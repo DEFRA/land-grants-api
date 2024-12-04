@@ -1,4 +1,4 @@
-# CDP Node.js Backend Template
+# land-grants-api
 
 Core delivery platform Node.js Backend Template.
 
@@ -35,7 +35,7 @@ easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
 To use the correct version of Node.js for this application, via nvm:
 
 ```bash
-cd cdp-node-backend-template
+cd land-grants-api
 nvm use
 ```
 
@@ -163,13 +163,13 @@ Helper methods are also available in `/src/helpers/mongo-lock.js`.
 Build:
 
 ```bash
-docker build --target development --no-cache --tag cdp-node-backend-template:development .
+docker build --target development --no-cache --tag land-grants-api:development .
 ```
 
 Run:
 
 ```bash
-docker run -e PORT=3001 -p 3001:3001 cdp-node-backend-template:development
+docker run -e PORT=3001 -p 3001:3001 land-grants-api:development
 ```
 
 ### Production image
@@ -177,13 +177,13 @@ docker run -e PORT=3001 -p 3001:3001 cdp-node-backend-template:development
 Build:
 
 ```bash
-docker build --no-cache --tag cdp-node-backend-template .
+docker build --no-cache --tag land-grants-api .
 ```
 
 Run:
 
 ```bash
-docker run -e PORT=3001 -p 3001:3001 cdp-node-backend-template
+docker run -e PORT=3001 -p 3001:3001 land-grants-api
 ```
 
 ### Docker Compose
