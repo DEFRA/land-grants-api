@@ -1,0 +1,14 @@
+
+@startuml agreement-system-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../people.puml
+  !include ../systems.puml
+  
+  landGrants("external")
+  agreementSystem("internal")
+  sitiAgri("external")
+
+  Rel(landGrants, agreementSystem, "creates agreements in")
+  Rel(agreementSystem, sitiAgri, "retrieves legacy agreements from")
+
+@enduml

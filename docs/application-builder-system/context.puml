@@ -1,0 +1,20 @@
+
+@startuml application-builder-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../systems.puml
+  !include ../people.puml
+
+  applicationBuilder()
+  policyImplementer()
+  
+  grantApplicationService("external")
+  landGrants("external")
+  applicationUi("external")
+  applicationManagement("external")
+
+  Rel(policyImplementer, applicationBuilder, "Implements policy using", "http")
+  Rel(applicationBuilder, grantApplicationService, "Provides config to", "event")
+  Rel(grantApplicationService, landGrants, "Provides config to", "event")
+  Rel(applicationBuilder, applicationManagement, "Provides config to", "event")
+  Rel(applicationBuilder, applicationUi, "Provides config to", "event")
+@enduml

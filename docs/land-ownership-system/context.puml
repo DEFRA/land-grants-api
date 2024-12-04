@@ -1,0 +1,13 @@
+
+@startuml land-ownership-system-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../systems.puml
+  !include ../people.puml
+
+  landGrants("external")
+  sitiAgri()
+  landOwnershipSystem("internal")
+
+  Rel(landOwnershipSystem, sitiAgri, "Retrieves existing land ownership data from", "http")
+  Rel(landOwnershipSystem, landGrants, "Provides land ownership data to", "http")
+@enduml

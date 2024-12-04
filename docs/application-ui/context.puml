@@ -1,0 +1,18 @@
+@startuml application-ui-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../people.puml
+  !include ../systems.puml
+  
+  applicant()
+  applicationUi()
+  singleFrontDoor()
+  identity()
+
+  grantApplicationService("external")
+
+  Rel(applicant, singleFrontDoor, "Logs in to", "http")
+  Rel(singleFrontDoor, identity, "Gets user identities from", "http")
+  Rel(applicant, applicationUi, "Applies using", "http")
+  Rel(applicationUi, grantApplicationService, "Sends application to", "event")
+
+@enduml
