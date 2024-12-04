@@ -1,30 +1,25 @@
-import { createServer } from '~/src/api/index.js'
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import Hapi from '@hapi/hapi'
+import { health } from './index.js'
 
 describe('#healthController', () => {
-  /** @type {Server} */
-  let server
+  const server = Hapi.server()
 
   beforeAll(async () => {
-    server = await createServer()
+    await server.register([health])
     await server.initialize()
   })
 
   afterAll(async () => {
-    await server.stop({ timeout: 0 })
+    await server.stop()
   })
 
   test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
+    const result = await server.inject({
       method: 'GET',
       url: '/health'
     })
 
-    expect(result).toEqual({ message: 'success' })
-    expect(statusCode).toBe(statusCodes.ok)
+    expect(result.statusCode).toBe(200)
+    expect(result.payload).toBe(JSON.stringify({ message: 'success' }))
   })
 })
-
-/**
- * @import { Server } from '@hapi/hapi'
- */

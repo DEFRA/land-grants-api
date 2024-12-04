@@ -1,0 +1,202 @@
+Land Cover Type,Code,Land Cover Class,Code,Land Cover,Code,Land Use,Land Use Code
+Agricultural area,100,Arable land,110,Land lying fallow,111,Fallow,FA01
+Agricultural area,100,Arable land,110,Temporary grass,112,Temporary grass,TG01
+Agricultural area,100,Arable land,110,Catch and cover crops,116,Catch crop,CA01
+Agricultural area,100,Arable land,110,Catch and cover crops,116,Cover crop,CA02
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Chickpea,LG01
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Fenugreek,LG02
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Field beans - spring,LG03
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Green beans,LG04
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Lentils,LG05
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Lupins,LG06
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Lupins,LG06
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Peas - spring,LG07
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Soya,LG08
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Cowpea,LG09
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Bird's foot trefoil,LG10
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Lucerne,LG11
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Sweet clover,LG12
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Sainfoin,LG13
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Clover,LG14
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Mixed crop - leguminous only 1,LG15
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Mixed crop - leguminous only 2,LG16
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Mixed crop - leguminous only 3,LG17
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Mixed crop - leguminous only 4,LG18
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Mixed crop - leguminous only 5,LG19
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Field beans - winter,LG20
+Agricultural area,100,Arable land,110,Leguminous and nitrogen fixing crops,117,Peas - winter,LG21
+Agricultural area,100,Arable land,110,Other arable crops,118,Barley - spring,AC01
+Agricultural area,100,Arable land,110,Other arable crops,118,Basil,AC02
+Agricultural area,100,Arable land,110,Other arable crops,118,Beet,AC03
+Agricultural area,100,Arable land,110,Other arable crops,118,Borage,AC04
+Agricultural area,100,Arable land,110,Other arable crops,118,Buckwheat,AC05
+Agricultural area,100,Arable land,110,Other arable crops,118,Canary seed,AC06
+Agricultural area,100,Arable land,110,Other arable crops,118,Carrot,AC07
+Agricultural area,100,Arable land,110,Other arable crops,118,Celery,AC08
+Agricultural area,100,Arable land,110,Other arable crops,118,Chicory,AC09
+Agricultural area,100,Arable land,110,Other arable crops,118,Daffodil,AC10
+Agricultural area,100,Arable land,110,Other arable crops,118,Dill,AC11
+Agricultural area,100,Arable land,110,Other arable crops,118,Evening primrose,AC12
+Agricultural area,100,Arable land,110,Other arable crops,118,Fennel,AC13
+Agricultural area,100,Arable land,110,Other arable crops,118,Hemp,AC14
+Agricultural area,100,Arable land,110,Other arable crops,118,Lettuce,AC15
+Agricultural area,100,Arable land,110,Other arable crops,118,Linseed - spring,AC16
+Agricultural area,100,Arable land,110,Other arable crops,118,Maize,AC17
+Agricultural area,100,Arable land,110,Other arable crops,118,Millet,AC18
+Agricultural area,100,Arable land,110,Other arable crops,118,Oats - spring,AC19
+Agricultural area,100,Arable land,110,Other arable crops,118,Onions,AC20
+Agricultural area,100,Arable land,110,Other arable crops,118,Oregano,AC21
+Agricultural area,100,Arable land,110,Other arable crops,118,Parsley,AC22
+Agricultural area,100,Arable land,110,Other arable crops,118,Parsnips,AC23
+Agricultural area,100,Arable land,110,Other arable crops,118,Rye - spring,AC24
+Agricultural area,100,Arable land,110,Other arable crops,118,Sage,AC25
+Agricultural area,100,Arable land,110,Other arable crops,118,Spinach,AC26
+Agricultural area,100,Arable land,110,Other arable crops,118,Strawberry,AC27
+Agricultural area,100,Arable land,110,Other arable crops,118,Sweet potato,AC28
+Agricultural area,100,Arable land,110,Other arable crops,118,Thyme,AC29
+Agricultural area,100,Arable land,110,Other arable crops,118,Triticale - spring,AC30
+Agricultural area,100,Arable land,110,Other arable crops,118,Tulip,AC31
+Agricultural area,100,Arable land,110,Other arable crops,118,Wheat - spring,AC32
+Agricultural area,100,Arable land,110,Other arable crops,118,Yam,AC33
+Agricultural area,100,Arable land,110,Other arable crops,118,Cabbage - spring,AC34
+Agricultural area,100,Arable land,110,Other arable crops,118,Turnip,AC35
+Agricultural area,100,Arable land,110,Other arable crops,118,Oilseed - spring,AC36
+Agricultural area,100,Arable land,110,Other arable crops,118,Brown mustard,AC37
+Agricultural area,100,Arable land,110,Other arable crops,118,Mustard,AC38
+Agricultural area,100,Arable land,110,Other arable crops,118,Crambe,AC39
+Agricultural area,100,Arable land,110,Other arable crops,118,Rocket,AC40
+Agricultural area,100,Arable land,110,Other arable crops,118,Radish,AC41
+Agricultural area,100,Arable land,110,Other arable crops,118,Horseradish,AC42
+Agricultural area,100,Arable land,110,Other arable crops,118,Tobacco,AC43
+Agricultural area,100,Arable land,110,Other arable crops,118,Potato,AC44
+Agricultural area,100,Arable land,110,Other arable crops,118,Tomato,AC45
+Agricultural area,100,Arable land,110,Other arable crops,118,Aubergine,AC46
+Agricultural area,100,Arable land,110,Other arable crops,118,Pepper,AC47
+Agricultural area,100,Arable land,110,Other arable crops,118,Chilli,AC48
+Agricultural area,100,Arable land,110,Other arable crops,118,Tree chilli,AC49
+Agricultural area,100,Arable land,110,Other arable crops,118,Squash,AC50
+Agricultural area,100,Arable land,110,Other arable crops,118,Japanese pie squash,AC51
+Agricultural area,100,Arable land,110,Other arable crops,118,Siam pumpkin,AC52
+Agricultural area,100,Arable land,110,Other arable crops,118,Banana squash,AC53
+Agricultural area,100,Arable land,110,Other arable crops,118,Butternut squash,AC54
+Agricultural area,100,Arable land,110,Other arable crops,118,Water melon,AC55
+Agricultural area,100,Arable land,110,Other arable crops,118,Cucumber,AC56
+Agricultural area,100,Arable land,110,Other arable crops,118,Melon,AC57
+Agricultural area,100,Arable land,110,Other arable crops,118,Mixed crop - group 1,AC58
+Agricultural area,100,Arable land,110,Other arable crops,118,Mixed crop - group 2,AC59
+Agricultural area,100,Arable land,110,Other arable crops,118,Mixed crop - group 3,AC60
+Agricultural area,100,Arable land,110,Other arable crops,118,Mixed crop - group 4,AC61
+Agricultural area,100,Arable land,110,Other arable crops,118,Mixed crop - group 5,AC62
+Agricultural area,100,Arable land,110,Other arable crops,118,Barley - winter,AC63
+Agricultural area,100,Arable land,110,Other arable crops,118,Linseed - winter,AC64
+Agricultural area,100,Arable land,110,Other arable crops,118,Oats - winter,AC65
+Agricultural area,100,Arable land,110,Other arable crops,118,Wheat - winter,AC66
+Agricultural area,100,Arable land,110,Other arable crops,118,Oilseed - winter,AC67
+Agricultural area,100,Arable land,110,Other arable crops,118,Rye - winter,AC68
+Agricultural area,100,Arable land,110,Other arable crops,118,Triticale - winter,AC69
+Agricultural area,100,Arable land,110,Other arable crops,118,Cabbage - winter,AC70
+Agricultural area,100,Arable land,110,Other arable crops,118,Coriander,AC71
+Agricultural area,100,Arable land,110,Other arable crops,118,Corn gromwell,AC72
+Agricultural area,100,Arable land,110,Other arable crops,118,Camelina,AC73
+Agricultural area,100,Arable land,110,Other arable crops,118,Phacelia,AC74
+Agricultural area,100,Arable land,110,Other arable crops,118,Oca,AC75
+Agricultural area,100,Arable land,110,Other arable crops,118,German chamomile,AC76
+Agricultural area,100,Arable land,110,Other arable crops,118,Corn chamomile,AC77
+Agricultural area,100,Arable land,110,Other arable crops,118,Corn cockle,AC78
+Agricultural area,100,Arable land,110,Other arable crops,118,Corn flower,AC79
+Agricultural area,100,Arable land,110,Other arable crops,118,Corn marigold,AC80
+Agricultural area,100,Arable land,110,Other arable crops,118,Poppy,AC81
+Agricultural area,100,Arable land,110,Other arable crops,118,Field for-get-me-not,AC82
+Agricultural area,100,Arable land,110,Other arable crops,118,Fox-glove,AC83
+Agricultural area,100,Arable land,110,Other arable crops,118,Hay rattle,AC84
+Agricultural area,100,Arable land,110,Other arable crops,118,Hedge bedstraw,AC85
+Agricultural area,100,Arable land,110,Other arable crops,118,Teasel,AC86
+Agricultural area,100,Arable land,110,Other arable crops,118,Quinoa,AC87
+Agricultural area,100,Arable land,110,Other arable crops,118,Sunflower,AC88
+Agricultural area,100,Arable land,110,Other arable crops,118,Cress,AC89
+Agricultural area,100,Arable land,110,Other arable crops,118,Gladioli,AC90
+Agricultural area,100,Arable land,110,Other arable crops,118,Echium,AC91
+Agricultural area,100,Arable land,110,Other arable crops,118,Sorghum,AC92
+Agricultural area,100,Arable land,110,Other arable crops,118,Sticky Nightshade,AC93
+Agricultural area,100,Arable land,110,Other arable crops,118,Sweet Williams,AC94
+Agricultural area,100,Arable land,110,Other arable crops,118,Wallflower,AC95
+Agricultural area,100,Arable land,110,Other arable crops,118,Samphire,AC96
+Agricultural area,100,Arable land,110,Other arable crops,118,Aster (Chinese),AC97
+Agricultural area,100,Arable land,110,Other arable crops,118,Larkspur,AC98
+Agricultural area,100,Arable land,110,Other arable crops,118,Nigella,AC99
+Agricultural area,100,Arable land,110,Other arable crops,118,Ryegrass (Italian) - grown for seed production,AC100
+Agricultural area,100,Arable land,110,Crops under water,121,Watercress,CW01
+Agricultural area,100,Permanent grassland,130,Permanent grassland,131,Permanent grassland,PG01
+Agricultural area,100,Permanent crops,140,Perennial crops,141,Perennial crops,TC01
+Agricultural area,100,Permanent crops,140,Nurseries,142,Nursery crops,NU01
+Agricultural area,100,Permanent crops,140,Short rotation coppice,143,Short rotation coppice,SR01
+Landscape features,200,Linear features,210,Stone wall,211,Stone wall,BF01
+Landscape features,200,Linear features,210,Hedge,212,Hedges,BF02
+Landscape features,200,Linear features,210,Hedge,212,Half hedge,BF11
+Landscape features,200,Linear features,210,Hedge,212,Adjacent hedge,BF12
+Landscape features,200,Linear features,210,Bank,218,Bank,BF08
+Landscape features,200,Linear features,210,Buffer strip,219,Buffer strip,BF15
+Landscape features,200,Linear features,210,Fence,291,Fence,BF16
+Landscape features,200,Boundary features,220,Short stone wall,221,Short stone wall,BB01
+Landscape features,200,Water/irrigation features,240,Drain/ditch/dyke,241,Drain/ditch/dyke,WF01
+Landscape features,200,Water/irrigation features,240,Pond,243,Pond,WF03
+Landscape features,200,Rock,250,Scree,251,Scree,RO02
+Landscape features,200,Rock,250,Boulders,252,Boulders,RO03
+Landscape features,200,Rock,250,Rocky outcrop,253,Rocky outcrop,RO04
+Landscape features,200,Heaps,270,Heaps,271,Heaps,HE03
+Landscape features,200,Notional features,280,Notional - rock,281,Scattered rock,NF01
+Landscape features,200,Notional features,280,Notional - bracken,282,Scattered bracken,NF02
+Landscape features,200,Notional features,280,Notional - scrub,283,Scattered scrub,NF03
+Landscape features,200,Notional features,280,Notional - trees,284,Scattered patches of trees,NF04
+Landscape features,200,Notional features,280,Notional - water,285,Scattered water features,NF05
+Landscape features,200,Notional features,280,Notional - natural,286,Scattered natural features,NF06
+Landscape features,200,Notional features,280,Notional - manmade,287,Scattered manmade features,NF07
+Landscape features,200,Notional features,280,Notional - mixed,288,Scattered features - mixed,NF08
+Non-agricultural area,300,Non-agricultural area,300,Non-agricultural area,300,Non-agricultural area,NA02
+Non-agricultural area,300,Non-agricultural area,300,Non-agricultural area,300,Non-agri BPS eligible,RD01
+Non-agricultural area,300,Woodland,330,Woodland,332,Woodland,WO12
+Non-agricultural area,300,Natural woodland,330,Residential gardens,338,Residential gardens,WO17
+Non-agricultural area,300,Woodland,330,Scrub - ungrazeable,347,Scrub - ungrazeable,WO25
+Non-agricultural area,300,Agricultural buildings,370,Farm building,371,Farm building,AB01
+Non-agricultural area,300,Agricultural buildings,370,Shelter on bare soil,373,Shelter on bare soil,AB03
+Non-agricultural area,300,Agricultural buildings,370,Glasshouse,376,Glasshouse,AB06
+Non-agricultural area,300,Agricultural buildings,370,Farmyards,379,Farmyards,AB09
+Non-agricultural area,300,Non-recreational buildings in a rural area,390,"Residential dwelling, house",391,"Residential dwelling, house",NR01
+Non-agricultural area,300,Structure,520,Structure,525,Structure,ST05
+Non-agricultural area,300,Utility,530,Solar panels,531,Solar panels,UT01
+Non-agricultural area,300,Utility,530,General utility,536,General utility,UT06
+Non-agricultural area,300,Utility,530,Water treatment works,537,Water treatment works,UT07
+Non-agricultural area,300,Hard standing,550,Hard standing,551,Hard standing,HS01
+Non-agricultural area,300,Real estate services,560,Real estate services,561,Real estate services,ES01
+Non-agricultural area,300,Storage areas,570,Storage area,571,Storage area,SA02
+Non-agricultural area,300,Inland water,580,River/ Stream on a boundary,581,River/ Stream on a boundary,IW01
+Non-agricultural area,300,Inland water,580,Rivers and Streams type 2,582,Rivers and Streams type 2,IW02
+Non-agricultural area,300,Inland water,580,Rivers and Streams type 3,583,Rivers and Streams type 3,IW03
+Non-agricultural area,300,Inland water,580,Drain/Ditch/Dyke on a boundary,588,Drain/Ditch/Dyke on a boundary,IW11
+Non-agricultural area,300,Inland wetland,590,Shingle,591,Shingle,IW05
+Non-agricultural area,300,Inland wetland,590,Fen marsh & swamp,592,Fen marsh & swamp,IW06
+Non-agricultural area,300,Inland wetland,590,Bog,593,Bog,IW07
+Non-agricultural area,300,Marine wetland,610,Salt marsh - ungrazeable,611,Salt marsh - ungrazeable,MW01
+Non-agricultural area,300,Marine wetland,610,Tidal areas,612,Tidal areas,MW02
+Non-agricultural area,300,Marine wetland,610,Reed beds,613,Reed beds,MW03
+Non-agricultural area,300,Marine wetland,610,Intertidal habitats,614,Intertidal habitats,MW04
+Non-agricultural area,300,Marine wetland,610,Saline habitats,615,Saline habitats,MW05
+Non-agricultural area,300,Coastal features,620,Cliffs,621,Cliffs,CF01
+Non-agricultural area,300,Coastal features,620,Vegetated shingle,622,Vegetated shingle,CF02
+Non-agricultural area,300,Coastal features,620,Sand dunes,623,Sand dunes,CF03
+Non-agricultural area,300,Manmade transport,630,Metalled track,631,Metalled Track,MT01
+Non-agricultural area,300,Manmade transport,630,Roads,633,Roads,MT03
+Non-agricultural area,300,Manmade transport,630,Railway,634,Railway,MT04
+Non-agricultural area,300,Manmade transport,630,Airstrip/airports,635,Airstrip/airports,MT05
+Non-agricultural area,300,Natural transport - tracks and gallops,640,Gallop,641,Gallop,NT01
+Non-agricultural area,300,Natural transport - tracks and gallops,640,Track - natural surface,643,Track - natural surface,NT03
+Non-agricultural area,300,Heath land and bracken,650,Heath land and bracken - ungrazeable,651,Heath land and bracken - ungrazeable,HE02
+Non-agricultural area,300,Recreational land,660,Sports and recreation,663,Sports and recreation,RL03
+Non-agricultural area,300,Recreational land,660,Golf course,664,Golf course,RL04
+Non-agricultural area,300,Cultivated and managed,670,Peat production,671,Peat production,CM01
+Non-agricultural area,300,Cultivated and managed,670,Turf production,672,Turf production,CM02
+Non-agricultural area,300,Manmade surface,680,Mineral extraction site,681,Mineral extraction site,MS04
+Non-agricultural area,300,Archaeological site,690,Archaeological site,691,Archaeological site,AS01
+Non-agricultural area,300,Peripheral land,710,Non-utilised Bank,711,Non-utilised bank,PL01
+Non-agricultural area,300,Peripheral land,710,Uncropped,712,Uncropped,PL02
+Unknown,400,Unknown,400,Unknown,0,Unknown,0

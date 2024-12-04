@@ -1,0 +1,75 @@
+@startuml _systems
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+  !procedure system($type="internal", $id, $name, $description)
+      !if $type == "external"
+          System_Ext($id, $name, $description)
+      !else
+          System($id, $name, $description)
+      !endif
+  !endprocedure
+
+  !procedure landGrants($type = "internal")
+      $system($type, "landGrants", "Land Grants System", "Aids the processing of land grant applications.")
+  !endprocedure
+
+  !procedure applicationUi($type = "internal")
+      $system($type, "applicationUi", "Application UI", "Hosts a funding application form web pages. Shared service between RPS, FETF and any other funding areas.")
+  !endprocedure
+
+  !procedure applicationManagement($type = "internal")
+      $system($type, "applicationManagement", "Application Management", "Orchestrates the application process, gives information and management control to operations teams.")
+  !endprocedure
+
+  !procedure applicationBuilder($type = "internal")
+      $system($type, "applicationBuilder", "Application Builder", "Builds and maintains funding schemes and actions. Configures the other systems so they stay in sync.")
+  !endprocedure
+
+  !procedure arcGis($type = "external")
+    $system($type, "arcGis", "ArcGIS", "A system providing land data and geospatial processing")
+  !endprocedure
+
+  !procedure agreementSystem($type = "external")
+    $system($type, "agreementSystem", "Agreement Service", "System of record for active and historic agreements")
+  !endprocedure
+
+  !procedure paymentHub()
+    $system("external", "paymentHub", "Payment Hub", "A system for processing payments")
+  !endprocedure
+
+  !procedure fraudService()
+    $system("external", "fraudService", "Fraud Service", "Access to fraud markers Fraud status assessment")
+  !endprocedure
+
+  !procedure singleFrontDoor()
+    $system("external", "singleFrontDoor", "Single Front Door", "A login and home page for all DEFRA farming")
+  !endprocedure
+
+  !procedure identity()
+    $system("external", "identity", "DEFRA.Identity", "A system for managing user identities")
+  !endprocedure
+
+  !procedure lms()
+    $system("external", "lms", "Land Management Service", "Existing system of record for land data")
+  !endprocedure
+
+  !procedure sitiAgri()
+    $system("external", "sitiAgri", "SitiAgri (SitiTenure)", "Existing system of record for land ownership")
+  !endprocedure
+
+  !procedure landChangeAudit()
+    SystemDb("landChangeAudit", "Land Change Audit", "A database of land change events")
+  !endprocedure
+
+  !procedure landService($type = "external")
+    $system($type, "landService", "Land Service", "A facade service for retrieving land data and performing geospatial processing")
+  !endprocedure
+
+  !procedure grantApplicationService($type = "external")
+    $system($type, "grantApplicationService", "Grant Application Service", "System of record for grant applications and definitions")
+  !endprocedure
+
+  !procedure landOwnershipSystem($type = "external")
+    $system($type, "landOwnershipSystem", "Land Ownership System", "The System of Record for land ownership")
+  !endprocedure
+@enduml

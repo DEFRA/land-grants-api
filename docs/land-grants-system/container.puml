@@ -1,0 +1,26 @@
+@startuml land-grants-system-container
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+  !include ../systems.puml
+  !include ../people.puml 
+
+  applicationUi("external")
+  grantApplicationService("external")
+
+  System_Boundary(landGrants, "Land Grants System") {
+    Container(grantApi, "Land Grants API", "node.js", "Capabilities include: \n• eligibility checks\n• grant payment calculations\n• available area calculation\n• action compatibility checks.")
+    ContainerDb(grantDb, "Land Grants Database", "Mongo", "Stores action config, eligibility criteria config, compatibility matrix and in progress applications")
+  }
+
+  Rel(applicationUi, grantApplicationService, "Sends application to", "event")
+  Rel(applicationUi, grantApplicationService, "Checks eligibility, Calculates Available Area, Calculates Payments Using", "http")
+  Rel(grantApplicationService, grantApi, "Sends application to", "event")
+  Rel(grantApplicationService, grantApi, "Checks eligibility, Calculates Available Area, Calculates Payments Using", "http")
+  Rel(grantApi, grantDb, "Reads from and writes to", "http")
+
+
+  landService()
+
+
+  Rel(landService, grantApi, "Provides land data to", "http")
+  Rel(grantApi, landService, "Performs geo processing using", "http")
+@enduml
