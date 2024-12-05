@@ -13,6 +13,13 @@
     "strictNullChecks": true,
     "types": ["jest"]
   },
-  "exclude": [".cache", ".server", "coverage", "node_modules"],
-  "include": ["**/*.cjs", "**/*.js", ".eslintrc.*", ".prettierrc.*"]
+  "exclude": [".cache", ".public", ".server", "coverage", "node_modules"],
+  "include": [
+    "**/*.cjs",
+    "**/*.js",
+    ".*.cjs",
+    ".*.js",
+    ".eslintrc.*",
+    ".prettierrc.*"
+  ]
 }
