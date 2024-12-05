@@ -1,0 +1,29 @@
+@startuml application-ui-container
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+  !include ../systems.puml
+  !include ../people.puml 
+
+
+  applicant()
+  singleFrontDoor()
+
+  System_Boundary(landGrantsDomain, "Land Grants") {
+    System_Ext(landGrantsUi, "Land Grants UI", "Domain specific web components")
+    landGrants("external")
+  }
+
+
+  System_Boundary(applicationUi, "Application UI") {
+    Container(webApp, "Form UI", "Node.js", "Allows applicants to apply for funding")
+    ContainerDb(configDb, "Form configuration", "Blob Storage", "Stores form configuration")
+    ContainerDb(stateDb, "Form state", "Document DB", "Stores in progress and completed forms")
+  }
+
+  Rel(applicant, singleFrontDoor, "Logs in to", "http")
+  Rel(applicant, webApp, "Applies using", "http")
+  Rel(webApp, landGrants, "Sends application to", "event")
+  Rel(webApp, configDb, "Stores form configuration in", "http")
+  Rel(webApp, stateDb, "Stores form state in", "http")
+  Rel(webApp, landGrantsUi, "Renders domain specific components", "http")
+
+@enduml

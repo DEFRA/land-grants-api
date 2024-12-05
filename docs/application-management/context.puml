@@ -1,0 +1,16 @@
+
+@startuml application-management-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../people.puml
+  !include ../systems.puml
+  
+  applicant()
+  operationsProcessor()
+
+  applicationManagement()
+  landGrants("external")
+
+  Rel(applicant, operationsProcessor, "Requires help from", "phone")
+  Rel(operationsProcessor, applicationManagement, "Manages applications using", "http")
+  Rel(landGrants, applicationManagement, "Creates and updates applications", "event")
+@enduml
