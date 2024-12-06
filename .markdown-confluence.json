@@ -1,0 +1,8 @@
+{
+  "confluenceBaseUrl": "https://eaflood.atlassian.net/",
+  "confluenceParentId": "5322670239",
+  "atlassianUserName": "nick.froud@equalexperts.com",
+  "folderToPublish": "./docs",
+  "contentRoot": "./",
+  "firstHeadingPageTitle": true
+}

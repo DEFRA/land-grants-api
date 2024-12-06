@@ -1,0 +1,15 @@
+
+@startuml land-service-context
+  !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+  !include ../systems.puml
+  
+  landService("internal")
+
+  arcGis()
+  landChangeAudit()
+  lms()
+
+  Rel(lms, arcGis, "Provides land data to", "etl")
+  Rel(arcGis, landService, "Provides land data & geospatial processing to", "http")
+  Rel(arcGis, landChangeAudit, "Logs changes to", "sql")
+@enduml
