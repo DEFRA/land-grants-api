@@ -2,7 +2,8 @@ import {
   mockSarahSingleLandCoverResponses,
   mockSarahSingleLandParcelResponses,
   mockSarahMultiLandCoverResponse,
-  mockSarahMultiLandParcelResponse
+  mockSarahMultiLandParcelResponse,
+  mockMoorlandDataResponse
 } from './mockData/index.js'
 
 export const findLandParcel = async (server, landParcelId, sheetId) => {
@@ -31,4 +32,12 @@ export const findLandCover = async (server, landParcelId, sheetId) => {
         item.features[0].properties.SHEET_ID === sheetId
     )
   )
+}
+
+export const performUtilityFunction = async () => {
+  return Promise.resolve({})
+}
+
+export const fetchMoorlandIntersection = async () => {
+  return Promise.resolve(mockMoorlandDataResponse)
 }
