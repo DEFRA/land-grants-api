@@ -1,12 +1,4 @@
 /**
- * @typedef BusinessParcel
- * @property { string } id
- * @property { string } sheetId
- * @property { object } attributes
- * @property { Array } agreements
- */
-
-/**
  * Finds and returns the latest land parcel from ArcGIS for each specified PARCEL_ID.
  * @param { import('@hapi/hapi').Request & MongoDBPlugin  } request
  * @param { string } sbi
@@ -32,3 +24,4 @@ async function findLandParcelsBySbi({ db }, sbi) {
 export { findLandParcelsBySbi }
 
 /** @import { MongoDBPlugin } from '~/src/helpers/mongodb.js' */
+/** @import { BusinessParcel } from '~/src/api/land/index.d.js' */
