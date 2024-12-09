@@ -1,8 +1,8 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { findAction } from '../../action/helpers/find-action.js'
-import { actionCompatibilityMatrix } from '../../available-area/helpers/action-compatibility-matrix.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
+import { findAllCompatibleActions } from '~/src/api/action-compatibility-matrix/helpers/find-compatible-actions-data.js'
 
 const logger = createLogger()
 
@@ -45,8 +45,12 @@ const paymentCalculationController = {
   handler: async ({ db, payload: { actions } }, h) => {
     try {
       const actionCodes = actions.map((action) => action['action-code'])
-      const actionsMissing = actionCodes.some(
-        (action) => !actionCompatibilityMatrix[action]
+      const compatibleActions = await Promise.all(
+        actionCodes.map((action) => findAllCompatibleActions(db, action))
+      )
+
+      const actionsMissing = compatibleActions.some(
+        (compatibleAction) => compatibleAction.length === 0
       )
 
       if (actionsMissing) {
