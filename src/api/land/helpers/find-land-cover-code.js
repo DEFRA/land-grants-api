@@ -20,7 +20,7 @@ const deepSearch = (data, value) => {
  * @returns {Promise<{}|null>}
  */
 async function findLandCoverCode(db, landCoverCode) {
-  const result = db.collection('land-codes').find(
+  const result = db.collection('codes').find(
     {
       $or: [
         { code: landCoverCode.toString() },

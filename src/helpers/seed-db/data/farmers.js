@@ -20,6 +20,34 @@ export const farmers = [
         sbi: '908789876',
         parcels: [
           {
+            id: '1040',
+            sheetId: 'SK0140',
+            agreements: [],
+            landUseList: [
+              {
+                code: 'PG01',
+                area: '4.2'
+              }
+            ],
+            attributes: {
+              moorlandLineStatus: 'above'
+            }
+          },
+          {
+            id: '2679',
+            sheetId: 'SJ9539',
+            agreements: [],
+            landUseList: [
+              {
+                code: 'PG01',
+                area: '4.2'
+              }
+            ],
+            attributes: {
+              moorlandLineStatus: 'below'
+            }
+          },
+          {
             id: '4769',
             sheetId: 'SK0241',
             agreements: [],
