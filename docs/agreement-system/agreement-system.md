@@ -2,7 +2,6 @@
 connie-publish: true
 connie-page-id: '5334728771'
 ---
-
 # Agreement system
 
 System of record for active and historic agreements.
@@ -16,3 +15,7 @@ System of record for active and historic agreements.
 ### Store and serve agreement information
 
 ### Enable digital/wet signatures
+
+### Payment holds
+
+### Agreement updates 

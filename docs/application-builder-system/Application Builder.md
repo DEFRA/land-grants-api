@@ -5,7 +5,7 @@ connie-page-id: '5334728806'
 
 # Application builder system
 
-Builds and maintains funding schemes and actions. Configures the other systems so they stay in sync.
+Builds and maintains funding schemes and actions. Configures the other systems so they stay in sync. This system could be very simple and be implemented with a GitHub repo and a GitHub action, the former storing the config and the latter transmitting it to the other systems. 
 
 ## Context diagram
 
