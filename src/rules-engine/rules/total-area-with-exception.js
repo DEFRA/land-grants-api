@@ -5,7 +5,7 @@ export function totalAreaWithException(application, config) {
     landParcel: { existingAgreements, area }
   } = application
 
-  const incompatibleAction = existingAgreements.find(
+  const incompatibleAction = existingAgreements?.find(
     (/** @type {{ code: string; }} */ agreement) =>
       config.incompatibleAction === agreement.code
   )
@@ -24,6 +24,13 @@ export function totalAreaWithException(application, config) {
       return {
         passed: false,
         message: `Action code ${actionCodeAppliedFor} is using a smaller area than is available after existing agreement ${config.incompatibleAction} is applied`
+      }
+    }
+  } else {
+    if (areaAppliedFor !== area) {
+      return {
+        passed: false,
+        message: `Action code ${actionCodeAppliedFor} is using a different area than the total area of the parcel`
       }
     }
   }

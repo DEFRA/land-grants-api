@@ -4,6 +4,10 @@ import { findAction } from '../helpers/find-action.js'
 import { actionCombinationLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 
+/**
+ * @param { ActionSelection[] } userSelectedActions
+ * @param { import('~/src/types.js').LandParcel } landParcel
+ */
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
   for (const action of userSelectedActions) {
@@ -16,6 +20,11 @@ const isValidArea = (userSelectedActions, landParcel) => {
   }
 }
 
+/**
+ * @param { import('~/src/types.js').Action[] } preexistingActions
+ * @param { ActionSelection[] } userSelectedActions
+ * @param { string[] } landUseCodes
+ */
 const isValidCombination = (
   preexistingActions = [],
   userSelectedActions,
@@ -53,8 +62,8 @@ const isValidCombination = (
 /**
  *
  * @param { import('mongodb').Db } db
- * @param { Array } userSelectedActions
- * @param { object } landParcel
+ * @param { ActionSelection[] } userSelectedActions
+ * @param { import('~/src/types.js').LandParcel } landParcel
  * @returns
  */
 const executeActionRules = async (db, userSelectedActions, landParcel) => {
@@ -68,6 +77,7 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
     const application = {
       areaAppliedFor: parseFloat(action.quantity),
       actionCodeAppliedFor: action.actionCode,
+      allActionsAppliedFor: userSelectedActions,
       landParcel: {
         area: parseFloat(landParcel.area),
         moorlandLineStatus: landParcel.moorlandLineStatus,
@@ -101,9 +111,15 @@ const actionValidationController = {
   },
 
   /**
+   * @typedef { object } ActionSelection
+   * @property { string } actionCode
+   * @property { string } quantity
+   */
+
+  /**
    * @typedef { import('@hapi/hapi').Request & object } RequestPayload
    * @property { object } landParcel
-   * @property { Array } actions
+   * @property { ActionSelection[] } actions
    */
 
   /**

@@ -116,5 +116,12 @@ export const actions = [
         config: { incompatibleAction: 'CIGL1' }
       }
     ]
+  },
+  {
+    code: 'CIGL1',
+    description: 'Take grassland field corners or blocks out of management',
+    payment: {
+      amountPerHectare: 333
+    }
   }
 ]
