@@ -231,7 +231,8 @@ const ACTION_COMPATIBILITY_MATRIX = {
     'SOH1',
     'SOH2',
     'SOH3'
-  ]
+  ],
+  CSAM3: ['CSAM3']
 }
 
 function applyUpdate(newEntries, actionCompatibilityMatrix) {
