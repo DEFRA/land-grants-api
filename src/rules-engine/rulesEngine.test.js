@@ -63,4 +63,4 @@ describe('Rules Engine', function () {
   })
 })
 
-/** @import { LandParcel, Application, LayerId } from '../types.js' */
+/** @import { LandParcel, Application, LayerId } from './rulesEngine.d.js' */

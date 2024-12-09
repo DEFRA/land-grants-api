@@ -23,4 +23,4 @@ export function noIntersectionWithLayer(application, ruleConfig) {
  * @property {number} tolerancePercentage
  */
 
-/** @import { RuleResponse, Application, LayerId } from '../../types.js' */
+/** @import { RuleResponse, Application, LayerId } from '../rulesEngine.d.js' */
