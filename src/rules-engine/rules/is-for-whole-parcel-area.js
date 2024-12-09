@@ -4,7 +4,7 @@ export function isForWholeParcelArea(application) {
     landParcel: { area }
   } = application
 
-  if (areaAppliedFor !== area) {
+  if (parseFloat(areaAppliedFor) !== parseFloat(area)) {
     return {
       passed: false,
       message: `Area applied for (${areaAppliedFor}ha) does not match parcel area (${area}ha)`
