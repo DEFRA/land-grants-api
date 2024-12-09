@@ -3,7 +3,7 @@
  * @param {NoIntersectionWithLayerRuleConfig} ruleConfig
  * @returns {RuleResponse}
  */
-export function noIntersectionWithLayer(application, ruleConfig) {
+export function check(application, ruleConfig) {
   const { intersections } = application.landParcel
   const { layerId, tolerancePercentage } = ruleConfig
 
@@ -16,6 +16,11 @@ export function noIntersectionWithLayer(application, ruleConfig) {
 
   return { passed: true }
 }
+
+/**
+ * @type {import('../../types.js').Rule}
+ */
+export const noIntersectionWithLayer = { check, requiredDataLayers: [] }
 
 /**
  * @typedef NoIntersectionWithLayerRuleConfig

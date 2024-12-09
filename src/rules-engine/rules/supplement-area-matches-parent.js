@@ -1,4 +1,4 @@
-export function supplementAreaMatchesParent(application, config) {
+export function check(application, config) {
   const {
     areaAppliedFor,
     actionCodeAppliedFor,
@@ -31,3 +31,8 @@ export function supplementAreaMatchesParent(application, config) {
 
   return { passed: true }
 }
+
+/**
+ * @type {import('../../types.js').Rule}
+ */
+export const supplementAreaMatchesParent = { check, requiredDataLayers: [] }

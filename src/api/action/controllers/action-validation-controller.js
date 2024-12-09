@@ -186,7 +186,7 @@ const actionValidationController = {
     const ruleFailureMessages = []
     for (const result of ruleResults) {
       if (!result.passed) {
-        const results = result.results
+        const results = result.allResults
           .filter((r) => !r.passed)
           .map((r) => r.message)
           .join(', ')

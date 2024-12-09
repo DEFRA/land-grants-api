@@ -1,4 +1,4 @@
-export function totalAreaWithException(application, config) {
+export function check(application, config) {
   const {
     areaAppliedFor,
     actionCodeAppliedFor,
@@ -30,3 +30,8 @@ export function totalAreaWithException(application, config) {
 
   return { passed: true }
 }
+
+/**
+ * @type {import('../../types.js').Rule}
+ */
+export const totalAreaWithException = { check, requiredDataLayers: [] }

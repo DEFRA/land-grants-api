@@ -16,7 +16,7 @@ describe('has-min-parcel-area', function () {
       }
       const ruleConfig = { minArea: minimumArea }
 
-      const result = rules['has-min-parcel-area'](application, ruleConfig)
+      const result = rules['has-min-parcel-area'].check(application, ruleConfig)
 
       expect(result).toStrictEqual({ passed: true })
     }
@@ -30,7 +30,7 @@ describe('has-min-parcel-area', function () {
     }
     const ruleConfig = { minArea: 2 }
 
-    const result = rules['has-min-parcel-area'](application, ruleConfig)
+    const result = rules['has-min-parcel-area'].check(application, ruleConfig)
 
     expect(result).toStrictEqual({
       passed: false,

@@ -16,7 +16,7 @@ describe('no-intersection-with-layer', function () {
     }
 
     // Acts
-    const result = rules['no-intersection-with-layer'](application, {
+    const result = rules['no-intersection-with-layer'].check(application, {
       layerId: 'sssi',
       tolerancePercentage: 0
     })
@@ -42,7 +42,7 @@ describe('no-intersection-with-layer', function () {
     }
 
     // Acts
-    const result = rules['no-intersection-with-layer'](application, {
+    const result = rules['no-intersection-with-layer'].check(application, {
       layerId: 'sssi',
       tolerancePercentage: 0
     })
@@ -68,7 +68,7 @@ describe('no-intersection-with-layer', function () {
     }
 
     // Acts
-    const result = rules['no-intersection-with-layer'](application, {
+    const result = rules['no-intersection-with-layer'].check(application, {
       layerId: 'sssi',
       tolerancePercentage: 0.1
     })

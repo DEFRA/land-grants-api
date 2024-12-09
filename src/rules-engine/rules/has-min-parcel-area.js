@@ -1,4 +1,4 @@
-export const hasMinimumParcelArea = (application, ruleConfig) => {
+export const check = (application, ruleConfig) => {
   const {
     landParcel: { area }
   } = application
@@ -12,3 +12,8 @@ export const hasMinimumParcelArea = (application, ruleConfig) => {
       }
     : { passed }
 }
+
+/**
+ * @type {import('../../types.js').Rule}
+ */
+export const hasMinimumParcelArea = { check, requiredDataLayers: [] }

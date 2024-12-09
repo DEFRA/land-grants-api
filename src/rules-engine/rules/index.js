@@ -5,23 +5,20 @@ import { isLessThanMaximumParcelArea } from './is-less-than-max-parcel-area.js'
 import { noIntersectionWithLayer } from './no-intersection-with-layer.js'
 import { supplementAreaMatchesParent } from './supplement-area-matches-parent.js'
 import { totalAreaWithException } from './total-area-with-exception.js'
-import {
-  hasPeatySoil,
-  isOutsideSda,
-  noHeferFeatures,
-  noSSI
-} from './tag-based-rules.js'
 
+/**
+ * @import { Rule } from '../../types.js'
+ */
+
+/**
+ * @type {Record<string, Rule>}
+ */
 export const rules = {
   'supplement-area-matches-parent': supplementAreaMatchesParent,
   'is-below-moorland-line': isBelowMoorlandLine,
   'is-for-whole-parcel-area': isForWholeParcelArea,
   'has-min-parcel-area': hasMinimumParcelArea,
   'is-less-than-max-parcel-area': isLessThanMaximumParcelArea,
-  'is-outside-sda': isOutsideSda,
-  'has-peaty-soil': hasPeatySoil,
-  'no-sssi': noSSI,
-  'no-hefer-features': noHeferFeatures,
   'no-intersection-with-layer': noIntersectionWithLayer,
   'total-area-with-exception': totalAreaWithException
 }

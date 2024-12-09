@@ -36,7 +36,10 @@ describe('Rules Engine', function () {
       expect(result).toStrictEqual({
         message: '',
         passed: true,
-        results: [{ ruleName: 'supplement-area-matches-parent', passed: true }]
+        message: '',
+        allResults: [
+          { ruleName: 'supplement-area-matches-parent', passed: true }
+        ]
       })
     })
 
@@ -54,7 +57,9 @@ describe('Rules Engine', function () {
       const application = createApplication()
 
       const executeRulesInvocation = () => {
-        executeRules(application, [{ id: 'test-non-existent-rule-id' }])
+        executeRules(application, [
+          { id: 'test-non-existent-rule-id', config: {} }
+        ])
       }
 
       expect(executeRulesInvocation).toThrow(
