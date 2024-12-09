@@ -1,5 +1,5 @@
 import { rules } from './index.js'
-import { blankIntersections } from '../../types.js'
+import { blankIntersections } from '../rulesEngine.d.js'
 
 describe('no-intersection-with-layer', function () {
   test('should pass when no intersection present on parcel', function () {
@@ -78,4 +78,4 @@ describe('no-intersection-with-layer', function () {
   })
 })
 
-/** @import { Application } from '../../types.js' */
+/** @import { Application } from '../rulesEngine.d.js' */
