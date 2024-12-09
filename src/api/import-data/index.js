@@ -1,7 +1,4 @@
-import {
-  importOptionsController,
-  importLandCodesController
-} from '~/src/api/import-data/controllers/index.js'
+import { importOptionsController } from '~/src/api/import-data/controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -20,16 +17,6 @@ const importData = {
             }
           },
           ...importOptionsController
-        },
-        {
-          method: 'POST',
-          path: '/import-data/land-codes',
-          options: {
-            payload: {
-              maxBytes: Number.MAX_SAFE_INTEGER
-            }
-          },
-          ...importLandCodesController
         }
       ])
     }
