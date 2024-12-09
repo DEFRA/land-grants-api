@@ -8,6 +8,15 @@ jest.mock('../../action/helpers/find-action.js', () => ({
   )
 }))
 
+jest.mock(
+  '~/src/api/action-compatibility-matrix/helpers/find-compatible-actions-data.js',
+  () => ({
+    findAllCompatibleActions: jest.fn(() =>
+      Promise.resolve([{ code: 'CSAM1', compatible: true }])
+    )
+  })
+)
+
 describe('paymentCalculationController', () => {
   const server = Hapi.server()
 
