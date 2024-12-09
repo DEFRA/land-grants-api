@@ -1,5 +1,12 @@
 import { rules } from './rules/index.js'
 
+/**
+ *
+ * @param {string} ruleName
+ * @param {Application} application
+ * @param {RuleConfig} ruleConfig
+ * @returns {RuleCheckResult}
+ */
 export const executeRule = (ruleName, application, ruleConfig) => {
   const rule = rules[ruleName]
 
@@ -10,6 +17,11 @@ export const executeRule = (ruleName, application, ruleConfig) => {
   return rule(application, ruleConfig)
 }
 
+/**
+ * @param {Application} application
+ * @param {{id: string, config: RuleConfig}[]} rules
+ * @returns {RuleCheckResults}
+ */
 export const executeRules = (application, rules) => {
   if (!rules?.length) {
     throw new Error('No rules provided to execute')
@@ -19,5 +31,13 @@ export const executeRules = (application, rules) => {
     ...executeRule(rule.id, application, rule.config)
   }))
 
-  return { results, passed: results.every((result) => result.passed === true) }
+  return {
+    results,
+    passed: results.every((result) => result.passed === true),
+    message: results.map((result) => result.message).join('\n')
+  }
 }
+
+/**
+ * @import { Application, RuleConfig, RuleCheckResult, RuleCheckResults } from '../types.js'
+ */
