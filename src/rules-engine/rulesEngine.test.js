@@ -36,7 +36,6 @@ describe('Rules Engine', function () {
       expect(result).toStrictEqual({
         message: '',
         passed: true,
-        message: '',
         allResults: [
           { ruleName: 'supplement-area-matches-parent', passed: true }
         ]
