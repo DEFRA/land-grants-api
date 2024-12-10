@@ -7,14 +7,23 @@ import {
 } from '../helpers/find-moorland-intersects.js'
 import { findLandParcel, fetchIntersection } from '~/src/services/arcgis.js'
 
-async function calculateIntersectionArea(server, landParcelId, sheetId, type) {
+async function calculateIntersectionArea(
+  server,
+  landParcelId,
+  sheetId,
+  layerId
+) {
   const landParcelResponse = await findLandParcel(server, landParcelId, sheetId)
 
   if (
     !landParcelResponse?.features ||
     landParcelResponse.features.length === 0
   ) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: 0 }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 0
+    }
   }
 
   const parcelFeature = landParcelResponse.features[0] // at the moment we are only using the first feature of the parcel for POC
@@ -26,10 +35,14 @@ async function calculateIntersectionArea(server, landParcelId, sheetId, type) {
   }
 
   const parcelGeometry = transformGeometryToRings(rawParcelGeometry)
-  const intersections = await fetchIntersection(server, parcelGeometry, type)
+  const intersections = await fetchIntersection(server, parcelGeometry, layerId)
 
   if (!intersections?.features || intersections.features.length === 0) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea
+    }
   }
 
   const geometries = intersections.features.map((feature) =>
@@ -50,7 +63,11 @@ async function calculateIntersectionArea(server, landParcelId, sheetId, type) {
   const intersectedGeometries = intersectResult.geometries || []
 
   if (intersectedGeometries.length === 0) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea
+    }
   }
   const areaResponse = await calculateAreas(intersectedGeometries)
 
@@ -63,16 +80,16 @@ async function calculateIntersectionArea(server, landParcelId, sheetId, type) {
   const areaResult = await areaResponse.json()
 
   // may have error margin due to maximum number of vertices per geometry of public API i.e.snapping
-  const totalArea = (areaResult.areas || []).reduce(
+  const totalIntersectingArea = (areaResult.areas || []).reduce(
     (sum, area) => sum + area,
     0
   )
-  const availableArea = parcelArea - totalArea // available area is the difference between the total area of the parcel and the area of the moorland intersection
+  const nonIntersectingArea = parcelArea - totalIntersectingArea // available area is the difference between the total area of the parcel and the area of the moorland intersection
 
   return {
     parcelId: landParcelId,
-    totalArea,
-    availableArea
+    totalIntersectingArea,
+    nonIntersectingArea
   }
 }
 
