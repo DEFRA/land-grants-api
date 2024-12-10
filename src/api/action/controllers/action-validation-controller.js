@@ -1,8 +1,8 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
 import { findAction } from '../helpers/find-action.js'
-import { actionCombinationLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { findActions } from '../helpers/find-actions.js'
 
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
@@ -16,7 +16,8 @@ const isValidArea = (userSelectedActions, landParcel) => {
   }
 }
 
-const isValidCombination = (
+const isValidCombination = async (
+  db,
   preexistingActions = [],
   userSelectedActions,
   landUseCodes
@@ -24,16 +25,16 @@ const isValidCombination = (
   const actionCodes = userSelectedActions
     .concat(preexistingActions)
     .map((action) => action.actionCode)
+
+  const actions = await findActions(db, actionCodes)
+
   for (const code of landUseCodes) {
-    const allowedCombinations =
-      actionCombinationLandUseCompatibilityMatrix[code] || []
     let validForThisCode = false
-    for (const combination of allowedCombinations) {
-      if (actionCodes.every((actionCode) => combination.includes(actionCode))) {
-        validForThisCode = true
-        break
-      }
+    if (actions.every((action) => landUseCodes.includes(action.code))) {
+      validForThisCode = true
+      break
     }
+
     if (!validForThisCode) {
       if (preexistingActions.length > 0) {
         const actionCodesString = preexistingActions
@@ -58,13 +59,15 @@ const isValidCombination = (
  * @returns
  */
 const executeActionRules = async (db, userSelectedActions, landParcel) => {
-  const actionPromises = await Promise.all(
-    userSelectedActions.map(
-      async (action) => await findAction(db, action.actionCode)
+  const actionPromises = (
+    await Promise.all(
+      userSelectedActions.map(
+        async (action) => await findAction(db, action.actionCode)
+      )
     )
-  )
+  ).filter((action) => action)
 
-  return userSelectedActions.map((action, index) => {
+  return userSelectedActions.map((action) => {
     const application = {
       areaAppliedFor: parseFloat(action.quantity),
       actionCodeAppliedFor: action.actionCode,
@@ -74,7 +77,12 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
         existingAgreements: []
       }
     }
-    const userSelectedAction = actionPromises[index]
+
+    const userSelectedAction = actionPromises.find(
+      (actionPromise) => actionPromise.code === action.actionCode
+    )
+
+    if (!userSelectedAction) throw new Error('Unknown action')
 
     return {
       action: action.actionCode,
@@ -113,11 +121,12 @@ const actionValidationController = {
   handler: async ({ db, payload: { actions, landParcel } }, h) => {
     const errors = {
       ...isValidArea(actions, landParcel),
-      ...isValidCombination(
+      ...(await isValidCombination(
+        db,
         landParcel.agreements,
         actions,
         landParcel.landUseCodes
-      )
+      ))
     }
 
     if (errors.length) {
@@ -131,7 +140,14 @@ const actionValidationController = {
         .code(200)
     }
 
-    const ruleResults = await executeActionRules(db, actions, landParcel)
+    let ruleResults
+
+    try {
+      ruleResults = await executeActionRules(db, actions, landParcel)
+    } catch (error) {
+      return Boom.badRequest(error)
+    }
+
     const ruleFailureMessages = []
     for (const result of ruleResults) {
       if (!result.passed) {
