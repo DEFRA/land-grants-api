@@ -25,14 +25,14 @@ describe('Action Validation controller', () => {
         response.json = () =>
           Promise.resolve({
             entity: {
-              availableArea: 0.7
+              nonIntersectingArea: 0.7
             }
           })
       } else if (url.indexOf('intersects/sssi') > -1) {
         response.json = () =>
           Promise.resolve({
             entity: {
-              availableArea: -0.7
+              nonIntersectingArea: -0.7
             }
           })
       }

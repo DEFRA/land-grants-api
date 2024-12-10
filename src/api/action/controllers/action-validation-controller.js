@@ -80,13 +80,13 @@ const findIntersections = async (landParcel, action) => ({
             `http://localhost:${config.get('port')}/land/intersects/moorland?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
           )
           const json = await response.json()
-          return ['moorland', json.entity.availableArea]
+          return ['moorland', json.entity.nonIntersectingArea]
         } else if (rule.id === 'is-sssi') {
           const response = await fetch(
             `http://localhost:${config.get('port')}/land/intersects/sssi?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
           )
           const json = await response.json()
-          return ['sssi', json.entity.availableArea]
+          return ['sssi', json.entity.nonIntersectingArea]
         }
       })
     )

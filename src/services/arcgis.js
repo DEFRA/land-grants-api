@@ -96,7 +96,7 @@ export async function fetchIntersection(server, geometry, layerType) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch from Moorland layer: ${response.statusText}`
+      `Failed to fetch from ${layerType} layer: ${response.statusText}`
     )
   }
 
