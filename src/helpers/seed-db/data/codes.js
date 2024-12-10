@@ -137,7 +137,7 @@ export const codes = [
             uses: [
               {
                 name: 'Barley - spring',
-                code: 'AC01'
+                code: 'AC32'
               },
               {
                 name: 'Basil',
