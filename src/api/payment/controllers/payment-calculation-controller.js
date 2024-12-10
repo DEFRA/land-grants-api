@@ -2,7 +2,7 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { findAction } from '../../action/helpers/find-action.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
-import { findAllCompatibleActions } from '~/src/api/action-compatibility-matrix/helpers/find-compatible-actions-data.js'
+import { findAllCompatibleActions } from '~/src/api/compatibility-matrix/helpers/find-compatible-actions-data.js'
 
 const logger = createLogger()
 

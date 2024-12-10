@@ -1,4 +1,4 @@
-import { findAllCompatibleActions } from '~/src/api/action-compatibility-matrix/helpers/find-compatible-actions-data.js'
+import { findAllCompatibleActions } from '~/src/api/compatibility-matrix/helpers/find-compatible-actions-data.js'
 import { initCache } from '~/src/helpers/cache.js'
 
 let cache

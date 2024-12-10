@@ -41,6 +41,7 @@ describe('Get Actions controller', () => {
         code: 'SAM1',
         description:
           'Assess soil, test soil organic matter and produce a soil management plan',
+        uses: ['AC32', 'PG01', 'TG01'],
         payment: {
           amountPerHectare: 5.8,
           additionalPaymentPerAgreement: 95

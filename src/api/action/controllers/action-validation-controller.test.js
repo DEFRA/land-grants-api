@@ -1,10 +1,8 @@
 import Hapi from '@hapi/hapi'
 import { action } from '../index.js'
-import { actions as mockActions } from '~/src/helpers/seed-db/data/actions.js'
 
-jest.mock('../helpers/find-action.js', () => ({
-  findAction: jest.fn(() => Promise.resolve(mockActions[0]))
-}))
+jest.mock('../helpers/find-action.js')
+jest.mock('../helpers/find-actions.js')
 
 describe('Action Validation controller', () => {
   const server = Hapi.server()
@@ -145,15 +143,14 @@ describe('Action Validation controller', () => {
       )
     })
 
-    test('should return 200 with the correct message if the combination is invalid', async () => {
-      // TODO - Need to find a combination of codes that are invalid
+    test('should return 400 with the correct error message if the action code is invalid', async () => {
       const request = {
         method: 'POST',
         url: '/action-validation',
         payload: {
           actions: [
             {
-              actionCode: 'CSAM15', // why does this made up code work??
+              actionCode: 'CSAM15',
               quantity: '5.2721',
               description: 'Herbal leys'
             }
@@ -171,13 +168,8 @@ describe('Action Validation controller', () => {
 
       const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(200)
-      expect(result).toBe(
-        JSON.stringify({
-          message: 'Action combination valid',
-          isValidCombination: true
-        })
-      )
+      expect(statusCode).toBe(400)
+      expect(result.message).toBe('Unknown action')
     })
 
     test('should return 200 with the correct message if the combination is valid', async () => {
