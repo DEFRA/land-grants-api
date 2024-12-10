@@ -1,5 +1,8 @@
 import Hapi from '@hapi/hapi'
 import { action } from '../index.js'
+import { isValidCombination } from './action-validation-controller.js'
+
+const originalFetch = global.fetch
 
 jest.mock('../helpers/find-action.js')
 jest.mock('../helpers/find-actions.js')
@@ -10,10 +13,27 @@ describe('Action Validation controller', () => {
   beforeAll(async () => {
     await server.register([action])
     await server.initialize()
+
+    // Mock fetch to provide expected structure
+    global.fetch = jest.fn((url = '') => {
+      if (typeof url !== 'string') {
+        return Promise.reject(new Error('Invalid URL'))
+      }
+
+      const response = new Response()
+      response.json = () =>
+        Promise.resolve({
+          entity: {
+            availableArea: 0.7
+          }
+        })
+      return Promise.resolve(response)
+    })
   })
 
   afterAll(async () => {
     await server.stop()
+    global.fetch = originalFetch
   })
 
   describe('POST /action-validation route', () => {
@@ -74,7 +94,7 @@ describe('Action Validation controller', () => {
       expect(message).toBe('"landParcel" is required')
     })
 
-    test('should return 200 with the correct message if theres a valid combination', async () => {
+    test('should return 200 with the correct message if there is a valid combination', async () => {
       const request = {
         method: 'POST',
         url: '/action-validation',
@@ -82,15 +102,14 @@ describe('Action Validation controller', () => {
           actions: [
             {
               actionCode: 'CSAM1',
-              quantity: '5.2721',
+              quantity: 5.2721,
               description: 'Herbal leys'
             }
           ],
           landParcel: {
-            parcelId: '5351',
-            area: '5.2721',
-            osSheetId: 'SK1715',
-            moorlandLineStatus: 'below',
+            id: '5351',
+            area: 5.2721,
+            sheetId: 'SK1715',
             agreements: [],
             landUseCodes: ['PG01']
           }
@@ -100,9 +119,9 @@ describe('Action Validation controller', () => {
       const { statusCode, result } = await server.inject(request)
 
       expect(statusCode).toBe(200)
-      expect(result).toBe(
+      expect(result).toEqual(
         JSON.stringify({
-          message: 'Action combination valid',
+          message: ['Action combination valid'],
           isValidCombination: true
         })
       )
@@ -116,15 +135,14 @@ describe('Action Validation controller', () => {
           actions: [
             {
               actionCode: 'CSAM1',
-              quantity: '6.2721',
+              quantity: 6.2721,
               description: 'Herbal leys'
             }
           ],
           landParcel: {
-            parcelId: '5351',
-            area: '5.2721',
-            osSheetId: 'SK1715',
-            moorlandLineStatus: 'below',
+            id: '5351',
+            area: 5.2721,
+            sheetId: 'SK1715',
             agreements: [],
             landUseCodes: ['PG01']
           }
@@ -136,8 +154,9 @@ describe('Action Validation controller', () => {
       expect(statusCode).toBe(200)
       expect(result).toBe(
         JSON.stringify({
-          message:
-            'CSAM1: Area applied for (6.2721ha) does not match parcel area (5.2721ha)',
+          message: [
+            'Area applied for (6.2721ha) is greater than parcel area (5.2721ha)'
+          ],
           isValidCombination: false
         })
       )
@@ -180,15 +199,14 @@ describe('Action Validation controller', () => {
           actions: [
             {
               actionCode: 'CSAM1',
-              quantity: '5.2721',
+              quantity: 5.2721,
               description: 'Herbal leys'
             }
           ],
           landParcel: {
-            parcelId: '5351',
-            area: '5.2721',
-            osSheetId: 'SK1715',
-            moorlandLineStatus: 'below',
+            id: '5351',
+            area: 5.2721,
+            sheetId: 'SK1715',
             agreements: [],
             landUseCodes: ['PG01']
           }
@@ -200,10 +218,34 @@ describe('Action Validation controller', () => {
       expect(statusCode).toBe(200)
       expect(result).toBe(
         JSON.stringify({
-          message: 'Action combination valid',
+          message: ['Action combination valid'],
           isValidCombination: true
         })
       )
+    })
+  })
+
+  describe('is valid combination function', () => {
+    it('should return undefined if supplied actions are compatible', async () => {
+      const result = await isValidCombination(
+        null,
+        [],
+        [{ actionCode: 'CSAM1' }],
+        ['PG01']
+      )
+      expect(result).toStrictEqual([])
+    })
+
+    it('should return an error if supplied actions are incompatible', async () => {
+      const result = await isValidCombination(
+        null,
+        [],
+        [{ actionCode: 'CSAM2' }],
+        ['PG01']
+      )
+      expect(result).toStrictEqual([
+        `The selected combination of actions are invalid for land use code: PG01`
+      ])
     })
   })
 })

@@ -3,8 +3,10 @@ import {
   findLandParcelBySbiController,
   findLandCoverController,
   findLandCoverCodeController,
-  findLandParcelIntersectsController
+  findLandParcelIntersectsController,
+  findMoorlandIntersectsController
 } from './controllers/index.js'
+
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
@@ -37,6 +39,11 @@ const land = {
           method: 'GET',
           path: '/land/parcel/{landParcelId}/intersects',
           ...findLandParcelIntersectsController
+        },
+        {
+          method: 'GET',
+          path: '/land/moorland/intersects',
+          ...findMoorlandIntersectsController
         }
       ])
     }

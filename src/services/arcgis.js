@@ -10,7 +10,11 @@ const baseUrls = {
   intersects:
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Parcel_and_SSSI_intersects/FeatureServer/0',
   landCover:
-    'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Land_Covers/FeatureServer/0'
+    'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Land_Covers/FeatureServer/0',
+  moorland:
+    'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Moorland/FeatureServer/0',
+  utilities:
+    'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer'
 }
 
 /**
@@ -60,6 +64,46 @@ async function fetchFromArcGis(server, options) {
   return await response.json()
 }
 
+export async function fetchMoorlandIntersection(server, geometry) {
+  const layer = baseUrls.moorland
+  if (!layer) {
+    throw new Error('Moorland layer URL not found')
+  }
+
+  const url = `${layer}/query`
+  const tokenResponse = await getCachedToken(server)
+  const queryGeometry = {
+    rings: geometry.rings
+  }
+
+  const body = new URLSearchParams({
+    geometry: JSON.stringify(queryGeometry),
+    geometryType: 'esriGeometryPolygon',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: '*',
+    f: 'geojson',
+    token: tokenResponse.access_token
+  })
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body.toString()
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch from Moorland layer: ${response.statusText}`
+    )
+  }
+
+  const jsonResponse = await response.json()
+
+  return jsonResponse
+}
+
 /**
  * @typedef ArcGISLandResponse
  * @property {Array} features
@@ -107,6 +151,20 @@ export async function findLandParcelIntersects(server, landParcelId, sheetId) {
     resourceName: 'intersects',
     landParcelId,
     sheetId
+  })
+}
+
+/**
+ * Performs utility functions on land parcel data.
+ * @param { URLSearchParams } body
+ * @param { string } utility
+ * @returns {Promise<Response>}
+ */
+export async function performUtilityFunction(body, utility) {
+  return await fetch(`${baseUrls.utilities}/${utility}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body
   })
 }
 
