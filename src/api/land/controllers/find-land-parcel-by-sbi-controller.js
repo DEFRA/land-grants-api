@@ -63,15 +63,21 @@ const getLandCovers = async (server, userParcels) => {
 
 const getLandCoverDetails = async (db, landCovers) =>
   await Promise.all(
-    landCovers.features.map(async (feature) => ({
-      properties: {
-        landCodeDetails: await findLandCoverCode(
-          db,
-          feature.properties.LAND_COVER_CLASS_CODE
-        ),
-        ...feature.properties
+    landCovers.features.map(async (feature) => {
+      const landCodeDetails = await findLandCoverCode(
+        db,
+        feature.properties.LAND_COVER_CLASS_CODE
+      )
+      return {
+        properties: {
+          ...feature.properties,
+          landCodeDetails: {
+            ...landCodeDetails,
+            uses: landCodeDetails.uses.slice(0, 1)
+          }
+        }
       }
-    }))
+    })
   )
 
 /**
