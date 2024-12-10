@@ -7,7 +7,7 @@ const originalFetch = global.fetch
 const findLandParcelSpy = jest.spyOn(arcgisService, 'findLandParcel')
 const fetchMoorlandIntersectionSpy = jest.spyOn(
   arcgisService,
-  'fetchMoorlandIntersection'
+  'fetchIntersection'
 )
 
 const mockLandParcelResponse = {
@@ -141,7 +141,7 @@ describe('Find Moorland Intersects', () => {
   test('should fetch intersections, calculate areas, and return the result', async () => {
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -166,7 +166,7 @@ describe('Find Moorland Intersects', () => {
       landParcelId,
       sheetId
     )
-    expect(arcgisService.fetchMoorlandIntersection).toHaveBeenCalledWith(
+    expect(arcgisService.fetchIntersection).toHaveBeenCalledWith(
       server,
       {
         rings: [
@@ -177,7 +177,8 @@ describe('Find Moorland Intersects', () => {
             [-3.84215781948155, 50.2369627492092]
           ]
         ]
-      }
+      },
+      'moorland'
     )
     expect(fetch).toHaveBeenCalledTimes(2) // One call for intersection, one for areas
   })
@@ -187,7 +188,7 @@ describe('Find Moorland Intersects', () => {
 
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -222,7 +223,7 @@ describe('Find Moorland Intersects', () => {
 
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -241,16 +242,20 @@ describe('Find Moorland Intersects', () => {
     expect(statusCode).toBe(200)
     expect(message).toBe('success')
     expect(entity).toEqual(expected)
-    expect(fetchMoorlandIntersectionSpy).toHaveBeenCalledWith(server, {
-      rings: [
-        [
-          [-3.84215781948155, 50.2369627492092],
-          [-3.84188557735844, 50.236368577696],
-          [-3.84159762148358, 50.2357813103825],
-          [-3.84215781948155, 50.2369627492092]
+    expect(fetchMoorlandIntersectionSpy).toHaveBeenCalledWith(
+      server,
+      {
+        rings: [
+          [
+            [-3.84215781948155, 50.2369627492092],
+            [-3.84188557735844, 50.236368577696],
+            [-3.84159762148358, 50.2357813103825],
+            [-3.84215781948155, 50.2369627492092]
+          ]
         ]
-      ]
-    })
+      },
+      'moorland'
+    )
     expect(fetch).not.toHaveBeenCalled()
   })
 })

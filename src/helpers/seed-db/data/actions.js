@@ -79,7 +79,13 @@ export const actions = [
     payment: {
       amountPerHectare: 121.0
     },
-    eligibilityRules: [{ id: 'has-min-parcel-area', config: { minArea: 2 } }]
+    eligibilityRules: [
+      {
+        id: 'has-min-parcel-area',
+        config: { minArea: 2 }
+      },
+      { id: 'is-not-sssi' }
+    ]
   },
   {
     code: 'CSAM1',
