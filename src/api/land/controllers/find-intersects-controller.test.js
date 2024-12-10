@@ -7,7 +7,7 @@ const originalFetch = global.fetch
 const findLandParcelSpy = jest.spyOn(arcgisService, 'findLandParcel')
 const fetchMoorlandIntersectionSpy = jest.spyOn(
   arcgisService,
-  'fetchMoorlandIntersection'
+  'fetchIntersection'
 )
 
 const mockLandParcelResponse = {
@@ -141,7 +141,7 @@ describe('Find Moorland Intersects', () => {
   test('should fetch intersections, calculate areas, and return the result', async () => {
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -154,8 +154,8 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 35000, // Sum of areas from the mockAreasResponse
-      availableArea: 15000 // 50000 - 35000
+      totalIntersectingArea: 35000, // Sum of areas from the mockAreasResponse
+      nonIntersectingArea: 15000 // 50000 - 35000
     }
 
     expect(statusCode).toBe(200)
@@ -166,7 +166,7 @@ describe('Find Moorland Intersects', () => {
       landParcelId,
       sheetId
     )
-    expect(arcgisService.fetchMoorlandIntersection).toHaveBeenCalledWith(
+    expect(arcgisService.fetchIntersection).toHaveBeenCalledWith(
       server,
       {
         rings: [
@@ -177,7 +177,8 @@ describe('Find Moorland Intersects', () => {
             [-3.84215781948155, 50.2369627492092]
           ]
         ]
-      }
+      },
+      'moorland'
     )
     expect(fetch).toHaveBeenCalledTimes(2) // One call for intersection, one for areas
   })
@@ -187,7 +188,7 @@ describe('Find Moorland Intersects', () => {
 
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -200,8 +201,8 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 0,
-      availableArea: 0
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 0
     }
 
     expect(statusCode).toBe(200)
@@ -222,7 +223,7 @@ describe('Find Moorland Intersects', () => {
 
     const request = {
       method: 'GET',
-      url: `/land/moorland/intersects?landParcelId=${landParcelId}&sheetId=${sheetId}`
+      url: `/land/intersects/moorland?landParcelId=${landParcelId}&sheetId=${sheetId}`
     }
 
     /**
@@ -235,22 +236,26 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 0,
-      availableArea: 50000 // Full parcel area since no intersections
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 50000 // Full parcel area since no intersections
     }
     expect(statusCode).toBe(200)
     expect(message).toBe('success')
     expect(entity).toEqual(expected)
-    expect(fetchMoorlandIntersectionSpy).toHaveBeenCalledWith(server, {
-      rings: [
-        [
-          [-3.84215781948155, 50.2369627492092],
-          [-3.84188557735844, 50.236368577696],
-          [-3.84159762148358, 50.2357813103825],
-          [-3.84215781948155, 50.2369627492092]
+    expect(fetchMoorlandIntersectionSpy).toHaveBeenCalledWith(
+      server,
+      {
+        rings: [
+          [
+            [-3.84215781948155, 50.2369627492092],
+            [-3.84188557735844, 50.236368577696],
+            [-3.84159762148358, 50.2357813103825],
+            [-3.84215781948155, 50.2369627492092]
+          ]
         ]
-      ]
-    })
+      },
+      'moorland'
+    )
     expect(fetch).not.toHaveBeenCalled()
   })
 })

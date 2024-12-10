@@ -5,19 +5,25 @@ import {
   calculateIntersection,
   calculateAreas
 } from '../helpers/find-moorland-intersects.js'
-import {
-  findLandParcel,
-  fetchMoorlandIntersection
-} from '~/src/services/arcgis.js'
+import { findLandParcel, fetchIntersection } from '~/src/services/arcgis.js'
 
-async function calculateIntersectionArea(server, landParcelId, sheetId) {
+async function calculateIntersectionArea(
+  server,
+  landParcelId,
+  sheetId,
+  layerId
+) {
   const landParcelResponse = await findLandParcel(server, landParcelId, sheetId)
 
   if (
     !landParcelResponse?.features ||
     landParcelResponse.features.length === 0
   ) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: 0 }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 0
+    }
   }
 
   const parcelFeature = landParcelResponse.features[0] // at the moment we are only using the first feature of the parcel for POC
@@ -29,24 +35,22 @@ async function calculateIntersectionArea(server, landParcelId, sheetId) {
   }
 
   const parcelGeometry = transformGeometryToRings(rawParcelGeometry)
-  const moorlandIntersections = await fetchMoorlandIntersection(
-    server,
-    parcelGeometry
-  )
+  const intersections = await fetchIntersection(server, parcelGeometry, layerId)
 
-  if (
-    !moorlandIntersections?.features ||
-    moorlandIntersections.features.length === 0
-  ) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+  if (!intersections?.features || intersections.features.length === 0) {
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea
+    }
   }
 
-  const moorlandGeometries = moorlandIntersections.features.map((feature) =>
+  const geometries = intersections.features.map((feature) =>
     transformGeometryToRings(feature.geometry)
   )
   const intersectResponse = await calculateIntersection(
     parcelGeometry,
-    moorlandGeometries
+    geometries
   )
 
   if (!intersectResponse?.ok) {
@@ -59,7 +63,11 @@ async function calculateIntersectionArea(server, landParcelId, sheetId) {
   const intersectedGeometries = intersectResult.geometries || []
 
   if (intersectedGeometries.length === 0) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea
+    }
   }
   const areaResponse = await calculateAreas(intersectedGeometries)
 
@@ -72,16 +80,16 @@ async function calculateIntersectionArea(server, landParcelId, sheetId) {
   const areaResult = await areaResponse.json()
 
   // may have error margin due to maximum number of vertices per geometry of public API i.e.snapping
-  const totalArea = (areaResult.areas || []).reduce(
+  const totalIntersectingArea = (areaResult.areas || []).reduce(
     (sum, area) => sum + area,
     0
   )
-  const availableArea = parcelArea - totalArea // available area is the difference between the total area of the parcel and the area of the moorland intersection
+  const nonIntersectingArea = parcelArea - totalIntersectingArea // available area is the difference between the total area of the parcel and the area of the moorland intersection
 
   return {
     parcelId: landParcelId,
-    totalArea,
-    availableArea
+    totalIntersectingArea,
+    nonIntersectingArea
   }
 }
 
@@ -89,7 +97,7 @@ async function calculateIntersectionArea(server, landParcelId, sheetId) {
  *
  * @satisfies {Partial<ServerRoute>}
  */
-const findMoorlandIntersectsController = {
+const findIntersectsController = {
   /**
    * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
@@ -99,7 +107,8 @@ const findMoorlandIntersectsController = {
     const entity = await calculateIntersectionArea(
       request.server,
       request.query.landParcelId,
-      request.query.sheetId
+      request.query.sheetId,
+      request.params.type
     )
 
     if (Boom.isBoom(entity)) return entity
@@ -108,7 +117,7 @@ const findMoorlandIntersectsController = {
   }
 }
 
-export { findMoorlandIntersectsController }
+export { findIntersectsController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
