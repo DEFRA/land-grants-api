@@ -1,10 +1,8 @@
 import Hapi from '@hapi/hapi'
 import { action } from '../index.js'
-import { actions as mockActions } from '~/src/helpers/seed-db/data/actions.js'
 
-jest.mock('../helpers/find-all-actions.js', () => ({
-  findAllActions: jest.fn(() => Promise.resolve(mockActions))
-}))
+jest.mock('../helpers/find-all-actions.js')
+jest.mock('../helpers/find-action.js')
 
 describe('Get Actions controller', () => {
   const server = Hapi.server()
