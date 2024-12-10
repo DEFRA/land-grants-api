@@ -21,12 +21,21 @@ describe('Action Validation controller', () => {
       }
 
       const response = new Response()
-      response.json = () =>
-        Promise.resolve({
-          entity: {
-            availableArea: 0.7
-          }
-        })
+      if (url.indexOf('intersects/moorland') > -1) {
+        response.json = () =>
+          Promise.resolve({
+            entity: {
+              availableArea: 0.7
+            }
+          })
+      } else if (url.indexOf('intersects/sssi') > -1) {
+        response.json = () =>
+          Promise.resolve({
+            entity: {
+              availableArea: -0.7
+            }
+          })
+      }
       return Promise.resolve(response)
     })
   })

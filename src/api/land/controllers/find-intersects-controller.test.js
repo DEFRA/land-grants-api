@@ -154,8 +154,8 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 35000, // Sum of areas from the mockAreasResponse
-      availableArea: 15000 // 50000 - 35000
+      totalIntersectingArea: 35000, // Sum of areas from the mockAreasResponse
+      nonIntersectingArea: 15000 // 50000 - 35000
     }
 
     expect(statusCode).toBe(200)
@@ -201,8 +201,8 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 0,
-      availableArea: 0
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 0
     }
 
     expect(statusCode).toBe(200)
@@ -236,8 +236,8 @@ describe('Find Moorland Intersects', () => {
 
     const expected = {
       parcelId: '1234',
-      totalArea: 0,
-      availableArea: 50000 // Full parcel area since no intersections
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 50000 // Full parcel area since no intersections
     }
     expect(statusCode).toBe(200)
     expect(message).toBe('success')
