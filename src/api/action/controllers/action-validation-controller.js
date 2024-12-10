@@ -77,10 +77,16 @@ const findIntersections = async (landParcel, action) => ({
       action.eligibilityRules.map(async (rule) => {
         if (rule.id === 'is-below-moorland-line') {
           const response = await fetch(
-            `http://localhost:${config.get('port')}/land/moorland/intersects?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
+            `http://localhost:${config.get('port')}/land/intersects/moorland?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
           )
           const json = await response.json()
           return ['moorland', json.entity.availableArea]
+        } else if (rule.id === 'is-not-sssi') {
+          const response = await fetch(
+            `http://localhost:${config.get('port')}/land/intersects/sssi?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
+          )
+          const json = await response.json()
+          return ['sssi', json.entity.availableArea]
         }
       })
     )

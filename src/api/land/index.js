@@ -4,7 +4,7 @@ import {
   findLandCoverController,
   findLandCoverCodeController,
   findLandParcelIntersectsController,
-  findMoorlandIntersectsController
+  findIntersectsController
 } from './controllers/index.js'
 
 /**
@@ -42,8 +42,8 @@ const land = {
         },
         {
           method: 'GET',
-          path: '/land/moorland/intersects',
-          ...findMoorlandIntersectsController
+          path: '/land/intersects/{type}',
+          ...findIntersectsController
         }
       ])
     }
