@@ -13,6 +13,7 @@ const baseUrls = {
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Land_Covers/FeatureServer/0',
   moorland:
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Moorland/FeatureServer/0',
+  sssi: 'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/SSSIs/FeatureServer/0',
   utilities:
     'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer'
 }
@@ -64,10 +65,10 @@ async function fetchFromArcGis(server, options) {
   return await response.json()
 }
 
-export async function fetchMoorlandIntersection(server, geometry) {
-  const layer = baseUrls.moorland
+export async function fetchIntersection(server, geometry, layerType) {
+  const layer = baseUrls[layerType]
   if (!layer) {
-    throw new Error('Moorland layer URL not found')
+    throw new Error('Layer URL not found')
   }
 
   const url = `${layer}/query`
@@ -95,7 +96,7 @@ export async function fetchMoorlandIntersection(server, geometry) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch from Moorland layer: ${response.statusText}`
+      `Failed to fetch from ${layerType} layer: ${response.statusText}`
     )
   }
 

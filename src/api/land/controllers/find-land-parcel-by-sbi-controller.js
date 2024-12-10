@@ -20,7 +20,6 @@ const transformParcelData = (sbi, parcels) =>
     sheetId: parcel.SHEET_ID,
     sbi,
     agreements: parcel.agreements,
-    attributes: parcel.attributes,
     area: (parcel.GEOM_AREA_SQM / 10000).toFixed(4),
     centroidX: parcel.CENTROID_X,
     centroidY: parcel.CENTROID_Y,
