@@ -76,8 +76,6 @@ const findIntersections = async (landParcel, action) => ({
     await Promise.all(
       action.eligibilityRules.map(async (rule) => {
         if (rule.id === 'is-below-moorland-line') {
-          landParcel.id = landParcel.id || landParcel.parcelId
-          landParcel.sheetId = landParcel.sheetId || landParcel.osSheetId
           const response = await fetch(
             `http://localhost:${config.get('port')}/land/moorland/intersects?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
           )
@@ -115,8 +113,8 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
         landParcel: {
           area: parseFloat(landParcel.area),
           existingAgreements: [],
-          id: landParcel.id,
-          sheetId: landParcel.sheetId
+          id: landParcel.id || landParcel.parcelId,
+          sheetId: landParcel.sheetId || landParcel.osSheetId
         }
       }
 
@@ -127,7 +125,7 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
       if (!userSelectedAction) throw new Error('Unknown action')
 
       application.landParcel = await findIntersections(
-        landParcel,
+        application.landParcel,
         userSelectedAction
       )
 
