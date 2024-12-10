@@ -14,7 +14,7 @@ async function findActions(db, actionCodes) {
       },
       { projection: { _id: 0 } }
     )
-    .exec()
+    .toArray()
 }
 
 export { findActions }
