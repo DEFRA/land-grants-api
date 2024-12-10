@@ -6,6 +6,31 @@ const TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG = {
 }
 
 describe('totalAreaWithException', function () {
+  test('should return false if the area applied for is smaller than the total area, and there are no other existing agreements', function () {
+    // Arrange
+    const application = {
+      areaAppliedFor: 40,
+      actionCodeAppliedFor: 'CLIG3',
+      landParcel: {
+        area: 100,
+        existingAgreements: []
+      }
+    }
+
+    // Act
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+      application,
+      TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
+    )
+
+    // Assert
+    expect(result).toStrictEqual({
+      passed: false,
+      message:
+        'Action code CLIG3 can only use less than the parcel size if existing agreement CIGL1 is applied'
+    })
+  })
+
   test('should return true if the area applied for matches the remaining area left by the incompatible action', function () {
     // Arrange
     const application = {
