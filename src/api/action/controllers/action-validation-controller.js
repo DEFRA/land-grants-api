@@ -2,8 +2,8 @@ import Boom from '@hapi/boom'
 import Joi from 'joi'
 import { config } from '~/src/config/index.js'
 import { findAction } from '../helpers/find-action.js'
-import { actionCombinationLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { findActions } from '../helpers/find-actions.js'
 
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
@@ -21,12 +21,14 @@ const isValidArea = (userSelectedActions, landParcel) => {
 
 /**
  * Checks if the supplied actions are a valid combination
+ * @param {MongoDBPlugin} db
  * @param {Array} preexistingActions
  * @param {Array<object>} userSelectedActions
  * @param {Array<string>} landUseCodes
- * @returns {Array}
+ * @returns {Promise<Array>}
  */
-export const isValidCombination = (
+export const isValidCombination = async (
+  db,
   preexistingActions = [],
   userSelectedActions,
   landUseCodes
@@ -35,19 +37,13 @@ export const isValidCombination = (
     .concat(preexistingActions)
     .map((action) => action.actionCode)
 
-  for (const code of landUseCodes) {
-    const allowedCombinations =
-      actionCombinationLandUseCompatibilityMatrix[code] || []
-    let validForThisCode = false
+  const actions = await findActions(db, actionCodes)
 
-    for (const combination of allowedCombinations) {
-      if (
-        actionCodes.length === combination.length &&
-        actionCodes.every((actionCode) => combination.includes(actionCode))
-      ) {
-        validForThisCode = true
-        break
-      }
+  for (const action of actions) {
+    let validForThisCode = false
+    if (landUseCodes.every((useCode) => action.uses.includes(useCode))) {
+      validForThisCode = true
+      break
     }
 
     if (!validForThisCode) {
@@ -55,17 +51,17 @@ export const isValidCombination = (
         const actionCodesString = preexistingActions
           .map((action) => action.actionCode)
           .join(', ')
-        return [
-          `The selected combination of actions, along with your pre-existing actions (${actionCodesString}), is invalid for land use code ${code}`
-        ]
+        return Promise.resolve([
+          `The selected combination of actions, along with your pre-existing actions (${actionCodesString}), is invalid for land use code ${landUseCodes.toString()}`
+        ])
       }
-      return [
-        `The selected combination of actions are invalid for land use code: ${code}`
-      ]
+      return Promise.resolve([
+        `The selected combination of actions are invalid for land use code: ${landUseCodes.toString()}`
+      ])
     }
   }
 
-  return []
+  return Promise.resolve([])
 }
 
 /**
@@ -103,14 +99,16 @@ const findIntersections = async (landParcel, action) => ({
  * @returns
  */
 const executeActionRules = async (db, userSelectedActions, landParcel) => {
-  const actions = await Promise.all(
-    userSelectedActions.map(
-      async (action) => await findAction(db, action.actionCode)
+  const actionPromises = (
+    await Promise.all(
+      userSelectedActions.map(
+        async (action) => await findAction(db, action.actionCode)
+      )
     )
-  )
+  ).filter((action) => action)
 
   return await Promise.all(
-    userSelectedActions.map(async (action, index) => {
+    userSelectedActions.map(async (action) => {
       const application = {
         areaAppliedFor: parseFloat(action.quantity),
         actionCodeAppliedFor: action.actionCode,
@@ -121,14 +119,21 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
           sheetId: landParcel.sheetId
         }
       }
+
+      const userSelectedAction = actionPromises.find(
+        (actionPromise) => actionPromise.code === action.actionCode
+      )
+
+      if (!userSelectedAction) throw new Error('Unknown action')
+
       application.landParcel = await findIntersections(
         landParcel,
-        actions[index]
+        userSelectedAction
       )
 
       return {
         action: action.actionCode,
-        ...executeRules(application, actions[index].eligibilityRules)
+        ...executeRules(application, userSelectedAction.eligibilityRules)
       }
     })
   )
@@ -164,11 +169,12 @@ const actionValidationController = {
   handler: async ({ db, payload: { actions, landParcel } }, h) => {
     const errors = [
       ...isValidArea(actions, landParcel),
-      ...isValidCombination(
+      ...(await isValidCombination(
+        db,
         landParcel.agreements,
         actions,
         landParcel.landUseCodes
-      )
+      ))
     ]
 
     if (errors.length) {
@@ -182,7 +188,14 @@ const actionValidationController = {
         .code(200)
     }
 
-    const ruleResults = await executeActionRules(db, actions, landParcel)
+    let ruleResults
+
+    try {
+      ruleResults = await executeActionRules(db, actions, landParcel)
+    } catch (error) {
+      return Boom.badRequest(error)
+    }
+
     const ruleFailureMessages = []
     for (const result of ruleResults) {
       if (!result.passed) {

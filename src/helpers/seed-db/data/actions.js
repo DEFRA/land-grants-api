@@ -3,6 +3,7 @@ export const actions = [
     code: 'SAM1',
     description:
       'Assess soil, test soil organic matter and produce a soil management plan',
+    uses: ['AC32', 'PG01', 'TG01'],
     payment: {
       amountPerHectare: 5.8,
       additionalPaymentPerAgreement: 95
@@ -15,6 +16,7 @@ export const actions = [
   {
     code: 'SAM2',
     description: 'Multi-species winter cover crop',
+    uses: ['AC32', 'TG01'],
     payment: {
       amountPerHectare: 129
     },
@@ -23,6 +25,7 @@ export const actions = [
   {
     code: 'SAM3',
     description: 'Herbal leys',
+    uses: ['PG01', 'TG01'],
     payment: {
       amountPerHectare: 382
     },
@@ -32,6 +35,7 @@ export const actions = [
     code: 'LIG1',
     description:
       'Manage grassland with very low nutrient inputs (outside SDAs)',
+    uses: ['PG01', 'TG01'],
     payment: {
       amountPerHectare: 151
     },
@@ -48,6 +52,7 @@ export const actions = [
   {
     code: 'AB3',
     description: 'Beetle banks',
+    uses: ['AC32', 'TG01'],
     payment: {
       amountPerHectare: 573
     },
@@ -56,6 +61,7 @@ export const actions = [
   {
     code: 'GRH7',
     description: 'Haymaking supplement',
+    uses: ['AC32', 'PG01', 'TG01'],
     payment: {
       amountPerHectare: 157
     },
@@ -69,6 +75,7 @@ export const actions = [
   {
     code: 'GRH1',
     description: 'Manage rough grazing for birds',
+    uses: ['PG01'],
     payment: {
       amountPerHectare: 121.0
     },
@@ -78,6 +85,7 @@ export const actions = [
     code: 'CSAM1',
     description:
       'Assess soil, produce a soil management plan and test soil organic matter',
+    uses: ['AC32', 'PG01', 'TG01'],
     payment: {
       amountPerHectare: 6,
       additionalPaymentPerAgreement: 97
@@ -90,6 +98,7 @@ export const actions = [
   {
     code: 'CSAM2',
     description: 'Multi-species winter cover crop',
+    uses: ['AC32', 'TG01'],
     payment: {
       amountPerHectare: 129
     },
@@ -98,6 +107,7 @@ export const actions = [
   {
     code: 'CSAM3',
     description: 'Herbal leys',
+    uses: ['AC32', 'PG01', 'TG01'],
     payment: {
       amountPerHectare: 382
     },
@@ -106,6 +116,7 @@ export const actions = [
   {
     code: 'CLIG3',
     description: 'Manage grassland with very low nutrient inputs',
+    uses: ['AC32', 'PG01', 'TG01'],
     payment: {
       amountPerHectare: 151
     },

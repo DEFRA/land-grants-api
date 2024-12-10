@@ -1,9 +1,9 @@
-import { findCompatibleActions } from '~/src/api/action-compatibility-matrix/controllers/index.js'
+import { findCompatibleActions } from '~/src/api/compatibility-matrix/controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
-const actionCompatibilityMatrix = {
+const compatibilityMatrix = {
   plugin: {
     name: 'compatibility-matrix',
     register: (server) => {
@@ -18,7 +18,7 @@ const actionCompatibilityMatrix = {
   }
 }
 
-export { actionCompatibilityMatrix }
+export { compatibilityMatrix }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

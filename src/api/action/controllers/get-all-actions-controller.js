@@ -1,17 +1,15 @@
 import Boom from '@hapi/boom'
-import { actionLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { findAllActions } from '../helpers/find-all-actions.js'
 
 let actions
 
-const getActionsForLandUses = (landUseCodes) => {
+const getActionsForLandUses = (db, landUseCodes) => {
   if (!Array.isArray(landUseCodes)) {
     throw new TypeError('landUseCodes must be an array')
   }
 
   return actions.filter((action) => {
-    const compatibleLandUses =
-      actionLandUseCompatibilityMatrix[action.code] || []
+    const compatibleLandUses = action.uses || []
     return landUseCodes.some((code) => compatibleLandUses.includes(code))
   })
 }
@@ -41,7 +39,10 @@ const getAllActionsController = {
       return Boom.badRequest('Missing parcel-id query parameter')
     }
 
-    const filteredActions = getActionsForLandUses(landUseCodes)
+    const filteredActions = await getActionsForLandUses(
+      request.db,
+      landUseCodes
+    )
       .filter((action) => !preexistingActions.includes(action.code))
       .map((action) => {
         return {

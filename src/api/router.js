@@ -1,7 +1,6 @@
 import { health } from '~/src/api/health/index.js'
-import { example } from '~/src/api/example/index.js'
 import { importData } from '~/src/api/import-data/index.js'
-import { actionCompatibilityMatrix } from '~/src/api/action-compatibility-matrix/index.js'
+import { compatibilityMatrix } from '~/src/api/compatibility-matrix/index.js'
 import { action } from '~/src/api/action/index.js'
 import { land } from '~/src/api/land/index.js'
 import { availableArea } from '~/src/api/available-area/index.js'
@@ -21,7 +20,7 @@ const router = {
       await server.register([importData])
 
       // Get Action compatibility matrix
-      await server.register([actionCompatibilityMatrix])
+      await server.register([compatibilityMatrix])
 
       // Get Actions
       await server.register([action])
@@ -34,9 +33,6 @@ const router = {
 
       // Payment Calculation
       await server.register([paymentCalculation])
-
-      // Application specific routes, add your own routes here.
-      await server.register([example])
     }
   }
 }
