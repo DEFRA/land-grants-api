@@ -116,6 +116,7 @@ const executeActionRules = async (db, userSelectedActions, landParcel) => {
       const application = {
         areaAppliedFor: parseFloat(action.quantity),
         actionCodeAppliedFor: action.actionCode,
+        userSelectedActions,
         landParcel: {
           area: parseFloat(landParcel.area),
           existingAgreements: [],

@@ -50,6 +50,15 @@ export const actions = [
     eligibilityRules: [{ id: 'is-inside-sda' }]
   },
   {
+    code: 'CIGL1',
+    description: 'Take grassland field corners or blocks out of management',
+    uses: ['PG01', 'TG01'],
+    payment: {
+      amountPerHectare: 333
+    },
+    eligibilityRules: [{ id: 'is-below-moorland-line' }]
+  },
+  {
     code: 'AB3',
     description: 'Beetle banks',
     uses: ['AC32', 'TG01'],
