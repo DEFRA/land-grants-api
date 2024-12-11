@@ -1,4 +1,4 @@
-import { performUtilityFunction } from '~/src/services/arcgis.js'
+import { performUtilityFunction } from '~/src/services/arcgis/arcgis.js'
 
 const arcGisSpatialReferenceId = '4326'
 

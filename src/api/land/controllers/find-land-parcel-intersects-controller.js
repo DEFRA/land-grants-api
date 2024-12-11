@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import isNull from 'lodash/isNull.js'
 
-import { findLandParcelIntersects } from '~/src/services/arcgis.js'
+import { findLandParcelIntersects } from '~/src/services/arcgis/arcgis.js'
 
 /**
  *

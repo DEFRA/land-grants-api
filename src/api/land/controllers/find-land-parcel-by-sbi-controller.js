@@ -3,7 +3,7 @@ import Joi from 'joi'
 import isNull from 'lodash/isNull.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
 import { findLandParcelsBySbi } from '../helpers/find-land-parcel-by-sbi.js'
-import { findLandParcel, findLandCover } from '~/src/services/arcgis.js'
+import { findLandParcel, findLandCover } from '~/src/services/arcgis/arcgis.js'
 import { findLandCoverCode } from '../helpers/find-land-cover-code.js'
 
 const logger = createLogger()
