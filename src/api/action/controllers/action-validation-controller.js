@@ -1,9 +1,10 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
-import { config } from '~/src/config/index.js'
 import { findAction } from '../helpers/find-action.js'
 import { actionCombinationLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { rules } from '~/src/rules-engine/rules/index.js'
+import { calculateIntersectionArea } from '~/src/services/arcgis/intersections.js'
 
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
@@ -70,30 +71,29 @@ export const isValidCombination = (
 
 /**
  * Finds and fetches any intersection data required for applicable eligibility rules
- * @param {*} landParcel
- * @param {*} action
- * @returns { Promise<*> }
+ * @param {object} landParcel
+ * @param {Action} action
+ * @returns { Promise<Record<LayerId, number>> }
  */
-const findIntersections = async (landParcel, action) => ({
-  ...landParcel,
-  intersections: (
-    await Promise.all(
-      action.eligibilityRules.map(async (rule) => {
-        if (rule.id === 'is-below-moorland-line') {
-          landParcel.id = landParcel.id || landParcel.parcelId
-          landParcel.sheetId = landParcel.sheetId || landParcel.osSheetId
-          const response = await fetch(
-            `http://localhost:${config.get('port')}/land/moorland/intersects?landParcelId=${landParcel.id}&sheetId=${landParcel.sheetId}`
-          )
-          const json = await response.json()
-          return ['moorland', json.entity.availableArea]
-        }
-      })
-    )
+const findIntersections = async (server, landParcelId, sheetId, actions) => {
+  const allRequiredIntersectionIds = actions.reduce((acc, action) => {
+    if (acc[action.id]) return { ...acc }
+
+    return {
+      ...acc,
+      [action.id]: action.eligibilityRules.flatMap(
+        (rule) => rules[rule.id].requiredDataLayers
+      )
+    }
+  }, {})
+
+  return await fetchIntersections(
+    server,
+    allRequiredIntersectionIds,
+    landParcelId,
+    sheetId
   )
-    .filter((data) => data !== undefined)
-    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
-})
+}
 
 /**
  * Executes action rules
@@ -102,36 +102,43 @@ const findIntersections = async (landParcel, action) => ({
  * @param { object } landParcel
  * @returns
  */
-const executeActionRules = async (db, userSelectedActions, landParcel) => {
+const executeActionRules = async (
+  server,
+  db,
+  userSelectedActions,
+  landParcel
+) => {
   const actions = await Promise.all(
     userSelectedActions.map(
       async (action) => await findAction(db, action.actionCode)
     )
   )
 
-  return await Promise.all(
-    userSelectedActions.map(async (action, index) => {
-      const application = {
-        areaAppliedFor: parseFloat(action.quantity),
-        actionCodeAppliedFor: action.actionCode,
-        landParcel: {
-          area: parseFloat(landParcel.area),
-          existingAgreements: [],
-          id: landParcel.id,
-          sheetId: landParcel.sheetId
-        }
-      }
-      application.landParcel = await findIntersections(
-        landParcel,
-        actions[index]
-      )
-
-      return {
-        action: action.actionCode,
-        ...executeRules(application, actions[index].eligibilityRules)
-      }
-    })
+  const allIntersections = await findIntersections(
+    server,
+    landParcel.id,
+    landParcel.sheetId,
+    actions
   )
+
+  return userSelectedActions.map((action, index) => {
+    const application = {
+      areaAppliedFor: parseFloat(action.quantity),
+      actionCodeAppliedFor: action.actionCode,
+      landParcel: {
+        area: parseFloat(landParcel.area),
+        existingAgreements: [],
+        id: landParcel.id,
+        sheetId: landParcel.sheetId,
+        intersections: allIntersections
+      }
+    }
+
+    return {
+      action: action.actionCode,
+      ...executeRules(application, actions[index].eligibilityRules)
+    }
+  })
 }
 
 /**
@@ -161,7 +168,7 @@ const actionValidationController = {
    * @param { import('@hapi/hapi').Request & MongoDBPlugin & RequestPayload } request
    * @returns { Promise<*> }
    */
-  handler: async ({ db, payload: { actions, landParcel } }, h) => {
+  handler: async ({ db, payload: { actions, landParcel }, server }, h) => {
     const errors = [
       ...isValidArea(actions, landParcel),
       ...isValidCombination(
@@ -182,7 +189,12 @@ const actionValidationController = {
         .code(200)
     }
 
-    const ruleResults = await executeActionRules(db, actions, landParcel)
+    const ruleResults = await executeActionRules(
+      server,
+      db,
+      actions,
+      landParcel
+    )
     const ruleFailureMessages = []
     for (const result of ruleResults) {
       if (!result.passed) {
@@ -222,4 +234,5 @@ export { actionValidationController }
 /**
  * @import { ServerRoute } from '@hapi/hapi'
  * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
+ * @import {LayerId} from '~/src/rules-engine/rulesEngine.d.js'
  */
