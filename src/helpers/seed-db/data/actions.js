@@ -1,3 +1,29 @@
+import { codes } from './codes.js'
+
+const deepSearch = (data, value) => {
+  if (data.code === value) {
+    if (!data.uses) return data.code
+    else return data.uses.map((use) => use.code)
+  }
+
+  for (const key of ['classes', 'covers', 'uses']) {
+    if (data[key]) {
+      for (const item of data[key]) {
+        const result = deepSearch(item, value)
+        if (result) return result
+      }
+    }
+  }
+
+  return null
+}
+
+export const populateActionClasses = (actions) =>
+  actions.map((action) => ({
+    ...action,
+    uses: action.uses.flatMap((targetCode) => deepSearch(codes[0], targetCode))
+  }))
+
 export const actions = [
   {
     code: 'SAM1',
