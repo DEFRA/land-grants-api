@@ -70,6 +70,7 @@ export const actions = [
   {
     code: 'LIG2',
     description: 'Manage grassland with very low nutrient inputs (SDAs)',
+    uses: ['PG01', 'TG01'],
     payment: {
       amountPerHectare: 151
     },
