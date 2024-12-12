@@ -15,7 +15,6 @@ export default {
   setupFiles: ['<rootDir>/.jest/setup.js'],
   setupFilesAfterEnv: ['<rootDir>/.jest/setup-after-env.js'],
   collectCoverageFrom: ['src/**/*.js'],
-  testPathIgnorePatterns: ['<rootDir>/src/helpers/seed-db/'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
