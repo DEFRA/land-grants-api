@@ -119,7 +119,8 @@ export const actions = [
       {
         id: 'has-min-parcel-area',
         config: { minArea: 2 }
-      }
+      },
+      { id: 'is-below-moorland-line' }
     ]
   },
   {
