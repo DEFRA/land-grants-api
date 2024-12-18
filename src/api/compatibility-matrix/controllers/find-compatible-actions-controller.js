@@ -1,4 +1,4 @@
-import { findAllCompatibleActions } from '~/src/api/compatibility-matrix/helpers/find-compatible-actions-data.js'
+import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
 import { initCache } from '~/src/helpers/cache.js'
 
 let cache
@@ -19,7 +19,8 @@ const findCompatibleActions = {
       cache = initCache(
         request.server,
         'compatibleActions',
-        async ({ action }) => await findAllCompatibleActions(request.db, action)
+        async ({ action }) =>
+          await optionsDataModel.find({ option_code: action })
       )
     }
 

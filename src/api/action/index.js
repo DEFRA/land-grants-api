@@ -1,6 +1,5 @@
 import { getActionController } from './controllers/get-action-controller.js'
 import { getAllActionsController } from './controllers/get-all-actions-controller.js'
-import { postActionRuleController } from './controllers/post-action-rule-controller.js'
 import { actionValidationController } from './controllers/action-validation-controller.js'
 
 /**
@@ -25,11 +24,6 @@ const action = {
           method: 'GET',
           path: '/actions',
           ...getAllActionsController
-        },
-        {
-          method: 'POST',
-          path: '/action/{actionCode}/rule',
-          ...postActionRuleController
         }
       ])
     }
