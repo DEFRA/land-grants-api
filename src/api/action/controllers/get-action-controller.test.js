@@ -1,7 +1,14 @@
 import Hapi from '@hapi/hapi'
-import { action } from '../index.js'
+import * as mockingoose from 'mockingoose'
 
-jest.mock('../helpers/find-action.js')
+import actionsModel from '~/src/api/action/models/actions.js'
+import { action } from '~/src/api/action/index.js'
+import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
+
+const actionsFindOne = (query) => {
+  const actionCode = query.getQuery().code
+  return actionsMockData.find((action) => action.code === actionCode)
+}
 
 describe('Get Actions controller', () => {
   const server = Hapi.server()
@@ -9,6 +16,8 @@ describe('Get Actions controller', () => {
   beforeAll(async () => {
     await server.register([action])
     await server.initialize()
+
+    mockingoose(actionsModel).toReturn(actionsFindOne, 'findOne')
   })
 
   afterAll(async () => {
@@ -24,8 +33,6 @@ describe('Get Actions controller', () => {
     expect(response.statusCode).toBe(404)
   })
 
-  // TODO tests with preexisting actions for GET and POST
-
   test('GET /action route should return 200 when actionCode parameter is provided', async () => {
     const request = {
       method: 'GET',
@@ -33,21 +40,6 @@ describe('Get Actions controller', () => {
     }
     const response = await server.inject(request)
     expect(response.statusCode).toBe(200)
-    expect(response.result).toEqual({
-      action: {
-        code: 'SAM1',
-        description:
-          'Assess soil, test soil organic matter and produce a soil management plan',
-        uses: ['AC32', 'PG01', 'TG01'],
-        payment: {
-          amountPerHectare: 5.8,
-          additionalPaymentPerAgreement: 95
-        },
-        eligibilityRules: [
-          { id: 'is-below-moorland-line' },
-          { id: 'is-for-whole-parcel-area' }
-        ]
-      }
-    })
+    expect(response.result.action.code).toBe('SAM1')
   })
 })

@@ -1,8 +1,15 @@
 import Hapi from '@hapi/hapi'
+import * as mockingoose from 'mockingoose'
+
+import actionsModel from '~/src/api/action/models/actions.js'
+import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
 import { action } from '../index.js'
 
-jest.mock('../helpers/find-all-actions.js')
-jest.mock('../helpers/find-action.js')
+const actionsFind = () => actionsMockData
+const actionsFindOne = (query) => {
+  const actionCode = query.getQuery().code
+  return actionsMockData.find((action) => action.code === actionCode)
+}
 
 describe('Get Actions controller', () => {
   const server = Hapi.server()
@@ -10,6 +17,9 @@ describe('Get Actions controller', () => {
   beforeAll(async () => {
     await server.register([action])
     await server.initialize()
+
+    mockingoose(actionsModel).toReturn(actionsFindOne, 'findOne')
+    mockingoose(actionsModel).toReturn(actionsFind, 'find')
   })
 
   afterAll(async () => {

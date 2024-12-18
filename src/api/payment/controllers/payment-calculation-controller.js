@@ -1,8 +1,9 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
-import { findAction } from '../../action/helpers/find-action.js'
+
+import actionsModel from '~/src/api/action/models/actions.js'
+import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
-import { findAllCompatibleActions } from '~/src/api/compatibility-matrix/helpers/find-compatible-actions-data.js'
 
 const logger = createLogger()
 
@@ -38,15 +39,17 @@ const paymentCalculationController = {
    */
 
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin & RequestPayload } request
+   * @param { import('@hapi/hapi').Request & RequestPayload } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
    * @returns { Promise<*> }
    */
-  handler: async ({ db, payload: { actions } }, h) => {
+  handler: async ({ payload: { actions } }, h) => {
     try {
       const actionCodes = actions.map((action) => action['action-code'])
       const compatibleActions = await Promise.all(
-        actionCodes.map((action) => findAllCompatibleActions(db, action))
+        actionCodes.map((action) =>
+          optionsDataModel.find({ option_code: action.toUpperCase() })
+        )
       )
 
       const actionsMissing = compatibleActions.some(
@@ -61,7 +64,9 @@ const paymentCalculationController = {
       }
 
       const actionPromises = await Promise.all(
-        actionCodes.map((actionCode) => findAction(db, actionCode))
+        actionCodes.map((actionCode) =>
+          actionsModel.findOne({ code: actionCode })
+        )
       )
 
       const payments = actions.map((actionRequest, index) => {
@@ -90,5 +95,4 @@ export { paymentCalculationController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */
