@@ -1,5 +1,6 @@
 import Boom from '@hapi/boom'
-import { findAction } from '../helpers/find-action.js'
+
+import actionsModel from '~/src/api/action/models/actions.js'
 
 /**
  *
@@ -7,14 +8,14 @@ import { findAction } from '../helpers/find-action.js'
  */
 const getActionController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @returns {Promise<*>}
    */
-  handler: async ({ db, params: { actionCode } }, h) => {
+  handler: async ({ params: { actionCode } }, h) => {
     if (!actionCode || actionCode === '')
       return Boom.badRequest('Missing actionCode query parameter')
 
-    const action = await findAction(db, actionCode)
+    const action = await actionsModel.findOne({ code: actionCode })
 
     if (!action) return Boom.notFound(`Action ${actionCode} not found`)
 
@@ -26,5 +27,4 @@ export { getActionController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */

@@ -1,5 +1,6 @@
 import Boom from '@hapi/boom'
-import { findAllActions } from '../helpers/find-all-actions.js'
+
+import actionsModel from '~/src/api/action/models/actions.js'
 
 let actions
 
@@ -20,12 +21,12 @@ const getActionsForLandUses = (db, landUseCodes) => {
  */
 const getAllActionsController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @returns {Promise<*>}
    */
   handler: async (request) => {
     if (!actions) {
-      actions = await findAllActions(request.db)
+      actions = await actionsModel.find()
     }
 
     const parcelId = request.query['parcel-id']
@@ -59,5 +60,4 @@ export { getAllActionsController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */
