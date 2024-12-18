@@ -21,7 +21,7 @@ const getActionsForLandUses = (db, landUseCodes) => {
  */
 const getAllActionsController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @returns {Promise<*>}
    */
   handler: async (request) => {
@@ -60,5 +60,4 @@ export { getAllActionsController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */

@@ -240,5 +240,4 @@ export { actionValidationController }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */
