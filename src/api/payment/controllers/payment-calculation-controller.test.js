@@ -1,21 +1,21 @@
 import Hapi from '@hapi/hapi'
+import * as mockingoose from 'mockingoose'
+
+import actionsModel from '~/src/api/action/models/actions.js'
+import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
 import { paymentCalculation } from '../index.js'
-import { actions as mockActions } from '~/src/helpers/seed-db/data/actions.js'
+import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
+import { optionsData as optionsMockData } from '~/src/helpers/seed-db/data/options-data.js'
 
-jest.mock('../../action/helpers/find-action.js', () => ({
-  findAction: jest.fn((db, actionCode) =>
-    Promise.resolve(mockActions.find((item) => item.code === actionCode))
-  )
-}))
+const actionsFindOne = (query) => {
+  const actionCode = query.getQuery().code
+  return actionsMockData.find((action) => action.code === actionCode)
+}
 
-jest.mock(
-  '~/src/api/compatibility-matrix/helpers/find-compatible-actions-data.js',
-  () => ({
-    findAllCompatibleActions: jest.fn(() =>
-      Promise.resolve([{ code: 'CSAM1', compatible: true }])
-    )
-  })
-)
+const optionsDataFind = (query) => {
+  const optionCode = query.getQuery().option_code
+  return optionsMockData.filter((option) => option.option_code === optionCode)
+}
 
 describe('paymentCalculationController', () => {
   const server = Hapi.server()
@@ -23,6 +23,9 @@ describe('paymentCalculationController', () => {
   beforeAll(async () => {
     await server.register([paymentCalculation])
     await server.initialize()
+
+    mockingoose(actionsModel).toReturn(actionsFindOne, 'findOne')
+    mockingoose(optionsDataModel).toReturn(optionsDataFind, 'find')
   })
 
   afterAll(async () => {
