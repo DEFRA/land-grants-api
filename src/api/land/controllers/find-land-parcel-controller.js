@@ -9,7 +9,7 @@ import { findLandParcel } from '~/src/services/arcgis/index.js'
  */
 const findLandParcelController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
    * @returns {Promise<*>}
    */
@@ -31,5 +31,4 @@ export { findLandParcelController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */

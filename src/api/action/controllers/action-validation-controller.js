@@ -1,9 +1,10 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
+
+import actionsModel from '~/src/api/action/models/actions.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { calculateIntersectionArea } from '~/src/services/arcgis/index.js'
-import { findActions } from '~/src/api/action/helpers/find-actions.js'
 
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
@@ -21,14 +22,12 @@ const isValidArea = (userSelectedActions, landParcel) => {
 
 /**
  * Checks if the supplied actions are a valid combination
- * @param {MongoDBPlugin} db
  * @param {Array} preexistingActions
  * @param {Array<object>} userSelectedActions
  * @param {Array<string>} landUseCodes
  * @returns {Promise<Array>}
  */
 export const isValidCombination = async (
-  db,
   preexistingActions = [],
   userSelectedActions,
   landUseCodes
@@ -37,7 +36,11 @@ export const isValidCombination = async (
     .concat(preexistingActions)
     .map((action) => action.actionCode)
 
-  const actionConfigs = await findActions(db, actionCodes)
+  const actionConfigs = await actionsModel.find({
+    $or: actionCodes.map((code) => ({
+      code
+    }))
+  })
 
   for (const actionConfig of actionConfigs) {
     let validForThisCode = false
@@ -104,14 +107,13 @@ const findIntersections = async (
 /**
  * Executes action rules
  * @param { import('@hapi/hapi').Server } server
- * @param { import('mongodb').Db } db
+ * @param { Array } userSelectedActions
  * @param { object } landParcel
  * @param { Array } actionConfigs
  * @returns
  */
 const executeActionRules = async (
   server,
-  db,
   userSelectedActions,
   landParcel,
   actionConfigs
@@ -167,16 +169,20 @@ const actionValidationController = {
    */
 
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin & RequestPayload } request
+   * @param { import('@hapi/hapi').Request & RequestPayload } request
    * @returns { Promise<*> }
    */
-  handler: async ({ db, payload: { actions, landParcel }, server }, h) => {
+  handler: async ({ payload: { actions, landParcel }, server }, h) => {
     try {
       const actionApplicationDetails = actions
       const actionCodes = actionApplicationDetails.map(
         (action) => action.actionCode
       )
-      const actionConfigs = await findActions(db, actionCodes)
+      const actionConfigs = await actionsModel.find({
+        $or: actionCodes.map((code) => ({
+          code
+        }))
+      })
 
       if (actionConfigs.length !== actionCodes.length) {
         const validActionCodes = actionConfigs.map((action) => action.code)
@@ -199,7 +205,6 @@ const actionValidationController = {
       const errors = [
         ...isValidArea(actionApplicationDetails, landParcel),
         ...(await isValidCombination(
-          db,
           landParcel.agreements,
           actionApplicationDetails,
           landParcel.landUseCodes
@@ -219,7 +224,6 @@ const actionValidationController = {
 
       const ruleResults = await executeActionRules(
         server,
-        db,
         actionApplicationDetails,
         landParcel,
         actionConfigs
@@ -266,6 +270,5 @@ export { actionValidationController }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  * @import {LayerId} from '~/src/rules-engine/rulesEngine.d.js'
  */

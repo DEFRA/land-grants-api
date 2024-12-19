@@ -1,71 +1,30 @@
 import Hapi from '@hapi/hapi'
-import { land } from '../index.js'
-import { farmers as mockFarmers } from '~/src/helpers/seed-db/data/farmers.js'
 import CatboxMemory from '@hapi/catbox-memory'
+import * as mockingoose from 'mockingoose'
+
+import farmersModel from '~/src/api/land/models/farmers.js'
+import codesModel from '../models/codes.js'
+import { land } from '../index.js'
+import { farmers as farmersMockData } from '~/src/helpers/seed-db/data/farmers.js'
+import { codes as codesMockData } from '~/src/helpers/seed-db/data/codes.js'
+
+const farmersFindOne = (query) => {
+  const sbiCode = query.getQuery()['businesses.sbi']
+  return farmersMockData.find((farmer) =>
+    farmer.businesses.filter((business) => business.sbi === sbiCode)
+  )
+}
+
+const codesFindOne = (query) => {
+  const classCode = query.getQuery()['classes.covers.code']
+  return codesMockData.find((mockCode) =>
+    mockCode.classes.find((mockClass) =>
+      mockClass.covers.find((mockCover) => mockCover.code === classCode)
+    )
+  )
+}
 
 jest.mock('~/src/services/arcgis/index.js')
-
-jest.mock('../helpers/find-land-parcel-by-sbi.js', () => ({
-  findLandParcelsBySbi: jest.fn((db, sbi) => {
-    const results = mockFarmers.find((farmer) =>
-      farmer.businesses.filter((business) => business.sbi === sbi)
-    )
-
-    if (!results) return Promise.reject(new Error('No matching businesses'))
-
-    const business = [results][0].businesses.filter(
-      (business) => business.sbi === sbi
-    )
-
-    // Get the parcels
-    const parcels = business[0].parcels.map((parcel) => ({
-      id: parcel.id,
-      sheetId: parcel.sheetId,
-      agreements: parcel.agreements,
-      attributes: parcel.attributes
-    }))
-
-    return Promise.resolve(parcels)
-  })
-}))
-
-jest.mock('../helpers/find-land-cover-code.js', () => ({
-  findLandCoverCode: jest.fn((db, code) => {
-    const responses = {
-      131: {
-        name: 'Permanent grassland',
-        code: '131',
-        uses: [
-          {
-            name: 'Permanent grassland',
-            code: 'PG01'
-          }
-        ]
-      },
-      118: {
-        name: 'Other arable crops',
-        code: '118',
-        uses: [
-          {
-            name: 'Wheat - spring',
-            code: 'AC32'
-          }
-        ]
-      },
-      583: {
-        name: 'Rivers and Streams type 3',
-        code: '583',
-        uses: [
-          {
-            name: 'Rivers and Streams type 3',
-            code: 'IW03'
-          }
-        ]
-      }
-    }
-    return Promise.resolve(responses[code])
-  })
-}))
 
 describe('Land Parcel by SBI controller', () => {
   const server = Hapi.server({
@@ -82,6 +41,9 @@ describe('Land Parcel by SBI controller', () => {
   beforeAll(async () => {
     await server.register([land])
     await server.initialize()
+
+    mockingoose(farmersModel).toReturn(farmersFindOne, 'findOne')
+    mockingoose(codesModel).toReturn(codesFindOne, 'findOne')
   })
 
   afterAll(async () => {

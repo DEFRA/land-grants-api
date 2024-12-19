@@ -177,7 +177,6 @@ describe('Find Moorland Intersects', () => {
       landParcelId,
       sheetId
     )
-
     expect(fetch).toHaveBeenCalledTimes(2) // One call for intersection, one for areas
   })
 

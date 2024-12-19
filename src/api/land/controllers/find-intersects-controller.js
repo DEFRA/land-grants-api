@@ -15,7 +15,7 @@ import {
  */
 const findIntersectsController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
    * @returns {Promise<*>}
    */
@@ -171,5 +171,4 @@ export { findIntersectsController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */

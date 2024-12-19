@@ -1,10 +1,12 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
 import isNull from 'lodash/isNull.js'
+
+import farmersModel from '../models/farmers.js'
+import codesModel from '../models/codes.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
-import { findLandParcelsBySbi } from '../helpers/find-land-parcel-by-sbi.js'
 import { findLandParcel, findLandCover } from '~/src/services/arcgis/index.js'
-import { findLandCoverCode } from '../helpers/find-land-cover-code.js'
+import { deepSearch } from '../utils/deep-search.js'
 
 const logger = createLogger()
 
@@ -63,10 +65,13 @@ const getLandCovers = async (server, userParcels) => {
 const getLandCoverDetails = async (db, landCovers) =>
   await Promise.all(
     landCovers.features.map(async (feature) => {
-      const landCodeDetails = await findLandCoverCode(
-        db,
+      const landCodeDetails = deepSearch(
+        await codesModel.findOne({
+          'classes.covers.code': feature.properties.LAND_COVER_CLASS_CODE
+        }),
         feature.properties.LAND_COVER_CLASS_CODE
       )
+
       return {
         properties: {
           ...feature.properties,
@@ -78,6 +83,17 @@ const getLandCoverDetails = async (db, landCovers) =>
       }
     })
   )
+
+const getParcelsFromBusiness = (business) =>
+  business.parcels.map((parcel) => ({
+    id: parcel.id,
+    sheetId: parcel.sheetId,
+    agreements: parcel.agreements,
+    attributes: parcel.attributes
+  }))
+
+const getBusinessFromFarmer = (farmer, sbi) =>
+  farmer.businesses.find((business) => business.sbi === sbi.toString())
 
 /**
  *
@@ -97,16 +113,25 @@ const findLandParcelBySbiController = {
   },
 
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
    * @returns {Promise<*>}
    */
   handler: async (request, h) => {
     /** @type { BusinessParcel[] } */
-    const userParcels = await findLandParcelsBySbi(
-      request,
-      request.params.sbi.toString()
-    )
+    const {
+      params: { sbi }
+    } = request
+    const farmer = await farmersModel.findOne({
+      'businesses.sbi': sbi.toString()
+    })
+
+    const business = getBusinessFromFarmer(farmer, sbi)
+    if (isNull(business)) {
+      return Boom.notFound()
+    }
+
+    const userParcels = getParcelsFromBusiness(business)
     if (isNull(userParcels)) {
       return Boom.notFound()
     }
@@ -151,6 +176,5 @@ export { findLandParcelBySbiController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
- * @import { BusinessParcel } from '~/src/api/land/helpers/find-land-parcel-by-sbi.js'
+ * @import { BusinessParcel } from '~/src/api/land/utils/find-land-parcel-by-sbi.js'
  */

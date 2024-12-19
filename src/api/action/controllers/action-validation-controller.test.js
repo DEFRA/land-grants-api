@@ -1,12 +1,24 @@
 import Hapi from '@hapi/hapi'
+import * as mockingoose from 'mockingoose'
+
+import actionsModel from '~/src/api/action/models/actions.js'
+import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
 import { action } from '../index.js'
 import { isValidCombination } from './action-validation-controller.js'
 
 const originalFetch = global.fetch
 
-jest.mock('../helpers/find-action.js')
-jest.mock('../helpers/find-actions.js')
 jest.mock('~/src/services/arcgis/index.js')
+
+const actionsFind = (query) => {
+  const codes = query.getQuery().$or.map((item) => item.code)
+  return actionsMockData.filter((element) => codes.includes(element.code))
+}
+
+const actionsFindOne = (query) => {
+  const actionCode = query.getQuery().code
+  return actionsMockData.find((action) => action.code === actionCode)
+}
 
 describe('Action Validation controller', () => {
   const server = Hapi.server()
@@ -14,6 +26,9 @@ describe('Action Validation controller', () => {
   beforeAll(async () => {
     await server.register([action])
     await server.initialize()
+
+    mockingoose(actionsModel).toReturn(actionsFindOne, 'findOne')
+    mockingoose(actionsModel).toReturn(actionsFind, 'find')
 
     // Mock fetch to provide expected structure
     global.fetch = jest.fn((url = '') => {
@@ -238,7 +253,6 @@ describe('Action Validation controller', () => {
   describe('is valid combination function', () => {
     it('should return undefined if supplied actions are compatible', async () => {
       const result = await isValidCombination(
-        null,
         [],
         [{ actionCode: 'CSAM1' }],
         ['PG01']
@@ -248,7 +262,6 @@ describe('Action Validation controller', () => {
 
     it('should return an error if supplied actions are incompatible', async () => {
       const result = await isValidCombination(
-        null,
         [],
         [{ actionCode: 'CSAM2' }],
         ['PG01']

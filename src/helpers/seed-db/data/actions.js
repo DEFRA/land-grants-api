@@ -1,3 +1,29 @@
+import { codes } from './codes.js'
+
+const deepSearch = (data, value) => {
+  if (data.code === value) {
+    if (!data.uses) return data.code
+    else return data.uses.map((use) => use.code)
+  }
+
+  for (const key of ['classes', 'covers', 'uses']) {
+    if (data[key]) {
+      for (const item of data[key]) {
+        const result = deepSearch(item, value)
+        if (result) return result
+      }
+    }
+  }
+
+  return null
+}
+
+export const populateActionClasses = (actions) =>
+  actions.map((action) => ({
+    ...action,
+    uses: action.uses.flatMap((targetCode) => deepSearch(codes[0], targetCode))
+  }))
+
 export const actions = [
   {
     code: 'SAM1',
@@ -44,10 +70,20 @@ export const actions = [
   {
     code: 'LIG2',
     description: 'Manage grassland with very low nutrient inputs (SDAs)',
+    uses: ['PG01', 'TG01'],
     payment: {
       amountPerHectare: 151
     },
     eligibilityRules: [{ id: 'is-inside-sda' }]
+  },
+  {
+    code: 'CIGL1',
+    description: 'Take grassland field corners or blocks out of management',
+    uses: ['PG01', 'TG01'],
+    payment: {
+      amountPerHectare: 333
+    },
+    eligibilityRules: [{ id: 'is-below-moorland-line' }]
   },
   {
     code: 'AB3',
@@ -83,7 +119,8 @@ export const actions = [
       {
         id: 'has-min-parcel-area',
         config: { minArea: 2 }
-      }
+      },
+      { id: 'is-below-moorland-line' }
     ]
   },
   {

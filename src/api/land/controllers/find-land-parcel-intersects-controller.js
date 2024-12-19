@@ -9,7 +9,7 @@ import { findLandParcelIntersects } from '~/src/services/arcgis/index.js'
  */
 const findLandParcelIntersectsController = {
   /**
-   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').Request } request
    * @param { import('@hapi/hapi').ResponseToolkit } h
    * @returns {Promise<*>}
    */
@@ -31,5 +31,4 @@ export { findLandParcelIntersectsController }
 
 /**
  * @import { ServerRoute} from '@hapi/hapi'
- * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */
