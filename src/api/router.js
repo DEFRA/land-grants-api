@@ -1,5 +1,4 @@
 import { health } from '~/src/api/health/index.js'
-import { importData } from '~/src/api/import-data/index.js'
 import { compatibilityMatrix } from '~/src/api/compatibility-matrix/index.js'
 import { action } from '~/src/api/action/index.js'
 import { land } from '~/src/api/land/index.js'
@@ -15,9 +14,6 @@ const router = {
     register: async (server) => {
       // Health-check route. Used by platform to check if service is running, do not remove!
       await server.register([health])
-
-      // Import data endpoints
-      await server.register([importData])
 
       // Get Action compatibility matrix
       await server.register([compatibilityMatrix])

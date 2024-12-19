@@ -1,7 +1,7 @@
 import Hapi from '@hapi/hapi'
 import * as mockingoose from 'mockingoose'
 
-import actionsModel from '~/src/api/action/models/actions.js'
+import actionsModel from '~/src/models/actions.js'
 import { action } from '~/src/api/action/index.js'
 import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
 
@@ -22,6 +22,7 @@ describe('Get Actions controller', () => {
 
   afterAll(async () => {
     await server.stop()
+    mockingoose(actionsModel).reset()
   })
 
   test('GET /action route should return 404 when actionCode parameter is missing', async () => {

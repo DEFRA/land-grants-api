@@ -1,7 +1,7 @@
 import Hapi from '@hapi/hapi'
 import * as mockingoose from 'mockingoose'
 
-import actionsModel from '~/src/api/action/models/actions.js'
+import actionsModel from '~/src/models/actions.js'
 import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
 import { action } from '../index.js'
 import { isValidCombination } from './action-validation-controller.js'
@@ -57,6 +57,7 @@ describe('Action Validation controller', () => {
   afterAll(async () => {
     await server.stop()
     global.fetch = originalFetch
+    mockingoose(actionsModel).reset()
   })
 
   describe('POST /action-validation route', () => {

@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
 
-import actionsModel from '~/src/api/action/models/actions.js'
+import actionsModel from '~/src/models/actions.js'
 import { config } from '~/src/config/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 

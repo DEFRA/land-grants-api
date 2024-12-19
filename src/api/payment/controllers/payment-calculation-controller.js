@@ -1,8 +1,8 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 
-import actionsModel from '~/src/api/action/models/actions.js'
-import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
+import actionsModel from '~/src/models/actions.js'
+import optionsDataModel from '~/src/models/options-data.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
 
 const logger = createLogger()
