@@ -8,6 +8,8 @@ import { isValidCombination } from './action-validation-controller.js'
 
 const originalFetch = global.fetch
 
+jest.mock('~/src/services/arcgis/index.js')
+
 const actionsFind = (query) => {
   const codes = query.getQuery().$or.map((item) => item.code)
   return actionsMockData.filter((element) => codes.includes(element.code))
@@ -211,7 +213,7 @@ describe('Action Validation controller', () => {
       const { statusCode, result } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(result.message).toBe('Unknown action')
+      expect(result).toContain('["Invalid action code: CSAM15"]')
     })
 
     test('should return 200 with the correct message if the combination is valid', async () => {

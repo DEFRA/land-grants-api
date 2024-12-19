@@ -17,7 +17,7 @@ describe('supplementAreaMatchesParent', function () {
     }
 
     // Act
-    const result = rules[SUPPLEMENT_AREA_RULE_ID](
+    const result = rules[SUPPLEMENT_AREA_RULE_ID].check(
       application,
       SUPPLEMENT_AREA_RULE_CONFIG
     )
@@ -37,7 +37,7 @@ describe('supplementAreaMatchesParent', function () {
     }
 
     // Act
-    const result = rules[SUPPLEMENT_AREA_RULE_ID](
+    const result = rules[SUPPLEMENT_AREA_RULE_ID].check(
       application,
       SUPPLEMENT_AREA_RULE_CONFIG
     )
@@ -61,7 +61,7 @@ describe('supplementAreaMatchesParent', function () {
     }
 
     // Act
-    const result = rules[SUPPLEMENT_AREA_RULE_ID](
+    const result = rules[SUPPLEMENT_AREA_RULE_ID].check(
       application,
       SUPPLEMENT_AREA_RULE_CONFIG
     )

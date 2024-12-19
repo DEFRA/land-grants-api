@@ -9,7 +9,7 @@ describe('is-less-than-max-parcel-area', function () {
     }
     const ruleConfig = { maxArea: 20 }
 
-    const result = rules['is-less-than-max-parcel-area'](
+    const result = rules['is-less-than-max-parcel-area'].check(
       application,
       ruleConfig
     )
@@ -25,7 +25,7 @@ describe('is-less-than-max-parcel-area', function () {
     }
     const ruleConfig = { maxArea: 20 }
 
-    const result = rules['is-less-than-max-parcel-area'](
+    const result = rules['is-less-than-max-parcel-area'].check(
       application,
       ruleConfig
     )

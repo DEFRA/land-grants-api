@@ -262,6 +262,27 @@ export const mockSarahSingleLandParcelResponses = [
   }
 ]
 
+export const mockLandParcelResponse = {
+  features: [
+    {
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-3.84215781948155, 50.2369627492092],
+            [-3.84188557735844, 50.236368577696],
+            [-3.84159762148358, 50.2357813103825],
+            [-3.84215781948155, 50.2369627492092]
+          ]
+        ]
+      },
+      properties: {
+        GEOM_AREA_SQM: 50000 // Parcel area for calculations
+      }
+    }
+  ]
+}
+
 export const mockSarahMultiLandParcelResponse = {
   type: 'FeatureCollection',
   features: [

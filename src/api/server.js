@@ -13,6 +13,7 @@ import { mongooseDb } from '~/src/helpers/mongoose.js'
 async function createServer() {
   const server = hapi.server({
     port: config.get('port'),
+    debug: { request: ['error'] },
     routes: {
       validate: {
         options: {

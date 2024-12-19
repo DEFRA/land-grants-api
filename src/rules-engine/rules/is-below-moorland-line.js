@@ -1,9 +1,4 @@
-/**
- * Checks that a land parcel is below the moorland line
- * @param {Application} application
- * @returns {RuleResponse}
- */
-export const isBelowMoorlandLine = (application) => {
+export function check(application) {
   const intersection = application.landParcel.intersections?.moorland
   const passed = intersection ? intersection > 0 : false
 
@@ -18,3 +13,12 @@ export const isBelowMoorlandLine = (application) => {
     passed
   }
 }
+
+/**
+ * @import { Rule } from '../rulesEngine.d.js'
+ */
+
+/**
+ * @type {Rule}
+ */
+export const isBelowMoorlandLine = { check, requiredDataLayers: ['moorland'] }

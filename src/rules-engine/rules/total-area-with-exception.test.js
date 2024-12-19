@@ -18,7 +18,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )
@@ -43,7 +43,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )
@@ -65,7 +65,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )
@@ -87,7 +87,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )
@@ -112,7 +112,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )
@@ -137,7 +137,7 @@ describe('totalAreaWithException', function () {
     }
 
     // Act
-    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID](
+    const result = rules[TOTAL_AREA_WITH_EXCEPTION_RULE_ID].check(
       application,
       TOTAL_AREA_WITH_EXCEPTION_RULE_CONFIG
     )

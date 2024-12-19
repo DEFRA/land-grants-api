@@ -1,14 +1,23 @@
 import Hapi from '@hapi/hapi'
 import { land } from '../index.js'
-import * as arcgisService from '~/src/services/arcgis.js'
+import * as arcgisService from '~/src/services/arcgis/index.js'
 import CatboxMemory from '@hapi/catbox-memory'
+
+jest.mock('~/src/services/arcgis/index.js', () => {
+  return {
+    __esModule: true,
+    ...jest.requireActual('~/src/services/arcgis/index.js')
+  }
+})
 
 const originalFetch = global.fetch
 const findLandParcelSpy = jest.spyOn(arcgisService, 'findLandParcel')
-const fetchMoorlandIntersectionSpy = jest.spyOn(
+const fetchFromLayerByIntersectionSpy = jest.spyOn(
   arcgisService,
-  'fetchIntersection'
+  'fetchFromLayerByIntersection'
 )
+
+const tokenSpy = jest.spyOn(arcgisService, 'getCachedToken')
 
 const mockLandParcelResponse = {
   features: [
@@ -129,8 +138,9 @@ describe('Find Moorland Intersects', () => {
       return Promise.resolve(response)
     })
 
-    findLandParcelSpy.mockResolvedValue(mockLandParcelResponse)
-    fetchMoorlandIntersectionSpy.mockResolvedValue(mockMoorlandResponse)
+    findLandParcelSpy.mockReturnValue(mockLandParcelResponse)
+    fetchFromLayerByIntersectionSpy.mockResolvedValue(mockMoorlandResponse)
+    tokenSpy.mockResolvedValue({ access_token: 'soifj', id: '123' })
   })
 
   afterAll(async () => {
@@ -155,7 +165,8 @@ describe('Find Moorland Intersects', () => {
     const expected = {
       parcelId: '1234',
       totalIntersectingArea: 35000, // Sum of areas from the mockAreasResponse
-      nonIntersectingArea: 15000 // 50000 - 35000
+      nonIntersectingArea: 15000, // 50000 - 35000
+      intersectingAreaPercentage: 70
     }
 
     expect(statusCode).toBe(200)
@@ -165,20 +176,6 @@ describe('Find Moorland Intersects', () => {
       server,
       landParcelId,
       sheetId
-    )
-    expect(arcgisService.fetchIntersection).toHaveBeenCalledWith(
-      server,
-      {
-        rings: [
-          [
-            [-3.84215781948155, 50.2369627492092],
-            [-3.84188557735844, 50.236368577696],
-            [-3.84159762148358, 50.2357813103825],
-            [-3.84215781948155, 50.2369627492092]
-          ]
-        ]
-      },
-      'moorland'
     )
     expect(fetch).toHaveBeenCalledTimes(2) // One call for intersection, one for areas
   })
@@ -200,9 +197,11 @@ describe('Find Moorland Intersects', () => {
     } = await server.inject(request)
 
     const expected = {
+      layerId: 'moorland',
       parcelId: '1234',
       totalIntersectingArea: 0,
-      nonIntersectingArea: 0
+      nonIntersectingArea: 0,
+      intersectingAreaPercentage: 0
     }
 
     expect(statusCode).toBe(200)
@@ -217,7 +216,7 @@ describe('Find Moorland Intersects', () => {
   })
 
   test('should handle no Moorland intersections gracefully', async () => {
-    fetchMoorlandIntersectionSpy.mockResolvedValueOnce({
+    fetchFromLayerByIntersectionSpy.mockResolvedValueOnce({
       features: []
     })
 
@@ -237,12 +236,15 @@ describe('Find Moorland Intersects', () => {
     const expected = {
       parcelId: '1234',
       totalIntersectingArea: 0,
-      nonIntersectingArea: 50000 // Full parcel area since no intersections
+      nonIntersectingArea: 50000, // Full parcel area since no intersections
+      intersectingAreaPercentage: 0,
+      layerId: 'moorland'
     }
     expect(statusCode).toBe(200)
     expect(message).toBe('success')
     expect(entity).toEqual(expected)
-    expect(fetchMoorlandIntersectionSpy).toHaveBeenCalledWith(
+    expect(fetchFromLayerByIntersectionSpy).toHaveBeenCalledWith(
+      'moorland',
       server,
       {
         rings: [
@@ -253,8 +255,7 @@ describe('Find Moorland Intersects', () => {
             [-3.84215781948155, 50.2369627492092]
           ]
         ]
-      },
-      'moorland'
+      }
     )
     expect(fetch).not.toHaveBeenCalled()
   })

@@ -1,5 +1,5 @@
 import { config } from '~/src/config/index.js'
-import { initCache } from '../cache.js'
+import { initCache } from '~/src/helpers/cache.js'
 
 const getUserToken = async () => {
   const url = new URL('https://www.arcgis.com/sharing/rest/generateToken')
@@ -9,12 +9,7 @@ const getUserToken = async () => {
   body.append('referer', '*')
   body.append('f', 'json')
 
-  const response = await fetch(url, {
-    method: 'post',
-    body
-  })
-
-  /** @type { object } */
+  const response = await fetch(url, { method: 'post', body })
   const json = await response.json()
 
   return {
@@ -23,14 +18,17 @@ const getUserToken = async () => {
   }
 }
 
+/**
+ * @type {import('@hapi/catbox').Policy<any, any>}
+ */
 let cache
 
 /**
- *  ArcGIS token cache
+ * ArcGIS token cache
  * @param { import('@hapi/hapi').Server } server
- * @returns { import('@hapi/catbox').Policy<any, any> }
+ * @returns {Promise<{ id: string; access_token: string }>}
  */
-export const arcgisTokenCache = (server) => {
+export function getCachedToken(server) {
   if (!cache) {
     cache = initCache(
       server,
@@ -44,5 +42,5 @@ export const arcgisTokenCache = (server) => {
     )
   }
 
-  return cache
+  return cache.get('arcgis_token')
 }
