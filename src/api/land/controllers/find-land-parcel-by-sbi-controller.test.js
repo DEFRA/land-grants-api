@@ -2,8 +2,8 @@ import Hapi from '@hapi/hapi'
 import CatboxMemory from '@hapi/catbox-memory'
 import * as mockingoose from 'mockingoose'
 
-import farmersModel from '~/src/api/land/models/farmers.js'
-import codesModel from '../models/codes.js'
+import farmersModel from '~/src/models/farmers.js'
+import codesModel from '../../../models/codes.js'
 import { land } from '../index.js'
 import { farmers as farmersMockData } from '~/src/helpers/seed-db/data/farmers.js'
 import { codes as codesMockData } from '~/src/helpers/seed-db/data/codes.js'
@@ -48,6 +48,9 @@ describe('Land Parcel by SBI controller', () => {
 
   afterAll(async () => {
     await server.stop()
+
+    mockingoose(farmersModel).reset()
+    mockingoose(codesModel).reset()
   })
 
   describe('GET /land/parcel/{sbi} route', () => {
