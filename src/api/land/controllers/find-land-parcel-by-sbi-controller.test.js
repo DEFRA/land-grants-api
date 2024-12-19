@@ -3,7 +3,7 @@ import { land } from '../index.js'
 import { farmers as mockFarmers } from '~/src/helpers/seed-db/data/farmers.js'
 import CatboxMemory from '@hapi/catbox-memory'
 
-jest.mock('../../../services/arcgis')
+jest.mock('~/src/services/arcgis/index.js')
 
 jest.mock('../helpers/find-land-parcel-by-sbi.js', () => ({
   findLandParcelsBySbi: jest.fn((db, sbi) => {
@@ -137,9 +137,6 @@ describe('Land Parcel by SBI controller', () => {
           sheetId: 'TR3354',
           agreements: [],
           area: '2.9072',
-          attributes: {
-            moorlandLineStatus: 'below'
-          },
           centroidX: 633588.383705711,
           centroidY: 154641.049534814,
           validated: 'N',

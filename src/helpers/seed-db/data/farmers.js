@@ -22,72 +22,32 @@ export const farmers = [
           {
             id: '1040',
             sheetId: 'SK0140',
-            agreements: [],
-            landUseList: [
-              {
-                code: 'PG01',
-                area: '4.2'
-              }
-            ],
-            attributes: {
-              moorlandLineStatus: 'above'
-            }
+            agreements: []
           },
           {
             id: '2679',
             sheetId: 'SJ9539',
-            agreements: [],
-            landUseList: [
-              {
-                code: 'PG01',
-                area: '4.2'
-              }
-            ],
-            attributes: {
-              moorlandLineStatus: 'below'
-            }
+            agreements: []
           },
           {
             id: '4769',
             sheetId: 'SK0241',
-            agreements: [],
-            landUseList: [
-              {
-                code: 'PG01',
-                area: '4.2'
-              }
-            ],
-            attributes: {
-              moorlandLineStatus: 'below'
-            }
+            agreements: []
           },
           {
             id: '6599',
             sheetId: 'SX6838',
-            agreements: [],
-            landUseList: [
-              {
-                code: 'AC32',
-                area: '5.1'
-              }
-            ],
-            attributes: {
-              moorlandLineStatus: 'below'
-            }
+            agreements: []
           },
           {
             id: '6065',
             sheetId: 'TR3354',
-            agreements: [],
-            landUseList: [
-              {
-                code: 'IW03',
-                area: '20'
-              }
-            ],
-            attributes: {
-              moorlandLineStatus: 'below'
-            }
+            agreements: []
+          },
+          {
+            id: '0340',
+            sheetId: 'SP1098',
+            agreements: []
           }
         ]
       },

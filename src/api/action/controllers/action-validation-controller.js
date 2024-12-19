@@ -1,10 +1,9 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
-import { findAction } from '../helpers/find-action.js'
-import { actionCombinationLandUseCompatibilityMatrix } from '~/src/api/available-area/helpers/action-land-use-compatibility-matrix.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
-import { calculateIntersectionArea } from '~/src/services/arcgis/intersections.js'
+import { calculateIntersectionArea } from '~/src/services/arcgis/index.js'
+import { findActions } from '~/src/api/action/helpers/find-actions.js'
 
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
@@ -22,12 +21,14 @@ const isValidArea = (userSelectedActions, landParcel) => {
 
 /**
  * Checks if the supplied actions are a valid combination
+ * @param {MongoDBPlugin} db
  * @param {Array} preexistingActions
  * @param {Array<object>} userSelectedActions
  * @param {Array<string>} landUseCodes
- * @returns {Array}
+ * @returns {Promise<Array>}
  */
-export const isValidCombination = (
+export const isValidCombination = async (
+  db,
   preexistingActions = [],
   userSelectedActions,
   landUseCodes
@@ -36,19 +37,13 @@ export const isValidCombination = (
     .concat(preexistingActions)
     .map((action) => action.actionCode)
 
-  for (const code of landUseCodes) {
-    const allowedCombinations =
-      actionCombinationLandUseCompatibilityMatrix[code] || []
-    let validForThisCode = false
+  const actionConfigs = await findActions(db, actionCodes)
 
-    for (const combination of allowedCombinations) {
-      if (
-        actionCodes.length === combination.length &&
-        actionCodes.every((actionCode) => combination.includes(actionCode))
-      ) {
-        validForThisCode = true
-        break
-      }
+  for (const actionConfig of actionConfigs) {
+    let validForThisCode = false
+    if (landUseCodes.every((useCode) => actionConfig.uses.includes(useCode))) {
+      validForThisCode = true
+      break
     }
 
     if (!validForThisCode) {
@@ -56,69 +51,76 @@ export const isValidCombination = (
         const actionCodesString = preexistingActions
           .map((action) => action.actionCode)
           .join(', ')
-        return [
-          `The selected combination of actions, along with your pre-existing actions (${actionCodesString}), is invalid for land use code ${code}`
-        ]
+        return Promise.resolve([
+          `The selected combination of actions, along with your pre-existing actions (${actionCodesString}), is invalid for land use code ${landUseCodes.toString()}`
+        ])
       }
-      return [
-        `The selected combination of actions are invalid for land use code: ${code}`
-      ]
+      return Promise.resolve([
+        `The selected combination of actions are invalid for land use code: ${landUseCodes.toString()}`
+      ])
     }
   }
 
-  return []
+  return Promise.resolve([])
 }
 
 /**
  * Finds and fetches any intersection data required for applicable eligibility rules
- * @param {object} landParcel
- * @param {Action} action
  * @returns { Promise<Record<LayerId, number>> }
  */
-const findIntersections = async (server, landParcelId, sheetId, actions) => {
-  const allRequiredIntersectionIds = actions.reduce((acc, action) => {
-    if (acc[action.id]) return { ...acc }
+const findIntersections = async (
+  server,
+  landParcelId,
+  sheetId,
+  actionConfigs
+) => {
+  const allRequiredIntersectionIds = actionConfigs.flatMap((actionConfig) =>
+    actionConfig.eligibilityRules.flatMap(
+      (rule) => rules[rule.id].requiredDataLayers
+    )
+  )
 
+  const allIntersections = await Promise.all(
+    allRequiredIntersectionIds.map(async (layerId) => {
+      return await calculateIntersectionArea(
+        server,
+        landParcelId,
+        sheetId,
+        layerId
+      )
+    })
+  )
+
+  const intersectMap = allIntersections.reduce((acc, intersection) => {
     return {
       ...acc,
-      [action.id]: action.eligibilityRules.flatMap(
-        (rule) => rules[rule.id].requiredDataLayers
-      )
+      [intersection.layerId]: intersection.intersectingAreaPercentage
     }
   }, {})
 
-  return await fetchIntersections(
-    server,
-    allRequiredIntersectionIds,
-    landParcelId,
-    sheetId
-  )
+  return intersectMap
 }
 
 /**
  * Executes action rules
+ * @param { import('@hapi/hapi').Server } server
  * @param { import('mongodb').Db } db
- * @param { Array } userSelectedActions
  * @param { object } landParcel
+ * @param { Array } actionConfigs
  * @returns
  */
 const executeActionRules = async (
   server,
   db,
   userSelectedActions,
-  landParcel
+  landParcel,
+  actionConfigs
 ) => {
-  const actions = await Promise.all(
-    userSelectedActions.map(
-      async (action) => await findAction(db, action.actionCode)
-    )
-  )
-
   const allIntersections = await findIntersections(
     server,
     landParcel.id,
     landParcel.sheetId,
-    actions
+    actionConfigs
   )
 
   return userSelectedActions.map((action, index) => {
@@ -136,7 +138,7 @@ const executeActionRules = async (
 
     return {
       action: action.actionCode,
-      ...executeRules(application, actions[index].eligibilityRules)
+      ...executeRules(application, actionConfigs[index].eligibilityRules)
     }
   })
 }
@@ -169,63 +171,94 @@ const actionValidationController = {
    * @returns { Promise<*> }
    */
   handler: async ({ db, payload: { actions, landParcel }, server }, h) => {
-    const errors = [
-      ...isValidArea(actions, landParcel),
-      ...isValidCombination(
-        landParcel.agreements,
-        actions,
-        landParcel.landUseCodes
+    try {
+      const actionApplicationDetails = actions
+      const actionCodes = actionApplicationDetails.map(
+        (action) => action.actionCode
       )
-    ]
+      const actionConfigs = await findActions(db, actionCodes)
 
-    if (errors.length) {
-      return h
-        .response(
-          JSON.stringify({
-            message: errors,
-            isValidCombination: false
-          })
+      if (actionConfigs.length !== actionCodes.length) {
+        const validActionCodes = actionConfigs.map((action) => action.code)
+        const invalidActionCodes = actionCodes.filter(
+          (code) => !validActionCodes.includes(code)
         )
-        .code(200)
-    }
-
-    const ruleResults = await executeActionRules(
-      server,
-      db,
-      actions,
-      landParcel
-    )
-    const ruleFailureMessages = []
-    for (const result of ruleResults) {
-      if (!result.passed) {
-        const results = result.allResults
-          .filter((r) => !r.passed)
-          .map((r) => r.message)
-          .join(', ')
-
-        ruleFailureMessages.push(`${result.action}: ${results}`)
+        const messages = invalidActionCodes.map(
+          (code) => `Invalid action code: ${code}`
+        )
+        return h
+          .response(
+            JSON.stringify({
+              message: messages,
+              isValidCombination: false
+            })
+          )
+          .code(400)
       }
-    }
 
-    if (ruleFailureMessages.length) {
+      const errors = [
+        ...isValidArea(actionApplicationDetails, landParcel),
+        ...(await isValidCombination(
+          db,
+          landParcel.agreements,
+          actionApplicationDetails,
+          landParcel.landUseCodes
+        ))
+      ]
+
+      if (errors.length) {
+        return h
+          .response(
+            JSON.stringify({
+              message: errors,
+              isValidCombination: false
+            })
+          )
+          .code(200)
+      }
+
+      const ruleResults = await executeActionRules(
+        server,
+        db,
+        actionApplicationDetails,
+        landParcel,
+        actionConfigs
+      )
+
+      const ruleFailureMessages = []
+      for (const result of ruleResults) {
+        if (!result.passed) {
+          const results = result.allResults
+            .filter((r) => !r.passed)
+            .map((r) => r.message)
+            .join(', ')
+
+          ruleFailureMessages.push(`${result.action}: ${results}`)
+        }
+      }
+
+      if (ruleFailureMessages.length) {
+        return h
+          .response(
+            JSON.stringify({
+              message: ruleFailureMessages.join(', '),
+              isValidCombination: false
+            })
+          )
+          .code(200)
+      }
+
       return h
         .response(
           JSON.stringify({
-            message: ruleFailureMessages.join(', '),
-            isValidCombination: false
+            message: ['Action combination valid'],
+            isValidCombination: true
           })
         )
         .code(200)
+    } catch (error) {
+      return Boom.boomify(error)
     }
-
-    return h
-      .response(
-        JSON.stringify({
-          message: ['Action combination valid'],
-          isValidCombination: true
-        })
-      )
-      .code(200)
   }
 }
 

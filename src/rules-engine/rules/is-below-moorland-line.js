@@ -15,6 +15,10 @@ export function check(application) {
 }
 
 /**
- * @type {import('../../types.js').Rule}
+ * @import { Rule } from '../rulesEngine.d.js'
+ */
+
+/**
+ * @type {Rule}
  */
 export const isBelowMoorlandLine = { check, requiredDataLayers: ['moorland'] }

@@ -41,3 +41,12 @@ export const performUtilityFunction = async () => {
 export const fetchMoorlandIntersection = async () => {
   return Promise.resolve(mockMoorlandDataResponse)
 }
+
+export const calculateIntersectionArea = async () => {
+  return Promise.resolve({
+    intersectingAreaPercentage: 10,
+    layerId: 'moorland'
+  })
+}
+
+export const isValidGeometry = () => true

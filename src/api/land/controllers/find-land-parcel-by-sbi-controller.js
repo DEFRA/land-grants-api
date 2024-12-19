@@ -3,7 +3,7 @@ import Joi from 'joi'
 import isNull from 'lodash/isNull.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
 import { findLandParcelsBySbi } from '../helpers/find-land-parcel-by-sbi.js'
-import { findLandParcel, findLandCover } from '~/src/services/arcgis/arcgis.js'
+import { findLandParcel, findLandCover } from '~/src/services/arcgis/index.js'
 import { findLandCoverCode } from '../helpers/find-land-cover-code.js'
 
 const logger = createLogger()
@@ -20,7 +20,6 @@ const transformParcelData = (sbi, parcels) =>
     sheetId: parcel.SHEET_ID,
     sbi,
     agreements: parcel.agreements,
-    attributes: parcel.attributes,
     area: (parcel.GEOM_AREA_SQM / 10000).toFixed(4),
     centroidX: parcel.CENTROID_X,
     centroidY: parcel.CENTROID_Y,
@@ -63,15 +62,21 @@ const getLandCovers = async (server, userParcels) => {
 
 const getLandCoverDetails = async (db, landCovers) =>
   await Promise.all(
-    landCovers.features.map(async (feature) => ({
-      properties: {
-        landCodeDetails: await findLandCoverCode(
-          db,
-          feature.properties.LAND_COVER_CLASS_CODE
-        ),
-        ...feature.properties
+    landCovers.features.map(async (feature) => {
+      const landCodeDetails = await findLandCoverCode(
+        db,
+        feature.properties.LAND_COVER_CLASS_CODE
+      )
+      return {
+        properties: {
+          ...feature.properties,
+          landCodeDetails: {
+            ...landCodeDetails,
+            uses: landCodeDetails.uses.slice(0, 1)
+          }
+        }
       }
-    }))
+    })
   )
 
 /**

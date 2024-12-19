@@ -62,6 +62,45 @@ async function fetchFromArcGis(server, options) {
   return await response.json()
 }
 
+export async function fetchFromLayerByIntersection(layerId, server, geometry) {
+  const layerUrl = layerUrls[layerId]
+
+  if (!layerUrl) {
+    throw new Error(`${layerId} layer URL not found`)
+  }
+
+  const url = `${layerUrl}/query`
+  const tokenResponse = await getCachedToken(server)
+  const queryGeometry = {
+    rings: geometry.rings
+  }
+
+  const body = new URLSearchParams({
+    geometry: JSON.stringify(queryGeometry),
+    geometryType: 'esriGeometryPolygon',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields: '*',
+    f: 'geojson',
+    token: tokenResponse.access_token
+  })
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: body.toString()
+  })
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch from ${layerId} layer: ${response.statusText}`
+    )
+  }
+
+  return await response.json()
+}
+
 /**
  * @typedef ArcGISLandResponse
  * @property {Array} features
@@ -102,7 +141,7 @@ export async function findLandCover(server, landParcelId, sheetId) {
  * @param {LandParcelGeometry} geometry
  * @returns { boolean }
  */
-const isValidGeometry = (geometry) =>
+export const isValidGeometry = (geometry) =>
   geometry && geometry.type === 'Polygon' && geometry.coordinates !== null
 
 /**

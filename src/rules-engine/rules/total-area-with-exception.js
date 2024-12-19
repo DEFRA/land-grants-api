@@ -11,7 +11,8 @@ export function check(application, config) {
   )
 
   if (incompatibleAction) {
-    const totalArea = areaAppliedFor + incompatibleAction.area
+    const totalArea =
+      parseFloat(areaAppliedFor) + parseFloat(incompatibleAction.area)
 
     if (totalArea > area) {
       return {
@@ -26,12 +27,18 @@ export function check(application, config) {
         message: `Action code ${actionCodeAppliedFor} is using a smaller area than is available after existing agreement ${config.incompatibleAction} is applied`
       }
     }
+  } else {
+    if (parseFloat(areaAppliedFor) < parseFloat(area))
+      return {
+        passed: false,
+        message: `Action code ${actionCodeAppliedFor} can only use less than the parcel size if existing agreement ${config.incompatibleAction} is applied`
+      }
   }
 
   return { passed: true }
 }
 
 /**
- * @type {import('../../types.js').Rule}
+ * @type {import('../rulesEngine.d.js').Rule}
  */
 export const totalAreaWithException = { check, requiredDataLayers: [] }

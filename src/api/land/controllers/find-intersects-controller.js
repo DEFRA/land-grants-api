@@ -1,12 +1,38 @@
-import { getCachedToken } from './user-token.js'
-import {
-  findLandParcel,
-  layerUrls,
-  transformGeometryToRings,
-  isValidGeometry
-} from './arcgis.js'
+import Boom from '@hapi/boom'
 
-import { calculateAreas, calculateIntersection } from './utility.js'
+import {
+  calculateAreas,
+  calculateIntersection,
+  findLandParcel,
+  isValidGeometry,
+  transformGeometryToRings,
+  fetchFromLayerByIntersection
+} from '~/src/services/arcgis/index.js'
+
+/**
+ *
+ * @satisfies {Partial<ServerRoute>}
+ */
+const findIntersectsController = {
+  /**
+   * @param { import('@hapi/hapi').Request & MongoDBPlugin } request
+   * @param { import('@hapi/hapi').ResponseToolkit } h
+   * @returns {Promise<*>}
+   */
+  handler: async (request, h) => {
+    try {
+      const entity = await calculateIntersectionArea(
+        request.server,
+        request.query.landParcelId,
+        request.query.sheetId,
+        request.params.type
+      )
+      return h.response({ message: 'success', entity }).code(200)
+    } catch (err) {
+      return Boom.boomify(err)
+    }
+  }
+}
 
 export async function fetchIntersections(
   server,
@@ -40,52 +66,13 @@ export async function fetchIntersections(
   )
 }
 
-export async function fetchFromLayerByIntersection(layerId, server, geometry) {
-  const layerUrl = layerUrls[layerId]
-
-  if (!layerUrl) {
-    throw new Error(`${layerId} layer URL not found`)
-  }
-
-  const url = `${layerUrl}/query`
-  const tokenResponse = await getCachedToken(server)
-  const queryGeometry = {
-    rings: geometry.rings
-  }
-
-  const body = new URLSearchParams({
-    geometry: JSON.stringify(queryGeometry),
-    geometryType: 'esriGeometryPolygon',
-    spatialRel: 'esriSpatialRelIntersects',
-    outFields: '*',
-    f: 'geojson',
-    token: tokenResponse.access_token
-  })
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: body.toString()
-  })
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch from ${layerId} layer: ${response.statusText}`
-    )
-  }
-
-  return await response.json()
-}
-
 /**
  *
  * @param {Server} server
  * @param {string} landParcelId
  * @param {string} sheetId
  * @param {LayerId} layerId
- * @returns { Promise<{ parcelId: string, totalIntersectArea: number, nonIntersectingArea: number }> }
+ * @returns { Promise<{ parcelId: string, totalIntersectArea: number, nonIntersectingArea: number, intersectingAreaPercentage }> }
  */
 export async function calculateIntersectionArea(
   server,
@@ -99,7 +86,13 @@ export async function calculateIntersectionArea(
     !landParcelResponse?.features ||
     landParcelResponse.features.length === 0
   ) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: 0 }
+    return {
+      layerId,
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: 0,
+      intersectingAreaPercentage: 0
+    }
   }
 
   const parcelFeature = landParcelResponse.features[0] // at the moment we are only using the first feature of the parcel for POC
@@ -111,25 +104,28 @@ export async function calculateIntersectionArea(
   }
 
   const parcelGeometry = transformGeometryToRings(rawParcelGeometry)
-  const moorlandIntersections = await fetchFromLayerByIntersection(
+  const intersections = await fetchFromLayerByIntersection(
     layerId,
     server,
     parcelGeometry
   )
 
-  if (
-    !moorlandIntersections?.features ||
-    moorlandIntersections.features.length === 0
-  ) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+  if (!intersections?.features || intersections.features.length === 0) {
+    return {
+      layerId,
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea,
+      intersectingAreaPercentage: 0
+    }
   }
 
-  const moorlandGeometries = moorlandIntersections.features.map((feature) =>
+  const geometries = intersections.features.map((feature) =>
     transformGeometryToRings(feature.geometry)
   )
   const intersectResponse = await calculateIntersection(
     parcelGeometry,
-    moorlandGeometries
+    geometries
   )
 
   if (!intersectResponse?.ok) {
@@ -140,7 +136,12 @@ export async function calculateIntersectionArea(
   const intersectedGeometries = intersectResult.geometries || []
 
   if (intersectedGeometries.length === 0) {
-    return { parcelId: landParcelId, totalArea: 0, availableArea: parcelArea }
+    return {
+      parcelId: landParcelId,
+      totalIntersectingArea: 0,
+      nonIntersectingArea: parcelArea,
+      intersectingAreaPercentage: 0
+    }
   }
   const areaResponse = await calculateAreas(intersectedGeometries)
 
@@ -151,20 +152,24 @@ export async function calculateIntersectionArea(
   const areaResult = await areaResponse.json()
 
   // may have error margin due to maximum number of vertices per geometry of public API i.e.snapping
-  const totalIntersectArea = (areaResult.areas || []).reduce(
+  const totalIntersectingArea = (areaResult.areas || []).reduce(
     (sum, area) => sum + area,
     0
   )
-  const nonIntersectingArea = parcelArea - totalIntersectArea // available area is the difference between the total area of the parcel and the area of the moorland intersection
+  const nonIntersectingArea = parcelArea - totalIntersectingArea
+  const intersectingAreaPercentage = (totalIntersectingArea / parcelArea) * 100
 
   return {
     parcelId: landParcelId,
-    totalIntersectArea,
-    nonIntersectingArea
+    totalIntersectingArea,
+    nonIntersectingArea,
+    intersectingAreaPercentage
   }
 }
 
+export { findIntersectsController }
+
 /**
- * import {LayerId} from '~/src/rules-engine/rulesEngine.d.js'
- * import { Server } from '@hapi/hapi'
+ * @import { ServerRoute} from '@hapi/hapi'
+ * @import { MongoDBPlugin } from '~/src/helpers/mongodb.js'
  */

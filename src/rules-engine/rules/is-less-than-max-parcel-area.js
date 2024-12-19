@@ -14,6 +14,6 @@ export const check = (application, ruleConfig) => {
 }
 
 /**
- * @type {import('../../types.js').Rule}
+ * @type {import('../rulesEngine.d.js').Rule}
  */
 export const isLessThanMaximumParcelArea = { check, requiredDataLayers: [] }

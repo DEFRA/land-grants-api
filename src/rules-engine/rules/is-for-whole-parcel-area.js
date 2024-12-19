@@ -15,6 +15,6 @@ export function check(application) {
 }
 
 /**
- * @type {import('../../types.js').Rule}
+ * @type {import('../rulesEngine.d.js').Rule}
  */
 export const isForWholeParcelArea = { check, requiredDataLayers: [] }

@@ -33,6 +33,6 @@ export function check(application, config) {
 }
 
 /**
- * @type {import('../../types.js').Rule}
+ * @type {import('../rulesEngine.d.js').Rule}
  */
 export const supplementAreaMatchesParent = { check, requiredDataLayers: [] }

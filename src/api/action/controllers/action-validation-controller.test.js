@@ -1,13 +1,12 @@
 import Hapi from '@hapi/hapi'
 import { action } from '../index.js'
-import { actions as mockActions } from '~/src/helpers/seed-db/data/actions.js'
 import { isValidCombination } from './action-validation-controller.js'
 
 const originalFetch = global.fetch
 
-jest.mock('../helpers/find-action.js', () => ({
-  findAction: jest.fn(() => Promise.resolve(mockActions[0]))
-}))
+jest.mock('../helpers/find-action.js')
+jest.mock('../helpers/find-actions.js')
+jest.mock('~/src/services/arcgis/index.js')
 
 describe('Action Validation controller', () => {
   const server = Hapi.server()
@@ -23,12 +22,21 @@ describe('Action Validation controller', () => {
       }
 
       const response = new Response()
-      response.json = () =>
-        Promise.resolve({
-          entity: {
-            availableArea: 0.7
-          }
-        })
+      if (url.indexOf('intersects/moorland') > -1) {
+        response.json = () =>
+          Promise.resolve({
+            entity: {
+              nonIntersectingArea: 0.7
+            }
+          })
+      } else if (url.indexOf('intersects/sssi') > -1) {
+        response.json = () =>
+          Promise.resolve({
+            entity: {
+              nonIntersectingArea: -0.7
+            }
+          })
+      }
       return Promise.resolve(response)
     })
   })
@@ -164,6 +172,35 @@ describe('Action Validation controller', () => {
       )
     })
 
+    test('should return 400 with the correct error message if the action code is invalid', async () => {
+      const request = {
+        method: 'POST',
+        url: '/action-validation',
+        payload: {
+          actions: [
+            {
+              actionCode: 'CSAM15',
+              quantity: '5.2721',
+              description: 'Herbal leys'
+            }
+          ],
+          landParcel: {
+            parcelId: '5351',
+            area: '5.2721',
+            osSheetId: 'SK1715',
+            moorlandLineStatus: 'below',
+            agreements: [],
+            landUseCodes: ['PG01']
+          }
+        }
+      }
+
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(result).toContain('["Invalid action code: CSAM15"]')
+    })
+
     test('should return 200 with the correct message if the combination is valid', async () => {
       const request = {
         method: 'POST',
@@ -199,15 +236,21 @@ describe('Action Validation controller', () => {
   })
 
   describe('is valid combination function', () => {
-    it('should return undefined if supplied actions are compatible', () => {
-      const result = isValidCombination([], [{ actionCode: 'CSAM1' }], ['PG01'])
+    it('should return undefined if supplied actions are compatible', async () => {
+      const result = await isValidCombination(
+        null,
+        [],
+        [{ actionCode: 'CSAM1' }],
+        ['PG01']
+      )
       expect(result).toStrictEqual([])
     })
 
-    it('should return an error if supplied actions are incompatible', () => {
-      const result = isValidCombination(
+    it('should return an error if supplied actions are incompatible', async () => {
+      const result = await isValidCombination(
+        null,
         [],
-        [{ actionCode: 'CSAM3' }, { actionCode: 'CLIG3' }],
+        [{ actionCode: 'CSAM2' }],
         ['PG01']
       )
       expect(result).toStrictEqual([
