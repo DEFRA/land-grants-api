@@ -1,24 +1,32 @@
-import { MongoClient } from 'mongodb'
+import * as mongoose from 'mongoose'
 import { config } from '~/src/config/index.js'
 import { pino } from 'pino'
+import { loggerOptions } from '../logging/logger-options.js'
 import data from './data/index.js'
 
-const logger = pino({}, pino.destination())
+import models from '~/src/models/index.js'
 
-const client = await MongoClient.connect(config.get('mongoUri'))
-const databaseName = config.get('mongoDatabase')
-const db = client.db(databaseName)
+const logger = pino(loggerOptions, pino.destination())
 
-logger.info(`mongodb connected to ${databaseName}`)
+await mongoose.connect(
+  `${config.get('mongoUri')}${config.get('mongoDatabase')}`
+)
+logger.info(`Mongoose connected`)
 
-for (const [collection, documents] of Object.entries(data)) {
-  await db.dropCollection(collection)
-  logger.info(`Dropped collection '${collection}'`)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+for (const [name, model] of Object.entries(models)) {
+  try {
+    await model.db.dropCollection(model.collection.name)
+    logger.info(`Dropped collection '${model.collection.name}'`)
 
-  await db.collection(collection).insertMany(documents)
-  logger.info(
-    `Successfully inserted ${documents.length} documents into the '${collection}' collection`
-  )
+    await model.insertMany(data[model.collection.name])
+    logger.info(
+      `Successfully inserted ${data[model.collection.name].length} documents into the '${model.collection.name}' collection`
+    )
+  } catch (e) {
+    logger.error(e)
+  }
 }
 
-await client.close()
+await mongoose.disconnect()
+logger.info(`Mongoose disconnected`)

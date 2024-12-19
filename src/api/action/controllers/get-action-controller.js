@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom'
 
-import actionsModel from '~/src/api/action/models/actions.js'
+import actionsModel from '~/src/models/actions.js'
 
 /**
  *
