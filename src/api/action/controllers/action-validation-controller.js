@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import Joi from 'joi'
 
-import actionsModel from '~/src/api/action/models/actions.js'
+import actionsModel from '~/src/models/actions.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { calculateIntersectionArea } from '~/src/services/arcgis/index.js'

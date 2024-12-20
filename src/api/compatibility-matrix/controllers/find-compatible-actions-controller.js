@@ -1,4 +1,4 @@
-import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
+import { optionsDataModel } from '~/src/models/index.js'
 import { initCache } from '~/src/helpers/cache.js'
 
 let cache

@@ -52,7 +52,7 @@ async function createServer() {
   // requestLogger - automatically logs incoming requests
   // secureContext - loads CA certificates from environment config
   // pulse         - provides shutdown handlers
-  // mongooseDb      - sets up mongoose
+  // mongooseDb    - sets up mongoose
   // router        - routes used in the app
   await server.register([
     requestLogger,
