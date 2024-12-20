@@ -300540,12 +300540,5 @@ export const optionsData = [
     type: 'BASECO',
     description: 'Options are compatible at LAND USE LEVEL',
     year: '2024'
-  },
-  {
-    option_code: '',
-    option_code_compatibility: null,
-    type: null,
-    description: null,
-    year: null
   }
 ]

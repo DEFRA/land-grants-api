@@ -8,7 +8,7 @@ const schema = new mongoose.Schema(
     uses: { type: Array, required: true },
     payment: {
       amountPerHectare: { type: Number, required: true },
-      additionalPaymentPerAgreement: { type: Number, required: true }
+      additionalPaymentPerAgreement: { type: Number }
     },
     eligibilityRules: [
       {
