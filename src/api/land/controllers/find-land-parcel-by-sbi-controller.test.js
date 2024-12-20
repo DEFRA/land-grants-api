@@ -24,7 +24,7 @@ const codesFindOne = (query) => {
   )
 }
 
-jest.mock('../../../services/arcgis')
+jest.mock('~/src/services/arcgis/index.js')
 
 describe('Land Parcel by SBI controller', () => {
   const server = Hapi.server({

@@ -14,7 +14,7 @@ export const executeRule = (ruleName, application, ruleConfig) => {
     throw new Error(`Unknown rule: ${ruleName}`)
   }
 
-  return rule(application, ruleConfig)
+  return rule.check(application, ruleConfig)
 }
 
 /**
@@ -32,7 +32,7 @@ export const executeRules = (application, rules) => {
   }))
 
   return {
-    results,
+    allResults: results,
     passed: results.every((result) => result.passed === true),
     message: results.map((result) => result.message).join('\n')
   }

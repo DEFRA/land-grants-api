@@ -5,7 +5,7 @@ import isNull from 'lodash/isNull.js'
 import farmersModel from '../../../models/farmers.js'
 import codesModel from '../../../models/codes.js'
 import { createLogger } from '~/src/helpers/logging/logger.js'
-import { findLandParcel, findLandCover } from '~/src/services/arcgis.js'
+import { findLandParcel, findLandCover } from '~/src/services/arcgis/index.js'
 import { deepSearch } from '../utils/deep-search.js'
 
 const logger = createLogger()

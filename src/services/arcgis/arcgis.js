@@ -1,26 +1,23 @@
-import { config } from '~/src/config/index.js'
-import { initCache } from '~/src/helpers/cache.js'
+import { getCachedToken } from './user-token.js'
+
+export const arcGisSpatialReferenceId = '4326'
 
 /**
- * @type {Record<string, string>}
+ * @type {Record<LayerId, string>}
  */
-const baseUrls = {
+export const layerUrls = {
   landParcel:
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/lms_land_parcels/FeatureServer/1',
-  intersects:
-    'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Parcel_and_SSSI_intersects/FeatureServer/0',
   landCover:
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Land_Covers/FeatureServer/0',
   moorland:
     'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/Moorland/FeatureServer/0',
-  sssi: 'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/SSSIs/FeatureServer/0',
-  utilities:
-    'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer'
+  sssi: 'https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services/SSSIs/FeatureServer/0'
 }
 
 /**
  * @param {import("@hapi/hapi").Server<any>} server
- * @param {{ resourceName: keyof baseUrls; landParcelId?: string; sheetId?: string, outFields?: "*"; resultCount?: number; }} options
+ * @param {{ resourceName: LayerId; landParcelId?: string; sheetId?: string, outFields?: "*"; resultCount?: number; }} options
  */
 async function fetchFromArcGis(server, options) {
   const {
@@ -30,7 +27,7 @@ async function fetchFromArcGis(server, options) {
     outFields = '*',
     resultCount
   } = options
-  const layer = baseUrls[resourceName]
+  const layer = layerUrls[resourceName]
 
   if (!layer) {
     throw new Error('Invalid layer id')
@@ -65,13 +62,14 @@ async function fetchFromArcGis(server, options) {
   return await response.json()
 }
 
-export async function fetchIntersection(server, geometry, layerType) {
-  const layer = baseUrls[layerType]
-  if (!layer) {
-    throw new Error('Layer URL not found')
+export async function fetchFromLayerByIntersection(layerId, server, geometry) {
+  const layerUrl = layerUrls[layerId]
+
+  if (!layerUrl) {
+    throw new Error(`${layerId} layer URL not found`)
   }
 
-  const url = `${layer}/query`
+  const url = `${layerUrl}/query`
   const tokenResponse = await getCachedToken(server)
   const queryGeometry = {
     rings: geometry.rings
@@ -96,13 +94,11 @@ export async function fetchIntersection(server, geometry, layerType) {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch from ${layerType} layer: ${response.statusText}`
+      `Failed to fetch from ${layerId} layer: ${response.statusText}`
     )
   }
 
-  const jsonResponse = await response.json()
-
-  return jsonResponse
+  return await response.json()
 }
 
 /**
@@ -141,76 +137,33 @@ export async function findLandCover(server, landParcelId, sheetId) {
 }
 
 /**
- * Finds relevant intersections for a given land parcel.
- * @param { import('@hapi/hapi').Server } server
- * @param { string } landParcelId
- * @param { string } sheetId
- * @returns {Promise<{}|null>}
+ * Checks if the geometry is valid
+ * @param {LandParcelGeometry} geometry
+ * @returns { boolean }
  */
-export async function findLandParcelIntersects(server, landParcelId, sheetId) {
-  return await fetchFromArcGis(server, {
-    resourceName: 'intersects',
-    landParcelId,
-    sheetId
-  })
-}
+export const isValidGeometry = (geometry) =>
+  geometry && geometry.type === 'Polygon' && geometry.coordinates !== null
 
 /**
- * Performs utility functions on land parcel data.
- * @param { URLSearchParams } body
- * @param { string } utility
- * @returns {Promise<Response>}
+ * Transforms the geometry to rings
+ * @param {LandParcelGeometry} geometry
+ * @returns { * }
  */
-export async function performUtilityFunction(body, utility) {
-  return await fetch(`${baseUrls.utilities}/${utility}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body
-  })
-}
-
-const getUserToken = async () => {
-  const url = new URL('https://www.arcgis.com/sharing/rest/generateToken')
-  const body = new FormData()
-  body.append('username', config.get('arcGis.username'))
-  body.append('password', config.get('arcGis.password'))
-  body.append('referer', '*')
-  body.append('f', 'json')
-
-  const response = await fetch(url, { method: 'post', body })
-  const json = await response.json()
-
+export const transformGeometryToRings = (geometry) => {
+  if (!isValidGeometry(geometry)) {
+    throw new Error('Invalid input geometry')
+  }
   return {
-    id: 'token',
-    access_token: json.token
-  }
-}
-
-/**
- * @type {import('@hapi/catbox').Policy<any, any>}
- */
-let cache
-
-/**
- * ArcGIS token cache
- * @param { import('@hapi/hapi').Server } server
- * @returns {Promise<{ id: string; access_token: string }>}
- */
-export function getCachedToken(server) {
-  if (!cache) {
-    cache = initCache(
-      server,
-      'arcgis_token',
-      async () => {
-        return await getUserToken()
-      },
-      {
-        expiresIn: 7200
+    rings: geometry.coordinates.map((ring) => {
+      if (
+        ring[0][0] !== ring[ring.length - 1][0] ||
+        ring[0][1] !== ring[ring.length - 1][1]
+      ) {
+        return [...ring, ring[0]] // Ensure the ring is closed
       }
-    )
+      return ring
+    })
   }
-
-  return cache.get('arcgis_token')
 }
 
-/** @import { LandParcel, Application, LayerId } from '../types.js' */
+/** @import { LandParcel, Application, LayerId } from '../../rules-engine/rulesEngine.d.js' */

@@ -12,7 +12,7 @@ describe('is-for-whole-parcel-area', function () {
     }
 
     // Act
-    const result = rules['is-for-whole-parcel-area'](application)
+    const result = rules['is-for-whole-parcel-area'].check(application)
 
     // Assert
     expect(result).toStrictEqual({ passed: true })
@@ -29,7 +29,7 @@ describe('is-for-whole-parcel-area', function () {
     }
 
     // Act
-    const result = rules['is-for-whole-parcel-area'](application)
+    const result = rules['is-for-whole-parcel-area'].check(application)
 
     // Assert
     expect(result).toStrictEqual({
