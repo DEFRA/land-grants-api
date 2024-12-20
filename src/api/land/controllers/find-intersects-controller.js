@@ -72,7 +72,7 @@ export async function fetchIntersections(
  * @param {string} landParcelId
  * @param {string} sheetId
  * @param {LayerId} layerId
- * @returns { Promise<{ parcelId: string, totalIntersectArea: number, nonIntersectingArea: number, intersectingAreaPercentage }> }
+ * @returns { Promise<CalculateIntersectionAreaResponse> }
  */
 export async function calculateIntersectionArea(
   server,

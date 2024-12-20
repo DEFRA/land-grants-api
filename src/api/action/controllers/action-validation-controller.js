@@ -69,7 +69,7 @@ export const isValidCombination = async (
 
 /**
  * Finds and fetches any intersection data required for applicable eligibility rules
- * @returns { Promise<Record<LayerId, number>> }
+ * @returns { Promise<Record<LayerId, CalculateIntersectionAreaResponse>> }
  */
 const findIntersections = async (
   server,
@@ -271,4 +271,5 @@ export { actionValidationController }
 /**
  * @import { ServerRoute } from '@hapi/hapi'
  * @import {LayerId} from '~/src/rules-engine/rulesEngine.d.js'
+ * @import {CalculateIntersectionAreaResponse} from '~/src/api/land/controllers/find-intersects-controller.d.js'
  */

@@ -1,3 +1,4 @@
+/** @type {RuleCheck} */
 export function check(application) {
   const intersection = application.landParcel.intersections?.moorland
   const passed = intersection ? intersection > 0 : false
@@ -15,7 +16,7 @@ export function check(application) {
 }
 
 /**
- * @import { Rule } from '../rulesEngine.d.js'
+ * @import { Rule, RuleCheck } from '../rulesEngine.d.js'
  */
 
 /**

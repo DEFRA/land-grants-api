@@ -3,7 +3,7 @@
  */
 
 /**
- * @typedef {Partial<Record<LayerId, number>>} Intersections
+ * @typedef {Partial<Record<LayerId, CalculateIntersectionAreaResponse>>} Intersections
  */
 
 /**
@@ -53,14 +53,15 @@ export const blankIntersections = {
  */
 
 /**
- * @typedef {Function} RuleCheck
- * @param {Application} application
- * @param {RuleConfig} ruleConfig
- * @returns {RuleCheckResult}
+ * @typedef {(application: Application, ruleConfig: RuleConfig ) => RuleCheckResult} RuleCheck
  */
 
 /**
  * @typedef {object} Rule
  * @property {RuleCheck} check
  * @property {LayerId[]} requiredDataLayers
+ */
+
+/**
+ *  @import {CalculateIntersectionAreaResponse} from '~/src/api/land/controllers/find-intersects-controller.d.js'
  */

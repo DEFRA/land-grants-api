@@ -9,13 +9,15 @@ describe('is-below-moorland-line', function () {
         area: 1,
         existingAgreements: [],
         intersections: {
-          moorland: 1
+          moorland: { intersectingAreaPercentage: 0 }
         }
       }
     }
 
     // Act
-    const result = rules['is-below-moorland-line'].check(application)
+    const result = rules['not-moorland'].check(application, {
+      maxIntersectionPercent: 0
+    })
 
     // Assert
     expect(result).toStrictEqual({ passed: true })
@@ -29,18 +31,21 @@ describe('is-below-moorland-line', function () {
         area: 1,
         existingAgreements: [],
         intersections: {
-          moorland: -1
+          moorland: { intersectingAreaPercentage: 1 }
         }
       }
     }
 
     // Act
-    const result = rules['is-below-moorland-line'].check(application)
+    const result = rules['not-moorland'].check(application, {
+      maxIntersectionPercent: 0
+    })
 
     // Assert
     expect(result).toStrictEqual({
       passed: false,
-      message: 'Land parcel is above the moorland line'
+      message:
+        'The parcel has a 1% intersection with the moorland layer, the maximum is 0%'
     })
   })
 })
