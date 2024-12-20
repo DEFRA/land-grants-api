@@ -1,8 +1,8 @@
 import Hapi from '@hapi/hapi'
 import * as mockingoose from 'mockingoose'
 
-import actionsModel from '~/src/api/action/models/actions.js'
-import optionsDataModel from '~/src/api/compatibility-matrix/models/options-data.js'
+import actionsModel from '~/src/models/actions.js'
+import optionsDataModel from '~/src/models/options-data.js'
 import { paymentCalculation } from '../index.js'
 import { actions as actionsMockData } from '~/src/helpers/seed-db/data/actions.js'
 import { optionsData as optionsMockData } from '~/src/helpers/seed-db/data/options-data.js'
@@ -30,6 +30,9 @@ describe('paymentCalculationController', () => {
 
   afterAll(async () => {
     await server.stop()
+
+    mockingoose(actionsModel).reset()
+    mockingoose(optionsDataModel).reset()
   })
 
   describe('POST /payment-calculation', () => {

@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import isNull from 'lodash/isNull.js'
 
-import codesModel from '../models/codes.js'
+import codesModel from '../../../models/codes.js'
 import { deepSearch } from '../utils/deep-search.js'
 
 /**
