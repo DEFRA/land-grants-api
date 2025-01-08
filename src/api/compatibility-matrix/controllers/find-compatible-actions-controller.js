@@ -1,4 +1,4 @@
-import { optionsDataModel } from '~/src/models/index.js'
+import optionsData from '~/src/models/options-data.js'
 import { initCache } from '~/src/helpers/cache.js'
 
 let cache
@@ -19,8 +19,7 @@ const findCompatibleActions = {
       cache = initCache(
         request.server,
         'compatibleActions',
-        async ({ action }) =>
-          await optionsDataModel.find({ option_code: action })
+        async ({ action }) => await optionsData.find({ option_code: action })
       )
     }
 
