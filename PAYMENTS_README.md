@@ -10,9 +10,11 @@ The Payment Hub is a strategic payment management service for paying customers w
 The Payment Hub applies common processes and rules to payment requests or post payment adjustments, which reduces the need for this to be done on a per scheme basis. This patterned approach reduces time, cost and risk, as the validation, automation and error handling built into the service reduces the likelihood of errors.
 
 ## How we'll be using Payments Hub
+
 In order to trigger a payment request to the Payment Hub, we'll be using their Service Bus Topic `fcc-pay-request`. We'll send messages to the topic with the relevant payment information.
 
 ### Authentication
+
 The Payment Service Bus provides a connection string we'll use in our service to connect to it. The string comes with an authentication key which will be stored safely within our service infrastructure. It will look like this:
 
 ```
@@ -20,17 +22,20 @@ sb://<sb-namespace>.servicebus.windows.net/;SharedAccessKeyName=RootManageShared
 ```
 
 ### Core Workflows
+
 1. Farmer Sarah has applied for action CSAM1 on her land parcel XYZ.
 2. Farmer John has applied for actions CSAM1 and CSAM3 on his land parcel XYZ.
 3. Farmer Peter has applied for CSAM1 on land parcel ABC and AHW10 on land parcel XYZ.
 4. ????? Anything else ????
 
 ### Integration Points
+
 To be completed, we are not sure at what specific point the payment will be triggered.
 
 ## Payload Format
 
 ### Request Format
+
 This is an example of the payload sent to Payment Hub when requesting a payment:
 
 ```json
@@ -73,44 +78,43 @@ This is an example of the payload sent to Payment Hub when requesting a payment:
 }
 ```
 
-| Parameter | Type | Required | Description | Example |
-|-----------|------|----------|-------------|---------|
-| sourceSystem | string | Yes | System identifier request originates from | AHWR |
-| frn | number | Yes | Firm Reference Number | 1234567890 |
-| sbi | number | No | Single Business Identifier | 123456789 |
-| marketingYear | number | Yes | Scheme year for request (2021-2099) | 2022 |
-| paymentRequestNumber | number | Yes | Version of payment request starting with 1 | 1 |
-| paymentType | number | No | Defines type of payment request (1-3) | 1 |
-| correlationId | uuid | No | Correlation ID for payment request chain | 123e4567-e89b-12d3-a456-426655440000 |
-| invoiceNumber | string | No | Invoice number | S1234567S1234567V001 |
-| agreementNumber | string | Yes | Unique reference number for agreement/application | AHWR12345678 |
-| contractNumber | string | No | Contract reference number of agreement | S1234567 |
-| currency | string | No | Currency of values (Default: GBP) | GBP |
-| schedule | string | No | Payment frequency (Q4, M12, T4) | Q4 |
-| dueDate | string | No | Date request should be issued (Default: Current date) | 09/11/2022 |
-| value | decimal | Yes | Decimal net value of request before enrichment | 500.00 |
-| debtType | string | No | Only for recoveries (irr/adm) | irr |
-| recoveryDate | string | No | Only for recoveries, date debt was discovered | 09/11/2021 |
-| pillar | string | No | Pillar of scheme for manual invoices | DA |
-| originalInvoiceNumber | string | No | Original invoice number (manual invoices only) | S1234567S1234567V001 |
-| originalSettlementDate | string | No | Original date of settlement (manual invoices only) | 09/11/2021 |
-| invoiceCorrectionReference | string | No | Invoice number used for correction | S1234567S1234567V001 |
-| trader | string | No | Trader identifier | 123456A |
-| vendor | string | No | Vendor identifier | 123456A |
-| invoiceLines | array | Yes | List of Invoice lines that make up request | - |
+| Parameter                  | Type    | Required | Description                                           | FRPS notes                                                                  | Example                              |
+| -------------------------- | ------- | -------- | ----------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------ |
+| sourceSystem               | string  | Yes      | System identifier request originates from             | New record in payments hub for FRPS                                         | AHWR                                 |
+| frn                        | number  | Yes      | Firm Reference Number                                 | We should record this alongside SBI                                         | 1234567890                           |
+| sbi                        | number  | No       | Single Business Identifier                            |                                                                             | 123456789                            |
+| marketingYear              | number  | Yes      | Scheme year for request (2021-2099)                   | How consequential is this? We will move away from scheme years              | 2022                                 |
+| paymentRequestNumber       | number  | Yes      | Version of payment request starting with 1            | Is this schema version?                                                     | v1                                   |
+| paymentType                | number  | No       | Defines type of payment request (1-3)                 |                                                                             | 1                                    |
+| correlationId              | uuid    | No       | Correlation ID for payment request chain              | I assume we generate this depending on which requests we want to associate? | 123e4567-e89b-12d3-a456-426655440000 |
+| invoiceNumber              | string  | No       | Invoice number                                        | Can we ignore this?                                                         | S1234567S1234567V001                 |
+| agreementNumber            | string  | Yes      | Unique reference number for agreement/application     | What happens to this once sent? How does single agreement affect this?      | AHWR12345678                         |
+| contractNumber             | string  | No       | Contract reference number of agreement                | Can we ignore this?                                                         | vS1234567                            |
+| currency                   | string  | No       | Currency of values (Default: GBP)                     |                                                                             | GBP                                  |
+| schedule                   | string  | No       | Payment frequency (Q4, M12, T4)                       | Which one is quarterly?                                                     | Q4                                   |
+| dueDate                    | string  | No       | Date request should be issued (Default: Current date) | Can we ignore this?                                                         | 09/11/2022                           |
+| value                      | decimal | Yes      | Decimal net value of request before enrichment        | Is this the annual total?                                                   | 500.00                               |
+| debtType                   | string  | No       | Only for recoveries (irr/adm)                         | Out of scope for now                                                        | irr                                  |
+| recoveryDate               | string  | No       | Only for recoveries, date debt was discovered         | Out of scope for now                                                        | 09/11/2021                           |
+| pillar                     | string  | No       | Pillar of scheme for manual invoices                  | N/A                                                                         | DA                                   |
+| originalInvoiceNumber      | string  | No       | Original invoice number (manual invoices only)        | N/A                                                                         | S1234567S1234567V001                 |
+| originalSettlementDate     | string  | No       | Original date of settlement (manual invoices only)    | N/A                                                                         | 09/11/2021                           |
+| invoiceCorrectionReference | string  | No       | Invoice number used for correction                    | Out of scope for now                                                        | S1234567S1234567V001                 |
+| trader                     | string  | No       | Trader identifier                                     | N/A                                                                         | 123456A                              |
+| vendor                     | string  | No       | Vendor identifier                                     | N/A                                                                         | 123456A                              |
+| invoiceLines               | array   | Yes      | List of Invoice lines that make up request            | To discuss - what can we provide here?                                      | -                                    |
 
-| Invoice Line Parameter | Type | Required | Description | Example |
-|-----------|------|----------|-------------|---------|
-| value | decimal | Yes | Value of invoice line | 500.00 |
-| description | string | Yes | Description of invoice line item | G00 - Gross value of claim |
-| schemeCode | string | Yes | Unique funding option code | A1234 |
-| standardCode | string | No | Funding option code to be mapped to scheme code | ahwr-cows |
-| accountCode | string | No | Unique account code for budgeting | SOS123 |
-| deliveryBody | string | No | Delivery body responsible for payment | RP00 |
-| marketingYear | number | No | Scheme year | 2022 |
-| convergence | boolean | No | Whether line is for convergence funding | false |
-| stateAid | boolean | No | Whether line is for state aid funding | false |
-
+| Invoice Line Parameter | Type    | Required | Description                                     | Example                    |
+| ---------------------- | ------- | -------- | ----------------------------------------------- | -------------------------- |
+| value                  | decimal | Yes      | Value of invoice line                           | 500.00                     |
+| description            | string  | Yes      | Description of invoice line item                | G00 - Gross value of claim |
+| schemeCode             | string  | Yes      | Unique funding option code                      | A1234                      |
+| standardCode           | string  | No       | Funding option code to be mapped to scheme code | ahwr-cows                  |
+| accountCode            | string  | No       | Unique account code for budgeting               | SOS123                     |
+| deliveryBody           | string  | No       | Delivery body responsible for payment           | RP00                       |
+| marketingYear          | number  | No       | Scheme year                                     | 2022                       |
+| convergence            | boolean | No       | Whether line is for convergence funding         | false                      |
+| stateAid               | boolean | No       | Whether line is for state aid funding           | false                      |
 
 _<p style="color: mediumpurple;">Currently the statement produced by the Payment Hub does not specify which action/s the payment is for.
 This leaves the farmer with no way to know the purpose of the payment. It puts them in a position where they are reluctant to use the money for fear of breaking their agreement ans spending the money in the wrong area.
