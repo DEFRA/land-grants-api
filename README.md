@@ -1,4 +1,4 @@
-# land-grants-api
+# land-grants-api-poc
 
 Core delivery platform Node.js Backend Template.
 
@@ -14,8 +14,6 @@ Core delivery platform Node.js Backend Template.
   - [Formatting](#formatting)
     - [Windows prettier issue](#windows-prettier-issue)
 - [API endpoints](#api-endpoints)
-- [Calling API endpoints](#calling-api-endpoints)
-  - [Postman](#postman)
 - [Development helpers](#development-helpers)
   - [MongoDB Locks](#mongodb-locks)
 - [Docker](#docker)
@@ -29,8 +27,6 @@ Core delivery platform Node.js Backend Template.
 
 ## Requirements
 
-This backend application is designed to be used with this [UI repo](https://github.com/DEFRA/ffc-sfd-experiment-ui):
-
 ### Node.js
 
 Please install [Node.js](http://nodejs.org/) `>= v18` and [npm](https://nodejs.org/) `>= v9`. You will find it
@@ -39,7 +35,7 @@ easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
 To use the correct version of Node.js for this application, via nvm:
 
 ```bash
-cd land-grants-api
+cd land-grants-api-poc
 nvm use
 ```
 
@@ -47,22 +43,10 @@ nvm use
 
 ### Setup
 
-Make sure you are on the latest version of Node:
-
-```bash
-nvm use --lts
-```
-
 Install application dependencies:
 
 ```bash
 npm install
-```
-
-Seed the database with development data:
-
-```bash
-npm run seed
 ```
 
 ### Development
@@ -91,7 +75,7 @@ npm start
 
 ### Npm scripts
 
-All available Npm scripts can be seen in [package.json](./package.json)
+All available Npm scripts can be seen in [package.json](./package.json).
 To view them in your command line run:
 
 ```bash
@@ -126,17 +110,6 @@ git config --global core.autocrlf false
 | `GET: /health`       | Health                         |
 | `GET: /example    `  | Example API (remove as needed) |
 | `GET: /example/<id>` | Example API (remove as needed) |
-
-## Calling API endpoints
-
-### Postman
-
-A [Postman](https://www.postman.com/) collection and environment are available for making calls to the
-land-grants-api API.
-Simply import the collection and environment into Postman.
-
-- [CDP Node Backend Template Postman Collection](postman/land-grants-api.postman_collection.json)
-- [CDP Node Backend Template Postman Environment](postman/land-grants-api.postman_environment.json)
 
 ## Development helpers
 
@@ -190,13 +163,13 @@ Helper methods are also available in `/src/helpers/mongo-lock.js`.
 Build:
 
 ```bash
-docker build --target development --no-cache --tag land-grants-api:development .
+docker build --target development --no-cache --tag land-grants-api-poc:development .
 ```
 
 Run:
 
 ```bash
-docker run -e PORT=3001 -p 3001:3001 land-grants-api:development
+docker run -e PORT=3001 -p 3001:3001 land-grants-api-poc:development
 ```
 
 ### Production image
@@ -204,13 +177,13 @@ docker run -e PORT=3001 -p 3001:3001 land-grants-api:development
 Build:
 
 ```bash
-docker build --no-cache --tag land-grants-api .
+docker build --no-cache --tag land-grants-api-poc .
 ```
 
 Run:
 
 ```bash
-docker run -e PORT=3001 -p 3001:3001 land-grants-api
+docker run -e PORT=3001 -p 3001:3001 land-grants-api-poc
 ```
 
 ### Docker Compose
