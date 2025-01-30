@@ -3,11 +3,11 @@
  */
 export default {
   rootDir: '.',
-  testEnvironment: 'node',
   verbose: true,
   resetModules: true,
   clearMocks: true,
   silent: false,
+  preset: '@shelf/jest-mongodb',
   watchPathIgnorePatterns: ['globalConfig'],
   testMatch: ['**/src/**/*.test.js'],
   reporters: ['default', ['github-actions', { silent: false }], 'summary'],
@@ -17,17 +17,18 @@ export default {
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
-    '<rootDir>/src/__fixtures__',
-    '<rootDir>/src/api/example',
-    '<rootDir>/src/api/router.js',
-    '<rootDir>/src/api/server.js',
-    '<rootDir>/src/helpers/start-server.js',
-    '<rootDir>/src/helpers/pulse.js',
-    '<rootDir>/src/helpers/seed-db/',
-    '<rootDir>/src/index.js',
-    '<rootDir>/src/config/'
+    'index.js'
   ],
-  coverageDirectory: '<rootDir>/coverage'
+  coverageDirectory: '<rootDir>/coverage',
+  transform: {
+    '^.+\\.js$': 'babel-jest'
+  },
+  transformIgnorePatterns: [
+    `node_modules/(?!${[
+      '@defra/hapi-tracing', // Supports ESM only
+      'node-fetch' // Supports ESM only
+    ].join('|')}/)`
+  ]
 }
 
 /**
