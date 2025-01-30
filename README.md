@@ -14,8 +14,6 @@ Core delivery platform Node.js Backend Template.
   - [Formatting](#formatting)
     - [Windows prettier issue](#windows-prettier-issue)
 - [API endpoints](#api-endpoints)
-- [Calling API endpoints](#calling-api-endpoints)
-  - [Postman](#postman)
 - [Development helpers](#development-helpers)
   - [MongoDB Locks](#mongodb-locks)
 - [Docker](#docker)
@@ -28,8 +26,6 @@ Core delivery platform Node.js Backend Template.
   - [About the licence](#about-the-licence)
 
 ## Requirements
-
-This backend application is designed to be used with this [UI repo](https://github.com/DEFRA/ffc-sfd-experiment-ui):
 
 ### Node.js
 
@@ -47,22 +43,10 @@ nvm use
 
 ### Setup
 
-Make sure you are on the latest version of Node:
-
-```bash
-nvm use --lts
-```
-
 Install application dependencies:
 
 ```bash
 npm install
-```
-
-Seed the database with development data:
-
-```bash
-npm run seed
 ```
 
 ### Development
@@ -91,7 +75,7 @@ npm start
 
 ### Npm scripts
 
-All available Npm scripts can be seen in [package.json](./package.json)
+All available Npm scripts can be seen in [package.json](./package.json).
 To view them in your command line run:
 
 ```bash
@@ -126,17 +110,6 @@ git config --global core.autocrlf false
 | `GET: /health`       | Health                         |
 | `GET: /example    `  | Example API (remove as needed) |
 | `GET: /example/<id>` | Example API (remove as needed) |
-
-## Calling API endpoints
-
-### Postman
-
-A [Postman](https://www.postman.com/) collection and environment are available for making calls to the
-land-grants-api API.
-Simply import the collection and environment into Postman.
-
-- [CDP Node Backend Template Postman Collection](postman/land-grants-api.postman_collection.json)
-- [CDP Node Backend Template Postman Environment](postman/land-grants-api.postman_environment.json)
 
 ## Development helpers
 
