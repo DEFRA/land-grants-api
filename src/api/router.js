@@ -1,5 +1,6 @@
-import { health } from '~/src/api/health/index.js'
+import { business } from '~/src/api/business/index.js'
 import { example } from '~/src/api/example/index.js'
+import { health } from '~/src/api/health/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -13,6 +14,7 @@ const router = {
 
       // Application specific routes, add your own routes here.
       await server.register([example])
+      await server.register([business])
     }
   }
 }
