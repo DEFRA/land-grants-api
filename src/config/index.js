@@ -1,4 +1,5 @@
 import convict from 'convict'
+import 'dotenv/config'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,6 +32,26 @@ const config = convict({
     doc: 'Api Service Name',
     format: String,
     default: 'land-grants-api'
+  },
+  consolidatedView: {
+    apiEndpoint: {
+      doc: 'Consolidated View API endpoint',
+      format: String,
+      default: '',
+      env: 'CV_API_ENDPOINT'
+    },
+    authToken: {
+      doc: 'Consolidated View Auth Token',
+      format: String,
+      default: '',
+      env: 'CV_API_AUTH_TOKEN'
+    },
+    authEmail: {
+      doc: 'Consolidated View AuthEmail',
+      format: String,
+      default: '',
+      env: 'CV_API_AUTH_EMAIL'
+    }
   },
   root: {
     doc: 'Project root',

@@ -1,7 +1,4 @@
-import { queryGraphQL } from '../../common/helpers/graphql.js';
-
-const GRAPHQL_ENDPOINT = 'https://countries.trevorblades.com/'; 
-
+import { findBusinessDetails } from '../../common/helpers/consolidated-view.js';
 
 /**
  * @satisfies {Partial<ServerRoute>}
@@ -14,27 +11,13 @@ const findBusinessController = {
    */
   
   handler: async (request, h) => {
-    const query = `
-          query {
-            countries {
-              name
-              code
-              phone
-              states {
-                code
-              }
-              capital
-            }
-          }
-      `;
 
+    const sbi = request.params.sbi;
       try {
-        const result = await queryGraphQL(GRAPHQL_ENDPOINT, query, {
-            authorId: request.params.authorId
-        });
+        const result = await findBusinessDetails(sbi);
         return result.data;
     } catch (error) {
-        console.error('GraphQL query failed:', error);
+        console.error('Consolidated View query failed:', error);
         return h.response({ error: 'Failed to fetch data' }).code(500);
     }
   }
