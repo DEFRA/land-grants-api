@@ -1,4 +1,4 @@
-import { findBusinessDetails } from '../../common/helpers/consolidated-view.js';
+import { findBusinessDetails } from '../helpers/business.js';
 
 /**
  * @satisfies {Partial<ServerRoute>}
@@ -11,7 +11,6 @@ const findBusinessController = {
    */
   
   handler: async (request, h) => {
-
     const sbi = request.params.sbi;
       try {
         const result = await findBusinessDetails(sbi);
