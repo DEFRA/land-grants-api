@@ -9,11 +9,12 @@ const findBusinessController = {
    * @param { ResponseToolkit } h
    * @returns { Promise<*> }
    */
-  
+
   handler: async (request, h) => {
     const sbi = request.params.sbi;
+    const crn = request.params.crn;
       try {
-        const result = await findBusinessDetails(sbi);
+        const result = await findBusinessDetails(sbi, crn);
         return result.data;
     } catch (error) {
         console.error('Consolidated View query failed:', error);

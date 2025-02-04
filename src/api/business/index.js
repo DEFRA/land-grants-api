@@ -10,7 +10,7 @@ const business = {
       server.route([
         {
           method: 'GET',
-          path: '/business/{sbi}',
+          path: '/business/{sbi}/{crn}',
           ...findBusinessController
         }
       ])
