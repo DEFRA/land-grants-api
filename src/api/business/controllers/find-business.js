@@ -11,14 +11,12 @@ const findBusinessController = {
    */
 
   handler: async (request, h) => {
-    const sbi = request.params.sbi;
-    const crn = request.params.crn;
-      try {
+    const {sbi, crn} = request.params;
+    try {
         const result = await findBusinessDetails(sbi, crn);
         return result.data;
     } catch (error) {
-        console.error('Consolidated View query failed:', error);
-        return h.response({ error: 'Failed to fetch data' }).code(500);
+        return h.response({ error: error.message }).code(error.code);
     }
   }
 }

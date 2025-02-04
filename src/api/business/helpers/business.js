@@ -40,12 +40,10 @@ query Business {
   })
 
   if (!response.ok) {
-    throw new Error(`Consolidated View request failed: ${response.statusText}`);
+    const error = new Error(response.statusText)
+    error.code = response.status;
+    throw error;
   }
 
-  const data = await response.json();
-  if (data.errors) {
-    throw new Error(data.errors.map(e => e.message).join(', '));
-  }
-  return data;
+  return await response.json();
 }
