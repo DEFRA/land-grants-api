@@ -1,0 +1,10 @@
+actionCode,actionArea,parcelID,sheetID,landparcelArea,moorlandLineStatus,landUseCode,expectedIsValid
+CSAM1,1,2679,SJ9539,2,below,AC32,false
+CSAM1,2,2679,SJ9539,2,below,PG01,true
+CSAM1,1,1040,SK0140,2,below,PG01,false
+CSAM1,2,1040,SK0140,2,above,PG01,false
+CSAM1,2,2679,SJ9539,2,below,AC32,true
+CSAM2,2,1040,SK0140,2,below,PG01,false
+CSAM2,2,2679,SJ9539,2,below,AC32,true
+CSAM2,1,2679,SJ9539,2,below,AC32,true
+CSAM2,1,1040,SK0140,2,above,AC32,false
