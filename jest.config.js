@@ -25,12 +25,15 @@ export default {
   },
   transformIgnorePatterns: [
     `node_modules/(?!${[
-      '@defra/hapi-tracing', // Supports ESM only
-      'node-fetch' // Supports ESM only
-    ].join('|')}/)`
-  ]
+      '@defra/hapi-tracing',
+      'node-fetch',
+      'data-uri-to-buffer',
+      'fetch-blob',
+      'formdata-polyfill',
+      'web-streams-polyfill'
+    ].join('|')})`
+  ],
+  moduleNameMapper: {
+    'node-fetch': '<rootDir>/.jest/node-fetch.js'
+  }
 }
-
-/**
- * @import { Config } from 'jest'
- */
