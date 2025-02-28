@@ -1,4 +1,4 @@
-import { findBusinessDetails } from '../helpers/business.js';
+import { findBusinessDetails } from '../helpers/business.js'
 
 /**
  * @satisfies {Partial<ServerRoute>}
@@ -11,17 +11,19 @@ const findBusinessController = {
    */
 
   handler: async (request, h) => {
-    const {sbi, crn} = request.params;
+    const { sbi, crn } = request.params
     try {
-        const result = await findBusinessDetails(sbi, crn);
-        return result.data;
+      const result = await findBusinessDetails(sbi, crn)
+      return result.data
     } catch (error) {
-        return h.response({ error: error.message }).code(error.code);
+      return h
+        .response({ error: error.message, status: error.code })
+        .code(error.code)
     }
   }
 }
 
-export { findBusinessController };
+export { findBusinessController }
 
 /**
  * @import { Request, ResponseToolkit, ServerRoute} from '@hapi/hapi'

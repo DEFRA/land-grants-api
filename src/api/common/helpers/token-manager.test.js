@@ -16,11 +16,6 @@ jest.mock('~/src/config/index.js', () => ({
 }))
 
 describe('Token Manager', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    jest.resetModules()
-  })
-
   describe('isTokenExpired', () => {
     test('returns true when no expiry time provided', async () => {
       const { isTokenExpired } = await import('./token-manager.js')
@@ -96,7 +91,7 @@ describe('Token Manager', () => {
       const bodyParams = new URLSearchParams(calledOptions.body)
       expect(Object.fromEntries(bodyParams)).toEqual({
         client_id: 'mock-client-id',
-        scope: 'api://mock-client-id/.default',
+        scope: 'mock-client-id/.default',
         client_secret: 'mock-client-secret',
         grant_type: 'client_credentials'
       })
@@ -114,7 +109,7 @@ describe('Token Manager', () => {
 
       const { refreshToken } = await import('./token-manager.js')
       await expect(refreshToken()).rejects.toThrow(
-        'Token refresh failed: Invalid credentials'
+        'Failed to refresh token: Invalid credentials'
       )
     })
 

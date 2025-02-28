@@ -66,12 +66,6 @@ const config = convict({
       default: '',
       env: 'CV_API_ENDPOINT'
     },
-    authToken: {
-      doc: 'Consolidated View Auth Token',
-      format: String,
-      default: '',
-      env: 'CV_API_AUTH_TOKEN'
-    },
     authEmail: {
       doc: 'Consolidated View AuthEmail',
       format: String,

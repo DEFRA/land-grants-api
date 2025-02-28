@@ -2,6 +2,8 @@ import fetch from 'node-fetch'
 import { URLSearchParams } from 'url'
 import { config } from '~/src/config/index.js'
 
+const EXPIRATION_BUFFER = 5 * 60 * 1000 // refresh tokens 5 minutes before actual expiry
+
 let tokenState = {
   currentToken: null,
   tokenExpiry: null
@@ -9,9 +11,7 @@ let tokenState = {
 
 export function isTokenExpired(expiryTime) {
   if (!expiryTime) return true
-
-  const expirationBuffer = 5 * 60 * 1000 // 5 minutes
-  return Date.now() >= expiryTime - expirationBuffer
+  return Date.now() >= expiryTime - EXPIRATION_BUFFER
 }
 
 export function createTokenRequestParams(clientId, scope, clientSecret) {
@@ -28,10 +28,11 @@ export async function refreshToken() {
   const tenantId = config.get('entra.tenantId')
   const clientId = config.get('entra.clientId')
   const clientSecret = config.get('entra.clientSecret')
-  const scope = `api://${clientId}/.default`
-  const params = createTokenRequestParams(clientId, scope, clientSecret)
+  const scope = `${clientId}/.default`
 
   try {
+    const params = createTokenRequestParams(clientId, scope, clientSecret)
+
     const response = await fetch(
       `${tokenEndpoint}/${tenantId}/oauth2/v2.0/token`,
       {
@@ -44,18 +45,14 @@ export async function refreshToken() {
     )
 
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(
-        `Token refresh failed: ${errorData.error_description || response.statusText}`
-      )
+      const errorText = await response.text()
+      throw new Error(`Failed with status ${response.status}: ${errorText}`)
     }
 
     const data = await response.json()
-
     tokenState = {
       currentToken: data.access_token,
-      // TODO: Check if expires_in comes from response
-      tokenExpiry: Date.now() + data.expires_in * 1000 - 5 * 60 * 1000
+      tokenExpiry: Date.now() + data.expires_in * 1000
     }
 
     return tokenState.currentToken

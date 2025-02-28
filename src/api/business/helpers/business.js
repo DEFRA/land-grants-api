@@ -1,8 +1,8 @@
 import fetch from 'node-fetch'
 import { config } from '~/src/config/index.js'
+import { getValidToken } from '../../common/helpers/token-manager.js'
 
 const CV_API_ENDPOINT = config.get('consolidatedView.apiEndpoint')
-const CV_API_AUTH_TOKEN = config.get('consolidatedView.authToken')
 const CV_API_AUTH_EMAIL = config.get('consolidatedView.authEmail')
 
 export async function findBusinessDetails(
@@ -24,12 +24,13 @@ query Business {
     }
 }
   `
+  const token = await getValidToken()
 
   const response = await fetch(CV_API_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${CV_API_AUTH_TOKEN}`,
+      Authorization: `Bearer ${token}`,
       email: CV_API_AUTH_EMAIL,
       ...headers
     },
