@@ -8,7 +8,7 @@ const mockData = {
   },
   actions: [
     {
-      action: 'BND1',
+      id: 'BND1',
       area: {
         unit: 'ha',
         value: 100
