@@ -1,8 +1,8 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 
 const mockData = {
-  parcelId: 12345,
-  dimensions: {
+  id: 12345,
+  size: {
     unit: 'ha',
     value: 500
   },
