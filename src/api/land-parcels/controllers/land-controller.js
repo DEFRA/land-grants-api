@@ -1,22 +1,5 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 
-const mockData = {
-  id: 12345,
-  size: {
-    unit: 'ha',
-    value: 500
-  },
-  actions: [
-    {
-      id: 'BND1',
-      area: {
-        unit: 'ha',
-        value: 100
-      }
-    }
-  ]
-}
-
 /**
  * @satisfies {Partial<ServerRoute>}
  */
@@ -31,6 +14,24 @@ const landController = {
     // if (isNull(entity)) {
     //   return Boom.boomify(Boom.notFound())
     // }
+
+    const mockData = {
+      parcelId: 9238,
+      sheetId: 'SX0679',
+      size: {
+        unit: 'ha',
+        value: Math.round(Math.random() * 1000)
+      },
+      actions: [
+        {
+          id: 'BND1',
+          area: {
+            unit: 'ha',
+            value: Math.round(Math.random() * 1000)
+          }
+        }
+      ]
+    }
 
     return h
       .response({ message: 'success', parcel: mockData })

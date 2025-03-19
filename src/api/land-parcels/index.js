@@ -10,7 +10,7 @@ const landRoutes = {
       server.route([
         {
           method: 'GET',
-          path: '/land-parcels/{parcelId}',
+          path: '/land-parcels/{parcelId}/sheet/{sheetId}',
           ...landController
         }
       ])

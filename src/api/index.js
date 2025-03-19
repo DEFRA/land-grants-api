@@ -1,19 +1,24 @@
-import path from 'path'
 import hapi from '@hapi/hapi'
+import path from 'path'
 
-import { config } from '~/src/config/index.js'
-import { router } from '~/src/api/router.js'
+import { failAction } from '~/src/api/common/helpers/fail-action.js'
 import { requestLogger } from '~/src/api/common/helpers/logging/request-logger.js'
 import { mongoDb } from '~/src/api/common/helpers/mongodb.js'
-import { failAction } from '~/src/api/common/helpers/fail-action.js'
-import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
+import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
+import { router } from '~/src/api/router.js'
+import { config } from '~/src/config/index.js'
 
 async function createServer() {
   const server = hapi.server({
     port: config.get('port'),
     routes: {
+      cors: {
+        origin: ['http://localhost:3009'],
+        headers: ['Accept', 'Content-Type'],
+        additionalHeaders: ['X-Requested-With']
+      },
       validate: {
         options: {
           abortEarly: false
