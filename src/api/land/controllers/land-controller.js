@@ -25,7 +25,13 @@ const landController = {
       actions: [
         {
           id: 'BND1',
-          area: {
+          title: 'BND1: Maintain dry stone walls',
+          duration: '3 years',
+          funding: '£27 per 100 metres (m) for both sides',
+          landTypes: 'Arable and 2 others',
+          areasOfInterest: 'Boundaries',
+          paymentTypes: 'Revenue',
+          availableArea: {
             unit: 'ha',
             value: Math.round(Math.random() * 1000)
           }
