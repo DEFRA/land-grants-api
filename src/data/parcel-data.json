@@ -1,0 +1,36 @@
+[
+  {
+    "parcelId": 9238,
+    "sheetId": "SX0679",
+    "size": {
+      "unit": "ha",
+      "value": 477
+    },
+    "actions": [
+      {
+        "code": "BND1",
+        "description": "BND1: Maintain dry stone walls",
+        "durationYears": 3,
+        "payment": {
+          "type": "Revenue",
+          "value": 30,
+          "unit": "100 metres",
+          "additionalPaymentPerAgreement": 95
+        },
+        "validLandCovers": ["Arable", "Grassland", "Woodland"],
+        "eligibilityRules": [
+          {
+            "id": "is-below-moorland-line"
+          },
+          {
+            "id": "is-for-whole-parcel-area"
+          }
+        ],
+        "availableArea": {
+          "unit": "ha",
+          "value": 907
+        }
+      }
+    ]
+  }
+]
