@@ -1,6 +1,38 @@
-# land-grants-api
+# Land Grants API
 
-Core delivery platform Node.js Backend Template.
+To read more about the farming grants platform, see this docs repo:
+
+https://github.com/DEFRA/farming-grants-docs
+
+The capabilities of the land grants API include:
+
+- [land based grant application eligibility checks](#eligibility-checks)
+- [grant payment calculations](#payment-calculations)
+- [available area calculation](#available-area-calculation)
+
+### Eligibility checks
+
+When an applicant applies for an action to undertake on a land parcel (field), we need to determine their eligibility based on the data we have available. An example of eligibility criteria for the **SCR1: Create scrub and open habitat mosaics** action can be found in [this document](https://www.gov.uk/find-funding-for-land-or-farms/scr1-create-scrub-and-open-habitat-mosaics). This document contains this statement:
+
+| Protected land                               | Eligibility                                                                            |
+| -------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Sites of special scientific interest (SSSIs) | Ineligible - you must not enter any area that's designated as an SSSI into this action |
+
+In this case, the API will need to check if there is an intersection between the land parcel and the SSSI map layer and reject the application if so.
+
+### Available Area Calculation
+
+The purpose of the Available Area Calculation (AAC) is to work out the number of hectares of a land parcel someone is able to apply a particular action on. Say an applicant has a 3 hectare land parcel, has already agreed to do action **A** on 1 hectare of the parcel, is applying for action **B** and **A** and **B** aren't compatible with each other, the AAC should return 2 hectares.
+
+Some more AAC scenarios are detailed here:
+
+![Available Area Calculation Scenarios](aac-scenarios.png)
+
+### Payment calculations
+
+Each action has a different way of calculating the total owed annually if the application gets approved and accepted. Most are a simple multiplication of the quantity of measurement applied for by the value. For example, for **SCR1**, the calculation is `£588 per hectare (ha) per year`.
+
+## Repo usage
 
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
