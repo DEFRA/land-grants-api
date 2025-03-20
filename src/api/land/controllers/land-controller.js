@@ -1,5 +1,18 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import parcelData from '~/src/data/parcel-data.json'
 
+// http://localhost:3001/parcel/SX0679-9999
+
+const transformParcel = (parcel) => {
+  return {
+    ...parcel,
+    actions: parcel.actions.map((a) => ({
+      code: a.code,
+      description: a.description,
+      availableArea: a.availableArea
+    }))
+  }
+}
 /**
  * @satisfies {Partial<ServerRoute>}
  */
@@ -10,37 +23,21 @@ const landController = {
    * @returns { Promise<*> }
    */
   handler: (request, h) => {
-    // const entity = await findExampleData(request.db, request.params.exampleId)
-    // if (isNull(entity)) {
-    //   return Boom.boomify(Boom.notFound())
-    // }
+    const { id } = request.params
+    const [sheetId, parcelId] = id.split('-')
 
-    const mockData = {
-      parcelId: 9238,
-      sheetId: 'SX0679',
-      size: {
-        unit: 'ha',
-        value: Math.round(Math.random() * 1000)
-      },
-      actions: [
-        {
-          id: 'BND1',
-          title: 'BND1: Maintain dry stone walls',
-          duration: '3 years',
-          funding: '£27 per 100 metres (m) for both sides',
-          landTypes: 'Arable and 2 others',
-          areasOfInterest: 'Boundaries',
-          paymentTypes: 'Revenue',
-          availableArea: {
-            unit: 'ha',
-            value: Math.round(Math.random() * 1000)
-          }
-        }
-      ]
+    const parcel = parcelData.find(
+      (p) => p.parcelId === Number(parcelId) && p.sheetId === sheetId
+    )
+
+    if (!parcel) {
+      return h
+        .response({ message: 'Parcel not found' })
+        .code(statusCodes.notFound)
     }
 
     return h
-      .response({ message: 'success', parcel: mockData })
+      .response({ message: 'success', parcel: transformParcel(parcel) })
       .code(statusCodes.ok)
   }
 }
