@@ -1,7 +1,7 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { createServer } from '~/src/api/index.js'
 
-describe.skip('#exampleFindAllController', () => {
+describe('#exampleFindAllController', () => {
   /** @type {Server} */
   let server
 
