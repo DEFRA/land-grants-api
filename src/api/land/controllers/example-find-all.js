@@ -1,5 +1,5 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { findAllExampleData } from '~/src/api/land-parcels/helpers/find-all-example-data.js'
+import { findAllExampleData } from '~/src/api/land/helpers/find-all-example-data.js'
 
 /**
  * Example controller
