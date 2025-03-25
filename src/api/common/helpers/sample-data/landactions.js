@@ -32,7 +32,7 @@ export default [
       }
     ],
     parcel: {
-      parcelId: 'SX63599044',
+      parcelId: 'SFI123456789',
       sheetId: 'SH1236723',
       size: {
         unit: 'mtr',
@@ -73,7 +73,7 @@ export default [
       }
     ],
     parcel: {
-      parcelId: 'SX63599044',
+      parcelId: 'BDI123456711',
       sheetId: 'SH1236723',
       size: {
         unit: 'mtr',
