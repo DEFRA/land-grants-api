@@ -12,10 +12,14 @@ async function getLandActionData(parcel, logger) {
     throw Boom.badRequest('Parcel is required')
   }
 
+  let sheetId = ''
+  let parcelId = ''
+
   try {
-    /* eslint-disable no-undef */
-    const [sheetId, parcelId] = parcel.split('-')
-    /* eslint-disable no-undef */
+    const parts = parcel.split('-')
+    sheetId = parts[0] || ''
+    parcelId = parts[1] || ''
+
     logger.info(
       `Fetching land actions data for sheetId: ${sheetId}-parcelId ${parcelId}`
     )
