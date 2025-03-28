@@ -1,4 +1,4 @@
-import landactions from './landactions.js'
+import landactions from './land-actions.js'
 
 export default {
   landactions
