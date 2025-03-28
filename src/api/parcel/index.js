@@ -3,7 +3,7 @@ import { ParcelController } from './controllers/index.js'
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
-const landRoutes = {
+const parcel = {
   plugin: {
     name: 'parcels',
     register: (server) => {
@@ -18,7 +18,7 @@ const landRoutes = {
   }
 }
 
-export { landRoutes }
+export { parcel }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'
