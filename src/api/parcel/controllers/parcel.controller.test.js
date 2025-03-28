@@ -68,8 +68,7 @@ describe('ParcelController', () => {
     await ParcelController.handler(mockRequest, mockResponse)
 
     expect(mockResponse.response).toHaveBeenCalledWith({
-      message: 'Failed to get land actions data ',
-      error: testError.message
+      message: testError.message
     })
 
     expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
@@ -85,8 +84,7 @@ describe('ParcelController', () => {
     await ParcelController.handler(mockRequest, mockResponse)
 
     expect(mockResponse.response).toHaveBeenCalledWith({
-      message: 'Failed to get land actions data ',
-      error: testError.message
+      message: testError.message
     })
 
     expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)

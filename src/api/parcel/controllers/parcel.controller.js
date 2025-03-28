@@ -23,8 +23,7 @@ const ParcelController = {
       request.logger.error(`Error fetching land actions: ${error.message}`)
       return h
         .response({
-          message: 'Failed to get land actions data ',
-          error: error.message
+          message: error.message
         })
         .code(statusCodes.notFound)
     }
