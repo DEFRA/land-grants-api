@@ -1,5 +1,5 @@
-import landactions from './land-actions.js'
+import parcelData from './parcel-data.js'
 
 export default {
-  landactions
+  'parcel-data': parcelData
 }

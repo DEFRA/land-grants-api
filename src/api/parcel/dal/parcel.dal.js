@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom'
-import landActionsModel from '~/src/api/parcel/models/parcel.js'
+import landParcelModel from '~/src/api/parcel/models/parcel.js'
 
 /**
  * Get land action data for rendering templates
@@ -20,28 +20,18 @@ async function getLandActionData(parcel, logger) {
     sheetId = parts[0] || ''
     parcelId = parts[1] || ''
 
-    logger.info(
-      `Fetching land actions data for sheetId: ${sheetId}-parcelId ${parcelId}`
-    )
+    logger.info(`Fetching land actions data for parcel: ${sheetId}-${parcelId}`)
 
-    const landactions = await landActionsModel
-      .findOne({ parcelId, sheetId })
-      .lean()
-
-    if (!landactions) {
-      logger.warn(
-        `Land Parcel not found for sheetId: ${sheetId}-parcelId ${parcelId}`
-      )
+    const landData = await landParcelModel.findOne({ parcelId, sheetId }).lean()
+    if (!landData) {
+      logger.warn(`Land Parcel not found for parcel: ${sheetId}-${parcelId}`)
       throw Boom.notFound('Land Parcel not found')
     }
 
-    logger.info(
-      `Successfully retrieved Land Parcel data for sheetId: ${sheetId}-parcelId ${parcelId}`
-    )
-    return landactions
+    return landData
   } catch (error) {
     logger.error(
-      `Error fetching Land Parcel data for sheetId: ${sheetId}-parcelId ${parcelId}`,
+      `Error fetching Land Parcel data for parcel: ${sheetId}-${parcelId}`,
       {
         error: error.message,
         stack: error.stack

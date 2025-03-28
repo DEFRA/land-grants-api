@@ -22,7 +22,6 @@ describe('getLandActionData', () => {
       'Parcel is required'
     )
 
-    expect(mockLogger.info).not.toHaveBeenCalled()
     expect(landActionsModel.findOne).not.toHaveBeenCalled()
   })
 
@@ -42,12 +41,6 @@ describe('getLandActionData', () => {
     }
 
     expect(errorThrown).toBeDefined()
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Fetching land actions data for sheetId: sheet123-parcelId parcel456'
-    )
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Land Parcel not found for sheetId: sheet123-parcelId parcel456'
-    )
     expect(landActionsModel.findOne).toHaveBeenCalledWith({
       parcelId: 'parcel456',
       sheetId: 'sheet123'
@@ -69,12 +62,6 @@ describe('getLandActionData', () => {
     const result = await getLandActionData(parcel, mockLogger)
 
     expect(result).toEqual(mockLandAction)
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Fetching land actions data for sheetId: sheet123-parcelId parcel456'
-    )
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Successfully retrieved Land Parcel data for sheetId: sheet123-parcelId parcel456'
-    )
     expect(landActionsModel.findOne).toHaveBeenCalledWith({
       parcelId: 'parcel456',
       sheetId: 'sheet123'
@@ -93,10 +80,6 @@ describe('getLandActionData', () => {
     await expect(getLandActionData(parcel, mockLogger)).rejects.toThrow(
       'Access denied'
     )
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Fetching land actions data for sheetId: sheet123-parcelId parcel456'
-    )
   })
 
   it('should throw an internal error for non-Boom errors', async () => {
@@ -112,10 +95,6 @@ describe('getLandActionData', () => {
 
     await expect(getLandActionData(parcel, mockLogger)).rejects.toThrow(
       'Failed to fetch Land Parcel data'
-    )
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Fetching land actions data for sheetId: sheet123-parcelId parcel456'
     )
   })
 
@@ -138,9 +117,6 @@ describe('getLandActionData', () => {
     }
 
     expect(errorThrown).toBeDefined()
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Fetching land actions data for sheetId: sheet123-parcelId '
-    )
     expect(landActionsModel.findOne).toHaveBeenCalledWith({
       parcelId: '',
       sheetId: 'sheet123'

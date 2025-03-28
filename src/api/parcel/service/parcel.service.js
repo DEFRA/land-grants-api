@@ -22,11 +22,12 @@ function enrichLandActionsData(landParcelData, logger) {
         },
         actions: [
           {
-            code: landParcelData.actions[0].code,
-            description: landParcelData.actions[0].description,
+            code: 'CSAM1',
+            description:
+              'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
             availableArea: {
               unit: 'ha',
-              value: calculateActionsApplicableArea(landParcelData)
+              value: calculateActionsApplicableArea()
             }
           }
         ]
@@ -51,12 +52,8 @@ function enrichLandActionsData(landParcelData, logger) {
  * @returns {number} The land action data with available area
  * @param {object} landParcelData - The parcel to fetch
  */
-function calculateActionsApplicableArea(landParcelData) {
-  if (landParcelData.actions[0].code === 'BND2') {
-    return 200
-  }
-
-  return 100
+function calculateActionsApplicableArea() {
+  return 200
 }
 
 /**

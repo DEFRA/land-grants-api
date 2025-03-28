@@ -1,27 +1,27 @@
 import mongoose from 'mongoose'
 
-const collection = 'landactions'
-
-const actionSchema = new mongoose.Schema({
-  code: { type: String, required: true },
-  description: { type: String, required: true },
-  durationYears: { type: Number, required: true },
-  payment: {
-    type: { type: String, required: true },
-    value: { type: Number, required: true },
-    unit: { type: String, required: true },
-    additionalPaymentPerAgreement: { type: Number, required: true }
-  },
-  validLandCovers: { type: [String], required: true },
-  eligibilityRules: [{ id: { type: String, required: true } }]
-})
+const collection = 'parcel-data'
 
 const schema = new mongoose.Schema(
   {
     sheetId: { type: String, required: true },
     parcelId: { type: String, required: true },
-    sbi: { type: String, required: true },
-    actions: { type: [actionSchema], required: true }
+    area: { type: Number, required: true },
+    features: { type: Array, required: false },
+    landCovers: {
+      code: { type: String, required: true },
+      area: { type: Number, required: true }
+    },
+    intersections: {
+      sssi: {
+        percent: { type: Number, required: false },
+        name: { type: String, required: false }
+      },
+      moorland: {
+        percent: { type: Number, required: false },
+        name: { type: String, required: false }
+      }
+    }
   },
   {
     collection,
@@ -30,6 +30,5 @@ const schema = new mongoose.Schema(
 )
 
 schema.index({ parcelId: 1, sheetId: 1 }, { unique: true })
-schema.index({ sbi: 1 })
 
 export default mongoose.model(collection, schema)
