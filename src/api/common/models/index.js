@@ -1,4 +1,4 @@
-import landactions from './land-actions.js'
+import landactions from '../../parcel/models/parcel.js'
 
 export default {
   landactions

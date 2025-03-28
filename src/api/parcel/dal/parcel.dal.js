@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom'
-import landActionsModel from '~/src/api/common/models/land-actions.js'
+import landActionsModel from '~/src/api/parcel/models/parcel.js'
 
 /**
  * Get land action data for rendering templates

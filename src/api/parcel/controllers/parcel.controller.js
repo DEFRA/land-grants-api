@@ -1,13 +1,13 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { getLandActionData } from '~/src/api/land/helpers/get-land-data.js'
-import { enrichLandActionsData } from '~/src/api/land/service/available-area-calculation-service.js'
+import { getLandActionData } from '~/src/api/parcel/dal/parcel.dal.js'
+import { enrichLandActionsData } from '~/src/api/parcel/service/parcel.service.js'
 
 /**
- * landactions controller
+ * ParcelController
  * Finds all entries in a mongodb collection
  * @satisfies {Partial<ServerRoute>}
  */
-const landActionsController = {
+const ParcelController = {
   handler: async (request, h) => {
     try {
       const { parcel } = request.params
@@ -31,7 +31,7 @@ const landActionsController = {
   }
 }
 
-export { landActionsController }
+export { ParcelController }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'

@@ -1,5 +1,5 @@
 import { health } from '~/src/api/health/index.js'
-import { landRoutes } from './land/index.js'
+import { landRoutes } from './parcel/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
