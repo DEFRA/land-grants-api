@@ -1,5 +1,6 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { getLandActionData } from '~/src/api/land/helpers/get-land-data.js'
+import { enrichLandActionsData } from '~/src/api/land/service/available-area-calculation-service.js'
 
 /**
  * landactions controller
@@ -9,14 +10,14 @@ import { getLandActionData } from '~/src/api/land/helpers/get-land-data.js'
 const landActionsController = {
   handler: async (request, h) => {
     try {
-      const { parcelId } = request.params
+      const { parcel } = request.params
       request.logger.info(
-        `Controller Fetching land actions data for parcelId ${parcelId}`
+        `Controller Fetching land actions data for parcel ${parcel}`
       )
-      const landParcelData = await getLandActionData(parcelId, request.logger)
-
+      const landParcelData = await getLandActionData(parcel, request.logger)
+      const enrichedLandActionsData = enrichLandActionsData(landParcelData)
       return h
-        .response({ message: 'success', parcel: landParcelData })
+        .response({ message: 'success', ...enrichedLandActionsData })
         .code(statusCodes.ok)
     } catch (error) {
       request.logger.error(`Error fetching land actions: ${error.message}`)

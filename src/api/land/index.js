@@ -1,4 +1,4 @@
-import { landController, landActionsController } from './controllers/index.js'
+import { landActionsController } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -10,12 +10,7 @@ const landRoutes = {
       server.route([
         {
           method: 'GET',
-          path: '/parcel/{parcelId}/sheet/{sheetId}',
-          ...landController
-        },
-        {
-          method: 'GET',
-          path: '/parcel/{parcelId}',
+          path: '/parcel/{parcel}',
           ...landActionsController
         }
       ])

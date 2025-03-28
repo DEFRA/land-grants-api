@@ -4,33 +4,45 @@ import landActionsModel from '~/src/api/common/models/land-actions.js'
 /**
  * Get land action data for rendering templates
  * @returns {object} The land action data
- * @param {string} parcelId - The parcel ID to fetch
+ * @param {string} parcel - The parcel to fetch
  * @param {object} logger - Logger instance
  */
-async function getLandActionData(parcelId, logger) {
-  if (!parcelId) {
-    throw Boom.badRequest('Parcel ID is required')
+async function getLandActionData(parcel, logger) {
+  if (!parcel) {
+    throw Boom.badRequest('Parcel is required')
   }
 
   try {
-    logger.info(`Fetching land actions data for parcelId ${parcelId}`)
+    /* eslint-disable no-undef */
+    const [sheetId, parcelId] = parcel.split('-')
+    /* eslint-disable no-undef */
+    logger.info(
+      `Fetching land actions data for sheetId: ${sheetId}-parcelId ${parcelId}`
+    )
 
-    const landactions = await landActionsModel.findOne({ parcelId }).lean()
+    const landactions = await landActionsModel
+      .findOne({ parcelId, sheetId })
+      .lean()
 
     if (!landactions) {
-      logger.warn(`Land Parcel not found for parcelId ${parcelId}`)
+      logger.warn(
+        `Land Parcel not found for sheetId: ${sheetId}-parcelId ${parcelId}`
+      )
       throw Boom.notFound('Land Parcel not found')
     }
 
     logger.info(
-      `Successfully retrieved Land Parcel data for parcelId ${parcelId}`
+      `Successfully retrieved Land Parcel data for sheetId: ${sheetId}-parcelId ${parcelId}`
     )
     return landactions
   } catch (error) {
-    logger.error(`Error fetching Land Parcel data for parcelId ${parcelId}`, {
-      error: error.message,
-      stack: error.stack
-    })
+    logger.error(
+      `Error fetching Land Parcel data for sheetId: ${sheetId}-parcelId ${parcelId}`,
+      {
+        error: error.message,
+        stack: error.stack
+      }
+    )
 
     if (error.isBoom) {
       throw error

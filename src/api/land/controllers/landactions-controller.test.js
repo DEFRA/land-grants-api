@@ -11,7 +11,7 @@ describe.skip('#landactions-controller', () => {
   })
 
   beforeEach(async () => {
-    await server.db.collection('example-data').insertMany([
+    await server.db.collection('landactions').insertMany([
       { exampleId: 'four', exampleData: 'data' },
       { exampleId: 'five', exampleData: 'data' }
     ])
