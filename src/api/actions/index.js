@@ -13,12 +13,12 @@ const landactions = {
       server.route([
         {
           method: 'POST',
-          path: '/payment',
+          path: '/calculate/payment',
           ...LandActionsPaymentController
         },
         {
           method: 'POST',
-          path: '/validate',
+          path: '/actions/validate',
           ...LandActionsValidateController
         }
       ])
