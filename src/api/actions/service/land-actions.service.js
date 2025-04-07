@@ -13,9 +13,16 @@ function validateLandActions(landActions, logger) {
     )
     throw Boom.badRequest('landActions is required')
   }
+  if (landActions.sbi === 'SB32445') {
+    return {
+      errorMessages: ['Actions not applicable', 'Max 3 ponds applicable'],
+      valid: false
+    }
+  }
 
   return {
-    isValidationSucess: true
+    errorMessages: [],
+    valid: true
   }
 }
 
