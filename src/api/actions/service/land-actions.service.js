@@ -34,7 +34,10 @@ function calculatePayment(landActions, logger) {
   }
 
   return {
-    amount: 2580
+    sbi: landActions.sbi,
+    payment: {
+      total: 100.98
+    }
   }
 }
 
