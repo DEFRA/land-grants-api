@@ -13,16 +13,18 @@ function validateLandActions(landActions, logger) {
     )
     throw Boom.badRequest('landActions is required')
   }
-  if (landActions.sbi === 'SB32445') {
-    return {
-      errorMessages: ['Actions not applicable', 'Max 3 ponds applicable'],
-      valid: false
-    }
-  }
+
+  const errorMessages = []
+  landActions.actions.length > 0 &&
+    landActions.actions.mpa((action) => {
+      if (action.quantity > 100) {
+        errorMessages.push(`${action.code} is exceeding max limit 100`)
+      }
+    })
 
   return {
-    errorMessages: [],
-    valid: true
+    errorMessages,
+    valid: errorMessages.length > 0
   }
 }
 
