@@ -14,17 +14,19 @@ function validateLandActions(landActions, logger) {
     throw Boom.badRequest('landActions is required')
   }
 
-  const errorMessages = []
-  landActions.actions.length > 0 &&
-    landActions.actions.mpa((action) => {
-      if (action.quantity > 100) {
-        errorMessages.push(`${action.code} is exceeding max limit 100`)
+  const errorMessages =
+    landActions.length > 0 &&
+    landActions[0].actions.length > 0 &&
+    landActions[0].actions.reduce((errors, item) => {
+      if (item.quantity > 100) {
+        errors.push(`${item.code} is exceeding max limit 100`)
       }
-    })
+      return errors
+    }, [])
 
   return {
     errorMessages,
-    valid: errorMessages.length > 0
+    valid: errorMessages.length === 0
   }
 }
 
