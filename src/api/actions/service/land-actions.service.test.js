@@ -46,6 +46,21 @@ describe('validateLandActions & calculatePayment', () => {
     expect(error.output.payload.message).toBe('landActions are required')
   })
 
+  it('validateLandActions should throw a bad request error if land actions list not is provided', () => {
+    expect(() => validateLandActions(landActions[0], mockLogger)).toThrow(
+      Boom.Boom
+    )
+
+    let error
+    try {
+      validateLandActions(null, mockLogger)
+    } catch (err) {
+      error = err
+    }
+    expect(error.isBoom).toBe(true)
+    expect(error.output.payload.message).toBe('landActions are required')
+  })
+
   it('calculatePayment should throw a bad request error if no land actions is provided', () => {
     expect(() => calculatePayment(null, mockLogger)).toThrow(Boom.Boom)
     let error

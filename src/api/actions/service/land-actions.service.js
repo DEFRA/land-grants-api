@@ -7,7 +7,15 @@ import Boom from '@hapi/boom'
  * @param {object} logger - Logger instance
  */
 function validateLandActions(landActions, logger) {
-  if (!landActions) {
+  const firstLandAction =
+    Array.isArray(landActions) && landActions.length > 0
+      ? landActions[0]
+      : landActions
+  if (
+    !firstLandAction ||
+    !Array.isArray(landActions) ||
+    landActions.length === 0
+  ) {
     logger.error(
       `Error validating land actions, no land and actions data provided`
     )
