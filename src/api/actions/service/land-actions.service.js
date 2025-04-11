@@ -11,7 +11,7 @@ function validateLandActions(landActions, logger) {
     logger.error(
       `Error validating land actions, no land and actions data provided`
     )
-    throw Boom.badRequest('landActions is required')
+    throw Boom.badRequest('landActions are required')
   }
 
   const errorMessages =
@@ -41,11 +41,10 @@ function calculatePayment(landActions, logger) {
     logger.error(
       `Error calculating payment land actions, no land and actions data provided`
     )
-    throw Boom.badRequest('landActions is required')
+    throw Boom.badRequest('landActions are required')
   }
 
   return {
-    sbi: landActions.sbi,
     payment: {
       total: 100.98
     }
