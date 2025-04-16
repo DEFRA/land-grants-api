@@ -6,6 +6,7 @@ import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { calculateIntersectionArea } from '~/src/services/arcgis/index.js'
 
+// this should just be a rule
 const isValidArea = (userSelectedActions, landParcel) => {
   const area = parseFloat(landParcel.area)
   for (const action of userSelectedActions) {
@@ -44,6 +45,7 @@ export const isValidCombination = async (
 
   for (const actionConfig of actionConfigs) {
     let validForThisCode = false
+    // land use / land covers should just be a rule
     if (landUseCodes.every((useCode) => actionConfig.uses.includes(useCode))) {
       validForThisCode = true
       break
