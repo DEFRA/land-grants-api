@@ -4,6 +4,7 @@ import path from 'path'
 import { failAction } from '~/src/api/common/helpers/fail-action.js'
 import { requestLogger } from '~/src/api/common/helpers/logging/request-logger.js'
 import { mongooseDb } from '~/src/api/common/helpers/mongoose.js'
+import { postgresDb } from '~/src/api/common/helpers/postgres.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
@@ -52,6 +53,7 @@ async function createServer() {
     secureContext,
     pulse,
     mongooseDb,
+    postgresDb,
     router
   ])
 

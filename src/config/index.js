@@ -1,4 +1,5 @@
 import convict from 'convict'
+import 'dotenv/config'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,6 +32,58 @@ const config = convict({
     doc: 'Api Service Name',
     format: String,
     default: 'land-grants-api'
+  },
+  entra: {
+    tokenEndpoint: {
+      doc: 'Microsoft entra token endpoint',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_TOKEN_URL'
+    },
+    tenantId: {
+      doc: 'Microsoft tenant ID',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_TENANT_ID'
+    },
+    clientId: {
+      doc: 'Microsoft client ID',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_CLIENT_ID'
+    },
+    clientSecret: {
+      doc: 'Microsoft client secret',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_CLIENT_SECRET'
+    },
+    scopeResource: {
+      doc: 'Microsoft scope resource url',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_SCOPE_RESOURCE'
+    }
+  },
+  landData: {
+    dbHost: {
+      doc: 'Land Data DB host',
+      format: String,
+      default: '',
+      env: 'LAND_DATA_DB_HOST'
+    },
+    dbUser: {
+      doc: 'Land Data DB username',
+      format: String,
+      default: '',
+      env: 'LAND_DATA_DB_USERNAME'
+    },
+    dbName: {
+      doc: 'Land Data DB name',
+      format: String,
+      default: '',
+      env: 'LAND_DATA_DB_NAME'
+    }
   },
   root: {
     doc: 'Project root',
