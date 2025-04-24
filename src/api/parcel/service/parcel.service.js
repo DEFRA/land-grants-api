@@ -9,10 +9,10 @@ function calculateActionsApplicableArea() {
 /**
  * Get land parcel area
  * @returns {number} The land action data with available area
- * @param {object} landParcelData - The parcel to fetch
+ * @param {string} parcelId - The parcel id
  */
-function getParcelArea(landParcelData) {
-  if (landParcelData.parcelId === '9238') {
+function getParcelArea(parcelId) {
+  if (parcelId === '9238') {
     return 440
   }
 

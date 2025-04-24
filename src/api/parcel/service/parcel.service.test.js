@@ -7,13 +7,11 @@ import {
 describe('Parcel Service', () => {
   describe('getParcelArea', () => {
     test('should return 440 for parcelId 9238', () => {
-      const landParcelData = { parcelId: '9238' }
-      expect(getParcelArea(landParcelData)).toBe(440)
+      expect(getParcelArea('9238')).toBe(440)
     })
 
     test('should return 500 for any other parcelId', () => {
-      const landParcelData = { parcelId: '1234' }
-      expect(getParcelArea(landParcelData)).toBe(500)
+      expect(getParcelArea('1234')).toBe(500)
     })
   })
 

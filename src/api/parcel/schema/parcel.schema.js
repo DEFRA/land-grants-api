@@ -21,7 +21,7 @@ const parcelActionsSchema = Joi.object({
       })
     )
     .required()
-})
+}).required()
 
 const parcelSuccessResponseSchema = Joi.object({
   message: Joi.string().required(),

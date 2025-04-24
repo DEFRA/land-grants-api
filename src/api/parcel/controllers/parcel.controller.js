@@ -43,7 +43,7 @@ const ParcelController = {
       const { sheetId, parcelId } = splitParcelId(parcel)
 
       request.logger.info(
-        `Splitted into sheetId ${sheetId} and parcelId ${parcelId}`
+        `Split into sheetId ${sheetId} and parcelId ${parcelId}`
       )
 
       const landParcel = await getLandParcel(sheetId, parcelId)
@@ -62,11 +62,7 @@ const ParcelController = {
         return Boom.notFound(errorMessage)
       }
 
-      const parcelActions = parcelActionsTransformer(
-        landParcel,
-        actions,
-        request.logger
-      )
+      const parcelActions = parcelActionsTransformer(landParcel, actions)
 
       return h
         .response({ message: 'success', ...parcelActions })
