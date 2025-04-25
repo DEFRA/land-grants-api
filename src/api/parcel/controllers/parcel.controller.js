@@ -1,31 +1,79 @@
+import Joi from 'joi'
+import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { getLandActionData } from '~/src/api/parcel/dal/parcel.dal.js'
-import { enrichLandActionsData } from '~/src/api/parcel/service/parcel.service.js'
+import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
+import { getLandParcel, getActions } from '~/src/api/parcel/queries/index.js'
+import { parcelActionsTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import {
+  parcelIdSchema,
+  parcelSuccessResponseSchema
+} from '~/src/api/parcel/schema/parcel.schema.js'
+import {
+  errorResponseSchema,
+  internalServerErrorResponseSchema
+} from '~/src/api/common/schema/index.js'
 
 /**
  * ParcelController
- * Finds all entries in a mongodb collection
+ * Returns a single land parcel merged with land actions
  * @satisfies {Partial<ServerRoute>}
  */
 const ParcelController = {
+  options: {
+    validate: {
+      params: Joi.object({
+        parcel: parcelIdSchema
+      })
+    },
+    response: {
+      status: {
+        200: parcelSuccessResponseSchema,
+        404: errorResponseSchema,
+        500: internalServerErrorResponseSchema
+      }
+    }
+  },
+
   handler: async (request, h) => {
     try {
       const { parcel } = request.params
+
+      request.logger.info(`Controller Fetching land parcel`)
+
+      const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+
       request.logger.info(
-        `Controller Fetching land actions data for parcel ${parcel}`
+        `Split into sheetId ${sheetId} and parcelId ${parcelId}`
       )
-      const landParcelData = await getLandActionData(parcel, request.logger)
-      const enrichedLandActionsData = enrichLandActionsData(landParcelData)
+
+      const landParcel = await getLandParcel(sheetId, parcelId, request.logger)
+
+      if (!landParcel) {
+        const errorMessage = `Land parcel not found`
+        request.logger.error(errorMessage)
+        return Boom.notFound(errorMessage)
+      }
+
+      const actions = getActions()
+
+      if (!actions) {
+        const errorMessage = 'Actions not found'
+        request.logger.error(errorMessage)
+        return Boom.notFound(errorMessage)
+      }
+
+      const parcelActions = parcelActionsTransformer(landParcel, actions)
+
       return h
-        .response({ message: 'success', ...enrichedLandActionsData })
+        .response({ message: 'success', ...parcelActions })
         .code(statusCodes.ok)
     } catch (error) {
-      request.logger.error(`Error fetching land actions: ${error.message}`)
-      return h
-        .response({
-          message: error.message
-        })
-        .code(statusCodes.notFound)
+      const errorMessage = `Error fetching land parcel`
+      request.logger.error(errorMessage, {
+        error: error.message,
+        stack: error.stack
+      })
+      return Boom.internal(errorMessage)
     }
   }
 }
