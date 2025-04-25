@@ -1,52 +1,3 @@
-import Boom from '@hapi/boom'
-
-/**
- * Enrich land actions data
- * @returns {object} The land action data with available area
- * @param {object} landParcelData - The parcel to fetch
- * @param {object} logger - Logger instance
- */
-function enrichLandActionsData(landParcelData, logger) {
-  if (!landParcelData) {
-    throw Boom.badRequest('landParcelData is required')
-  }
-
-  try {
-    return {
-      parcel: {
-        parcelId: landParcelData.parcelId,
-        sheetId: landParcelData.sheetId,
-        size: {
-          unit: 'ha',
-          value: getParcelArea(landParcelData)
-        },
-        actions: [
-          {
-            code: 'CSAM1',
-            description:
-              'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
-            availableArea: {
-              unit: 'ha',
-              value: calculateActionsApplicableArea()
-            }
-          }
-        ]
-      }
-    }
-  } catch (error) {
-    logger.error(`Error fetching calculating land actions availability area`, {
-      error: error.message,
-      stack: error.stack
-    })
-
-    if (error.isBoom) {
-      throw error
-    }
-
-    throw Boom.internal('Failed to fetch Land Parcel data')
-  }
-}
-
 /**
  * Enrich land actions data
  * @returns {number} The land action data with available area
@@ -58,14 +9,39 @@ function calculateActionsApplicableArea() {
 /**
  * Get land parcel area
  * @returns {number} The land action data with available area
- * @param {object} landParcelData - The parcel to fetch
+ * @param {string} parcelId - The parcel id
  */
-function getParcelArea(landParcelData) {
-  if (landParcelData.parcelId === '9238') {
+function getParcelArea(parcelId) {
+  if (parcelId === '9238') {
     return 440
   }
 
   return 500
 }
 
-export { enrichLandActionsData }
+/**
+ * Split id into sheet id and parcel id
+ * @param {string} id - 6-character long alpha-numeric string - 4-character long numeric string
+ * @returns {object} The sheet id and parcel id
+ */
+function splitParcelId(id, logger) {
+  try {
+    const parts = id?.split('-')
+    const sheetId = parts?.[0] || null
+    const parcelId = parts?.[1] || null
+
+    if (!sheetId || !parcelId) {
+      throw new Error(`Unable to split parcel id ${id}`)
+    }
+
+    return {
+      sheetId,
+      parcelId
+    }
+  } catch (error) {
+    logger.error(`Unable to split parcel id ${id}`, error)
+    throw error
+  }
+}
+
+export { getParcelArea, calculateActionsApplicableArea, splitParcelId }

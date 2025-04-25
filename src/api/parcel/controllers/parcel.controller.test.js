@@ -1,92 +1,152 @@
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { ParcelController } from '~/src/api/parcel/controllers/parcel.controller.js'
-import { getLandActionData } from '~/src/api/parcel/dal/parcel.dal.js'
-import { enrichLandActionsData } from '~/src/api/parcel/service/parcel.service.js'
+import Hapi from '@hapi/hapi'
+import * as mockingoose from 'mockingoose'
 
-jest.mock('~/src/api/parcel/dal/parcel.dal.js')
-jest.mock('~/src/api/parcel/service/parcel.service.js')
+import { parcel } from '~/src/api/parcel/index.js'
+import parcelModel from '~/src/api/parcel/models/parcel.model.js'
+import { getActions } from '~/src/api/parcel/queries/getActions.query.js'
+import { mockParcel, mockActions } from '~/src/api/parcel/fixtures/index.js'
 
-describe('ParcelController', () => {
-  const mockParcel = 'ABC123'
-  const mockRequest = {
-    params: { parcel: mockParcel },
-    logger: {
+jest.mock('~/src/api/parcel/queries/getActions.query.js', () => ({
+  getActions: jest.fn()
+}))
+
+describe('Parcel controller', () => {
+  const server = Hapi.server()
+
+  beforeAll(async () => {
+    server.decorate('request', 'logger', {
       info: jest.fn(),
+      debug: jest.fn(),
       error: jest.fn()
-    }
-  }
+    })
 
-  const mockResponse = {
-    code: jest.fn().mockReturnThis(),
-    response: jest.fn().mockReturnThis()
-  }
+    await server.register([parcel])
+    await server.initialize()
+  })
 
-  const mockLandParcelData = {
-    parcelId: mockParcel,
-    area: 1000,
-    actions: ['action1', 'action2']
-  }
-
-  const mockEnrichedData = {
-    parcelId: mockParcel,
-    area: 1000,
-    actions: ['action1', 'action2'],
-    availableArea: 800
-  }
+  afterAll(async () => {
+    await server.stop()
+    mockingoose(parcelModel).reset()
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockResponse.code.mockReturnThis()
-    mockResponse.response.mockReturnThis()
   })
 
-  test('should return enriched land actions data on success', async () => {
-    getLandActionData.mockResolvedValue(mockLandParcelData)
-    enrichLandActionsData.mockReturnValue(mockEnrichedData)
+  describe('GET /parcel/:parcel route', () => {
+    test('should return 400 if the request has an invalid parcel param', async () => {
+      const request = {
+        method: 'GET',
+        url: '/parcel/1'
+      }
 
-    await ParcelController.handler(mockRequest, mockResponse)
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
 
-    expect(getLandActionData).toHaveBeenCalledWith(
-      mockParcel,
-      mockRequest.logger
-    )
-
-    expect(enrichLandActionsData).toHaveBeenCalledWith(mockLandParcelData)
-
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: 'success',
-      ...mockEnrichedData
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request params input')
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.ok)
+    test('should return 404 if the parcel does not exist', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      mockingoose(parcelModel).toReturn(null, 'findOne')
+
+      const request = {
+        method: 'GET',
+        url: `/parcel/${sheetId}-${parcelId}`
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Land parcel not found')
+    })
+
+    test('should return 404 if the parcel does not have any actions', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      getActions.mockReturnValueOnce(null)
+
+      mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+
+      const request = {
+        method: 'GET',
+        url: `/parcel/${sheetId}-${parcelId}`
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Actions not found')
+    })
+
+    test('should return 500 if the controller throws an error', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      getActions.mockImplementationOnce(() => {
+        throw new Error('An internal server error occurred')
+      })
+
+      mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+
+      const request = {
+        method: 'GET',
+        url: `/parcel/${sheetId}-${parcelId}`
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
   })
 
-  test('should return error response when getLandActionData throws an error', async () => {
-    const testError = new Error('Data not found')
-    getLandActionData.mockRejectedValue(testError)
+  test('should return 200 if valid land parcel and actions', async () => {
+    const sheetId = 'SX0679'
+    const parcelId = '9238'
 
-    await ParcelController.handler(mockRequest, mockResponse)
+    getActions.mockReturnValueOnce(mockActions)
 
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: testError.message
-    })
+    mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
-  })
+    const request = {
+      method: 'GET',
+      url: `/parcel/${sheetId}-${parcelId}`
+    }
 
-  test('should return error response when enrichLandActionsData throws an error', async () => {
-    const testError = new Error('Enrichment failed')
-    getLandActionData.mockResolvedValue(mockLandParcelData)
-    enrichLandActionsData.mockImplementation(() => {
-      throw testError
-    })
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const {
+      statusCode,
+      result: { message, parcel }
+    } = await server.inject(request)
 
-    await ParcelController.handler(mockRequest, mockResponse)
-
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: testError.message
-    })
-
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
+    expect(statusCode).toBe(200)
+    expect(message).toBe('success')
+    expect(parcel).toBeDefined()
+    expect(parcel.parcelId).toBe(parcelId)
+    expect(parcel.sheetId).toBe(sheetId)
+    expect(parcel.size.unit).toBe('ha')
+    expect(parcel.size.value).toBe(440)
+    expect(parcel.actions).toBeDefined()
+    expect(parcel.actions).toHaveLength(1)
   })
 })
