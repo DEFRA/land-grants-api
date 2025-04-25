@@ -40,13 +40,13 @@ const ParcelController = {
 
       request.logger.info(`Controller Fetching land parcel`)
 
-      const { sheetId, parcelId } = splitParcelId(parcel)
+      const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
 
       request.logger.info(
         `Split into sheetId ${sheetId} and parcelId ${parcelId}`
       )
 
-      const landParcel = await getLandParcel(sheetId, parcelId)
+      const landParcel = await getLandParcel(sheetId, parcelId, request.logger)
 
       if (!landParcel) {
         const errorMessage = `Land parcel not found`

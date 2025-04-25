@@ -24,14 +24,14 @@ function getParcelArea(parcelId) {
  * @param {string} id - 6-character long alpha-numeric string - 4-character long numeric string
  * @returns {object} The sheet id and parcel id
  */
-function splitParcelId(id) {
+function splitParcelId(id, logger) {
   try {
-    const parts = id.split('-')
-    const sheetId = parts[0] || null
-    const parcelId = parts[1] || null
+    const parts = id?.split('-')
+    const sheetId = parts?.[0] || null
+    const parcelId = parts?.[1] || null
 
     if (!sheetId || !parcelId) {
-      throw new Error('Unable to split parcel id')
+      throw new Error(`Unable to split parcel id ${id}`)
     }
 
     return {
@@ -39,7 +39,8 @@ function splitParcelId(id) {
       parcelId
     }
   } catch (error) {
-    throw new Error('Unable to split parcel id')
+    logger.error(`Unable to split parcel id ${id}`, error)
+    throw error
   }
 }
 
