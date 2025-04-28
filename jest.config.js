@@ -17,6 +17,7 @@ export default {
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
+    '<rootDir>/src/api/common/helpers/seed-database.js',
     'index.js'
   ],
   coverageDirectory: '<rootDir>/coverage',
