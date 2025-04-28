@@ -3,12 +3,8 @@ import * as mockingoose from 'mockingoose'
 
 import { parcel } from '~/src/api/parcel/index.js'
 import parcelModel from '~/src/api/parcel/models/parcel.model.js'
-import { getActions } from '~/src/api/parcel/queries/getActions.query.js'
+import actionModel from '~/src/api/parcel/models/action.model.js'
 import { mockParcel, mockActions } from '~/src/api/parcel/fixtures/index.js'
-
-jest.mock('~/src/api/parcel/queries/getActions.query.js', () => ({
-  getActions: jest.fn()
-}))
 
 describe('Parcel controller', () => {
   const server = Hapi.server()
@@ -75,9 +71,8 @@ describe('Parcel controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      getActions.mockReturnValueOnce(null)
-
       mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+      mockingoose(actionModel).toReturn([], 'find')
 
       const request = {
         method: 'GET',
@@ -98,11 +93,8 @@ describe('Parcel controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      getActions.mockImplementationOnce(() => {
-        throw new Error('An internal server error occurred')
-      })
-
       mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+      mockingoose(actionModel).toReturn(new Error('Database error'), 'find')
 
       const request = {
         method: 'GET',
@@ -118,35 +110,34 @@ describe('Parcel controller', () => {
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
     })
-  })
 
-  test('should return 200 if valid land parcel and actions', async () => {
-    const sheetId = 'SX0679'
-    const parcelId = '9238'
+    test('should return 200 if valid land parcel and actions', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
 
-    getActions.mockReturnValueOnce(mockActions)
+      mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+      mockingoose(actionModel).toReturn(mockActions, 'find')
 
-    mockingoose(parcelModel).toReturn(mockParcel, 'findOne')
+      const request = {
+        method: 'GET',
+        url: `/parcel/${sheetId}-${parcelId}`
+      }
 
-    const request = {
-      method: 'GET',
-      url: `/parcel/${sheetId}-${parcelId}`
-    }
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcel }
+      } = await server.inject(request)
 
-    /** @type { Hapi.ServerInjectResponse<object> } */
-    const {
-      statusCode,
-      result: { message, parcel }
-    } = await server.inject(request)
-
-    expect(statusCode).toBe(200)
-    expect(message).toBe('success')
-    expect(parcel).toBeDefined()
-    expect(parcel.parcelId).toBe(parcelId)
-    expect(parcel.sheetId).toBe(sheetId)
-    expect(parcel.size.unit).toBe('ha')
-    expect(parcel.size.value).toBe(440)
-    expect(parcel.actions).toBeDefined()
-    expect(parcel.actions).toHaveLength(1)
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcel).toBeDefined()
+      expect(parcel.parcelId).toBe(parcelId)
+      expect(parcel.sheetId).toBe(sheetId)
+      expect(parcel.size.unit).toBe('ha')
+      expect(parcel.size.value).toBe(440)
+      expect(parcel.actions).toBeDefined()
+      expect(parcel.actions).toHaveLength(1)
+    })
   })
 })
