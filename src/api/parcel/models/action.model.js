@@ -5,11 +5,7 @@ const collection = 'action-data'
 const schema = new mongoose.Schema(
   {
     code: { type: String, required: true },
-    description: { type: String, required: true },
-    availableArea: {
-      unit: { type: String, required: true },
-      value: { type: Number, required: true }
-    }
+    description: { type: String, required: true }
   },
   {
     collection,
