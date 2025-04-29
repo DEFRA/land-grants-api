@@ -1,8 +1,11 @@
 /**
- * getLandData
- * @returns {Array} List of landParcels
+ * Get a land data
+ * @param {string} parcelId - The parcelId
+ * @param {string} db - DB connection object
+ * @param {object} logger - The logger
+ * @returns {object} The land data
  */
-async function getLandData(parcelId, logger, db) {
+async function getLandData(parcelId, db, logger) {
   let client
 
   try {

@@ -39,8 +39,8 @@ const LandController = {
 
       const landParcels = await getLandData(
         parcelId,
-        request.logger,
-        request.server.postgresDb
+        request.server.postgresDb,
+        request.logger
       )
 
       if (!landParcels) {
@@ -61,47 +61,6 @@ const LandController = {
       return Boom.internal(errorMessage)
     }
   }
-
-  // handler: async (request, h) => {
-  //   let client
-  //   const parcel_id = '002'
-
-  //   try {
-  //     client = await request.server.postgresDb.connect()
-
-  //     const query = 'SELECT * FROM land_parcels WHERE parcel_id = $1'
-  //     const values = [parcel_id]
-
-  //     const result = await client.query(query, values)
-
-  //     if (result.rowCount === 0) {
-  //       return h
-  //         .response({
-  //           success: false,
-  //           message: `Item with parcel_id ${parcel_id} not found`
-  //         })
-  //         .code(404)
-  //     }
-
-  //     return h.response({
-  //       success: true,
-  //       data: result.rows[0]
-  //     })
-  //   } catch (error) {
-  //     console.log({ error, id }, 'Error executing PostgreSQL query')
-  //     return h
-  //       .response({
-  //         success: false,
-  //         error: 'Database query failed',
-  //         message: error.message
-  //       })
-  //       .code(500)
-  //   } finally {
-  //     if (client) {
-  //       client.release()
-  //     }
-  //   }
-  // }
 }
 
 export { LandController }
