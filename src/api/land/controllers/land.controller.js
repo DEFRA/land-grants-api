@@ -1,13 +1,14 @@
 import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { parcelIdSchema } from '../../parcel/schema/parcel.schema.js'
-import { getLandParcels } from '../queries/land.query.js'
+import { getLandData } from '../queries/land.query.js'
 import { landParcelsSuccessResponseSchema } from '../schema/land.schema.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
+import { landDataTransformer } from '../transformers/land.transformer.js'
 
 /**
  * LandController
@@ -36,7 +37,7 @@ const LandController = {
 
       request.logger.info(`Controller Fetching by parcelId: ${parcelId}`)
 
-      const landParcels = await getLandParcels(
+      const landParcels = await getLandData(
         parcelId,
         request.logger,
         request.server.postgresDb
@@ -47,9 +48,9 @@ const LandController = {
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
-
+      const landData = landDataTransformer(landParcels)
       return h
-        .response({ message: 'success', ...landParcels })
+        .response({ message: 'success', landParcels: landData })
         .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = `Error fetching land parcel`
