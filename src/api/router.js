@@ -1,6 +1,7 @@
 import { health } from '~/src/api/health/index.js'
 import { parcel } from './parcel/index.js'
 import { landactions } from './actions/index.js'
+import { landdata } from './land/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -15,6 +16,7 @@ const router = {
       // Application specific routes, add your own routes here.
       await server.register([parcel])
       await server.register([landactions])
+      await server.register([landdata])
     }
   }
 }

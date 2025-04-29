@@ -50,7 +50,7 @@ describe('#startServer', () => {
     let server
 
     afterAll(async () => {
-      await server.stop({ timeout: 0 })
+      server && (await server.stop({ timeout: 0 }))
     })
 
     test('Should start up server as expected', async () => {
@@ -67,11 +67,11 @@ describe('#startServer', () => {
         'Setting up mongoose'
       )
       expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        3,
+        5,
         'Server started successfully'
       )
       expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        4,
+        6,
         'Access your backend on http://localhost:3098'
       )
     })
