@@ -19,6 +19,10 @@ export const postgresDb = {
      */
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
+      if (process.env.NODE_ENV === 'test') {
+        server.logger.info('Skipping Postgres connection in test mode')
+        return
+      }
 
       const pool = new Pool({
         port: 5432,

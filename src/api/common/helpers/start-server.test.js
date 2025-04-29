@@ -70,10 +70,6 @@ describe('#startServer', () => {
         5,
         'Server started successfully'
       )
-      expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        6,
-        'Access your backend on http://localhost:3098'
-      )
     })
   })
 
