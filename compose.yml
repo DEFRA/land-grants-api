@@ -40,59 +40,24 @@ services:
     volumes:
       - mongodb-data:/data
     restart: always
-
-  ################################################################################
-
-  # your-frontend:
-  #   image: defradigital/your-frontend:${YOUR_FRONTEND_VERSION:-latest}
-  #   ports:
-  #     - '3000:3000'
-  #   links:
-  #     - 'localstack:localstack'
-  #     - 'redis:redis'
-  #   depends_on:
-  #     localstack:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_started
-  #   env_file:
-  #     - 'compose/aws.env'
-  #   environment:
-  #     PORT: 3000
-  #     NODE_ENV: development
-  #     REDIS_HOST: redis
-  #     LOCALSTACK_ENDPOINT: http://localstack:4566
-  #     USE_SINGLE_INSTANCE_CACHE: true
-  #   networks:
-  #     - cdp-tenant
-
-  your-backend:
-    build: ./
+  
+  postgres:
+    image: postgis/postgis:17-3.4
+    restart: always
     ports:
-      - '3555:3555'
-    links:
-      - 'localstack:localstack'
-      - 'mongodb:mongodb'
-    depends_on:
-      localstack:
-        condition: service_healthy
-      mongodb:
-        condition: service_started
-    env_file:
-      - 'compose/aws.env'
+      - 5432:5432
     environment:
-      PORT: 3555
-      NODE_ENV: development
-      LOCALSTACK_ENDPOINT: http://localstack:4566
-      MONGO_URI: mongodb://mongodb:27017/
-      SEED_DB: true
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=p0stgr@s
+      - POSTGRES_DB=postgres
     networks:
       - cdp-tenant
-
-################################################################################
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
 
 volumes:
   mongodb-data:
+  postgres_data:
 
 networks:
   cdp-tenant:

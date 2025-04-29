@@ -7,6 +7,7 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 const isProduction = process.env.NODE_ENV === 'production'
 const isDev = process.env.NODE_ENV === 'development'
 const isTest = process.env.NODE_ENV === 'test'
+const isLocal = process.env.NODE_ENV === 'local'
 const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -17,8 +18,8 @@ const config = convict({
   },
   env: {
     doc: 'The application environment.',
-    format: ['production', 'development', 'test'],
-    default: 'development',
+    format: ['production', 'development', 'test', 'local'],
+    default: 'local',
     env: 'NODE_ENV'
   },
   port: {
@@ -32,6 +33,65 @@ const config = convict({
     format: String,
     default: 'land-grants-api'
   },
+  entra: {
+    tokenEndpoint: {
+      doc: 'Microsoft entra token endpoint',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_TOKEN_URL'
+    },
+    tenantId: {
+      doc: 'Microsoft tenant ID',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_TENANT_ID'
+    },
+    clientId: {
+      doc: 'Microsoft client ID',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_CLIENT_ID'
+    },
+    clientSecret: {
+      doc: 'Microsoft client secret',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_CLIENT_SECRET'
+    },
+    scopeResource: {
+      doc: 'Microsoft scope resource url',
+      format: String,
+      default: '',
+      env: 'ENTRA_INTERNAL_SCOPE_RESOURCE'
+    }
+  },
+  landData: {
+    dbHost: {
+      doc: 'Land Data DB host',
+      format: String,
+      default: 'localhost',
+      env: 'LAND_DATA_DB_HOST'
+    },
+    dbName: {
+      doc: 'Land Data DB name',
+      format: String,
+      default: 'postgres',
+      env: 'LAND_DATA_DB_NAME'
+    },
+    dbUser: {
+      doc: 'Land Data DB username',
+      format: String,
+      default: 'postgres',
+      env: 'LAND_DATA_DB_USERNAME'
+    },
+    dbPassword: {
+      doc: 'Land Data DB password',
+      format: String,
+      default: 'p0stgr@s',
+      env: 'LAND_DATA_DB_PASSWORD'
+    }
+  },
+
   root: {
     doc: 'Project root',
     format: String,
@@ -51,6 +111,12 @@ const config = convict({
     doc: 'If this application running in the test environment',
     format: Boolean,
     default: isTest
+  },
+  isLocal: {
+    doc: 'If this application running in the local environment',
+    format: Boolean,
+    default: isLocal,
+    env: 'NODE_ENV'
   },
   log: {
     enabled: {

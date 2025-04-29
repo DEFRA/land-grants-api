@@ -9,6 +9,7 @@ import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { router } from '~/src/api/router.js'
 import { config } from '~/src/config/index.js'
+import { postgresDb } from './common/helpers/postgres.js'
 
 async function createServer() {
   const server = hapi.server({
@@ -52,6 +53,7 @@ async function createServer() {
     secureContext,
     pulse,
     mongooseDb,
+    postgresDb,
     router
   ])
 
