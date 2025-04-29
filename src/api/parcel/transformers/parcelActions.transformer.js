@@ -22,7 +22,7 @@ function parcelActionsTransformer(landParcel, actions) {
         code: action.code,
         description: action.description,
         availableArea: {
-          ...action.availableArea,
+          unit: 'ha',
           value: calculateActionsApplicableArea()
         }
       }))
