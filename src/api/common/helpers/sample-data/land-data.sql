@@ -9,6 +9,8 @@
         last_updated DATE
       );
 
+TRUNCATE land_parcels;
+
 INSERT INTO land_parcels (parcel_id, sheet_id, area_sqm, shape, valid_from, valid_to, last_updated)
         VALUES 
         ('A1B2C3-4821', 'S001', 120.5, ST_GeomFromText('POLYGON((0 0,0 1,1 1,1 0,0 0))', 4326), CURRENT_DATE, NULL, CURRENT_DATE),
