@@ -1,8 +1,8 @@
 /**
- * getLandParcels
+ * getLandData
  * @returns {Array} List of landParcels
  */
-async function getLandParcels(parcelId, logger, db) {
+async function getLandData(parcelId, logger, db) {
   let client
 
   try {
@@ -27,4 +27,4 @@ async function getLandParcels(parcelId, logger, db) {
   }
 }
 
-export { getLandParcels }
+export { getLandData }

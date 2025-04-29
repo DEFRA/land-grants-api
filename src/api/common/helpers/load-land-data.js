@@ -4,8 +4,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 async function loadLandData(server, logger) {
+  const client = await server.connect()
   try {
-    const client = await server.connect()
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = path.dirname(__filename)
     const sqlFilePath = path.join(
@@ -23,7 +23,7 @@ async function loadLandData(server, logger) {
     logger.info('Successfully loaded Land data into Postgis')
   } catch (err) {
     await client.query('ROLLBACK')
-    logger.error('Failed to load Land data into Postgis :', err)
+    logger.error(`Failed to load Land data into Postgis : ${err}`)
   } finally {
     client.release()
   }
