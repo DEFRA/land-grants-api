@@ -1,19 +1,18 @@
+import actionModel from '~/src/api/parcel/models/action.model.js'
+
 /**
- * Get actions
- * @returns {Array} List of actions
+ * Get all actions
+ * @param {object} logger - The logger
+ * @returns {object} The actions
  */
-function getActions() {
-  return [
-    {
-      code: 'CSAM1',
-      description:
-        'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
-      availableArea: {
-        unit: 'ha',
-        value: 0
-      }
-    }
-  ]
+async function getActions(logger) {
+  try {
+    const actions = await actionModel.find({}).lean()
+    return actions
+  } catch (error) {
+    logger.error(`Unable to get actions`, error)
+    throw error
+  }
 }
 
 export { getActions }
