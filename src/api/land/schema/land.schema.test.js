@@ -1,11 +1,11 @@
-import { mockLandParcel } from '../fixtures/index.js'
+import { mockLandData } from '../fixtures/index.js'
 import {
   landParcelIdSchema,
   landParcelSchema,
   landParcelsSuccessResponseSchema
 } from './land.schema.js'
 
-describe('Land Parcel Schema Validation', () => {
+describe('Land Data Schema Validation', () => {
   describe('landParcelIdSchema', () => {
     it('should validate correct parcel id format', () => {
       const validParcelId = 'ABC123-2024'
@@ -13,8 +13,8 @@ describe('Land Parcel Schema Validation', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should reject invalid parcel id format', () => {
-      const invalidParcelIds = [
+    it('should reject invalid land parcel id format', () => {
+      const invalidLandParcelIds = [
         'SX0679-923', // too short parcel id
         'SX0679-92384', // too long parcel id
         'SX067-9238', // too short sheet id
@@ -23,7 +23,7 @@ describe('Land Parcel Schema Validation', () => {
         'SX0679-9238-extra' // extra characters
       ]
 
-      invalidParcelIds.forEach((id) => {
+      invalidLandParcelIds.forEach((id) => {
         const result = landParcelIdSchema.validate(id)
         expect(result.error).toBeDefined()
       })
@@ -32,7 +32,7 @@ describe('Land Parcel Schema Validation', () => {
 
   describe('landParcelSchema', () => {
     it('should validate correct land parcel actions data', () => {
-      const result = landParcelSchema.validate(mockLandParcel)
+      const result = landParcelSchema.validate(mockLandData)
       expect(result.error).toBeUndefined()
     })
 
@@ -51,7 +51,7 @@ describe('Land Parcel Schema Validation', () => {
   describe('landParcelsSuccessResponseSchema', () => {
     const validResponse = {
       message: 'Success',
-      landParcels: [mockLandParcel]
+      landParcels: [mockLandData]
     }
 
     it('should validate correct success response', () => {

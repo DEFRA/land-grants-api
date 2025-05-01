@@ -9,6 +9,7 @@ import {
 } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { landDataTransformer } from '../transformers/land.transformer.js'
+import { splitParcelId } from '../../parcel/service/parcel.service.js'
 
 /**
  * LandController
@@ -19,7 +20,7 @@ const LandController = {
   options: {
     validate: {
       params: Joi.object({
-        parcelId: parcelIdSchema
+        landParcelId: parcelIdSchema
       })
     },
     response: {
@@ -33,12 +34,16 @@ const LandController = {
 
   handler: async (request, h) => {
     try {
-      const { parcelId } = request.params
+      const { landParcelId } = request.params
 
-      request.logger.info(`Controller Fetching by parcelId: ${parcelId}`)
-
+      request.logger.info(
+        `Controller finding land data by landParcelId: ${landParcelId}`
+      )
+      
+      const { sheetId, parcelId } = splitParcelId(landParcelId, request.logger)
       const landParcels = await getLandData(
         parcelId,
+        sheetId,
         request.server.postgresDb,
         request.logger
       )
