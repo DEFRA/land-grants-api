@@ -39,7 +39,7 @@ const LandController = {
       request.logger.info(
         `Controller finding land data by landParcelId: ${landParcelId}`
       )
-      
+
       const { sheetId, parcelId } = splitParcelId(landParcelId, request.logger)
       const landParcels = await getLandData(
         parcelId,
