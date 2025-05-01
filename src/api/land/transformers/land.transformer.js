@@ -8,7 +8,7 @@ function landDataTransformer(landDataRows) {
     parcelId: row.parcel_id,
     sheetId: row.sheet_id,
     areaSqm: row.area_sqm,
-    shape: row.shape,
+    geom: row.geom,
     validFrom: row.valid_from,
     validTo: row.valid_to,
     lastUpdated: row.last_updated
