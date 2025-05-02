@@ -1,4 +1,4 @@
-import actionModel from '~/src/api/parcel/models/action.model.js'
+import actionModel from '~/src/api/actions/models/action.model.js'
 
 /**
  * Get all actions

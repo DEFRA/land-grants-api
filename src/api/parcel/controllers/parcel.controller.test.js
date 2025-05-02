@@ -3,8 +3,9 @@ import * as mockingoose from 'mockingoose'
 
 import { parcel } from '~/src/api/parcel/index.js'
 import parcelModel from '~/src/api/parcel/models/parcel.model.js'
-import actionModel from '~/src/api/parcel/models/action.model.js'
-import { mockParcel, mockActions } from '~/src/api/parcel/fixtures/index.js'
+import actionModel from '~/src/api/actions/models/action.model.js'
+import { mockParcel } from '~/src/api/parcel/fixtures/index.js'
+import { mockActions } from '~/src/api/actions/fixtures/index.js'
 
 describe('Parcel controller', () => {
   const server = Hapi.server()
