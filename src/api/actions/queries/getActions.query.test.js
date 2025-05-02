@@ -1,7 +1,7 @@
-import { getActions } from '~/src/api/parcel/queries/getActions.query.js'
-import actionModel from '~/src/api/parcel/models/action.model.js'
-import { mockActions } from '~/src/api/parcel/fixtures/index.js'
-jest.mock('~/src/api/parcel/models/action.model.js')
+import { getActions } from '~/src/api/actions/queries/getActions.query.js'
+import actionModel from '~/src/api/actions/models/action.model.js'
+import { mockActions } from '~/src/api/actions/fixtures/index.js'
+jest.mock('~/src/api/actions/models/action.model.js')
 
 describe('getActions', () => {
   const mockLogger = {
