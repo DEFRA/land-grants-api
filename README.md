@@ -137,11 +137,12 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+| Endpoint                            | Description                                                                                                                                                                                                                                                                                                    |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET: /health`                      | Health                                                                                                                                                                                                                                                                                                         |
+| `POST: /calculate/payment `         | Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.<br><br>Body: `{ actionCode: string, area: number, parcelId: string }`,<br><br>Response: `{ payment: number, currency: "GBP", frequency: "annual" }`                                   |
+| `POST: /actions/validate  `         | Validates if an action can be applied to a specific land parcel. Checks eligibility criteria, SSSI restrictions, and action compatibility. <br><br>Body: `{ actionCode: string, parcelId: string, sheetId: string }` <br><br> Response: `{ eligible: boolean, availableArea: number, restrictions: string[] }` |
+| `GET: /parcel/{sheetId}-{parcelId}` | Returns data for a specific parcel and includes the actions that can be made on that parcel                                                                                                                                                                                                                    |
 
 ## Development helpers
 
