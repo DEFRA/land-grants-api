@@ -41,15 +41,13 @@ const LandController = {
       )
 
       const { sheetId, parcelId } = splitParcelId(landParcelId, request.logger)
-      const landParcels = await getLandData(
-        parcelId,
-        sheetId,
-        request.server.postgresDb,
-        request.logger
-      )
+      const landParcels = await getLandData(parcelId, sheetId, {
+        db: request.server.postgresDb,
+        logger: request.logger
+      })
 
       if (!landParcels) {
-        const errorMessage = `Land parcel not found`
+        const errorMessage = `Land data not found`
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
