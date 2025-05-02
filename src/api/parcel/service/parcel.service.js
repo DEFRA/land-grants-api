@@ -3,7 +3,8 @@
  * @returns {number} The land action data with available area
  */
 function calculateActionsApplicableArea() {
-  return 200
+  const parcelSizeValue = 200
+  return parcelSizeValue
 }
 
 /**
@@ -12,11 +13,9 @@ function calculateActionsApplicableArea() {
  * @param {string} parcelId - The parcel id
  */
 function getParcelArea(parcelId) {
-  if (parcelId === '9238') {
-    return 440
-  }
+  const parcelSizeValue = parcelId === '9238' ? 440 : 500
 
-  return 500
+  return parcelSizeValue
 }
 
 /**
