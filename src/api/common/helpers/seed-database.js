@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import data from '~/src/api/common/helpers/sample-data/index.js'
+import data from '~/src/api/common/helpers/seed-data/index.js'
 import models from '~/src/api/common/models/index.js'
 
 export async function seedDatabase(logger) {
