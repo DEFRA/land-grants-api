@@ -19,9 +19,10 @@ function parcelActionsTransformer(landParcel, actions) {
         value: getParcelArea(landParcel?.parcelId)
       },
       actions: actions?.map((action) => ({
-        ...action,
+        code: action.code,
+        description: action.description,
         availableArea: {
-          ...action.availableArea,
+          unit: 'ha',
           value: calculateActionsApplicableArea()
         }
       }))
