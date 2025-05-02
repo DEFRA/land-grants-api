@@ -54,9 +54,9 @@ const ParcelController = {
         return Boom.notFound(errorMessage)
       }
 
-      const actions = getActions()
+      const actions = await getActions(request.logger)
 
-      if (!actions) {
+      if (!actions || actions?.length === 0) {
         const errorMessage = 'Actions not found'
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
