@@ -18,7 +18,7 @@ const parcelActionsSchema = Joi.object({
           unit: Joi.string().valid('ha').required(),
           value: Joi.number().positive().required()
         }).required()
-      })
+      }).label('action')
     )
     .required()
 }).required()
@@ -26,6 +26,6 @@ const parcelActionsSchema = Joi.object({
 const parcelSuccessResponseSchema = Joi.object({
   message: Joi.string().required(),
   parcel: parcelActionsSchema
-})
+}).label('parcelSuccessResponse')
 
 export { parcelActionsSchema, parcelIdSchema, parcelSuccessResponseSchema }

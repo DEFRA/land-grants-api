@@ -11,7 +11,7 @@ const errorResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.notFound).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
-})
+}).label('errorResponse')
 
 /**
  * @typedef {object} InternalServerErrorResponseSchema
@@ -23,6 +23,6 @@ const internalServerErrorResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.internalServerError).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
-})
+}).label('internalServerErrorResponse')
 
 export { errorResponseSchema, internalServerErrorResponseSchema }

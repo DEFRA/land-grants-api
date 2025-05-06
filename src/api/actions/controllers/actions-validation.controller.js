@@ -7,6 +7,12 @@ import { validateLandActions } from '~/src/api/actions/service/land-actions.serv
  * @satisfies {Partial<ServerRoute>}
  */
 const LandActionsValidateController = {
+  options: {
+    tags: ['api'],
+    description: 'Validate land actions',
+    notes:
+      'Validates if an action can be applied to a specific land parcel. Checks eligibility criteria, SSSI restrictions, and action compatibility.'
+  },
   handler: async (request, h) => {
     try {
       const { landActions } = request.payload
@@ -45,7 +51,7 @@ The UI should check the rules when the form is submitted and render the page wit
 
 A/Cs:
 
-If a user inputs more than the available area then clicks submit, they see an error 
+If a user inputs more than the available area then clicks submit, they see an error
 
 If the user inputs less than or equal to the available area, they are able to submit without error
 */

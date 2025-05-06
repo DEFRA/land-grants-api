@@ -7,6 +7,12 @@ import { calculatePayment } from '~/src/api/actions/service/land-actions.service
  * @satisfies {Partial<ServerRoute>}
  */
 const LandActionsPaymentController = {
+  options: {
+    tags: ['api'],
+    description: 'Calculate land actions payment',
+    notes:
+      'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.'
+  },
   handler: async (request, h) => {
     try {
       const { landActions } = request.payload
