@@ -11,7 +11,7 @@ async function loadLandData(server, logger) {
     const sqlFilePath = path.join(
       __dirname,
       '..',
-      '/helpers/sample-data',
+      '/helpers/seed-data',
       'land-data.sql'
     )
     const sql = await fs.readFile(sqlFilePath, 'utf8')
