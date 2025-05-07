@@ -4,7 +4,7 @@ import {
   calculatePayment
 } from '~/src/api/actions/service/land-actions.service.js'
 
-describe('validateLandActions & calculatePayment', () => {
+describe('validateLandActions', () => {
   const mockLogger = {
     info: jest.fn(),
     warn: jest.fn(),

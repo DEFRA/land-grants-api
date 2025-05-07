@@ -1,24 +1,24 @@
-import { LandActionsValidateController } from './controllers/actions-validation.controller.js'
+import { PaymentsCalculateController } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
-const landactions = {
+const payments = {
   plugin: {
-    name: 'landactions',
+    name: 'payments',
     register: (server) => {
       server.route([
         {
           method: 'POST',
-          path: '/actions/validate',
-          ...LandActionsValidateController
+          path: '/payments/calculate',
+          ...PaymentsCalculateController
         }
       ])
     }
   }
 }
 
-export { landactions }
+export { payments }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'
