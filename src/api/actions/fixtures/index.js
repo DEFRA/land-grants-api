@@ -10,4 +10,24 @@ const mockActions = [
   }
 ]
 
-export { mockActions }
+const mockLandActions = {
+  landActions: [
+    {
+      sheetId: 'SX0679',
+      parcelId: '9238',
+      sbi: '123456789',
+      actions: [
+        {
+          code: 'BND1',
+          quantity: 99
+        },
+        {
+          code: 'BND2',
+          quantity: 200
+        }
+      ]
+    }
+  ]
+}
+
+export { mockActions, mockLandActions }

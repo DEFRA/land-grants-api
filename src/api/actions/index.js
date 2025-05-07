@@ -1,21 +1,13 @@
-import {
-  LandActionsPaymentController,
-  LandActionsValidateController
-} from './controllers/index.js'
+import { LandActionsValidateController } from './controllers/actions-validation.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
 const landactions = {
   plugin: {
-    name: 'payment',
+    name: 'landactions',
     register: (server) => {
       server.route([
-        {
-          method: 'POST',
-          path: '/calculate/payment',
-          ...LandActionsPaymentController
-        },
         {
           method: 'POST',
           path: '/actions/validate',
