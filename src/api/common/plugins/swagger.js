@@ -20,7 +20,9 @@ const swagger = {
             info: {
               title: 'Land Grants API',
               version: config.serviceVersion
-            }
+            },
+            swaggerUI: !config.isProduction,
+            documentationPage: !config.isProduction
           }
         }
       ])
