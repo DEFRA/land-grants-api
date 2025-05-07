@@ -37,6 +37,7 @@ Each action has a different way of calculating the total owed annually if the ap
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
 - [Local development](#local-development)
+  - [Configuration](#configuration)
   - [Setup](#setup)
   - [Development](#development)
   - [Testing](#testing)
@@ -46,14 +47,14 @@ Each action has a different way of calculating the total owed annually if the ap
   - [Formatting](#formatting)
     - [Windows prettier issue](#windows-prettier-issue)
 - [API endpoints](#api-endpoints)
-- [Development helpers](#development-helpers)
-  - [MongoDB Locks](#mongodb-locks)
 - [Docker](#docker)
   - [Development image](#development-image)
   - [Production image](#production-image)
   - [Docker Compose](#docker-compose)
   - [Dependabot](#dependabot)
   - [SonarCloud](#sonarcloud)
+- [Development helpers](#development-helpers)
+  - [MongoDB Locks](#mongodb-locks)
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
 
@@ -72,6 +73,10 @@ nvm use
 ```
 
 ## Local development
+
+### Configuration
+
+This API requires a `.env` file to operate, please view the `.env.example` for details of the required properties, talk to a collegue for missing values.
 
 ### Setup
 
@@ -137,57 +142,9 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint                            | Description                                                                                                                                                                                                                                                                                                    |
-| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET: /health`                      | Health                                                                                                                                                                                                                                                                                                         |
-| `POST: /calculate/payment `         | Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.<br><br>Body: `{ actionCode: string, area: number, parcelId: string }`,<br><br>Response: `{ payment: number, currency: "GBP", frequency: "annual" }`                                   |
-| `POST: /actions/validate  `         | Validates if an action can be applied to a specific land parcel. Checks eligibility criteria, SSSI restrictions, and action compatibility. <br><br>Body: `{ actionCode: string, parcelId: string, sheetId: string }` <br><br> Response: `{ eligible: boolean, availableArea: number, restrictions: string[] }` |
-| `GET: /parcel/{sheetId}-{parcelId}` | Returns data for a specific parcel and includes the actions that can be made on that parcel                                                                                                                                                                                                                    |
+This API includes swagger documentation, this can be viewed at:
 
-## Development helpers
-
-### MongoDB Locks
-
-If you require a write lock for Mongo you can acquire it via `server.locker` or `request.locker`:
-
-```javascript
-async function doStuff(server) {
-  const lock = await server.locker.lock('unique-resource-name')
-
-  if (!lock) {
-    // Lock unavailable
-    return
-  }
-
-  try {
-    // do stuff
-  } finally {
-    await lock.free()
-  }
-}
-```
-
-Keep it small and atomic.
-
-You may use **using** for the lock resource management.
-Note test coverage reports do not like that syntax.
-
-```javascript
-async function doStuff(server) {
-  await using lock = await server.locker.lock('unique-resource-name')
-
-  if (!lock) {
-    // Lock unavailable
-    return
-  }
-
-  // do stuff
-
-  // lock automatically released
-}
-```
-
-Helper methods are also available in `/src/helpers/mongo-lock.js`.
+`http://{host_name}:3001/documentation`
 
 ## Docker
 
@@ -241,6 +198,51 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 ### SonarCloud
 
 Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
+
+## Development helpers
+
+### MongoDB Locks
+
+If you require a write lock for Mongo you can acquire it via `server.locker` or `request.locker`:
+
+```javascript
+async function doStuff(server) {
+  const lock = await server.locker.lock('unique-resource-name')
+
+  if (!lock) {
+    // Lock unavailable
+    return
+  }
+
+  try {
+    // do stuff
+  } finally {
+    await lock.free()
+  }
+}
+```
+
+Keep it small and atomic.
+
+You may use **using** for the lock resource management.
+Note test coverage reports do not like that syntax.
+
+```javascript
+async function doStuff(server) {
+  await using lock = await server.locker.lock('unique-resource-name')
+
+  if (!lock) {
+    // Lock unavailable
+    return
+  }
+
+  // do stuff
+
+  // lock automatically released
+}
+```
+
+Helper methods are also available in `/src/helpers/mongo-lock.js`.
 
 ## Licence
 
