@@ -34,7 +34,9 @@ describe('#swagger', () => {
           info: {
             title: 'Land Grants API',
             version: config.serviceVersion
-          }
+          },
+          swaggerUI: true,
+          documentationPage: true
         }
       }
     ])
