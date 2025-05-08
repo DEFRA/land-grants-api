@@ -19,8 +19,8 @@ export const postgresDb = {
      */
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
-      if (process.env.NODE_ENV === 'test') {
-        server.logger.info('Skipping Postgres connection in test mode')
+      if (options.disablePostgres) {
+        server.logger.info('Skipping Postgres connection')
         return
       }
 
@@ -61,6 +61,7 @@ export const postgresDb = {
     host: config.get('landData.dbHost'),
     password: config.get('landData.dbPassword'),
     isLocal: config.get('isLocal'),
+    disablePostgres: config.get('disablePostgres'),
     seed: config.get('seedDb')
   }
 }
