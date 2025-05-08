@@ -30,11 +30,11 @@ describe('Parcel controller', () => {
     jest.clearAllMocks()
   })
 
-  describe('GET /parcel/:parcel route', () => {
+  describe('GET /parcels/:parcel route', () => {
     test('should return 400 if the request has an invalid parcel param', async () => {
       const request = {
         method: 'GET',
-        url: '/parcel/1'
+        url: '/parcels/1'
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -55,7 +55,7 @@ describe('Parcel controller', () => {
 
       const request = {
         method: 'GET',
-        url: `/parcel/${sheetId}-${parcelId}`
+        url: `/parcels/${sheetId}-${parcelId}`
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -77,7 +77,7 @@ describe('Parcel controller', () => {
 
       const request = {
         method: 'GET',
-        url: `/parcel/${sheetId}-${parcelId}`
+        url: `/parcels/${sheetId}-${parcelId}`
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -99,7 +99,7 @@ describe('Parcel controller', () => {
 
       const request = {
         method: 'GET',
-        url: `/parcel/${sheetId}-${parcelId}`
+        url: `/parcels/${sheetId}-${parcelId}`
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -121,7 +121,7 @@ describe('Parcel controller', () => {
 
       const request = {
         method: 'GET',
-        url: `/parcel/${sheetId}-${parcelId}`
+        url: `/parcels/${sheetId}-${parcelId}`
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */

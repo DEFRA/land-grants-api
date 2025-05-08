@@ -1,29 +1,11 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { LandActionsPaymentController } from '~/src/api/actions/controllers/action-payment.controller.js'
-import { calculatePayment } from '~/src/api/actions/service/land-actions.service.js'
+import { PaymentsCalculateController } from '~/src/api/payment/controllers/payment-calculate.controller.js'
+import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
+import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 
-jest.mock('~/src/api/actions/service/land-actions.service.js')
+jest.mock('~/src/api/payment/service/payment.service.js')
 
-describe('LandActionsPaymentController', () => {
-  const mockLandActions = {
-    landActions: [
-      {
-        sheetId: 'SX0679',
-        parcelId: '9238',
-        sbi: '123456789',
-        actions: [
-          {
-            code: 'BND1',
-            quantity: 99
-          },
-          {
-            code: 'BND2',
-            quantity: 200
-          }
-        ]
-      }
-    ]
-  }
+describe('PaymentsCalculateController', () => {
   const mockRequest = {
     payload: mockLandActions,
     logger: {
@@ -53,7 +35,7 @@ describe('LandActionsPaymentController', () => {
   test('should return calculated payment amount for given land actions data on success', async () => {
     calculatePayment.mockReturnValue(mockCalculatedPaymentData)
 
-    await LandActionsPaymentController.handler(mockRequest, mockResponse)
+    await PaymentsCalculateController.handler(mockRequest, mockResponse)
 
     expect(calculatePayment).toHaveBeenCalledWith(
       mockLandActions.landActions,
@@ -72,7 +54,7 @@ describe('LandActionsPaymentController', () => {
     const testError = new Error('Data not found')
     calculatePayment.mockRejectedValue(testError)
 
-    await LandActionsPaymentController.handler(mockRequest, mockResponse)
+    await PaymentsCalculateController.handler(mockRequest, mockResponse)
 
     expect(mockResponse.response).toHaveBeenCalledWith({
       message: testError.message
