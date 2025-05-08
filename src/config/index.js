@@ -1,4 +1,5 @@
 import convict from 'convict'
+import 'dotenv/config'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -111,6 +112,12 @@ const config = convict({
     doc: 'If this application running in the test environment',
     format: Boolean,
     default: isTest
+  },
+  disablePostgres: {
+    doc: 'If we should skip the postgres connection',
+    format: Boolean,
+    default: true,
+    env: 'DISABLE_POSTGRES'
   },
   isLocal: {
     doc: 'If this application running in the local environment',
