@@ -7,6 +7,7 @@ import { mongooseDb } from '~/src/api/common/helpers/mongoose.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
+import { swagger } from '~/src/api/common/plugins/swagger.js'
 import { router } from '~/src/api/router.js'
 import { config } from '~/src/config/index.js'
 import { postgresDb } from './common/helpers/postgres.js'
@@ -47,6 +48,7 @@ async function createServer() {
   // pulse          - provides shutdown handlers
   // mongooseDb     - sets up mongoose connection pool and attaches to `server` and `request` objects
   // router         - routes used in the app
+  // swagger        - swagger documentation
   await server.register([
     requestLogger,
     requestTracing,
@@ -56,6 +58,9 @@ async function createServer() {
     postgresDb,
     router
   ])
+
+  // Register swagger separately as it needs Inert and Vision plugins
+  await swagger.plugins.register(server)
 
   return server
 }

@@ -10,7 +10,7 @@ const parcel = {
       server.route([
         {
           method: 'GET',
-          path: '/parcel/{parcel}',
+          path: '/parcels/{parcel}',
           ...ParcelController
         }
       ])

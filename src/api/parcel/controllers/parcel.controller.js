@@ -20,6 +20,10 @@ import {
  */
 const ParcelController = {
   options: {
+    tags: ['api'],
+    description: 'Get land parcel',
+    notes:
+      'Returns data for a specific parcel and includes the actions that can be made on that parcel',
     validate: {
       params: Joi.object({
         parcel: parcelIdSchema

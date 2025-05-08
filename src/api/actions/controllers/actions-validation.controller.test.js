@@ -1,29 +1,10 @@
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { LandActionsValidateController } from '~/src/api/actions/controllers/actions-validation.controller.js'
 import { validateLandActions } from '~/src/api/actions/service/land-actions.service.js'
-
+import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 jest.mock('~/src/api/actions/service/land-actions.service.js')
 
 describe('LandActionsValidateController', () => {
-  const mockLandActions = {
-    landActions: [
-      {
-        sheetId: 'SX0679',
-        parcelId: '9238',
-        sbi: '123456789',
-        actions: [
-          {
-            code: 'BND1',
-            quantity: 99
-          },
-          {
-            code: 'BND2',
-            quantity: 200
-          }
-        ]
-      }
-    ]
-  }
   const mockRequest = {
     payload: mockLandActions,
     logger: {
