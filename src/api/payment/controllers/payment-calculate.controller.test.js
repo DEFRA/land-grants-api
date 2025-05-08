@@ -1,65 +1,136 @@
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { PaymentsCalculateController } from '~/src/api/payment/controllers/payment-calculate.controller.js'
-import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
+import Hapi from '@hapi/hapi'
 import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
+import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
+import { payments } from '~/src/api/payment/index.js'
 
-jest.mock('~/src/api/payment/service/payment.service.js')
+jest.mock('~/src/api/payment/service/payment.service.js', () => ({
+  calculatePayment: jest.fn()
+}))
 
-describe('PaymentsCalculateController', () => {
-  const mockRequest = {
-    payload: mockLandActions,
-    logger: {
+describe('Payment calculate controller', () => {
+  const server = Hapi.server()
+
+  beforeAll(async () => {
+    server.decorate('request', 'logger', {
       info: jest.fn(),
+      debug: jest.fn(),
       error: jest.fn()
-    }
-  }
+    })
 
-  const mockResponse = {
-    code: jest.fn().mockReturnThis(),
-    response: jest.fn().mockReturnThis()
-  }
+    await server.register([payments])
+    await server.initialize()
+  })
 
-  const mockCalculatedPaymentData = {
-    message: 'success',
-    payment: {
-      total: 100.98
-    }
-  }
+  afterAll(async () => {
+    await server.stop()
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockResponse.code.mockReturnThis()
-    mockResponse.response.mockReturnThis()
   })
 
-  test('should return calculated payment amount for given land actions data on success', async () => {
-    calculatePayment.mockReturnValue(mockCalculatedPaymentData)
+  describe('GET /payments/calculate route', () => {
+    test('should return 200 if the request has a valid parcel payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
 
-    await PaymentsCalculateController.handler(mockRequest, mockResponse)
+      calculatePayment.mockResolvedValue({
+        payment: {
+          total: 100.98
+        }
+      })
 
-    expect(calculatePayment).toHaveBeenCalledWith(
-      mockLandActions.landActions,
-      mockRequest.logger
-    )
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
 
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: 'success',
-      ...mockCalculatedPaymentData
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.ok)
-  })
+    test('should return 400 if the request has an invalid parcel payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: {
+          landActions: null
+        }
+      }
 
-  test('should return error response when calculatePayment throws an error', async () => {
-    const testError = new Error('Data not found')
-    calculatePayment.mockRejectedValue(testError)
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
 
-    await PaymentsCalculateController.handler(mockRequest, mockResponse)
-
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: testError.message
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
+    test('should return 400 if the request has no land actions in payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: {
+          landActions: {
+            actions: []
+          }
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 if the request has an invalid land action', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      calculatePayment.mockResolvedValue(null)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Unable to calculate payment')
+    })
+
+    test('should return 500 if the controller throws an error', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      calculatePayment.mockRejectedValue(
+        new Error('An internal server error occurred')
+      )
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
   })
 })

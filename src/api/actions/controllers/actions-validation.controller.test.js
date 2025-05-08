@@ -1,82 +1,147 @@
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { LandActionsValidateController } from '~/src/api/actions/controllers/actions-validation.controller.js'
-import { validateLandActions } from '~/src/api/actions/service/land-actions.service.js'
+import Hapi from '@hapi/hapi'
 import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
-jest.mock('~/src/api/actions/service/land-actions.service.js')
+import { validateLandActions } from '~/src/api/actions/service/land-actions.service.js'
+import { landactions } from '~/src/api/actions/index.js'
 
-describe('LandActionsValidateController', () => {
-  const mockRequest = {
-    payload: mockLandActions,
-    logger: {
+jest.mock('~/src/api/actions/service/land-actions.service.js', () => ({
+  validateLandActions: jest.fn()
+}))
+
+describe('Actions validation controller', () => {
+  const server = Hapi.server()
+
+  beforeAll(async () => {
+    server.decorate('request', 'logger', {
       info: jest.fn(),
+      debug: jest.fn(),
       error: jest.fn()
-    }
-  }
+    })
 
-  const mockResponse = {
-    code: jest.fn().mockReturnThis(),
-    response: jest.fn().mockReturnThis()
-  }
+    await server.register([landactions])
+    await server.initialize()
+  })
 
-  const mockValidationErrorResponse = {
-    errorMessages: ['BND2 is exceeding max limit 100'],
-    valid: false
-  }
-
-  const mockValidationResponse = {
-    message: 'success',
-    ...mockValidationErrorResponse
-  }
+  afterAll(async () => {
+    await server.stop()
+  })
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockResponse.code.mockReturnThis()
-    mockResponse.response.mockReturnThis()
   })
 
-  test('should return validation response with errorMessages on successful validation', async () => {
-    validateLandActions.mockReturnValue(mockValidationResponse)
+  describe('POST /actions/validate route', () => {
+    test('should return 200 if the request has a valid parcel payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
 
-    await LandActionsValidateController.handler(mockRequest, mockResponse)
-    expect(validateLandActions).toHaveBeenCalled()
-    expect(validateLandActions).toHaveBeenCalledWith(
-      mockLandActions.landActions,
-      mockRequest.logger
-    )
+      validateLandActions.mockResolvedValue({
+        errorMessages: [],
+        valid: true
+      })
 
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: 'success',
-      ...mockValidationResponse
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.ok)
-  })
+    test('should return 400 if the request has an invalid parcel payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: {
+          landActions: null
+        }
+      }
 
-  test('should return error response when no data provided in the request, validationActions throws an error', async () => {
-    const testError = new Error('landActions is required')
-    validateLandActions.mockRejectedValue(testError)
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
 
-    await LandActionsValidateController.handler(mockRequest, mockResponse)
-
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: testError.message
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
-  })
+    test('should return 400 if the request has no land actions in payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: {
+          landActions: {
+            actions: []
+          }
+        }
+      }
 
-  test('should return error response when validationActions throws an error', async () => {
-    const testError = new Error('Validation failed')
-    validateLandActions.mockImplementation(() => {
-      throw testError
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
-    await LandActionsValidateController.handler(mockRequest, mockResponse)
+    test('should return 200 if the request has an invalid land action', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
 
-    expect(mockResponse.response).toHaveBeenCalledWith({
-      message: testError.message
+      const validationResponse = {
+        errorMessages: [
+          {
+            code: 'BND1',
+            description: 'Invalid land action'
+          }
+        ],
+        valid: false
+      }
+
+      validateLandActions.mockResolvedValue(validationResponse)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, errorMessages, valid }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(errorMessages).toEqual(validationResponse.errorMessages)
+      expect(valid).toBe(validationResponse.valid)
     })
 
-    expect(mockResponse.code).toHaveBeenCalledWith(statusCodes.notFound)
+    test('should return 500 if the controller throws an error', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      validateLandActions.mockRejectedValue(
+        new Error('An internal server error occurred')
+      )
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
   })
 })
