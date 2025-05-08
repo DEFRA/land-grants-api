@@ -19,7 +19,7 @@ const LandActionsValidateController = {
     tags: ['api'],
     description: 'Validate land actions',
     notes:
-      'Validates if an action can be applied to a specific land parcel. Checks eligibility criteria, SSSI restrictions, and action compatibility.',
+      'Validates if a combination of actions and quantities can be applied to a specific land parcel. Checks eligibility criteria, SSSI restrictions, and action compatibility.',
     validate: {
       payload: landActionSchema
     },
