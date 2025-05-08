@@ -22,7 +22,12 @@ const landActionSchema = Joi.object({
 
 const landActionValidationResponseSchema = Joi.object({
   message: Joi.string().required(),
-  errorMessages: Joi.array().items(Joi.string()).required(),
+  errorMessages: Joi.array().items(
+    Joi.object({
+      code: Joi.string().required(),
+      description: Joi.string().required()
+    })
+  ),
   valid: Joi.boolean().required()
 })
 
