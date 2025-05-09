@@ -31,6 +31,15 @@ describe('#swagger', () => {
         plugin: 'mock-hapi-swagger',
         options: {
           definitionPrefix: 'useLabel',
+          security: [{ jwt: [] }],
+          securityDefinitions: {
+            jwt: {
+              type: 'apiKey',
+              name: 'Authorization',
+              in: 'header',
+              description: 'Enter your JWT token without any prefix'
+            }
+          },
           info: {
             title: 'Land Grants API',
             version: config.serviceVersion
