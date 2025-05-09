@@ -1,7 +1,9 @@
 import convict from 'convict'
 import 'dotenv/config'
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import grantsUi from './grants-ui.js'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,6 +30,12 @@ const config = convict({
     format: 'port',
     default: 3001,
     env: 'PORT'
+  },
+  serviceBaseUrl: {
+    doc: 'Api Service base URL',
+    format: String,
+    default: 'http://localhost:3001',
+    env: 'APP_BASE_URL'
   },
   serviceName: {
     doc: 'Api Service Name',
@@ -66,6 +74,7 @@ const config = convict({
       env: 'ENTRA_INTERNAL_SCOPE_RESOURCE'
     }
   },
+  grantsUi: grantsUi.getProperties(),
   landData: {
     dbHost: {
       doc: 'Land Data DB host',

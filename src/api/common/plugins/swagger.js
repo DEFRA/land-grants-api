@@ -1,6 +1,6 @@
-import HapiSwagger from 'hapi-swagger'
 import Inert from '@hapi/inert'
 import Vision from '@hapi/vision'
+import HapiSwagger from 'hapi-swagger'
 
 import { config } from '~/src/config/index.js'
 
@@ -17,6 +17,15 @@ const swagger = {
           plugin: HapiSwagger,
           options: {
             definitionPrefix: 'useLabel',
+            security: [{ jwt: [] }],
+            securityDefinitions: {
+              jwt: {
+                type: 'apiKey',
+                name: 'Authorization',
+                in: 'header',
+                description: 'Enter your JWT token without any prefix'
+              }
+            },
             info: {
               title: 'Land Grants API',
               version: config.serviceVersion

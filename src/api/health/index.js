@@ -10,6 +10,9 @@ const health = {
       server.route({
         method: 'GET',
         path: '/health',
+        options: {
+          auth: false
+        },
         ...healthController
       })
     }

@@ -1,4 +1,5 @@
 import hapi from '@hapi/hapi'
+import hapiAuthJwt2 from 'hapi-auth-jwt2'
 import path from 'path'
 
 import { failAction } from '~/src/api/common/helpers/fail-action.js'
@@ -42,6 +43,7 @@ async function createServer() {
   })
 
   // Hapi Plugins:
+  // hapiAuthJwt2   - JWT authentication
   // requestLogger  - automatically logs incoming requests
   // requestTracing - trace header logging and propagation
   // secureContext  - loads CA certificates from environment config
@@ -50,6 +52,7 @@ async function createServer() {
   // router         - routes used in the app
   // swagger        - swagger documentation
   await server.register([
+    hapiAuthJwt2,
     requestLogger,
     requestTracing,
     secureContext,
@@ -61,6 +64,25 @@ async function createServer() {
 
   // Register swagger separately as it needs Inert and Vision plugins
   await swagger.plugins.register(server)
+
+  // JWT validation function
+  const validate = (decoded) => {
+    // Perform any additional validation logic here
+    if (decoded?.service !== 'grants-ui') {
+      return { isValid: false }
+    }
+    return { isValid: true }
+  }
+
+  // Set up the JWT authentication strategy
+  server.auth.strategy('jwt', 'jwt', {
+    key: config.get('grantsUi.publicKey'),
+    validate,
+    verifyOptions: { algorithms: ['RS256'] }
+  })
+
+  // Set the default authentication strategy
+  server.auth.default('jwt')
 
   return server
 }
