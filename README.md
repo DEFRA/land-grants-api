@@ -94,6 +94,33 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+### Loading land-data into local postgres:
+
+1. Copy files from https://defra.sharepoint.com/teams/Team1645/Restricted_FCP%20RPS%20Future/Forms/AllItems.aspx?id=%2Fteams%2FTeam1645%2FRestricted%5FFCP%20RPS%20Future%2Fland%2Dgrant%2Dapi%2Ddata&viewid=f5678bbd%2Dae3a%2D4cd4%2D9f4c%2Dab8e79452a94&ovuser=770a2450%2D0227%2D4c62%2D90c7%2D4e38537f1102%2CJilly%2EGledhill%40defra%2Egov%2Euk&OR=Teams%2DHL&CT=1733739622621&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNDEwMjAwMTMxOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D
+
+to srr/api/common/migration folder
+
+2. set environment variables:
+
+- DISABLE_POSTGRES=false
+- NODE_ENV=local
+
+3. run
+
+```bash
+npm run dev
+```
+
+4. Successful data load message in the console on start-up
+
+- Successfully loaded postgres data 001-create-schema.sql into Postgis
+- Successfully loaded postgres data 002-create-land-table.sql into Postgis
+- Successfully loaded postgres data 003-create-land-covers-table.sql into Postgis
+- Successfully loaded postgres data 004-create-moorland-designations-table.sql into Postgis
+- Successfully loaded postgres data land-parcels-data.sql into Postgis
+- Successfully loaded postgres data land-covers-data.sql into Postgis
+- Successfully loaded postgres data moorland-designations-data.sql into Postgis
+
 ### Testing
 
 To test the application run:
