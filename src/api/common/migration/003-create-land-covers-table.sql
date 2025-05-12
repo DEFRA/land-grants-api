@@ -5,5 +5,6 @@
         land_cover_class_code TEXT, 
         is_linear_feature BOOLEAN,
         area_sqm NUMERIC,
-        geom GEOMETRY
+        geom GEOMETRY,
+        last_updated DATE
       );

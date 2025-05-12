@@ -55,7 +55,7 @@ export const postgresDb = {
             pool,
             server.logger
           )
-          await loadPostgresData('land-data.sql', pool, server.logger)
+          await loadPostgresData('land-parcels-data.sql', pool, server.logger)
           await loadPostgresData('land-covers-data.sql', pool, server.logger)
           await loadPostgresData(
             'moorland-designations-data.sql',
