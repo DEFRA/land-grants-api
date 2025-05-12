@@ -116,7 +116,7 @@ const config = convict({
   disablePostgres: {
     doc: 'If we should skip the postgres connection',
     format: Boolean,
-    default: true,
+    default: !isLocal,
     env: 'DISABLE_POSTGRES'
   },
   isLocal: {
