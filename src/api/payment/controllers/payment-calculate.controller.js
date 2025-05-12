@@ -1,3 +1,4 @@
+import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
 import { landActionSchema } from '~/src/api/actions/schema/action-validation.schema.js'
@@ -37,23 +38,35 @@ const PaymentsCalculateController = {
       request.logger.info(
         `Controller calculating land actions payment ${landActions}`
       )
+
+      if (!landActions?.actions?.length === 0) {
+        const errorMessage =
+          'Error calculating payment land actions, no land or actions data provided'
+        request.logger.error(errorMessage)
+        return Boom.badRequest(errorMessage)
+      }
+
       const calculateResponse = await calculatePayment(
         landActions,
         request.logger
       )
 
+      if (!calculateResponse) {
+        const errorMessage = 'Unable to calculate payment'
+        request.logger.error(errorMessage)
+        return Boom.badRequest(errorMessage)
+      }
+
       return h
         .response({ message: 'success', ...calculateResponse })
         .code(statusCodes.ok)
     } catch (error) {
-      request.logger.error(
-        `Error calculating land actions payment: ${error.message}`
-      )
-      return h
-        .response({
-          message: error.message
-        })
-        .code(statusCodes.notFound)
+      const errorMessage = `Error calculating land actions payment: ${error.message}`
+      request.logger.error(errorMessage, {
+        error: error.message,
+        stack: error.stack
+      })
+      return Boom.internal(errorMessage)
     }
   }
 }
