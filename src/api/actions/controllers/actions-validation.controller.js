@@ -1,3 +1,4 @@
+import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { validateLandActions } from '~/src/api/actions/service/land-actions.service.js'
 import {
@@ -36,6 +37,7 @@ const LandActionsValidateController = {
     try {
       const { landActions } = request.payload
       request.logger.info(`Controller validating land actions ${landActions}`)
+
       const validationResponse = await validateLandActions(
         landActions,
         request.logger
@@ -45,12 +47,12 @@ const LandActionsValidateController = {
         .response({ message: 'success', ...validationResponse })
         .code(statusCodes.ok)
     } catch (error) {
-      request.logger.error(`Error validating land actions: ${error.message}`)
-      return h
-        .response({
-          message: error.message
-        })
-        .code(statusCodes.notFound)
+      const errorMessage = `Error validating land actions: ${error.message}`
+      request.logger.error(errorMessage, {
+        error: error.message,
+        stack: error.stack
+      })
+      return Boom.internal(errorMessage)
     }
   }
 }
