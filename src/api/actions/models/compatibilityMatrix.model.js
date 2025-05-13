@@ -14,6 +14,6 @@ const schema = new mongoose.Schema(
   }
 )
 
-schema.index({ optionCode: 1, optionCodeCompat: 1, year: 1 }, { unique: true })
+schema.index({ optionCode: 1 }, { unique: true })
 
 export default mongoose.model(collection, schema)

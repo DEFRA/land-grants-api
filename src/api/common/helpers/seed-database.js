@@ -10,8 +10,8 @@ export async function seedDatabase(logger) {
 
   for (const [name, model] of Object.entries(models)) {
     try {
-      await model
-        .deleteMany()
+      await model.db
+        .dropCollection(name)
         .catch(() => logger.warn(`Collection '${name}' does not exist`))
 
       logger.info(`Dropped collection '${name}'`)
