@@ -7,8 +7,6 @@ const landParcelSchema = Joi.object({
   sheetId: Joi.string().required(),
   areaSqm: Joi.number().positive().required(),
   geom: Joi.string().required(),
-  validFrom: Joi.date().required(),
-  validTo: Joi.date().optional().allow(null),
   lastUpdated: Joi.date().required().allow(null)
 }).required()
 
