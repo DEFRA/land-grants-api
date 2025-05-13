@@ -13,12 +13,14 @@ jest.mock('mongoose', () => ({
 }))
 
 jest.mock('~/src/api/common/models/index.js', () => {
-  const mockDeleteMany = jest.fn().mockResolvedValue(true)
+  const mockDropCollection = jest.fn().mockResolvedValue(true)
   const mockInsertMany = jest.fn().mockResolvedValue(true)
 
   return {
     'parcel-data': {
-      deleteMany: mockDeleteMany,
+      db: {
+        dropCollection: mockDropCollection
+      },
       insertMany: mockInsertMany
     }
   }
@@ -38,7 +40,7 @@ describe('seedDatabase', () => {
   test('successfully seeds the database when mongoose is connected', async () => {
     await seedDatabase(mockLogger)
 
-    expect(models['parcel-data'].deleteMany).toHaveBeenCalledTimes(1)
+    expect(models['parcel-data'].db.dropCollection).toHaveBeenCalledTimes(1)
 
     expect(models['parcel-data'].insertMany).toHaveBeenCalledWith(
       data['parcel-data']
