@@ -1,7 +1,7 @@
 import pg from 'pg'
 import { config } from '~/src/config/index.js'
 import { getValidToken } from './entra/token-manager.js'
-import { loadLandData } from './load-land-data.js'
+import { loadPostgresData } from './load-land-data.js'
 const { Pool } = pg
 
 /**
@@ -20,7 +20,7 @@ export const postgresDb = {
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
       if (options.disablePostgres) {
-        server.logger.info('Skipping Postgres connection')
+        server.logger.info('Skipping Postgres connection in test mode')
         return
       }
 
@@ -39,7 +39,29 @@ export const postgresDb = {
         client.release()
 
         if (options.isLocal) {
-          await loadLandData(pool, server.logger)
+          await loadPostgresData('001-create-schema.sql', pool, server.logger)
+          await loadPostgresData(
+            '002-create-land-table.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            '003-create-land-covers-table.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            '004-create-moorland-designations-table.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData('land-parcels-data.sql', pool, server.logger)
+          await loadPostgresData('land-covers-data.sql', pool, server.logger)
+          await loadPostgresData(
+            'moorland-designations-data.sql',
+            pool,
+            server.logger
+          )
         }
 
         server.decorate('server', 'postgresDb', pool)
