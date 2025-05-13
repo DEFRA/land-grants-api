@@ -3,7 +3,7 @@ import path from 'path'
 
 import { fileURLToPath } from 'url'
 
-async function loadPostgresData(dataFileName, server, logger) {
+async function runPostgresScript(dataFileName, server, logger) {
   const client = await server.connect()
   try {
     const __filename = fileURLToPath(import.meta.url)
@@ -28,4 +28,4 @@ async function loadPostgresData(dataFileName, server, logger) {
   }
 }
 
-export { loadPostgresData }
+export { runPostgresScript }

@@ -1,7 +1,7 @@
 import pg from 'pg'
 import { config } from '~/src/config/index.js'
 import { getValidToken } from './entra/token-manager.js'
-import { loadPostgresData } from './load-land-data.js'
+import { runPostgresScript } from './load-land-data.js'
 const { Pool } = pg
 
 /**
@@ -39,37 +39,37 @@ export const postgresDb = {
         client.release()
 
         if (options.isLocal) {
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/migration/001-create-schema.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/migration/002-create-land-table.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/migration/003-create-land-covers-table.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/migration/004-create-moorland-designations-table.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/helpers/seed-data/land-parcels-data.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/helpers/seed-data/land-covers-data.sql',
             pool,
             server.logger
           )
-          await loadPostgresData(
+          await runPostgresScript(
             '../common/helpers/seed-data/moorland-designations-data.sql',
             pool,
             server.logger
