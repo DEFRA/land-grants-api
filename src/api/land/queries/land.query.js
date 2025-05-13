@@ -1,7 +1,7 @@
 /**
  * Get a land data
- * @param {string} parcelId - The parcelId
  * @param {string} sheetId - The sheetId
+ * @param {string} parcelId - The parcelId
  * @param {object} {db, logger} - DB connection and logger object
  * @returns {object} The land data
  */
