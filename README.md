@@ -105,6 +105,13 @@ to srr/api/common/migration folder
 - DISABLE_POSTGRES=false
 - NODE_ENV=local
 
+Refer: .env.example
+If you have issue with .env file set env variables in package.json scripts
+
+```
+ "dev": "NODE_ENV=local SEED_DB=true DISABLE_POSTGRES=false npm run server:watch",
+```
+
 3. run
 
 ```bash
