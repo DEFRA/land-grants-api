@@ -1,90 +1,81 @@
-import hapi from '@hapi/hapi'
+import { startServer } from '~/src/api/common/helpers/start-server.js'
+import { createServer } from '~/src/api/index.js'
+import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
 
-const mockLoggerInfo = jest.fn()
-const mockLoggerError = jest.fn()
-
-const mockHapiLoggerInfo = jest.fn()
-const mockHapiLoggerError = jest.fn()
-
-jest.mock('hapi-pino', () => ({
-  register: (server) => {
-    server.decorate('server', 'logger', {
-      info: mockHapiLoggerInfo,
-      error: mockHapiLoggerError
-    })
-  },
-  name: 'mock-hapi-pino'
+// Mock all external dependencies
+jest.mock('~/src/config/index.js', () => ({
+  config: {
+    get: jest.fn().mockReturnValue(3000)
+  }
 }))
+
+jest.mock('~/src/api/index.js', () => ({
+  createServer: jest.fn()
+}))
+
 jest.mock('~/src/api/common/helpers/logging/logger.js', () => ({
-  createLogger: () => ({
-    info: (...args) => mockLoggerInfo(...args),
-    error: (...args) => mockLoggerError(...args)
-  })
+  createLogger: jest.fn()
 }))
 
-describe('#startServer', () => {
-  const PROCESS_ENV = process.env
-  let createServerSpy
-  let hapiServerSpy
-  let startServerImport
-  let createServerImport
+describe('startServer', () => {
+  // Mock server and logger objects
+  const mockServer = {
+    start: jest.fn().mockResolvedValue(),
+    logger: {
+      info: jest.fn(),
+      error: jest.fn()
+    }
+  }
 
-  beforeAll(async () => {
-    process.env = { ...PROCESS_ENV }
-    process.env.PORT = '3098' // Set to obscure port to avoid conflicts
+  const mockLogger = {
+    info: jest.fn(),
+    error: jest.fn()
+  }
 
-    createServerImport = await import('~/src/api/index.js')
-    startServerImport = await import(
-      '~/src//api/common/helpers/start-server.js'
+  beforeEach(() => {
+    jest.clearAllMocks()
+    createServer.mockResolvedValue(mockServer)
+    createLogger.mockReturnValue(mockLogger)
+  })
+
+  test('successfully starts the server', async () => {
+    const server = await startServer()
+
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(mockServer.start).toHaveBeenCalledTimes(1)
+    expect(mockServer.logger.info).toHaveBeenCalledWith(
+      'Server started successfully'
     )
-
-    createServerSpy = jest.spyOn(createServerImport, 'createServer')
-    hapiServerSpy = jest.spyOn(hapi, 'server')
+    expect(mockServer.logger.info).toHaveBeenCalledWith(
+      'Access your backend on http://localhost:3000'
+    )
+    expect(server).toBe(mockServer)
   })
 
-  afterAll(() => {
-    process.env = PROCESS_ENV
+  test('handles server creation error', async () => {
+    const testError = new Error('Server creation failed')
+    createServer.mockRejectedValueOnce(testError)
+
+    const server = await startServer()
+
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(createLogger).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith('Server failed to start :(')
+    expect(mockLogger.error).toHaveBeenCalledWith(testError)
+    expect(server).toBeUndefined()
   })
 
-  describe('When server starts', () => {
-    let server
+  test('handles server start error', async () => {
+    const testError = new Error('Server start failed')
+    mockServer.start.mockRejectedValueOnce(testError)
 
-    afterAll(async () => {
-      server && (await server.stop({ timeout: 0 }))
-    })
+    const server = await startServer()
 
-    test('Should start up server as expected', async () => {
-      server = await startServerImport.startServer()
-
-      expect(createServerSpy).toHaveBeenCalled()
-      expect(hapiServerSpy).toHaveBeenCalled()
-      expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        1,
-        'Custom secure context is disabled'
-      )
-      expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        2,
-        'Setting up mongoose'
-      )
-      expect(mockHapiLoggerInfo).toHaveBeenNthCalledWith(
-        5,
-        'Server started successfully'
-      )
-    })
-  })
-
-  describe('When server start fails', () => {
-    beforeAll(() => {
-      createServerSpy.mockRejectedValue(new Error('Server failed to start'))
-    })
-
-    test('Should log failed startup message', async () => {
-      await startServerImport.startServer()
-
-      expect(mockLoggerInfo).toHaveBeenCalledWith('Server failed to start :(')
-      expect(mockLoggerError).toHaveBeenCalledWith(
-        Error('Server failed to start')
-      )
-    })
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(mockServer.start).toHaveBeenCalledTimes(1)
+    expect(createLogger).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith('Server failed to start :(')
+    expect(mockLogger.error).toHaveBeenCalledWith(testError)
+    expect(server).toBe(mockServer)
   })
 })

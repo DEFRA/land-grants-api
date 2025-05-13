@@ -1,30 +1,43 @@
-import { createServer } from '~/src/api/index.js'
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import Hapi from '@hapi/hapi'
+import { health } from '~/src/api/health/index.js'
 
-describe('#healthController', () => {
-  /** @type {Server} */
-  let server
+describe('Health controller', () => {
+  const server = Hapi.server()
 
   beforeAll(async () => {
-    server = await createServer()
+    server.decorate('request', 'logger', {
+      info: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn()
+    })
+
+    await server.register([health])
     await server.initialize()
   })
 
   afterAll(async () => {
-    server && (await server.stop({ timeout: 0 }))
+    await server.stop()
   })
 
-  test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: '/health'
-    })
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-    expect(result).toEqual({ message: 'success' })
-    expect(statusCode).toBe(statusCodes.ok)
+  describe('POST /health route', () => {
+    test('should return 200', async () => {
+      const request = {
+        method: 'GET',
+        url: '/health'
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+    })
   })
 })
-
-/**
- * @import { Server } from '@hapi/hapi'
- */
