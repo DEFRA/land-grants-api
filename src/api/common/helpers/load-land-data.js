@@ -3,7 +3,7 @@ import path from 'path'
 
 import { fileURLToPath } from 'url'
 
-async function loadLandData(server, logger) {
+async function loadPostgresData(dataFileName, server, logger) {
   const client = await server.connect()
   try {
     const __filename = fileURLToPath(import.meta.url)
@@ -11,8 +11,8 @@ async function loadLandData(server, logger) {
     const sqlFilePath = path.join(
       __dirname,
       '..',
-      '/helpers/seed-data',
-      'land-data.sql'
+      '../common/migration',
+      dataFileName
     )
     const sql = await fs.readFile(sqlFilePath, 'utf8')
 
@@ -20,13 +20,17 @@ async function loadLandData(server, logger) {
     await client.query(sql)
     await client.query('COMMIT')
 
-    logger.info('Successfully loaded Land data into Postgis')
+    logger.info(
+      `Successfully loaded postgres data ${dataFileName} into Postgis`
+    )
   } catch (err) {
     await client.query('ROLLBACK')
-    logger.error(`Failed to load Land data into Postgis : ${err}`)
+    logger.error(
+      `Failed to load postgres data file:  ${dataFileName} into Postgis : ${err}`
+    )
   } finally {
     client.release()
   }
 }
 
-export { loadLandData }
+export { loadPostgresData }
