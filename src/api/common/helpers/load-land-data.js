@@ -8,12 +8,7 @@ async function loadPostgresData(dataFileName, server, logger) {
   try {
     const __filename = fileURLToPath(import.meta.url)
     const __dirname = path.dirname(__filename)
-    const sqlFilePath = path.join(
-      __dirname,
-      '..',
-      '../common/migration',
-      dataFileName
-    )
+    const sqlFilePath = path.join(__dirname, '..', dataFileName)
     const sql = await fs.readFile(sqlFilePath, 'utf8')
 
     await client.query('BEGIN')

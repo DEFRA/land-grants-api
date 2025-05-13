@@ -39,26 +39,38 @@ export const postgresDb = {
         client.release()
 
         if (options.isLocal) {
-          await loadPostgresData('001-create-schema.sql', pool, server.logger)
           await loadPostgresData(
-            '002-create-land-table.sql',
+            '../common/migration/001-create-schema.sql',
             pool,
             server.logger
           )
           await loadPostgresData(
-            '003-create-land-covers-table.sql',
+            '../common/migration/002-create-land-table.sql',
             pool,
             server.logger
           )
           await loadPostgresData(
-            '004-create-moorland-designations-table.sql',
+            '../common/migration/003-create-land-covers-table.sql',
             pool,
             server.logger
           )
-          await loadPostgresData('land-parcels-data.sql', pool, server.logger)
-          await loadPostgresData('land-covers-data.sql', pool, server.logger)
           await loadPostgresData(
-            'moorland-designations-data.sql',
+            '../common/migration/004-create-moorland-designations-table.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            '../common/helpers/seed-data/land-parcels-data.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            '../common/helpers/seed-data/land-covers-data.sql',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            '../common/helpers/seed-data/moorland-designations-data.sql',
             pool,
             server.logger
           )
