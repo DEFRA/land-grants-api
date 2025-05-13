@@ -21,7 +21,7 @@ export async function seedDatabase(logger) {
       })
 
       logger.info(
-        `Successfully inserted ${data[name].length} land actions into the '${name}' collection`
+        `Successfully inserted ${data[name].length} into the '${name}' collection`
       )
     } catch (e) {
       logger.error(e)
