@@ -15,3 +15,8 @@ docs/.obsidian
 globalConfig.json
 
 tsconfig.tsbuildinfo
+
+# Land data files
+land-covers-data.sql
+land-parcels-data.sql
+moorland-designations-data.sql
