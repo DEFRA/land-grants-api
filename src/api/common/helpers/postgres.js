@@ -1,6 +1,7 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import pg from 'pg'
+import { getTrustStoreCerts } from '~/src/api/common/helpers/secure-context/get-trust-store-certs.js'
 import { config } from '~/src/config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
@@ -52,14 +53,17 @@ export const postgresDb = {
         ...options,
         port: DEFAULT_PORT
       }
+      const trustStoreCerts = getTrustStoreCerts(process.env)
       const pool = new Pool({
         ...params,
         password: await getToken(params),
         database: options.database,
         ...(server.secureContext &&
-          !options.isLocal && {
+          !options.isLocal &&
+          trustStoreCerts.length > 0 && {
             ssl: {
-              secureContext: server.secureContext
+              rejectUnauthorized: true,
+              ca: trustStoreCerts[0]
             }
           })
       })
@@ -113,7 +117,7 @@ export const postgresDb = {
     database: config.get('postgres.database'),
     host: config.get('postgres.host'),
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
-    isLocal: config.get('isLocal'),
+    isLocal: false,
     disablePostgres: config.get('disablePostgres'),
     seed: config.get('seedDb')
   }
