@@ -1,11 +1,3 @@
-// const mockActions = [
-//   {
-//     code: 'CSAM1',
-//     description:
-//       'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
-//   }
-// ]
-
 const mockActions = [
   {
     version: 1,
