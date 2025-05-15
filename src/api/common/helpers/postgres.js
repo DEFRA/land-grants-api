@@ -52,18 +52,14 @@ export const postgresDb = {
         ...options,
         port: DEFAULT_PORT
       }
-
-      if (options.certificate) server.logger.info('RDS certificate found!')
-
       const pool = new Pool({
         ...params,
         password: await getToken(params),
         database: options.database,
-        ...(!options.isLocal &&
-          options.certificate && {
+        ...(server.secureContext &&
+          !options.isLocal && {
             ssl: {
-              rejectUnauthorized: true,
-              ca: options.certificate
+              secureContext: server.secureContext
             }
           })
       })
@@ -118,7 +114,6 @@ export const postgresDb = {
     host: config.get('postgres.host'),
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
-    certificate: config.get('rdsCertificate'),
     disablePostgres: config.get('disablePostgres'),
     seed: config.get('seedDb')
   }
