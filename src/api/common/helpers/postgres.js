@@ -48,23 +48,19 @@ export const postgresDb = {
         return
       }
 
-      // Inspect secure context before using it
       if (!options.isLocal && server.secureContext) {
         server.logger.info(
           'Secure context is available for Postgres SSL connection'
         )
 
-        // Log available properties of secureContext
         server.logger.info(
           'SecureContext properties:',
           Object.keys(server.secureContext)
         )
 
-        // Check if context property exists (this is the internal OpenSSL context)
         if (server.secureContext.context) {
           server.logger.info('SecureContext has internal context object')
 
-          // Try to check what methods are available on the context
           try {
             const contextMethods = Object.getOwnPropertyNames(
               Object.getPrototypeOf(server.secureContext.context)
@@ -77,7 +73,6 @@ export const postgresDb = {
             )
           }
 
-          // Try to get certificate info if possible
           try {
             if (
               typeof server.secureContext.context.getCertificate === 'function'
