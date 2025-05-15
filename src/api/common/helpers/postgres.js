@@ -114,7 +114,7 @@ export const postgresDb = {
     host: config.get('postgres.host'),
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
-    disablePostgres: config.get('disablePostgres'),
+    disablePostgres: true,
     seed: config.get('seedDb')
   }
 }
