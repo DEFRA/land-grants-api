@@ -8,7 +8,10 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 const isProduction = process.env.NODE_ENV === 'production'
 const isDev = process.env.NODE_ENV === 'development'
 const isTest = process.env.NODE_ENV === 'test'
-const isLocal = process.env.NODE_ENV === 'local'
+const isLocal = !isDev && !isTest && !isProduction
+
+console.log('Environment:', process.env.NODE_ENV)
+
 const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -102,8 +105,7 @@ const config = convict({
   isLocal: {
     doc: 'If this application running in the local environment',
     format: Boolean,
-    default: isLocal,
-    env: 'NODE_ENV'
+    default: isLocal
   },
   log: {
     enabled: {
