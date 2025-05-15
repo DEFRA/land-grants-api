@@ -48,18 +48,77 @@ export const postgresDb = {
         return
       }
 
+      // Inspect secure context before using it
+      if (!options.isLocal && server.secureContext) {
+        server.logger.info(
+          'Secure context is available for Postgres SSL connection'
+        )
+
+        // Log available properties of secureContext
+        server.logger.info(
+          'SecureContext properties:',
+          Object.keys(server.secureContext)
+        )
+
+        // Check if context property exists (this is the internal OpenSSL context)
+        if (server.secureContext.context) {
+          server.logger.info('SecureContext has internal context object')
+
+          // Try to check what methods are available on the context
+          try {
+            const contextMethods = Object.getOwnPropertyNames(
+              Object.getPrototypeOf(server.secureContext.context)
+            )
+            server.logger.info('Context methods available:', contextMethods)
+          } catch (err) {
+            server.logger.warn(
+              'Could not inspect context methods:',
+              err.message
+            )
+          }
+
+          // Try to get certificate info if possible
+          try {
+            if (
+              typeof server.secureContext.context.getCertificate === 'function'
+            ) {
+              const certInfo = server.secureContext.context.getCertificate()
+              server.logger.info('Certificate info available:', !!certInfo)
+            }
+          } catch (err) {
+            server.logger.warn('Could not get certificate info:', err.message)
+          }
+        } else {
+          server.logger.warn(
+            'SecureContext does not have context property - may not be properly initialized'
+          )
+        }
+      } else if (!options.isLocal) {
+        server.logger.warn(
+          'Secure context is not available for Postgres SSL connection'
+        )
+      }
+
+      const sslConfig =
+        !options.isLocal && server.secureContext
+          ? { ssl: { secureContext: server.secureContext } }
+          : {}
+
+      server.logger.info('PostgreSQL connection config:', {
+        user: options.user,
+        host: options.host,
+        port: DEFAULT_PORT,
+        database: options.database,
+        usingSsl: !!sslConfig.ssl
+      })
+
       const pool = new Pool({
         user: options.user,
         password: await getToken(options),
         host: options.host,
         port: DEFAULT_PORT,
         database: options.database,
-        ...(!options.isLocal &&
-          server.secureContext && {
-            ssl: {
-              secureContext: server.secureContext
-            }
-          })
+        ...sslConfig
       })
 
       try {
