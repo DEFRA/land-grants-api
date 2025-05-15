@@ -52,7 +52,7 @@ export const postgresDb = {
         user: options.user,
         password: await getToken(options),
         host: options.host,
-        port: options.port,
+        port: DEFAULT_PORT,
         database: options.database,
         ...(!options.isLocal &&
           server.secureContext && {
