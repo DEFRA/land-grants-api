@@ -102,8 +102,7 @@ const config = convict({
   isLocal: {
     doc: 'If this application running in the local environment',
     format: Boolean,
-    default: isLocal,
-    env: 'NODE_ENV'
+    default: isLocal
   },
   log: {
     enabled: {

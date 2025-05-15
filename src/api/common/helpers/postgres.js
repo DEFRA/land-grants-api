@@ -48,109 +48,18 @@ export const postgresDb = {
         return
       }
 
-      if (!options.isLocal) {
-        server.logger.info(
-          'Checking secure context for Postgres SSL connection...'
-        )
-
-        server.logger.info(`SecureContext exists: ${!!server.secureContext}`)
-
-        if (server.secureContext) {
-          const secureContextProps = Object.keys(server.secureContext)
-          server.logger.info(
-            `SecureContext has ${secureContextProps.length} properties: ${secureContextProps.join(', ')}`
-          )
-
-          server.logger.info(
-            `SecureContext has internal context: ${!!server.secureContext.context}`
-          )
-
-          if (server.secureContext.context) {
-            try {
-              const contextMethods = Object.getOwnPropertyNames(
-                Object.getPrototypeOf(server.secureContext.context)
-              )
-              server.logger.info(
-                `Context has ${contextMethods.length} methods: ${contextMethods.join(', ')}`
-              )
-            } catch (err) {
-              server.logger.warn(
-                `Could not inspect context methods: ${err.message}`
-              )
-            }
-
-            try {
-              const hasAddCertMethod =
-                typeof server.secureContext.context.addCACert === 'function'
-              server.logger.info(
-                `SecureContext can add CA certificates: ${hasAddCertMethod}`
-              )
-
-              if (
-                typeof server.secureContext.context.getCertificatesCount ===
-                'function'
-              ) {
-                try {
-                  const certCount =
-                    server.secureContext.context.getCertificatesCount()
-                  server.logger.info(
-                    `Number of certificates in secure context: ${certCount}`
-                  )
-                } catch (e) {
-                  server.logger.warn(
-                    `Could not get certificate count: ${e.message}`
-                  )
-                }
-              } else {
-                server.logger.info(
-                  'No getCertificatesCount method available on context'
-                )
-              }
-
-              if (
-                typeof server.secureContext.context.getCertificate ===
-                'function'
-              ) {
-                try {
-                  const certInfo = server.secureContext.context.getCertificate()
-                  server.logger.info(
-                    `Certificate info available: ${!!certInfo}`
-                  )
-                } catch (e) {
-                  server.logger.warn(
-                    `Could not get certificate info: ${e.message}`
-                  )
-                }
-              }
-            } catch (err) {
-              server.logger.warn(
-                `Error checking certificate capability: ${err.message}`
-              )
-            }
-          }
-        } else {
-          server.logger.warn(
-            'Secure context is not available for Postgres SSL connection'
-          )
-        }
-      }
-
-      const sslConfig =
-        !options.isLocal && server.secureContext
-          ? { ssl: { secureContext: server.secureContext } }
-          : {}
-
-      server.logger.info(
-        `PostgreSQL connection config: user=${options.user}, host=${options.host}, database=${options.database}, usingSsl=${!!sslConfig.ssl}`
-      )
-
       const pool = new Pool({
         user: options.user,
         password: await getToken(options),
         host: options.host,
         port: DEFAULT_PORT,
         database: options.database,
-        ...sslConfig
+        ...(!options.isLocal &&
+          server.secureContext && {
+            ssl: {
+              secureContext: server.secureContext
+            }
+          })
       })
 
       try {
