@@ -170,6 +170,13 @@ const config = convict({
     default: isProduction,
     env: 'ENABLE_SECURE_CONTEXT'
   },
+  rdsCertificate: {
+    doc: 'RDS certificate',
+    format: String,
+    nullable: true,
+    default: null,
+    env: 'TRUSTSTORE_RDS_ROOT_CA'
+  },
   isMetricsEnabled: {
     doc: 'Enable metrics reporting',
     format: Boolean,
