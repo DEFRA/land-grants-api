@@ -48,13 +48,11 @@ export const postgresDb = {
         return
       }
 
-      const params = {
-        ...options,
-        port: DEFAULT_PORT
-      }
       const pool = new Pool({
-        ...params,
-        password: await getToken(params),
+        user: options.user,
+        password: await getToken(options),
+        host: options.host,
+        port: options.port,
         database: options.database,
         ...(!options.isLocal &&
           server.secureContext && {
