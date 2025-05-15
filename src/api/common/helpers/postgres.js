@@ -56,8 +56,8 @@ export const postgresDb = {
         ...params,
         password: await getToken(params),
         database: options.database,
-        ...(server.secureContext &&
-          !options.isLocal && {
+        ...(!options.isLocal &&
+          server.secureContext && {
             ssl: {
               secureContext: server.secureContext
             }
