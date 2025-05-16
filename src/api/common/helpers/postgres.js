@@ -49,16 +49,14 @@ export const postgresDb = {
         return
       }
 
-      const params = {
-        ...options,
-        port: DEFAULT_PORT
-      }
       const pool = new Pool({
-        ...params,
-        password: await getToken(params),
+        user: options.user,
+        password: await getToken(options),
+        host: options.host,
+        port: DEFAULT_PORT,
         database: options.database,
-        ...(server.secureContext &&
-          !options.isLocal && {
+        ...(!options.isLocal &&
+          server.secureContext && {
             ssl: {
               secureContext: server.secureContext
             }
@@ -115,6 +113,7 @@ export const postgresDb = {
     host: config.get('postgres.host'),
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
+    region: config.get('postgres.region'),
     disablePostgres: config.get('disablePostgres'),
     seed: config.get('seedDb')
   }
