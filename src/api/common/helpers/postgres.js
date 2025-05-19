@@ -1,8 +1,32 @@
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
+import { Signer } from '@aws-sdk/rds-signer'
 import pg from 'pg'
 import { config } from '~/src/config/index.js'
-import { getValidToken } from './entra/token-manager.js'
 import { loadPostgresData } from './load-land-data.js'
+
 const { Pool } = pg
+
+const DEFAULT_PORT = 5432
+
+/**
+ * Gets a database token for authentication
+ * @param {object} options Connection options
+ * @returns {Promise<string>} Authentication token or local password
+ */
+async function getToken(options) {
+  if (!options.isLocal) {
+    const signer = new Signer({
+      hostname: options.host,
+      port: DEFAULT_PORT,
+      username: options.user,
+      credentials: fromNodeProviderChain(),
+      region: options.region
+    })
+    return await signer.getAuthToken()
+  } else {
+    return options.passwordForLocalDev
+  }
+}
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -14,7 +38,7 @@ export const postgresDb = {
     /**
      *
      * @param { import('@hapi/hapi').Server } server
-     * @param {{user: string, host: string, database: string}} options
+     * @param {{user: string, host: string, database: string, isLocal: boolean, disablePostgres: boolean}} options
      * @returns {void}
      */
     register: async function (server, options) {
@@ -25,12 +49,17 @@ export const postgresDb = {
       }
 
       const pool = new Pool({
-        port: 5432,
         user: options.user,
-        ssl: !options.isLocal,
-        password: options.isLocal ? options.password : await getValidToken(),
+        password: await getToken(options),
         host: options.host,
-        database: options.database
+        port: DEFAULT_PORT,
+        database: options.database,
+        ...(!options.isLocal &&
+          server.secureContext && {
+            ssl: {
+              secureContext: server.secureContext
+            }
+          })
       })
 
       try {
@@ -78,11 +107,12 @@ export const postgresDb = {
     }
   },
   options: {
-    user: config.get('landData.dbUser'),
-    database: config.get('landData.dbName'),
-    host: config.get('landData.dbHost'),
-    password: config.get('landData.dbPassword'),
+    user: config.get('postgres.user'),
+    database: config.get('postgres.database'),
+    host: config.get('postgres.host'),
+    passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
+    region: config.get('postgres.region'),
     disablePostgres: config.get('disablePostgres'),
     seed: config.get('seedDb')
   }
