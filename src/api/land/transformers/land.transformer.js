@@ -9,8 +9,6 @@ function landDataTransformer(landDataRows) {
     sheetId: row.sheet_id,
     areaSqm: row.area_sqm,
     geom: row.geom,
-    // validFrom: row.valid_from,
-    // validTo: row.valid_to,
     lastUpdated: row.last_updated
   }))
 }
