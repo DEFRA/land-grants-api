@@ -40,9 +40,9 @@ services:
     volumes:
       - mongodb-data:/data
     restart: always
-  
+
   postgres:
-    image: postgis/postgis:17-3.4
+    image: postgis/postgis:16-3.4
     restart: always
     ports:
       - 5432:5432
@@ -53,7 +53,7 @@ services:
     networks:
       - cdp-tenant
     volumes:
-      - postgres_data:/var/lib/postgresql/data  
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
   mongodb-data:
