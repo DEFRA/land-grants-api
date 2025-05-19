@@ -34,62 +34,42 @@ const config = convict({
     format: String,
     default: 'land-grants-api'
   },
-  entra: {
-    tokenEndpoint: {
-      doc: 'Microsoft entra token endpoint',
-      format: String,
-      default: '',
-      env: 'ENTRA_INTERNAL_TOKEN_URL'
-    },
-    tenantId: {
-      doc: 'Microsoft tenant ID',
-      format: String,
-      default: '',
-      env: 'ENTRA_INTERNAL_TENANT_ID'
-    },
-    clientId: {
-      doc: 'Microsoft client ID',
-      format: String,
-      default: '',
-      env: 'ENTRA_INTERNAL_CLIENT_ID'
-    },
-    clientSecret: {
-      doc: 'Microsoft client secret',
-      format: String,
-      default: '',
-      env: 'ENTRA_INTERNAL_CLIENT_SECRET'
-    },
-    scopeResource: {
-      doc: 'Microsoft scope resource url',
-      format: String,
-      default: '',
-      env: 'ENTRA_INTERNAL_SCOPE_RESOURCE'
-    }
-  },
-  landData: {
-    dbHost: {
-      doc: 'Land Data DB host',
+  postgres: {
+    host: {
+      doc: 'Postgres Land Data DB host',
       format: String,
       default: 'localhost',
-      env: 'LAND_DATA_DB_HOST'
+      env: 'POSTGRES_HOST'
     },
-    dbName: {
-      doc: 'Land Data DB name',
+    hostRead: {
+      doc: 'Postgres Land Data DB host',
+      format: String,
+      default: 'localhost',
+      env: 'POSTGRES_HOST_READ'
+    },
+    region: {
+      doc: 'Postgres Land Data DB region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'POSTGRES_REGION'
+    },
+    database: {
+      doc: 'Postgres Land Data DB name',
       format: String,
       default: 'postgres',
-      env: 'LAND_DATA_DB_NAME'
+      env: 'POSTGRES_DATABASE'
     },
-    dbUser: {
-      doc: 'Land Data DB username',
+    user: {
+      doc: 'Postgres Land Data DB username',
       format: String,
       default: 'postgres',
-      env: 'LAND_DATA_DB_USERNAME'
+      env: 'POSTGRES_USERNAME'
     },
-    dbPassword: {
-      doc: 'Land Data DB password',
+    passwordForLocalDev: {
+      doc: 'Postgres Land Data DB password',
       format: String,
       default: 'p0stgr@s',
-      env: 'LAND_DATA_DB_PASSWORD'
+      env: 'POSTGRES_PASSWORD_FOR_LOCAL_DEV'
     }
   },
 
@@ -122,8 +102,7 @@ const config = convict({
   isLocal: {
     doc: 'If this application running in the local environment',
     format: Boolean,
-    default: isLocal,
-    env: 'NODE_ENV'
+    default: isLocal
   },
   log: {
     enabled: {

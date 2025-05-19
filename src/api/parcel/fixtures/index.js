@@ -31,9 +31,8 @@ const mockParcelWithActions = {
     },
     actions: [
       {
-        code: 'CSAM1',
-        description:
-          'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
         availableArea: {
           unit: 'ha',
           value: 200
