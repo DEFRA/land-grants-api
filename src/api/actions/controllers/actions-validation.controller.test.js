@@ -4,21 +4,23 @@ import { landactions } from '~/src/api/actions/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
+import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
-import { applicationTransformer } from '~/src/api/actions/transformers/applicationTransformer.js'
+import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 
-// Mock all the dependencies
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
 jest.mock('~/src/api/actions/queries/getActions.query.js')
+jest.mock('~/src/api/land/queries/getParcelAvailableArea.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
-jest.mock('~/src/api/actions/transformers/applicationTransformer.js')
+jest.mock('~/src/api/actions/transformers/application.transformer.js')
 
 describe('Actions validation controller', () => {
   const server = Hapi.server()
   const mockActionData = {
     code: 'BND1',
-    rules: ['rule1', 'rule2']
+    rules: ['rule1', 'rule2'],
+    landCoverClassCodes: ['130', '240']
   }
 
   beforeAll(async () => {
@@ -46,8 +48,8 @@ describe('Actions validation controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Setup default mock implementations
     getMoorlandInterceptPercentage.mockResolvedValue(50)
+    getParcelAvailableArea.mockResolvedValue(1000)
     applicationTransformer.mockReturnValue({
       areaAppliedFor: 50,
       actionCodeAppliedFor: 'BND1',
@@ -92,11 +94,19 @@ describe('Actions validation controller', () => {
         expect.any(Object)
       )
       expect(getActions).toHaveBeenCalled()
+      expect(getParcelAvailableArea).toHaveBeenCalledWith(
+        'SX0679',
+        '9238',
+        mockActionData.landCoverClassCodes,
+        expect.any(Object),
+        expect.any(Object)
+      )
       expect(applicationTransformer).toHaveBeenCalledWith(
-        50, // This is hardcoded in the controller for now
+        1000,
         'BND1',
         99,
-        50
+        50,
+        []
       )
       expect(executeRules).toHaveBeenCalledWith(
         rules,
@@ -134,6 +144,7 @@ describe('Actions validation controller', () => {
       expect(errorMessages).toEqual([
         { code: 'rule1', description: 'Rule 1 failed' }
       ])
+      expect(getParcelAvailableArea).toHaveBeenCalled()
     })
 
     test('should return 400 if the request has an invalid parcel payload', async () => {
@@ -203,6 +214,27 @@ describe('Actions validation controller', () => {
       }
 
       getActions.mockRejectedValue(new Error('Failed to retrieve actions'))
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 if getParcelAvailableArea throws an error', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      getParcelAvailableArea.mockRejectedValue(
+        new Error('Failed to calculate parcel area')
+      )
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {

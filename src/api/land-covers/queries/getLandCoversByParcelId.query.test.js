@@ -1,4 +1,4 @@
-import { getLandCoversByParcelId } from '~/src/api/land-covers/queries/getLandCoversByParcelId.js'
+import { getLandCoversByParcelId } from '~/src/api/land-covers/queries/getLandCoversByParcelId.query.js'
 
 describe('getLandCoversByParcelId', () => {
   let mockDb

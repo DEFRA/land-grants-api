@@ -1,6 +1,5 @@
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-// import { validateLandActions } from '~/src/api/actions/service/land-actions.service.js'
 import {
   landActionSchema,
   landActionValidationResponseSchema
@@ -13,7 +12,8 @@ import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoor
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
-import { applicationTransformer } from '~/src/api/actions/transformers/applicationTransformer.js'
+import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
+import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
 
 /**
  * LandActionsValidateController
@@ -45,6 +45,20 @@ const LandActionsValidateController = {
         `Controller validating land actions ${landActions?.length}`
       )
 
+      const actions = await getActions(request.logger)
+      request.logger.info(`Actions: ${actions?.length}`)
+
+      const parcelAvailableArea = await getParcelAvailableArea(
+        landActions[0].sheetId,
+        landActions[0].parcelId,
+        actions.find((a) => a.code === landActions[0].actions[0].code)
+          .landCoverClassCodes,
+        request.server.postgresDb,
+        request.logger
+      )
+
+      request.logger.info(`Parcel available area: ${parcelAvailableArea}`)
+
       const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
         landActions[0].sheetId,
         landActions[0].parcelId,
@@ -53,19 +67,16 @@ const LandActionsValidateController = {
       )
 
       const application = applicationTransformer(
-        50, // TODO: get this from the area calculation
+        parcelAvailableArea,
         landActions[0].actions[0].code,
         landActions[0].actions[0].quantity,
-        intersectingAreaPercentage
+        intersectingAreaPercentage,
+        [] // TODO: get existing agreements
       )
-
-      const actions = await getActions(request.logger)
-      request.logger.info(`Actions: ${actions?.length}`)
 
       const ruleToExecute = actions.find(
         (a) => a.code === landActions[0].actions[0].code
       )
-      request.logger.info(`Rule to execute: ${ruleToExecute.code}`)
 
       const result = executeRules(rules, application, ruleToExecute.rules)
       request.logger.info(`Result: ${JSON.stringify(result)}`)
