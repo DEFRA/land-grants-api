@@ -143,11 +143,11 @@ const config = convict({
     default: 'land-grants-api',
     env: 'MONGO_DATABASE'
   },
-  seedDb: {
+  seedMongoDb: {
     doc: 'Seed the database',
     format: Boolean,
     default: false,
-    env: 'SEED_DB'
+    env: 'SEED_MONGODB'
   },
   httpProxy: {
     doc: 'HTTP Proxy',

@@ -109,7 +109,7 @@ Refer: .env.example
 If you have issue with .env file set env variables in package.json scripts
 
 ```
- "dev": "NODE_ENV=local SEED_DB=true DISABLE_POSTGRES=false npm run server:watch",
+ "dev": "NODE_ENV=local SEED_MONGODB=true DISABLE_POSTGRES=false npm run server:watch",
 ```
 
 3. run
@@ -120,10 +120,6 @@ npm run dev
 
 4. Successful data load message in the console on start-up
 
-- Successfully loaded postgres data 001-create-schema.sql into Postgis
-- Successfully loaded postgres data 002-create-land-table.sql into Postgis
-- Successfully loaded postgres data 003-create-land-covers-table.sql into Postgis
-- Successfully loaded postgres data 004-create-moorland-designations-table.sql into Postgis
 - Successfully loaded postgres data land-parcels-data.sql into Postgis
 - Successfully loaded postgres data land-covers-data.sql into Postgis
 - Successfully loaded postgres data moorland-designations-data.sql into Postgis

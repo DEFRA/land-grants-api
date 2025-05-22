@@ -113,7 +113,6 @@ export const postgresDb = {
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
-    disablePostgres: config.get('disablePostgres'),
-    seed: config.get('seedDb')
+    disablePostgres: config.get('disablePostgres')
   }
 }
