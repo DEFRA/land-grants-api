@@ -1,43 +1,4 @@
 /**
- * Get a land data
- * @param {string} sheetId - The sheetId
- * @param {string} parcelId - The parcelId
- * @param {{object, object}} DB connection and logger object
- * @returns {object} The land data
- */
-async function getLandData(sheetId, parcelId, { db, logger }) {
-  let client
-
-  try {
-    logger.info(
-      `Connecting to DB to fetch info parcelId: ${parcelId} sheetId ${sheetId}`
-    )
-    client = await db.connect()
-    logger.info(
-      `Retrieving land parcels for parcelId: ${parcelId} sheetId ${sheetId}`
-    )
-
-    const query =
-      'SELECT * FROM land.land_parcels WHERE sheet_id = $1 and parcel_id = $2'
-    const values = [sheetId, parcelId]
-
-    const result = await client.query(query, values)
-    logger.info(
-      `Retrieved land parcels for parcelId:-  ${parcelId} sheetId ${sheetId} , ${result.rows}`
-    )
-
-    return result.rows
-  } catch (error) {
-    logger.error('Error executing get Land parcels query', error)
-    return
-  } finally {
-    if (client) {
-      client.release()
-    }
-  }
-}
-
-/**
  * Get available area of a land parcel excluding specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
  * @param {string} parcelId - Parcel ID.
@@ -91,8 +52,9 @@ async function getParcelAvailableArea(
     logger.info(
       `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes}`
     )
+
     const area = result.rows[0]?.area_after_exclusion
-    return area !== null ? parseFloat(area) : 0
+    return area !== null ? Math.round(area * 100) / 100 : 0
   } catch (err) {
     logger.error(
       `Error calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} ${err.message}, ${err.stack}`
@@ -105,4 +67,4 @@ async function getParcelAvailableArea(
   }
 }
 
-export { getLandData, getParcelAvailableArea }
+export { getParcelAvailableArea }

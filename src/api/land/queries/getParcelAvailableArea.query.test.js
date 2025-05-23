@@ -1,4 +1,4 @@
-import { getParcelAvailableArea } from './land.query.js'
+import { getParcelAvailableArea } from './getParcelAvailableArea.query.js'
 import { Pool } from 'pg'
 
 describe('getParcelAvailableArea', () => {
