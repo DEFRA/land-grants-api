@@ -68,22 +68,6 @@ export const postgresDb = {
         client.release()
 
         if (options.isLocal) {
-          await loadPostgresData('001-create-schema.sql', pool, server.logger)
-          await loadPostgresData(
-            '002-create-land-table.sql',
-            pool,
-            server.logger
-          )
-          await loadPostgresData(
-            '003-create-land-covers-table.sql',
-            pool,
-            server.logger
-          )
-          await loadPostgresData(
-            '004-create-moorland-designations-table.sql',
-            pool,
-            server.logger
-          )
           await loadPostgresData('land-parcels-data.sql', pool, server.logger)
           await loadPostgresData('land-covers-data.sql', pool, server.logger)
           await loadPostgresData(
@@ -113,7 +97,6 @@ export const postgresDb = {
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
-    disablePostgres: config.get('disablePostgres'),
-    seed: config.get('seedDb')
+    disablePostgres: config.get('disablePostgres')
   }
 }
