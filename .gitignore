@@ -17,6 +17,6 @@ globalConfig.json
 tsconfig.tsbuildinfo
 
 # Land data files
-land-covers-data.sql
-land-parcels-data.sql
-moorland-designations-data.sql
+# Ignore all files in the land data directory
+/src/api/common/migration/*
+!/src/api/common/migration/.keep
