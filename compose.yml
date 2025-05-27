@@ -41,15 +41,15 @@ services:
       - mongodb-data:/data
     restart: always
 
-  postgres:
+  land-grants-backend-postgres:
     image: postgis/postgis:16-3.4
     restart: always
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=p0stgr@s
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=land_grants_api
+      - POSTGRES_PASSWORD=land_grants_api
+      - POSTGRES_DB=land_grants_api
     networks:
       - cdp-tenant
     volumes:

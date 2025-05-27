@@ -56,20 +56,20 @@ const config = convict({
     database: {
       doc: 'Postgres Land Data DB name',
       format: String,
-      default: 'postgres',
+      default: 'land_grants_api',
       env: 'POSTGRES_DATABASE'
     },
     user: {
       doc: 'Postgres Land Data DB username',
       format: String,
-      default: 'postgres',
+      default: 'land_grants_api',
       env: 'POSTGRES_USERNAME'
     },
     passwordForLocalDev: {
       doc: 'Postgres Land Data DB password',
       format: String,
-      default: 'p0stgr@s',
-      env: 'POSTGRES_PASSWORD_FOR_LOCAL_DEV'
+      default: 'land_grants_api',
+      env: 'POSTGRES_PASSWORD'
     }
   },
 
@@ -143,11 +143,11 @@ const config = convict({
     default: 'land-grants-api',
     env: 'MONGO_DATABASE'
   },
-  seedDb: {
+  seedMongoDb: {
     doc: 'Seed the database',
     format: Boolean,
     default: false,
-    env: 'SEED_DB'
+    env: 'SEED_MONGODB'
   },
   httpProxy: {
     doc: 'HTTP Proxy',
