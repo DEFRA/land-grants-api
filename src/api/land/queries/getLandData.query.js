@@ -2,10 +2,11 @@
  * Get a land data
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
- * @param {{object, object}} DB connection and logger object
+ * @param {{object}} db connection
+ * @param {{object}} logger object
  * @returns {object} The land data
  */
-async function getLandData(sheetId, parcelId, { db, logger }) {
+async function getLandData(sheetId, parcelId, db, logger) {
   let client
 
   try {
