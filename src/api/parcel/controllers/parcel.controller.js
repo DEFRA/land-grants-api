@@ -2,8 +2,11 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
-import { getLandParcel, getActions } from '~/src/api/parcel/queries/index.js'
-import { parcelActionsTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import { getActions } from '~/src/api/parcel/queries/index.js'
+import {
+  actionTransformer,
+  parcelTransformer
+} from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
   parcelIdSchema,
   parcelSuccessResponseSchema
@@ -12,6 +15,8 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
+import { getLandData } from '../../land/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 
 /**
  * ParcelController
@@ -50,7 +55,12 @@ const ParcelController = {
         `Split into sheetId ${sheetId} and parcelId ${parcelId}`
       )
 
-      const landParcel = await getLandParcel(sheetId, parcelId, request.logger)
+      const landParcel = await getLandData(
+        sheetId,
+        parcelId,
+        request.server.postgresDb,
+        request.logger
+      )
 
       if (!landParcel) {
         const errorMessage = `Land parcel not found`
@@ -59,14 +69,40 @@ const ParcelController = {
       }
 
       const actions = await getActions(request.logger)
-
       if (!actions || actions?.length === 0) {
         const errorMessage = 'Actions not found'
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
+      request.logger.info(`actions size :: ${actions.length}`)
 
-      const parcelActions = parcelActionsTransformer(landParcel, actions)
+      const transformedActions = await Promise.all(
+        (actions ?? []).map(async (action) => {
+          const actionAvailableArea = await getParcelAvailableArea(
+            sheetId,
+            parcelId,
+            action.landCoverClassCodes,
+            request.server.postgresDb,
+            request.logger
+          )
+
+          return {
+            ...actionTransformer(action, actionAvailableArea)
+          }
+        })
+      )
+
+      request.logger.info(`transformedActions :: ${transformedActions.length}`)
+      if (!transformedActions) {
+        const errorMessage = `Aailable area calculation failed`
+        request.logger.error(errorMessage)
+        return Boom.notFound(errorMessage)
+      }
+
+      const parcelActions = parcelTransformer(
+        landParcel['0'],
+        transformedActions
+      )
 
       return h
         .response({ message: 'success', ...parcelActions })
