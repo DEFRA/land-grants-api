@@ -1,7 +1,7 @@
 const mockParcel = {
-  sheetId: 'SX0679',
-  parcelId: '9238',
-  area: 300,
+  sheet_id: 'SX0679',
+  parcel_id: '9238',
+  area_sqm: 300,
   features: [],
   landCovers: [
     {
@@ -27,7 +27,7 @@ const mockParcelWithActions = {
     sheetId: 'SX0679',
     size: {
       unit: 'ha',
-      value: 440
+      value: 300
     },
     actions: [
       {
