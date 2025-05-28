@@ -17,37 +17,39 @@ async function getParcelAvailableArea(
   let client
   try {
     client = await db.connect()
-    logger.info(
-      `Calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes}`
-    )
 
-    const result = await client.query(
-      `WITH target_parcel AS (
-        SELECT geom
-        FROM land.land_parcels
-        WHERE sheet_id = $1
-          AND parcel_id = $2
-      ),
-      excluded_land_cover_geom AS (
-        SELECT ST_Union(geom) AS unioned_geom
-        FROM land.land_covers
-        WHERE sheet_id = $1
-          AND parcel_id = $2
-          AND land_cover_class_code = ANY(ARRAY[$3])
-      ),
-      difference_geom AS (
-        SELECT
-          ST_Difference(
-            p.geom,
-            COALESCE(lc.unioned_geom, ST_GeomFromText('GEOMETRYCOLLECTION EMPTY', ST_SRID(p.geom)))
-          ) AS remaining_geom
-        FROM target_parcel p
-        LEFT JOIN excluded_land_cover_geom lc ON TRUE
-      )
-      SELECT ST_Area(remaining_geom) AS area_after_exclusion
-      FROM difference_geom`,
-      [sheetId, parcelId, landCoverClassCodes]
+    const avaialbleAreaCalculationQuery = `WITH target_parcel AS (
+    SELECT geom
+    FROM land.land_parcels
+    WHERE sheet_id = $1
+      AND parcel_id = $2
+  ),
+  excluded_land_cover_geom AS (
+    SELECT ST_Union(geom) AS unioned_geom
+    FROM land.land_covers
+    WHERE sheet_id = $1
+      AND parcel_id = $2
+      AND land_cover_class_code = ANY($3)
+  ),
+  difference_geom AS (
+    SELECT
+      ST_Difference(
+        p.geom,
+        COALESCE(lc.unioned_geom, ST_GeomFromText('GEOMETRYCOLLECTION EMPTY', ST_SRID(p.geom)))
+      ) AS remaining_geom
+    FROM target_parcel p
+    LEFT JOIN excluded_land_cover_geom lc ON TRUE
+  )
+  SELECT ST_Area(remaining_geom) AS area_after_exclusion
+  FROM difference_geom`
+    logger.info(
+      `Executing Avaialble Area Calculation Query with values: ${JSON.stringify([sheetId, parcelId, landCoverClassCodes])}`
     )
+    const result = await client.query(avaialbleAreaCalculationQuery, [
+      sheetId,
+      parcelId,
+      landCoverClassCodes
+    ])
 
     logger.info(
       `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes}`
