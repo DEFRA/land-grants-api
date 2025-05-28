@@ -18,7 +18,7 @@ async function getParcelAvailableArea(
   try {
     client = await db.connect()
 
-    const queryString = `WITH target_parcel AS (
+    const avaialbleAreaCalculationQuery = `WITH target_parcel AS (
     SELECT geom
     FROM land.land_parcels
     WHERE sheet_id = $1
@@ -43,9 +43,9 @@ async function getParcelAvailableArea(
   SELECT ST_Area(remaining_geom) AS area_after_exclusion
   FROM difference_geom`
     logger.info(
-      `Executing SQL: ${queryString} with values: ${JSON.stringify([sheetId, parcelId, landCoverClassCodes])}`
+      `Executing Avaialble Area Calculation Query with values: ${JSON.stringify([sheetId, parcelId, landCoverClassCodes])}`
     )
-    const result = await client.query(queryString, [
+    const result = await client.query(avaialbleAreaCalculationQuery, [
       sheetId,
       parcelId,
       landCoverClassCodes

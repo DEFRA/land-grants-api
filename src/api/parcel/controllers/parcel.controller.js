@@ -3,7 +3,10 @@ import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import { getActions } from '~/src/api/parcel/queries/index.js'
-import { parcelActionsTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import {
+  actionTransformer,
+  parcelTransformer
+} from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
   parcelIdSchema,
   parcelSuccessResponseSchema
@@ -71,25 +74,34 @@ const ParcelController = {
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
+      request.logger.info(`actions size :: ${actions.length}`)
 
-      const availableArea = await getParcelAvailableArea(
-        sheetId,
-        parcelId,
-        actions[0].landCoverClassCodes,
-        request.server.postgresDb,
-        request.logger
+      const transformedActions = await Promise.all(
+        (actions ?? []).map(async (action) => {
+          const actionAvailableArea = await getParcelAvailableArea(
+            sheetId,
+            parcelId,
+            action.landCoverClassCodes,
+            request.server.postgresDb,
+            request.logger
+          )
+
+          return {
+            ...actionTransformer(action, actionAvailableArea)
+          }
+        })
       )
-      request.logger.info(`availableArea :: ${availableArea}`)
-      if (!availableArea) {
+
+      request.logger.info(`transformedActions :: ${transformedActions.length}`)
+      if (!transformedActions) {
         const errorMessage = `Aailable area calculation failed`
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
 
-      const parcelActions = parcelActionsTransformer(
+      const parcelActions = parcelTransformer(
         landParcel['0'],
-        actions,
-        availableArea
+        transformedActions
       )
 
       return h
