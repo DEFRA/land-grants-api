@@ -11,15 +11,15 @@ export const parcelHasIntersectionWithDataLayer = {
       }
     }
 
-    const isLessThanOrEqualToMax =
-      intersection.intersectingAreaPercentage <=
-      minimumIntersectionPercent + tolerancePercent
+    const isGreaterThanOrEqualToMin =
+      intersection.intersectingAreaPercentage >=
+      minimumIntersectionPercent - tolerancePercent
 
-    return isLessThanOrEqualToMax
+    return isGreaterThanOrEqualToMin
       ? { passed: true }
       : {
           passed: false,
-          message: `The parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer, the maximum is ${minimumIntersectionPercent}% with a tolerance of ${tolerancePercent}%`
+          message: `The parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer, the minimum is ${minimumIntersectionPercent}% with a tolerance of ${tolerancePercent}%`
         }
   }
 }

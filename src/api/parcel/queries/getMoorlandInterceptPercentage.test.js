@@ -1,6 +1,6 @@
-import { getLandCoversByParcelId } from '~/src/api/land-covers/queries/getLandCoversByParcelId.js'
+import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
 
-describe('getLandCoversByParcelId', () => {
+describe('getMoorlandInterceptPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -9,8 +9,13 @@ describe('getLandCoversByParcelId', () => {
   beforeEach(() => {
     mockResult = {
       rows: [
-        { id: 1, sheet_id: 'SH123', parcel_id: 'PA456', cover_type: 'Grass' },
-        { id: 2, sheet_id: 'SH123', parcel_id: 'PA456', cover_type: 'Trees' }
+        {
+          sheet_id: 'SH123',
+          parcel_id: 'PA456',
+          parcel_area_m2: 1000,
+          moorland_overlap_m2: 500,
+          moorland_overlap_percent: 50
+        }
       ]
     }
 
@@ -33,7 +38,7 @@ describe('getLandCoversByParcelId', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -41,34 +46,72 @@ describe('getLandCoversByParcelId', () => {
   test('should query with the correct parameters', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const expectedQuery =
-      'select * from land.land_covers where sheet_id = $1 and parcel_id = $2'
+    const expectedQuery = `
+      SELECT
+          p.sheet_id,
+          p.parcel_id,
+          ROUND(ST_Area(p.geom)::numeric, 2) AS parcel_area_m2,
+          ROUND(
+              COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::numeric), 0),
+              2
+          ) AS moorland_overlap_m2,
+          ROUND(
+              COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::numeric), 0)
+              / NULLIF(ST_Area(p.geom)::numeric, 0) * 100,
+              2
+          ) AS moorland_overlap_percent
+      FROM
+          land.land_parcels p
+      LEFT JOIN
+          land.moorland_designations m
+          ON ST_Intersects(p.geom, m.geom)
+      WHERE
+          p.sheet_id = $1 AND
+          p.parcel_id = $2
+      GROUP BY
+          p.sheet_id, p.parcel_id, p.geom;
+    `
     const expectedValues = [sheetId, parcelId]
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
 
-  test('should return the query results', async () => {
+  test('should return the moorland overlap percentage', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getLandCoversByParcelId(
+    const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
     )
 
-    expect(result).toEqual(mockResult.rows)
+    expect(result).toBe(50)
+  })
+
+  test('should return 0 when no moorland overlap', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockResult.rows[0].moorland_overlap_percent = null
+
+    const result = await getMoorlandInterceptPercentage(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toBe(0)
   })
 
   test('should release the client when done', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -79,7 +122,7 @@ describe('getLandCoversByParcelId', () => {
     const error = new Error('Database error')
     mockClient.query = jest.fn().mockRejectedValue(error)
 
-    const result = await getLandCoversByParcelId(
+    const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -88,7 +131,7 @@ describe('getLandCoversByParcelId', () => {
 
     expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Error executing get land covers by parcel id query',
+      'Error executing get moorland intercept percentage query',
       error
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -99,7 +142,7 @@ describe('getLandCoversByParcelId', () => {
     const parcelId = 'PA456'
     mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getLandCoversByParcelId(
+    const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
