@@ -10,7 +10,7 @@ describe('Parcel controller', () => {
   const pool = new Pool()
 
   const mockQuery = jest.fn((sql, params) => {
-    if (sql.includes('SELECT * FROM land.land_parcels WHERE')) {
+    if (sql.includes('SELECT * FROM land_parcels WHERE')) {
       if (params.includes('SX0679')) {
         return Promise.resolve({
           rows: [{ parcel_id: '9238', sheet_id: 'SX0679' }]
