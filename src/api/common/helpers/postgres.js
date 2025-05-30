@@ -5,7 +5,6 @@ import { config } from '~/src/config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
 const { Pool } = pg
-
 const DEFAULT_PORT = 5432
 
 /**
@@ -14,23 +13,43 @@ const DEFAULT_PORT = 5432
  * @param {object} options Connection options
  * @returns {Promise<string>} Authentication token or local password
  */
-async function getToken(server, options) {
-  let token = await server.app.tokenCache.get('rds-token') // use the cached token
-  if (!token) {
-    if (options.postgres.iamAuthentication) {
-      const signer = new Signer({
-        hostname: options.postgres.host,
-        port: options.postgres.port,
-        username: options.postgres.user,
-        credentials: fromNodeProviderChain(),
-        region: options.region
-      })
-      token = await signer.getAuthToken()
-    } else {
-      token = 'admin'
-    }
+async function getRemoteToken(server, options) {
+  const signer = new Signer({
+    hostname: options.host,
+    port: DEFAULT_PORT,
+    username: options.user,
+    credentials: fromNodeProviderChain(),
+    region: options.region
+  })
+
+  return await signer.getAuthToken()
+}
+
+/**
+ * @param {import('@hapi/hapi').Server} server
+ * @param {{passwordForLocalDev: string}} options
+ * @returns {{password: string}}
+ */
+const getlocal = (server, options) => {
+  return {
+    password: options.passwordForLocalDev
   }
-  return token
+}
+
+/**
+ * @param {import('@hapi/hapi').Server} server
+ * @returns {{Client: typeof IAMClient, ssl: {rejectUnauthorized: false, secureContext: import('tls').SecureContext}}}
+ */
+const getRemote = (server) => {
+  return {
+    Client: IAMClient,
+    ...(server.secureContext && {
+      ssl: {
+        rejectUnauthorized: false,
+        secureContext: server.secureContext
+      }
+    })
+  }
 }
 
 /**
@@ -53,27 +72,13 @@ export const postgresDb = {
         return
       }
 
-      const tokenCache = server.cache({
-        segment: 'rdsToken',
-        expiresIn: 15 * 60 * 1000, // 15 minutes
-        generateTimeout: 2000 // timeout for token generation
-      })
-
-      server.app.tokenCache = tokenCache
-
       const pool = new Pool({
-        user: options.postgres.user,
-        host: options.postgres.host,
-        port: DEFAULT_PORT, // options.postgres.port,
-        database: options.postgres.database,
+        user: options.user,
+        host: options.host,
+        port: DEFAULT_PORT,
+        database: options.database,
         region: options.region,
-        Client: IAMClient,
-        ...(server.secureContext && {
-          ssl: {
-            rejectUnauthorized: false,
-            secureContext: server.secureContext
-          }
-        })
+        ...(options.isLocal ? getlocal(server, options) : getRemote(server))
       })
 
       try {
@@ -117,7 +122,7 @@ export const postgresDb = {
 
 class IAMClient extends Client {
   async connect(server, host, port, user, region) {
-    this.connectionParameters.password = await getToken(server, {
+    this.connectionParameters.password = await getRemoteToken(server, {
       host,
       port,
       user,
