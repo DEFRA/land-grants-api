@@ -18,7 +18,7 @@ async function getLandData(sheetId, parcelId, { db, logger }) {
     )
 
     const query =
-      'SELECT * FROM land.land_parcels WHERE sheet_id = $1 and parcel_id = $2'
+      'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2'
     const values = [sheetId, parcelId]
 
     const result = await client.query(query, values)
@@ -63,13 +63,13 @@ async function getParcelAvailableArea(
     const result = await client.query(
       `WITH target_parcel AS (
         SELECT geom
-        FROM land.land_parcels
+        FROM land_parcels
         WHERE sheet_id = $1
           AND parcel_id = $2
       ),
       excluded_land_cover_geom AS (
         SELECT ST_Union(geom) AS unioned_geom
-        FROM land.land_covers
+        FROM land_covers
         WHERE sheet_id = $1
           AND parcel_id = $2
           AND land_cover_class_code = ANY(ARRAY[$3])

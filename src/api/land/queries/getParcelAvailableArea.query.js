@@ -20,13 +20,13 @@ async function getParcelAvailableArea(
 
     const avaialbleAreaCalculationQuery = `WITH target_parcel AS (
     SELECT geom
-    FROM land.land_parcels
+    FROM land_parcels
     WHERE sheet_id = $1
       AND parcel_id = $2
   ),
   excluded_land_cover_geom AS (
     SELECT ST_Union(geom) AS unioned_geom
-    FROM land.land_covers
+    FROM land_covers
     WHERE sheet_id = $1
       AND parcel_id = $2
       AND land_cover_class_code = ANY($3)
