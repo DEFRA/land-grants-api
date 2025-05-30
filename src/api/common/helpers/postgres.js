@@ -1,30 +1,54 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
-import pg from 'pg'
+import pg, { Client } from 'pg'
 import { config } from '~/src/config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
 const { Pool } = pg
-
 const DEFAULT_PORT = 5432
 
 /**
  * Gets a database token for authentication
+ * @param {object} server
  * @param {object} options Connection options
  * @returns {Promise<string>} Authentication token or local password
  */
-async function getToken(options) {
-  if (!options.isLocal) {
-    const signer = new Signer({
-      hostname: options.host,
-      port: DEFAULT_PORT,
-      username: options.user,
-      credentials: fromNodeProviderChain(),
-      region: options.region
+async function getRemoteToken(server, options) {
+  const signer = new Signer({
+    hostname: options.host,
+    port: DEFAULT_PORT,
+    username: options.user,
+    credentials: fromNodeProviderChain(),
+    region: options.region
+  })
+
+  return await signer.getAuthToken()
+}
+
+/**
+ * @param {import('@hapi/hapi').Server} server
+ * @param {{passwordForLocalDev: string}} options
+ * @returns {{password: string}}
+ */
+const getlocal = (server, options) => {
+  return {
+    password: options.passwordForLocalDev
+  }
+}
+
+/**
+ * @param {import('@hapi/hapi').Server} server
+ * @returns {{Client: typeof IAMClient, ssl: {rejectUnauthorized: false, secureContext: import('tls').SecureContext}}}
+ */
+const getRemote = (server) => {
+  return {
+    Client: IAMClient,
+    ...(server.secureContext && {
+      ssl: {
+        rejectUnauthorized: false,
+        secureContext: server.secureContext
+      }
     })
-    return await signer.getAuthToken()
-  } else {
-    return options.passwordForLocalDev
   }
 }
 
@@ -50,16 +74,11 @@ export const postgresDb = {
 
       const pool = new Pool({
         user: options.user,
-        password: await getToken(options),
         host: options.host,
         port: DEFAULT_PORT,
         database: options.database,
-        ...(!options.isLocal &&
-          server.secureContext && {
-            ssl: {
-              secureContext: server.secureContext
-            }
-          })
+        region: options.region,
+        ...(options.isLocal ? getlocal(server, options) : getRemote(server))
       })
 
       try {
@@ -98,5 +117,17 @@ export const postgresDb = {
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
     disablePostgres: config.get('disablePostgres')
+  }
+}
+
+class IAMClient extends Client {
+  async connect(server, host, port, user, region) {
+    this.connectionParameters.password = await getRemoteToken(server, {
+      host,
+      port,
+      user,
+      region
+    })
+    return super.connect()
   }
 }
