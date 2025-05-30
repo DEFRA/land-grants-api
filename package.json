@@ -58,6 +58,8 @@
     "pg": "^8.15.6",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
+    "testcontainers": "^11.0.0",
+    "time-span": "^5.1.0",
     "undici": "^6.20.1"
   },
   "devDependencies": {
