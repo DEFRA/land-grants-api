@@ -42,7 +42,7 @@ describe('getLandCoversByParcelId', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const expectedQuery =
-      'select * from land.land_covers where sheet_id = $1 and parcel_id = $2'
+      'select * from land_covers where sheet_id = $1 and parcel_id = $2'
     const expectedValues = [sheetId, parcelId]
 
     await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)

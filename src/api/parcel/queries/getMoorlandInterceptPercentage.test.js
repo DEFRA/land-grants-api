@@ -61,9 +61,9 @@ describe('getMoorlandInterceptPercentage', () => {
               2
           ) AS moorland_overlap_percent
       FROM
-          land.land_parcels p
+          land_parcels p
       LEFT JOIN
-          land.moorland_designations m
+          moorland_designations m
           ON ST_Intersects(p.geom, m.geom)
       WHERE
           p.sheet_id = $1 AND
