@@ -1,52 +1,43 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
-import pg from 'pg'
+import { Pool } from 'pg'
 import { config } from '~/src/config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
-const { Pool } = pg
 const DEFAULT_PORT = 5432
 
-/**
- * @param {import('@hapi/hapi').Server} server
- * @param {{host: string, port: number, user: string, region: string}} options
- * @returns {Promise<{password: string, ssl: {rejectUnauthorized: false, secureContext: import('tls').SecureContext}}>}
- */
-async function getRemote(server, options) {
-  try {
-    const signer = new Signer({
-      hostname: options.host,
-      port: DEFAULT_PORT,
-      username: options.user,
-      credentials: fromNodeProviderChain(),
-      region: options.region
+class SecurePool extends Pool {
+  constructor(options) {
+    super({
+      max: 10,
+      host: options.host,
+      port: options.port,
+      database: options.database,
+      user: options.user,
+      ssl: !options.isLocal
+        ? {
+            rejectUnauthorized: false,
+            secureContext: options.secureContext
+          }
+        : undefined
     })
 
-    const password = await signer.getAuthToken()
+    this.options = options
 
-    return {
-      password,
-      ...(server.secureContext && {
-        ssl: {
-          rejectUnauthorized: false,
-          secureContext: server.secureContext
-        }
-      })
-    }
-  } catch (err) {
-    server.logger.error({ err }, 'Failed to get remote token')
-    throw err
+    this.signer = new Signer({
+      hostname: options.host,
+      username: options.user,
+      region: options.region,
+      port: DEFAULT_PORT,
+      credentials: fromNodeProviderChain()
+    })
+
+    this.originalConnect = super.connect.bind(this)
   }
-}
 
-/**
- * @param {import('@hapi/hapi').Server} server
- * @param {{passwordForLocalDev: string}} options
- * @returns {{password: string}}
- */
-const getlocal = (server, options) => {
-  return {
-    password: options.passwordForLocalDev
+  connect() {
+    this.options.password = this.options.passwordForLocalDev
+    return this.originalConnect()
   }
 }
 
@@ -65,20 +56,21 @@ export const postgresDb = {
      */
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
+
       if (options.disablePostgres) {
         server.logger.info('Skipping Postgres connection in test mode')
         return
       }
 
-      const pool = new Pool({
+      const pool = new SecurePool({
+        port: DEFAULT_PORT,
         user: options.user,
         host: options.host,
-        port: DEFAULT_PORT,
         database: options.database,
         region: options.region,
-        ...(options.isLocal
-          ? getlocal(server, options)
-          : await getRemote(server, options))
+        secureContext: server.secureContext,
+        passwordForLocalDev: options.passwordForLocalDev,
+        isLocal: options.isLocal
       })
 
       try {
