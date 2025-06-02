@@ -19,28 +19,28 @@ describe('parcelHasIntersectionWithDataLayer', () => {
     }
   }
 
-  test('should pass when intersection is less than or equal to minimumIntersectionPercent + tolerancePercent', () => {
-    const application = createApplication(51)
+  test('should pass when intersection is greater than or equal to minimumIntersectionPercent - tolerancePercent', () => {
+    const application = createApplication(49)
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
     expect(result).toEqual({ passed: true })
   })
 
-  test('should pass when intersection is exactly equal to minimumIntersectionPercent + tolerancePercent', () => {
-    const application = createApplication(51)
+  test('should pass when intersection is exactly equal to minimumIntersectionPercent', () => {
+    const application = createApplication(50)
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
     expect(result).toEqual({ passed: true })
   })
 
-  test('should fail when intersection is greater than minimumIntersectionPercent + tolerancePercent', () => {
-    const application = createApplication(52)
+  test('should fail when intersection is less than minimumIntersectionPercent - tolerancePercent', () => {
+    const application = createApplication(48)
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
     expect(result).toEqual({
       passed: false,
       message:
-        'The parcel has a 52% intersection with the moorland layer, the maximum is 50% with a tolerance of 1%'
+        'The parcel has a 48% intersection with the moorland layer, the minimum is 50% with a tolerance of 1%'
     })
   })
 
