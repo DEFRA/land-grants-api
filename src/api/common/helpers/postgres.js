@@ -35,8 +35,10 @@ class SecurePool extends Pool {
     this.originalConnect = super.connect.bind(this)
   }
 
-  connect() {
-    this.options.password = this.options.passwordForLocalDev
+  async connect() {
+    this.options.password = this.options.isLocal
+      ? this.options.passwordForLocalDev
+      : await this.signer.getAuthToken()
     return this.originalConnect()
   }
 }
