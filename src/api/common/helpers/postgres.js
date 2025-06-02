@@ -26,6 +26,7 @@ class SecurePool extends Pool {
     })
 
     this.options = options
+    this.server = server
 
     this.signer = new Signer({
       hostname: options.host,
@@ -38,20 +39,20 @@ class SecurePool extends Pool {
     this.originalConnect = super.connect.bind(this)
   }
 
-  async connect(server) {
+  async connect() {
     try {
-      server.logger.info('Connecting to Postgres with signer')
+      this.server.logger.info('Connecting to Postgres with signer')
 
       this.options.password = this.options.isLocal
         ? this.options.passwordForLocalDev
         : await this.signer.getAuthToken()
 
-      server.logger.info('Password set for Postgres connection')
-      server.logger.info(`Options: ${JSON.stringify(this.options)}`)
+      this.server.logger.info('Password set for Postgres connection')
+      this.server.logger.info(`Options: ${JSON.stringify(this.options)}`)
 
       return this.originalConnect()
     } catch (err) {
-      server.logger.error({ err }, 'Failed in connect method')
+      this.server.logger.error({ err }, 'Failed in connect method')
       throw err
     }
   }
@@ -92,7 +93,7 @@ export const postgresDb = {
       )
 
       try {
-        const client = await pool.connect(server)
+        const client = await pool.connect()
         server.logger.info('Postgres connection successful')
         client.release()
 
