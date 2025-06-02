@@ -75,11 +75,11 @@ const mockLandActions = {
       actions: [
         {
           code: 'BND1',
-          quantity: 99
+          quantity: 99.0
         },
         {
           code: 'BND2',
-          quantity: 200
+          quantity: 200.0
         }
       ]
     }
@@ -93,11 +93,11 @@ const application = {
   actions: [
     {
       code: 'BND1',
-      quantity: 99
+      quantity: 99.0
     },
     {
       code: 'BND2',
-      quantity: 200
+      quantity: 200.0
     }
   ],
   intersections: {

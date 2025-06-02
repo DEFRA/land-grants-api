@@ -27,11 +27,7 @@ const application = {
     area: 100,
     existingAgreements: [{ area: 100, code: 'LIG2' }],
     intersections: {
-      sssi: 0,
-      monument: 0,
-      moorland: 0,
-      lfa: 0,
-      landParcel: 100
+      moorland: { intersectingAreaPercentage: 50 }
     }
   }
 }
