@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+
+  <changeSet id="create-land-covers-table" author="system">
+    <createTable tableName="land_covers" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="parcel_id" type="TEXT"/>
+      <column name="sheet_id" type="TEXT"/>
+      <column name="land_cover_class_code" type="TEXT"/>
+      <column name="is_linear_feature" type="BOOLEAN"/>
+      <column name="area_sqm" type="NUMERIC"/>
+      <column name="geom" type="GEOMETRY"/>
+      <column name="last_updated" type="DATE"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="create-land-parcels-table" author="system">
+    <createTable tableName="land_parcels" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="parcel_id" type="TEXT"/>
+      <column name="sheet_id" type="TEXT"/>
+      <column name="area_sqm" type="NUMERIC"/>
+      <column name="geom" type="GEOMETRY"/>
+      <column name="last_updated" type="DATE"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="create-moorland-designations-table" author="system">
+    <createTable tableName="moorland_designations" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="lfa_moor_id" type="NUMERIC"/>
+      <column name="name" type="TEXT"/>
+      <column name="ref_code" type="TEXT"/>
+      <column name="geom" type="GEOMETRY"/>
+      <column name="last_updated" type="DATE"/>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>

@@ -1,5 +1,7 @@
 import { type } from 'os'
-import { GenericContainer, Network } from 'testcontainers'
+import { GenericContainer, Network, Wait } from 'testcontainers'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 /**
  * DB setup file. Idea stolen from:
@@ -37,6 +39,7 @@ async function initializePostgres() {
   const network = await new Network().start()
 
   const postgresContainer = new GenericContainer('postgis/postgis:16-3.4')
+    .withName('postgis')
     .withNetwork(network)
     .withExposedPorts(5432)
     .withLogConsumer((stream) => {
@@ -50,8 +53,15 @@ async function initializePostgres() {
       POSTGRES_DB: DB_CONFIG.database
     })
 
+  const filename = fileURLToPath(import.meta.url)
+  const dirname = path.dirname(filename)
+
   const liquibaseContainer = new GenericContainer('liquibase/liquibase')
+    .withName('liquibase')
     .withNetwork(network)
+    .withWaitStrategy(
+      Wait.forLogMessage("Liquibase command 'update' was executed successfully")
+    )
     .withLogConsumer((stream) => {
       stream.on('data', console.log)
       stream.on('err', console.error)
@@ -59,15 +69,15 @@ async function initializePostgres() {
     })
     .withCopyDirectoriesToContainer([
       {
-        source: './changelog',
-        target: '/changelog'
+        source: dirname + '/changelog',
+        target: '/liquibase/changelog'
       }
     ])
     .withCommand([
       'update',
-      '--url=jdbc:postgresql://localhost:5432/' + process.env.POSTGRES_DB,
-      '--username=' + process.env.POSTGRES_USER,
-      '--password=' + process.env.POSTGRES_PASSWORD,
+      '--url=jdbc:postgresql://postgis:5432/' + DB_CONFIG.database,
+      '--username=' + DB_CONFIG.user,
+      '--password=' + DB_CONFIG.password,
       '--changeLogFile=/changelog/db.changelog.xml'
     ])
 

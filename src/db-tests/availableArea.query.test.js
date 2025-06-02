@@ -1,4 +1,4 @@
-// import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
+import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
 import {
   connectToTestDatbase,
   resetDatabase,
@@ -18,7 +18,7 @@ describe('Postgres', () => {
   })
 
   beforeEach(async () => {
-    // await seedDatabase(connection)
+    await seedDatabase(connection)
   })
 
   afterEach(async () => {
@@ -30,25 +30,24 @@ describe('Postgres', () => {
   })
 
   test('Get parcel available area', async () => {
-    // const sheetId = 'SD7565'
-    // const parcelId = '6976'
-    // const landCoverClassCodes = ['130', '131']
+    const sheetId = 'SD7565'
+    const parcelId = '6976'
+    const landCoverClassCodes = ['130', '131']
 
-    // const availableArea = await getParcelAvailableArea(
-    //   sheetId,
-    //   parcelId,
-    //   landCoverClassCodes,
-    //   connection,
-    //   logger
-    // )
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
 
     try {
-      const result = await connection.query('select 1 + 1 as result')
+      // const result = await connection.query('select 1 + 1 as result')
       // get value from the result
-      const value = result.rows[0].result
 
-      console.log(result)
-      expect(value).toBe(2)
+      console.log(availableArea)
+      expect(availableArea).toBe(2112.29)
     } catch (error) {
       console.error('Error executing query:', error)
       if (error.errors && Array.isArray(error.errors)) {
