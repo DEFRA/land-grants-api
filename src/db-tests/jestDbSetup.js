@@ -1,6 +1,5 @@
 import { type } from 'os'
-import { GenericContainer } from 'testcontainers'
-import timeSpan from 'time-span'
+import { GenericContainer, Network } from 'testcontainers'
 
 /**
  * DB setup file. Idea stolen from:
@@ -11,54 +10,78 @@ global.containers = []
 
 let firstRun = true
 
+export const DB_CONFIG = {
+  host: 'localhost',
+  user: 'land_grants_api',
+  database: 'land_grants_api',
+  password: 'land_grants_api',
+  port: 5432
+}
+
 export default async () => {
+  console.log('Running global setup for database tests')
   process.env.JEST_FIRST_RUN = firstRun ? 'yes' : 'no'
 
   if (firstRun) {
-    console.log('\nsetup started')
-    const end = timeSpan()
-
     const postgresContainer = initializePostgres()
 
     const startedContainers = await Promise.all([postgresContainer])
 
     global.containers.push(...startedContainers)
-
-    console.log(`setup done in: ${end.seconds()} seconds`)
   }
 
   firstRun = false
 }
 
 async function initializePostgres() {
+  const network = await new Network().start()
+
   const postgresContainer = new GenericContainer('postgis/postgis:16-3.4')
+    .withNetwork(network)
     .withExposedPorts(5432)
+    .withLogConsumer((stream) => {
+      stream.on('data', console.log)
+      stream.on('err', console.error)
+      stream.on('end', () => console.log('DB Stream closed'))
+    })
     .withEnvironment({
-      POSTGRES_USER: process.env.POSTGRES_USER,
-      POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
-      POSTGRES_DB: process.env.POSTGRES_DB
+      POSTGRES_USER: DB_CONFIG.user,
+      POSTGRES_PASSWORD: DB_CONFIG.password,
+      POSTGRES_DB: DB_CONFIG.database
     })
 
+  const liquibaseContainer = new GenericContainer('liquibase/liquibase')
+    .withNetwork(network)
+    .withLogConsumer((stream) => {
+      stream.on('data', console.log)
+      stream.on('err', console.error)
+      stream.on('end', () => console.log('Liquibase Stream closed'))
+    })
+    .withCopyDirectoriesToContainer([
+      {
+        source: './changelog',
+        target: '/changelog'
+      }
+    ])
+    .withCommand([
+      'update',
+      '--url=jdbc:postgresql://localhost:5432/' + process.env.POSTGRES_DB,
+      '--username=' + process.env.POSTGRES_USER,
+      '--password=' + process.env.POSTGRES_PASSWORD,
+      '--changeLogFile=/changelog/db.changelog.xml'
+    ])
+
   if (type() === 'Linux') {
-    console.log('postgres: using tmpfs mount')
     postgresContainer.withTmpFs({ '/var/lib/postgresql/data': '' })
   }
 
-  const postgresStarted = await startContainer(postgresContainer, 'postgress')
+  const postgresStarted = await postgresContainer.start()
+  await liquibaseContainer.start()
 
   process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
-  process.env.POSTGRES_USER = POSTGRES_USER
-  process.env.POSTGRES_PASSWORD = POSTGRES_PASSWORD
-  process.env.POSTGRES_DB = POSTGRES_DB
+  process.env.POSTGRES_USER = DB_CONFIG.user
+  process.env.POSTGRES_PASSWORD = DB_CONFIG.password
+  process.env.POSTGRES_DB = DB_CONFIG.database
 
   return postgresStarted
-}
-
-async function startContainer(containerBuilder, name) {
-  const end = timeSpan()
-  const startedContainer = await containerBuilder.start()
-
-  console.log(`${name} started in: ${end.seconds()} seconds`)
-
-  return startedContainer
 }

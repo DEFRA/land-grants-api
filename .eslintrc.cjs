@@ -41,7 +41,7 @@ module.exports = {
             endOfLine: 'auto'
           }
         ],
-        'no-console': 'error',
+        // 'no-console': 'error',
 
         // Turn off strict type checking rules
         '@typescript-eslint/no-unsafe-argument': 'off',

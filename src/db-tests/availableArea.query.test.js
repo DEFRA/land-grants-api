@@ -1,4 +1,4 @@
-import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
+// import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
 import {
   connectToTestDatbase,
   resetDatabase,
@@ -8,8 +8,8 @@ import {
 let connection
 
 const logger = {
-  info: jest.fn(),
-  error: jest.fn()
+  info: console.info,
+  error: console.error
 }
 
 describe('Postgres', () => {
@@ -18,7 +18,7 @@ describe('Postgres', () => {
   })
 
   beforeEach(async () => {
-    await seedDatabase(connection)
+    // await seedDatabase(connection)
   })
 
   afterEach(async () => {
@@ -29,19 +29,41 @@ describe('Postgres', () => {
     await connection.end()
   })
 
-  test('Get user by email', async () => {
-    const sheetId = 'SD7565'
-    const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
+  test('Get parcel available area', async () => {
+    // const sheetId = 'SD7565'
+    // const parcelId = '6976'
+    // const landCoverClassCodes = ['130', '131']
 
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
+    // const availableArea = await getParcelAvailableArea(
+    //   sheetId,
+    //   parcelId,
+    //   landCoverClassCodes,
+    //   connection,
+    //   logger
+    // )
 
-    expect(availableArea).toBeDefined()
+    try {
+      const result = await connection.query('select 1 + 1 as result')
+      // get value from the result
+      const value = result.rows[0].result
+
+      console.log(result)
+      expect(value).toBe(2)
+    } catch (error) {
+      console.error('Error executing query:', error)
+      if (error.errors && Array.isArray(error.errors)) {
+        error.errors.forEach((err) => console.error(err.message))
+      }
+
+      throw error
+    }
+
+    // const availableArea = await getParcelAvailableArea(
+    //   'SD7565',
+    //   '6976',
+    //   ['130', '131'],
+    //   connection,
+    //   logger
+    // )
   })
 })

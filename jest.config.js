@@ -29,7 +29,8 @@ export default {
       '@defra/hapi-tracing', // Supports ESM only
       'node-fetch' // Supports ESM only
     ].join('|')}/)`
-  ]
+  ],
+  projects: ['<rootDir>/src/db-tests']
 }
 
 /**
