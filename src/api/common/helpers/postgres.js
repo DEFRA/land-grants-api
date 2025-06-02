@@ -7,7 +7,11 @@ import { loadPostgresData } from './load-land-data.js'
 const DEFAULT_PORT = 5432
 
 class SecurePool extends Pool {
-  constructor(options) {
+  constructor(options, server) {
+    server.logger.info(
+      `Calling constructor with options: ${JSON.stringify(options)}`
+    )
+
     super({
       host: options.host,
       port: options.port,
@@ -16,7 +20,7 @@ class SecurePool extends Pool {
       ssl: !options.isLocal
         ? {
             rejectUnauthorized: false,
-            secureContext: options.secureContext
+            secureContext: server.secureContext
           }
         : undefined
     })
@@ -34,11 +38,22 @@ class SecurePool extends Pool {
     this.originalConnect = super.connect.bind(this)
   }
 
-  async connect() {
-    this.options.password = this.options.isLocal
-      ? this.options.passwordForLocalDev
-      : await this.signer.getAuthToken()
-    return this.originalConnect()
+  async connect(server) {
+    try {
+      server.logger.info('Connecting to Postgres with signer')
+
+      this.options.password = this.options.isLocal
+        ? this.options.passwordForLocalDev
+        : await this.signer.getAuthToken()
+
+      server.logger.info('Password set for Postgres connection')
+      server.logger.info(`Options: ${JSON.stringify(this.options)}`)
+
+      return this.originalConnect()
+    } catch (err) {
+      server.logger.error({ err }, 'Failed in connect method')
+      throw err
+    }
   }
 }
 
@@ -63,19 +78,21 @@ export const postgresDb = {
         return
       }
 
-      const pool = new SecurePool({
-        port: DEFAULT_PORT,
-        user: options.user,
-        host: options.host,
-        database: options.database,
-        region: options.region,
-        secureContext: server.secureContext,
-        passwordForLocalDev: options.passwordForLocalDev,
-        isLocal: options.isLocal
-      })
+      const pool = new SecurePool(
+        {
+          port: DEFAULT_PORT,
+          user: options.user,
+          host: options.host,
+          database: options.database,
+          region: options.region,
+          passwordForLocalDev: options.passwordForLocalDev,
+          isLocal: options.isLocal
+        },
+        server
+      )
 
       try {
-        const client = await pool.connect()
+        const client = await pool.connect(server)
         server.logger.info('Postgres connection successful')
         client.release()
 
