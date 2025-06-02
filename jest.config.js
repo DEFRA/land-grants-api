@@ -9,11 +9,11 @@ export default {
   silent: false,
   preset: '@shelf/jest-mongodb',
   watchPathIgnorePatterns: ['globalConfig'],
-  testMatch: ['**/src/**/*.test.js'],
+  testMatch: ['**/src/api/**/*.test.js', '**/src/rules-engine/**/*.test.js'],
   reporters: ['default', ['github-actions', { silent: false }], 'summary'],
   setupFiles: ['<rootDir>/.jest/setup.js'],
   setupFilesAfterEnv: ['<rootDir>/.jest/setup-after-env.js'],
-  collectCoverageFrom: ['src/**/*.js'],
+  collectCoverageFrom: ['src/api/**/*.js', 'src/rules-engine/**/*.js'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
