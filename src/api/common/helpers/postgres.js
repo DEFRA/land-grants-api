@@ -7,9 +7,9 @@ import { loadPostgresData } from './load-land-data.js'
 const DEFAULT_PORT = 5432
 
 /**
- * Get RDS auth token (no caching for now)
- * @param {object} options
- * @returns {Promise<string>}
+ * Gets a database token for authentication
+ * @param {object} options Connection options
+ * @returns {Promise<string>} Authentication token or local password
  */
 async function getToken(options) {
   if (options.isLocal) {
@@ -50,9 +50,18 @@ export const postgresDb = {
       const pool = new Pool({
         port: DEFAULT_PORT,
         user: options.user,
+        password: async () => {
+          server.logger.info('Getting Postgres authentication token')
+          return await getToken(options)
+        },
         host: options.host,
         database: options.database,
-        password: async () => await getToken(options)
+        ...(!options.isLocal &&
+          server.secureContext && {
+            ssl: {
+              secureContext: server.secureContext
+            }
+          })
       })
 
       try {
