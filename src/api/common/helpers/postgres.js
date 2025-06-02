@@ -1,15 +1,71 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
-import { Pool } from 'pg'
+import { Client, Pool } from 'pg'
 import { config } from '~/src/config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
 const DEFAULT_PORT = 5432
 
+/**
+ * Get RDS auth token (no caching for now)
+ * @param {object} options
+ * @returns {Promise<string>}
+ */
+async function getToken(options) {
+  if (options.isLocal) {
+    return options.passwordForLocalDev
+  } else {
+    const signer = new Signer({
+      hostname: options.host,
+      port: DEFAULT_PORT,
+      username: options.user,
+      credentials: fromNodeProviderChain(),
+      region: options.region
+    })
+    return await signer.getAuthToken()
+  }
+}
+
+/**
+ * Custom Client class that fetches fresh IAM tokens on connect
+ */
+class IAMClient extends Client {
+  constructor(config, server, options) {
+    super(config)
+    this.server = server
+    this.options = options
+  }
+
+  async connect() {
+    try {
+      this.server.logger.info('IAMClient connecting with fresh token')
+      const password = await getToken(this.options)
+
+      // Update the connectionParameters.password which is what pg uses
+      this.connectionParameters.password = password
+      this.password = password
+
+      this.server.logger.info('Password set for connection')
+      return super.connect()
+    } catch (err) {
+      this.server.logger.error({ err }, 'Failed to connect with IAM token')
+      throw err
+    }
+  }
+}
+
+/**
+ * Custom Pool class using IAMClient
+ */
 class SecurePool extends Pool {
   constructor(options, server) {
     server.logger.info(
-      `Calling constructor with options: ${JSON.stringify(options)}`
+      `Creating SecurePool with options: ${JSON.stringify({
+        ...options,
+        passwordForLocalDev: options.passwordForLocalDev
+          ? '[REDACTED]'
+          : undefined
+      })}`
     )
 
     super({
@@ -17,6 +73,12 @@ class SecurePool extends Pool {
       port: options.port,
       database: options.database,
       user: options.user,
+      region: options.region,
+      Client: class extends IAMClient {
+        constructor(config) {
+          super(config, server, options)
+        }
+      },
       ssl: !options.isLocal
         ? {
             rejectUnauthorized: false,
@@ -27,34 +89,6 @@ class SecurePool extends Pool {
 
     this.options = options
     this.server = server
-
-    this.signer = new Signer({
-      hostname: options.host,
-      username: options.user,
-      region: options.region,
-      port: DEFAULT_PORT,
-      credentials: fromNodeProviderChain()
-    })
-
-    this.originalConnect = super.connect.bind(this)
-  }
-
-  async connect() {
-    try {
-      this.server.logger.info('Connecting to Postgres with signer')
-
-      this.options.password = this.options.isLocal
-        ? this.options.passwordForLocalDev
-        : await this.signer.getAuthToken()
-
-      this.server.logger.info('Password set for Postgres connection')
-      this.server.logger.info(`Options: ${JSON.stringify(this.options)}`)
-
-      return this.originalConnect()
-    } catch (err) {
-      this.server.logger.error({ err }, 'Failed in connect method')
-      throw err
-    }
   }
 }
 
@@ -68,7 +102,7 @@ export const postgresDb = {
     /**
      *
      * @param { import('@hapi/hapi').Server } server
-     * @param {{user: string, host: string, database: string, isLocal: boolean, disablePostgres: boolean}} options
+     * @param {{user: string, host: string, database: string, isLocal: boolean, disablePostgres: boolean, region: string, passwordForLocalDev?: string}} options
      * @returns {void}
      */
     register: async function (server, options) {
