@@ -9,7 +9,6 @@ const DEFAULT_PORT = 5432
 class SecurePool extends Pool {
   constructor(options) {
     super({
-      max: 10,
       host: options.host,
       port: options.port,
       database: options.database,
