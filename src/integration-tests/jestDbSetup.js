@@ -15,49 +15,38 @@ export const DB_CONFIG = {
   password: config.get('postgres.passwordForLocalDev')
 }
 
-export default async () => {
-  console.log('Running global setup for database tests')
-  const postgresContainer = await initializePostgres()
-  process.env.POSTGRES_PORT = postgresContainer.getMappedPort(5432)
-  containers.push(postgresContainer)
+const log = (stream, name) => {
+  stream.on('data', console.log)
+  stream.on('err', console.error)
+  stream.on('end', () => console.log(`${name} Stream closed`))
 }
 
-async function initializePostgres() {
+export default async () => {
+  console.log('Running global setup for database tests')
   const network = await new Network().start()
+  const postgresContainer = initializePostgres(network)
+  const postgresStarted = await postgresContainer.start()
+  const liquibaseContainer = initializeLiquibase(network)
+  await liquibaseContainer.start()
 
-  const postgresContainer = new GenericContainer('postgis/postgis:16-3.4')
-    .withName('postgis')
-    .withNetwork(network)
-    .withExposedPorts(5432)
-    .withLogConsumer((stream) => {
-      stream.on('data', console.log)
-      stream.on('err', console.error)
-      stream.on('end', () => console.log('DB Stream closed'))
-    })
-    .withEnvironment({
-      POSTGRES_USER: DB_CONFIG.user,
-      POSTGRES_PASSWORD: DB_CONFIG.password,
-      POSTGRES_DB: DB_CONFIG.database,
-      POSTGRES_PORT: 5432
-    })
+  process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
+  containers.push(postgresStarted)
+}
 
-  const currentDir = path.dirname(fileURLToPath(import.meta.url))
-  const dirname = path.resolve(currentDir, '../../changelog')
-
-  const liquibaseContainer = new GenericContainer('liquibase/liquibase')
+function initializeLiquibase(network) {
+  return new GenericContainer('liquibase/liquibase')
     .withName('liquibase')
     .withNetwork(network)
+    .withLogConsumer((stream) => log(stream, 'Liquibase'))
     .withWaitStrategy(
       Wait.forLogMessage("Liquibase command 'update' was executed successfully")
     )
-    .withLogConsumer((stream) => {
-      stream.on('data', console.log)
-      stream.on('err', console.error)
-      stream.on('end', () => console.log('Liquibase Stream closed'))
-    })
     .withCopyDirectoriesToContainer([
       {
-        source: dirname,
+        source: path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          '../../changelog'
+        ),
         target: '/liquibase/changelog'
       }
     ])
@@ -68,12 +57,19 @@ async function initializePostgres() {
       '--password=' + DB_CONFIG.password,
       '--changeLogFile=/changelog/db.changelog.xml'
     ])
+}
 
-  if (type() === 'Linux') {
-    postgresContainer.withTmpFs({ '/var/lib/postgresql/data': '' })
-  }
-
-  const postgresStarted = await postgresContainer.start()
-  await liquibaseContainer.start()
-  return postgresStarted
+function initializePostgres(network) {
+  return new GenericContainer('postgis/postgis:16-3.4')
+    .withName('postgis')
+    .withNetwork(network)
+    .withExposedPorts(5432)
+    .withLogConsumer((stream) => log(stream, 'Postgres'))
+    .withTmpFs(type() === 'Linux' ? { '/var/lib/postgresql/data': '' } : {})
+    .withEnvironment({
+      POSTGRES_USER: DB_CONFIG.user,
+      POSTGRES_PASSWORD: DB_CONFIG.password,
+      POSTGRES_DB: DB_CONFIG.database,
+      POSTGRES_PORT: 5432
+    })
 }
