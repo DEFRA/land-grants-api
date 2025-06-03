@@ -5,7 +5,7 @@ import {
   connectToTestDatbase,
   resetDatabase,
   seedDatabase
-} from './test-db-utils.js'
+} from './setup/postgres.js'
 
 let connection
 

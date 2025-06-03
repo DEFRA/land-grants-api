@@ -2,7 +2,7 @@ import { type } from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { GenericContainer, Network, Wait } from 'testcontainers'
-import { config } from '../..//src/config/index.js'
+import { config } from '../../config/index.js'
 
 export const containers = []
 
@@ -43,7 +43,7 @@ function initializeLiquibase(network) {
       {
         source: path.resolve(
           path.dirname(fileURLToPath(import.meta.url)),
-          '../../changelog'
+          '../../../changelog'
         ),
         target: '/liquibase/changelog'
       }
