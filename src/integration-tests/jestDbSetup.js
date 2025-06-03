@@ -55,8 +55,8 @@ async function initializePostgres() {
       POSTGRES_DB: DB_CONFIG.database
     })
 
-  const filename = fileURLToPath(import.meta.url)
-  const dirname = path.dirname(filename)
+  const currentDir = path.dirname(fileURLToPath(import.meta.url))
+  const dirname = path.resolve(currentDir, '../../changelog')
 
   const liquibaseContainer = new GenericContainer('liquibase/liquibase')
     .withName('liquibase')
@@ -71,7 +71,7 @@ async function initializePostgres() {
     })
     .withCopyDirectoriesToContainer([
       {
-        source: dirname + '/changelog',
+        source: dirname,
         target: '/liquibase/changelog'
       }
     ])
