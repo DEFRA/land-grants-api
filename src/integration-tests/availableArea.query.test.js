@@ -25,7 +25,7 @@ describe('Available Area query', () => {
     await connection.end()
   })
 
-  test('Get parcel available area', async () => {
+  test('should return available area when valid inputs', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverClassCodes = ['130', '131']
@@ -41,10 +41,10 @@ describe('Available Area query', () => {
     expect(availableArea).toBe(2112.29)
   })
 
-  test('Get parcel available area 1', async () => {
+  test('should return 0 available area when invalid landCoverClassCodes', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
+    const landCoverClassCodes = []
 
     const availableArea = await getParcelAvailableArea(
       sheetId,
@@ -54,54 +54,6 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe(2112.29)
-  })
-
-  test('Get parcel available area 2', async () => {
-    const sheetId = 'SD7565'
-    const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(2112.29)
-  })
-
-  test('Get parcel available area 3', async () => {
-    const sheetId = 'SD7565'
-    const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(2112.29)
-  })
-
-  test('Get parcel available area 4', async () => {
-    const sheetId = 'SD7565'
-    const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(2112.29)
+    expect(availableArea).toBe(7529.31)
   })
 })

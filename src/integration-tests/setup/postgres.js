@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Pool } from 'pg'
-import { DB_CONFIG } from './jestDbSetup.js'
+import { DB_CONFIG } from './jestSetup.js'
 
 export const connectToTestDatbase = () => {
   return new Pool({

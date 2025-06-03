@@ -9,7 +9,6 @@ export default {
   rootDir: '../../',
   testMatch: [`<rootDir>${currentPath}/**/?(*.)+(spec|test).[jt]s?(x)`],
   testEnvironment: 'node',
-  // setupFilesAfterEnv: [`<rootDir>${currentPath}/jestSetup.ts`],
-  globalSetup: `<rootDir>${currentPath}/setup/jestDbSetup.js`
-  // globalTeardown: `<rootDir>${currentPath}/setup/jestDbTeardown.js`
+  globalSetup: `<rootDir>${currentPath}/setup/jestSetup.js`,
+  globalTeardown: `<rootDir>${currentPath}/setup/jestTeardown.js`
 }
