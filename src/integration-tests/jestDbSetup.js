@@ -1,40 +1,25 @@
 /* eslint-disable no-console */
 
 import { type } from 'os'
-import { GenericContainer, Network, Wait } from 'testcontainers'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { GenericContainer, Network, Wait } from 'testcontainers'
+import { config } from '../..//src/config/index.js'
 
-/**
- * DB setup file. Idea stolen from:
- * https://github.com/ivandotv/jest-database-containers
- */
-
-global.containers = []
-
-let firstRun = true
+export const containers = []
 
 export const DB_CONFIG = {
-  host: 'localhost',
-  user: 'land_grants_api',
-  database: 'land_grants_api',
-  password: 'land_grants_api',
-  port: 5432
+  host: config.get('postgres.host'),
+  user: config.get('postgres.user'),
+  database: config.get('postgres.database'),
+  password: config.get('postgres.passwordForLocalDev')
 }
 
 export default async () => {
   console.log('Running global setup for database tests')
-  process.env.JEST_FIRST_RUN = firstRun ? 'yes' : 'no'
-
-  if (firstRun) {
-    const postgresContainer = initializePostgres()
-
-    const startedContainers = await Promise.all([postgresContainer])
-
-    global.containers.push(...startedContainers)
-  }
-
-  firstRun = false
+  const postgresContainer = await initializePostgres()
+  process.env.POSTGRES_PORT = postgresContainer.getMappedPort(5432)
+  containers.push(postgresContainer)
 }
 
 async function initializePostgres() {
@@ -52,7 +37,8 @@ async function initializePostgres() {
     .withEnvironment({
       POSTGRES_USER: DB_CONFIG.user,
       POSTGRES_PASSWORD: DB_CONFIG.password,
-      POSTGRES_DB: DB_CONFIG.database
+      POSTGRES_DB: DB_CONFIG.database,
+      POSTGRES_PORT: 5432
     })
 
   const currentDir = path.dirname(fileURLToPath(import.meta.url))
@@ -89,11 +75,5 @@ async function initializePostgres() {
 
   const postgresStarted = await postgresContainer.start()
   await liquibaseContainer.start()
-
-  process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
-  process.env.POSTGRES_USER = DB_CONFIG.user
-  process.env.POSTGRES_PASSWORD = DB_CONFIG.password
-  process.env.POSTGRES_DB = DB_CONFIG.database
-
   return postgresStarted
 }

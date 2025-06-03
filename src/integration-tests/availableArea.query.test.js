@@ -14,10 +14,10 @@ const logger = {
   error: console.error
 }
 
-describe('Postgres', () => {
+describe('Available Area query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedDatabase(connection)
+    await seedDatabase(connection, 'seed.sql')
   })
 
   afterAll(async () => {

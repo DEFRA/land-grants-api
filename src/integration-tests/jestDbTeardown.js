@@ -1,3 +1,5 @@
+import { containers } from './jestDbSetup.js'
+
 export default async (config) => {
   const { watch, watchAll } = config
 
@@ -5,7 +7,7 @@ export default async (config) => {
   if (watch || watchAll) return
 
   await Promise.all(
-    global.containers.map((container) => container.stop({ timeout: 10000 }))
+    containers.map((container) => container.stop({ timeout: 10000 }))
   )
 }
 

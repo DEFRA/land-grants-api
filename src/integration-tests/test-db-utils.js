@@ -1,11 +1,9 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { Pool } from 'pg'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { Pool } from 'pg'
 import { DB_CONFIG } from './jestDbSetup.js'
-
-let seedFile
 
 export const connectToTestDatbase = () => {
   return new Pool({
@@ -14,20 +12,16 @@ export const connectToTestDatbase = () => {
   })
 }
 
-export async function seedDatabase(client) {
+export async function seedDatabase(client, seedFile) {
   const filename = fileURLToPath(import.meta.url)
   const dirname = path.dirname(filename)
-  if (!seedFile) {
-    seedFile = await readFile(resolve(dirname, './seed.sql'), {
-      encoding: 'utf8'
-    })
-  }
-  await client.query(seedFile)
+  const seedFileContent = await readFile(resolve(dirname, seedFile), {
+    encoding: 'utf8'
+  })
+  await client.query(seedFileContent)
 }
 
 export async function resetDatabase(client) {
-  // truncate all tables in the database
-  // https://stackoverflow.com/a/12082038/1489487
   await client.query(`
       DO
       $func$
