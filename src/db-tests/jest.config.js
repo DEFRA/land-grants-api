@@ -1,6 +1,6 @@
 import parentConfig from '../../jest.config.js'
 
-const currentPath = 'src/integration-tests'
+const currentPath = 'src/db-tests'
 
 export default {
   ...parentConfig,
