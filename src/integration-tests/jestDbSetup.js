@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { type } from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -16,13 +14,13 @@ export const DB_CONFIG = {
 }
 
 const log = (stream, name) => {
+  /* eslint-disable no-console */
   stream.on('data', console.log)
   stream.on('err', console.error)
   stream.on('end', () => console.log(`${name} Stream closed`))
 }
 
 export default async () => {
-  console.log('Running global setup for database tests')
   const network = await new Network().start()
   const postgresContainer = initializePostgres(network)
   const postgresStarted = await postgresContainer.start()

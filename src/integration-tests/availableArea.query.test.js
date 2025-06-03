@@ -17,7 +17,7 @@ const logger = {
 describe('Available Area query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedDatabase(connection, 'seed.sql')
+    await seedDatabase(connection, 'availableArea.query.sql')
   })
 
   afterAll(async () => {
