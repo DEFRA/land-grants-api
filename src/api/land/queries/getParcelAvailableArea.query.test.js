@@ -29,7 +29,7 @@ describe('getParcelAvailableArea', () => {
 
   it('returns area when query succeeds', async () => {
     mockClient.query.mockResolvedValue({
-      rows: [{ area_after_exclusion: '1234.56' }]
+      rows: [{ total_land_cover_area: '1234.56' }]
     })
 
     const result = await getParcelAvailableArea(
@@ -46,7 +46,7 @@ describe('getParcelAvailableArea', () => {
 
   it('returns 0 if no area is returned', async () => {
     mockClient.query.mockResolvedValue({
-      rows: [{ area_after_exclusion: null }]
+      rows: [{ total_land_cover_area: null }]
     })
 
     const result = await getParcelAvailableArea(
