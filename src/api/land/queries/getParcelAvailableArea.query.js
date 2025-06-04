@@ -23,25 +23,24 @@ async function getParcelAvailableArea(
     FROM land_parcels
     WHERE sheet_id = $1
       AND parcel_id = $2
-  ),
-  excluded_land_cover_geom AS (
-    SELECT ST_Union(geom) AS unioned_geom
-    FROM land_covers
-    WHERE sheet_id = $1
-      AND parcel_id = $2
-      AND land_cover_class_code = ANY($3)
-  ),
-  difference_geom AS (
+),
+intersected_land_covers AS (
     SELECT
-      ST_Difference(
-        p.geom,
-        COALESCE(lc.unioned_geom, ST_GeomFromText('GEOMETRYCOLLECTION EMPTY', ST_SRID(p.geom)))
-      ) AS remaining_geom
-    FROM target_parcel p
-    LEFT JOIN excluded_land_cover_geom lc ON TRUE
-  )
-  SELECT ST_Area(remaining_geom) AS area_after_exclusion
-  FROM difference_geom`
+      ST_Intersection(lc.geom, p.geom) AS clipped_geom
+    FROM land_covers lc
+    JOIN target_parcel p
+      ON ST_Intersects(lc.geom, p.geom)
+    WHERE lc.sheet_id = $1
+      AND lc.parcel_id = $2
+      AND lc.land_cover_class_code = ANY($3) 
+),
+unioned_geom AS (
+    SELECT ST_Union(clipped_geom) AS merged_geom
+    FROM intersected_land_covers
+)
+SELECT ST_Area(merged_geom) AS total_land_cover_area
+FROM unioned_geom
+`
     logger.info(
       `Executing Avaialble Area Calculation Query with values: ${JSON.stringify([sheetId, parcelId, landCoverClassCodes])}`
     )
@@ -55,7 +54,7 @@ async function getParcelAvailableArea(
       `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes}`
     )
 
-    const area = result.rows[0]?.area_after_exclusion
+    const area = result.rows[0]?.total_land_cover_area
     return area !== null ? Math.round(area * 100) / 100 : 0
   } catch (err) {
     logger.error(

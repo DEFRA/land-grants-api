@@ -81,7 +81,7 @@ const ParcelController = {
           const actionAvailableArea = await getParcelAvailableArea(
             sheetId,
             parcelId,
-            action.landCoverClassCodes,
+            action.landCoverClassCodes.concat(action.landCoverCodes),
             request.server.postgresDb,
             request.logger
           )
@@ -92,7 +92,6 @@ const ParcelController = {
         })
       )
 
-      request.logger.info(`transformedActions :: ${transformedActions.length}`)
       if (!transformedActions) {
         const errorMessage = `Aailable area calculation failed`
         request.logger.error(errorMessage)
