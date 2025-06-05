@@ -25,7 +25,7 @@
     "test": "npm run test:unit && npm run test:db",
     "test:unit": "jest --coverage --verbose --runInBand",
     "test:watch": "jest --watch",
-    "test:db": "npx jest --projects=src/db-tests",
+    "test:db": "npx jest --projects=src/db-tests --runInBand",
     "server:watch": "nodemon --exec tsx --enable-source-maps ./src",
     "server:debug": "nodemon --exec tsx --enable-source-maps --inspect ./src",
     "prestart": "npm run build",
