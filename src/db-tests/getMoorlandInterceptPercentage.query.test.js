@@ -26,13 +26,6 @@ describe('Get moorland intercept percentage query', () => {
     await connection.end()
   })
 
-  // sheet_id = SD5642 AND parcel_id = 9903 -- large amount of moorland with lots of covers
-  // sheet_id = SD5942 AND parcel_id = 2744 -- tiny amount of moorland
-  // sheet_id = SD4964 AND parcel_id = 7210 -- large ammount of moorland
-  // sheet_id = SD6743 AND parcel_id = 5422 -- small ammount of moorland
-  // sheet_id = SD6743 AND parcel_id = 3385 -- full ammount of moorland
-  // sheet_id = SD6842 AND parcel_id = 0784 -- no of moorland SBI
-
   test('when large amount of moorland and sheet_id = SD5642 AND parcel_id = 9903', async () => {
     const sheetId = 'SD5642'
     const parcelId = '9903'
@@ -47,7 +40,7 @@ describe('Get moorland intercept percentage query', () => {
     expect(result).toBe('98.64')
   })
 
-  test('when large amount of moorland and sheet_id = SD5942 AND parcel_id = 2744', async () => {
+  test('when tiny amount of moorland and sheet_id = SD5942 AND parcel_id = 2744', async () => {
     const sheetId = 'SD5942'
     const parcelId = '2744'
 
