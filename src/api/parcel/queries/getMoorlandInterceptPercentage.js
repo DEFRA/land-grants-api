@@ -40,7 +40,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       `Retrieved moorland intercept percentage for ${sheetId}-${parcelId} , ${result.rows}`
     )
 
-    return result.rows[0].moorland_overlap_percent || 0
+    return result?.rows?.[0]?.moorland_overlap_percent || (0).toFixed(2)
   } catch (error) {
     logger.error(
       'Error executing get moorland intercept percentage query',
