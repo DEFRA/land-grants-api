@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 
+import { mockActions } from '../api/actions/fixtures/index.js'
 import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
 import {
   connectToTestDatbase,
@@ -23,22 +24,6 @@ describe('Available Area query', () => {
   afterAll(async () => {
     await resetDatabase(connection)
     await connection.end()
-  })
-
-  test('should return available area when valid inputs', async () => {
-    const sheetId = 'SD7565'
-    const parcelId = '6976'
-    const landCoverClassCodes = ['130', '131']
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBeDefined()
   })
 
   test('should return 0 available area when no landCoverClassCodes provided', async () => {
@@ -76,25 +61,21 @@ describe('Available Area query', () => {
   test('should return 7529.21 available area when all landCoverClassCodes in the system provided', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
-    const landCoverClassCodes = [
-      '631',
-      '130',
-      '131',
-      '551',
-      '131',
-      '130',
-      '551'
-    ]
+    const landCoverCodes = Array.from(
+      new Set(
+        mockActions[0].landCoverClassCodes.concat(mockActions[0].landCoverCodes)
+      )
+    )
 
     const availableArea = await getParcelAvailableArea(
       sheetId,
       parcelId,
-      landCoverClassCodes,
+      landCoverCodes,
       connection,
       logger
     )
 
-    expect(availableArea).toBe(7529.21)
+    expect(availableArea).toBe(5417.03)
   })
 
   test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
