@@ -46,13 +46,22 @@ const LandActionsValidateController = {
       )
 
       const actions = await getActions(request.logger)
-      request.logger.info(`Actions: ${actions?.length}`)
+      if (!actions || actions?.length === 0) {
+        const errorMessage = 'Actions not found'
+        request.logger.error(errorMessage)
+        return Boom.notFound(errorMessage)
+      }
+
+      const uniqueLandCodes = Array.from(
+        new Set(
+          actions[0].landCoverClassCodes.concat(actions[0].landCoverCodes)
+        )
+      )
 
       const parcelAvailableArea = await getParcelAvailableArea(
         landActions[0].sheetId,
         landActions[0].parcelId,
-        actions.find((a) => a.code === landActions[0].actions[0].code)
-          .landCoverClassCodes,
+        uniqueLandCodes,
         request.server.postgresDb,
         request.logger
       )
