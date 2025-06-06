@@ -4,7 +4,7 @@ const mockActions = [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement: 'sqm',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272

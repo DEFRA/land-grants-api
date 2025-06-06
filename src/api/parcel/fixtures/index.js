@@ -26,7 +26,7 @@ const mockParcelWithActions = {
     parcelId: '9238',
     sheetId: 'SX0679',
     size: {
-      unit: 'ha',
+      unit: 'sqm',
       value: 300
     },
     actions: [
@@ -34,7 +34,7 @@ const mockParcelWithActions = {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         availableArea: {
-          unit: 'ha',
+          unit: 'sqm',
           value: 200
         }
       }
