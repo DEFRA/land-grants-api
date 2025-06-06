@@ -74,14 +74,16 @@ const ParcelController = {
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
-      request.logger.info(`actions size :: ${actions.length}`)
 
       const transformedActions = await Promise.all(
         (actions ?? []).map(async (action) => {
+          const uniqueLandCodes = Array.from(
+            new Set(action.landCoverClassCodes.concat(action.landCoverCodes))
+          )
           const actionAvailableArea = await getParcelAvailableArea(
             sheetId,
             parcelId,
-            action.landCoverClassCodes.concat(action.landCoverCodes),
+            uniqueLandCodes,
             request.server.postgresDb,
             request.logger
           )
