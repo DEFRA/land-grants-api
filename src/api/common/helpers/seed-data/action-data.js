@@ -4,7 +4,7 @@ export default [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement: 'sqm',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -69,7 +69,7 @@ export default [
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement: 'sqm',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -83,7 +83,7 @@ export default [
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement: 'sqm',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
