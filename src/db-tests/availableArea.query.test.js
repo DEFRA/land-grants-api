@@ -41,7 +41,7 @@ describe('Available Area query', () => {
     expect(availableArea).toBeDefined()
   })
 
-  test('should return 0 available area when invalid landCoverClassCodes', async () => {
+  test('should return 0 available area when no landCoverClassCodes provided', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverClassCodes = []
@@ -54,14 +54,37 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBeDefined()
+    expect(availableArea).toBe(0)
   })
 
+   test('should return 0 available area when invalid landCoverClassCodes provided', async () => {
+    const sheetId = 'SD7565'
+    const parcelId = '6976'
+    const landCoverClassCodes = ['0000', '9999']
+
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
+
+    expect(availableArea).toBe(0)
+  })
 
   test('should return 7529.21 available area when all landCoverClassCodes in the system provided', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
-    const landCoverClassCodes = ['631', '130', '131', '551', '131', '130', '551']
+    const landCoverClassCodes = [
+      '631',
+      '130',
+      '131',
+      '551',
+      '131',
+      '130',
+      '551'
+    ]
 
     const availableArea = await getParcelAvailableArea(
       sheetId,
@@ -74,7 +97,7 @@ describe('Available Area query', () => {
     expect(availableArea).toBe(7529.21)
   })
 
-   test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
+  test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverClassCodes = ['551', '131', '130', '551']
@@ -90,4 +113,35 @@ describe('Available Area query', () => {
     expect(availableArea).toBe(5702.54)
   })
 
+  test('should return 0 available area when sheetId not found in the system', async () => {
+    const sheetId = 'UD00000'
+    const parcelId = '6976'
+    const landCoverClassCodes = ['551', '131', '130', '551']
+
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
+
+    expect(availableArea).toBe(0)
+  })
+
+  test('should return 0 available area when parcelId not found in the system', async () => {
+    const sheetId = 'SD7565'
+    const parcelId = '0000'
+    const landCoverClassCodes = ['551', '131', '130', '551']
+
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
+
+    expect(availableArea).toBe(0)
+  })
 })
