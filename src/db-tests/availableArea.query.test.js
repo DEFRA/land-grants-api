@@ -57,7 +57,7 @@ describe('Available Area query', () => {
     expect(availableArea).toBe(0)
   })
 
-   test('should return 0 available area when invalid landCoverClassCodes provided', async () => {
+  test('should return 0 available area when invalid landCoverClassCodes provided', async () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverClassCodes = ['0000', '9999']
