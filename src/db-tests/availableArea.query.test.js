@@ -56,4 +56,38 @@ describe('Available Area query', () => {
 
     expect(availableArea).toBeDefined()
   })
+
+
+  test('should return 7529.21 available area when all landCoverClassCodes in the system provided', async () => {
+    const sheetId = 'SD7565'
+    const parcelId = '6976'
+    const landCoverClassCodes = ['631', '130', '131', '551', '131', '130', '551']
+
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
+
+    expect(availableArea).toBe(7529.21)
+  })
+
+   test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
+    const sheetId = 'SD7565'
+    const parcelId = '6976'
+    const landCoverClassCodes = ['551', '131', '130', '551']
+
+    const availableArea = await getParcelAvailableArea(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      connection,
+      logger
+    )
+
+    expect(availableArea).toBe(5702.54)
+  })
+
 })

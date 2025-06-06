@@ -74,7 +74,6 @@ const ParcelController = {
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
-      request.logger.info(`actions size :: ${actions.length}`)
 
       const transformedActions = await Promise.all(
         (actions ?? []).map(async (action) => {
