@@ -27,7 +27,7 @@ function parcelTransformer(landParcel, actions) {
       sheetId: landParcel?.sheet_id,
       size: {
         unit: 'sqm',
-        value: Number(landParcel.area_sqm)
+        value: landParcel.area_sqm ? Number(landParcel.area_sqm) : 0
       },
       actions
     }
