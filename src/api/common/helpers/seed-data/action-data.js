@@ -42,38 +42,111 @@ export default [
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'sqm',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 20
     },
-    landCoverClassCodes: [],
-    rules: []
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'sqm',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 53
     },
-    landCoverClassCodes: [],
-    rules: []
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,
     startDate: '2025-01-01',
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 66
     },
-    landCoverClassCodes: [],
-    rules: []
+    'land-cover-class-codes': [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          'layer-name': 'moorland',
+          'minimum-intersection-percent': 50,
+          'tolerance-percent': 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,

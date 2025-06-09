@@ -25,7 +25,7 @@ describe('Actions validation controller', () => {
     landCoverClassCodes: ['130', '240']
   }
 
-  const mockLandCoverCodes = ['131', '241', '243']
+  const mockLandCoverCodes = ['130', '240', '131', '241', '243']
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -102,7 +102,7 @@ describe('Actions validation controller', () => {
       expect(getParcelAvailableArea).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        mockActionData.landCoverClassCodes.concat(mockLandCoverCodes),
+        mockLandCoverCodes,
         expect.any(Object),
         expect.any(Object)
       )

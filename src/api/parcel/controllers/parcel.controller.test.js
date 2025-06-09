@@ -5,14 +5,17 @@ import actionModel from '~/src/api/actions/models/action.model.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
+import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
+import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 
 // Mock the query functions
 jest.mock('../../land/queries/getLandData.query.js')
 jest.mock('../../land/queries/getParcelAvailableArea.query.js')
-jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
 
 const mockGetLandData = getLandData
 const mockGetParcelAvailableArea = getParcelAvailableArea
+const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
 
 describe('Parcel controller', () => {
   const server = Hapi.server()
@@ -51,9 +54,53 @@ describe('Parcel controller', () => {
     // Default mock implementations
     mockGetLandData.mockResolvedValue(mockLandParcelData)
     mockGetParcelAvailableArea.mockResolvedValue(300)
+    mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
   })
 
   describe('GET /parcels/:parcel route', () => {
+    test('should return 200 if valid land parcel and actions', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      mockingoose(actionModel).toReturn(mockActions, 'find')
+
+      const request = {
+        method: 'GET',
+        url: `/parcels/${sheetId}-${parcelId}`
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcel }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcel).toBeDefined()
+      expect(parcel.parcelId).toBe(parcelId)
+      expect(parcel.sheetId).toBe(sheetId)
+      expect(parcel.size.unit).toBe('sqm')
+      expect(parcel.size.value).toBe(440)
+      expect(parcel.actions).toBeDefined()
+      expect(parcel.actions).toHaveLength(1)
+
+      // Verify that our mocked functions were called
+      expect(mockGetLandData).toHaveBeenCalledWith(
+        sheetId,
+        parcelId,
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
+        sheetId,
+        parcelId,
+        expect.any(Array),
+        expect.any(Object),
+        expect.any(Object)
+      )
+    })
+
     test('should return 400 if the request has an invalid parcel param', async () => {
       const request = {
         method: 'GET',
@@ -154,49 +201,6 @@ describe('Parcel controller', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
-    })
-
-    test('should return 200 if valid land parcel and actions', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      mockingoose(actionModel).toReturn(mockActions, 'find')
-
-      const request = {
-        method: 'GET',
-        url: `/parcels/${sheetId}-${parcelId}`
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message, parcel }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcel).toBeDefined()
-      expect(parcel.parcelId).toBe(parcelId)
-      expect(parcel.sheetId).toBe(sheetId)
-      expect(parcel.size.unit).toBe('sqm')
-      expect(parcel.size.value).toBe(440)
-      expect(parcel.actions).toBeDefined()
-      expect(parcel.actions).toHaveLength(1)
-
-      // Verify that our mocked functions were called
-      expect(mockGetLandData).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Array),
-        expect.any(Object),
-        expect.any(Object)
-      )
     })
 
     test('should return 404 if available area calculation fails', async () => {

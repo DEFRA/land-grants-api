@@ -4,7 +4,7 @@ import landCoverCodesModel from '~/src/api/land-cover-codes/models/land-cover-co
  * Get all land cover codes
  * @param {string[]} codes - The codes to get
  * @param {object} logger - The logger
- * @returns {object} The land cover codes
+ * @returns {Promise<string[]>} The land cover codes
  */
 async function getLandCoverCodesForCodes(codes, logger) {
   try {
@@ -16,7 +16,10 @@ async function getLandCoverCodesForCodes(codes, logger) {
         ]
       })
       .lean()
-    return landCoverCodes
+
+    const landUseClassCode = landCoverCodes.map((code) => code.landUseClassCode)
+    const uniqueCodes = Array.from(new Set(codes.concat(landUseClassCode)))
+    return uniqueCodes
   } catch (error) {
     logger.error(`Unable to get land cover codes`, error)
     throw error
