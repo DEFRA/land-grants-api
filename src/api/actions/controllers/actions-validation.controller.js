@@ -14,6 +14,7 @@ import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { mergelLandCoverCodes } from '~/src/api/land-cover-codes/service/index.js'
 
 /**
  * LandActionsValidateController
@@ -52,11 +53,7 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const uniqueLandCodes = Array.from(
-        new Set(
-          actions[0].landCoverClassCodes.concat(actions[0].landCoverCodes)
-        )
-      )
+      const uniqueLandCodes = mergelLandCoverCodes(actions[0])
 
       const parcelAvailableArea = await getParcelAvailableArea(
         landActions[0].sheetId,
@@ -76,9 +73,9 @@ const LandActionsValidateController = {
       )
 
       const application = applicationTransformer(
-        parcelAvailableArea,
         landActions[0].actions[0].code,
         landActions[0].actions[0].quantity,
+        parcelAvailableArea,
         intersectingAreaPercentage,
         [] // TODO: get existing agreements
       )

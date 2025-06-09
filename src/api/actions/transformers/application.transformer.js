@@ -7,15 +7,15 @@
  * @param {Array} existingAgreements - The existing agreements
  */
 function applicationTransformer(
-  areaAppliedFor,
-  code,
+  actionCodeAppliedFor,
   area,
+  areaAppliedFor,
   intersectingAreaPercentage,
   existingAgreements
 ) {
   return {
     areaAppliedFor,
-    actionCodeAppliedFor: code,
+    actionCodeAppliedFor,
     landParcel: {
       area,
       existingAgreements,
