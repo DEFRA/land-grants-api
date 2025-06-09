@@ -58,14 +58,10 @@ const LandActionsValidateController = {
         request.logger
       )
 
-      const uniqueLandCodes = Array.from(
-        new Set(actions[0].landCoverClassCodes.concat(landCoverCodes))
-      )
-
       const parcelAvailableArea = await getParcelAvailableArea(
         landActions[0].sheetId,
         landActions[0].parcelId,
-        uniqueLandCodes,
+        landCoverCodes,
         request.server.postgresDb,
         request.logger
       )
