@@ -177,7 +177,7 @@ describe('Parcel controller', () => {
       expect(parcel).toBeDefined()
       expect(parcel.parcelId).toBe(parcelId)
       expect(parcel.sheetId).toBe(sheetId)
-      expect(parcel.size.unit).toBe('ha')
+      expect(parcel.size.unit).toBe('sqm')
       expect(parcel.size.value).toBe(440)
       expect(parcel.actions).toBeDefined()
       expect(parcel.actions).toHaveLength(1)
