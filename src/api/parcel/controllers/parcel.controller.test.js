@@ -9,6 +9,7 @@ import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableAre
 // Mock the query functions
 jest.mock('../../land/queries/getLandData.query.js')
 jest.mock('../../land/queries/getParcelAvailableArea.query.js')
+jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
 
 const mockGetLandData = getLandData
 const mockGetParcelAvailableArea = getParcelAvailableArea

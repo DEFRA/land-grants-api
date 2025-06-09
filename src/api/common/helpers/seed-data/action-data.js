@@ -9,33 +9,6 @@ export default [
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
     },
-    landCoverCodes: [
-      '131',
-      '241',
-      '243',
-      '251',
-      '252',
-      '253',
-      '271',
-      '281',
-      '282',
-      '283',
-      '285',
-      '286',
-      '287',
-      '288',
-      '300',
-      '347',
-      '582',
-      '583',
-      '591',
-      '592',
-      '593',
-      '621',
-      '641',
-      '643',
-      '651'
-    ],
     landCoverClassCodes: [
       '130',
       '240',
@@ -74,7 +47,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -88,7 +60,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -101,7 +72,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -115,7 +85,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -129,7 +98,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -143,7 +111,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -157,7 +124,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -171,7 +137,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -185,7 +150,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -199,7 +163,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -213,7 +176,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   }
