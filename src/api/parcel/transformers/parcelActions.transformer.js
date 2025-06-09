@@ -9,7 +9,7 @@ function actionTransformer(action, totalAvailableArea) {
     code: action.code,
     description: action.description,
     availableArea: {
-      unit: 'ha',
+      unit: 'sqm',
       value: totalAvailableArea
     }
   }
@@ -26,8 +26,8 @@ function parcelTransformer(landParcel, actions) {
       parcelId: landParcel?.parcel_id,
       sheetId: landParcel?.sheet_id,
       size: {
-        unit: 'ha',
-        value: landParcel.area_sqm
+        unit: 'sqm',
+        value: landParcel.area_sqm ? Number(landParcel.area_sqm) : 0
       },
       actions
     }
