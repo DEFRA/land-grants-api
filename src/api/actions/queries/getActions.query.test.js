@@ -20,7 +20,9 @@ describe('getActions', () => {
 
     const result = await getActions(mockLogger)
 
-    expect(actionModel.find).toHaveBeenCalledWith({ code: { $in: ['CMOR1'] } })
+    expect(actionModel.find).toHaveBeenCalledWith({
+      code: { $in: ['CMOR1', 'UPL1', 'UPL2', 'UPL3'] }
+    })
     expect(result).toEqual(mockActions)
   })
 
@@ -32,7 +34,9 @@ describe('getActions', () => {
 
     const result = await getActions(mockLogger)
 
-    expect(actionModel.find).toHaveBeenCalledWith({ code: { $in: ['CMOR1'] } })
+    expect(actionModel.find).toHaveBeenCalledWith({
+      code: { $in: ['CMOR1', 'UPL1', 'UPL2', 'UPL3'] }
+    })
     expect(result).toBeNull()
   })
 

@@ -32,7 +32,7 @@ intersected_land_covers AS (
       ON ST_Intersects(lc.geom, p.geom)
     WHERE lc.sheet_id = $1
       AND lc.parcel_id = $2
-      AND lc.land_cover_class_code = ANY($3) 
+      AND lc.land_cover_class_code = ANY($3)
 ),
 unioned_geom AS (
     SELECT ST_Union(clipped_geom) AS merged_geom
