@@ -13,7 +13,6 @@ const schema = new mongoose.Schema(
       ratePerUnitGbp: { type: Number },
       ratePerAgreementPerYearGbp: { type: Number }
     },
-    landCoverCodes: [{ type: String }],
     landCoverClassCodes: [{ type: String }],
     rules: [
       {

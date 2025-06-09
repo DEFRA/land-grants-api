@@ -14,6 +14,7 @@ import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 
 /**
  * LandActionsValidateController
@@ -52,10 +53,13 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
+      const landCoverCodes = await getLandCoverCodesForCodes(
+        actions[0].landCoverClassCodes,
+        request.logger
+      )
+
       const uniqueLandCodes = Array.from(
-        new Set(
-          actions[0].landCoverClassCodes.concat(actions[0].landCoverCodes)
-        )
+        new Set(actions[0].landCoverClassCodes.concat(landCoverCodes))
       )
 
       const parcelAvailableArea = await getParcelAvailableArea(

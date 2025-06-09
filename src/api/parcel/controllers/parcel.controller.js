@@ -17,6 +17,7 @@ import {
 } from '~/src/api/common/schema/index.js'
 import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 
 /**
  * ParcelController
@@ -77,8 +78,13 @@ const ParcelController = {
 
       const transformedActions = await Promise.all(
         (actions ?? []).map(async (action) => {
+          const landCoverCodes = await getLandCoverCodesForCodes(
+            actions[0].landCoverClassCodes,
+            request.logger
+          )
+
           const uniqueLandCodes = Array.from(
-            new Set(action.landCoverClassCodes.concat(action.landCoverCodes))
+            new Set(actions[0].landCoverClassCodes.concat(landCoverCodes))
           )
           const actionAvailableArea = await getParcelAvailableArea(
             sheetId,
