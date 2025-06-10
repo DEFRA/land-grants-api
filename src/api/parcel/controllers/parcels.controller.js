@@ -1,0 +1,167 @@
+import Joi from 'joi'
+import Boom from '@hapi/boom'
+import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
+import { actionTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import { parcelIdSchema } from '~/src/api/parcel/schema/parcel.schema.js'
+import {
+  errorResponseSchema,
+  internalServerErrorResponseSchema
+} from '~/src/api/common/schema/index.js'
+import { getLandData } from '../../land/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getActions } from '../../actions/queries/index.js'
+
+/**
+ * ParcelsController
+ * Returns a single land parcel merged with land actions
+ * @satisfies {Partial<ServerRoute>}
+ */
+
+const availableAreaSchema = Joi.object({
+  unit: Joi.string().required(),
+  value: Joi.number().required()
+})
+
+const actionSchema = Joi.object({
+  code: Joi.string().required(),
+  description: Joi.string().required(),
+  availableArea: availableAreaSchema.optional()
+})
+
+const parcelSchema = Joi.object({
+  parcelId: Joi.string().required(),
+  sheetId: Joi.string().required(),
+  size: Joi.object({
+    unit: Joi.string().required(),
+    value: Joi.number().required()
+  }).optional(),
+  actions: Joi.array().items(actionSchema).optional()
+})
+
+const responseSchema = Joi.object({
+  message: Joi.string().valid('success').required(),
+  parcels: Joi.array().items(parcelSchema).required()
+})
+
+const ParcelsController = {
+  options: {
+    tags: ['api'],
+    description: 'Get multiple land parcels with selected fields',
+    notes:
+      'Returns data for multiple parcels and includes the requested fields',
+    validate: {
+      payload: Joi.object({
+        parcelIds: Joi.array().items(parcelIdSchema).required(),
+        fields: Joi.array().items(Joi.string()).required()
+      })
+    },
+    response: {
+      status: {
+        200: responseSchema,
+        404: errorResponseSchema,
+        500: internalServerErrorResponseSchema
+      }
+    }
+  },
+
+  handler: async (request, h) => {
+    try {
+      const { parcelIds, fields } = request.payload
+      request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
+
+      const responseParcels = []
+
+      for (const parcel of parcelIds) {
+        const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+        const landParcel = await getLandData(
+          sheetId,
+          parcelId,
+          request.server.postgresDb,
+          request.logger
+        )
+
+        if (!landParcel) {
+          const errorMessage = `Land parcel not found: ${parcel}`
+          request.logger.error(errorMessage)
+          return Boom.notFound(errorMessage)
+        }
+
+        const parcelResponse = {
+          parcelId: landParcel['0'].parcel_id,
+          sheetId: landParcel['0'].sheet_id
+        }
+
+        if (fields.includes('size')) {
+          parcelResponse.size = {
+            unit: 'sqm',
+            value: landParcel['0'].area_sqm
+          }
+        }
+
+        if (fields.some((f) => f.startsWith('actions'))) {
+          const actions = await getActions(request.logger)
+
+          if (!actions || actions?.length === 0) {
+            const errorMessage = 'Actions not found'
+            request.logger.error(errorMessage)
+            return Boom.notFound(errorMessage)
+          }
+
+          const transformedActions = await Promise.all(
+            actions.map(async (action) => {
+              let transformed = {
+                code: action.code,
+                description: action.description
+              }
+
+              if (fields.includes('actions.availableArea')) {
+                const landCoverCodes = await getLandCoverCodesForCodes(
+                  action.landCoverClassCodes,
+                  request.logger
+                )
+                const availableArea = await getParcelAvailableArea(
+                  sheetId,
+                  parcelId,
+                  landCoverCodes,
+                  request.server.postgresDb,
+                  request.logger
+                )
+
+                if (availableArea) {
+                  transformed = actionTransformer(action, availableArea)
+                }
+              }
+
+              return transformed
+            })
+          )
+
+          parcelResponse.actions = transformedActions
+        }
+
+        responseParcels.push(parcelResponse)
+      }
+
+      return h
+        .response({
+          message: 'success',
+          parcels: responseParcels
+        })
+        .code(statusCodes.ok)
+    } catch (error) {
+      const errorMessage = 'Error fetching parcels'
+      request.logger.error(errorMessage, {
+        error: error.message,
+        stack: error.stack
+      })
+      return Boom.internal(errorMessage)
+    }
+  }
+}
+export { ParcelsController }
+
+/**
+ * @import { ServerRoute } from '@hapi/hapi'
+ */

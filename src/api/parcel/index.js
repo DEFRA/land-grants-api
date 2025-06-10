@@ -1,4 +1,4 @@
-import { ParcelController } from './controllers/index.js'
+import { ParcelController, ParcelsController } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -12,6 +12,11 @@ const parcel = {
           method: 'GET',
           path: '/parcels/{parcel}',
           ...ParcelController
+        },
+        {
+          method: 'POST',
+          path: '/parcels',
+          ...ParcelsController
         }
       ])
     }

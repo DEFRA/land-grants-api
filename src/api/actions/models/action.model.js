@@ -33,4 +33,4 @@ const schema = new mongoose.Schema(
 
 schema.index({ code: 1 }, { unique: true })
 
-export default mongoose.model(collection, schema)
+export default mongoose.models[collection] || mongoose.model(collection, schema)
