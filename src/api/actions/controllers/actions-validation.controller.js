@@ -14,7 +14,7 @@ import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
-import { mergelLandCoverCodes } from '~/src/api/land-cover-codes/service/index.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 
 /**
  * LandActionsValidateController
@@ -53,12 +53,15 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const uniqueLandCodes = mergelLandCoverCodes(actions[0])
+      const landCoverCodes = await getLandCoverCodesForCodes(
+        actions[0].landCoverClassCodes,
+        request.logger
+      )
 
       const parcelAvailableArea = await getParcelAvailableArea(
         landActions[0].sheetId,
         landActions[0].parcelId,
-        uniqueLandCodes,
+        landCoverCodes,
         request.server.postgresDb,
         request.logger
       )

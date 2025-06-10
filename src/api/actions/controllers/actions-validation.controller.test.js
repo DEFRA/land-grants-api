@@ -4,6 +4,7 @@ import { landactions } from '~/src/api/actions/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
@@ -14,6 +15,7 @@ jest.mock('~/src/api/actions/queries/getActions.query.js')
 jest.mock('~/src/api/land/queries/getParcelAvailableArea.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
+jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
 
 describe('Actions validation controller', () => {
   const server = Hapi.server()
@@ -22,6 +24,8 @@ describe('Actions validation controller', () => {
     rules: ['rule1', 'rule2'],
     landCoverClassCodes: ['130', '240']
   }
+
+  const mockLandCoverCodes = ['130', '240', '131', '241', '243']
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -59,6 +63,7 @@ describe('Actions validation controller', () => {
       }
     })
     getActions.mockResolvedValue([mockActionData])
+    getLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
     executeRules.mockReturnValue({
       passed: true,
       results: []
@@ -97,7 +102,7 @@ describe('Actions validation controller', () => {
       expect(getParcelAvailableArea).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        mockActionData.landCoverClassCodes,
+        mockLandCoverCodes,
         expect.any(Object),
         expect.any(Object)
       )

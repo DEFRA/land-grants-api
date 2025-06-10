@@ -61,7 +61,7 @@ describe('Parcel Schema Validation', () => {
       const invalid = {
         ...mockParcelWithActions.parcel,
         size: {
-          unit: 'ha',
+          unit: 'sqm',
           value: -10.5
         }
       }

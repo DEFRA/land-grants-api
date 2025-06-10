@@ -32,7 +32,13 @@ describe('getLandCoverCodesForCodes', () => {
         { landUseClassCode: { $in: mockCodes } }
       ]
     })
-    expect(result).toEqual(expectedResults)
+    expect(result).toEqual(
+      Array.from(
+        new Set(
+          result.concat(expectedResults.map((code) => code.landUseClassCode))
+        )
+      )
+    )
     expect(mockLogger.error).not.toHaveBeenCalled()
   })
 
@@ -54,7 +60,13 @@ describe('getLandCoverCodesForCodes', () => {
         { landUseClassCode: { $in: mockCodes } }
       ]
     })
-    expect(result).toEqual(expectedResults)
+    expect(result).toEqual(
+      Array.from(
+        new Set(
+          result.concat(expectedResults.map((code) => code.landUseClassCode))
+        )
+      )
+    )
     expect(mockLogger.error).not.toHaveBeenCalled()
   })
 

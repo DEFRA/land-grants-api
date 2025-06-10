@@ -62,9 +62,7 @@ describe('Available Area query', () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverCodes = Array.from(
-      new Set(
-        mockActions[0].landCoverClassCodes.concat(mockActions[0].landCoverCodes)
-      )
+      new Set(mockActions[0].landCoverClassCodes.concat(['131', '241', '243']))
     )
 
     const availableArea = await getParcelAvailableArea(

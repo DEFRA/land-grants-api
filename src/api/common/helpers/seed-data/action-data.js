@@ -4,38 +4,11 @@ export default [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement: 'sqm',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
     },
-    landCoverCodes: [
-      '131',
-      '241',
-      '243',
-      '251',
-      '252',
-      '253',
-      '271',
-      '281',
-      '282',
-      '283',
-      '285',
-      '286',
-      '287',
-      '288',
-      '300',
-      '347',
-      '582',
-      '583',
-      '591',
-      '592',
-      '593',
-      '621',
-      '641',
-      '643',
-      '651'
-    ],
     landCoverClassCodes: [
       '130',
       '240',
@@ -71,41 +44,111 @@ export default [
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'ha',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 20
     },
-    landCoverCodes: [],
-    landCoverClassCodes: [],
-    rules: []
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
-    applicationUnitOfMeasurement: 'ha',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 53
     },
-    landCoverCodes: [],
-    landCoverClassCodes: [],
-    rules: []
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,
     startDate: '2025-01-01',
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
+    'application-unit-of-measurement': 'sqm',
     payment: {
-      ratePerUnitGbp: 0,
-      ratePerAgreementPerYearGbp: 0
+      'rate-per-unit-gbp': 66
     },
-    landCoverCodes: [],
-    landCoverClassCodes: [],
-    rules: []
+    'land-cover-class-codes': [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          'layer-name': 'moorland',
+          'minimum-intersection-percent': 50,
+          'tolerance-percent': 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
   },
   {
     version: 1,
@@ -117,7 +160,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -131,7 +173,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -145,7 +186,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -159,7 +199,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -173,7 +212,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -187,7 +225,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -201,7 +238,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   },
@@ -215,7 +251,6 @@ export default [
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverCodes: [],
     landCoverClassCodes: [],
     rules: []
   }
