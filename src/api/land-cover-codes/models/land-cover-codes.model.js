@@ -8,8 +8,8 @@ const schema = new mongoose.Schema(
     landCoverTypeCode: { type: String, required: true },
     landCoverClassDescription: { type: String, required: true },
     landCoverClassCode: { type: String, required: true },
-    landUseClassDescription: { type: String, required: true },
-    landUseClassCode: { type: String, required: true },
+    landCoverDescription: { type: String, required: true },
+    landCoverCode: { type: String, required: true },
     landUseDescription: { type: String, required: true },
     landUseCode: { type: String, required: true }
   },

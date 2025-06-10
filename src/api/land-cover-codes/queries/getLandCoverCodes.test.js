@@ -29,23 +29,23 @@ describe('getLandCoverCodesForCodes', () => {
     expect(landCoverCodesModel.find).toHaveBeenCalledWith({
       $or: [
         { landCoverClassCode: { $in: mockCodes } },
-        { landUseClassCode: { $in: mockCodes } }
+        { landCoverCode: { $in: mockCodes } }
       ]
     })
     expect(result).toEqual(
       Array.from(
         new Set(
-          result.concat(expectedResults.map((code) => code.landUseClassCode))
+          result.concat(expectedResults.map((code) => code.landCoverCode))
         )
       )
     )
     expect(mockLogger.error).not.toHaveBeenCalled()
   })
 
-  test('should return land cover codes when found for landUseClassCode', async () => {
+  test('should return land cover codes when found for landCoverCode', async () => {
     const mockCodes = ['110']
     const expectedResults = mockLandCoverCodes.filter(
-      (code) => code.landUseClassCode === '110'
+      (code) => code.landCoverCode === '110'
     )
 
     landCoverCodesModel.find.mockReturnValue({
@@ -57,13 +57,13 @@ describe('getLandCoverCodesForCodes', () => {
     expect(landCoverCodesModel.find).toHaveBeenCalledWith({
       $or: [
         { landCoverClassCode: { $in: mockCodes } },
-        { landUseClassCode: { $in: mockCodes } }
+        { landCoverCode: { $in: mockCodes } }
       ]
     })
     expect(result).toEqual(
       Array.from(
         new Set(
-          result.concat(expectedResults.map((code) => code.landUseClassCode))
+          result.concat(expectedResults.map((code) => code.landCoverCode))
         )
       )
     )

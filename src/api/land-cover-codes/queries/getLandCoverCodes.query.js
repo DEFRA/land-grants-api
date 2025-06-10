@@ -8,17 +8,17 @@ import landCoverCodesModel from '~/src/api/land-cover-codes/models/land-cover-co
  */
 async function getLandCoverCodesForCodes(codes, logger) {
   try {
-    const landCoverCodes = await landCoverCodesModel
+    const landCovers = await landCoverCodesModel
       .find({
         $or: [
           { landCoverClassCode: { $in: codes } },
-          { landUseClassCode: { $in: codes } }
+          { landCoverCode: { $in: codes } }
         ]
       })
       .lean()
 
-    const landUseClassCode = landCoverCodes.map((code) => code.landUseClassCode)
-    const uniqueCodes = Array.from(new Set(codes.concat(landUseClassCode)))
+    const landCoverCodes = landCovers.map((code) => code.landCoverCode)
+    const uniqueCodes = Array.from(new Set(codes.concat(landCoverCodes)))
     return uniqueCodes
   } catch (error) {
     logger.error(`Unable to get land cover codes`, error)
