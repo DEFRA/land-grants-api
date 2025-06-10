@@ -76,9 +76,9 @@ const LandActionsValidateController = {
       )
 
       const application = applicationTransformer(
-        parcelAvailableArea,
         landActions[0].actions[0].code,
         landActions[0].actions[0].quantity,
+        parcelAvailableArea,
         intersectingAreaPercentage,
         [] // TODO: get existing agreements
       )

@@ -30,10 +30,12 @@ export default [
           layerName: 'moorland',
           minimumIntersectionPercent: 50,
           tolerancePercent: 1
-        }
+        },
+        data: 'moorlandInterceptPercentage'
       },
       {
-        name: 'applied-for-total-available-area'
+        name: 'applied-for-total-available-area',
+        data: 'appliedForTotalAvailableArea'
       }
     ]
   },
