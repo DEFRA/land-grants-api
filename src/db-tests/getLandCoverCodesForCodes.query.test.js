@@ -10,6 +10,8 @@ const logger = {
 
 describe('Get land cover codes', () => {
   beforeAll(async () => {
+    jest.setTimeout(30000)
+
     await mongoose.connect('mongodb://127.0.0.1:27017/', {
       dbName: 'land-grants-api'
     })
