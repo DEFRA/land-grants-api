@@ -4,8 +4,8 @@ const mockLandCoverCodes = [
     landCoverTypeCode: '100',
     landCoverClassDescription: 'Arable Land ',
     landCoverClassCode: '110',
-    landUseClassDescription: 'Half Hedge Arable EFA',
-    landUseClassCode: '110',
+    landCoverDescription: 'Half Hedge Arable EFA',
+    landCoverCode: '110',
     landUseDescription: 'Half Hedge Arable EFA',
     landUseCode: 'HAE1'
   },
@@ -14,8 +14,8 @@ const mockLandCoverCodes = [
     landCoverTypeCode: '100',
     landCoverClassDescription: 'Arable Land ',
     landCoverClassCode: '110',
-    landUseClassDescription: 'Full Hedge Arable EFA',
-    landUseClassCode: '110',
+    landCoverDescription: 'Full Hedge Arable EFA',
+    landCoverCode: '110',
     landUseDescription: 'Full Hedge Arable EFA',
     landUseCode: 'HAE2'
   },
@@ -24,8 +24,8 @@ const mockLandCoverCodes = [
     landCoverTypeCode: '100',
     landCoverClassDescription: 'Arable Land ',
     landCoverClassCode: '110',
-    landUseClassDescription: 'Half Hedge Arable NON-EFA',
-    landUseClassCode: '110',
+    landCoverDescription: 'Half Hedge Arable NON-EFA',
+    landCoverCode: '110',
     landUseDescription: 'Half Hedge Arable NON-EFA',
     landUseCode: 'HAN1'
   }
