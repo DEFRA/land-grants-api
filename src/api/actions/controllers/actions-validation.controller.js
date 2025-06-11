@@ -15,6 +15,7 @@ import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
 
 /**
  * LandActionsValidateController
@@ -46,7 +47,21 @@ const LandActionsValidateController = {
         `Controller validating land actions ${landActions?.length}`
       )
 
+      const landParcel = await getLandData(
+        landActions[0].sheetId,
+        landActions[0].parcelId,
+        request.server.postgresDb,
+        request.logger
+      )
+
+      if (!landParcel) {
+        const errorMessage = `Land parcel not found`
+        request.logger.error(errorMessage)
+        return Boom.notFound(errorMessage)
+      }
+
       const actions = await getActions(request.logger)
+
       if (!actions || actions?.length === 0) {
         const errorMessage = 'Actions not found'
         request.logger.error(errorMessage)
@@ -58,57 +73,63 @@ const LandActionsValidateController = {
         request.logger
       )
 
-      const parcelAvailableArea = await getParcelAvailableArea(
-        landActions[0].sheetId,
-        landActions[0].parcelId,
-        landCoverCodes,
-        request.server.postgresDb,
-        request.logger
-      )
+      let results = []
 
-      request.logger.info(`Parcel available area: ${parcelAvailableArea}`)
+      for (const action of landActions[0].actions) {
+        const parcelAvailableArea = await getParcelAvailableArea(
+          landActions[0].sheetId,
+          landActions[0].parcelId,
+          landCoverCodes,
+          request.server.postgresDb,
+          request.logger
+        )
 
-      const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
-        landActions[0].sheetId,
-        landActions[0].parcelId,
-        request.server.postgresDb,
-        request.logger
-      )
+        request.logger.info(`Parcel available area: ${parcelAvailableArea}`)
 
-      const application = applicationTransformer(
-        parcelAvailableArea,
-        landActions[0].actions[0].code,
-        landActions[0].actions[0].quantity,
-        intersectingAreaPercentage,
-        [] // TODO: get existing agreements
-      )
+        const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
+          landActions[0].sheetId,
+          landActions[0].parcelId,
+          request.server.postgresDb,
+          request.logger
+        )
 
-      const ruleToExecute = actions.find(
-        (a) => a.code === landActions[0].actions[0].code
-      )
+        const application = applicationTransformer(
+          parcelAvailableArea,
+          action.code,
+          action.quantity,
+          intersectingAreaPercentage,
+          [] // TODO: get existing agreements
+        )
 
-      if (ruleToExecute?.rules?.length === 0) {
-        const errorMessage =
-          'Error validating land actions, no rules found for action'
-        request.logger.error(errorMessage)
-        return Boom.badRequest(errorMessage)
+        const ruleToExecute = actions.find((a) => a.code === action.code)
+
+        if (ruleToExecute?.rules?.length === 0) {
+          const errorMessage =
+            'Error validating land actions, no rules found for action'
+          request.logger.error(errorMessage)
+          return Boom.notFound(errorMessage)
+        }
+
+        const result = executeRules(rules, application, ruleToExecute?.rules)
+        request.logger.info(`Result: ${JSON.stringify(result)}`)
+
+        results = results.concat(
+          result.results
+            .filter((r) => !r.passed)
+            .map((r) => {
+              return {
+                code: action.code,
+                description: r.message
+              }
+            })
+        )
       }
-
-      const result = executeRules(rules, application, ruleToExecute?.rules)
-      request.logger.info(`Result: ${JSON.stringify(result)}`)
 
       return h
         .response({
           message: 'success',
-          valid: result.passed,
-          errorMessages: result.results
-            .filter((r) => !r.passed)
-            .map((r) => {
-              return {
-                code: r.name,
-                description: r.message
-              }
-            })
+          valid: results.every((r) => r.passed),
+          errorMessages: results
         })
         .code(statusCodes.ok)
     } catch (error) {
