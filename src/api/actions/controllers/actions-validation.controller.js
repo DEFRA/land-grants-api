@@ -1,21 +1,21 @@
 import Boom from '@hapi/boom'
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import {
   landActionSchema,
   landActionValidationResponseSchema
 } from '~/src/api/actions/schema/action-validation.schema.js'
+import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
+import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
-import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { getActions } from '~/src/api/actions/queries/getActions.query.js'
-import { rules } from '~/src/rules-engine/rules/index.js'
-import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
-import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
+import { rules } from '~/src/rules-engine/rules/index.js'
+import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 
 /**
  * LandActionsValidateController
@@ -94,9 +94,9 @@ const LandActionsValidateController = {
         )
 
         const application = applicationTransformer(
-          parcelAvailableArea,
-          action.code,
           action.quantity,
+          action.code,
+          parcelAvailableArea,
           intersectingAreaPercentage,
           [] // TODO: get existing agreements
         )
