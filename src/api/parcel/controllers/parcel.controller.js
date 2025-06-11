@@ -2,7 +2,7 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
-import { getActions } from '~/src/api/parcel/queries/index.js'
+import { getActions } from '~/src/api/actions/queries/index.js'
 import {
   actionTransformer,
   parcelTransformer

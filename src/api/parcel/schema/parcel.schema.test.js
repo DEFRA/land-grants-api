@@ -1,7 +1,8 @@
 import {
   parcelIdSchema,
   parcelActionsSchema,
-  parcelSuccessResponseSchema
+  parcelSuccessResponseSchema,
+  parcelsSuccessResponseSchema
 } from './parcel.schema.js'
 import { mockParcelWithActions } from '~/src/api/parcel/fixtures/index.js'
 
@@ -90,6 +91,48 @@ describe('Parcel Schema Validation', () => {
     it('should reject missing parcel data', () => {
       const invalid = { ...validResponse, parcel: undefined }
       const result = parcelSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+  })
+
+  describe('parcelsSuccessResponseSchema', () => {
+    const validResponse = {
+      message: 'success',
+      parcels: [mockParcelWithActions.parcel]
+    }
+
+    it('should validate correct success response', () => {
+      const result = parcelsSuccessResponseSchema.validate(validResponse)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject missing message', () => {
+      const invalid = { ...validResponse, message: undefined }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject missing parcels data', () => {
+      const invalid = { ...validResponse, parcels: undefined }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject missing size info in parcels data', () => {
+      const invalid = {
+        ...validResponse,
+        parcels: [{ ...mockParcelWithActions.parcel, size: {} }]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject missing actions in parcels data', () => {
+      const invalid = {
+        ...validResponse,
+        parcels: [{ ...mockParcelWithActions.parcel, actions: {} }]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
       expect(result.error).toBeDefined()
     })
   })

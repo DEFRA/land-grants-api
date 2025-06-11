@@ -34,4 +34,31 @@ function parcelTransformer(landParcel, actions) {
   }
 }
 
-export { actionTransformer, parcelTransformer }
+/**
+ * Transform parcel to land parcel
+ * @param {object} landParcel - The parcel to merge
+ */
+function landParcelTransformer(landParcel) {
+  return {
+    parcelId: landParcel?.parcel_id,
+    sheetId: landParcel?.sheet_id,
+    size: {
+      unit: 'sqm',
+      value: landParcel.area_sqm ? Number(landParcel.area_sqm) : 0
+    }
+  }
+}
+
+/**
+ * Transform parcel and actions to land parcel and actions
+ * @param {object} landParcel - The parcel to merge
+ * @param {object} actions - The actions to merge
+ */
+function parcelActionsTransformer(landParcel, actions) {
+  return {
+    ...landParcelTransformer(landParcel),
+    actions
+  }
+}
+
+export { actionTransformer, parcelTransformer, parcelActionsTransformer }
