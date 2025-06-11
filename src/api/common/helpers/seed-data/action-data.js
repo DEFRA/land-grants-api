@@ -138,9 +138,9 @@ export default [
       {
         name: 'parcel-has-intersection-with-data-layer',
         config: {
-          'layer-name': 'moorland',
-          'minimum-intersection-percent': 50,
-          'tolerance-percent': 1
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
         }
       },
       {
