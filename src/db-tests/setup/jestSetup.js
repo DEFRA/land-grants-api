@@ -24,13 +24,24 @@ export default async () => {
   const network = await new Network().start()
   const postgresContainer = initializePostgres(network)
   const postgresStarted = await postgresContainer.start()
+
   const liquibaseContainer = initializeLiquibase(network)
   await liquibaseContainer.start()
+
   const mongoContainer = initializeMongo(network)
-  await mongoContainer.start()
+  const mongoStarted = await mongoContainer.start()
+
+  process.env.MONGO_PORT = mongoStarted.getMappedPort(27017)
+  containers.push(mongoStarted)
 
   process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
   containers.push(postgresStarted)
+
+  const host = mongoStarted.getHost()
+  const port = mongoStarted.getMappedPort(27017)
+  process.env.MONGO_PORT = port
+  process.env.MONGO_HOST = host
+  containers.push(mongoStarted)
 }
 
 function initializeMongo(network) {
@@ -38,8 +49,6 @@ function initializeMongo(network) {
     .withName('mongo')
     .withNetwork(network)
     .withExposedPorts(27017)
-    .withLogConsumer((stream) => log(stream, 'Mongo'))
-    .withTmpFs(type() === 'Linux' ? { '/var/lib/mongo/data': '' } : {})
 }
 
 function initializeLiquibase(network) {

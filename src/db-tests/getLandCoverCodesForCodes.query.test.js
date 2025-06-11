@@ -10,13 +10,21 @@ const logger = {
 
 describe('Get land cover codes', () => {
   beforeAll(async () => {
-    jest.setTimeout(30000)
+    await mongoose.connect(
+      `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`,
+      {
+        dbName: 'land-grants-api'
+      }
+    )
 
-    await mongoose.connect('mongodb://127.0.0.1:27017/', {
-      dbName: 'land-grants-api'
-    })
-
-    await landCoverCodesModel.db.dropCollection('land-cover-codes')
+    try {
+      await landCoverCodesModel.db.dropCollection('land-cover-codes')
+    } catch (error) {
+      // Ignore error if collection doesn't exist
+      if (error.codeName !== 'NamespaceNotFound') {
+        throw error
+      }
+    }
     await landCoverCodesModel.insertMany(landCoverCodes)
   })
 
@@ -25,8 +33,9 @@ describe('Get land cover codes', () => {
   })
 
   test('should return all land cover codes for 130', async () => {
-    const landCoverCodes = await getLandCoverCodesForCodes(['130'], logger)
-    expect(landCoverCodes).toEqual(['130', '131', '132'])
+    const landCovers = await getLandCoverCodesForCodes(['130'], logger)
+    expect(landCovers).toEqual(['130', '131', '132'])
+    expect(true).toBe(true)
   })
 
   test('should return all land cover codes', async () => {
