@@ -108,10 +108,12 @@ const ParcelController = {
         request.logger.error(errorMessage)
         return Boom.notFound(errorMessage)
       }
-
+      const sortedParcelActions = transformedActions.sort((a, b) =>
+        a.code.localeCompare(b.code)
+      )
       const parcelActions = parcelTransformer(
         landParcel['0'],
-        transformedActions
+        sortedParcelActions
       )
 
       return h

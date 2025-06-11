@@ -2,7 +2,10 @@ import Hapi from '@hapi/hapi'
 import * as mockingoose from 'mockingoose'
 import { parcel } from '~/src/api/parcel/index.js'
 import actionModel from '~/src/api/actions/models/action.model.js'
-import { mockActions } from '~/src/api/actions/fixtures/index.js'
+import {
+  mockActions,
+  mockMultipleActions
+} from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
@@ -62,7 +65,7 @@ describe('Parcel controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(mockActions, 'find')
+      mockingoose(actionModel).toReturn(mockMultipleActions, 'find')
 
       const request = {
         method: 'GET',
@@ -83,8 +86,10 @@ describe('Parcel controller', () => {
       expect(parcel.size.unit).toBe('sqm')
       expect(parcel.size.value).toBe(440)
       expect(parcel.actions).toBeDefined()
-      expect(parcel.actions).toHaveLength(1)
-
+      expect(parcel.actions).toHaveLength(3)
+      expect(parcel.actions[0].code).toBe('CMOR1')
+      expect(parcel.actions[1].code).toBe('UPL1')
+      expect(parcel.actions[2].code).toBe('UPL2')
       // Verify that our mocked functions were called
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,

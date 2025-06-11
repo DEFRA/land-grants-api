@@ -39,6 +39,121 @@ const mockActions = [
   }
 ]
 
+const mockMultipleActions = [
+  {
+    version: 1,
+    startDate: '2025-01-01',
+    code: 'UPL1',
+    description: 'UPL1: Moderate livestock grazing on moorland',
+    'application-unit-of-measurement': 'sqm',
+    payment: {
+      'rate-per-unit-gbp': 20
+    },
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
+  },
+  {
+    version: 1,
+    startDate: '2025-01-01',
+    code: 'CMOR1',
+    description: 'CMOR1: Assess moorland and produce a written record',
+    applicationUnitOfMeasurement: 'sqm',
+    payment: {
+      ratePerUnitGbp: 10.6,
+      ratePerAgreementPerYearGbp: 272
+    },
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
+  },
+  {
+    version: 1,
+    startDate: '2025-01-01',
+    code: 'UPL2',
+    description: 'UPL2: Low livestock grazing on moorland',
+    'application-unit-of-measurement': 'sqm',
+    payment: {
+      'rate-per-unit-gbp': 53
+    },
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: [
+      {
+        name: 'parcel-has-intersection-with-data-layer',
+        config: {
+          layerName: 'moorland',
+          minimumIntersectionPercent: 50,
+          tolerancePercent: 1
+        }
+      },
+      {
+        name: 'applied-for-total-available-area'
+      }
+    ]
+  }
+]
+
 const mockLandActions = {
   landActions: [
     {
@@ -78,4 +193,4 @@ const application = {
   }
 }
 
-export { mockActions, mockLandActions, application }
+export { mockActions, mockMultipleActions, mockLandActions, application }
