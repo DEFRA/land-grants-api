@@ -6,6 +6,7 @@ import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 
@@ -13,6 +14,7 @@ jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
 jest.mock('~/src/api/actions/queries/getActions.query.js')
 jest.mock('~/src/api/land/queries/getParcelAvailableArea.query.js')
+jest.mock('~/src/api/land/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
 jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
@@ -26,6 +28,13 @@ describe('Actions validation controller', () => {
   }
 
   const mockLandCoverCodes = ['130', '240', '131', '241', '243']
+  const mockLandParcelData = [
+    {
+      sheet_id: 'SX0679',
+      parcel_id: '9238',
+      area: 1000
+    }
+  ]
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -52,10 +61,11 @@ describe('Actions validation controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
+    getLandData.mockResolvedValue(mockLandParcelData)
     getMoorlandInterceptPercentage.mockResolvedValue(50)
     getParcelAvailableArea.mockResolvedValue(1000)
     applicationTransformer.mockReturnValue({
-      areaAppliedFor: 50,
+      areaAppliedFor: 99,
       actionCodeAppliedFor: 'BND1',
       landParcel: {
         area: 99,
@@ -86,19 +96,31 @@ describe('Actions validation controller', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, valid }
+        result: { message, valid, errorMessages }
       } = await server.inject(request)
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(valid).toBe(true)
+      expect(errorMessages).toEqual([])
+
+      expect(getLandData).toHaveBeenCalledWith(
+        'SX0679',
+        '9238',
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(getActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(getLandCoverCodesForCodes).toHaveBeenCalledWith(
+        mockActionData.landCoverClassCodes,
+        expect.any(Object)
+      )
       expect(getMoorlandInterceptPercentage).toHaveBeenCalledWith(
         'SX0679',
         '9238',
         expect.any(Object),
         expect.any(Object)
       )
-      expect(getActions).toHaveBeenCalled()
       expect(getParcelAvailableArea).toHaveBeenCalledWith(
         'SX0679',
         '9238',
@@ -109,7 +131,7 @@ describe('Actions validation controller', () => {
       expect(applicationTransformer).toHaveBeenCalledWith(
         1000,
         'BND1',
-        99,
+        99.0,
         50,
         []
       )
@@ -129,7 +151,7 @@ describe('Actions validation controller', () => {
 
       const failedResults = [
         { name: 'rule1', passed: false, message: 'Rule 1 failed' },
-        { name: 'rule2', passed: true }
+        { name: 'rule2', passed: true, message: 'Rule 2 passed' }
       ]
 
       executeRules.mockReturnValue({
@@ -147,23 +169,60 @@ describe('Actions validation controller', () => {
       expect(message).toBe('success')
       expect(valid).toBe(false)
       expect(errorMessages).toEqual([
-        { code: 'rule1', description: 'Rule 1 failed' }
+        { code: 'BND1', description: 'Rule 1 failed' },
+        { code: 'BND2', description: 'Rule 1 failed' }
       ])
-      expect(getParcelAvailableArea).toHaveBeenCalled()
     })
 
-    test('should return 400 if no rules found for action', async () => {
+    test('should return 404 if land parcel not found', async () => {
       const request = {
         method: 'POST',
         url: '/actions/validate',
         payload: mockLandActions
       }
 
-      // Mock action with empty rules array, matching the controller's condition: ruleToExecute?.rules?.length === 0
+      getLandData.mockResolvedValue(null)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Land parcel not found')
+    })
+
+    test('should return 404 if no actions found', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      getActions.mockResolvedValue([])
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Actions not found')
+    })
+
+    test('should return 404 if no rules found for action', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
       getActions.mockResolvedValue([
         {
           code: 'BND1',
-          rules: [], // Empty array to trigger the condition
+          rules: [],
           landCoverClassCodes: ['130', '240']
         }
       ])
@@ -174,7 +233,7 @@ describe('Actions validation controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(400)
+      expect(statusCode).toBe(404)
       expect(message).toBe(
         'Error validating land actions, no rules found for action'
       )
@@ -207,6 +266,25 @@ describe('Actions validation controller', () => {
           landActions: []
         }
       }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 if getLandData throws an error', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      getLandData.mockRejectedValue(new Error('Database error'))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -277,6 +355,83 @@ describe('Actions validation controller', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should handle multiple actions and aggregate results', async () => {
+      const multiActionPayload = {
+        landActions: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            sbi: '123456789',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              },
+              {
+                code: 'BND2',
+                quantity: 200.0
+              }
+            ]
+          }
+        ]
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: multiActionPayload
+      }
+
+      const mockActionData2 = {
+        code: 'BND2',
+        rules: ['rule3', 'rule4'],
+        landCoverClassCodes: ['130', '240']
+      }
+
+      getActions.mockResolvedValue([mockActionData, mockActionData2])
+
+      executeRules
+        .mockReturnValueOnce({
+          passed: true,
+          results: [{ passed: true, message: 'Rule passed' }]
+        })
+        .mockReturnValueOnce({
+          passed: false,
+          results: [{ passed: false, message: 'Rule failed for BND2' }]
+        })
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, valid, errorMessages }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(valid).toBe(false)
+      expect(errorMessages).toEqual([
+        { code: 'BND2', description: 'Rule failed for BND2' }
+      ])
+
+      expect(applicationTransformer).toHaveBeenCalledTimes(2)
+      expect(applicationTransformer).toHaveBeenNthCalledWith(
+        1,
+        1000,
+        'BND1',
+        99.0,
+        50,
+        []
+      )
+      expect(applicationTransformer).toHaveBeenNthCalledWith(
+        2,
+        1000,
+        'BND2',
+        200.0,
+        50,
+        []
+      )
     })
   })
 })
