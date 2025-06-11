@@ -28,7 +28,8 @@ describe('appliedForTotalAvailableArea', () => {
 
     expect(result).toEqual({
       passed: false,
-      message: 'Area applied for (9.5ha) does not match parcel area (10.5ha)'
+      message:
+        'Area applied for (9.5 ha.) does not match parcel area (10.5 ha.)'
     })
   })
 
