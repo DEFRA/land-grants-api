@@ -19,7 +19,7 @@ async function getLandCoverCodesForCodes(codes, logger) {
 
     const landCoverCodes = landCovers.map((code) => code.landCoverCode)
     const uniqueCodes = Array.from(new Set(codes.concat(landCoverCodes)))
-    return uniqueCodes
+    return uniqueCodes.sort()
   } catch (error) {
     logger.error(`Unable to get land cover codes`, error)
     throw error
