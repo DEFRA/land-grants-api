@@ -102,6 +102,81 @@ describe('Parcels controller', () => {
       )
     })
 
+    test('should return 200 if valid land parcel available and fields: `size` passed in the request', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      mockingoose(actionModel).toReturn(mockActions, 'find')
+
+      const request = {
+        method: 'POST',
+        url: `/parcels`,
+        payload: {
+          fields: ['size'],
+          parcelIds: ['SX0679-9238']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toBeDefined()
+      expect(parcels[0].parcelId).toBe(parcelId)
+      expect(parcels[0].sheetId).toBe(sheetId)
+      expect(parcels[0].actions).toBeUndefined()
+
+      // // Verify that our mocked functions were called
+      expect(mockGetLandData).toHaveBeenCalledWith(
+        sheetId,
+        parcelId,
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(mockGetParcelAvailableArea).toBeCalledTimes(0)
+    })
+
+    test('should return 200 if valid land parcel available and fields: `actions` passed in the request', async () => {
+      const sheetId = 'SX0679'
+      const parcelId = '9238'
+
+      mockingoose(actionModel).toReturn(mockActions, 'find')
+
+      const request = {
+        method: 'POST',
+        url: `/parcels`,
+        payload: {
+          fields: ['actions'],
+          parcelIds: ['SX0679-9238']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toBeDefined()
+      expect(parcels[0].parcelId).toBe(parcelId)
+      expect(parcels[0].sheetId).toBe(sheetId)
+      expect(parcels[0].actions).toBeDefined()
+
+      // // Verify that our mocked functions were called
+      expect(mockGetLandData).toHaveBeenCalledWith(
+        sheetId,
+        parcelId,
+        expect.any(Object),
+        expect.any(Object)
+      )
+    })
+
     test('should return 400 if the request has an invalid parcel in payload', async () => {
       const request = {
         method: 'POST',
