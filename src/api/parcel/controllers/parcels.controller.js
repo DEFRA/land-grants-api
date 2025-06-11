@@ -120,8 +120,10 @@ const ParcelsController = {
               return transformed
             })
           )
-
-          parcelResponse.actions = transformedActions
+          const sortedParcelActions = transformedActions.sort((a, b) =>
+            a.code.localeCompare(b.code)
+          )
+          parcelResponse.actions = sortedParcelActions
         }
 
         responseParcels.push(parcelResponse)
