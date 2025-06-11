@@ -68,7 +68,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions.availableArea'],
+          fields: ['size', 'actions', 'actions.availableArea'],
           parcelIds: ['SX0679-9238']
         }
       }
@@ -107,7 +107,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: '/parcels',
         payload: {
-          fields: ['size'],
+          fields: [],
           parcelIds: ['1']
         }
       }
@@ -133,7 +133,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['size'],
+          fields: [],
           parcelIds: [`${sheetId}-${parcelId}`]
         }
       }

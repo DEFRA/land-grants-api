@@ -3,7 +3,10 @@ import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import { actionTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { parcelIdSchema } from '~/src/api/parcel/schema/parcel.schema.js'
+import {
+  parcelIdSchema,
+  parcelsSuccessResponseSchema
+} from '~/src/api/parcel/schema/parcel.schema.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
@@ -18,33 +21,6 @@ import { getActions } from '../../actions/queries/index.js'
  * Returns a single land parcel merged with land actions
  * @satisfies {Partial<ServerRoute>}
  */
-
-const availableAreaSchema = Joi.object({
-  unit: Joi.string().required(),
-  value: Joi.number().required()
-})
-
-const actionSchema = Joi.object({
-  code: Joi.string().required(),
-  description: Joi.string().required(),
-  availableArea: availableAreaSchema.optional()
-})
-
-const parcelSchema = Joi.object({
-  parcelId: Joi.string().required(),
-  sheetId: Joi.string().required(),
-  size: Joi.object({
-    unit: Joi.string().required(),
-    value: Joi.number().required()
-  }).optional(),
-  actions: Joi.array().items(actionSchema).optional()
-})
-
-const responseSchema = Joi.object({
-  message: Joi.string().valid('success').required(),
-  parcels: Joi.array().items(parcelSchema).required()
-})
-
 const ParcelsController = {
   options: {
     tags: ['api'],
@@ -59,7 +35,7 @@ const ParcelsController = {
     },
     response: {
       status: {
-        200: responseSchema,
+        200: parcelsSuccessResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
