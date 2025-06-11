@@ -28,14 +28,11 @@ export default async () => {
   const liquibaseContainer = initializeLiquibase(network)
   await liquibaseContainer.start()
 
-  const mongoContainer = initializeMongo(network)
-  const mongoStarted = await mongoContainer.start()
-
-  process.env.MONGO_PORT = mongoStarted.getMappedPort(27017)
-  containers.push(mongoStarted)
-
   process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
   containers.push(postgresStarted)
+
+  const mongoContainer = initializeMongo(network)
+  const mongoStarted = await mongoContainer.start()
 
   const host = mongoStarted.getHost()
   const port = mongoStarted.getMappedPort(27017)
