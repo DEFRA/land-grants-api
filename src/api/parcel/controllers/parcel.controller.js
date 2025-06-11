@@ -82,6 +82,13 @@ const ParcelController = {
             actions[0].landCoverClassCodes,
             request.logger
           )
+          request.logger.info(
+            `Getting actionAvailableArea for ${JSON.stringify({
+              sheetId,
+              parcelId,
+              landCoverCodes
+            })}`
+          )
           const actionAvailableArea = await getParcelAvailableArea(
             sheetId,
             parcelId,

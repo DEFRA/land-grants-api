@@ -51,7 +51,7 @@ FROM unioned_geom
     ])
 
     logger.info(
-      `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes}`
+      `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} : query response: ${JSON.stringify(result.rows)}`
     )
 
     const area = result.rows[0]?.total_land_cover_area
