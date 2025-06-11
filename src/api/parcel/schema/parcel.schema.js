@@ -28,4 +28,35 @@ const parcelSuccessResponseSchema = Joi.object({
   parcel: parcelActionsSchema
 }).label('parcelSuccessResponse')
 
-export { parcelActionsSchema, parcelIdSchema, parcelSuccessResponseSchema }
+const availableAreaSchema = Joi.object({
+  unit: Joi.string().required(),
+  value: Joi.number().required()
+})
+
+const actionSchema = Joi.object({
+  code: Joi.string().required(),
+  description: Joi.string().required(),
+  availableArea: availableAreaSchema.optional()
+})
+
+const parcelSchema = Joi.object({
+  parcelId: Joi.string().required(),
+  sheetId: Joi.string().required(),
+  size: Joi.object({
+    unit: Joi.string().required(),
+    value: Joi.number().required()
+  }).optional(),
+  actions: Joi.array().items(actionSchema).optional()
+})
+
+const parcelsSuccessResponseSchema = Joi.object({
+  message: Joi.string().valid('success').required(),
+  parcels: Joi.array().items(parcelSchema).required()
+})
+
+export {
+  parcelActionsSchema,
+  parcelIdSchema,
+  parcelSuccessResponseSchema,
+  parcelsSuccessResponseSchema
+}
