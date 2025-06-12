@@ -1,3 +1,20 @@
+import {
+  applicationUnitOfMeasurement,
+  sqmToHaRounded
+} from '~/src/api/common/helpers/measurement.js'
+
+/**
+ * Transform size to application unit of measurement
+ * @param {number} area - The area to transform
+ * @returns {object} The transformed size
+ */
+function transformSize(area) {
+  return {
+    unit: applicationUnitOfMeasurement,
+    value: sqmToHaRounded(area)
+  }
+}
+
 /**
  * Transform parcel and actions to land parcel and actions
  * @returns {object} The land action data with available area
@@ -8,10 +25,7 @@ function actionTransformer(action, totalAvailableArea) {
   return {
     code: action.code,
     description: action.description,
-    availableArea: {
-      unit: 'sqm',
-      value: totalAvailableArea
-    }
+    availableArea: transformSize(totalAvailableArea)
   }
 }
 
@@ -25,10 +39,7 @@ function parcelTransformer(landParcel, actions) {
     parcel: {
       parcelId: landParcel?.parcel_id,
       sheetId: landParcel?.sheet_id,
-      size: {
-        unit: 'sqm',
-        value: landParcel.area_sqm ? Number(landParcel.area_sqm) : 0
-      },
+      size: transformSize(landParcel.area_sqm),
       actions
     }
   }
@@ -42,10 +53,7 @@ function landParcelTransformer(landParcel) {
   return {
     parcelId: landParcel?.parcel_id,
     sheetId: landParcel?.sheet_id,
-    size: {
-      unit: 'sqm',
-      value: landParcel.area_sqm ? Number(landParcel.area_sqm) : 0
-    }
+    size: transformSize(landParcel.area_sqm)
   }
 }
 
@@ -61,4 +69,9 @@ function parcelActionsTransformer(landParcel, actions) {
   }
 }
 
-export { actionTransformer, parcelTransformer, parcelActionsTransformer }
+export {
+  actionTransformer,
+  parcelTransformer,
+  parcelActionsTransformer,
+  transformSize
+}

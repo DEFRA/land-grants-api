@@ -2,7 +2,10 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
-import { actionTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import {
+  actionTransformer,
+  transformSize
+} from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
   parcelIdSchema,
   parcelsSuccessResponseSchema
@@ -70,10 +73,7 @@ const ParcelsController = {
         }
 
         if (fields.includes('size')) {
-          parcelResponse.size = {
-            unit: 'sqm',
-            value: landParcel['0'].area_sqm
-          }
+          parcelResponse.size = transformSize(landParcel['0'].area_sqm)
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {

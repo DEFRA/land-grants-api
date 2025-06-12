@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
@@ -6,8 +7,8 @@ const parcelActionsSchema = Joi.object({
   parcelId: Joi.string().required(),
   sheetId: Joi.string().required(),
   size: Joi.object({
-    unit: Joi.string().valid('sqm').required(),
-    value: Joi.number().positive().required()
+    unit: Joi.string().valid(applicationUnitOfMeasurement).required(),
+    value: Joi.number().required()
   }).required(),
   actions: Joi.array()
     .items(
@@ -15,8 +16,8 @@ const parcelActionsSchema = Joi.object({
         code: Joi.string().required(),
         description: Joi.string().required(),
         availableArea: Joi.object({
-          unit: Joi.string().valid('sqm').required(),
-          value: Joi.number().positive().required()
+          unit: Joi.string().valid(applicationUnitOfMeasurement).required(),
+          value: Joi.number().required()
         }).required()
       }).label('action')
     )

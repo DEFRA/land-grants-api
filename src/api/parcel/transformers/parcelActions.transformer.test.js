@@ -1,6 +1,7 @@
 import {
   actionTransformer,
-  parcelTransformer
+  parcelTransformer,
+  transformSize
 } from './parcelActions.transformer.js'
 import {
   mockParcel,
@@ -22,5 +23,11 @@ describe('parcelActions.transformer', () => {
     )
 
     expect(result).toEqual(mockParcelWithActions)
+  })
+
+  it('should transform size correctly', () => {
+    const result = transformSize(mockParcel.area_sqm)
+
+    expect(result).toEqual(mockParcelWithActions.parcel.size)
   })
 })
