@@ -104,7 +104,7 @@ describe('getMoorlandInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe('0.00')
+    expect(result).toBe((0).toFixed(2))
   })
 
   test('should release the client when done', async () => {

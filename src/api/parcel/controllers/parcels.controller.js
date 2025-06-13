@@ -4,7 +4,7 @@ import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import {
   actionTransformer,
-  transformSize
+  sizeTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
   parcelIdSchema,
@@ -73,7 +73,7 @@ const ParcelsController = {
         }
 
         if (fields.includes('size')) {
-          parcelResponse.size = transformSize(landParcel['0'].area_sqm)
+          parcelResponse.size = sizeTransformer(landParcel['0'].area_sqm, true)
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {

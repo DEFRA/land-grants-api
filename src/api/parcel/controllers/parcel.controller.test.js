@@ -85,9 +85,7 @@ describe('Parcel controller', () => {
       expect(parcel.parcelId).toBe(parcelId)
       expect(parcel.sheetId).toBe(sheetId)
       expect(parcel.size.unit).toBe(applicationUnitOfMeasurement)
-      expect(parcel.size.value).toBe(
-        applicationUnitOfMeasurement === 'sqm' ? 440 : 0.044
-      )
+      expect(parcel.size.value).toBe(440)
       expect(parcel.actions).toBeDefined()
       expect(parcel.actions).toHaveLength(3)
       expect(parcel.actions[0].code).toBe('CMOR1')

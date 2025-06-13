@@ -55,31 +55,31 @@ describe('sqmToHaRounded', () => {
 
   describe('invalid input handling', () => {
     test('returns 0 for null input', () => {
-      expect(sqmToHaRounded(null)).toBe(0)
+      expect(sqmToHaRounded(null)).toBe((0).toFixed(2))
     })
 
     test('returns 0 for undefined input', () => {
-      expect(sqmToHaRounded(undefined)).toBe(0)
+      expect(sqmToHaRounded(undefined)).toBe((0).toFixed(2))
     })
 
     test('returns 0 for string input', () => {
-      expect(sqmToHaRounded('12345')).toBe(0)
+      expect(sqmToHaRounded('12345')).toBe((0).toFixed(2))
     })
 
     test('returns 0 for boolean input', () => {
-      expect(sqmToHaRounded(true)).toBe(0)
+      expect(sqmToHaRounded(true)).toBe((0).toFixed(2))
     })
 
     test('returns 0 for object input', () => {
-      expect(sqmToHaRounded({})).toBe(0)
+      expect(sqmToHaRounded({})).toBe((0).toFixed(2))
     })
 
     test('returns 0 for array input', () => {
-      expect(sqmToHaRounded([12345])).toBe(0)
+      expect(sqmToHaRounded([12345])).toBe((0).toFixed(2))
     })
 
     test('returns 0 for NaN input', () => {
-      expect(sqmToHaRounded(NaN)).toBe(0)
+      expect(sqmToHaRounded(NaN)).toBe((0).toFixed(2))
     })
   })
 
