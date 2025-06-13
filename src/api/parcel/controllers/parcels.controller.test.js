@@ -137,7 +137,7 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetParcelAvailableArea).toBeCalledTimes(0)
+      expect(mockGetParcelAvailableArea).toHaveBeenCalledTimes(0)
     })
 
     test('should return 200 if valid land parcel available and fields: `actions` passed in the request', async () => {

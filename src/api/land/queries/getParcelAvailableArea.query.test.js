@@ -29,7 +29,7 @@ describe('getParcelAvailableArea', () => {
 
   it('returns area when query succeeds', async () => {
     mockClient.query.mockResolvedValue({
-      rows: [{ total_land_cover_area: '1234.56' }]
+      rows: [{ total_land_cover_area: 15894.28 }]
     })
 
     const result = await getParcelAvailableArea(
@@ -40,7 +40,7 @@ describe('getParcelAvailableArea', () => {
       mockLogger
     )
 
-    expect(result).toBeCloseTo(1234.56)
+    expect(result).toBe(1.5894)
     expect(mockClient.query).toHaveBeenCalledTimes(1)
   })
 
@@ -57,7 +57,7 @@ describe('getParcelAvailableArea', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBe((0).toFixed(2))
   })
 
   it('throws an error when query fails', async () => {

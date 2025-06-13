@@ -1,3 +1,5 @@
+import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
+
 const mockParcel = {
   sheet_id: 'SX0679',
   parcel_id: '9238',
@@ -26,16 +28,16 @@ const mockParcelWithActions = {
     parcelId: '9238',
     sheetId: 'SX0679',
     size: {
-      unit: 'sqm',
-      value: 300
+      unit: applicationUnitOfMeasurement,
+      value: applicationUnitOfMeasurement === 'sqm' ? 300 : 0.03
     },
     actions: [
       {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         availableArea: {
-          unit: 'sqm',
-          value: 200
+          unit: applicationUnitOfMeasurement,
+          value: applicationUnitOfMeasurement === 'sqm' ? 200 : 0.02
         }
       }
     ]

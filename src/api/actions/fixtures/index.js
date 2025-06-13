@@ -1,10 +1,12 @@
+import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
+
 const mockActions = [
   {
     version: 1,
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    applicationUnitOfMeasurement: 'sqm',
+    applicationUnitOfMeasurement,
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -45,7 +47,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
-    'application-unit-of-measurement': 'sqm',
+    applicationUnitOfMeasurement,
     payment: {
       'rate-per-unit-gbp': 20
     },
@@ -82,7 +84,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    applicationUnitOfMeasurement: 'sqm',
+    applicationUnitOfMeasurement,
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -120,7 +122,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
-    'application-unit-of-measurement': 'sqm',
+    applicationUnitOfMeasurement,
     payment: {
       'rate-per-unit-gbp': 53
     },

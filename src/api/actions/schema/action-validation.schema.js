@@ -11,7 +11,7 @@ const landActionSchema = Joi.object({
           .items(
             Joi.object({
               code: Joi.string().required(),
-              quantity: Joi.number().precision(2).required()
+              quantity: Joi.number().required()
             })
           )
           .required()
