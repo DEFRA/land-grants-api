@@ -18,6 +18,7 @@ import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getActions } from '../../actions/queries/index.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * ParcelsController
@@ -73,7 +74,10 @@ const ParcelsController = {
         }
 
         if (fields.includes('size')) {
-          parcelResponse.size = sizeTransformer(landParcel['0'].area_sqm, true)
+          parcelResponse.size = sizeTransformer(
+            sqmToHaRounded(landParcel['0'].area_sqm),
+            true
+          )
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {

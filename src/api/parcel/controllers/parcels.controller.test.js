@@ -7,8 +7,8 @@ import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
-// Mock the query functions
 jest.mock('../../land/queries/getLandData.query.js')
 jest.mock('../../land/queries/getParcelAvailableArea.query.js')
 jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
@@ -24,8 +24,8 @@ describe('Parcels controller', () => {
     {
       parcel_id: '9238',
       sheet_id: 'SX0679',
-      area_sqm: 440, // in hectares (the transformer uses this value directly)
-      geom: 'POLYGON((...))', // mock geometry
+      area_sqm: 440,
+      geom: 'POLYGON((...))',
       land_cover_type: 'grassland'
     }
   ]
@@ -51,14 +51,34 @@ describe('Parcels controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    // Default mock implementations
     mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetParcelAvailableArea.mockResolvedValue(300)
+    mockGetParcelAvailableArea.mockResolvedValue(sqmToHaRounded(300))
     mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
   })
 
+  const expectedOutput = [
+    {
+      parcelId: '9238',
+      sheetId: 'SX0679',
+      size: {
+        unit: 'ha',
+        value: 0.044
+      },
+      actions: [
+        {
+          code: 'CMOR1',
+          description: 'CMOR1: Assess moorland and produce a written record',
+          availableArea: {
+            unit: 'ha',
+            value: 0.03
+          }
+        }
+      ]
+    }
+  ]
+
   describe('POST /parcels route', () => {
-    test('should return 200 if valid land parcel and actions', async () => {
+    test('should return 200 if all fields are requested', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
@@ -82,11 +102,8 @@ describe('Parcels controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels).toBeDefined()
-      expect(parcels[0].parcelId).toBe(parcelId)
-      expect(parcels[0].sheetId).toBe(sheetId)
-      expect(parcels[0].actions).toBeDefined()
+      expect(parcels).toEqual(expectedOutput)
 
-      // // Verify that our mocked functions were called
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,
         parcelId,
@@ -102,7 +119,7 @@ describe('Parcels controller', () => {
       )
     })
 
-    test('should return 200 if valid land parcel available and fields: `size` passed in the request', async () => {
+    test('should return 200 if fields: `size` passed in the request', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
@@ -123,14 +140,18 @@ describe('Parcels controller', () => {
         result: { message, parcels }
       } = await server.inject(request)
 
+      const expectedOutputWithSizeOnly = [
+        {
+          ...expectedOutput[0],
+          actions: undefined
+        }
+      ]
+
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels).toBeDefined()
-      expect(parcels[0].parcelId).toBe(parcelId)
-      expect(parcels[0].sheetId).toBe(sheetId)
-      expect(parcels[0].actions).toBeUndefined()
+      expect(parcels).toEqual(expectedOutputWithSizeOnly)
 
-      // // Verify that our mocked functions were called
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,
         parcelId,
@@ -140,7 +161,7 @@ describe('Parcels controller', () => {
       expect(mockGetParcelAvailableArea).toHaveBeenCalledTimes(0)
     })
 
-    test('should return 200 if valid land parcel available and fields: `actions` passed in the request', async () => {
+    test('should return 200 if fields: `actions` passed in the request', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
@@ -161,14 +182,24 @@ describe('Parcels controller', () => {
         result: { message, parcels }
       } = await server.inject(request)
 
+      const expectedOutputWithActionsOnly = [
+        {
+          ...expectedOutput[0],
+          size: undefined,
+          actions: [
+            {
+              ...expectedOutput[0].actions[0],
+              availableArea: undefined
+            }
+          ]
+        }
+      ]
+
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels).toBeDefined()
-      expect(parcels[0].parcelId).toBe(parcelId)
-      expect(parcels[0].sheetId).toBe(sheetId)
-      expect(parcels[0].actions).toBeDefined()
+      expect(parcels).toEqual(expectedOutputWithActionsOnly)
 
-      // // Verify that our mocked functions were called
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,
         parcelId,
@@ -274,13 +305,12 @@ describe('Parcels controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 404 if available area calculation fails', async () => {
+    test('should return 500 if available area calculation fails', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
       mockingoose(actionModel).toReturn(mockActions, 'find')
 
-      // Mock getParcelAvailableArea to throw an error
       mockGetParcelAvailableArea.mockRejectedValue(
         new Error('Area calculation failed')
       )
