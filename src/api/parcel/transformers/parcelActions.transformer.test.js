@@ -1,26 +1,149 @@
 import {
   actionTransformer,
-  parcelTransformer
+  parcelTransformer,
+  parcelActionsTransformer,
+  sizeTransformer
 } from './parcelActions.transformer.js'
-import {
-  mockParcel,
-  mockParcelWithActions
-} from '~/src/api/parcel/fixtures/index.js'
-import { mockActions } from '~/src/api/actions/fixtures/index.js'
 
-describe('parcelActions.transformer', () => {
-  it('should transform land parcel actions correctly', () => {
-    const result = actionTransformer(mockActions[0], 200)
+describe('sizeTransformer', () => {
+  test('should transform area to correct format', () => {
+    const area = 1000
+    const result = sizeTransformer(area)
 
-    expect(result).toEqual(mockParcelWithActions.parcel.actions[0])
+    expect(result).toEqual({
+      unit: 'ha',
+      value: 1000
+    })
+  })
+})
+
+describe('actionTransformer', () => {
+  test('should transform action with available area', () => {
+    const action = {
+      code: 'ACTION1',
+      description: 'Test Action'
+    }
+    const totalAvailableArea = 500
+
+    const result = actionTransformer(action, totalAvailableArea)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availableArea: {
+        unit: 'ha',
+        value: 500
+      }
+    })
+  })
+})
+
+describe('parcelTransformer', () => {
+  test('should transform land parcel with actions', () => {
+    const landParcel = {
+      parcel_id: 'P123',
+      sheet_id: 'S456',
+      area_sqm: 2000
+    }
+    const actions = [
+      {
+        code: 'ACTION1',
+        description: 'Test Action 1',
+        availableArea: {
+          unit: 'ha',
+          value: 1000
+        }
+      }
+    ]
+
+    const result = parcelTransformer(landParcel, actions)
+
+    expect(result).toEqual({
+      parcel: {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        size: {
+          unit: 'ha',
+          value: 2000
+        },
+        actions
+      }
+    })
   })
 
-  it('should transform land parcel and actions correctly', () => {
-    const result = parcelTransformer(
-      mockParcel,
-      mockParcelWithActions.parcel.actions
-    )
+  test('should handle null parcel_id and sheet_id', () => {
+    const landParcel = {
+      parcel_id: null,
+      sheet_id: null,
+      area_sqm: 2000
+    }
+    const actions = []
 
-    expect(result).toEqual(mockParcelWithActions)
+    const result = parcelTransformer(landParcel, actions)
+
+    expect(result).toEqual({
+      parcel: {
+        parcelId: null,
+        sheetId: null,
+        size: {
+          unit: 'ha',
+          value: 2000
+        },
+        actions: []
+      }
+    })
+  })
+})
+
+describe('parcelActionsTransformer', () => {
+  test('should transform land parcel with actions using spread operator', () => {
+    const landParcel = {
+      parcel_id: 'P123',
+      sheet_id: 'S456',
+      area_sqm: 2000
+    }
+    const actions = [
+      {
+        code: 'ACTION1',
+        description: 'Test Action 1',
+        availableArea: {
+          unit: 'ha',
+          value: 1000
+        }
+      }
+    ]
+
+    const result = parcelActionsTransformer(landParcel, actions)
+
+    expect(result).toEqual({
+      parcelId: 'P123',
+      sheetId: 'S456',
+      size: {
+        unit: 'ha',
+        value: 2000
+      },
+      actions
+    })
+  })
+
+  test('should handle empty actions array', () => {
+    const landParcel = {
+      parcel_id: 'P123',
+      sheet_id: 'S456',
+      area_sqm: 2000
+    }
+    const actions = []
+
+    const result = parcelActionsTransformer(landParcel, actions)
+
+    expect(result).toEqual({
+      parcelId: 'P123',
+      sheetId: 'S456',
+      size: {
+        unit: 'ha',
+        value: 2000
+      },
+      actions: []
+    })
   })
 })
