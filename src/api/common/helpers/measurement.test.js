@@ -62,8 +62,8 @@ describe('sqmToHaRounded', () => {
       expect(sqmToHaRounded(undefined)).toBe((0).toFixed(2))
     })
 
-    test('returns 0 for string input', () => {
-      expect(sqmToHaRounded('12345')).toBe((0).toFixed(2))
+    test('returns converted value for valid numeric string input', () => {
+      expect(sqmToHaRounded('12345')).toBe(1.2345)
     })
 
     test('returns 0 for boolean input', () => {
@@ -80,6 +80,72 @@ describe('sqmToHaRounded', () => {
 
     test('returns 0 for NaN input', () => {
       expect(sqmToHaRounded(NaN)).toBe((0).toFixed(2))
+    })
+  })
+
+  describe('string input handling', () => {
+    test('converts valid numeric string to hectares', () => {
+      expect(sqmToHaRounded('10000')).toBe(1)
+    })
+
+    test('converts decimal string to hectares', () => {
+      expect(sqmToHaRounded('12345.67')).toBe(1.2346)
+    })
+
+    test('converts negative string to hectares', () => {
+      expect(sqmToHaRounded('-10000')).toBe(-1)
+    })
+
+    test('converts scientific notation string', () => {
+      expect(sqmToHaRounded('1e4')).toBe(1)
+    })
+
+    test('converts zero string', () => {
+      expect(sqmToHaRounded('0')).toBe(0)
+    })
+
+    test('returns 0 for empty string', () => {
+      expect(sqmToHaRounded('')).toBe(0)
+    })
+
+    test('returns 0 for whitespace-only string', () => {
+      expect(sqmToHaRounded('   ')).toBe(0)
+    })
+
+    test('returns 0 for non-numeric string', () => {
+      expect(sqmToHaRounded('abc')).toBe((0).toFixed(2))
+    })
+
+    test('returns 0 for mixed alphanumeric string', () => {
+      expect(sqmToHaRounded('123abc')).toBe((0).toFixed(2))
+    })
+
+    test('returns 0 for string with units', () => {
+      expect(sqmToHaRounded('12345 sqm')).toBe((0).toFixed(2))
+    })
+
+    test('handles string with leading/trailing whitespace', () => {
+      expect(sqmToHaRounded('  10000  ')).toBe(1)
+    })
+
+    test('handles string with plus sign', () => {
+      expect(sqmToHaRounded('+10000')).toBe(1)
+    })
+
+    test('returns 0 for multiple decimal points', () => {
+      expect(sqmToHaRounded('123.45.67')).toBe((0).toFixed(2))
+    })
+
+    test('returns 0 for string with special characters', () => {
+      expect(sqmToHaRounded('12,345')).toBe((0).toFixed(2))
+    })
+
+    test('handles very large number as string', () => {
+      expect(sqmToHaRounded('1000000')).toBe(100)
+    })
+
+    test('handles very small number as string', () => {
+      expect(sqmToHaRounded('0.5')).toBe(0.0001)
     })
   })
 

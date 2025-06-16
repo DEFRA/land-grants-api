@@ -1,6 +1,10 @@
 export const applicationUnitOfMeasurement = 'ha'
 
 export const sqmToHaRounded = (sqm) => {
+  if (typeof sqm === 'string') {
+    sqm = Number(sqm)
+  }
+
   if (typeof sqm !== 'number' || isNaN(sqm)) {
     return (0).toFixed(2)
   }
