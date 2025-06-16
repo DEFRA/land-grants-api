@@ -10,6 +10,7 @@ import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
 
 // Mock the query functions
 jest.mock('../../land/queries/getLandData.query.js')
@@ -83,7 +84,7 @@ describe('Parcel controller', () => {
       expect(parcel).toBeDefined()
       expect(parcel.parcelId).toBe(parcelId)
       expect(parcel.sheetId).toBe(sheetId)
-      expect(parcel.size.unit).toBe('sqm')
+      expect(parcel.size.unit).toBe(applicationUnitOfMeasurement)
       expect(parcel.size.value).toBe(440)
       expect(parcel.actions).toBeDefined()
       expect(parcel.actions).toHaveLength(3)

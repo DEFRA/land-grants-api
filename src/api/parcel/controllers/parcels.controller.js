@@ -2,7 +2,10 @@ import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
-import { actionTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import {
+  actionTransformer,
+  sizeTransformer
+} from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
   parcelIdSchema,
   parcelsSuccessResponseSchema
@@ -15,6 +18,7 @@ import { getLandData } from '../../land/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getActions } from '../../actions/queries/index.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * ParcelsController
@@ -70,10 +74,10 @@ const ParcelsController = {
         }
 
         if (fields.includes('size')) {
-          parcelResponse.size = {
-            unit: 'sqm',
-            value: landParcel['0'].area_sqm
-          }
+          parcelResponse.size = sizeTransformer(
+            sqmToHaRounded(landParcel['0'].area_sqm),
+            true
+          )
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {

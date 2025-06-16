@@ -5,6 +5,7 @@ import {
   parcelsSuccessResponseSchema
 } from './parcel.schema.js'
 import { mockParcelWithActions } from '~/src/api/parcel/fixtures/index.js'
+import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
 
 describe('Parcel Schema Validation', () => {
   describe('parcelIdSchema', () => {
@@ -62,7 +63,7 @@ describe('Parcel Schema Validation', () => {
       const invalid = {
         ...mockParcelWithActions.parcel,
         size: {
-          unit: 'sqm',
+          unit: applicationUnitOfMeasurement,
           value: -10.5
         }
       }
