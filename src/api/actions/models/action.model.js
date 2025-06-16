@@ -8,7 +8,8 @@ const schema = new mongoose.Schema(
     startDate: { type: String, required: true },
     code: { type: String, required: true },
     description: { type: String, required: true },
-    applicationUnitOfMeasurement: { type: String },
+    applicationUnitOfMeasurement: { type: String, required: true },
+    guidenceUrl: { type: String, required: true },
     payment: {
       ratePerUnitGbp: { type: Number },
       ratePerAgreementPerYearGbp: { type: Number }

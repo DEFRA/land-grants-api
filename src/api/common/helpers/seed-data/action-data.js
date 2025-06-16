@@ -164,6 +164,8 @@ export default [
     code: 'UPL4',
     description:
       'UPL4: Keep cattle and ponies on moorland supplement (minimum 30% GLU)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -177,6 +179,8 @@ export default [
     code: 'UPL5',
     description:
       'UPL5: Keep cattle and ponies on moorland supplement (minimum 70% GLU)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -190,6 +194,8 @@ export default [
     code: 'UPL6',
     description:
       'UPL6: Keep cattle and ponies on moorland supplement (100% GLU)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -203,6 +209,8 @@ export default [
     code: 'UPL7',
     description:
       'UPL7: Shepherding livestock on moorland (no required stock removal period)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -216,6 +224,8 @@ export default [
     code: 'UPL8',
     description:
       'UPL8: Shepherding livestock on moorland (remove stock for at least 4 months)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -229,6 +239,8 @@ export default [
     code: 'UPL9',
     description:
       'UPL9: Shepherding livestock on moorland (remove stock for at least 6 months)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -242,6 +254,8 @@ export default [
     code: 'SPM4',
     description:
       'SPM4: Keep native breeds on extensively managed habitats supplement (50-80%)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -255,6 +269,8 @@ export default [
     code: 'SPM5',
     description:
       'SPM5: Keep native breeds on extensively managed habitats supplement (more than 80%)',
+    applicationUnitOfMeasurement,
+    guidenceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
