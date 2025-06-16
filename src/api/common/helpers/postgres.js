@@ -1,7 +1,7 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
-import { config } from '~/src/config/index.js'
+import { config } from '../../../config/index.js'
 import { loadPostgresData } from './load-land-data.js'
 
 const DEFAULT_PORT = 5432
@@ -69,7 +69,7 @@ export const postgresDb = {
         server.logger.info('Postgres connection successful')
         client.release()
 
-        if (options.isLocal) {
+        if (options.isLocal && options.loadPostgresData) {
           await loadPostgresData('land-parcels-data.sql', pool, server.logger)
           await loadPostgresData('land-covers-data.sql', pool, server.logger)
           await loadPostgresData(
@@ -99,6 +99,7 @@ export const postgresDb = {
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
-    disablePostgres: config.get('disablePostgres')
+    disablePostgres: config.get('disablePostgres'),
+    loadPostgresData: config.get('loadPostgresData')
   }
 }
