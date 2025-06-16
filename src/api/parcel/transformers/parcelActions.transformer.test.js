@@ -22,7 +22,7 @@ describe('actionTransformer', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     }
     const totalAvailableArea = 500
 
@@ -35,7 +35,7 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 500
       },
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     })
   })
 
@@ -43,7 +43,7 @@ describe('actionTransformer', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     }
     const totalAvailableArea = null
 
@@ -53,7 +53,7 @@ describe('actionTransformer', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     })
   })
 
@@ -61,7 +61,7 @@ describe('actionTransformer', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     }
 
     const result = actionTransformer(action)
@@ -70,7 +70,7 @@ describe('actionTransformer', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     })
   })
 
@@ -78,7 +78,7 @@ describe('actionTransformer', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     }
     const totalAvailableArea = 0
 
@@ -88,7 +88,7 @@ describe('actionTransformer', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      guidenceUrl: 'https://www.gov.uk'
+      guidanceUrl: 'https://www.gov.uk'
     })
   })
 })

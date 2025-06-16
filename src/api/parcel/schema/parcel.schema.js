@@ -15,7 +15,7 @@ const parcelActionsSchema = Joi.object({
       Joi.object({
         code: Joi.string().required(),
         description: Joi.string().required(),
-        guidenceUrl: Joi.string().required(),
+        guidanceUrl: Joi.string().required(),
         availableArea: Joi.object({
           unit: Joi.string().valid(applicationUnitOfMeasurement).required(),
           value: Joi.number().min(0).required()
@@ -39,7 +39,7 @@ const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
   availableArea: availableAreaSchema.optional(),
-  guidenceUrl: Joi.string().required()
+  guidanceUrl: Joi.string().required()
 })
 
 const parcelSchema = Joi.object({
