@@ -46,7 +46,7 @@ export default [
     description: 'UPL1: Moderate livestock grazing on moorland',
     applicationUnitOfMeasurement,
     payment: {
-      'rate-per-unit-gbp': 20
+      ratePerUnitGbp: 20
     },
     landCoverClassCodes: [
       '130',
@@ -83,7 +83,7 @@ export default [
     description: 'UPL2: Low livestock grazing on moorland',
     applicationUnitOfMeasurement,
     payment: {
-      'rate-per-unit-gbp': 53
+      ratePerUnitGbp: 53
     },
     landCoverClassCodes: [
       '130',
@@ -120,9 +120,9 @@ export default [
     description: 'UPL3: Limited livestock grazing on moorland',
     applicationUnitOfMeasurement,
     payment: {
-      'rate-per-unit-gbp': 66
+      ratePerUnitGbp: 66
     },
-    'land-cover-class-codes': [
+    landCoverClassCodes: [
       '130',
       '240',
       '250',
