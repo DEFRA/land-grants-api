@@ -7,6 +7,8 @@ export default [
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
     applicationUnitOfMeasurement,
+    guidenceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/cmor1-assess-moorland-and-produce-a-written-record',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -45,6 +47,8 @@ export default [
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    guidenceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/upl1-moderate-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 20
     },
@@ -82,6 +86,8 @@ export default [
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    guidenceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 53
     },
@@ -119,6 +125,8 @@ export default [
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    guidenceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/upl3-limited-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 66
     },
