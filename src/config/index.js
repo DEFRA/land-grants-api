@@ -104,6 +104,12 @@ const config = convict({
     format: Boolean,
     default: isLocal
   },
+  loadPostgresData: {
+    doc: 'If we need to load the postgres data',
+    format: Boolean,
+    default: false,
+    env: 'LOAD_POSTGRES_DATA'
+  },
   log: {
     enabled: {
       doc: 'Is logging enabled',
