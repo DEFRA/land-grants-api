@@ -6,6 +6,7 @@ const mockActions = [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
+    guidenceUrl: 'https://www.gov.uk/guidance/cmor1',
     applicationUnitOfMeasurement,
     payment: {
       ratePerUnitGbp: 10.6,
@@ -47,6 +48,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
+    guidenceUrl: 'https://www.gov.uk/guidance/upl1',
     applicationUnitOfMeasurement,
     payment: {
       'rate-per-unit-gbp': 20
@@ -84,6 +86,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
+    guidenceUrl: 'https://www.gov.uk/guidance/cmor1',
     applicationUnitOfMeasurement,
     payment: {
       ratePerUnitGbp: 10.6,
@@ -122,6 +125,7 @@ const mockMultipleActions = [
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
+    guidenceUrl: 'https://www.gov.uk/guidance/upl2',
     applicationUnitOfMeasurement,
     payment: {
       'rate-per-unit-gbp': 53

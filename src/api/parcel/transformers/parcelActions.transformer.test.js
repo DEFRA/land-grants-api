@@ -21,7 +21,8 @@ describe('actionTransformer', () => {
   test('should transform action with available area', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action'
+      description: 'Test Action',
+      guidenceUrl: 'https://www.gov.uk'
     }
     const totalAvailableArea = 500
 
@@ -33,7 +34,61 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      }
+      },
+      guidenceUrl: 'https://www.gov.uk'
+    })
+  })
+
+  test('should transform action without available area when totalAvailableArea is null', () => {
+    const action = {
+      code: 'ACTION1',
+      description: 'Test Action',
+      guidenceUrl: 'https://www.gov.uk'
+    }
+    const totalAvailableArea = null
+
+    const result = actionTransformer(action, totalAvailableArea)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availableArea: undefined,
+      guidenceUrl: 'https://www.gov.uk'
+    })
+  })
+
+  test('should transform action without available area when totalAvailableArea is undefined', () => {
+    const action = {
+      code: 'ACTION1',
+      description: 'Test Action',
+      guidenceUrl: 'https://www.gov.uk'
+    }
+
+    const result = actionTransformer(action)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availableArea: undefined,
+      guidenceUrl: 'https://www.gov.uk'
+    })
+  })
+
+  test('should transform action without available area when totalAvailableArea is 0', () => {
+    const action = {
+      code: 'ACTION1',
+      description: 'Test Action',
+      guidenceUrl: 'https://www.gov.uk'
+    }
+    const totalAvailableArea = 0
+
+    const result = actionTransformer(action, totalAvailableArea)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availableArea: undefined,
+      guidenceUrl: 'https://www.gov.uk'
     })
   })
 })
