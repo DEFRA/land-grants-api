@@ -74,7 +74,7 @@ describe('actionTransformer', () => {
     })
   })
 
-  test('should transform action without available area when totalAvailableArea is 0', () => {
+  test('should transform action with available area when totalAvailableArea is 0', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
@@ -87,7 +87,10 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
+      availableArea: {
+        unit: 'ha',
+        value: 0
+      },
       guidanceUrl: 'https://www.gov.uk'
     })
   })
