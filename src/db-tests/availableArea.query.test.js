@@ -39,7 +39,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe((0).toFixed(2))
+    expect(availableArea).toBe(0)
   })
 
   test('should return 0 available area when invalid landCoverClassCodes provided', async () => {
@@ -55,7 +55,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe((0).toFixed(2))
+    expect(availableArea).toBe(0)
   })
 
   test('should return 7529.21 available area when all landCoverClassCodes in the system provided', async () => {
@@ -73,7 +73,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe(0.5417)
+    expect(availableArea).toBe(0.54170289)
   })
 
   test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
@@ -89,7 +89,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe(0.5703)
+    expect(availableArea).toBe(0.57025438)
   })
 
   test('should return 0 available area when sheetId not found in the system', async () => {
@@ -105,7 +105,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe((0).toFixed(2))
+    expect(availableArea).toBe(0)
   })
 
   test('should return 0 available area when parcelId not found in the system', async () => {
@@ -121,6 +121,6 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe((0).toFixed(2))
+    expect(availableArea).toBe(0)
   })
 })
