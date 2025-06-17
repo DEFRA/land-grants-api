@@ -100,10 +100,13 @@ npm run dev
 
 to srr/api/common/migration folder
 
-2. environment variables update:
-If you have below environment variable in your local .env file remove it:
-- SEED_MONGODB=true
+2. Environment variables update:
+   If you have below environment variables in your local .env file remove them:
 
+- SEED_MONGODB
+- DISABLE_POSTGRES
+
+.env is not required for running the API in local, all the config values are defaulted to local setup, unless developer/user want to overrides for there testing.
 
 3. run
 
@@ -111,7 +114,7 @@ If you have below environment variable in your local .env file remove it:
 npm run load:data
 ```
 
-4. Successful data load messages in the console 
+4. Successful data load messages in the console
 
 - Successfully loaded postgres data land-parcels-data.sql into Postgis
 - Successfully loaded postgres data land-covers-data.sql into Postgis
