@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import data from '~/src/api/common/helpers/seed-data/index.js'
-import models from '~/src/api/common/models/index.js'
+import data from '../helpers/seed-data/index.js'
+import models from '../../common/models/index.js'
 
 export async function seedDatabase(logger) {
   while (mongoose.connection.readyState !== mongoose.STATES.connected) {
