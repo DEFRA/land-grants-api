@@ -62,7 +62,7 @@ const ParcelsController = {
           request.logger
         )
 
-        if (!landParcel) {
+        if (!landParcel || landParcel.length === 0) {
           const errorMessage = `Land parcel not found: ${parcel}`
           request.logger.error(errorMessage)
           return Boom.notFound(errorMessage)
@@ -113,7 +113,7 @@ const ParcelsController = {
                   request.logger
                 )
 
-                if (availableArea) {
+                if (availableArea || availableArea === 0) {
                   transformed = actionTransformer(action, availableArea)
                 }
               }
