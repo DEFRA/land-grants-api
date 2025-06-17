@@ -37,7 +37,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('98.64')
+    expect(result).toBe(98.63846812482574)
   })
 
   test('when tiny amount of moorland and sheet_id = SD5942 AND parcel_id = 2744', async () => {
@@ -51,7 +51,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('0.06')
+    expect(result).toBe(0.060174140617365424)
   })
 
   test('when large ammount of moorland and sheet_id = SD4964 AND parcel_id = 7210', async () => {
@@ -65,7 +65,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('96.11')
+    expect(result).toBe(96.11421332219413)
   })
 
   test('when small ammount of moorland and sheet_id = SD6743 AND parcel_id = 5422', async () => {
@@ -79,7 +79,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('31.51')
+    expect(result).toBe(31.50518807213718)
   })
 
   test('when full ammount of moorland and sheet_id = SD6743 AND parcel_id = 3385', async () => {
@@ -93,7 +93,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('100.00')
+    expect(result).toBe(100)
   })
 
   test('when no moorland and sheet_id = SD6842 AND parcel_id = 0784', async () => {
@@ -107,7 +107,9 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('0.00')
+    console.log('result', result)
+
+    expect(result).toBe(0)
   })
 
   test('when sheet_id = SD6842 AND parcel_id = not found', async () => {
@@ -121,7 +123,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('0.00')
+    expect(result).toBe(0)
   })
 
   test('when sheet id and parcel id not found', async () => {
@@ -135,6 +137,6 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe('0.00')
+    expect(result).toBe(0)
   })
 })
