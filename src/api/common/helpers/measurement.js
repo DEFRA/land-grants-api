@@ -1,15 +1,16 @@
 export const applicationUnitOfMeasurement = 'ha'
 
 export const sqmToHaRounded = (sqm) => {
+  const decimalPlaces = 8
+
   if (typeof sqm === 'string') {
     sqm = Number(sqm)
   }
 
   if (typeof sqm !== 'number' || isNaN(sqm)) {
-    return (0).toFixed(2)
+    return 0
   }
 
-  const decimalPlaces = 4
   const hectares = sqm / 10000
 
   return (
@@ -19,11 +20,12 @@ export const sqmToHaRounded = (sqm) => {
 }
 
 export const haToSqmRounded = (ha) => {
+  const decimalPlaces = 4
+
   if (typeof ha !== 'number' || isNaN(ha)) {
-    return (0).toFixed(2)
+    return 0
   }
 
-  const decimalPlaces = 4
   const hectares = ha * 10000
   return Math.round(hectares * Math.pow(10, decimalPlaces))
 }

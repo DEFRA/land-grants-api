@@ -11,16 +11,10 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       SELECT
           p.sheet_id,
           p.parcel_id,
-          ROUND(ST_Area(p.geom)::numeric, 2) AS parcel_area_m2,
-          ROUND(
-              COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::numeric), 0),
-              2
-          ) AS moorland_overlap_m2,
-          ROUND(
-              COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::numeric), 0)
-              / NULLIF(ST_Area(p.geom)::numeric, 0) * 100,
-              2
-          ) AS moorland_overlap_percent
+          ST_Area(p.geom)::float8, 2 AS parcel_area_m2,
+          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) AS moorland_overlap_m2,
+          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
+              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS moorland_overlap_percent
       FROM
           land_parcels p
       LEFT JOIN
@@ -40,7 +34,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       `Retrieved moorland intercept percentage for ${sheetId}-${parcelId} , ${result.rows}`
     )
 
-    return result?.rows?.[0]?.moorland_overlap_percent || (0).toFixed(2)
+    return result?.rows?.[0]?.moorland_overlap_percent || 0
   } catch (error) {
     logger.error(
       'Error executing get moorland intercept percentage query',
