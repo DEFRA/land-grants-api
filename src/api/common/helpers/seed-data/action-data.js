@@ -1,4 +1,4 @@
-import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
+import { applicationUnitOfMeasurement } from '../measurement.js'
 
 export default [
   {
