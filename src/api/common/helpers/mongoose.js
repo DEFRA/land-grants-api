@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-import { config } from '~/src/config/index.js'
+import { config } from '../../../config/index.js'
 import { seedDatabase } from './seed-database.js'
 
 /**

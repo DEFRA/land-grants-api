@@ -94,35 +94,36 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
-### Loading land-data into local postgres:
+### Loading land-data into local postgres and mongoDB data:
 
 1. Copy files from https://defra.sharepoint.com/teams/Team1645/Restricted_FCP%20RPS%20Future/Forms/AllItems.aspx?id=%2Fteams%2FTeam1645%2FRestricted%5FFCP%20RPS%20Future%2Fland%2Dgrant%2Dapi%2Ddata&viewid=f5678bbd%2Dae3a%2D4cd4%2D9f4c%2Dab8e79452a94&ovuser=770a2450%2D0227%2D4c62%2D90c7%2D4e38537f1102%2CJilly%2EGledhill%40defra%2Egov%2Euk&OR=Teams%2DHL&CT=1733739622621&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNDEwMjAwMTMxOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D
 
 to srr/api/common/migration folder
 
-2. set environment variables:
+2. Environment variables update:
+   If you have below environment variables in your local .env file remove them:
 
-- DISABLE_POSTGRES=false
-- NODE_ENV=local
+- SEED_MONGODB
+- DISABLE_POSTGRES
 
-Refer: .env.example
-If you have issue with .env file set env variables in package.json scripts
-
-```
- "dev": "NODE_ENV=local SEED_MONGODB=true DISABLE_POSTGRES=false npm run server:watch",
-```
+.env is not required for running the API in local, all the config values are defaulted to local setup, unless developer/user want to overrides for there testing.
 
 3. run
 
 ```bash
-npm run dev
+npm run load:data
 ```
 
-4. Successful data load message in the console on start-up
+4. Successful data load messages in the console
 
 - Successfully loaded postgres data land-parcels-data.sql into Postgis
 - Successfully loaded postgres data land-covers-data.sql into Postgis
 - Successfully loaded postgres data moorland-designations-data.sql into Postgis
+- Successfully inserted 1 into the 'parcel-data' collection
+- Successfully inserted 12 into the 'action-data' collection
+- Successfully inserted 268 into the 'land-cover-codes' collection
+- Successfully inserted 53535 into the 'compatibility-matrix' collection
+- MongooseDb data load complete.
 
 ### Testing
 
