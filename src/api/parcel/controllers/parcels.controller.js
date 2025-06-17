@@ -91,10 +91,7 @@ const ParcelsController = {
 
           const transformedActions = await Promise.all(
             actions.map(async (action) => {
-              let transformed = {
-                code: action.code,
-                description: action.description
-              }
+              let transformed = actionTransformer(action)
 
               if (fields.includes('actions.availableArea')) {
                 const landCoverCodes = await getLandCoverCodesForCodes(
