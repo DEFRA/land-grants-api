@@ -22,7 +22,10 @@ function actionTransformer(action, totalAvailableArea) {
   return {
     code: action.code,
     description: action.description,
-    availableArea: sizeTransformer(totalAvailableArea)
+    availableArea: totalAvailableArea
+      ? sizeTransformer(totalAvailableArea)
+      : undefined,
+    guidanceUrl: action.guidanceUrl
   }
 }
 
