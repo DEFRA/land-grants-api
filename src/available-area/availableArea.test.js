@@ -6,19 +6,13 @@ function makeCompatibilityCheckFn(compatibilityMap) {
     compatibilityMap[action2]?.includes(action1)
 }
 
-// compatibilityCheckFn: (action1, action2) => {
-//           if (action1 === 'UPL7' && action2 === 'UPL1') return true
-//           if (action1 === 'UPL7' && action2 === 'CMOR1') return true
-//           return false
-//         }
-
 describe('Available Area calculations', function () {
   const testConditions = [
     [
       'should return total valid land cover when no existing actions',
       {
         totalValidLandCover: 5.9,
-        existingActions: [],
+        actionsOnParcel: [],
         actionCodeAppliedFor: 'CMOR1',
         expectedAvailableArea: 5.9
       }
@@ -27,7 +21,7 @@ describe('Available Area calculations', function () {
       'should return total valid land cover minus incompatible existing actions',
       {
         totalValidLandCover: 7.777,
-        existingActions: [{ code: 'OFM3', area: 1.5 }],
+        actionsOnParcel: [{ code: 'OFM3', area: 1.5 }],
         actionCodeAppliedFor: 'CMOR1',
         expectedAvailableArea: 6.277
       }
@@ -36,7 +30,7 @@ describe('Available Area calculations', function () {
       'should return total valid land cover without subtracting compatible existing actions',
       {
         totalValidLandCover: 14.123,
-        existingActions: [{ code: 'UPL1', area: 2.41 }],
+        actionsOnParcel: [{ code: 'UPL1', area: 2.41 }],
         actionCodeAppliedFor: 'CMOR1',
         expectedAvailableArea: 14.123,
         compatibilityCheckFn: makeCompatibilityCheckFn({ CMOR1: ['UPL1'] })
@@ -46,7 +40,7 @@ describe('Available Area calculations', function () {
       'should return zero when all valid land covered is used by incompatible action',
       {
         totalValidLandCover: 3.21,
-        existingActions: [{ code: 'CMOR1', area: 3.21 }],
+        actionsOnParcel: [{ code: 'CMOR1', area: 3.21 }],
         actionCodeAppliedFor: 'CMOR1',
         expectedAvailableArea: 0
       }
@@ -55,7 +49,7 @@ describe('Available Area calculations', function () {
       'should return zero when there is no valid land cover',
       {
         totalValidLandCover: 0,
-        existingActions: [],
+        actionsOnParcel: [],
         actionCodeAppliedFor: 'CMOR1',
         expectedAvailableArea: 0
       }
@@ -64,7 +58,7 @@ describe('Available Area calculations', function () {
       'should return total valid land cover when action applied for is compatible with all existing actions',
       {
         totalValidLandCover: 10.12,
-        existingActions: [
+        actionsOnParcel: [
           { code: 'CMOR1', area: 10.12 },
           { code: 'UPL1', area: 10.12 }
         ],
@@ -79,7 +73,7 @@ describe('Available Area calculations', function () {
       'should return valid land cover minus incompatible existing actions area',
       {
         totalValidLandCover: 431.5,
-        existingActions: [
+        actionsOnParcel: [
           { code: 'CMOR1', area: 100.5 },
           { code: 'UPL1', area: 78.2 }
         ],
@@ -98,7 +92,7 @@ describe('Available Area calculations', function () {
       name,
       {
         totalValidLandCover,
-        existingActions,
+        actionsOnParcel,
         actionCodeAppliedFor,
         expectedAvailableArea,
         compatibilityCheckFn
@@ -107,7 +101,7 @@ describe('Available Area calculations', function () {
       expect(
         calculateAvailableArea(
           totalValidLandCover,
-          existingActions,
+          actionsOnParcel,
           actionCodeAppliedFor,
           compatibilityCheckFn
         )
