@@ -14,12 +14,8 @@ export function createActionStacks(
   const explanations = []
   let stackNumber = 0
 
-  function createStack(actionCodes, area) {
-    stackNumber++
-    return {
-      stack: { stackNumber, actionCodes, area },
-      explanation: `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`
-    }
+  if (!Array.isArray(actions)) {
+    throw new Error('Actions must be an array')
   }
 
   if (actions.length === 0) {
@@ -29,6 +25,9 @@ export function createActionStacks(
     }
   }
 
+  // sort actions by area in ascending order
+  // this ensures that smaller actions are considered first
+  // which helps in filling stacks more efficiently
   const sortedActions = actions.sort((a, b) => {
     return a.area - b.area
   })
@@ -57,22 +56,7 @@ export function createActionStacks(
             `  Added ${action.code} to Stack ${stack.stackNumber} with area ${stack.area}`
           )
         } else {
-          explanations.push(
-            `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area})`
-          )
-
-          const { stack: newStack, explanation: newStackExplanation } =
-            createStack([...stack.actionCodes], stack.area - currentArea)
-
-          stacks.push(newStack)
-
-          stack.actionCodes.push(action.code)
-          stack.area = currentArea
-
-          explanations.push(
-            `  Reducing Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
-          )
-          explanations.push(newStackExplanation)
+          splitStacks(action, currentArea, stack)
 
           currentArea = 0
           break
@@ -97,5 +81,34 @@ export function createActionStacks(
   return {
     explanations,
     stacks
+  }
+
+  function createStack(actionCodes, area) {
+    stackNumber++
+    return {
+      stack: { stackNumber, actionCodes, area },
+      explanation: `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`
+    }
+  }
+
+  function splitStacks(action, currentArea, stack) {
+    explanations.push(
+      `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area})`
+    )
+
+    const { stack: newStack, explanation: newStackExplanation } = createStack(
+      [...stack.actionCodes],
+      stack.area - currentArea
+    )
+
+    stacks.push(newStack)
+
+    stack.actionCodes.push(action.code)
+    stack.area = currentArea
+
+    explanations.push(
+      `  Reducing Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
+    )
+    explanations.push(newStackExplanation)
   }
 }
