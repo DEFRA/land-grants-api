@@ -11,6 +11,23 @@ export function createActionStacks(
   compatibilityCheckFn = () => false
 ) {
   const stacks = []
+  const explanations = []
+  let stackNumber = 0
+
+  function createStack(actionCodes, area) {
+    stackNumber++
+    return {
+      stack: { stackNumber, actionCodes, area },
+      explanation: `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`
+    }
+  }
+
+  if (actions.length === 0) {
+    return {
+      explanations: ['No existing actions so no stacks are needed'],
+      stacks: []
+    }
+  }
 
   const sortedActions = actions.sort((a, b) => {
     return a.area - b.area
@@ -18,6 +35,8 @@ export function createActionStacks(
 
   for (const action of sortedActions) {
     let currentArea = action.area
+
+    explanations.push(`Adding ${action.code} (area ${action.area})`)
 
     for (const stack of stacks) {
       if (
@@ -27,15 +46,56 @@ export function createActionStacks(
           compatibilityCheckFn
         )
       ) {
-        stack.actionCodes.push(action.code)
-        currentArea -= stack.area
+        explanations.push(
+          `  ${action.code} is compatible with: ${stack.actionCodes.join(', ')} in Stack ${stack.stackNumber}`
+        )
+
+        if (currentArea >= stack.area) {
+          stack.actionCodes.push(action.code)
+          currentArea -= stack.area
+          explanations.push(
+            `  Added ${action.code} to Stack ${stack.stackNumber} with area ${stack.area}`
+          )
+        } else {
+          explanations.push(
+            `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area})`
+          )
+
+          const { stack: newStack, explanation: newStackExplanation } =
+            createStack([...stack.actionCodes], stack.area - currentArea)
+
+          stacks.push(newStack)
+
+          stack.actionCodes.push(action.code)
+          stack.area = currentArea
+
+          explanations.push(
+            `  Reducing Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
+          )
+          explanations.push(newStackExplanation)
+
+          currentArea = 0
+          break
+        }
+      } else {
+        explanations.push(
+          `  ${action.code} is not compatible with all of: ${stack.actionCodes.join(', ')} in Stack ${stack.stackNumber}`
+        )
       }
     }
 
     if (currentArea > 0) {
-      stacks.push({ actionCodes: [action.code], area: currentArea })
+      const { stack: newStack, explanation } = createStack(
+        [action.code],
+        currentArea
+      )
+      stacks.push(newStack)
+      explanations.push(explanation)
     }
   }
 
-  return stacks
+  return {
+    explanations,
+    stacks
+  }
 }
