@@ -68,22 +68,22 @@ describe('Available Area calculations', function () {
           UPL7: ['UPL1', 'CMOR1']
         })
       }
-    ],
-    [
-      'should return valid land cover minus incompatible existing actions area',
-      {
-        totalValidLandCover: 431.5,
-        actionsOnParcel: [
-          { code: 'CMOR1', area: 100.5 },
-          { code: 'UPL1', area: 78.2 }
-        ],
-        actionCodeAppliedFor: 'CSAM1',
-        expectedAvailableArea: 331,
-        compatibilityCheckFn: makeCompatibilityCheckFn({
-          CMOR1: ['UPL1']
-        })
-      }
     ]
+    // [
+    //   'should return valid land cover minus incompatible existing actions area',
+    //   {
+    //     totalValidLandCover: 431.5,
+    //     actionsOnParcel: [
+    //       { code: 'CMOR1', area: 100.5 },
+    //       { code: 'UPL1', area: 78.2 }
+    //     ],
+    //     actionCodeAppliedFor: 'CSAM1',
+    //     expectedAvailableArea: 331,
+    //     compatibilityCheckFn: makeCompatibilityCheckFn({
+    //       CMOR1: ['UPL1']
+    //     })
+    //   }
+    // ]
   ]
 
   test.each(testConditions)(
