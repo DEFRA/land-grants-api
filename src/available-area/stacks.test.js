@@ -247,4 +247,16 @@ describe('Stacks', function () {
       ).toEqual(expectedResult)
     }
   )
+
+  test('should return appropriate error when non array is passed for actions', () => {
+    expect(() => {
+      createActionStacks('not an array', () => true)
+    }).toThrow('Actions must be an array')
+  })
+
+  test('should return appropriate error when null is passed for actions', () => {
+    expect(() => {
+      createActionStacks(null, () => true)
+    }).toThrow('Actions must be an array')
+  })
 })
