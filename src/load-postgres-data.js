@@ -13,8 +13,7 @@ function run() {
     logger.info('Initializing Postgres plugin to load data...')
     postgresDb.plugin.register(server, {
       ...postgresDb.options,
-      loadPostgresData: true,
-      disablePostgres: false
+      loadPostgresData: true
     })
 
     logger.info('Data load complete.')
