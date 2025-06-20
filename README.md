@@ -89,6 +89,8 @@ npm run dev
 
 ### Testing
 
+In order to run the `db tests` please make sure you have `docker` running
+
 This will run the unit tests.
 
 ```bash
