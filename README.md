@@ -4,59 +4,14 @@ To read more about the farming grants platform, see this docs repo:
 
 https://github.com/DEFRA/farming-grants-docs
 
-The capabilities of the land grants API include:
+## Contents
 
-- [land based grant application eligibility checks](#eligibility-checks)
-- [grant payment calculations](#payment-calculations)
-- [available area calculation](#available-area-calculation)
+The capabilities of the `land-grants-api` include:
 
-### Eligibility checks
-
-When an applicant applies for an action to undertake on a land parcel (field), we need to determine their eligibility based on the data we have available. An example of eligibility criteria for the **SCR1: Create scrub and open habitat mosaics** action can be found in [this document](https://www.gov.uk/find-funding-for-land-or-farms/scr1-create-scrub-and-open-habitat-mosaics). This document contains this statement:
-
-| Protected land                               | Eligibility                                                                            |
-| -------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Sites of special scientific interest (SSSIs) | Ineligible - you must not enter any area that's designated as an SSSI into this action |
-
-In this case, the API will need to check if there is an intersection between the land parcel and the SSSI map layer and reject the application if so.
-
-### Available Area Calculation
-
-The purpose of the Available Area Calculation (AAC) is to work out the number of hectares of a land parcel someone is able to apply a particular action on. Say an applicant has a 3 hectare land parcel, has already agreed to do action **A** on 1 hectare of the parcel, is applying for action **B** and **A** and **B** aren't compatible with each other, the AAC should return 2 hectares.
-
-Some more AAC scenarios are detailed here:
-
-![Available Area Calculation Scenarios](aac-scenarios.png)
-
-### Payment calculations
-
-Each action has a different way of calculating the total owed annually if the application gets approved and accepted. Most are a simple multiplication of the quantity of measurement applied for by the value. For example, for **SCR1**, the calculation is `£588 per hectare (ha) per year`.
-
-## Repo usage
-
-- [Requirements](#requirements)
-  - [Node.js](#nodejs)
-- [Local development](#local-development)
-  - [Configuration](#configuration)
-  - [Setup](#setup)
-  - [Development](#development)
-  - [Testing](#testing)
-  - [Production](#production)
-  - [Npm scripts](#npm-scripts)
-  - [Update dependencies](#update-dependencies)
-  - [Formatting](#formatting)
-    - [Windows prettier issue](#windows-prettier-issue)
-- [API endpoints](#api-endpoints)
-- [Docker](#docker)
-  - [Development image](#development-image)
-  - [Production image](#production-image)
-  - [Docker Compose](#docker-compose)
-  - [Dependabot](#dependabot)
-  - [SonarCloud](#sonarcloud)
-- [Development helpers](#development-helpers)
-  - [MongoDB Locks](#mongodb-locks)
-- [Licence](#licence)
-  - [About the licence](#about-the-licence)
+- [Working wiith qgis](docs/working-wiith-qgis.md)
+- [Available area calculation](docs/available-area-calculation)
+- [Land based grant application eligibility checks](docs/eligibility-checks)
+- [Grant payment calculations](docs/payment-calculation)
 
 ## Requirements
 
@@ -76,7 +31,7 @@ nvm use
 
 ### Configuration
 
-This API requires a `.env` file to operate, please view the `.env.example` for details of the required properties, talk to a collegue for missing values.
+An `.env` is NOT required for running the API locally, all the config values are defaulted to a local setup, unless developer/user wants to override these for testing; if so see `env.example`.
 
 ### Setup
 
@@ -86,52 +41,77 @@ Install application dependencies:
 npm install
 ```
 
+### Download the land data
+
+1. Download the `sql` files from [sharepoint]('https://defra.sharepoint.com/teams/Team1645/Restricted_FCP%20RPS%20Future/Forms/AllItems.aspx?id=%2Fteams%2FTeam1645%2FRestricted%5FFCP%20RPS%20Future%2Fland%2Dgrant%2Dapi%2Ddata&viewid=f5678bbd%2Dae3a%2D4cd4%2D9f4c%2Dab8e79452a94&ovuser=770a2450%2D0227%2D4c62%2D90c7%2D4e38537f1102%2CJilly%2EGledhill%40defra%2Egov%2Euk&OR=Teams%2DHL&CT=1733739622621&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNDEwMjAwMTMxOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D'), talk to a collegue if you do not have access.
+
+2. Copy these files to to the `src/api/common/migration` folder
+
+The api uses [Liquidbase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema
+
 ### Development
 
-To run the application in `development` mode run:
+In order to run the api, you will need `docker` installed, so please make sure this is running when starting the api.
+
+To run the application in `development` mode run the following commands:
+
+#### Create databases
+
+You are only required to run this once, unless the schema changes.
+
+This script:
+
+- will start a dockerised postgres database
+- run the liquidbase migration, creating the tables
+- will start dockerised mongodb database
 
 ```bash
-npm run dev
+npm run dev:setup
 ```
 
-### Loading land-data into local postgres and mongoDB data:
+#### Load seed data
 
-1. Copy files from https://defra.sharepoint.com/teams/Team1645/Restricted_FCP%20RPS%20Future/Forms/AllItems.aspx?id=%2Fteams%2FTeam1645%2FRestricted%5FFCP%20RPS%20Future%2Fland%2Dgrant%2Dapi%2Ddata&viewid=f5678bbd%2Dae3a%2D4cd4%2D9f4c%2Dab8e79452a94&ovuser=770a2450%2D0227%2D4c62%2D90c7%2D4e38537f1102%2CJilly%2EGledhill%40defra%2Egov%2Euk&OR=Teams%2DHL&CT=1733739622621&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNDEwMjAwMTMxOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D
+This script will seed the postgres and mongodb databases
 
-to srr/api/common/migration folder
-
-2. Environment variables update:
-   If you have below environment variables in your local .env file remove them:
-
-- SEED_MONGODB
-- DISABLE_POSTGRES
-
-.env is not required for running the API in local, all the config values are defaulted to local setup, unless developer/user want to overrides for there testing.
-
-3. run
+You are only required to run this once, unless the seed data changes
 
 ```bash
 npm run load:data
 ```
 
-4. Successful data load messages in the console
+#### Start the api
 
-- Successfully loaded postgres data land-parcels-data.sql into Postgis
-- Successfully loaded postgres data land-covers-data.sql into Postgis
-- Successfully loaded postgres data moorland-designations-data.sql into Postgis
-- Successfully inserted 1 into the 'parcel-data' collection
-- Successfully inserted 12 into the 'action-data' collection
-- Successfully inserted 268 into the 'land-cover-codes' collection
-- Successfully inserted 53535 into the 'compatibility-matrix' collection
-- MongooseDb data load complete.
+This script will start the api
+
+```bash
+npm run dev
+```
 
 ### Testing
 
-To test the application run:
+This will run the unit tests.
+
+```bash
+npm run test:unit
+```
+
+This will run the db tests.
+
+```bash
+npm run test:db
+```
+
+This will run the unit and db tests.
 
 ```bash
 npm run test
 ```
+
+## API endpoints
+
+This API includes swagger documentation, this can be viewed at:
+
+`http://{host_name}:3001/documentation`
 
 ### Production
 
@@ -171,56 +151,6 @@ If you are having issues with formatting of line breaks on Windows update your g
 git config --global core.autocrlf false
 ```
 
-## API endpoints
-
-This API includes swagger documentation, this can be viewed at:
-
-`http://{host_name}:3001/documentation`
-
-## Docker
-
-### Development image
-
-Build:
-
-```bash
-docker build --target development --no-cache --tag land-grants-api:development .
-```
-
-Run:
-
-```bash
-docker run -e PORT=3001 -p 3001:3001 land-grants-api:development
-```
-
-### Production image
-
-Build:
-
-```bash
-docker build --no-cache --tag land-grants-api .
-```
-
-Run:
-
-```bash
-docker run -e PORT=3001 -p 3001:3001 land-grants-api
-```
-
-### Docker Compose
-
-A local environment with:
-
-- Localstack for AWS services (S3, SQS)
-- Redis
-- MongoDB
-- This service.
-- A commented out frontend example.
-
-```bash
-docker compose up --build -d
-```
-
 ### Dependabot
 
 We have added an example dependabot configuration file to the repository. You can enable it by renaming
@@ -229,51 +159,6 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 ### SonarCloud
 
 Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
-
-## Development helpers
-
-### MongoDB Locks
-
-If you require a write lock for Mongo you can acquire it via `server.locker` or `request.locker`:
-
-```javascript
-async function doStuff(server) {
-  const lock = await server.locker.lock('unique-resource-name')
-
-  if (!lock) {
-    // Lock unavailable
-    return
-  }
-
-  try {
-    // do stuff
-  } finally {
-    await lock.free()
-  }
-}
-```
-
-Keep it small and atomic.
-
-You may use **using** for the lock resource management.
-Note test coverage reports do not like that syntax.
-
-```javascript
-async function doStuff(server) {
-  await using lock = await server.locker.lock('unique-resource-name')
-
-  if (!lock) {
-    // Lock unavailable
-    return
-  }
-
-  // do stuff
-
-  // lock automatically released
-}
-```
-
-Helper methods are also available in `/src/helpers/mongo-lock.js`.
 
 ## Licence
 

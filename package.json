@@ -1,7 +1,7 @@
 {
   "name": "land-grants-api",
   "version": "0.0.0",
-  "description": "CDP Backend Template",
+  "description": "Land grants API",
   "main": ".server/index.js",
   "type": "module",
   "engines": {
@@ -12,6 +12,7 @@
     "build:server": "NODE_ENV=production babel --delete-dir-on-start --ignore \"**/*.test.js\" --ignore \"**/__fixtures__\" --ignore \"**/test-helpers\" --copy-files --no-copy-ignored --out-dir ./.server ./src",
     "docker:dev": "NODE_ENV=development npm run server:watch",
     "dev": "NODE_ENV=local npm run server:watch",
+    "dev:setup": "scripts/start",
     "load:data": "npm run load:postgres-data && npm run load:mongo-data",
     "load:postgres-data": "NODE_ENV=local node src/load-postgres-data.js",
     "load:mongo-data": "NODE_ENV=local SEED_MONGODB=true node src/load-mongodb-data.js",

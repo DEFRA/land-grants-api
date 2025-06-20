@@ -1,64 +1,63 @@
-version: '3.4'
+x-common-migration: &common-migration
+  POSTGRES_HOST: ${POSTGRES_HOST:-land-grants-backend-postgres}
+  SCHEMA_ROLE: ${POSTGRES_SCHEMA_ROLE:-land_grants_api}
+  SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
+
+x-common-postgres: &common-postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-land_grants_api}
+  POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
+
 services:
-  localstack:
-    image: localstack/localstack:3.0.2
-    ports:
-      - '4566:4566' # LocalStack Gateway
-      - '4510-4559:4510-4559' # external services port range
-    env_file:
-      - 'compose/aws.env'
-    environment:
-      DEBUG: ${DEBUG:-1}
-      LS_LOG: WARN # Localstack DEBUG Level
-      SERVICES: s3,sqs,sns,firehose
-      LOCALSTACK_HOST: 127.0.0.1
-    volumes:
-      - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
-    healthcheck:
-      test: ['CMD', 'curl', 'localhost:4566']
-      interval: 5s
-      start_period: 5s
-      retries: 3
-    networks:
-      - cdp-tenant
-
-  redis:
-    image: redis:7.2.3-alpine3.18
-    ports:
-      - '6379:6379'
-    restart: always
-    networks:
-      - cdp-tenant
-
   mongodb:
     image: mongo:6.0.13
     networks:
-      - cdp-tenant
+      - cdp-mongo-tenant
     ports:
       - '27017:27017'
     volumes:
       - mongodb-data:/data
     restart: always
 
+  database-up:
+    image: liquibase/liquibase:4.31-alpine
+    environment:
+      << : [*common-postgres, *common-migration]
+    entrypoint: >
+      sh -c "/scripts/migration/database-up"
+    depends_on:
+      - land-grants-backend-postgres
+    volumes:
+      - ./changelog:/liquibase/changelog
+      - ./scripts:/scripts
+
+  database-down:
+    image: liquibase/liquibase:4.31-alpine
+    environment:
+      << : [*common-postgres, *common-migration]
+    entrypoint: >
+      sh -c "/scripts/migration/database-down"
+    depends_on:
+      - land-grants-backend-postgres
+    volumes:
+      - ./changelog:/liquibase/changelog
+      - ./scripts:/scripts
+
   land-grants-backend-postgres:
     image: postgis/postgis:16-3.4
-    restart: always
+    environment: *common-postgres
     ports:
       - 5432:5432
-    environment:
-      - POSTGRES_USER=land_grants_api
-      - POSTGRES_PASSWORD=land_grants_api
-      - POSTGRES_DB=land_grants_api
-    networks:
-      - cdp-tenant
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  mongodb-data:
   postgres_data:
+  mongodb-data:
 
 networks:
   cdp-tenant:
+    external: true
+  cdp-mongo-tenant:
     driver: bridge
