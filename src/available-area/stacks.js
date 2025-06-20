@@ -1,3 +1,5 @@
+import { first } from 'lodash'
+
 /**
  * Checks if a code is compatible with all codes in a list using a provided function.
  * @param {string} code
@@ -13,6 +15,38 @@ function areAllCodesCompatible(code, codes, compareFn) {
   return true
 }
 
+function checkCompatibility(action, stack, compatibilityCheckFn) {
+  const compatibleCodes = []
+  const incompatibleCodes = []
+
+  for (const code of stack.actionCodes) {
+    if (compatibilityCheckFn(action.code, code)) {
+      compatibleCodes.push(code)
+    } else {
+      incompatibleCodes.push(code)
+    }
+  }
+
+  const explanations = []
+
+  if (compatibleCodes.length > 0) {
+    explanations.push(
+      explain.compatible(action.code, compatibleCodes, stack.stackNumber)
+    )
+  }
+
+  if (incompatibleCodes.length > 0) {
+    explanations.push(
+      explain.notCompatible(action.code, incompatibleCodes, stack.stackNumber)
+    )
+  }
+
+  return {
+    allCompatible: incompatibleCodes.length === 0,
+    explanations
+  }
+}
+
 const explain = {
   allCodesCompatible: (action, existingStack) =>
     `  ${action.code} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
@@ -25,7 +59,11 @@ const explain = {
   stackCreated: (stackNumber, actionCodes, area) =>
     `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`,
   shrinkStack: (stack, action) =>
-    `  Shrinking Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
+    `  Shrinking Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`,
+  notCompatible: (code, incompatibleCodes, stackNumber) =>
+    `  ${code} is not compatible with: ${incompatibleCodes.join(', ')} in Stack ${stackNumber}`,
+  compatible: (code, compatibleCodes, stackNumber) =>
+    `  ${code} is compatible with: ${compatibleCodes.join(', ')} in Stack ${stackNumber}`
 }
 
 export function createActionStacks(
@@ -60,28 +98,30 @@ export function createActionStacks(
     explanations.push(`Adding ${action.code} (area ${action.area})`)
 
     for (const existingStack of stacks) {
+      const compatiblity = checkCompatibility(
+        action,
+        existingStack,
+        compatibilityCheckFn
+      )
+
       const actionIsCompatibleWithAllActionsInExistingStack =
-        areAllCodesCompatible(
-          action.code,
-          existingStack.actionCodes,
-          compatibilityCheckFn
-        )
+        compatiblity.allCompatible
 
-      if (actionIsCompatibleWithAllActionsInExistingStack) {
-        explanations.push(explain.allCodesCompatible(action, existingStack))
+      explanations.push(...compatiblity.explanations)
 
-        if (remainingAreaForAction >= existingStack.area) {
-          existingStack.actionCodes.push(action.code)
-          remainingAreaForAction -= existingStack.area
-          explanations.push(explain.addedToStack(action, existingStack))
-        } else {
-          splitStacks(action, remainingAreaForAction, existingStack)
+      if (!actionIsCompatibleWithAllActionsInExistingStack) {
+        continue
+      }
 
-          remainingAreaForAction = 0
-          break
-        }
+      if (remainingAreaForAction >= existingStack.area) {
+        existingStack.actionCodes.push(action.code)
+        remainingAreaForAction -= existingStack.area
+        explanations.push(explain.addedToStack(action, existingStack))
       } else {
-        explanations.push(explain.allCodesNotCompatible(action, existingStack))
+        splitStacks(action, remainingAreaForAction, existingStack)
+
+        remainingAreaForAction = 0
+        break
       }
     }
 
