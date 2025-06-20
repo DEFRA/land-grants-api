@@ -1,9 +1,31 @@
-function areAllCodesCompatible(code, codes, fn) {
+/**
+ * Checks if a code is compatible with all codes in a list using a provided function.
+ * @param {string} code
+ * @param {string[]} codes
+ * @param {Function} compareFn
+ * @returns {boolean}
+ */
+function areAllCodesCompatible(code, codes, compareFn) {
   for (const c of codes) {
-    if (!fn(code, c)) return false
+    if (!compareFn(code, c)) return false
   }
 
   return true
+}
+
+const explain = {
+  allCodesCompatible: (action, existingStack) =>
+    `  ${action.code} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
+  allCodesNotCompatible: (action, existingStack) =>
+    `  ${action.code} is not compatible with all of: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
+  addedToStack: (action, existingStack) =>
+    `  Added ${action.code} to Stack ${existingStack.stackNumber} with area ${existingStack.area}`,
+  remainingAreaLessThanStack: (action, currentArea, stack) =>
+    `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area}), split needed`,
+  stackCreated: (stackNumber, actionCodes, area) =>
+    `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`,
+  shrinkStack: (stack, action) =>
+    `  Shrinking Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
 }
 
 export function createActionStacks(
@@ -33,45 +55,42 @@ export function createActionStacks(
   })
 
   for (const action of sortedActions) {
-    let currentArea = action.area
+    let remainingAreaForAction = action.area
 
     explanations.push(`Adding ${action.code} (area ${action.area})`)
 
-    for (const stack of stacks) {
-      if (
+    for (const existingStack of stacks) {
+      const actionIsCompatibleWithAllActionsInExistingStack =
         areAllCodesCompatible(
           action.code,
-          stack.actionCodes,
+          existingStack.actionCodes,
           compatibilityCheckFn
         )
-      ) {
-        explanations.push(
-          `  ${action.code} is compatible with: ${stack.actionCodes.join(', ')} in Stack ${stack.stackNumber}`
-        )
 
-        if (currentArea >= stack.area) {
-          stack.actionCodes.push(action.code)
-          currentArea -= stack.area
-          explanations.push(
-            `  Added ${action.code} to Stack ${stack.stackNumber} with area ${stack.area}`
-          )
+      if (actionIsCompatibleWithAllActionsInExistingStack) {
+        explanations.push(explain.allCodesCompatible(action, existingStack))
+
+        if (remainingAreaForAction >= existingStack.area) {
+          existingStack.actionCodes.push(action.code)
+          remainingAreaForAction -= existingStack.area
+          explanations.push(explain.addedToStack(action, existingStack))
         } else {
-          splitStacks(action, currentArea, stack)
+          splitStacks(action, remainingAreaForAction, existingStack)
 
-          currentArea = 0
+          remainingAreaForAction = 0
           break
         }
       } else {
-        explanations.push(
-          `  ${action.code} is not compatible with all of: ${stack.actionCodes.join(', ')} in Stack ${stack.stackNumber}`
-        )
+        explanations.push(explain.allCodesNotCompatible(action, existingStack))
       }
     }
 
-    if (currentArea > 0) {
+    const currentActionHasAreaNotAssignedToAnyStack = remainingAreaForAction > 0
+
+    if (currentActionHasAreaNotAssignedToAnyStack) {
       const { stack: newStack, explanation } = createStack(
         [action.code],
-        currentArea
+        remainingAreaForAction
       )
       stacks.push(newStack)
       explanations.push(explanation)
@@ -87,13 +106,13 @@ export function createActionStacks(
     stackNumber++
     return {
       stack: { stackNumber, actionCodes, area },
-      explanation: `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`
+      explanation: explain.stackCreated(stackNumber, actionCodes, area)
     }
   }
 
   function splitStacks(action, currentArea, stack) {
     explanations.push(
-      `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area})`
+      explain.remainingAreaLessThanStack(action, currentArea, stack)
     )
 
     const { stack: newStack, explanation: newStackExplanation } = createStack(
@@ -106,9 +125,7 @@ export function createActionStacks(
     stack.actionCodes.push(action.code)
     stack.area = currentArea
 
-    explanations.push(
-      `  Reducing Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`
-    )
+    explanations.push(explain.shrinkStack(stack, action))
     explanations.push(newStackExplanation)
   }
 }
