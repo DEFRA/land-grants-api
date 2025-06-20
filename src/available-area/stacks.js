@@ -1,21 +1,53 @@
-import { first } from 'lodash'
-
-/**
- * Checks if a code is compatible with all codes in a list using a provided function.
- * @param {string} code
- * @param {string[]} codes
- * @param {Function} compareFn
- * @returns {boolean}
- */
-function areAllCodesCompatible(code, codes, compareFn) {
-  for (const c of codes) {
-    if (!compareFn(code, c)) return false
+function makeCreateStack() {
+  let stackNumber = 0
+  function createStack(actionCodes, area) {
+    stackNumber++
+    return {
+      stack: { stackNumber, actionCodes, area },
+      explanation: explain.stackCreated(stackNumber, actionCodes, area)
+    }
   }
-
-  return true
+  return createStack
 }
 
-function checkCompatibility(action, stack, compatibilityCheckFn) {
+function splitStacks(
+  createStack,
+  stacks,
+  explanations,
+  action,
+  remainingAreaForAction
+) {
+  const newStacks = [...stacks]
+  const currentStack = newStacks.pop()
+
+  const newExplanations = [...explanations]
+  newExplanations.push(
+    explain.remainingAreaLessThanStack(
+      action,
+      remainingAreaForAction,
+      currentStack
+    )
+  )
+
+  const { stack: newStack, explanation: newStackExplanation } = createStack(
+    [...currentStack.actionCodes],
+    currentStack.area - remainingAreaForAction
+  )
+
+  currentStack.actionCodes.push(action.code)
+  currentStack.area = remainingAreaForAction
+
+  newStacks.push(currentStack)
+  newStacks.push(newStack)
+
+  newExplanations.push(explain.shrinkStack(currentStack, action))
+  newExplanations.push(newStackExplanation)
+
+  return { newExplanations, newStacks }
+}
+
+function checkCompatibility(action, stack, explanations, compatibilityCheckFn) {
+  const newExplanations = [...explanations]
   const compatibleCodes = []
   const incompatibleCodes = []
 
@@ -27,27 +59,27 @@ function checkCompatibility(action, stack, compatibilityCheckFn) {
     }
   }
 
-  const explanations = []
-
   if (compatibleCodes.length > 0) {
-    explanations.push(
+    newExplanations.push(
       explain.compatible(action.code, compatibleCodes, stack.stackNumber)
     )
   }
 
   if (incompatibleCodes.length > 0) {
-    explanations.push(
+    newExplanations.push(
       explain.notCompatible(action.code, incompatibleCodes, stack.stackNumber)
     )
   }
 
   return {
     allCompatible: incompatibleCodes.length === 0,
-    explanations
+    newExplanations
   }
 }
 
 const explain = {
+  noStacksNeeded: () => `No existing actions so no stacks are needed`,
+  addingAction: (action) => `Adding ${action.code} (area ${action.area})`,
   allCodesCompatible: (action, existingStack) =>
     `  ${action.code} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
   allCodesNotCompatible: (action, existingStack) =>
@@ -70,9 +102,9 @@ export function createActionStacks(
   actions,
   compatibilityCheckFn = () => false
 ) {
-  const stacks = []
-  const explanations = []
-  let stackNumber = 0
+  let stacks = []
+  let explanations = []
+  const createStack = makeCreateStack()
 
   if (!Array.isArray(actions)) {
     throw new Error('Actions must be an array')
@@ -80,7 +112,7 @@ export function createActionStacks(
 
   if (actions.length === 0) {
     return {
-      explanations: ['No existing actions so no stacks are needed'],
+      explanations: [explain.noStacksNeeded()],
       stacks: []
     }
   }
@@ -88,26 +120,25 @@ export function createActionStacks(
   // sort actions by area in ascending order
   // this ensures that smaller actions are considered first
   // which helps in filling stacks more efficiently
-  const sortedActions = actions.sort((a, b) => {
-    return a.area - b.area
-  })
+  const sortedActionsAsc = actions.sort((a, b) => a.area - b.area)
 
-  for (const action of sortedActions) {
+  for (const action of sortedActionsAsc) {
     let remainingAreaForAction = action.area
 
-    explanations.push(`Adding ${action.code} (area ${action.area})`)
+    explanations.push(explain.addingAction(action))
 
     for (const existingStack of stacks) {
-      const compatiblity = checkCompatibility(
+      const compatibility = checkCompatibility(
         action,
         existingStack,
+        explanations,
         compatibilityCheckFn
       )
 
       const actionIsCompatibleWithAllActionsInExistingStack =
-        compatiblity.allCompatible
+        compatibility.allCompatible
 
-      explanations.push(...compatiblity.explanations)
+      explanations = compatibility.newExplanations
 
       if (!actionIsCompatibleWithAllActionsInExistingStack) {
         continue
@@ -118,7 +149,16 @@ export function createActionStacks(
         remainingAreaForAction -= existingStack.area
         explanations.push(explain.addedToStack(action, existingStack))
       } else {
-        splitStacks(action, remainingAreaForAction, existingStack)
+        const { newExplanations, newStacks } = splitStacks(
+          createStack,
+          stacks,
+          explanations,
+          action,
+          remainingAreaForAction
+        )
+
+        explanations = newExplanations
+        stacks = newStacks
 
         remainingAreaForAction = 0
         break
@@ -140,32 +180,5 @@ export function createActionStacks(
   return {
     explanations,
     stacks
-  }
-
-  function createStack(actionCodes, area) {
-    stackNumber++
-    return {
-      stack: { stackNumber, actionCodes, area },
-      explanation: explain.stackCreated(stackNumber, actionCodes, area)
-    }
-  }
-
-  function splitStacks(action, currentArea, stack) {
-    explanations.push(
-      explain.remainingAreaLessThanStack(action, currentArea, stack)
-    )
-
-    const { stack: newStack, explanation: newStackExplanation } = createStack(
-      [...stack.actionCodes],
-      stack.area - currentArea
-    )
-
-    stacks.push(newStack)
-
-    stack.actionCodes.push(action.code)
-    stack.area = currentArea
-
-    explanations.push(explain.shrinkStack(stack, action))
-    explanations.push(newStackExplanation)
   }
 }
