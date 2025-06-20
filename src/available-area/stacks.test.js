@@ -211,8 +211,8 @@ describe('Stacks', function () {
             '  C is compatible with: A in Stack 1',
             '  Added C to Stack 1 with area 3',
             '  C is compatible with: B in Stack 2',
-            '  Remaining area of C is 6, this is less than the area of Stack 2 (8)',
-            '  Reducing Stack 2 area to 6 and adding C to it',
+            '  Remaining area of C is 6, this is less than the area of Stack 2 (8), split needed',
+            '  Shrinking Stack 2 area to 6 and adding C to it',
             '  Created Stack 3 for B with area 2'
           ],
           stacks: [
