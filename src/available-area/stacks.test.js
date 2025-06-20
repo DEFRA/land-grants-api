@@ -226,6 +226,76 @@ describe('Stacks', function () {
           C: ['B']
         })
       }
+    ],
+    [
+      'CIPM4: Real world example',
+      {
+        existingActionsCompatibleByLandCover: [
+          { code: 'SW1', area: 4600 },
+          { code: 'AB1', area: 5000 },
+          { code: 'PRF1', area: 87218 },
+          { code: 'SOH1', area: 91818 },
+          { code: 'CSAM1', area: 93555 }
+        ],
+        expectedResult: {
+          explanations: [
+            'Adding SW1 (area 4600)',
+            '  Created Stack 1 for SW1 with area 4600',
+            'Adding AB1 (area 5000)',
+            '  AB1 is not compatible with: SW1 in Stack 1',
+            '  Created Stack 2 for AB1 with area 5000',
+            'Adding PRF1 (area 87218)',
+            '  PRF1 is not compatible with: SW1 in Stack 1',
+            '  PRF1 is compatible with: AB1 in Stack 2',
+            '  Added PRF1 to Stack 2 with area 5000',
+            '  Created Stack 3 for PRF1 with area 82218',
+            'Adding SOH1 (area 91818)',
+            '  SOH1 is not compatible with: SW1 in Stack 1',
+            '  SOH1 is compatible with: AB1, PRF1 in Stack 2',
+            '  Added SOH1 to Stack 2 with area 5000',
+            '  SOH1 is compatible with: PRF1 in Stack 3',
+            '  Added SOH1 to Stack 3 with area 82218',
+            '  Created Stack 4 for SOH1 with area 4600',
+            'Adding CSAM1 (area 93555)',
+            '  CSAM1 is not compatible with: SW1 in Stack 1',
+            '  CSAM1 is compatible with: AB1, PRF1, SOH1 in Stack 2',
+            '  Added CSAM1 to Stack 2 with area 5000',
+            '  CSAM1 is compatible with: PRF1, SOH1 in Stack 3',
+            '  Added CSAM1 to Stack 3 with area 82218',
+            '  CSAM1 is compatible with: SOH1 in Stack 4',
+            '  Added CSAM1 to Stack 4 with area 4600',
+            '  Created Stack 5 for CSAM1 with area 1737'
+          ],
+          stacks: [
+            { stackNumber: 1, actionCodes: ['SW1'], area: 4600 },
+            {
+              stackNumber: 2,
+              actionCodes: ['AB1', 'PRF1', 'SOH1', 'CSAM1'],
+              area: 5000
+            },
+            {
+              stackNumber: 3,
+              actionCodes: ['PRF1', 'SOH1', 'CSAM1'],
+              area: 82218
+            },
+            {
+              stackNumber: 4,
+              actionCodes: ['SOH1', 'CSAM1'],
+              area: 4600
+            },
+            {
+              stackNumber: 5,
+              actionCodes: ['CSAM1'],
+              area: 1737
+            }
+          ]
+        },
+        compatibilityCheckFn: makeCompatibilityCheckFn({
+          AB1: ['CSAM1', 'PRF1', 'SOH1'],
+          CSAM1: ['PRF1', 'SOH1'],
+          PRF1: ['SOH1']
+        })
+      }
     ]
   ]
 
