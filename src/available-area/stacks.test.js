@@ -116,7 +116,7 @@ describe('Stacks', function () {
             'Adding UPL2 (area 8)',
             '  Created Stack 1 for UPL2 with area 8',
             'Adding UPL1 (area 9)',
-            '  UPL1 is not compatible with all of: UPL2 in Stack 1',
+            '  UPL1 is not compatible with: UPL2 in Stack 1',
             '  Created Stack 2 for UPL1 with area 9'
           ],
           stacks: [
@@ -140,11 +140,11 @@ describe('Stacks', function () {
             'Adding A (area 3)',
             '  Created Stack 1 for A with area 3',
             'Adding C (area 8)',
-            '  C is not compatible with all of: A in Stack 1',
+            '  C is not compatible with: A in Stack 1',
             '  Created Stack 2 for C with area 8',
             'Adding B (area 9)',
-            '  B is not compatible with all of: A in Stack 1',
-            '  B is not compatible with all of: C in Stack 2',
+            '  B is not compatible with: A in Stack 1',
+            '  B is not compatible with: C in Stack 2',
             '  Created Stack 3 for B with area 9'
           ],
           stacks: [
@@ -205,7 +205,7 @@ describe('Stacks', function () {
             'Adding A (area 3)',
             '  Created Stack 1 for A with area 3',
             'Adding B (area 8)',
-            '  B is not compatible with all of: A in Stack 1',
+            '  B is not compatible with: A in Stack 1',
             '  Created Stack 2 for B with area 8',
             'Adding C (area 9)',
             '  C is compatible with: A in Stack 1',
