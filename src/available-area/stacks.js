@@ -1,10 +1,12 @@
+const formatSqmToHa = (value) => `${value / 10000} ha`
+
 function makeCreateStack() {
   let stackNumber = 0
-  function createStack(actionCodes, area) {
+  function createStack(actionCodes, areaSqm) {
     stackNumber++
     return {
-      stack: { stackNumber, actionCodes, area },
-      explanation: explain.stackCreated(stackNumber, actionCodes, area)
+      stack: { stackNumber, actionCodes, areaSqm },
+      explanation: explain.stackCreated(stackNumber, actionCodes, areaSqm)
     }
   }
   return createStack
@@ -31,11 +33,11 @@ function splitStacks(
 
   const { stack: newStack, explanation: newStackExplanation } = createStack(
     [...currentStack.actionCodes],
-    currentStack.area - remainingAreaForAction
+    currentStack.areaSqm - remainingAreaForAction
   )
 
   currentStack.actionCodes.push(action.code)
-  currentStack.area = remainingAreaForAction
+  currentStack.areaSqm = remainingAreaForAction
 
   newStacks.push(currentStack)
   newStacks.push(newStack)
@@ -79,19 +81,20 @@ function checkCompatibility(action, stack, explanations, compatibilityCheckFn) {
 
 const explain = {
   noStacksNeeded: () => `No existing actions so no stacks are needed`,
-  addingAction: (action) => `Adding ${action.code} (area ${action.area})`,
+  addingAction: (action) =>
+    `Adding ${action.code} (area ${formatSqmToHa(action.areaSqm)})`,
   allCodesCompatible: (action, existingStack) =>
     `  ${action.code} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
   allCodesNotCompatible: (action, existingStack) =>
     `  ${action.code} is not compatible with all of: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
   addedToStack: (action, existingStack) =>
-    `  Added ${action.code} to Stack ${existingStack.stackNumber} with area ${existingStack.area}`,
+    `  Added ${action.code} to Stack ${existingStack.stackNumber} with area ${formatSqmToHa(existingStack.areaSqm)}`,
   remainingAreaLessThanStack: (action, currentArea, stack) =>
-    `  Remaining area of ${action.code} is ${currentArea}, this is less than the area of Stack ${stack.stackNumber} (${stack.area}), split needed`,
-  stackCreated: (stackNumber, actionCodes, area) =>
-    `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${area}`,
+    `  Remaining area of ${action.code} is ${formatSqmToHa(currentArea)}, this is less than the area of Stack ${stack.stackNumber} (${formatSqmToHa(stack.areaSqm)}), split needed`,
+  stackCreated: (stackNumber, actionCodes, areaSqm) =>
+    `  Created Stack ${stackNumber} for ${actionCodes.join(', ')} with area ${formatSqmToHa(areaSqm)}`,
   shrinkStack: (stack, action) =>
-    `  Shrinking Stack ${stack.stackNumber} area to ${stack.area} and adding ${action.code} to it`,
+    `  Shrinking Stack ${stack.stackNumber} area to ${formatSqmToHa(stack.areaSqm)} and adding ${action.code} to it`,
   notCompatible: (code, incompatibleCodes, stackNumber) =>
     `  ${code} is not compatible with: ${incompatibleCodes.join(', ')} in Stack ${stackNumber}`,
   compatible: (code, compatibleCodes, stackNumber) =>
@@ -120,10 +123,10 @@ export function createActionStacks(
   // sort actions by area in ascending order
   // this ensures that smaller actions are considered first
   // which helps in filling stacks more efficiently
-  const sortedActionsAsc = actions.sort((a, b) => a.area - b.area)
+  const sortedActionsAsc = actions.sort((a, b) => a.areaSqm - b.areaSqm)
 
   for (const action of sortedActionsAsc) {
-    let remainingAreaForAction = action.area
+    let remainingAreaForAction = action.areaSqm
 
     explanations.push(explain.addingAction(action))
 
@@ -144,9 +147,9 @@ export function createActionStacks(
         continue
       }
 
-      if (remainingAreaForAction >= existingStack.area) {
+      if (remainingAreaForAction >= existingStack.areaSqm) {
         existingStack.actionCodes.push(action.code)
-        remainingAreaForAction -= existingStack.area
+        remainingAreaForAction -= existingStack.areaSqm
         explanations.push(explain.addedToStack(action, existingStack))
       } else {
         const { newExplanations, newStacks } = splitStacks(
