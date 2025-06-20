@@ -101,10 +101,7 @@ const explain = {
     `  ${code} is compatible with: ${compatibleCodes.join(', ')} in Stack ${stackNumber}`
 }
 
-export function createActionStacks(
-  actions,
-  compatibilityCheckFn = () => false
-) {
+export function stackActions(actions, compatibilityCheckFn = () => false) {
   let stacks = []
   let explanations = []
   const createStack = makeCreateStack()

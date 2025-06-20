@@ -1,4 +1,4 @@
-import { createActionStacks } from './stacks.js'
+import { stackActions } from './stackActions.js'
 
 function makeCompatibilityCheckFn(compatibilityMap) {
   return (action1, action2) => {
@@ -312,23 +312,20 @@ describe('Stacks', function () {
       }
     ) => {
       expect(
-        createActionStacks(
-          existingActionsCompatibleByLandCover,
-          compatibilityCheckFn
-        )
+        stackActions(existingActionsCompatibleByLandCover, compatibilityCheckFn)
       ).toEqual(expectedResult)
     }
   )
 
   test('should return appropriate error when non array is passed for actions', () => {
     expect(() => {
-      createActionStacks('not an array', () => true)
+      stackActions('not an array', () => true)
     }).toThrow('Actions must be an array')
   })
 
   test('should return appropriate error when null is passed for actions', () => {
     expect(() => {
-      createActionStacks(null, () => true)
+      stackActions(null, () => true)
     }).toThrow('Actions must be an array')
   })
 })
