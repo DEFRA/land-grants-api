@@ -51,7 +51,7 @@ The api uses [Liquidbase](https://docs.liquibase.com/home.html) for db migration
 
 ### Development
 
-In order to run the api, you will need `docker` installed, so please make sure this is running when starting the api.
+In order to run the api, you will need `docker` installed, so please make sure this is running when either running the setup or starting the api.
 
 To run the application in `development` mode run the following commands:
 
@@ -64,19 +64,10 @@ This script:
 - will start a dockerised postgres database
 - run the liquidbase migration, creating the tables
 - will start dockerised mongodb database
+- seed the postgres and mongodb databases
 
 ```bash
 npm run dev:setup
-```
-
-#### Load seed data
-
-This script will seed the postgres and mongodb databases
-
-You are only required to run this once, unless the seed data changes
-
-```bash
-npm run load:data
 ```
 
 #### Start the api
@@ -85,6 +76,16 @@ This script will start the api
 
 ```bash
 npm run dev
+```
+
+#### Reload seed data
+
+This script will seed the postgres and mongodb databases
+
+You are only required to run this when the seed data changes
+
+```bash
+npm run load:data
 ```
 
 ### Testing
