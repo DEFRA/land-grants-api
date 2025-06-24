@@ -5,9 +5,5 @@ projectRoot="$(a="/$0"; a=${a%/*}; a=${a:-.}; a=${a#/}/; cd "$a/.." || return; p
 cd "${projectRoot}"
 
 docker compose down
-docker compose -f compose.migrate.yml down
-docker compose -f compose.migrate.yml run --rm database-up
-
-docker compose \
-  -f compose.yml \
-  up $@
+docker compose up -d
+npm run load:data
