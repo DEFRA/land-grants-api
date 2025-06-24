@@ -36,16 +36,11 @@ export const postgresDb = {
     /**
      *
      * @param { import('@hapi/hapi').Server } server
-     * @param {{user: string, host: string, database: string, isLocal: boolean, disablePostgres: boolean, region: string, passwordForLocalDev?: string}} options
+     * @param {{user: string, host: string, database: string, isLocal: boolean, region: string, passwordForLocalDev?: string}} options
      * @returns {void}
      */
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
-
-      if (options.disablePostgres) {
-        server.logger.info('Skipping Postgres connection in test mode')
-        return
-      }
 
       const pool = new Pool({
         port: DEFAULT_PORT,
@@ -99,7 +94,6 @@ export const postgresDb = {
     passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
-    disablePostgres: config.get('disablePostgres'),
     loadPostgresData: config.get('loadPostgresData')
   }
 }
