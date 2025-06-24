@@ -3,14 +3,14 @@ import * as mockingoose from 'mockingoose'
 import { parcel } from '~/src/api/parcel/index.js'
 import actionModel from '~/src/api/actions/models/action.model.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
-import { getLandData } from '../../land/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
-jest.mock('../../land/queries/getLandData.query.js')
-jest.mock('../../land/queries/getParcelAvailableArea.query.js')
+jest.mock('../../parcel/queries/getLandData.query.js')
+jest.mock('../../parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
 
 const mockGetLandData = getLandData

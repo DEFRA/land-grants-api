@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 import { mockActions } from '../api/actions/fixtures/index.js'
-import { getParcelAvailableArea } from '../api/land/queries/getParcelAvailableArea.query.js'
+import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import {
   connectToTestDatbase,
   resetDatabase,

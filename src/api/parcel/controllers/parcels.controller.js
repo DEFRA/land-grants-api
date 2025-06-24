@@ -1,4 +1,3 @@
-import Joi from 'joi'
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
@@ -7,15 +6,15 @@ import {
   sizeTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import {
-  parcelIdSchema,
+  parcelsSchema,
   parcelsSuccessResponseSchema
 } from '~/src/api/parcel/schema/parcel.schema.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandData } from '../../land/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '../../land/queries/getParcelAvailableArea.query.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
@@ -32,10 +31,7 @@ const ParcelsController = {
     notes:
       'Returns data for multiple parcels and includes the requested fields',
     validate: {
-      payload: Joi.object({
-        parcelIds: Joi.array().items(parcelIdSchema).required(),
-        fields: Joi.array().items(Joi.string()).required()
-      })
+      payload: parcelsSchema
     },
     response: {
       status: {
