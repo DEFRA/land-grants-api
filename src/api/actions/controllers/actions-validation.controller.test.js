@@ -4,8 +4,8 @@ import { landactions } from '~/src/api/actions/index.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
-import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
@@ -13,8 +13,8 @@ import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
 jest.mock('~/src/api/actions/queries/getActions.query.js')
-jest.mock('~/src/api/land/queries/getParcelAvailableArea.query.js')
-jest.mock('~/src/api/land/queries/getLandData.query.js')
+jest.mock('~/src/api/parcel/queries/getParcelAvailableArea.query.js')
+jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
 jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
