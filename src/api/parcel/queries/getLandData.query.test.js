@@ -1,4 +1,4 @@
-import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
+import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
 describe('getLandData', () => {
   const mockLogger = {

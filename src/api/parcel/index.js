@@ -1,4 +1,4 @@
-import { ParcelController, ParcelsController } from './controllers/index.js'
+import { ParcelsController } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -8,11 +8,6 @@ const parcel = {
     name: 'parcels',
     register: (server) => {
       server.route([
-        {
-          method: 'GET',
-          path: '/parcels/{parcel}',
-          ...ParcelController
-        },
         {
           method: 'POST',
           path: '/parcels',

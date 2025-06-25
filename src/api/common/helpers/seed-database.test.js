@@ -17,7 +17,7 @@ jest.mock('~/src/api/common/models/index.js', () => {
   const mockInsertMany = jest.fn().mockResolvedValue(true)
 
   return {
-    'parcel-data': {
+    'action-data': {
       db: {
         dropCollection: mockDropCollection
       },
@@ -40,10 +40,10 @@ describe('seedDatabase', () => {
   test('successfully seeds the database when mongoose is connected', async () => {
     await seedDatabase(mockLogger)
 
-    expect(models['parcel-data'].db.dropCollection).toHaveBeenCalledTimes(1)
+    expect(models['action-data'].db.dropCollection).toHaveBeenCalledTimes(1)
 
-    expect(models['parcel-data'].insertMany).toHaveBeenCalledWith(
-      data['parcel-data']
+    expect(models['action-data'].insertMany).toHaveBeenCalledWith(
+      data['action-data']
     )
 
     expect(mockLogger.info).toHaveBeenCalledWith(
@@ -55,7 +55,7 @@ describe('seedDatabase', () => {
   })
 
   test('handles database error', async () => {
-    models['parcel-data'].insertMany.mockRejectedValueOnce(
+    models['action-data'].insertMany.mockRejectedValueOnce(
       new Error('DB insert error')
     )
 
@@ -63,7 +63,7 @@ describe('seedDatabase', () => {
 
     expect(mockLogger.error).toHaveBeenCalled()
 
-    expect(models['parcel-data'].insertMany).toHaveBeenCalled()
+    expect(models['action-data'].insertMany).toHaveBeenCalled()
   })
 
   test('waits for mongoose connection if not connected', async () => {
@@ -79,6 +79,6 @@ describe('seedDatabase', () => {
       'Waiting for mongoose to connect...'
     )
 
-    expect(models['parcel-data'].insertMany).toHaveBeenCalled()
+    expect(models['action-data'].insertMany).toHaveBeenCalled()
   })
 })

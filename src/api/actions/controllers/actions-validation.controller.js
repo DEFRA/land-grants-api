@@ -11,8 +11,8 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
-import { getLandData } from '~/src/api/land/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '~/src/api/land/queries/getParcelAvailableArea.query.js'
+import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
+import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
