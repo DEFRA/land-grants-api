@@ -9,9 +9,9 @@ https://github.com/DEFRA/farming-grants-docs
 The capabilities of the `land-grants-api` include:
 
 - [Working wiith qgis](docs/working-wiith-qgis.md)
-- [Available area calculation](docs/available-area-calculation)
-- [Land based grant application eligibility checks](docs/eligibility-checks)
-- [Grant payment calculations](docs/payment-calculation)
+- [Available area calculation](docs/available-area-calculation.md)
+- [Land based grant application eligibility checks](docs/eligibility-checks.md)
+- [Grant payment calculations](docs/payment-calculation.md)
 
 ## Requirements
 
@@ -47,7 +47,7 @@ npm install
 
 2. Copy these files to to the `src/api/common/migration` folder
 
-The api uses [Liquidbase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema
+The api uses [Liquibase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema
 
 ### Development
 
@@ -62,7 +62,7 @@ You are only required to run this once, unless the schema changes.
 This script:
 
 - will start a dockerised postgres database
-- run the liquidbase migration, creating the tables
+- run the liquibase migration, creating the tables
 - will start dockerised mongodb database
 - seed the postgres and mongodb databases
 
@@ -88,26 +88,34 @@ You are only required to run this when the seed data changes
 npm run load:data
 ```
 
+We can also run these individually for `postgres` and `mongo`
+
+```bash
+load:data:postgres
+```
+
+```bash
+load:data:mongo
+```
+
 ### Testing
 
 In order to run the `db tests` please make sure you have `docker` running
 
-This will run the unit tests.
+In order to run all the tests
+
+```bash
+npm run test
+```
+
+We can also run these individually for `unit` and `db`
 
 ```bash
 npm run test:unit
 ```
 
-This will run the db tests.
-
 ```bash
 npm run test:db
-```
-
-This will run the unit and db tests.
-
-```bash
-npm run test
 ```
 
 ## API endpoints
