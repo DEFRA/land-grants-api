@@ -54,4 +54,29 @@ describe('Calculate available area', () => {
       ]
     })
   })
+
+  test('should return 1 stack for two actions', async () => {
+    const actions = [
+      { code: 'CMOR1', areaSqm: 3 },
+      { code: 'UPL1', areaSqm: 3 }
+    ]
+    const result = await calculateAvailableArea(logger, actions)
+
+    expect(result).toEqual({
+      explanations: [
+        'Adding CMOR1 (area 0.0003 ha)',
+        '  Created Stack 1 for CMOR1 with area 0.0003 ha',
+        'Adding UPL1 (area 0.0003 ha)',
+        '  UPL1 is compatible with: CMOR1 in Stack 1',
+        '  Added UPL1 to Stack 1 with area 0.0003 ha'
+      ],
+      stacks: [
+        {
+          stackNumber: 1,
+          actionCodes: ['CMOR1', 'UPL1'],
+          areaSqm: 3
+        }
+      ]
+    })
+  })
 })

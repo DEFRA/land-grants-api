@@ -6,7 +6,7 @@ const createCompatibilityMatrix = async (actions, logger) => {
 
   return (action1, action2) => {
     return compatibilityMatrices.some(
-      (a) => a.optionCode === action1 && a.optionCodeCompat === action2
+      (a) => a.optionCode === action2 && a.optionCodeCompat === action1
     )
   }
 }
