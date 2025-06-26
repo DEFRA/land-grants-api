@@ -1,4 +1,4 @@
-import compatibilityMatrixModel from '~/src/api/actions/models/compatibilityMatrix.model.js'
+import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import compatibilityMatrix from '~/src/db-tests/fixtures/compatibility-matrix.json'
 import { compatibilitycodes } from '~/src/db-tests/fixtures/compatibilityCodes.js'

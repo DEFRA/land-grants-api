@@ -1,14 +1,14 @@
-import compatibilityMatrixModel from '~/src/api/actions/models/compatibilityMatrix.model.js'
+import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 
-async function getCompatibilityMatrix(code, logger) {
+async function getCompatibilityMatrix(codes, logger) {
   try {
     const matrix = await compatibilityMatrixModel
-      .find({ optionCode: code })
+      .find({ optionCode: { $in: codes } })
+      .select('-_id optionCode optionCodeCompat year')
+      .sort({ optionCodeCompat: 1 })
       .lean()
 
-    const filteredCodes = matrix.map((code) => code.optionCodeCompat)
-    const uniqueCodes = Array.from(new Set(filteredCodes))
-    return uniqueCodes.sort()
+    return matrix
   } catch (error) {
     logger.error(`Unable to get compatibility matrix`, error)
     throw error

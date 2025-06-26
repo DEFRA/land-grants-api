@@ -1,26 +1,26 @@
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-// import { stackActions } from './stackActions.js'
+import { stackActions } from './stackActions.js'
 
-// const compatibilityCheckFn = (compatibilityMatrix, action) => {
-//   return compatibilityMatrix.find((a) => a === action)
-// }
+const createCompatibilityMatrix = async (actions, logger) => {
+  const compatibilityMatrices = await getCompatibilityMatrix(actions, logger)
 
-export async function calculateAvailableArea(logger) {
-  // const actions = [
-  //   { code: 'CMOR1', areaSqm: 3 },
-  //   { code: 'UPL1', areaSqm: 8 },
-  //   { code: 'UPL2', areaSqm: 9 }
-  // ]
+  return (action1, action2) => {
+    return compatibilityMatrices.some(
+      (a) => a.optionCode === action1 && a.optionCodeCompat === action2
+    )
+  }
+}
 
-  const compatibilityMatrix = await getCompatibilityMatrix('CMOR1', logger)
+// where do we get the actions from?
+// 1. agreements
+// 2. actions submitted by the user as part of validation.
+// question, how do we test this work?
+// the get parcels endpoint will need agreements
+// the validation endpoint will submit actions, so this one can be tested.
 
-  // currently in stack actions we do not await compatibilityCheckFn
-  // might be better to pass compatibilityMatrix to stackActions, and then pass
-  // compatibilityMatrix into the compatibilityCheckFn, and just pass in one action
-
-  // const fn = await compatibilityCheckFn(compatibilityMatrix, 'CMOR1', 'UPL1')
-  // const result = stackActions(actions, compatibilityMatrix, fn)
-
-  // return result
-  return compatibilityMatrix
+export async function calculateAvailableArea(logger, actions) {
+  const codes = actions.map((a) => a.code)
+  const compatibilityCheckFn = await createCompatibilityMatrix(codes, logger)
+  const result = stackActions(actions, compatibilityCheckFn)
+  return result
 }
