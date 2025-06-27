@@ -21,8 +21,7 @@ describe('actionTransformer', () => {
   test('should transform action with available area', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://www.gov.uk'
+      description: 'Test Action'
     }
     const totalAvailableArea = 500
 
@@ -34,16 +33,14 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      },
-      guidanceUrl: 'https://www.gov.uk'
+      }
     })
   })
 
   test('should transform action without available area when totalAvailableArea is null', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://www.gov.uk'
+      description: 'Test Action'
     }
     const totalAvailableArea = null
 
@@ -52,16 +49,14 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      guidanceUrl: 'https://www.gov.uk'
+      availableArea: undefined
     })
   })
 
   test('should transform action without available area when totalAvailableArea is undefined', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://www.gov.uk'
+      description: 'Test Action'
     }
 
     const result = actionTransformer(action)
@@ -69,16 +64,14 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      guidanceUrl: 'https://www.gov.uk'
+      availableArea: undefined
     })
   })
 
   test('should transform action with available area when totalAvailableArea is 0', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://www.gov.uk'
+      description: 'Test Action'
     }
     const totalAvailableArea = 0
 
@@ -90,8 +83,7 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 0
-      },
-      guidanceUrl: 'https://www.gov.uk'
+      }
     })
   })
 })

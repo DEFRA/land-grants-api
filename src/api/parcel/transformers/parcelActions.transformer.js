@@ -25,8 +25,7 @@ function actionTransformer(action, totalAvailableArea) {
     availableArea:
       totalAvailableArea || totalAvailableArea === 0
         ? sizeTransformer(totalAvailableArea)
-        : undefined,
-    guidanceUrl: action.guidanceUrl
+        : undefined
   }
 }
 
