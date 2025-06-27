@@ -1,4 +1,8 @@
 /**
+ * @import { Action, Stack, CompatibilityCheckFn } from './available-area.d.js'
+ */
+
+/**
  * Converts square meters to hectares and formats as a string
  * @param {number} value - Area in square meters
  * @returns {string} Formatted string with area in hectares
@@ -7,7 +11,7 @@ const formatSqmToHa = (value) => `${value / 10000} ha`
 
 /**
  * Creates a factory function for creating stacks with incrementing stack numbers
- * @returns {Function} A createStack function that maintains stack numbering
+ * @returns {CompatibilityCheckFn} A createStack function that maintains stack numbering
  */
 function makeCreateStack() {
   let stackNumber = 0
@@ -16,7 +20,7 @@ function makeCreateStack() {
    * Creates a new stack with action codes and area
    * @param {string[]} actionCodes - Array of action codes for this stack
    * @param {number} areaSqm - Area of the stack in square meters
-   * @returns {{stack: {stackNumber: number, actionCodes: string[], areaSqm: number}, explanation: string}} object containing the stack and explanation
+   * @returns {{stack: Stack, explanation: string}} object containing the stack and explanation
    */
   function createStack(actionCodes, areaSqm) {
     stackNumber++
@@ -31,13 +35,11 @@ function makeCreateStack() {
 /**
  * Splits the last item of stacks into two new stacks, allocating the area in remainingAreaForAction within the two
  * @param {Function} createStack - Factory function for creating new stacks
- * @param {object[]} stacks - Array of existing stacks
+ * @param {Stack[]} stacks - Array of existing stacks
  * @param {string[]} explanations - Array of explanation strings
- * @param {object} action - The action being processed
- * @param {string} action.code - Action code identifier
- * @param {number} action.areaSqm - Area of the action in square meters
+ * @param {Action} action - The action being processed
  * @param {number} remainingAreaForAction - Remaining area to be allocated for the action
- * @returns {{newExplanations: string[], newStacks: object[]}} object containing updated explanations and stacks
+ * @returns {{newExplanations: string[], newStacks: Stack[]}} object containing updated explanations and stacks
  */
 function splitStacks(
   createStack,
@@ -48,6 +50,10 @@ function splitStacks(
 ) {
   const newStacks = [...stacks]
   const currentStack = newStacks.pop()
+
+  if (currentStack == null) {
+    throw new Error('No stacks available to split')
+  }
 
   const newExplanations = [...explanations]
   newExplanations.push(
@@ -77,14 +83,10 @@ function splitStacks(
 
 /**
  * Checks compatibility between an action and all actions in a stack, based on a compatibility check function
- * @param {object} action - The action to check compatibility for
- * @param {string} action.code - Action code identifier
- * @param {number} action.areaSqm - Area of the action in square meters
- * @param {object} stack - The stack to check against
- * @param {string[]} stack.actionCodes - Array of action codes in the stack
- * @param {number} stack.stackNumber - Stack identifier number
+ * @param {Action} action - The action to check compatibility for
+ * @param {Stack} stack - The stack to check against
  * @param {string[]} explanations - Current array of explanations
- * @param {Function} compatibilityCheckFn - Function to check if two action codes are compatible
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
  * @returns {{allCompatible: boolean, newExplanations: string[]}} Compatibility check results
  */
 function checkCompatibility(action, stack, explanations, compatibilityCheckFn) {
@@ -130,9 +132,7 @@ const explain = {
 
   /**
    * Generates explanation when adding an action
-   * @param {object} action - Action being added
-   * @param {string} action.code - Action code
-   * @param {number} action.areaSqm - Action area in square meters
+   * @param {Action} action - Action being added
    * @returns {string} Explanation message
    */
   addingAction: (action) =>
@@ -140,11 +140,8 @@ const explain = {
 
   /**
    * Generates explanation when action is compatible with all codes in a stack
-   * @param {object} action - Action being checked
-   * @param {string} action.code - Action code
-   * @param {object} existingStack - Stack being checked against
-   * @param {string[]} existingStack.actionCodes - Action codes in the stack
-   * @param {number} existingStack.stackNumber - Stack identifier
+   * @param {Action} action - Action being checked
+   * @param {Stack} existingStack - Stack being checked against
    * @returns {string} Explanation message
    */
   allCodesCompatible: (action, existingStack) =>
@@ -152,11 +149,8 @@ const explain = {
 
   /**
    * Generates explanation when action is not compatible with all codes in a stack
-   * @param {object} action - Action being checked
-   * @param {string} action.code - Action code
-   * @param {object} existingStack - Stack being checked against
-   * @param {string[]} existingStack.actionCodes - Action codes in the stack
-   * @param {number} existingStack.stackNumber - Stack identifier
+   * @param {Action} action - Action being checked
+   * @param {Stack} existingStack - Stack being checked against
    * @returns {string} Explanation message
    */
   allCodesNotCompatible: (action, existingStack) =>
@@ -164,11 +158,8 @@ const explain = {
 
   /**
    * Generates explanation when action is added to an existing stack
-   * @param {object} action - Action being added
-   * @param {string} action.code - Action code
-   * @param {object} existingStack - Stack the action was added to
-   * @param {number} existingStack.stackNumber - Stack identifier
-   * @param {number} existingStack.areaSqm - Stack area in square meters
+   * @param {Action} action - Action being added
+   * @param {Stack} existingStack - Stack the action was added to
    * @returns {string} Explanation message
    */
   addedToStack: (action, existingStack) =>
@@ -176,12 +167,9 @@ const explain = {
 
   /**
    * Generates explanation when remaining area is less than stack area, requiring split
-   * @param {object} action - Action being processed
-   * @param {string} action.code - Action code
+   * @param {Action} action - Action being processed
    * @param {number} currentArea - Remaining area for the action
-   * @param {object} stack - Stack that needs to be split
-   * @param {number} stack.stackNumber - Stack identifier
-   * @param {number} stack.areaSqm - Stack area in square meters
+   * @param {Stack} stack - Stack that needs to be split
    * @returns {string} Explanation message
    */
   remainingAreaLessThanStack: (action, currentArea, stack) =>
@@ -199,11 +187,8 @@ const explain = {
 
   /**
    * Generates explanation when a stack is shrunk and an action is added
-   * @param {object} stack - Stack being shrunk
-   * @param {number} stack.stackNumber - Stack identifier
-   * @param {number} stack.areaSqm - New area of the stack after shrinking
-   * @param {object} action - Action being added
-   * @param {string} action.code - Action code
+   * @param {Stack} stack - Stack being shrunk
+   * @param {Action} action - Action being added
    * @returns {string} Explanation message
    */
   shrinkStack: (stack, action) =>
@@ -232,11 +217,9 @@ const explain = {
 
 /**
  * Main function that organizes actions into stacks based on compatibility and area constraints
- * @param {object[]} actions - Array of actions to be stacked
- * @param {string} actions[].code - Unique identifier for the action
- * @param {number} actions[].areaSqm - Area of the action in square meters
- * @param {Function} compatibilityCheckFn - Function to check if two action codes are compatible
- * @returns {{explanations: string[], stacks: {stackNumber: number, actionCodes: string[], areaSqm: number}[]}}
+ * @param {Action[]} actions - Array of actions to be stacked
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
+ * @returns {{explanations: string[], stacks: Stack[]}}
  * @throws {Error} Throws error if actions parameter is not an array
  */
 export function stackActions(actions, compatibilityCheckFn = () => false) {

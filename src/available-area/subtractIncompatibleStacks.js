@@ -1,8 +1,12 @@
 /**
+ * @import { Action, Stack, CompatibilityCheckFn } from './available-area.d.js'
+ */
+
+/**
  * Checks if all action codes in an array are compatible with a given code, according to a compatibility check function
  * @param {string} code - The action code to check compatibility against
  * @param {string[]} codes - Array of action codes to check
- * @param {Function} compatibilityCheckFn - Function to check if two action codes are compatible
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
  * @returns {boolean} true if all codes are compatible with the given code
  */
 function allActionCodesAreCompatible(code, codes, compatibilityCheckFn) {
@@ -13,8 +17,8 @@ function allActionCodesAreCompatible(code, codes, compatibilityCheckFn) {
  * Validates input parameters for the subtractIncompatibleStacks function
  * @param {string} actionCodeAppliedFor - Action code being applied for
  * @param {number} totalValidLandCoverSqm - Total valid land cover area in square meters
- * @param {object[]} stacks - Array of stack objects
- * @param {Function} compatibilityCheckFn - Function to check action code compatibility
+ * @param {Stack[]} stacks - Array of stack objects
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check action code compatibility
  * @throws {Error} Throws error if any parameter is invalid
  */
 function validateInputParams(
@@ -44,10 +48,8 @@ function validateInputParams(
  * Calculates remaining land cover area after subtracting incompatible stacks
  * @param {string} actionCodeAppliedFor - Action code being applied for
  * @param {number} totalValidLandCoverSqm - Total valid land cover area in square meters
- * @param {object[]} stacks - Array of stack objects containing actionCodes and areaSqm
- * @param {string[]} stacks[].actionCodes - Array of action codes in the stack
- * @param {number} stacks[].areaSqm - Area of the stack in square meters
- * @param {Function} compatibilityCheckFn - Function to check if two action codes are compatible
+ * @param {Stack[]} stacks - Array of stack objects containing actionCodes and areaSqm
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
  * @returns {number} Remaining land cover area after subtracting incompatible stacks
  * @throws {Error} Throws error if input parameters are invalid
  */
