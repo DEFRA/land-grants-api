@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom'
-import { getActions } from '~/src/api/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import {
   landActionSchema,
   landActionValidationResponseSchema
@@ -60,7 +60,7 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const actions = await getActions(request.logger)
+      const actions = await getEnabledActions(request.logger)
 
       if (!actions || actions?.length === 0) {
         const errorMessage = 'Actions not found'
