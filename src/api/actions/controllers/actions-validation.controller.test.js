@@ -1,7 +1,7 @@
 import Hapi from '@hapi/hapi'
 import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 import { landactions } from '~/src/api/actions/index.js'
-import { getActions } from '~/src/api/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
@@ -72,7 +72,7 @@ describe('Actions validation controller', () => {
         intersections: { moorland: { intersectingAreaPercentage: 50 } }
       }
     })
-    getActions.mockResolvedValue([mockActionData])
+    getEnabledActions.mockResolvedValue([mockActionData])
     getLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
     executeRules.mockReturnValue({
       passed: true,
@@ -110,7 +110,7 @@ describe('Actions validation controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(getActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(getEnabledActions).toHaveBeenCalledWith(expect.any(Object))
       expect(getLandCoverCodesForCodes).toHaveBeenCalledWith(
         mockActionData.landCoverClassCodes,
         expect.any(Object)
@@ -200,7 +200,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getActions.mockResolvedValue([])
+      getEnabledActions.mockResolvedValue([])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -219,7 +219,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getActions.mockResolvedValue([
+      getEnabledActions.mockResolvedValue([
         {
           code: 'BND1',
           rules: [],
@@ -324,7 +324,9 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getActions.mockRejectedValue(new Error('Failed to retrieve actions'))
+      getEnabledActions.mockRejectedValue(
+        new Error('Failed to retrieve actions')
+      )
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -390,7 +392,7 @@ describe('Actions validation controller', () => {
         landCoverClassCodes: ['130', '240']
       }
 
-      getActions.mockResolvedValue([mockActionData, mockActionData2])
+      getEnabledActions.mockResolvedValue([mockActionData, mockActionData2])
 
       executeRules
         .mockReturnValueOnce({

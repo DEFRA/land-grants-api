@@ -3,6 +3,7 @@ import { applicationUnitOfMeasurement } from '../measurement.js'
 export default [
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
@@ -41,6 +42,7 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
@@ -78,6 +80,7 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
@@ -115,6 +118,7 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
@@ -152,6 +156,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL4',
     description:
@@ -166,6 +171,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL5',
     description:
@@ -180,6 +186,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL6',
     description:
@@ -194,6 +201,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL7',
     description:
@@ -208,6 +216,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL8',
     description:
@@ -222,6 +231,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL9',
     description:
@@ -236,6 +246,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'SPM4',
     description:
@@ -250,6 +261,7 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'SPM5',
     description:
@@ -260,6 +272,35 @@ export default [
       ratePerAgreementPerYearGbp: 0
     },
     landCoverClassCodes: [],
+    rules: []
+  },
+  {
+    version: 1,
+    enabled: false,
+    startDate: '2025-01-01',
+    code: 'CSAM1',
+    description:
+      'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
+    applicationUnitOfMeasurement,
+    guidanceUrl: 'NA',
+    payment: {
+      ratePerUnitGbp: 0,
+      ratePerAgreementPerYearGbp: 0
+    },
+    landCoverClassCodes: [
+      '110',
+      '111',
+      '112',
+      '117',
+      '118',
+      '121',
+      '130',
+      '131',
+      '140',
+      '141',
+      '142',
+      '143'
+    ],
     rules: []
   }
 ]
