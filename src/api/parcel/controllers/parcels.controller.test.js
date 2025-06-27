@@ -68,7 +68,6 @@ describe('Parcels controller', () => {
         {
           code: 'CMOR1',
           description: 'CMOR1: Assess moorland and produce a written record',
-          guidanceUrl: 'https://www.gov.uk/guidance/cmor1',
           availableArea: {
             unit: 'ha',
             value: 0.03

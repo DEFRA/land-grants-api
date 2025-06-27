@@ -35,7 +35,6 @@ const mockParcelWithActions = {
       {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        guidanceUrl: 'https://www.gov.uk/guidance/cmor1',
         availableArea: {
           unit: applicationUnitOfMeasurement,
           value: applicationUnitOfMeasurement === 'sqm' ? 200 : 0.02

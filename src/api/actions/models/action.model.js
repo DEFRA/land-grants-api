@@ -9,7 +9,6 @@ const schema = new mongoose.Schema(
     code: { type: String, required: true },
     description: { type: String, required: true },
     applicationUnitOfMeasurement: { type: String, required: true },
-    guidanceUrl: { type: String, required: true },
     payment: {
       ratePerUnitGbp: { type: Number },
       ratePerAgreementPerYearGbp: { type: Number }
