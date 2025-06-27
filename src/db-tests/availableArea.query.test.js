@@ -73,7 +73,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe(0.54170289)
+    expect(availableArea).toBe(5417.028883865481)
   })
 
   test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
@@ -89,7 +89,7 @@ describe('Available Area query', () => {
       logger
     )
 
-    expect(availableArea).toBe(0.57025438)
+    expect(availableArea).toBe(5702.543843742915)
   })
 
   test('should return 0 available area when sheetId not found in the system', async () => {

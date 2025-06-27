@@ -1,5 +1,3 @@
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-
 /**
  * Get available area of a land parcel excluding specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
@@ -58,8 +56,7 @@ async function getParcelAvailableArea(
       `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} : query response: ${JSON.stringify(result.rows)}`
     )
 
-    const area = result.rows[0]?.total_land_cover_area
-    return sqmToHaRounded(area)
+    return result?.rows[0]?.total_land_cover_area || 0
   } catch (err) {
     logger.error(
       `Error calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} ${err.message}, ${err.stack}`
