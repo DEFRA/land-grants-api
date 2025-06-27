@@ -11,8 +11,8 @@ import {
 let connection
 
 const logger = {
-  info: console.info,
-  error: console.error
+  info: jest.fn(),
+  error: jest.fn()
 }
 
 describe('Available Area query', () => {
