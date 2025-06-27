@@ -3,13 +3,14 @@ import actionModel from '~/src/api/actions/models/action.model.js'
 /**
  * Get all actions
  * @param {object} logger - The logger
+ * @param {string[]} codes - The codes to get
  * @returns {object} The actions
  */
-async function getActions(logger) {
+async function getActions(logger, codes = ['CMOR1', 'UPL1', 'UPL2', 'UPL3']) {
   try {
     const actions = await actionModel
       .find({
-        code: { $in: ['CMOR1', 'UPL1', 'UPL2', 'UPL3'] }
+        code: { $in: codes }
       })
       .lean()
     return actions

@@ -1,0 +1,272 @@
+[
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF5",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF5",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF6",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF6",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF8",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HEF8",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HS4",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HS4",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HS5",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "HS5",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "OFM3",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "OFM3",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "OT6",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "OT6",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SP7",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SP7",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SPM4",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SPM4",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SPM5",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SPM5",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SW15",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SW15",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SW16",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "SW16",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP1",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP1",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP2",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP2",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP3",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UP3",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL1",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL1",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL10",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL10",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL2",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL2",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL3",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL3",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL4",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL4",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL5",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL5",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL6",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL6",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL7",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL7",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL8",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL8",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL9",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "UPL9",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "WD7",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "WD7",
+    "year": "2025"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "WD8",
+    "year": "2024"
+  },
+  {
+    "optionCode": "CMOR1",
+    "optionCodeCompat": "WD8",
+    "year": "2025"
+  }
+]
