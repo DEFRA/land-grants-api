@@ -5,7 +5,7 @@ import actionModel from '~/src/api/actions/models/action.model.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCovers.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 

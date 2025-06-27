@@ -10,7 +10,7 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCovers.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
