@@ -5,6 +5,7 @@ import { startServer } from '~/src/api/common/helpers/start-server.js'
 
 await startServer()
 
+// checking github permissions
 process.on('unhandledRejection', (error) => {
   const logger = createLogger()
   logger.info('Unhandled rejection')
