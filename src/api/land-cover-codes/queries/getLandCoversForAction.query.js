@@ -1,4 +1,4 @@
-import ActionLandCovers from '~/src/api/land-cover-codes/models/action-land-covers.model.js'
+import actionLandCoversModel from '~/src/api/land-cover-codes/models/action-land-covers.model.js'
 
 /**
  * Get all land cover codes
@@ -8,9 +8,11 @@ import ActionLandCovers from '~/src/api/land-cover-codes/models/action-land-cove
  */
 async function getLandCoversForAction(actionCode, logger) {
   try {
-    const actionLandCovers = await ActionLandCovers.find({
-      actionCode
-    }).lean()
+    const actionLandCovers = await actionLandCoversModel
+      .find({
+        actionCode
+      })
+      .lean()
 
     if (!actionLandCovers || actionLandCovers.length === 0) {
       logger.warn(`No land cover codes found for action code: ${actionCode}`)
