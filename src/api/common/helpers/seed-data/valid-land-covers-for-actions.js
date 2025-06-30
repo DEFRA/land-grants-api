@@ -1,3 +1,19 @@
+/**
+ * @typedef {object} ActionLandCover
+ * @property {string} landCoverCode - The code of the land cover.
+ * @property {string} landCoverClassCode - The class code of the land cover.
+ */
+
+/**
+ * @typedef {object} ActionLandCovers
+ * @property {string} actionCode - The code of the action.
+ * @property {Array<ActionLandCover>} landCovers - The land covers associated with the action.
+ */
+
+/**
+ * @type {Array<ActionLandCovers>}
+ * This array contains the land cover codes that are valid for each action
+ */
 export default [
   {
     actionCode: 'SPM5',
