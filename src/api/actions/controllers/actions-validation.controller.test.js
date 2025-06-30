@@ -3,7 +3,7 @@ import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 import { landactions } from '~/src/api/actions/index.js'
 import { getActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCovers.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
@@ -17,7 +17,7 @@ jest.mock('~/src/api/parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
-jest.mock('~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js')
 
 describe('Actions validation controller', () => {
   const server = Hapi.server()
@@ -27,7 +27,11 @@ describe('Actions validation controller', () => {
     landCoverClassCodes: ['130', '240']
   }
 
-  const mockLandCoverCodes = ['130', '240', '131', '241', '243']
+  const mockLandCoverCodes = [
+    { landCoverClassCode: '130', landCoverCode: '131' },
+    { landCoverClassCode: '240', landCoverCode: '241' },
+    { landCoverClassCode: '240', landCoverCode: '244' }
+  ]
   const mockLandParcelData = [
     {
       sheet_id: 'SX0679',
@@ -73,7 +77,7 @@ describe('Actions validation controller', () => {
       }
     })
     getActions.mockResolvedValue([mockActionData])
-    getLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
+    getLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
     executeRules.mockReturnValue({
       passed: true,
       results: []
@@ -111,8 +115,8 @@ describe('Actions validation controller', () => {
         expect.any(Object)
       )
       expect(getActions).toHaveBeenCalledWith(expect.any(Object))
-      expect(getLandCoverCodesForCodes).toHaveBeenCalledWith(
-        mockActionData.landCoverClassCodes,
+      expect(getLandCoversForAction).toHaveBeenCalledWith(
+        mockActionData.code,
         expect.any(Object)
       )
       expect(getMoorlandInterceptPercentage).toHaveBeenCalledWith(

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCovers.query.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import landCoverCodesModel from '../api/land-cover-codes/models/action-land-covers.model.js'
 import landCoverCodes from '../api/common/helpers/seed-data/action-land-covers.js'
 

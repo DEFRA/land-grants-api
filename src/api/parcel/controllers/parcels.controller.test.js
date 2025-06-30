@@ -5,17 +5,17 @@ import actionModel from '~/src/api/actions/models/action.model.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCovers.query.js'
+import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForAction.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../parcel/queries/getParcelAvailableArea.query.js')
-jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('../../land-cover-codes/queries/getLandCoversForAction.query.js')
 
 const mockGetLandData = getLandData
 const mockGetParcelAvailableArea = getParcelAvailableArea
-const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
+const mockGetLandCoversForAction = getLandCoversForAction
 
 describe('Parcels controller', () => {
   const server = Hapi.server()
@@ -53,7 +53,7 @@ describe('Parcels controller', () => {
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
     mockGetParcelAvailableArea.mockResolvedValue(sqmToHaRounded(300))
-    mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
+    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
   })
 
   const expectedOutput = [

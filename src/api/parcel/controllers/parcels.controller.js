@@ -15,7 +15,7 @@ import {
 } from '~/src/api/common/schema/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCovers.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
@@ -90,8 +90,8 @@ const ParcelsController = {
               let transformed = actionTransformer(action)
 
               if (fields.includes('actions.availableArea')) {
-                const landCoverCodes = await getLandCoverCodesForCodes(
-                  action.landCoverClassCodes,
+                const landCoverCodes = await getLandCoversForAction(
+                  action.code,
                   request.logger
                 )
                 request.logger.info(

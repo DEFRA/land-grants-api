@@ -10,7 +10,7 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCovers.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
@@ -68,8 +68,8 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const landCoverCodes = await getLandCoverCodesForCodes(
-        actions[0].landCoverClassCodes,
+      const landCoverCodes = await getLandCoversForAction(
+        actions[0].code,
         request.logger
       )
 
