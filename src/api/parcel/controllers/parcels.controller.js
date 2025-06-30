@@ -16,7 +16,7 @@ import {
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
-import { getActions } from '../../actions/queries/index.js'
+import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
@@ -77,7 +77,7 @@ const ParcelsController = {
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {
-          const actions = await getActions(request.logger)
+          const actions = await getEnabledActions(request.logger)
 
           if (!actions || actions?.length === 0) {
             const errorMessage = 'Actions not found'

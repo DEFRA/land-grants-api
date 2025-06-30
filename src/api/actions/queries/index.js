@@ -1,3 +1,3 @@
-import { getActions } from './getActions.query.js'
+import { getEnabledActions } from './getActions.query.js'
 
-export { getActions }
+export { getEnabledActions }
