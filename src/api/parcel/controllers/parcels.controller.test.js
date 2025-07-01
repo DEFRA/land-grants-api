@@ -4,7 +4,7 @@ import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
-import { getActions } from '../../actions/queries/index.js'
+import { getEnabledActions } from '../../actions/queries/index.js'
 import {
   createCompatibilityMatrix,
   calculateAvailableArea
@@ -20,7 +20,7 @@ jest.mock('~/src/available-area/index.js')
 const mockGetLandData = getLandData
 const mockGetParcelAvailableArea = getParcelAvailableArea
 const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
-const mockGetActions = getActions
+const mockGetEnabledActions = getEnabledActions
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockCalculateAvailableArea = calculateAvailableArea
 
@@ -70,7 +70,7 @@ describe('Parcels controller', () => {
     mockGetLandData.mockResolvedValue(mockLandParcelData)
     mockGetParcelAvailableArea.mockResolvedValue(300)
     mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
-    mockGetActions.mockResolvedValue(mockActions)
+    mockGetEnabledActions.mockResolvedValue(mockActions)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
@@ -128,7 +128,7 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
       expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
         sheetId,
         parcelId,
@@ -178,7 +178,7 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetActions).not.toHaveBeenCalled()
+      expect(mockGetEnabledActions).not.toHaveBeenCalled()
       expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
@@ -226,7 +226,7 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
       expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
@@ -282,8 +282,8 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      // Mock getActions to return null/empty
-      mockGetActions.mockResolvedValue(null)
+      // Mock getEnabledActions to return null/empty
+      mockGetEnabledActions.mockResolvedValue(null)
 
       const request = {
         method: 'POST',
@@ -309,7 +309,7 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockGetActions.mockRejectedValue(new Error('Database error'))
+      mockGetEnabledActions.mockRejectedValue(new Error('Database error'))
 
       const request = {
         method: 'POST',

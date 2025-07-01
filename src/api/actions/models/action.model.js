@@ -5,11 +5,11 @@ const collection = 'action-data'
 const schema = new mongoose.Schema(
   {
     version: { type: Number, required: true },
+    enabled: { type: Boolean, required: true, default: false },
     startDate: { type: String, required: true },
     code: { type: String, required: true },
     description: { type: String, required: true },
     applicationUnitOfMeasurement: { type: String, required: true },
-    guidanceUrl: { type: String, required: true },
     payment: {
       ratePerUnitGbp: { type: Number },
       ratePerAgreementPerYearGbp: { type: Number }

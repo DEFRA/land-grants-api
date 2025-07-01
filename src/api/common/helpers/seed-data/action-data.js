@@ -3,12 +3,11 @@ import { applicationUnitOfMeasurement } from '../measurement.js'
 export default [
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
     applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/cmor1-assess-moorland-and-produce-a-written-record',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -43,12 +42,11 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
     applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/upl1-moderate-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 20
     },
@@ -82,12 +80,11 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
     applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 53
     },
@@ -121,12 +118,11 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
     startDate: '2025-01-01',
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
     applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/upl3-limited-livestock-grazing-on-moorland',
     payment: {
       ratePerUnitGbp: 66
     },
@@ -160,12 +156,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL4',
     description:
       'UPL4: Keep cattle and ponies on moorland supplement (minimum 30% GLU)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -175,12 +171,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL5',
     description:
       'UPL5: Keep cattle and ponies on moorland supplement (minimum 70% GLU)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -190,12 +186,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL6',
     description:
       'UPL6: Keep cattle and ponies on moorland supplement (100% GLU)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -205,12 +201,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL7',
     description:
       'UPL7: Shepherding livestock on moorland (no required stock removal period)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -220,12 +216,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL8',
     description:
       'UPL8: Shepherding livestock on moorland (remove stock for at least 4 months)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -235,12 +231,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'UPL9',
     description:
       'UPL9: Shepherding livestock on moorland (remove stock for at least 6 months)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -250,12 +246,12 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'SPM4',
     description:
       'SPM4: Keep native breeds on extensively managed habitats supplement (50-80%)',
     applicationUnitOfMeasurement,
-    guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
@@ -265,17 +261,46 @@ export default [
   },
   {
     version: 1,
+    enabled: false,
     startDate: '2025-01-01',
     code: 'SPM5',
     description:
       'SPM5: Keep native breeds on extensively managed habitats supplement (more than 80%)',
+    applicationUnitOfMeasurement,
+    payment: {
+      ratePerUnitGbp: 0,
+      ratePerAgreementPerYearGbp: 0
+    },
+    landCoverClassCodes: [],
+    rules: []
+  },
+  {
+    version: 1,
+    enabled: false,
+    startDate: '2025-01-01',
+    code: 'CSAM1',
+    description:
+      'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
     applicationUnitOfMeasurement,
     guidanceUrl: 'NA',
     payment: {
       ratePerUnitGbp: 0,
       ratePerAgreementPerYearGbp: 0
     },
-    landCoverClassCodes: [],
+    landCoverClassCodes: [
+      '110',
+      '111',
+      '112',
+      '117',
+      '118',
+      '121',
+      '130',
+      '131',
+      '140',
+      '141',
+      '142',
+      '143'
+    ],
     rules: []
   }
 ]
