@@ -1,10 +1,10 @@
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
- * Get available area of a land parcel excluding specified land cover classes.
+ * Get available area of a land parcel matching specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
  * @param {string} parcelId - Parcel ID.
- * @param {object} landCoverClassCodes - Array of land cover class codes to exclude.
+ * @param {string[]} landCoverClassCodes - Array of land cover class codes to include.
  * @param {object} db - DB connection object
  * @param {object} logger - logger object
  * @returns {Promise<number>} Available area in square meters.
@@ -55,14 +55,14 @@ async function getParcelAvailableArea(
     ])
 
     logger.info(
-      `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} : query response: ${JSON.stringify(result.rows)}`
+      `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes.join(', ')} : query response: ${JSON.stringify(result.rows)}`
     )
 
     const area = result.rows[0]?.total_land_cover_area
     return sqmToHaRounded(area)
   } catch (err) {
     logger.error(
-      `Error calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} ${err.message}, ${err.stack}`
+      `Error calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes.join(', ')} ${err.message}, ${err.stack}`
     )
     throw err
   } finally {

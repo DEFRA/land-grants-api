@@ -18,6 +18,7 @@ import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableA
 import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import { mergeLandCoverCodes } from '../../land-cover-codes/services/merge-land-cover-codes.js'
 
 /**
  * ParcelsController
@@ -101,10 +102,13 @@ const ParcelsController = {
                     landCoverCodes
                   })}`
                 )
+
+                const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
+
                 const availableArea = await getParcelAvailableArea(
                   sheetId,
                   parcelId,
-                  landCoverCodes,
+                  mergedLandCoverCodes,
                   request.server.postgresDb,
                   request.logger
                 )

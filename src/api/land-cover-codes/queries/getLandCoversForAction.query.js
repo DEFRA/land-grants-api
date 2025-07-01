@@ -1,10 +1,14 @@
 import actionLandCoversModel from '~/src/api/land-cover-codes/models/action-land-covers.model.js'
 
 /**
+ * @import {LandCovers} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */
+
+/**
  * Get all land cover codes
  * @param {string} actionCode - The action code to get land cover codes for
  * @param {object} logger - The logger
- * @returns {Promise<{landCoverCode: string, landCoverClassCode: string}[]>} The land cover codes
+ * @returns {Promise<LandCovers[]>} The land cover codes
  */
 async function getLandCoversForAction(actionCode, logger) {
   try {

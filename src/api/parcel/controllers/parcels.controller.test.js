@@ -6,7 +6,7 @@ import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForAction.query.js'
-import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { mockValidLandCoversForAction } from '../../land-cover-codes/fixtures/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
@@ -53,7 +53,9 @@ describe('Parcels controller', () => {
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
     mockGetParcelAvailableArea.mockResolvedValue(sqmToHaRounded(300))
-    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
+    mockGetLandCoversForAction.mockResolvedValue(
+      mockValidLandCoversForAction[0].landCovers
+    )
   })
 
   const expectedOutput = [
