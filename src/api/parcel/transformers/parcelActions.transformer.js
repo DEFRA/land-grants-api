@@ -16,18 +16,28 @@ function sizeTransformer(area) {
  * Transform parcel and actions to land parcel and actions
  * @returns {object} The land action data with available area
  * @param {object} action - The actions to merge
- * @param {object} totalAvailableArea - Total Available Area
+ * @param {object} availableArea - Total Available Area
  */
-function actionTransformer(action, totalAvailableArea) {
-  return {
+function actionTransformer(action, availableArea, showResults = false) {
+  const response = {
     code: action.code,
     description: action.description,
     availableArea:
-      totalAvailableArea || totalAvailableArea === 0
-        ? sizeTransformer(totalAvailableArea)
-        : undefined,
-    guidanceUrl: action.guidanceUrl
+      availableArea?.availableAreaHectares ||
+      availableArea?.availableAreaHectares === 0
+        ? sizeTransformer(availableArea?.availableAreaHectares)
+        : undefined
   }
+
+  if (showResults) {
+    response.results = {
+      totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
+      stacks: availableArea?.stacks,
+      explanations: availableArea?.explanations
+    }
+  }
+
+  return response
 }
 
 /**

@@ -11,12 +11,10 @@ async function getLandData(sheetId, parcelId, db, logger) {
 
   try {
     logger.info(
-      `Connecting to DB to fetch info parcelId: ${parcelId} sheetId ${sheetId}`
+      `Connecting to DB to fetch info parcelId: ${sheetId}-${parcelId}`
     )
     client = await db.connect()
-    logger.info(
-      `Retrieving land parcels for parcelId: ${parcelId} sheetId ${sheetId}`
-    )
+    logger.info(`Retrieving land parcels for parcelId: ${sheetId}-${parcelId}`)
 
     const query =
       'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2'
@@ -24,7 +22,7 @@ async function getLandData(sheetId, parcelId, db, logger) {
 
     const result = await client.query(query, values)
     logger.info(
-      `Retrieved land parcels for parcelId:-  ${parcelId} sheetId ${sheetId} , ${result.rows}`
+      `Retrieved land parcels for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
     )
 
     return result.rows

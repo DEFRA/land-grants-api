@@ -43,7 +43,7 @@ async function getParcelAvailableArea(
     `
 
     logger.info(
-      `Executing Avaialble Area Calculation Query with values: ${JSON.stringify([sheetId, parcelId, landCoverClassCodes])}`
+      `Executing Avaialble Area Calculation for parcelId: ${sheetId}-${parcelId}`
     )
 
     const result = await client.query(avaialbleAreaCalculationQuery, [
@@ -52,14 +52,15 @@ async function getParcelAvailableArea(
       landCoverClassCodes
     ])
 
+    const totalLandCoverArea = result?.rows[0]?.total_land_cover_area || 0
     logger.info(
-      `Calculated area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} : query response: ${JSON.stringify(result.rows)}`
+      `Calculated area for parcelId: ${sheetId}-${parcelId}, result: ${totalLandCoverArea}`
     )
 
-    return result?.rows[0]?.total_land_cover_area || 0
+    return totalLandCoverArea
   } catch (err) {
     logger.error(
-      `Error calculating area for sheetId: ${sheetId}, parcelId: ${parcelId}, and cover codes: ${landCoverClassCodes} ${err.message}, ${err.stack}`
+      `Error calculating area for parcelId: ${sheetId}-${parcelId} ${err.message}, ${err.stack}`
     )
     throw err
   } finally {

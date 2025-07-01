@@ -15,11 +15,10 @@ const parcelActionsSchema = Joi.object({
       Joi.object({
         code: Joi.string().required(),
         description: Joi.string().required(),
-        guidanceUrl: Joi.string().required(),
         availableArea: Joi.object({
           unit: Joi.string().valid(applicationUnitOfMeasurement).required(),
           value: Joi.number().min(0).required()
-        }).required()
+        }).optional()
       }).label('action')
     )
     .required()
@@ -39,7 +38,11 @@ const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
   availableArea: availableAreaSchema.optional(),
-  guidanceUrl: Joi.string().required()
+  results: Joi.object({
+    totalValidLandCoverSqm: Joi.number().optional(),
+    stacks: Joi.array().optional(),
+    explanations: Joi.array().optional()
+  })
 })
 
 const parcelSchema = Joi.object({
@@ -55,8 +58,23 @@ const parcelSchema = Joi.object({
 const parcelsSchema = Joi.object({
   parcelIds: Joi.array().items(parcelIdSchema).required(),
   fields: Joi.array()
-    .items(Joi.string().valid('size', 'actions', 'actions.availableArea'))
-    .required()
+    .items(
+      Joi.string().valid(
+        'size',
+        'actions',
+        'actions.availableArea',
+        'actions.results'
+      )
+    )
+    .required(),
+  existingActions: Joi.array()
+    .items(
+      Joi.object({
+        code: Joi.string().required(),
+        areaSqm: Joi.number().required()
+      })
+    )
+    .optional()
 })
 
 const parcelsSuccessResponseSchema = Joi.object({

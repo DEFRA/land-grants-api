@@ -23,3 +23,45 @@ export const seedMongo = async (model, collection, data) => {
 export const closeMongo = async () => {
   await mongoose.disconnect()
 }
+
+export const createResponseCapture = () => {
+  let responseData = null
+  let statusCode = null
+
+  const h = {
+    response: (data) => {
+      responseData = data
+      return {
+        code: (code) => {
+          statusCode = code
+          return { data: responseData, statusCode }
+        }
+      }
+    }
+  }
+
+  return {
+    h,
+    getResponse: () => ({ data: responseData, statusCode })
+  }
+}
+
+export const createHandler = (
+  parcelIds,
+  fields,
+  existingActions,
+  logger,
+  connection
+) => {
+  return {
+    payload: {
+      parcelIds,
+      fields,
+      existingActions
+    },
+    logger,
+    server: {
+      postgresDb: connection
+    }
+  }
+}
