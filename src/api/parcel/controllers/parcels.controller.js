@@ -133,7 +133,7 @@ const ParcelsController = {
                 )
 
                 const availableArea = calculateAvailableArea(
-                  existingActions,
+                  existingActions || [],
                   { code: action.code },
                   totalValidLandCoverSqm,
                   compatibilityCheckFn
@@ -171,7 +171,6 @@ const ParcelsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      request.logger.error({ error })
       const errorMessage = 'Error fetching parcels'
       request.logger.error(errorMessage, {
         error: error.message,
