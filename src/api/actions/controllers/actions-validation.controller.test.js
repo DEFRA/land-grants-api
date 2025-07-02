@@ -131,7 +131,7 @@ describe('Actions validation controller', () => {
       expect(applicationTransformer).toHaveBeenCalledWith(
         99.0,
         'BND1',
-        1000,
+        0.1,
         50,
         []
       )
@@ -422,7 +422,7 @@ describe('Actions validation controller', () => {
         1,
         99.0,
         'BND1',
-        1000,
+        0.1,
         50,
         []
       )
@@ -430,7 +430,7 @@ describe('Actions validation controller', () => {
         2,
         200.0,
         'BND2',
-        1000,
+        0.1,
         50,
         []
       )
