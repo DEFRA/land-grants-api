@@ -16,6 +16,7 @@ import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvaila
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * LandActionsValidateController
@@ -96,7 +97,7 @@ const LandActionsValidateController = {
         const application = applicationTransformer(
           action.quantity,
           action.code,
-          parcelAvailableArea,
+          sqmToHaRounded(parcelAvailableArea),
           intersectingAreaPercentage,
           [] // TODO: get existing agreements
         )

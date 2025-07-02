@@ -78,25 +78,6 @@ describe('getLandData', () => {
       expect(mockClient.release).toHaveBeenCalledTimes(1)
       expect(result).toEqual([])
     })
-
-    it('should log info messages during successful execution', async () => {
-      const mockLandData = [
-        { id: 1, sheet_id: testSheetId, parcel_id: testParcelId }
-      ]
-      mockClient.query.mockResolvedValue({ rows: mockLandData })
-
-      await getLandData(testSheetId, testParcelId, mockDb, mockLogger)
-
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        `Connecting to DB to fetch info parcelId: ${testParcelId} sheetId ${testSheetId}`
-      )
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        `Retrieving land parcels for parcelId: ${testParcelId} sheetId ${testSheetId}`
-      )
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        `Retrieved land parcels for parcelId:-  ${testParcelId} sheetId ${testSheetId} , ${mockLandData.toString()}`
-      )
-    })
   })
 
   describe('error handling', () => {

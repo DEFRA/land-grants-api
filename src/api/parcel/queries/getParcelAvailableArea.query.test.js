@@ -40,7 +40,7 @@ describe('getParcelAvailableArea', () => {
       mockLogger
     )
 
-    expect(result).toBe(1.589428)
+    expect(result).toBe(15894.28)
     expect(mockClient.query).toHaveBeenCalledTimes(1)
   })
 

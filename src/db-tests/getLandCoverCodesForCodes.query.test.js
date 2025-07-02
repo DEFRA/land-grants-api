@@ -1,7 +1,11 @@
-import mongoose from 'mongoose'
 import { getLandCoverCodesForCodes } from '../api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
+import {
+  connectMongo,
+  seedMongo,
+  closeMongo
+} from '~/src/db-tests/setup/utils.js'
 
 const logger = {
   info: jest.fn(),
@@ -10,26 +14,12 @@ const logger = {
 
 describe('Get land cover codes', () => {
   beforeAll(async () => {
-    await mongoose.connect(
-      `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}`,
-      {
-        dbName: 'land-grants-api'
-      }
-    )
-
-    try {
-      await landCoverCodesModel.db.dropCollection('land-cover-codes')
-    } catch (error) {
-      // Ignore error if collection doesn't exist
-      if (error.codeName !== 'NamespaceNotFound') {
-        throw error
-      }
-    }
-    await landCoverCodesModel.insertMany(landCoverCodes)
+    await connectMongo()
+    await seedMongo(landCoverCodesModel, 'land-cover-codes', landCoverCodes)
   })
 
   afterAll(async () => {
-    await mongoose.disconnect()
+    await closeMongo()
   })
 
   test('should return all land cover codes for 130', async () => {

@@ -10,8 +10,8 @@ import {
 let connection
 
 const logger = {
-  info: console.info,
-  error: console.error
+  info: jest.fn(),
+  error: jest.fn()
 }
 
 describe('Get moorland intercept percentage query', () => {
@@ -106,8 +106,6 @@ describe('Get moorland intercept percentage query', () => {
       connection,
       logger
     )
-
-    console.log('result', result)
 
     expect(result).toBe(0)
   })

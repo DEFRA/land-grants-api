@@ -1,21 +1,28 @@
 import Hapi from '@hapi/hapi'
-import * as mockingoose from 'mockingoose'
 import { parcel } from '~/src/api/parcel/index.js'
-import actionModel from '~/src/api/actions/models/action.model.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getEnabledActions } from '../../actions/queries/index.js'
+import {
+  createCompatibilityMatrix,
+  calculateAvailableArea
+} from '~/src/available-area/index.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('../../actions/queries/index.js')
+jest.mock('~/src/available-area/index.js')
 
 const mockGetLandData = getLandData
 const mockGetParcelAvailableArea = getParcelAvailableArea
 const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
+const mockGetEnabledActions = getEnabledActions
+const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+const mockCalculateAvailableArea = calculateAvailableArea
 
 describe('Parcels controller', () => {
   const server = Hapi.server()
@@ -29,6 +36,15 @@ describe('Parcels controller', () => {
       land_cover_type: 'grassland'
     }
   ]
+
+  const mockCompatibilityCheckFn = jest.fn()
+  const mockAvailableAreaResult = {
+    stacks: [],
+    explanations: [],
+    availableAreaSqm: 300,
+    totalValidLandCoverSqm: 300,
+    availableAreaHectares: 0.03
+  }
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -52,8 +68,11 @@ describe('Parcels controller', () => {
     jest.clearAllMocks()
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetParcelAvailableArea.mockResolvedValue(sqmToHaRounded(300))
+    mockGetParcelAvailableArea.mockResolvedValue(300)
     mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
+    mockGetEnabledActions.mockResolvedValue(mockActions)
+    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
 
   const expectedOutput = [
@@ -82,14 +101,13 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(mockActions, 'find')
-
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
           fields: ['size', 'actions', 'actions.availableArea'],
-          parcelIds: ['SX0679-9238']
+          parcelIds: ['SX0679-9238'],
+          existingActions: []
         }
       }
 
@@ -110,6 +128,7 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
       expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
         sheetId,
         parcelId,
@@ -117,20 +136,21 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
+      expect(mockCreateCompatibilityMatrix).toHaveBeenCalled()
+      expect(mockCalculateAvailableArea).toHaveBeenCalled()
     })
 
     test('should return 200 if fields: `size` passed in the request', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(mockActions, 'find')
-
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
           fields: ['size'],
-          parcelIds: ['SX0679-9238']
+          parcelIds: ['SX0679-9238'],
+          existingActions: []
         }
       }
 
@@ -158,21 +178,21 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetParcelAvailableArea).toHaveBeenCalledTimes(0)
+      expect(mockGetEnabledActions).not.toHaveBeenCalled()
+      expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
     test('should return 200 if fields: `actions` passed in the request', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(mockActions, 'find')
-
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
           fields: ['actions'],
-          parcelIds: ['SX0679-9238']
+          parcelIds: ['SX0679-9238'],
+          existingActions: []
         }
       }
 
@@ -206,6 +226,8 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
     test('should return 400 if the request has an invalid parcel in payload', async () => {
@@ -214,7 +236,8 @@ describe('Parcels controller', () => {
         url: '/parcels',
         payload: {
           fields: [],
-          parcelIds: ['1']
+          parcelIds: ['1'],
+          existingActions: []
         }
       }
 
@@ -240,7 +263,8 @@ describe('Parcels controller', () => {
         url: `/parcels`,
         payload: {
           fields: [],
-          parcelIds: [`${sheetId}-${parcelId}`]
+          parcelIds: [`${sheetId}-${parcelId}`],
+          existingActions: []
         }
       }
 
@@ -258,15 +282,16 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      // Mock actions to return null
-      mockingoose(actionModel).toReturn(null, 'find')
+      // Mock getEnabledActions to return null/empty
+      mockGetEnabledActions.mockResolvedValue(null)
 
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
           fields: ['actions'],
-          parcelIds: [`${sheetId}-${parcelId}`]
+          parcelIds: [`${sheetId}-${parcelId}`],
+          existingActions: []
         }
       }
 
@@ -284,14 +309,15 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(new Error('Database error'), 'find')
+      mockGetEnabledActions.mockRejectedValue(new Error('Database error'))
 
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
           fields: ['actions'],
-          parcelIds: [`${sheetId}-${parcelId}`]
+          parcelIds: [`${sheetId}-${parcelId}`],
+          existingActions: []
         }
       }
 
@@ -309,8 +335,6 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockingoose(actionModel).toReturn(mockActions, 'find')
-
       mockGetParcelAvailableArea.mockRejectedValue(
         new Error('Area calculation failed')
       )
@@ -320,7 +344,8 @@ describe('Parcels controller', () => {
         url: `/parcels`,
         payload: {
           fields: ['actions.availableArea'],
-          parcelIds: [`${sheetId}-${parcelId}`]
+          parcelIds: [`${sheetId}-${parcelId}`],
+          existingActions: []
         }
       }
 
@@ -332,6 +357,69 @@ describe('Parcels controller', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should include results when actions.results field is requested', async () => {
+      const mockAvailableAreaWithResults = {
+        ...mockAvailableAreaResult,
+        stacks: [{ code: 'CMOR1', areaSqm: 100 }],
+        explanations: ['Test explanation']
+      }
+      mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaWithResults)
+
+      const request = {
+        method: 'POST',
+        url: `/parcels`,
+        payload: {
+          fields: ['actions', 'actions.availableArea', 'actions.results'],
+          parcelIds: ['SX0679-9238'],
+          existingActions: []
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels[0].actions[0]).toHaveProperty('results')
+      expect(parcels[0].actions[0].results).toEqual({
+        totalValidLandCoverSqm: 300,
+        stacks: [{ code: 'CMOR1', areaSqm: 100 }],
+        explanations: ['Test explanation']
+      })
+    })
+
+    test('should handle existing actions in available area calculation', async () => {
+      const existingActions = [{ code: 'UPL1', areaSqm: 100 }]
+
+      const request = {
+        method: 'POST',
+        url: `/parcels`,
+        payload: {
+          fields: ['actions', 'actions.availableArea'],
+          parcelIds: ['SX0679-9238'],
+          existingActions
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
+        existingActions,
+        { code: 'CMOR1' },
+        300,
+        mockCompatibilityCheckFn
+      )
     })
   })
 })

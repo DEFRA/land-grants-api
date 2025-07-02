@@ -18,6 +18,10 @@ import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableA
 import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import {
+  createCompatibilityMatrix,
+  calculateAvailableArea
+} from '~/src/available-area/index.js'
 
 /**
  * ParcelsController
@@ -44,7 +48,7 @@ const ParcelsController = {
 
   handler: async (request, h) => {
     try {
-      const { parcelIds, fields } = request.payload
+      const { parcelIds, fields, existingActions } = request.payload
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 
       const responseParcels = []
@@ -85,9 +89,18 @@ const ParcelsController = {
             return Boom.notFound(errorMessage)
           }
 
+          request.logger.info(
+            `Found ${actions.length} actions for parcel: ${sheetId}-${parcelId}`
+          )
+
           const transformedActions = await Promise.all(
             actions.map(async (action) => {
               let transformed = actionTransformer(action)
+              request.logger.info(`transformed: ${JSON.stringify(transformed)}`)
+
+              request.logger.info(
+                `Getting actionAvailableArea for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+              )
 
               if (fields.includes('actions.availableArea')) {
                 const landCoverCodes = await getLandCoverCodesForCodes(
@@ -95,13 +108,10 @@ const ParcelsController = {
                   request.logger
                 )
                 request.logger.info(
-                  `Getting actionAvailableArea for ${JSON.stringify({
-                    sheetId,
-                    parcelId,
-                    landCoverCodes
-                  })}`
+                  `Found ${landCoverCodes.length} landCoverCodes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
                 )
-                const availableArea = await getParcelAvailableArea(
+
+                const totalValidLandCoverSqm = await getParcelAvailableArea(
                   sheetId,
                   parcelId,
                   landCoverCodes,
@@ -109,8 +119,36 @@ const ParcelsController = {
                   request.logger
                 )
 
+                request.logger.info(
+                  `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+                )
+
+                const codes = actions.map((a) => a.code)
+                request.logger.info(
+                  `Found ${codes.length} codes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+                )
+                const compatibilityCheckFn = await createCompatibilityMatrix(
+                  codes,
+                  request.logger
+                )
+
+                const availableArea = calculateAvailableArea(
+                  existingActions || [],
+                  { code: action.code },
+                  totalValidLandCoverSqm,
+                  compatibilityCheckFn
+                )
+
+                request.logger.info(
+                  `availableArea ${availableArea.availableAreaHectares} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+                )
+
                 if (availableArea || availableArea === 0) {
-                  transformed = actionTransformer(action, availableArea)
+                  transformed = actionTransformer(
+                    action,
+                    availableArea,
+                    fields.includes('actions.results')
+                  )
                 }
               }
 
