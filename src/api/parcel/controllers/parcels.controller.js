@@ -15,9 +15,10 @@ import {
 } from '~/src/api/common/schema/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import { mergeLandCoverCodes } from '../../land-cover-codes/services/merge-land-cover-codes.js'
 
 /**
  * ParcelsController
@@ -90,8 +91,8 @@ const ParcelsController = {
               let transformed = actionTransformer(action)
 
               if (fields.includes('actions.availableArea')) {
-                const landCoverCodes = await getLandCoverCodesForCodes(
-                  action.landCoverClassCodes,
+                const landCoverCodes = await getLandCoversForAction(
+                  action.code,
                   request.logger
                 )
                 request.logger.info(
@@ -101,10 +102,13 @@ const ParcelsController = {
                     landCoverCodes
                   })}`
                 )
+
+                const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
+
                 const availableArea = await getParcelAvailableArea(
                   sheetId,
                   parcelId,
-                  landCoverCodes,
+                  mergedLandCoverCodes,
                   request.server.postgresDb,
                   request.logger
                 )
