@@ -75,27 +75,6 @@ describe('Parcels controller', () => {
     mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
 
-  const expectedOutput = [
-    {
-      parcelId: '9238',
-      sheetId: 'SX0679',
-      size: {
-        unit: 'ha',
-        value: 0.044
-      },
-      actions: [
-        {
-          code: 'CMOR1',
-          description: 'CMOR1: Assess moorland and produce a written record',
-          availableArea: {
-            unit: 'ha',
-            value: 0.03
-          }
-        }
-      ]
-    }
-  ]
-
   describe('POST /parcels route', () => {
     test('should return 200 if all fields are requested', async () => {
       const sheetId = 'SX0679'
@@ -105,7 +84,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['size', 'actions', 'actions.availableArea'],
+          fields: ['size', 'actions'],
           parcelIds: ['SX0679-9238'],
           existingActions: []
         }
@@ -120,7 +99,27 @@ describe('Parcels controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels).toBeDefined()
-      expect(parcels).toEqual(expectedOutput)
+      expect(parcels).toEqual([
+        {
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          actions: [
+            {
+              code: 'CMOR1',
+              description:
+                'CMOR1: Assess moorland and produce a written record',
+              availableArea: {
+                unit: 'ha',
+                value: 0.03
+              }
+            }
+          ],
+          size: {
+            unit: 'ha',
+            value: 0.044
+          }
+        }
+      ])
 
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,
@@ -162,8 +161,12 @@ describe('Parcels controller', () => {
 
       const expectedOutputWithSizeOnly = [
         {
-          ...expectedOutput[0],
-          actions: undefined
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          size: {
+            unit: 'ha',
+            value: 0.044
+          }
         }
       ]
 
@@ -204,12 +207,17 @@ describe('Parcels controller', () => {
 
       const expectedOutputWithActionsOnly = [
         {
-          ...expectedOutput[0],
-          size: undefined,
+          parcelId: '9238',
+          sheetId: 'SX0679',
           actions: [
             {
-              ...expectedOutput[0].actions[0],
-              availableArea: undefined
+              code: 'CMOR1',
+              description:
+                'CMOR1: Assess moorland and produce a written record',
+              availableArea: {
+                unit: 'ha',
+                value: 0.03
+              }
             }
           ]
         }
@@ -227,7 +235,6 @@ describe('Parcels controller', () => {
         expect.any(Object)
       )
       expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
-      expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
     test('should return 400 if the request has an invalid parcel in payload', async () => {
@@ -371,7 +378,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions', 'actions.availableArea', 'actions.results'],
+          fields: ['actions', 'actions.results'],
           parcelIds: ['SX0679-9238'],
           existingActions: []
         }
@@ -400,7 +407,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions', 'actions.availableArea'],
+          fields: ['actions'],
           parcelIds: ['SX0679-9238'],
           existingActions
         }

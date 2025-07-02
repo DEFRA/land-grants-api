@@ -12,9 +12,13 @@ export const connectToTestDatbase = () => {
   })
 }
 
-export async function seedDatabase(client, seedFile) {
+export async function seedDatabase(
+  client,
+  seedFile,
+  folderPath = '../fixtures'
+) {
   const filename = fileURLToPath(import.meta.url)
-  const dirname = path.resolve(path.dirname(filename), '../fixtures')
+  const dirname = path.resolve(path.dirname(filename), folderPath)
   const seedFileContent = await readFile(resolve(dirname, seedFile), {
     encoding: 'utf8'
   })

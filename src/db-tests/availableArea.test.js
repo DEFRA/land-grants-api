@@ -28,7 +28,7 @@ let connection
 describe('Calculate available area', () => {
   beforeAll(async () => {
     await connectMongo()
-    await seedMongo(actionModel, 'action', actions)
+    await seedMongo(actionModel, 'action-data', actions)
     await seedMongo(
       compatibilityMatrixModel,
       'compatibility-matrix',
