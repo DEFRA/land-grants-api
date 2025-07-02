@@ -4,6 +4,6 @@ import compatibilityMatrix from '../../actions/models/compatibilityMatrix.model.
 
 export default {
   'action-data': actionData,
-  'land-cover-codes': landCoverCodes,
+  'action-land-covers': landCoverCodes,
   'compatibility-matrix': compatibilityMatrix
 }

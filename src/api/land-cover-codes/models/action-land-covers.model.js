@@ -27,7 +27,7 @@ const ActionLandCoverSchema = new mongoose.Schema({
 })
 
 const ActionLandCovers = mongoose.model(
-  'ActionLandCovers',
+  'action-land-covers',
   ActionLandCoverSchema
 )
 
