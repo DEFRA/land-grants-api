@@ -73,7 +73,7 @@ describe('Calculate available area', () => {
       try {
         existingActions = JSON.parse(existingActionsStr)
       } catch (e) {
-        console.error(
+        logger.error(
           `Error parsing existing actions in CSV file for parcelId ${parcelId}, sheetId ${sheetId}`
         )
       }
@@ -100,8 +100,6 @@ describe('Calculate available area', () => {
         connection,
         logger
       )
-
-      console.log(JSON.stringify(result))
 
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
