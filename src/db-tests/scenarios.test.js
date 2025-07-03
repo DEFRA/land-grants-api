@@ -1,22 +1,22 @@
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
-import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
-import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
-import actions from '../api/common/helpers/seed-data/action-data.js'
-import actionModel from '../api/actions/models/action.model.js'
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
-import { getAvailableAreaForAction } from '../available-area/availableArea.js'
+import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import {
   connectToTestDatbase,
   resetDatabase,
   seedDatabase
 } from '~/src/db-tests/setup/postgres.js'
 import {
+  closeMongo,
   connectMongo,
-  seedMongo,
-  closeMongo
+  seedMongo
 } from '~/src/db-tests/setup/utils.js'
-import { createCompatibilityMatrix } from '../available-area/index.js'
+import actionModel from '../api/actions/models/action.model.js'
 import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
+import actions from '../api/common/helpers/seed-data/action-data.js'
+import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
+import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
+import { getAvailableAreaForAction } from '../available-area/availableArea.js'
+import { createCompatibilityMatrix } from '../available-area/index.js'
 import { getAvailableAreaFixtures } from './fixtures/getAvailableAreaFixtures.js'
 
 const logger = {
@@ -62,12 +62,22 @@ describe('Calculate available area', () => {
     async (
       name,
       {
-        expectedActionCode,
-        expectedSheetId,
-        expectedParcelId,
-        expectedAvailableAreaValue
+        sheetId,
+        parcelId,
+        applyingForAction,
+        existingActions: existingActionsStr,
+        expectedAvailableArea
       }
     ) => {
+      let existingActions = []
+      try {
+        existingActions = JSON.parse(existingActionsStr)
+      } catch (e) {
+        console.error(
+          `Error parsing existing actions in CSV file for parcelId ${parcelId}, sheetId ${sheetId}`
+        )
+      }
+
       const compatibilityCheckFn = await createCompatibilityMatrix(
         ['CMOR1', 'UPL1', 'UPL2', 'UPL3'],
         logger
@@ -75,25 +85,26 @@ describe('Calculate available area', () => {
 
       const enabledActions = await getEnabledActions(logger)
       const currentAction = enabledActions.find(
-        (action) => action.code === expectedActionCode
+        (action) => action.code === applyingForAction
       )
 
       const result = await getAvailableAreaForAction(
         {
-          code: expectedActionCode,
-          areaSqm: 1000,
+          code: applyingForAction,
           landCoverClassCodes: currentAction.landCoverClassCodes
         },
-        expectedSheetId,
-        expectedParcelId,
+        sheetId,
+        parcelId,
         compatibilityCheckFn,
-        [],
+        existingActions,
         connection,
         logger
       )
 
+      console.log(JSON.stringify(result))
+
       expect(result.availableAreaHectares).toEqual(
-        Number(expectedAvailableAreaValue)
+        Number(expectedAvailableArea)
       )
     }
   )
