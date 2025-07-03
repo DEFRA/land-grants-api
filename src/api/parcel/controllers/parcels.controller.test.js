@@ -3,14 +3,14 @@ import { parcel } from '~/src/api/parcel/index.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
-import { createCompatibilityMatrix } from '~/src/available-area/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../actions/queries/index.js')
-jest.mock('~/src/available-area/index.js')
+jest.mock('~/src/available-area/calculateAvailableArea.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
 

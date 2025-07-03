@@ -16,7 +16,7 @@ import {
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-import { createCompatibilityMatrix } from '~/src/available-area/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
 
 /**

@@ -16,7 +16,7 @@ import actions from '../api/common/helpers/seed-data/action-data.js'
 import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
 import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
-import { createCompatibilityMatrix } from '../available-area/index.js'
+import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './fixtures/getAvailableAreaFixtures.js'
 
 const logger = {
