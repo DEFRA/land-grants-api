@@ -1,10 +1,10 @@
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
-import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
-import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
-import actions from '../api/common/helpers/seed-data/action-data.js'
-import actionModel from '../api/actions/models/action.model.js'
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
+import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
+import actionModel from '../api/actions/models/action.model.js'
+import actions from '../api/common/helpers/seed-data/action-data.js'
+import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
+import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 
 import {
   connectToTestDatbase,
@@ -12,10 +12,10 @@ import {
   seedPostgres
 } from '~/src/db-tests/setup/postgres.js'
 import {
-  connectMongo,
-  seedMongo,
   closeMongo,
-  createResponseCapture
+  connectMongo,
+  createResponseCapture,
+  seedMongo
 } from '~/src/db-tests/setup/utils.js'
 
 const logger = {
