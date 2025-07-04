@@ -39,6 +39,27 @@ describe('Subtract incompatible stacks', function () {
       }
     ],
     [
+      'should return 5 sqm when total valid land cover is 10 sqm and we have 2 stacks with incompatible actions that are compatible between them',
+      {
+        actionCodeAppliedFor: 'OFM3',
+        totalValidLandCoverSqm: 10,
+        stacks: [
+          {
+            actionCodes: ['SPM4', 'SAM1'],
+            areaSqm: 3
+          },
+          {
+            actionCodes: ['SAM1'],
+            areaSqm: 2
+          }
+        ],
+        expectedResult: 5,
+        compatibilityCheckFn: makeCompatibilityCheckFn({
+          SPM4: ['SAM1']
+        })
+      }
+    ],
+    [
       'should return 30 sqm when total valid land cover is 30 sqm and we have 1 compatible stack with 1 sqm',
       {
         actionCodeAppliedFor: 'CMOR1',

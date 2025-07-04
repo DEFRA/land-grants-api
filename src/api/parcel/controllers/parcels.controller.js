@@ -1,23 +1,23 @@
 import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import {
+  errorResponseSchema,
+  internalServerErrorResponseSchema
+} from '~/src/api/common/schema/index.js'
+import {
+  parcelsSchema,
+  parcelsSuccessResponseSchema
+} from '~/src/api/parcel/schema/parcel.schema.js'
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import {
   actionTransformer,
   sizeTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import {
-  parcelsSchema,
-  parcelsSuccessResponseSchema
-} from '~/src/api/parcel/schema/parcel.schema.js'
-import {
-  errorResponseSchema,
-  internalServerErrorResponseSchema
-} from '~/src/api/common/schema/index.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getEnabledActions } from '../../actions/queries/index.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
+import { getEnabledActions } from '../../actions/queries/index.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 /**
  * ParcelsController
@@ -99,22 +99,24 @@ const ParcelsController = {
           )
 
           const availableAreas = await Promise.all(
-            actions.map(async (action) => {
-              const availableArea = await getAvailableAreaForAction(
-                action,
-                sheetId,
-                parcelId,
-                compatibilityCheckFn,
-                existingActions,
-                request.server.postgresDb,
-                request.logger
-              )
-              return actionTransformer(
-                action,
-                availableArea,
-                fields.includes('actions.results')
-              )
-            })
+            actions
+              .filter((a) => a.display)
+              .map(async (action) => {
+                const availableArea = await getAvailableAreaForAction(
+                  action,
+                  sheetId,
+                  parcelId,
+                  compatibilityCheckFn,
+                  existingActions,
+                  request.server.postgresDb,
+                  request.logger
+                )
+                return actionTransformer(
+                  action,
+                  availableArea,
+                  fields.includes('actions.results')
+                )
+              })
           )
 
           const sortedParcelActions = availableAreas.sort((a, b) =>

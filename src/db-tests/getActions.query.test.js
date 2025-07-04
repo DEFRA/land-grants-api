@@ -37,6 +37,14 @@ describe('Get actions', () => {
 
     const actionCodes = actions.map((action) => action.code)
 
-    expect(actionCodes).toEqual(['CMOR1', 'UPL1', 'UPL2', 'UPL3'])
+    expect(actionCodes).toEqual([
+      'CMOR1',
+      'UPL1',
+      'UPL2',
+      'UPL3',
+      'SPM4',
+      'SAM1',
+      'OFM3'
+    ])
   })
 })
