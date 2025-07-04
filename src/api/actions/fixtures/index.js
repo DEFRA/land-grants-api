@@ -7,6 +7,8 @@ const mockActions = [
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
     applicationUnitOfMeasurement,
+    enabled: true,
+    display: true,
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -48,6 +50,8 @@ const mockMultipleActions = [
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    enabled: true,
+    display: true,
     payment: {
       'rate-per-unit-gbp': 20
     },
@@ -85,6 +89,8 @@ const mockMultipleActions = [
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
     applicationUnitOfMeasurement,
+    enabled: true,
+    display: true,
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -123,6 +129,8 @@ const mockMultipleActions = [
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    enabled: true,
+    display: true,
     payment: {
       'rate-per-unit-gbp': 53
     },
@@ -195,4 +203,4 @@ const application = {
   }
 }
 
-export { mockActions, mockMultipleActions, mockLandActions, application }
+export { application, mockActions, mockLandActions, mockMultipleActions }

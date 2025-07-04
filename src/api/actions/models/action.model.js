@@ -6,6 +6,7 @@ const schema = new mongoose.Schema(
   {
     version: { type: Number, required: true },
     enabled: { type: Boolean, required: true, default: false },
+    display: { type: Boolean, required: true, default: false },
     startDate: { type: String, required: true },
     code: { type: String, required: true },
     description: { type: String, required: true },
