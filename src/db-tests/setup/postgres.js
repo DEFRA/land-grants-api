@@ -1,9 +1,9 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { Pool } from 'pg'
 import { DB_CONFIG } from './jestSetup.js'
+import { readCompressedFileStream } from '../../api/common/helpers/compression.js'
 
 export const connectToTestDatbase = () => {
   return new Pool({
@@ -12,16 +12,32 @@ export const connectToTestDatbase = () => {
   })
 }
 
-export async function seedDatabase(
-  client,
-  seedFile,
-  folderPath = '../fixtures'
-) {
+export async function seedPostgres(connection, options) {
+  const migrationPath = '../../api/common/migration'
+
+  if (options.parcels) {
+    await seedDatabase(connection, 'land-parcels-data.sql.gz', migrationPath)
+  }
+
+  if (options.covers) {
+    await seedDatabase(connection, 'land-covers-data.sql.gz', migrationPath)
+  }
+
+  if (options.moorland) {
+    await seedDatabase(
+      connection,
+      'moorland-designations-data.sql.gz',
+      migrationPath
+    )
+  }
+}
+
+export async function seedDatabase(client, seedFile, folderPath) {
   const filename = fileURLToPath(import.meta.url)
   const dirname = path.resolve(path.dirname(filename), folderPath)
-  const seedFileContent = await readFile(resolve(dirname, seedFile), {
-    encoding: 'utf8'
-  })
+  const seedFileContent = await readCompressedFileStream(
+    resolve(dirname, seedFile)
+  )
   await client.query(seedFileContent)
 }
 

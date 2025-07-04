@@ -65,10 +65,14 @@ export const postgresDb = {
         client.release()
 
         if (options.isLocal && options.loadPostgresData) {
-          await loadPostgresData('land-parcels-data.sql', pool, server.logger)
-          await loadPostgresData('land-covers-data.sql', pool, server.logger)
           await loadPostgresData(
-            'moorland-designations-data.sql',
+            'land-parcels-data.sql.gz',
+            pool,
+            server.logger
+          )
+          await loadPostgresData('land-covers-data.sql.gz', pool, server.logger)
+          await loadPostgresData(
+            'moorland-designations-data.sql.gz',
             pool,
             server.logger
           )

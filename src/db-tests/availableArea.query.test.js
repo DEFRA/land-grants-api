@@ -5,7 +5,7 @@ import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailable
 import {
   connectToTestDatbase,
   resetDatabase,
-  seedDatabase
+  seedPostgres
 } from './setup/postgres.js'
 
 let connection
@@ -18,8 +18,12 @@ const logger = {
 describe('Available Area query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedDatabase(connection, 'availableArea.query.sql')
-  })
+    await seedPostgres(connection, {
+      parcels: true,
+      covers: true,
+      moorland: false
+    })
+  }, 60000)
 
   afterAll(async () => {
     await resetDatabase(connection)

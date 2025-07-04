@@ -9,7 +9,7 @@ import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controll
 import {
   connectToTestDatbase,
   resetDatabase,
-  seedDatabase
+  seedPostgres
 } from '~/src/db-tests/setup/postgres.js'
 import {
   connectMongo,
@@ -36,8 +36,12 @@ describe('Calculate available area', () => {
     )
     await seedMongo(landCoverCodesModel, 'land-cover-codes', landCoverCodes)
     connection = await connectToTestDatbase()
-    await seedDatabase(connection, 'availableAreaParcelsController.sql')
-  })
+    await seedPostgres(connection, {
+      parcels: true,
+      covers: true,
+      moorland: false
+    })
+  }, 60000)
 
   afterAll(async () => {
     await closeMongo()

@@ -3,7 +3,7 @@ import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/comp
 import {
   connectToTestDatbase,
   resetDatabase,
-  seedDatabase
+  seedPostgres
 } from '~/src/db-tests/setup/postgres.js'
 import {
   closeMongo,
@@ -17,7 +17,7 @@ import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
 import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
-import { getAvailableAreaFixtures } from './fixtures/getAvailableAreaFixtures.js'
+import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
 const logger = {
   info: jest.fn(),
@@ -39,16 +39,11 @@ describe('Calculate available area', () => {
     )
     await seedMongo(landCoverCodesModel, 'land-cover-codes', landCoverCodes)
     connection = await connectToTestDatbase()
-    await seedDatabase(
-      connection,
-      'land-parcels-data.sql',
-      '../../api/common/migration'
-    )
-    await seedDatabase(
-      connection,
-      'land-covers-data.sql',
-      '../../api/common/migration'
-    )
+    await seedPostgres(connection, {
+      parcels: true,
+      covers: true,
+      moorland: false
+    })
   }, 60000)
 
   afterAll(async () => {
