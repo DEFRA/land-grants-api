@@ -14,14 +14,10 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-import {
-  createCompatibilityMatrix,
-  calculateAvailableArea
-} from '~/src/available-area/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
+import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
 
 /**
  * ParcelsController
@@ -93,74 +89,40 @@ const ParcelsController = {
             `Found ${actions.length} actions for parcel: ${sheetId}-${parcelId}`
           )
 
-          const transformedActions = await Promise.all(
+          const codes = actions.map((a) => a.code)
+          request.logger.info(
+            `Found ${codes.length} codes for parcel: ${sheetId}-${parcelId}`
+          )
+          const compatibilityCheckFn = await createCompatibilityMatrix(
+            codes,
+            request.logger
+          )
+
+          const availableAreas = await Promise.all(
             actions.map(async (action) => {
-              let transformed = actionTransformer(action)
-              request.logger.info(`transformed: ${JSON.stringify(transformed)}`)
-
-              request.logger.info(
-                `Getting actionAvailableArea for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+              const availableArea = await getAvailableAreaForAction(
+                action,
+                sheetId,
+                parcelId,
+                compatibilityCheckFn,
+                existingActions,
+                request.server.postgresDb,
+                request.logger
               )
-
-              if (fields.includes('actions.availableArea')) {
-                const landCoverCodes = await getLandCoverCodesForCodes(
-                  action.landCoverClassCodes,
-                  request.logger
-                )
-                request.logger.info(
-                  `Found ${landCoverCodes.length} landCoverCodes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
-                )
-
-                const totalValidLandCoverSqm = await getParcelAvailableArea(
-                  sheetId,
-                  parcelId,
-                  landCoverCodes,
-                  request.server.postgresDb,
-                  request.logger
-                )
-
-                request.logger.info(
-                  `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
-                )
-
-                const codes = actions.map((a) => a.code)
-                request.logger.info(
-                  `Found ${codes.length} codes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
-                )
-                const compatibilityCheckFn = await createCompatibilityMatrix(
-                  codes,
-                  request.logger
-                )
-
-                const availableArea = calculateAvailableArea(
-                  existingActions || [],
-                  { code: action.code },
-                  totalValidLandCoverSqm,
-                  compatibilityCheckFn
-                )
-
-                request.logger.info(
-                  `availableArea ${availableArea.availableAreaHectares} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
-                )
-
-                if (availableArea || availableArea === 0) {
-                  transformed = actionTransformer(
-                    action,
-                    availableArea,
-                    fields.includes('actions.results')
-                  )
-                }
-              }
-
-              return transformed
+              return actionTransformer(
+                action,
+                availableArea,
+                fields.includes('actions.results')
+              )
             })
           )
-          const sortedParcelActions = transformedActions.sort((a, b) =>
+
+          const sortedParcelActions = availableAreas.sort((a, b) =>
             a.code.localeCompare(b.code)
           )
+
           parcelResponse.actions = sortedParcelActions
         }
-
         responseParcels.push(parcelResponse)
       }
 

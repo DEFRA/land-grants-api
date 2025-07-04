@@ -2,27 +2,23 @@ import Hapi from '@hapi/hapi'
 import { parcel } from '~/src/api/parcel/index.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '../../parcel/queries/getParcelAvailableArea.query.js'
-import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
-import {
-  createCompatibilityMatrix,
-  calculateAvailableArea
-} from '~/src/available-area/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
+import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
+import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
-jest.mock('../../parcel/queries/getParcelAvailableArea.query.js')
-jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
 jest.mock('../../actions/queries/index.js')
-jest.mock('~/src/available-area/index.js')
+jest.mock('~/src/available-area/calculateAvailableArea.js')
+jest.mock('~/src/available-area/availableArea.js')
+jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
 
 const mockGetLandData = getLandData
-const mockGetParcelAvailableArea = getParcelAvailableArea
-const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
 const mockGetEnabledActions = getEnabledActions
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockCalculateAvailableArea = calculateAvailableArea
+const mockGetAvailableAreaForAction = getAvailableAreaForAction
+const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
 
 describe('Parcels controller', () => {
   const server = Hapi.server()
@@ -68,33 +64,11 @@ describe('Parcels controller', () => {
     jest.clearAllMocks()
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetParcelAvailableArea.mockResolvedValue(300)
-    mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
     mockGetEnabledActions.mockResolvedValue(mockActions)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
+    mockGetAvailableAreaForAction.mockResolvedValue(mockAvailableAreaResult)
+    mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
   })
-
-  const expectedOutput = [
-    {
-      parcelId: '9238',
-      sheetId: 'SX0679',
-      size: {
-        unit: 'ha',
-        value: 0.044
-      },
-      actions: [
-        {
-          code: 'CMOR1',
-          description: 'CMOR1: Assess moorland and produce a written record',
-          availableArea: {
-            unit: 'ha',
-            value: 0.03
-          }
-        }
-      ]
-    }
-  ]
 
   describe('POST /parcels route', () => {
     test('should return 200 if all fields are requested', async () => {
@@ -105,7 +79,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['size', 'actions', 'actions.availableArea'],
+          fields: ['size', 'actions'],
           parcelIds: ['SX0679-9238'],
           existingActions: []
         }
@@ -120,7 +94,27 @@ describe('Parcels controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels).toBeDefined()
-      expect(parcels).toEqual(expectedOutput)
+      expect(parcels).toEqual([
+        {
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          actions: [
+            {
+              code: 'CMOR1',
+              description:
+                'CMOR1: Assess moorland and produce a written record',
+              availableArea: {
+                unit: 'ha',
+                value: 0.03
+              }
+            }
+          ],
+          size: {
+            unit: 'ha',
+            value: 0.044
+          }
+        }
+      ])
 
       expect(mockGetLandData).toHaveBeenCalledWith(
         sheetId,
@@ -129,15 +123,8 @@ describe('Parcels controller', () => {
         expect.any(Object)
       )
       expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
-      expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Array),
-        expect.any(Object),
-        expect.any(Object)
-      )
+      expect(mockGetAvailableAreaForAction).toHaveBeenCalled()
       expect(mockCreateCompatibilityMatrix).toHaveBeenCalled()
-      expect(mockCalculateAvailableArea).toHaveBeenCalled()
     })
 
     test('should return 200 if fields: `size` passed in the request', async () => {
@@ -162,8 +149,12 @@ describe('Parcels controller', () => {
 
       const expectedOutputWithSizeOnly = [
         {
-          ...expectedOutput[0],
-          actions: undefined
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          size: {
+            unit: 'ha',
+            value: 0.044
+          }
         }
       ]
 
@@ -179,7 +170,7 @@ describe('Parcels controller', () => {
         expect.any(Object)
       )
       expect(mockGetEnabledActions).not.toHaveBeenCalled()
-      expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
+      expect(mockGetAvailableAreaForAction).not.toHaveBeenCalled()
     })
 
     test('should return 200 if fields: `actions` passed in the request', async () => {
@@ -204,12 +195,17 @@ describe('Parcels controller', () => {
 
       const expectedOutputWithActionsOnly = [
         {
-          ...expectedOutput[0],
-          size: undefined,
+          parcelId: '9238',
+          sheetId: 'SX0679',
           actions: [
             {
-              ...expectedOutput[0].actions[0],
-              availableArea: undefined
+              code: 'CMOR1',
+              description:
+                'CMOR1: Assess moorland and produce a written record',
+              availableArea: {
+                unit: 'ha',
+                value: 0.03
+              }
             }
           ]
         }
@@ -227,7 +223,6 @@ describe('Parcels controller', () => {
         expect.any(Object)
       )
       expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
-      expect(mockGetParcelAvailableArea).not.toHaveBeenCalled()
     })
 
     test('should return 400 if the request has an invalid parcel in payload', async () => {
@@ -335,7 +330,7 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockGetParcelAvailableArea.mockRejectedValue(
+      mockGetAvailableAreaForAction.mockRejectedValue(
         new Error('Area calculation failed')
       )
 
@@ -365,13 +360,15 @@ describe('Parcels controller', () => {
         stacks: [{ code: 'CMOR1', areaSqm: 100 }],
         explanations: ['Test explanation']
       }
-      mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaWithResults)
+      mockGetAvailableAreaForAction.mockResolvedValue(
+        mockAvailableAreaWithResults
+      )
 
       const request = {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions', 'actions.availableArea', 'actions.results'],
+          fields: ['actions', 'actions.results'],
           parcelIds: ['SX0679-9238'],
           existingActions: []
         }
@@ -400,7 +397,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions', 'actions.availableArea'],
+          fields: ['actions'],
           parcelIds: ['SX0679-9238'],
           existingActions
         }
@@ -414,11 +411,14 @@ describe('Parcels controller', () => {
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
-      expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
+      expect(mockGetAvailableAreaForAction).toHaveBeenCalledWith(
+        mockActions[0],
+        'SX0679',
+        '9238',
+        mockCompatibilityCheckFn,
         existingActions,
-        { code: 'CMOR1' },
-        300,
-        mockCompatibilityCheckFn
+        expect.any(Object),
+        expect.any(Object)
       )
     })
   })
