@@ -18,7 +18,7 @@ function sizeTransformer(area) {
  * @param {object} action - The actions to merge
  * @param {object} availableArea - Total Available Area
  */
-function actionTransformer(action, availableArea, showResults = false) {
+function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
     code: action.code,
     description: action.description,

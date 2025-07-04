@@ -43,7 +43,7 @@ async function getParcelAvailableArea(
     `
 
     logger.info(
-      `Executing Avaialble Area Calculation for parcelId: ${sheetId}-${parcelId}`
+      `Executing Available Area Calculation for parcelId: ${sheetId}-${parcelId}`
     )
 
     const result = await client.query(avaialbleAreaCalculationQuery, [

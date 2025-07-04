@@ -1,0 +1,7 @@
+scenarioName,sheetId,parcelId,applyingForAction,existingActions,expectedAvailableArea
+CMOR1 - No existing actions,SD6743,7268,CMOR1,[],0.59268576
+CMOR1 - One existing compatible action,SD6743,7268,CMOR1,"[{ ""code"": ""UPL1"", ""areaSqm"": 12.9, ""unit"": ""ha"" }]",0.59268576
+UPL2 - One existing incompatible action,SD6743,7268,UPL2,"[{ ""code"": ""UPL1"", ""areaSqm"": 1049.9, ""unit"": ""ha"" }]",0.48769576
+CMOR1 - Multiple existing compatible actions,SD6743,7268,CMOR1,"[{ ""code"": ""UPL6"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""UPL7"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.59268576
+UPL1 - Multiple existing incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""UPL3"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.52810576
+UPL1 - Multiple existing compatible and incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""CMOR1"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.58039576

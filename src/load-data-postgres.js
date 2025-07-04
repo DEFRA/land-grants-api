@@ -8,7 +8,7 @@ server.logger = logger
 
 server.secureContext = null
 
-function run() {
+export function seedPostgresData() {
   try {
     logger.info('Initializing Postgres plugin to load data...')
     postgresDb.plugin.register(server, {
@@ -23,4 +23,4 @@ function run() {
   }
 }
 
-run()
+seedPostgresData()
