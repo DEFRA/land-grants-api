@@ -4,6 +4,7 @@ export default [
   {
     version: 1,
     enabled: true,
+    display: true,
     startDate: '2025-01-01',
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
@@ -43,6 +44,7 @@ export default [
   {
     version: 1,
     enabled: true,
+    display: true,
     startDate: '2025-01-01',
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
@@ -81,6 +83,7 @@ export default [
   {
     version: 1,
     enabled: true,
+    display: true,
     startDate: '2025-01-01',
     code: 'UPL2',
     description: 'UPL2: Low livestock grazing on moorland',
@@ -119,6 +122,7 @@ export default [
   {
     version: 1,
     enabled: true,
+    display: true,
     startDate: '2025-01-01',
     code: 'UPL3',
     description: 'UPL3: Limited livestock grazing on moorland',
@@ -157,6 +161,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL4',
     description:
@@ -172,6 +177,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL5',
     description:
@@ -187,6 +193,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL6',
     description:
@@ -202,6 +209,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL7',
     description:
@@ -217,6 +225,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL8',
     description:
@@ -232,6 +241,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'UPL9',
     description:
@@ -246,7 +256,8 @@ export default [
   },
   {
     version: 1,
-    enabled: false,
+    enabled: true,
+    display: false,
     startDate: '2025-01-01',
     code: 'SPM4',
     description:
@@ -262,6 +273,7 @@ export default [
   {
     version: 1,
     enabled: false,
+    display: false,
     startDate: '2025-01-01',
     code: 'SPM5',
     description:
@@ -276,7 +288,52 @@ export default [
   },
   {
     version: 1,
+    enabled: true,
+    display: false,
+    startDate: '2025-01-01',
+    code: 'SAM1',
+    description:
+      'SAM1: Assess soil, produce a soil management plan and test soil organic matter',
+    applicationUnitOfMeasurement,
+    payment: {
+      ratePerUnitGbp: 0,
+      ratePerAgreementPerYearGbp: 0
+    },
+    landCoverClassCodes: [],
+    rules: []
+  },
+  {
+    version: 1,
+    enabled: true,
+    display: false,
+    startDate: '2025-01-01',
+    code: 'OFM3',
+    description: 'OFM3: Organic land management – enclosed rough grazing',
+    applicationUnitOfMeasurement,
+    payment: {
+      ratePerUnitGbp: 0,
+      ratePerAgreementPerYearGbp: 0
+    },
+    landCoverClassCodes: [
+      '130',
+      '240',
+      '250',
+      '270',
+      '280',
+      '300',
+      '330',
+      '580',
+      '590',
+      '620',
+      '640',
+      '650'
+    ],
+    rules: []
+  },
+  {
+    version: 1,
     enabled: false,
+    display: true,
     startDate: '2025-01-01',
     code: 'CSAM1',
     description:
