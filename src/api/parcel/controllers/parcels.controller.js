@@ -12,7 +12,7 @@ import {
 import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import {
   actionTransformer,
-  currentActionsTransformer,
+  plannedActionsTransformer,
   sizeTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
@@ -45,7 +45,7 @@ const ParcelsController = {
 
   handler: async (request, h) => {
     try {
-      const { parcelIds, fields, currentActions } = request.payload
+      const { parcelIds, fields, plannedActions } = request.payload
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 
       const responseParcels = []
@@ -108,7 +108,7 @@ const ParcelsController = {
                   sheetId,
                   parcelId,
                   compatibilityCheckFn,
-                  currentActionsTransformer(currentActions),
+                  plannedActionsTransformer(plannedActions),
                   request.server.postgresDb,
                   request.logger
                 )

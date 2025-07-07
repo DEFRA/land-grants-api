@@ -85,11 +85,11 @@ function parcelActionsTransformer(landParcel, actions) {
 
 /**
  * Transform current actions to actions with area in square meters
- * @param {object} currentActions - The current actions to transform
+ * @param {object} plannedActions - The planned actions to transform
  * @returns {object} The transformed current actions
  */
-function currentActionsTransformer(currentActions) {
-  return currentActions.map((a) => {
+function plannedActionsTransformer(plannedActions) {
+  return plannedActions.map((a) => {
     return {
       code: a.code,
       areaSqm: haToSqmRounded(a.quantity)
@@ -102,5 +102,5 @@ export {
   parcelTransformer,
   parcelActionsTransformer,
   sizeTransformer,
-  currentActionsTransformer
+  plannedActionsTransformer
 }

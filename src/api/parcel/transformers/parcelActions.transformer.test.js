@@ -2,7 +2,7 @@ import {
   actionTransformer,
   parcelTransformer,
   parcelActionsTransformer,
-  currentActionsTransformer,
+  plannedActionsTransformer,
   sizeTransformer
 } from './parcelActions.transformer.js'
 
@@ -274,11 +274,11 @@ describe('parcelActionsTransformer', () => {
   })
 })
 
-describe('currentActionsTransformer', () => {
+describe('plannedActionsTransformer', () => {
   test('should transform current actions to actions with area in square meters', () => {
-    const currentActions = [{ code: 'UPL1', quantity: 0.00001 }]
+    const plannedActions = [{ code: 'UPL1', quantity: 0.00001 }]
 
-    const result = currentActionsTransformer(currentActions)
+    const result = plannedActionsTransformer(plannedActions)
 
     expect(result).toEqual([{ code: 'UPL1', areaSqm: 1000 }])
   })

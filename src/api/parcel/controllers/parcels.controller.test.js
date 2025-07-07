@@ -82,7 +82,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['size', 'actions'],
           parcelIds: ['SX0679-9238'],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -138,7 +138,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['size'],
           parcelIds: ['SX0679-9238'],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -184,7 +184,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: ['SX0679-9238'],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -233,7 +233,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: [],
           parcelIds: ['1'],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -260,7 +260,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: [],
           parcelIds: [`${sheetId}-${parcelId}`],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -287,7 +287,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -313,7 +313,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -341,7 +341,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions.availableArea'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -371,7 +371,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions', 'actions.results'],
           parcelIds: ['SX0679-9238'],
-          currentActions: []
+          plannedActions: []
         }
       }
 
@@ -392,7 +392,7 @@ describe('Parcels controller', () => {
     })
 
     test('should handle existing actions in available area calculation', async () => {
-      const currentActions = [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
+      const plannedActions = [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
 
       const request = {
         method: 'POST',
@@ -400,7 +400,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: ['SX0679-9238'],
-          currentActions
+          plannedActions
         }
       }
 
@@ -417,7 +417,7 @@ describe('Parcels controller', () => {
         'SX0679',
         '9238',
         mockCompatibilityCheckFn,
-        currentActions.map((a) => ({
+        plannedActions.map((a) => ({
           code: a.code,
           areaSqm: haToSqmRounded(a.quantity)
         })),
