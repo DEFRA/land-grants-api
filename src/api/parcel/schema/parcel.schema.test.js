@@ -143,7 +143,7 @@ describe('Parcel Schema Validation', () => {
     const validParcelsRequest = {
       parcelIds: ['SX0679-9238', 'AB1234-5678'],
       fields: ['size', 'actions'],
-      currentActions: [{ code: 'UPL1', quantity: 0.00001 }]
+      currentActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
     }
 
     it('should validate correct parcels request', () => {
@@ -247,13 +247,13 @@ describe('Parcel Schema Validation', () => {
       expect(result.error).toBeDefined()
     })
 
-    it('should pass invalid currentActions', () => {
-      const valid = {
+    it('should reject invalid unit', () => {
+      const invalid = {
         ...validParcelsRequest,
-        currentActions: [{ code: 'UPL1', quantity: '0.00001' }]
+        currentActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'acres' }]
       }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
+      const result = parcelsSchema.validate(invalid)
+      expect(result.error).toBeDefined()
     })
   })
 })

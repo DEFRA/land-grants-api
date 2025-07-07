@@ -392,7 +392,7 @@ describe('Parcels controller', () => {
     })
 
     test('should handle existing actions in available area calculation', async () => {
-      const currentActions = [{ code: 'UPL1', quantity: 0.00001 }]
+      const currentActions = [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
 
       const request = {
         method: 'POST',

@@ -71,7 +71,8 @@ const parcelsSchema = Joi.object({
     .items(
       Joi.object({
         code: Joi.string().required(),
-        quantity: Joi.number().required()
+        quantity: Joi.number().required(),
+        unit: Joi.string().valid('ha', 'sqm').required()
       })
     )
     .optional()
