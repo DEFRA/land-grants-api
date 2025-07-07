@@ -49,7 +49,7 @@ export const createResponseCapture = () => {
 export const createHandler = (
   parcelIds,
   fields,
-  existingActions,
+  currentActions,
   logger,
   connection
 ) => {
@@ -57,7 +57,7 @@ export const createHandler = (
     payload: {
       parcelIds,
       fields,
-      existingActions
+      currentActions
     },
     logger,
     server: {

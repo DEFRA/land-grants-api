@@ -1,4 +1,7 @@
-import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
+import {
+  applicationUnitOfMeasurement,
+  haToSqmRounded
+} from '~/src/api/common/helpers/measurement.js'
 
 /**
  * Transform size to application unit of measurement
@@ -80,9 +83,24 @@ function parcelActionsTransformer(landParcel, actions) {
   }
 }
 
+/**
+ * Transform current actions to actions with area in square meters
+ * @param {object} currentActions - The current actions to transform
+ * @returns {object} The transformed current actions
+ */
+function currentActionsTransformer(currentActions) {
+  return currentActions.map((a) => {
+    return {
+      code: a.code,
+      areaSqm: haToSqmRounded(a.quantity)
+    }
+  })
+}
+
 export {
   actionTransformer,
   parcelTransformer,
   parcelActionsTransformer,
-  sizeTransformer
+  sizeTransformer,
+  currentActionsTransformer
 }

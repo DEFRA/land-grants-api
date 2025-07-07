@@ -61,7 +61,7 @@ describe('Calculate available area', () => {
         payload: {
           parcelIds: ['SD6743-7268'],
           fields: ['size', 'actions.availableArea', 'actions.results'],
-          existingActions: []
+          currentActions: []
         },
         logger,
         server: {
@@ -149,7 +149,7 @@ describe('Calculate available area', () => {
         payload: {
           parcelIds: ['SD6743-7268'],
           fields: ['size', 'actions.availableArea', 'actions.results'],
-          existingActions: [{ code: 'CMOR1', areaSqm: 1000 }]
+          currentActions: [{ code: 'CMOR1', quantity: 0.00001 }]
         },
         logger,
         server: {
@@ -273,9 +273,9 @@ describe('Calculate available area', () => {
         payload: {
           parcelIds: ['SD6743-7268'],
           fields: ['size', 'actions.availableArea', 'actions.results'],
-          existingActions: [
-            { code: 'UPL1', areaSqm: 1000 },
-            { code: 'UPL2', areaSqm: 2000 }
+          currentActions: [
+            { code: 'UPL1', quantity: 0.00001 },
+            { code: 'UPL2', quantity: 0.00002 }
           ]
         },
         logger,
