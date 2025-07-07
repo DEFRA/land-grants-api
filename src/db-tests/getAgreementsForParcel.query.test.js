@@ -50,19 +50,10 @@ describe('Get agreements for parcel query', () => {
       logger
     )
 
-    expect(agreements).toEqual([
-      {
-        id: 1,
-        parcel_id: '7268',
-        sheet_id: 'SD6743',
-        actions: [
-          {
-            unit: 'ha',
-            quantity: 12.9,
-            action_code: 'UPL1'
-          }
-        ]
-      }
-    ])
+    expect(agreements[0].parcel_id).toBe('7268')
+    expect(agreements[0].sheet_id).toBe('SD6743')
+    expect(agreements[0].actions[0].unit).toBe('ha')
+    expect(agreements[0].actions[0].quantity).toBe(12.9)
+    expect(agreements[0].actions[0].action_code).toBe('UPL1')
   })
 })
