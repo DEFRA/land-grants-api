@@ -1,5 +1,5 @@
 import Hapi from '@hapi/hapi'
-import { haToSqmRounded } from '~/src/api/common/helpers/measurement.js'
+import { haToSqm } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
@@ -419,7 +419,7 @@ describe('Parcels controller', () => {
         mockCompatibilityCheckFn,
         plannedActions.map((a) => ({
           code: a.code,
-          areaSqm: haToSqmRounded(a.quantity)
+          areaSqm: haToSqm(a.quantity)
         })),
         expect.any(Object),
         expect.any(Object)

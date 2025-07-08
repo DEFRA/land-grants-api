@@ -1,6 +1,6 @@
 import {
   applicationUnitOfMeasurement,
-  haToSqmRounded
+  haToSqm
 } from '~/src/api/common/helpers/measurement.js'
 
 /**
@@ -92,7 +92,7 @@ function plannedActionsTransformer(plannedActions) {
   return plannedActions.map((a) => {
     return {
       code: a.code,
-      areaSqm: haToSqmRounded(a.quantity)
+      areaSqm: haToSqm(a.quantity)
     }
   })
 }
