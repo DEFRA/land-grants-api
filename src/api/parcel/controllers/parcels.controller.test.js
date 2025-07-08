@@ -1,4 +1,5 @@
 import Hapi from '@hapi/hapi'
+import { haToSqmRounded } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
 import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
@@ -37,7 +38,7 @@ describe('Parcels controller', () => {
   const mockAvailableAreaResult = {
     stacks: [],
     explanations: [],
-    availableAreaSqm: 300,
+    availablequantity: 300,
     totalValidLandCoverSqm: 300,
     availableAreaHectares: 0.03
   }
@@ -81,7 +82,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['size', 'actions'],
           parcelIds: ['SX0679-9238'],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -137,7 +138,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['size'],
           parcelIds: ['SX0679-9238'],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -183,7 +184,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: ['SX0679-9238'],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -232,7 +233,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: [],
           parcelIds: ['1'],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -259,7 +260,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: [],
           parcelIds: [`${sheetId}-${parcelId}`],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -286,7 +287,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -312,7 +313,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -340,7 +341,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions.availableArea'],
           parcelIds: [`${sheetId}-${parcelId}`],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -357,7 +358,7 @@ describe('Parcels controller', () => {
     test('should include results when actions.results field is requested', async () => {
       const mockAvailableAreaWithResults = {
         ...mockAvailableAreaResult,
-        stacks: [{ code: 'CMOR1', areaSqm: 100 }],
+        stacks: [{ code: 'CMOR1', quantity: 0.00001 }],
         explanations: ['Test explanation']
       }
       mockGetAvailableAreaForAction.mockResolvedValue(
@@ -370,7 +371,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions', 'actions.results'],
           parcelIds: ['SX0679-9238'],
-          existingActions: []
+          plannedActions: []
         }
       }
 
@@ -385,13 +386,13 @@ describe('Parcels controller', () => {
       expect(parcels[0].actions[0]).toHaveProperty('results')
       expect(parcels[0].actions[0].results).toEqual({
         totalValidLandCoverSqm: 300,
-        stacks: [{ code: 'CMOR1', areaSqm: 100 }],
+        stacks: [{ code: 'CMOR1', quantity: 0.00001 }],
         explanations: ['Test explanation']
       })
     })
 
     test('should handle existing actions in available area calculation', async () => {
-      const existingActions = [{ code: 'UPL1', areaSqm: 100 }]
+      const plannedActions = [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
 
       const request = {
         method: 'POST',
@@ -399,7 +400,7 @@ describe('Parcels controller', () => {
         payload: {
           fields: ['actions'],
           parcelIds: ['SX0679-9238'],
-          existingActions
+          plannedActions
         }
       }
 
@@ -416,7 +417,10 @@ describe('Parcels controller', () => {
         'SX0679',
         '9238',
         mockCompatibilityCheckFn,
-        existingActions,
+        plannedActions.map((a) => ({
+          code: a.code,
+          areaSqm: haToSqmRounded(a.quantity)
+        })),
         expect.any(Object),
         expect.any(Object)
       )
