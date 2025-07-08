@@ -280,6 +280,6 @@ describe('plannedActionsTransformer', () => {
 
     const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ code: 'UPL1', areaSqm: 1000 }])
+    expect(result).toEqual([{ code: 'UPL1', areaSqm: 0.1 }])
   })
 })

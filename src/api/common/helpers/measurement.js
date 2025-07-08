@@ -19,13 +19,11 @@ export const sqmToHaRounded = (sqm) => {
   )
 }
 
-export const haToSqmRounded = (ha) => {
-  const decimalPlaces = 4
-
+export const haToSqm = (ha) => {
   if (typeof ha !== 'number' || isNaN(ha)) {
     return 0
   }
 
   const hectares = ha * 10000
-  return Math.round(hectares * Math.pow(10, decimalPlaces))
+  return hectares
 }

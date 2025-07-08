@@ -1,4 +1,4 @@
-import { sqmToHaRounded } from './measurement.js'
+import { sqmToHaRounded, haToSqm } from './measurement.js'
 
 describe('sqmToHaRounded', () => {
   describe('normal conversions', () => {
@@ -196,6 +196,151 @@ describe('sqmToHaRounded', () => {
     test('converts areas requiring high precision', () => {
       expect(sqmToHaRounded(1.23456)).toBe(0.00012346) // Very small area with 8 decimal places
       expect(sqmToHaRounded(99.9999)).toBe(0.00999999) // Almost 0.01 hectare with 8 decimal places
+    })
+  })
+})
+
+describe('haToSqm', () => {
+  describe('normal conversions', () => {
+    test('converts 1 hectare to 10000 sqm', () => {
+      expect(haToSqm(1)).toBe(10000)
+    })
+
+    test('converts 5 hectares to 50000 sqm', () => {
+      expect(haToSqm(5)).toBe(50000)
+    })
+
+    test('converts 1.2345 hectares to 12345 sqm', () => {
+      expect(haToSqm(1.2345)).toBe(12345)
+    })
+
+    test('converts 2.5 hectares to 25000 sqm', () => {
+      expect(haToSqm(2.5)).toBe(25000)
+    })
+
+    test('converts 0.1 hectares to 1000 sqm', () => {
+      expect(haToSqm(0.1)).toBe(1000)
+    })
+
+    test('converts decimal hectares with precision', () => {
+      expect(haToSqm(1.23456)).toBe(12345.6)
+    })
+  })
+
+  describe('edge cases', () => {
+    test('handles 0 hectares', () => {
+      expect(haToSqm(0)).toBe(0)
+    })
+
+    test('handles very small areas (less than 1 hectare)', () => {
+      expect(haToSqm(0.0001)).toBe(1)
+    })
+
+    test('handles very small areas with precision', () => {
+      expect(haToSqm(0.00005)).toBe(0.5)
+      expect(haToSqm(0.00004)).toBe(0.4)
+    })
+
+    test('handles very large areas', () => {
+      expect(haToSqm(100)).toBe(1000000)
+    })
+
+    test('handles negative numbers', () => {
+      expect(haToSqm(-1)).toBe(-10000)
+    })
+
+    test('handles fractional hectares with precision', () => {
+      expect(haToSqm(1.23454)).toBe(12345.4)
+      expect(haToSqm(1.23455)).toBe(12345.5)
+    })
+  })
+
+  describe('invalid input handling', () => {
+    test('returns 0 for null input', () => {
+      expect(haToSqm(null)).toBe(0)
+    })
+
+    test('returns 0 for undefined input', () => {
+      expect(haToSqm(undefined)).toBe(0)
+    })
+
+    test('returns 0 for string input', () => {
+      expect(haToSqm('1.2345')).toBe(0)
+    })
+
+    test('returns 0 for boolean input', () => {
+      expect(haToSqm(true)).toBe(0)
+    })
+
+    test('returns 0 for object input', () => {
+      expect(haToSqm({})).toBe(0)
+    })
+
+    test('returns 0 for array input', () => {
+      expect(haToSqm([1.2345])).toBe(0)
+    })
+
+    test('returns 0 for NaN input', () => {
+      expect(haToSqm(NaN)).toBe(0)
+    })
+
+    test('returns 0 for empty string', () => {
+      expect(haToSqm('')).toBe(0)
+    })
+
+    test('returns 0 for non-numeric string', () => {
+      expect(haToSqm('abc')).toBe(0)
+    })
+  })
+
+  describe('precision handling', () => {
+    test('maintains decimal precision correctly', () => {
+      expect(haToSqm(1.23449)).toBeCloseTo(12344.9)
+      expect(haToSqm(1.2345)).toBe(12345)
+      expect(haToSqm(1.23451)).toBeCloseTo(12345.1)
+      expect(haToSqm(1.23455)).toBeCloseTo(12345.5)
+      expect(haToSqm(1.23459)).toBeCloseTo(12345.9)
+    })
+
+    test('handles very precise inputs', () => {
+      expect(haToSqm(0.000049)).toBeCloseTo(0.49)
+      expect(haToSqm(0.00005)).toBeCloseTo(0.5)
+      expect(haToSqm(0.000051)).toBeCloseTo(0.51)
+    })
+
+    test('handles precision at different scales', () => {
+      expect(haToSqm(10.99999)).toBeCloseTo(109999.9)
+      expect(haToSqm(10.99994)).toBeCloseTo(109999.4)
+      expect(haToSqm(10.99995)).toBeCloseTo(109999.5)
+    })
+  })
+
+  describe('real world scenarios', () => {
+    test('converts typical field sizes', () => {
+      expect(haToSqm(2.5)).toBe(25000)
+      expect(haToSqm(5.0)).toBe(50000)
+      expect(haToSqm(10.0)).toBe(100000)
+    })
+
+    test('converts small garden areas', () => {
+      expect(haToSqm(0.01)).toBe(100)
+      expect(haToSqm(0.05)).toBe(500)
+    })
+
+    test('converts large farm areas', () => {
+      expect(haToSqm(500)).toBe(5000000)
+      expect(haToSqm(1000)).toBe(10000000)
+    })
+
+    test('converts complex area measurements with precision', () => {
+      expect(haToSqm(12.3456789)).toBeCloseTo(123456.789)
+      expect(haToSqm(98.7654321)).toBeCloseTo(987654.321)
+    })
+
+    test('converts areas maintaining full precision', () => {
+      expect(haToSqm(1.00005)).toBeCloseTo(10000.5)
+      expect(haToSqm(0.99995)).toBeCloseTo(9999.5)
+      expect(haToSqm(0.99994)).toBeCloseTo(9999.4)
     })
   })
 })
