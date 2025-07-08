@@ -142,7 +142,8 @@ describe('Parcel Schema Validation', () => {
   describe('parcelsSchema', () => {
     const validParcelsRequest = {
       parcelIds: ['SX0679-9238', 'AB1234-5678'],
-      fields: ['size', 'actions']
+      fields: ['size', 'actions'],
+      plannedActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
     }
 
     it('should validate correct parcels request', () => {
@@ -227,6 +228,30 @@ describe('Parcel Schema Validation', () => {
 
     it('should reject non-array fields', () => {
       const invalid = { ...validParcelsRequest, fields: 'size' }
+      const result = parcelsSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject non-array plannedActions', () => {
+      const invalid = { ...validParcelsRequest, plannedActions: 'UPL1' }
+      const result = parcelsSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject array plannedActions with invalid quantity', () => {
+      const invalid = {
+        ...validParcelsRequest,
+        plannedActions: [{ code: 'UPL1', quantity: null }]
+      }
+      const result = parcelsSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject invalid unit', () => {
+      const invalid = {
+        ...validParcelsRequest,
+        plannedActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'acres' }]
+      }
       const result = parcelsSchema.validate(invalid)
       expect(result.error).toBeDefined()
     })

@@ -67,11 +67,12 @@ const parcelsSchema = Joi.object({
       )
     )
     .required(),
-  existingActions: Joi.array()
+  plannedActions: Joi.array()
     .items(
       Joi.object({
         code: Joi.string().required(),
-        areaSqm: Joi.number().required()
+        quantity: Joi.number().required(),
+        unit: Joi.string().valid('ha', 'sqm').required()
       })
     )
     .optional()

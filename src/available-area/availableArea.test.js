@@ -23,7 +23,7 @@ describe('getAvailableAreaForAction', () => {
   const mockSheetId = 'SX0679'
   const mockParcelId = '9238'
   const mockCompatibilityCheckFn = jest.fn()
-  const mockExistingActions = [{ code: 'UPL1', areaSqm: 100 }]
+  const mockExistingActions = [{ code: 'UPL1', quantity: 100 }]
   const mockPostgresDb = {
     query: jest.fn(),
     connect: jest.fn(),
@@ -48,7 +48,7 @@ describe('getAvailableAreaForAction', () => {
 
   const mockTotalValidLandCoverSqm = 5000
   const mockAvailableAreaResult = {
-    stacks: [{ code: 'CMOR1', areaSqm: 3000 }],
+    stacks: [{ code: 'CMOR1', quantity: 3000 }],
     explanations: ['Test explanation'],
     availableAreaSqm: 3000,
     totalValidLandCoverSqm: 5000,
