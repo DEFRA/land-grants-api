@@ -19,6 +19,8 @@ import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js
 import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
 
 /**
  * ParcelsController
@@ -65,6 +67,18 @@ const ParcelsController = {
           return Boom.notFound(errorMessage)
         }
 
+        const agreements = await getAgreementsForParcel(
+          sheetId,
+          parcelId,
+          request.server.postgresDb,
+          request.logger
+        )
+
+        const mergedActions = mergeAgreementsTransformer(
+          agreements,
+          plannedActions
+        )
+
         const parcelResponse = {
           parcelId: landParcel['0'].parcel_id,
           sheetId: landParcel['0'].sheet_id
@@ -108,7 +122,7 @@ const ParcelsController = {
                   sheetId,
                   parcelId,
                   compatibilityCheckFn,
-                  plannedActionsTransformer(plannedActions),
+                  plannedActionsTransformer(mergedActions),
                   request.server.postgresDb,
                   request.logger
                 )

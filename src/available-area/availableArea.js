@@ -12,6 +12,7 @@ export async function getAvailableAreaForAction(
   postgresDb,
   logger
 ) {
+  // TODO remove this
   const transformed = actionTransformer(action)
   logger.info(`transformed: ${JSON.stringify(transformed)}`)
 
