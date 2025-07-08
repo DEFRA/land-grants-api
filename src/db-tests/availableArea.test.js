@@ -163,7 +163,6 @@ describe('Calculate available area', () => {
 
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
-    // console.log(JSON.stringify(data, null, 2))
     expect(data.parcels).toEqual([
       {
         parcelId: '7268',

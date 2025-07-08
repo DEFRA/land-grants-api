@@ -342,5 +342,10 @@ describe('haToSqm', () => {
       expect(haToSqm(0.99995)).toBeCloseTo(9999.5)
       expect(haToSqm(0.99994)).toBeCloseTo(9999.4)
     })
+
+    test('handles floating point precision issues', () => {
+      expect(haToSqm(0.1 + 0.2)).toBe(3000.0000000000005)
+      expect(haToSqm(0.1 + 0.2)).not.toBe(0.3)
+    })
   })
 })
