@@ -14,9 +14,9 @@ function agreementActionsTransformer(agreements) {
   })
 }
 
-function mergeAgreementsTransformer(agreementActions, existingActions) {
+function mergeAgreementsTransformer(agreementActions, plannedActions) {
   const actions = agreementActionsTransformer(agreementActions)
-  return [...(actions || []), ...(existingActions || [])]
+  return [...(actions || []), ...(plannedActions || [])]
 }
 
 export { agreementActionsTransformer, mergeAgreementsTransformer }

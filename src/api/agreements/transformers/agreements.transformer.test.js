@@ -202,7 +202,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const existingActions = [
+    const plannedActions = [
       {
         code: 'SPM4',
         quantity: 50,
@@ -210,7 +210,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const result = mergeAgreementsTransformer(agreementActions, existingActions)
+    const result = mergeAgreementsTransformer(agreementActions, plannedActions)
 
     expect(result).toEqual([
       {
@@ -227,7 +227,7 @@ describe('mergeAgreementsTransformer', () => {
   })
 
   test('should handle null agreement actions with existing actions', () => {
-    const existingActions = [
+    const plannedActions = [
       {
         code: 'SPM4',
         quantity: 50,
@@ -235,7 +235,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const result = mergeAgreementsTransformer(null, existingActions)
+    const result = mergeAgreementsTransformer(null, plannedActions)
 
     expect(result).toEqual([
       {
@@ -281,7 +281,7 @@ describe('mergeAgreementsTransformer', () => {
   })
 
   test('should handle undefined agreement actions with existing actions', () => {
-    const existingActions = [
+    const plannedActions = [
       {
         code: 'SPM4',
         quantity: 50,
@@ -289,7 +289,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const result = mergeAgreementsTransformer(undefined, existingActions)
+    const result = mergeAgreementsTransformer(undefined, plannedActions)
 
     expect(result).toEqual([
       {
@@ -351,7 +351,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const existingActions = [
+    const plannedActions = [
       {
         code: 'SPM4',
         quantity: 50,
@@ -364,7 +364,7 @@ describe('mergeAgreementsTransformer', () => {
       }
     ]
 
-    const result = mergeAgreementsTransformer(agreementActions, existingActions)
+    const result = mergeAgreementsTransformer(agreementActions, plannedActions)
 
     expect(result).toEqual([
       {
