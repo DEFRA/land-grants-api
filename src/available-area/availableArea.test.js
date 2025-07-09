@@ -1,15 +1,16 @@
 import { getAvailableAreaForAction } from './availableArea.js'
-import { getLandCoverCodesForCodes } from '../api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { actionTransformer } from '../api/parcel/transformers/parcelActions.transformer.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
+import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
-jest.mock('../api/land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('../api/land-cover-codes/queries/getLandCoversForAction.query.js')
 jest.mock('../api/parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('../api/parcel/transformers/parcelActions.transformer.js')
 jest.mock('./calculateAvailableArea.js')
 
-const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
+const mockGetLandCoversForAction = getLandCoversForAction
 const mockGetParcelAvailableArea = getParcelAvailableArea
 const mockActionTransformer = actionTransformer
 const mockCalculateAvailableArea = calculateAvailableArea
@@ -36,8 +37,8 @@ describe('getAvailableAreaForAction', () => {
   }
 
   const mockLandCoverCodes = [
-    { code: '130', description: 'Grassland' },
-    { code: '240', description: 'Moorland' }
+    { land_cover_code: '130', land_cover_class_code: '130' },
+    { land_cover_code: '240', land_cover_class_code: '240' }
   ]
 
   const mockTransformedAction = {
@@ -59,7 +60,7 @@ describe('getAvailableAreaForAction', () => {
     jest.clearAllMocks()
 
     mockActionTransformer.mockReturnValue(mockTransformedAction)
-    mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
+    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
     mockGetParcelAvailableArea.mockResolvedValue(mockTotalValidLandCoverSqm)
     mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
@@ -78,14 +79,15 @@ describe('getAvailableAreaForAction', () => {
     expect(result).toEqual(mockAvailableAreaResult)
 
     expect(mockActionTransformer).toHaveBeenCalledWith(mockAction)
-    expect(mockGetLandCoverCodesForCodes).toHaveBeenCalledWith(
-      mockAction.landCoverClassCodes,
+    expect(mockGetLandCoversForAction).toHaveBeenCalledWith(
+      mockAction.code,
+      mockPostgresDb,
       mockLogger
     )
     expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
       mockSheetId,
       mockParcelId,
-      mockLandCoverCodes,
+      mergeLandCoverCodes(mockLandCoverCodes),
       mockPostgresDb,
       mockLogger
     )

@@ -1,7 +1,8 @@
-import { getLandCoverCodesForCodes } from '../api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { actionTransformer } from '../api/parcel/transformers/parcelActions.transformer.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
+import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 export async function getAvailableAreaForAction(
   action,
@@ -19,18 +20,22 @@ export async function getAvailableAreaForAction(
     `Getting actionAvailableArea for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
   )
 
-  const landCoverCodes = await getLandCoverCodesForCodes(
-    action.landCoverClassCodes,
+  const landCoverCodes = await getLandCoversForAction(
+    action.code,
+    postgresDb,
     logger
   )
+
+  const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
+
   logger.info(
-    `Found ${landCoverCodes.length} landCoverCodes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+    `Found ${mergedLandCoverCodes.length} mergedLandCoverCodes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
   )
 
   const totalValidLandCoverSqm = await getParcelAvailableArea(
     sheetId,
     parcelId,
-    landCoverCodes,
+    mergedLandCoverCodes,
     postgresDb,
     logger
   )
