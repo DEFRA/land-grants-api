@@ -2,7 +2,7 @@ export default [
   {
     landCoverTypeDescription: 'Agricultural Area',
     landCoverTypeCode: '100',
-    landCoverClassDescription: 'Arable Land ',
+    landCoverClassDescription: 'Arable Land',
     landCoverClassCode: '110',
     landCoverDescription: 'Half Hedge Arable EFA',
     landCoverCode: '110',
@@ -12,7 +12,7 @@ export default [
   {
     landCoverTypeDescription: 'Agricultural Area',
     landCoverTypeCode: '100',
-    landCoverClassDescription: 'Arable Land ',
+    landCoverClassDescription: 'Arable Land',
     landCoverClassCode: '110',
     landCoverDescription: 'Full Hedge Arable EFA',
     landCoverCode: '110',
@@ -22,7 +22,7 @@ export default [
   {
     landCoverTypeDescription: 'Agricultural Area',
     landCoverTypeCode: '100',
-    landCoverClassDescription: 'Arable Land ',
+    landCoverClassDescription: 'Arable Land',
     landCoverClassCode: '110',
     landCoverDescription: 'Half Hedge Arable NON-EFA',
     landCoverCode: '110',
@@ -32,7 +32,7 @@ export default [
   {
     landCoverTypeDescription: 'Agricultural Area',
     landCoverTypeCode: '100',
-    landCoverClassDescription: 'Arable Land ',
+    landCoverClassDescription: 'Arable Land',
     landCoverClassCode: '110',
     landCoverDescription: 'Half Hedge Adjacent EFA',
     landCoverCode: '110',
@@ -42,7 +42,7 @@ export default [
   {
     landCoverTypeDescription: 'Agricultural Area',
     landCoverTypeCode: '100',
-    landCoverClassDescription: 'Arable Land ',
+    landCoverClassDescription: 'Arable Land',
     landCoverClassCode: '110',
     landCoverDescription: 'Half Hedge Adjacent NON-EFA',
     landCoverCode: '110',
@@ -76,7 +76,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Arable - buffer strip',
     landCoverCode: '113',
-    landUseDescription: 'Temporary grass buffer strip ',
+    landUseDescription: 'Temporary grass buffer strip',
     landUseCode: 'ABS01'
   },
   {
@@ -86,7 +86,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Arable - buffer strip',
     landCoverCode: '113',
-    landUseDescription: 'Sown mixed cover buffer strip ',
+    landUseDescription: 'Sown mixed cover buffer strip',
     landUseCode: 'ABS02'
   },
   {
@@ -346,7 +346,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Basil ',
+    landUseDescription: 'Basil',
     landUseCode: 'AC02'
   },
   {
@@ -356,7 +356,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Beet ',
+    landUseDescription: 'Beet',
     landUseCode: 'AC03'
   },
   {
@@ -366,7 +366,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Borage ',
+    landUseDescription: 'Borage',
     landUseCode: 'AC04'
   },
   {
@@ -376,7 +376,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Buckwheat ',
+    landUseDescription: 'Buckwheat',
     landUseCode: 'AC05'
   },
   {
@@ -386,7 +386,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Canary seed ',
+    landUseDescription: 'Canary seed',
     landUseCode: 'AC06'
   },
   {
@@ -396,7 +396,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Carrot ',
+    landUseDescription: 'Carrot',
     landUseCode: 'AC07'
   },
   {
@@ -406,7 +406,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Celery ',
+    landUseDescription: 'Celery',
     landUseCode: 'AC08'
   },
   {
@@ -416,7 +416,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Chicory ',
+    landUseDescription: 'Chicory',
     landUseCode: 'AC09'
   },
   {
@@ -426,7 +426,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Daffodil ',
+    landUseDescription: 'Daffodil',
     landUseCode: 'AC10'
   },
   {
@@ -436,7 +436,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Dill ',
+    landUseDescription: 'Dill',
     landUseCode: 'AC11'
   },
   {
@@ -446,7 +446,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Evening primrose ',
+    landUseDescription: 'Evening primrose',
     landUseCode: 'AC12'
   },
   {
@@ -456,7 +456,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Fennel ',
+    landUseDescription: 'Fennel',
     landUseCode: 'AC13'
   },
   {
@@ -466,7 +466,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Hemp ',
+    landUseDescription: 'Hemp',
     landUseCode: 'AC14'
   },
   {
@@ -476,7 +476,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Lettuce ',
+    landUseDescription: 'Lettuce',
     landUseCode: 'AC15'
   },
   {
@@ -496,7 +496,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Maize ',
+    landUseDescription: 'Maize',
     landUseCode: 'AC17'
   },
   {
@@ -506,7 +506,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Millet ',
+    landUseDescription: 'Millet',
     landUseCode: 'AC18'
   },
   {
@@ -526,7 +526,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Onions ',
+    landUseDescription: 'Onions',
     landUseCode: 'AC20'
   },
   {
@@ -536,7 +536,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Oregano ',
+    landUseDescription: 'Oregano',
     landUseCode: 'AC21'
   },
   {
@@ -546,7 +546,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Parsley ',
+    landUseDescription: 'Parsley',
     landUseCode: 'AC22'
   },
   {
@@ -556,7 +556,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Parsnips ',
+    landUseDescription: 'Parsnips',
     landUseCode: 'AC23'
   },
   {
@@ -576,7 +576,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Sage ',
+    landUseDescription: 'Sage',
     landUseCode: 'AC25'
   },
   {
@@ -586,7 +586,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Spinach ',
+    landUseDescription: 'Spinach',
     landUseCode: 'AC26'
   },
   {
@@ -596,7 +596,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Strawberry ',
+    landUseDescription: 'Strawberry',
     landUseCode: 'AC27'
   },
   {
@@ -606,7 +606,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Sweet potato ',
+    landUseDescription: 'Sweet potato',
     landUseCode: 'AC28'
   },
   {
@@ -616,7 +616,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Thyme ',
+    landUseDescription: 'Thyme',
     landUseCode: 'AC29'
   },
   {
@@ -636,7 +636,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Tulip ',
+    landUseDescription: 'Tulip',
     landUseCode: 'AC31'
   },
   {
@@ -656,7 +656,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Yam ',
+    landUseDescription: 'Yam',
     landUseCode: 'AC33'
   },
   {
@@ -676,7 +676,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Turnip ',
+    landUseDescription: 'Turnip',
     landUseCode: 'AC35'
   },
   {
@@ -696,7 +696,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Brown mustard ',
+    landUseDescription: 'Brown mustard',
     landUseCode: 'AC37'
   },
   {
@@ -706,7 +706,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Mustard ',
+    landUseDescription: 'Mustard',
     landUseCode: 'AC38'
   },
   {
@@ -716,7 +716,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Crambe ',
+    landUseDescription: 'Crambe',
     landUseCode: 'AC39'
   },
   {
@@ -726,7 +726,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Rocket ',
+    landUseDescription: 'Rocket',
     landUseCode: 'AC40'
   },
   {
@@ -736,7 +736,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Radish ',
+    landUseDescription: 'Radish',
     landUseCode: 'AC41'
   },
   {
@@ -746,7 +746,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Horseradish ',
+    landUseDescription: 'Horseradish',
     landUseCode: 'AC42'
   },
   {
@@ -756,7 +756,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Tobacco ',
+    landUseDescription: 'Tobacco',
     landUseCode: 'AC43'
   },
   {
@@ -766,7 +766,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Potato ',
+    landUseDescription: 'Potato',
     landUseCode: 'AC44'
   },
   {
@@ -776,7 +776,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Tomato ',
+    landUseDescription: 'Tomato',
     landUseCode: 'AC45'
   },
   {
@@ -786,7 +786,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Aubergine ',
+    landUseDescription: 'Aubergine',
     landUseCode: 'AC46'
   },
   {
@@ -796,7 +796,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Pepper ',
+    landUseDescription: 'Pepper',
     landUseCode: 'AC47'
   },
   {
@@ -806,7 +806,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Chilli ',
+    landUseDescription: 'Chilli',
     landUseCode: 'AC48'
   },
   {
@@ -816,7 +816,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Tree chilli ',
+    landUseDescription: 'Tree chilli',
     landUseCode: 'AC49'
   },
   {
@@ -826,7 +826,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Squash ',
+    landUseDescription: 'Squash',
     landUseCode: 'AC50'
   },
   {
@@ -836,7 +836,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Japanese pie squash ',
+    landUseDescription: 'Japanese pie squash',
     landUseCode: 'AC51'
   },
   {
@@ -846,7 +846,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Siam pumpkin ',
+    landUseDescription: 'Siam pumpkin',
     landUseCode: 'AC52'
   },
   {
@@ -856,7 +856,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Banana squash ',
+    landUseDescription: 'Banana squash',
     landUseCode: 'AC53'
   },
   {
@@ -866,7 +866,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Butternut squash ',
+    landUseDescription: 'Butternut squash',
     landUseCode: 'AC54'
   },
   {
@@ -876,7 +876,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Water melon ',
+    landUseDescription: 'Water melon',
     landUseCode: 'AC55'
   },
   {
@@ -886,7 +886,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Cucumber ',
+    landUseDescription: 'Cucumber',
     landUseCode: 'AC56'
   },
   {
@@ -896,7 +896,7 @@ export default [
     landCoverClassCode: '110',
     landCoverDescription: 'Other arable crops',
     landCoverCode: '118',
-    landUseDescription: 'Melon ',
+    landUseDescription: 'Melon',
     landUseCode: 'AC57'
   },
   {
@@ -1386,7 +1386,7 @@ export default [
     landCoverClassCode: '130',
     landCoverDescription: 'Permanent grassland - buffer',
     landCoverCode: '132',
-    landUseDescription: 'Permanent grass buffer strip ',
+    landUseDescription: 'Permanent grass buffer strip',
     landUseCode: 'PG02'
   },
   {
@@ -1424,9 +1424,9 @@ export default [
     landCoverTypeCode: '200',
     landCoverClassDescription: 'Linear features',
     landCoverClassCode: '210',
-    landCoverDescription: 'Stone wall ',
+    landCoverDescription: 'Stone wall',
     landCoverCode: '211',
-    landUseDescription: 'Stone wall ',
+    landUseDescription: 'Stone wall',
     landUseCode: 'BF01'
   },
   {
@@ -1514,7 +1514,7 @@ export default [
     landCoverTypeCode: '200',
     landCoverClassDescription: 'Boundary Features',
     landCoverClassCode: '220',
-    landCoverDescription: 'Short Stone wall ',
+    landCoverDescription: 'Short Stone wall',
     landCoverCode: '221',
     landUseDescription: 'Short Stone Wall',
     landUseCode: 'BB01'
@@ -1704,7 +1704,7 @@ export default [
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Non-agricultural area',
     landCoverClassCode: '300',
-    landCoverDescription: 'Non-agricultural area ',
+    landCoverDescription: 'Non-agricultural area',
     landCoverCode: '300',
     landUseDescription: 'Non-Agri BPS eligible',
     landUseCode: 'RD01'
@@ -2094,9 +2094,9 @@ export default [
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Agricultural buildings',
     landCoverClassCode: '370',
-    landCoverDescription: 'Glasshouse ',
+    landCoverDescription: 'Glasshouse',
     landCoverCode: '376',
-    landUseDescription: 'Glasshouse ',
+    landUseDescription: 'Glasshouse',
     landUseCode: 'AB06'
   },
   {
@@ -2144,20 +2144,20 @@ export default [
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Non-recreational buildings in a rural area',
     landCoverClassCode: '390',
-    landCoverDescription: '"Residential dwelling',
-    landCoverCode: ' house"',
-    landUseDescription: '391',
-    landUseCode: '"Residential dwelling'
+    landCoverDescription: 'Residential dwelling house',
+    landCoverCode: '391',
+    landUseDescription: 'Residential dwelling house',
+    landUseCode: 'NR01'
   },
   {
     landCoverTypeDescription: 'Non-agricultural area',
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Non-recreational buildings in a rural area',
     landCoverClassCode: '390',
-    landCoverDescription: '"Hill fort',
-    landCoverCode: ' military – castle"',
-    landUseDescription: '392',
-    landUseCode: '"Hill fort'
+    landCoverDescription: 'Hill fort military castle',
+    landCoverCode: '392',
+    landUseDescription: 'Hill fort military castle',
+    landUseCode: 'NR02'
   },
   {
     landCoverTypeDescription: 'Non-agricultural area',
@@ -2424,9 +2424,9 @@ export default [
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Marine wetland',
     landCoverClassCode: '610',
-    landCoverDescription: 'Tidal areas ',
+    landCoverDescription: 'Tidal areas',
     landCoverCode: '612',
-    landUseDescription: 'Tidal areas ',
+    landUseDescription: 'Tidal areas',
     landUseCode: 'MW02'
   },
   {
@@ -2614,9 +2614,9 @@ export default [
     landCoverTypeCode: '300',
     landCoverClassDescription: 'Recreational land',
     landCoverClassCode: '660',
-    landCoverDescription: 'Golf course ',
+    landCoverDescription: 'Golf course',
     landCoverCode: '664',
-    landUseDescription: 'Golf course ',
+    landUseDescription: 'Golf course',
     landUseCode: 'RL04'
   },
   {
