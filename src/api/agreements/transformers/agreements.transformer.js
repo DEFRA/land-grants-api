@@ -15,8 +15,7 @@ function agreementActionsTransformer(agreements) {
 }
 
 function mergeAgreementsTransformer(agreementActions, plannedActions) {
-  const actions = agreementActionsTransformer(agreementActions)
-  return [...(actions || []), ...(plannedActions || [])]
+  return [...(agreementActions || []), ...(plannedActions || [])]
 }
 
 export { agreementActionsTransformer, mergeAgreementsTransformer }

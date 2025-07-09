@@ -192,13 +192,9 @@ describe('mergeAgreementsTransformer', () => {
   test('should merge agreement actions with existing actions', () => {
     const agreementActions = [
       {
-        actions: [
-          {
-            action_code: 'UPL1',
-            quantity: 100,
-            unit: 'ha'
-          }
-        ]
+        code: 'UPL1',
+        quantity: 100,
+        unit: 'ha'
       }
     ]
 
@@ -249,13 +245,9 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle agreement actions with null existing actions', () => {
     const agreementActions = [
       {
-        actions: [
-          {
-            action_code: 'UPL1',
-            quantity: 100,
-            unit: 'ha'
-          }
-        ]
+        code: 'UPL1',
+        quantity: 100,
+        unit: 'ha'
       }
     ]
 
@@ -303,13 +295,9 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle agreement actions with undefined existing actions', () => {
     const agreementActions = [
       {
-        actions: [
-          {
-            action_code: 'UPL1',
-            quantity: 100,
-            unit: 'ha'
-          }
-        ]
+        code: 'UPL1',
+        quantity: 100,
+        unit: 'ha'
       }
     ]
 
@@ -327,27 +315,19 @@ describe('mergeAgreementsTransformer', () => {
   test('should merge multiple agreement actions with multiple existing actions', () => {
     const agreementActions = [
       {
-        actions: [
-          {
-            action_code: 'UPL1',
-            quantity: 100,
-            unit: 'ha'
-          },
-          {
-            action_code: 'UPL2',
-            quantity: 75,
-            unit: 'ha'
-          }
-        ]
+        code: 'UPL1',
+        quantity: 100,
+        unit: 'ha'
       },
       {
-        actions: [
-          {
-            action_code: 'CMOR1',
-            quantity: 25,
-            unit: 'ha'
-          }
-        ]
+        code: 'UPL2',
+        quantity: 75,
+        unit: 'ha'
+      },
+      {
+        code: 'CMOR1',
+        quantity: 25,
+        unit: 'ha'
       }
     ]
 

@@ -12,7 +12,7 @@ const logger = {
   error: jest.fn()
 }
 
-describe('Get agreements for parcel query', () => {
+describe('Get agreement actions for parcel query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
@@ -25,35 +25,33 @@ describe('Get agreements for parcel query', () => {
     await connection.end()
   })
 
-  test('should return 0 agreements when parcel is missing', async () => {
+  test('should return 0 actions when parcel is missing', async () => {
     const sheetId = 'Missing'
     const parcelId = 'Missing'
 
-    const agreements = await getAgreementsForParcel(
+    const actions = await getAgreementsForParcel(
       sheetId,
       parcelId,
       connection,
       logger
     )
 
-    expect(agreements).toStrictEqual([])
+    expect(actions).toStrictEqual([])
   })
 
-  test('should return 1 agreement when parcel is present', async () => {
+  test('should return 1 action when parcel is present', async () => {
     const sheetId = 'SD6743'
     const parcelId = '7268'
 
-    const agreements = await getAgreementsForParcel(
+    const actions = await getAgreementsForParcel(
       sheetId,
       parcelId,
       connection,
       logger
     )
 
-    expect(agreements[0].parcel_id).toBe('7268')
-    expect(agreements[0].sheet_id).toBe('SD6743')
-    expect(agreements[0].actions[0].unit).toBe('ha')
-    expect(agreements[0].actions[0].quantity).toBe(0.1)
-    expect(agreements[0].actions[0].action_code).toBe('UPL1')
+    expect(actions[0].code).toBe('UPL1')
+    expect(actions[0].unit).toBe('ha')
+    expect(actions[0].quantity).toBe(0.1)
   })
 })

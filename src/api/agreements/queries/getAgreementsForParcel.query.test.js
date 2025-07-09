@@ -5,6 +5,7 @@ describe('getAgreementsForParcel', () => {
   let mockLogger
   let mockClient
   let mockResult
+  let expectedTransformedResult
 
   beforeEach(() => {
     mockResult = {
@@ -35,6 +36,20 @@ describe('getAgreementsForParcel', () => {
         }
       ]
     }
+
+    // Expected result after transformation
+    expectedTransformedResult = [
+      {
+        code: 'UPL1',
+        unit: 'ha',
+        quantity: 0.5
+      },
+      {
+        code: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2
+      }
+    ]
 
     mockClient = {
       query: jest.fn().mockResolvedValue(mockResult),
@@ -72,7 +87,7 @@ describe('getAgreementsForParcel', () => {
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
 
-  test('should return the query results', async () => {
+  test('should return the transformed query results', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
@@ -83,7 +98,7 @@ describe('getAgreementsForParcel', () => {
       mockLogger
     )
 
-    expect(result).toEqual(mockResult.rows)
+    expect(result).toEqual(expectedTransformedResult)
   })
 
   test('should return empty array when no agreements found', async () => {
@@ -196,6 +211,6 @@ describe('getAgreementsForParcel', () => {
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2',
       [null, undefined]
     )
-    expect(result).toEqual(mockResult.rows)
+    expect(result).toEqual(expectedTransformedResult)
   })
 })

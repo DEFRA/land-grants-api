@@ -1,10 +1,16 @@
+import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
+
+/**
+ * @import {AgreementAction} from '~/src/api/agreements/agreements.d.js'
+ */
+
 /**
  * Get agreements for a parcel
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
  * @param {{object}} db connection
  * @param {{object}} logger object
- * @returns {object} The agreements
+ * @returns {Promise<AgreementAction[]>} The agreements
  */
 async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
   let client
@@ -25,7 +31,7 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
       `Retrieved agreements for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
     )
 
-    return result.rows
+    return agreementActionsTransformer(result.rows)
   } catch (error) {
     logger.error(`Error executing get agreements query: ${error}`)
     return
