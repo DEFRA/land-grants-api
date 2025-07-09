@@ -89,7 +89,7 @@ function parcelActionsTransformer(landParcel, actions) {
  * @returns {object} The transformed current actions
  */
 function plannedActionsTransformer(plannedActions) {
-  return plannedActions.map((a) => {
+  return (plannedActions || []).map((a) => {
     return {
       code: a.code,
       areaSqm: haToSqm(a.quantity)

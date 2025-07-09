@@ -69,7 +69,6 @@ describe('Calculate available area with agreements', () => {
     )
 
     const { data, statusCode } = getResponse()
-
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
