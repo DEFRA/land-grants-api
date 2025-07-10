@@ -20,13 +20,9 @@ async function getLandCoversForAction(actionCode, db, logger) {
     client = await db.connect()
 
     const query = `
-      SELECT DISTINCT
-        lcc.land_cover_code,
-        lcc.land_cover_class_code
-      FROM land_cover_codes_actions lca
-      INNER JOIN land_cover_codes lcc
-        ON lca.land_cover_code = lcc.land_cover_code
-        AND lca.land_cover_class_code = lcc.land_cover_class_code WHERE lca.action_code = $1`
+      SELECT DISTINCT land_cover_code, land_cover_class_code
+        FROM public.land_cover_codes_actions
+        WHERE action_code = $1`
 
     const actionLandCovers = await client.query(query, [actionCode])
 
