@@ -1,13 +1,15 @@
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 export const createCompatibilityMatrix = async (codes, logger) => {
   const compatibilityMatrices = await getCompatibilityMatrix(codes, logger)
   return (action1, action2) => {
     return compatibilityMatrices.some(
-      (a) => a.optionCode === action2 && a.optionCodeCompat === action1
+      (a) =>
+        (a.optionCode === action2 && a.optionCodeCompat === action1) ||
+        (a.optionCode === action1 && a.optionCodeCompat === action2)
     )
   }
 }

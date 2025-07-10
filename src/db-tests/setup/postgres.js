@@ -39,6 +39,10 @@ export async function seedPostgres(connection, options) {
     )
   }
 
+  if (options.agreements) {
+    await seedDatabase(connection, 'agreements-data.sql.gz', '../fixtures')
+  }
+
   if (options.moorland) {
     await seedDatabase(
       connection,
