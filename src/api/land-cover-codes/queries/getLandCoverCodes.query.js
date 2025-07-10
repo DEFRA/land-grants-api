@@ -17,7 +17,7 @@ async function getLandCoverCodesForCodes(codes, logger) {
       })
       .lean()
 
-    logger.info(`Land Cover Codes for Codes: ${JSON.stringify(landCovers)}`)
+    logger.info(`Land Cover Codes for Codes: ${landCovers?.length || 0}`)
     const landCoverCodes = landCovers.map((code) => code.landCoverCode)
     const uniqueCodes = Array.from(new Set(codes.concat(landCoverCodes)))
     return uniqueCodes.sort()
