@@ -40,7 +40,6 @@ describe('Calculate available area', () => {
       parcels: true,
       covers: true,
       moorland: false,
-      actions: false,
       landCoverCodes: true,
       landCoverCodesActions: true
     })
