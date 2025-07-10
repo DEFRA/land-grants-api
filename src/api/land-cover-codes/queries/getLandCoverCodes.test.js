@@ -1,13 +1,14 @@
 import { jest } from '@jest/globals'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
-import landCoverCodesModel from '~/src/api/land-cover-codes/models/land-cover-codes.model.js'
 import { mockLandCoverCodes } from '~/src/api/land-cover-codes/fixtures/index.js'
+import landCoverCodesModel from '~/src/api/land-cover-codes/models/land-cover-codes.model.js'
+import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
 
 jest.mock('~/src/api/land-cover-codes/models/land-cover-codes.model.js')
 
 describe('getLandCoverCodesForCodes', () => {
   const mockLogger = {
-    error: jest.fn()
+    error: jest.fn(),
+    info: jest.fn()
   }
 
   beforeEach(() => {
