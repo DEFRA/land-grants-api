@@ -64,7 +64,7 @@ export const postgresDb = {
         server.logger.info('Postgres connection successful')
         client.release()
 
-        if (options.isLocal && options.loadPostgresData) {
+        if (options.loadPostgresData) {
           await loadPostgresData('agreements-data.sql.gz', pool, server.logger)
           await loadPostgresData(
             'land-parcels-data.sql.gz',
