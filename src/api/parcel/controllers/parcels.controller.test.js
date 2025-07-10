@@ -8,18 +8,21 @@ import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailab
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
 import { getLandCoverCodesForCodes } from '../../land-cover-codes/queries/getLandCoverCodes.query.js'
 import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../actions/queries/index.js')
 jest.mock('~/src/available-area/calculateAvailableArea.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('../../land-cover-codes/queries/getLandCoverCodes.query.js')
+jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
 
 const mockGetLandData = getLandData
 const mockGetEnabledActions = getEnabledActions
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockGetAvailableAreaForAction = getAvailableAreaForAction
 const mockGetLandCoverCodesForCodes = getLandCoverCodesForCodes
+const mockGetAgreementsForParcel = getAgreementsForParcel
 
 describe('Parcels controller', () => {
   const server = Hapi.server()
@@ -69,6 +72,7 @@ describe('Parcels controller', () => {
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockGetAvailableAreaForAction.mockResolvedValue(mockAvailableAreaResult)
     mockGetLandCoverCodesForCodes.mockResolvedValue(mockLandCoverCodes)
+    mockGetAgreementsForParcel.mockResolvedValue([])
   })
 
   describe('POST /parcels route', () => {

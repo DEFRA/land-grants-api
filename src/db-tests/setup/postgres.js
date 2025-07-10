@@ -23,6 +23,10 @@ export async function seedPostgres(connection, options) {
     await seedDatabase(connection, 'land-covers-data.sql.gz', migrationPath)
   }
 
+  if (options.agreements) {
+    await seedDatabase(connection, 'agreements-data.sql.gz', '../fixtures')
+  }
+
   if (options.moorland) {
     await seedDatabase(
       connection,
