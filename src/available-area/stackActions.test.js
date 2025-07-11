@@ -17,7 +17,9 @@ describe('Stacks', function () {
     [
       'should return 1 stack when 1 action',
       {
-        existingActionsCompatibleByLandCover: [{ code: 'CMOR1', areaSqm: 5 }],
+        existingActionsCompatibleByLandCover: [
+          { actionCode: 'CMOR1', areaSqm: 5 }
+        ],
         expectedResult: {
           explanations: [
             'Adding CMOR1 (area 0.0005 ha)',
@@ -32,8 +34,8 @@ describe('Stacks', function () {
       'should return 1 stack when 2 actions and area is the same for both actions',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'CMOR1', areaSqm: 5 },
-          { code: 'UPL1', areaSqm: 5 }
+          { actionCode: 'CMOR1', areaSqm: 5 },
+          { actionCode: 'UPL1', areaSqm: 5 }
         ],
         expectedResult: {
           explanations: [
@@ -54,8 +56,8 @@ describe('Stacks', function () {
       'should return 2 stack when 2 actions and area for the second action is larger',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'CMOR1', areaSqm: 5 },
-          { code: 'UPL1', areaSqm: 10 }
+          { actionCode: 'CMOR1', areaSqm: 5 },
+          { actionCode: 'UPL1', areaSqm: 10 }
         ],
         expectedResult: {
           explanations: [
@@ -78,8 +80,8 @@ describe('Stacks', function () {
       'should return 2 stack when 2 actions and area when the second action is smaller',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'UPL1', areaSqm: 9 },
-          { code: 'CMOR1', areaSqm: 8 }
+          { actionCode: 'UPL1', areaSqm: 9 },
+          { actionCode: 'CMOR1', areaSqm: 8 }
         ],
         expectedResult: {
           explanations: [
@@ -102,8 +104,8 @@ describe('Stacks', function () {
       'should return 2 stack when 2 actions and area when the actions are not compatible',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'UPL1', areaSqm: 9 },
-          { code: 'UPL2', areaSqm: 8 }
+          { actionCode: 'UPL1', areaSqm: 9 },
+          { actionCode: 'UPL2', areaSqm: 8 }
         ],
         expectedResult: {
           explanations: [
@@ -125,9 +127,9 @@ describe('Stacks', function () {
       'should return 3 stacks when no actions are compatible',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'A', areaSqm: 3 },
-          { code: 'B', areaSqm: 9 },
-          { code: 'C', areaSqm: 8 }
+          { actionCode: 'A', areaSqm: 3 },
+          { actionCode: 'B', areaSqm: 9 },
+          { actionCode: 'C', areaSqm: 8 }
         ],
         expectedResult: {
           explanations: [
@@ -154,9 +156,9 @@ describe('Stacks', function () {
       'should return 3 stacks when all actions are compatible',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'A', areaSqm: 3 },
-          { code: 'B', areaSqm: 9 },
-          { code: 'C', areaSqm: 8 }
+          { actionCode: 'A', areaSqm: 3 },
+          { actionCode: 'B', areaSqm: 9 },
+          { actionCode: 'C', areaSqm: 8 }
         ],
         expectedResult: {
           explanations: [
@@ -190,9 +192,9 @@ describe('Stacks', function () {
       'should return 3 stacks when some actions are compatible',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'A', areaSqm: 3 },
-          { code: 'B', areaSqm: 8 },
-          { code: 'C', areaSqm: 9 }
+          { actionCode: 'A', areaSqm: 3 },
+          { actionCode: 'B', areaSqm: 8 },
+          { actionCode: 'C', areaSqm: 9 }
         ],
         expectedResult: {
           explanations: [
@@ -225,11 +227,11 @@ describe('Stacks', function () {
       'CIPM4: Real world example',
       {
         existingActionsCompatibleByLandCover: [
-          { code: 'SW1', areaSqm: 4600 },
-          { code: 'AB1', areaSqm: 5000 },
-          { code: 'PRF1', areaSqm: 87218 },
-          { code: 'SOH1', areaSqm: 91818 },
-          { code: 'CSAM1', areaSqm: 93555 }
+          { actionCode: 'SW1', areaSqm: 4600 },
+          { actionCode: 'AB1', areaSqm: 5000 },
+          { actionCode: 'PRF1', areaSqm: 87218 },
+          { actionCode: 'SOH1', areaSqm: 91818 },
+          { actionCode: 'CSAM1', areaSqm: 93555 }
         ],
         expectedResult: {
           explanations: [

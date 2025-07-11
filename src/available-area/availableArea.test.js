@@ -2,7 +2,6 @@ import { getAvailableAreaForAction } from './availableArea.js'
 import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
-import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 jest.mock('../api/land-cover-codes/queries/getLandCoversForAction.query.js')
 jest.mock('../api/parcel/queries/getLandCoversForParcel.query.js')
@@ -19,7 +18,7 @@ describe('getAvailableAreaForAction', () => {
   const mockSheetId = 'SX0679'
   const mockParcelId = '9238'
   const mockCompatibilityCheckFn = jest.fn()
-  const mockExistingActions = [{ code: 'UPL1', quantity: 100 }]
+  const mockExistingActions = [{ actionCode: 'UPL1', areaSqm: 100 }]
   const mockPostgresDb = {
     query: jest.fn(),
     connect: jest.fn(),
@@ -37,11 +36,11 @@ describe('getAvailableAreaForAction', () => {
   ]
 
   const mockLandCoversForParcel = [
-    { land_cover_code: '130', area: 3000 },
-    { land_cover_code: '240', area: 2000 }
+    { landCoverClassCode: '130', areaSqm: 3000 },
+    { landCoverClassCode: '240', areaSqm: 2000 }
   ]
   const mockAvailableAreaResult = {
-    stacks: [{ code: 'CMOR1', quantity: 3000 }],
+    stacks: [{ actionCode: 'CMOR1', areaSqm: 3000 }],
     explanations: ['Test explanation'],
     availableAreaSqm: 3000,
     totalValidLandCoverSqm: 5000,
@@ -74,17 +73,11 @@ describe('getAvailableAreaForAction', () => {
       mockPostgresDb,
       mockLogger
     )
-    expect(mockGetParcelAvailableArea).toHaveBeenCalledWith(
-      mockSheetId,
-      mockParcelId,
-      mergeLandCoverCodes(mockLandCoverCodes),
-      mockPostgresDb,
-      mockLogger
-    )
+
     expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
       mockExistingActions,
-      { code: mockActionCode },
-      mockTotalValidLandCoverSqm,
+      mockActionCode,
+      5000,
       mockCompatibilityCheckFn
     )
   })
