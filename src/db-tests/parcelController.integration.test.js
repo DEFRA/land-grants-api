@@ -12,15 +12,14 @@ import {
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
 import actionModel from '../api/actions/models/action.model.js'
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
-import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 const logger = {
   log: console.log,
+  warn: console.warn,
   info: console.info,
   error: console.error
 }
@@ -59,9 +58,10 @@ describe('Calculate available area', () => {
     async (
       name,
       {
+        applyingForAction,
         sheetId,
         parcelId,
-        applyingForAction,
+
         existingActions: existingActionsStr,
         expectedAvailableArea
       }
@@ -80,25 +80,22 @@ describe('Calculate available area', () => {
         logger
       )
 
-      const landCoverClassCodes = await getLandCoversForAction(
-        applyingForAction,
-        connection,
-        logger
-      )
+      // const landCoverClassCodes = await getLandCoversForAction(
+      //   applyingForAction,
+      //   connection,
+      //   logger
+      // )
 
-      console.info(
-        `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
-          landCoverClassCodes
-        )}`
-      )
+      // console.info(
+      //   `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
+      //     landCoverClassCodes
+      //   )}`
+      // )
 
-      const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
+      // const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
 
       const result = await getAvailableAreaForAction(
-        {
-          code: applyingForAction,
-          landCoverClassCodes: mergedLandCoverCodes
-        },
+        applyingForAction,
         sheetId,
         parcelId,
         compatibilityCheckFn,
@@ -106,6 +103,9 @@ describe('Calculate available area', () => {
         connection,
         logger
       )
+
+      console.log(JSON.stringify(result.explanations, null, 2))
+      console.log(JSON.stringify(result.stacks, null, 2))
 
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)

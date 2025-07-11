@@ -1,10 +1,10 @@
 scenarioName,sheetId,parcelId,applyingForAction,existingActions,expectedAvailableArea
 CMOR1 - No existing actions,SD6743,7268,CMOR1,[],0.59268576
-CMOR1 - One existing compatible action,SD6743,7268,CMOR1,"[{ ""code"": ""UPL1"", ""areaSqm"": 12.9, ""unit"": ""ha"" }]",0.59268576
-UPL2 - One existing incompatible action,SD6743,7268,UPL2,"[{ ""code"": ""UPL1"", ""areaSqm"": 1049.9, ""unit"": ""ha"" }]",0.48769576
-CMOR1 - Multiple existing compatible actions,SD6743,7268,CMOR1,"[{ ""code"": ""UPL6"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""UPL7"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.59268576
-UPL1 - Multiple existing incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""UPL3"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.52810576
-UPL1 - Multiple existing compatible and incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""CMOR1"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.58039576
-OFM3 - Multiple existing incompatible actions that are compatible between them,SD6743,7268,OFM3,"[{ ""code"": ""SPM4"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""SAM1"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.54039576
-CSAM1 - One existing incompatible action with no land cover in common,SD6853,6707,CSAM1,"[{ ""code"": ""WBD1"", ""areaSqm"": 175.07, ""unit"": ""ha"" }]",2.41323074
-CMOR1 - One existing incompatible action with land cover in common,SD7164,8058,CMOR1,"[{ ""code"": ""WS1"", ""areaSqm"": 25328.2335  }]",3.12543301
+CMOR1 - One existing compatible action,SD6743,7268,CMOR1,"[{ ""actionCode"": ""UPL1"", ""areaSqm"": 12.9 }]",0.59268576
+UPL2 - One existing incompatible action,SD6743,7268,UPL2,"[{ ""actionCode"": ""UPL1"", ""areaSqm"": 1049.9 }]",0.48769576
+CMOR1 - Multiple existing compatible actions,SD6743,7268,CMOR1,"[{ ""actionCode"": ""UPL6"", ""areaSqm"": 122.9 }, { ""actionCode"": ""UPL7"", ""areaSqm"": 522.9 }]",0.59268576
+UPL1 - Multiple existing incompatible actions,SD6743,7268,UPL1,"[{ ""actionCode"": ""UPL2"", ""areaSqm"": 122.9 }, { ""actionCode"": ""UPL3"", ""areaSqm"": 522.9 }]",0.52810576
+UPL1 - Multiple existing compatible and incompatible actions,SD6743,7268,UPL1,"[{ ""actionCode"": ""UPL2"", ""areaSqm"": 122.9 }, { ""actionCode"": ""CMOR1"", ""areaSqm"": 522.9 }]",0.58039576
+OFM3 - Multiple existing incompatible actions that are compatible between them,SD6743,7268,OFM3,"[{ ""actionCode"": ""SPM4"", ""areaSqm"": 122.9 }, { ""actionCode"": ""SAM1"", ""areaSqm"": 522.9 }]",0.54039576
+CSAM1 - One existing incompatible action with no land cover in common,SD6853,6707,CSAM1,"[{ ""actionCode"": ""WBD1"", ""areaSqm"": 175.07 }]",2.41323074
+CMOR1 - One existing incompatible action with land cover in common,SD7164,8058,CMOR1,"[{ ""actionCode"": ""WS1"", ""areaSqm"": 25328.2335  }]",3.12543301
