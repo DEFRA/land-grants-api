@@ -88,7 +88,7 @@ describe('Available Area', () => {
         'should return full area when no existing actions',
         {
           processedActions: [],
-          action: { code: 'CMOR1' },
+          action: { actionCode: 'CMOR1' },
           totalValidLandCoverSqm: 10000,
           compatibilityCheckFn: makeCompatibilityCheckFn({}),
           expectedResult: {
@@ -103,8 +103,8 @@ describe('Available Area', () => {
       [
         'should calculate available area with one existing compatible action',
         {
-          processedActions: [{ code: 'CMOR1', areaSqm: 1000 }],
-          action: { code: 'UPL1' },
+          processedActions: [{ actionCode: 'CMOR1', areaSqm: 1000 }],
+          action: { actionCode: 'UPL1' },
           totalValidLandCoverSqm: 10000,
           compatibilityCheckFn: makeCompatibilityCheckFn({ CMOR1: ['UPL1'] }),
           expectedResult: {
@@ -122,8 +122,8 @@ describe('Available Area', () => {
       [
         'should subtract incompatible stack area from available area',
         {
-          processedActions: [{ code: 'UPL1', areaSqm: 2000 }],
-          action: { code: 'UPL2' },
+          processedActions: [{ actionCode: 'UPL1', areaSqm: 2000 }],
+          action: { actionCode: 'UPL2' },
           totalValidLandCoverSqm: 10000,
           compatibilityCheckFn: makeCompatibilityCheckFn({}),
           expectedResult: {
@@ -142,10 +142,10 @@ describe('Available Area', () => {
         'should handle multiple compatible actions in same stack',
         {
           processedActions: [
-            { code: 'CMOR1', areaSqm: 1000 },
-            { code: 'UPL1', areaSqm: 1000 }
+            { actionCode: 'CMOR1', areaSqm: 1000 },
+            { actionCode: 'UPL1', areaSqm: 1000 }
           ],
-          action: { code: 'UPL3' },
+          action: { actionCode: 'UPL3' },
           totalValidLandCoverSqm: 5000,
           compatibilityCheckFn: makeCompatibilityCheckFn({
             CMOR1: ['UPL1', 'UPL3'],
@@ -172,11 +172,11 @@ describe('Available Area', () => {
         'should handle multiple incompatible actions that are compatible among them in separate stacks',
         {
           processedActions: [
-            { code: 'CHRW1', areaSqm: 10000 },
-            { code: 'CHRW2', areaSqm: 8000 },
-            { code: 'CHRW3', areaSqm: 7000 }
+            { actionCode: 'CHRW1', areaSqm: 10000 },
+            { actionCode: 'CHRW2', areaSqm: 8000 },
+            { actionCode: 'CHRW3', areaSqm: 7000 }
           ],
-          action: { code: 'CMOR1' },
+          action: { actionCode: 'CMOR1' },
           compatibilityCheckFn: makeCompatibilityCheckFn({
             CHRW1: ['CHRW2', 'CHRW3'],
             CHRW2: ['CHRW3']
@@ -224,10 +224,10 @@ describe('Available Area', () => {
         'should handle multiple incompatible actions in separate stacks',
         {
           processedActions: [
-            { code: 'UPL1', areaSqm: 1000 },
-            { code: 'UPL2', areaSqm: 2000 }
+            { actionCode: 'UPL1', areaSqm: 1000 },
+            { actionCode: 'UPL2', areaSqm: 2000 }
           ],
-          action: { code: 'UPL3' },
+          action: { actionCode: 'UPL3' },
           totalValidLandCoverSqm: 10000,
           compatibilityCheckFn: makeCompatibilityCheckFn({}),
           expectedResult: {
@@ -251,8 +251,8 @@ describe('Available Area', () => {
       [
         'should return zero available area when all land is used by incompatible actions',
         {
-          processedActions: [{ code: 'UPL1', areaSqm: 5000 }],
-          action: { code: 'UPL2' },
+          processedActions: [{ actionCode: 'UPL1', areaSqm: 5000 }],
+          action: { actionCode: 'UPL2' },
           totalValidLandCoverSqm: 5000,
           compatibilityCheckFn: makeCompatibilityCheckFn({}),
           expectedResult: {
@@ -283,7 +283,7 @@ describe('Available Area', () => {
       ) => {
         const result = calculateAvailableArea(
           processedActions,
-          action,
+          action.actionCode,
           totalValidLandCoverSqm,
           compatibilityCheckFn
         )

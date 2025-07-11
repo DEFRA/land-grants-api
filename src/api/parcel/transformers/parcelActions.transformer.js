@@ -85,13 +85,13 @@ function parcelActionsTransformer(landParcel, actions) {
 
 /**
  * Transform current actions to actions with area in square meters
- * @param {object} plannedActions - The planned actions to transform
- * @returns {object} The transformed current actions
+ * @param {AgreementAction[] | null} plannedActions - The planned actions to transform
+ * @returns {Action[]} The transformed current actions
  */
 function plannedActionsTransformer(plannedActions) {
-  return (plannedActions || []).map((a) => {
+  return (plannedActions ?? []).map((a) => {
     return {
-      code: a.code,
+      actionCode: a.actionCode,
       areaSqm: haToSqm(a.quantity)
     }
   })
@@ -99,8 +99,13 @@ function plannedActionsTransformer(plannedActions) {
 
 export {
   actionTransformer,
-  parcelTransformer,
   parcelActionsTransformer,
-  sizeTransformer,
-  plannedActionsTransformer
+  parcelTransformer,
+  plannedActionsTransformer,
+  sizeTransformer
 }
+
+/**
+ * @import { AgreementAction, AgreementActionSqm } from "../../agreements/agreements.d.js"
+ * @import { Action } from "~/src/available-area/available-area.d.js"
+ */

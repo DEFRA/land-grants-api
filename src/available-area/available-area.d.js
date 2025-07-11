@@ -2,13 +2,13 @@
  * @typedef {object} Stack
  * @property {number} stackNumber - The unique identifier for the stack
  * @property {string[]} actionCodes - The action codes associated with the stack
- * @property {number} quantity - The area of the stack in square meters
+ * @property {number} areaSqm - The area of the stack in square meters
  */
 
 /**
  * @typedef {object} Action
- * @property {string} code - The unique identifier for the action
- * @property {number} quantity - The area of the action in square meters
+ * @property {string} actionCode - The action code
+ * @property {number} areaSqm - The action area in sqm
  */
 
 /**
