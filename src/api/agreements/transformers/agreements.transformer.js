@@ -14,8 +14,18 @@ function agreementActionsTransformer(agreements) {
   })
 }
 
+/**
+ *
+ * @param {AgreementAction[]} agreementActions
+ * @param {AgreementAction[]} plannedActions
+ * @returns {AgreementAction[]}
+ */
 function mergeAgreementsTransformer(agreementActions, plannedActions) {
   return [...(agreementActions || []), ...(plannedActions || [])]
 }
 
 export { agreementActionsTransformer, mergeAgreementsTransformer }
+
+/**
+ * @import { AgreementAction } from "../agreements.d.js"
+ */

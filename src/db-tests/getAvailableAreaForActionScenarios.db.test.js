@@ -12,15 +12,16 @@ import {
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
 import actionModel from '../api/actions/models/action.model.js'
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
-import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 const logger = {
   log: console.log,
+  warn: console.warn,
   info: console.info,
   error: console.error
 }

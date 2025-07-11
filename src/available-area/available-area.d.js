@@ -7,8 +7,8 @@
 
 /**
  * @typedef {object} Action
- * @property {string} code - The unique identifier for the action
- * @property {number} quantity - The area of the action in square meters
+ * @property {string} actionCode - The action code
+ * @property {number} areaSqm - The action area in sqm
  */
 
 /**

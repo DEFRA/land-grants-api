@@ -14,6 +14,14 @@ export const createCompatibilityMatrix = async (codes, logger) => {
   }
 }
 
+/**
+ *
+ * @param {Action[]} processedActions
+ * @param {Action} action
+ * @param {number} totalValidLandCoverSqm
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @returns
+ */
 export function calculateAvailableArea(
   processedActions,
   action,
@@ -25,7 +33,7 @@ export function calculateAvailableArea(
 
   // subtract areas of stacks where any action is not compatible
   const availableAreaSqm = subtractIncompatibleStacks(
-    action.code,
+    action.actionCode,
     totalValidLandCoverSqm,
     result.stacks,
     compatibilityCheckFn
@@ -38,3 +46,7 @@ export function calculateAvailableArea(
     availableAreaHectares: sqmToHaRounded(availableAreaSqm)
   }
 }
+
+/**
+ * @import { Action, CompatibilityCheckFn } from "./available-area.d.js"
+ */

@@ -18,9 +18,9 @@ import {
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 /**
  * ParcelsController

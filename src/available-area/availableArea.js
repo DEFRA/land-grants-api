@@ -3,6 +3,17 @@ import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
 
+/**
+ *
+ * @param {Action} action
+ * @param {string} sheetId
+ * @param {string} parcelId
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @param {Action[]} existingActions
+ * @param {object} postgresDb
+ * @param {object} logger
+ * @returns
+ */
 export async function getAvailableAreaForAction(
   action,
   sheetId,
@@ -13,11 +24,11 @@ export async function getAvailableAreaForAction(
   logger
 ) {
   logger.info(
-    `Getting actionAvailableArea for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+    `Getting actionAvailableArea for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
   )
 
   const landCoverCodes = await getLandCoversForAction(
-    action.code,
+    action.actionCode,
     postgresDb,
     logger
   )
@@ -25,7 +36,7 @@ export async function getAvailableAreaForAction(
   const landCoverCodesForAppliedForAction = mergeLandCoverCodes(landCoverCodes)
 
   logger.info(
-    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${action.code} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
+    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
       landCoverCodesForAppliedForAction
     )}`
   )
@@ -39,7 +50,7 @@ export async function getAvailableAreaForAction(
   )
 
   logger.info(
-    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
   )
 
   const existingActionsWithLandCoverInCommonWithAppliedForAction =
@@ -52,13 +63,13 @@ export async function getAvailableAreaForAction(
 
   const availableArea = calculateAvailableArea(
     existingActionsWithLandCoverInCommonWithAppliedForAction,
-    { code: action.code },
+    { actionCode: action.actionCode },
     totalValidLandCoverSqm,
     compatibilityCheckFn
   )
 
   logger.info(
-    `availableArea ${availableArea.availableAreaHectares} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+    `availableArea ${availableArea.availableAreaHectares} for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
   )
 
   return availableArea
@@ -67,11 +78,11 @@ export async function getAvailableAreaForAction(
 /**
  * Filter existing actions to find those that share at least one land cover code
  * with the applied for action.
- * @param {string[]} existingActions - The list of existing actions
+ * @param {Action[]} existingActions - The list of existing actions
  * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {object} postgresDb - The database connection object
  * @param {object} logger - The logger object
- * @returns {Promise<string[]>} - A list of existing actions that share land cover codes
+ * @returns {Promise<Action[]>} - A list of existing actions that share land cover codes
  */
 async function filterActionsWithLandCoverInCommon(
   existingActions,
@@ -83,7 +94,7 @@ async function filterActionsWithLandCoverInCommon(
 
   for (const action of existingActions) {
     const actionLandCoverCodes = await getLandCoversForAction(
-      action.code,
+      action.actionCode,
       postgresDb,
       logger
     )
@@ -91,7 +102,7 @@ async function filterActionsWithLandCoverInCommon(
       mergeLandCoverCodes(actionLandCoverCodes)
 
     logger.info(
-      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesForAppliedForExistingAction.length} for action: ${action.code}: ${JSON.stringify(
+      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesForAppliedForExistingAction.length} for action: ${action.actionCode}: ${JSON.stringify(
         mergedLandCoverCodesForAppliedForExistingAction
       )}`
     )
@@ -108,3 +119,7 @@ async function filterActionsWithLandCoverInCommon(
 
   return actionsWithLandCoverInCommon
 }
+
+/**
+ * @import { Action, CompatibilityCheckFn } from './available-area.d.js'
+ */
