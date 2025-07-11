@@ -6,3 +6,4 @@ CMOR1 - Multiple existing compatible actions,SD6743,7268,CMOR1,"[{ ""code"": ""U
 UPL1 - Multiple existing incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""UPL3"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.52810576
 UPL1 - Multiple existing compatible and incompatible actions,SD6743,7268,UPL1,"[{ ""code"": ""UPL2"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""CMOR1"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.58039576
 OFM3 - Multiple existing incompatible actions that are compatible between them,SD6743,7268,OFM3,"[{ ""code"": ""SPM4"", ""areaSqm"": 122.9, ""unit"": ""ha"" }, { ""code"": ""SAM1"", ""areaSqm"": 522.9, ""unit"": ""ha"" }]",0.54039576
+CSAM1 - One existing incompatible action with no land cover in common,SD6853,6707,CSAM1,"[{ ""code"": ""WBD1"", ""areaSqm"": 175.07, ""unit"": ""ha"" }]",2.41323074

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import {
@@ -11,15 +12,17 @@ import {
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
 import actionModel from '../api/actions/models/action.model.js'
-import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
+import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 const logger = {
-  info: jest.fn(),
-  error: jest.fn()
+  log: console.log,
+  info: console.info,
+  error: console.error
 }
 
 let connection
@@ -73,19 +76,28 @@ describe('Calculate available area', () => {
       }
 
       const compatibilityCheckFn = await createCompatibilityMatrix(
-        ['CMOR1', 'UPL1', 'UPL2', 'UPL3', 'SAM1', 'SPM4', 'OFM3'],
+        ['CMOR1', 'UPL1', 'UPL2', 'UPL3', 'SAM1', 'SPM4', 'OFM3', 'CAHL3'],
         logger
       )
 
-      const enabledActions = await getEnabledActions(logger)
-      const currentAction = enabledActions.find(
-        (action) => action.code === applyingForAction
+      const landCoverClassCodes = await getLandCoversForAction(
+        applyingForAction,
+        connection,
+        logger
       )
+
+      console.info(
+        `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
+          landCoverClassCodes
+        )}`
+      )
+
+      const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
 
       const result = await getAvailableAreaForAction(
         {
           code: applyingForAction,
-          landCoverClassCodes: currentAction.landCoverClassCodes
+          landCoverClassCodes: mergedLandCoverCodes
         },
         sheetId,
         parcelId,
