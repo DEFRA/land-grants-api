@@ -22,16 +22,18 @@ export async function getAvailableAreaForAction(
     logger
   )
 
-  const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
+  const landCoverCodesForAppliedForAction = mergeLandCoverCodes(landCoverCodes)
 
   logger.info(
-    `Found ${mergedLandCoverCodes.length} mergedLandCoverCodes for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
+    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${action.code} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
+      landCoverCodesForAppliedForAction
+    )}`
   )
 
   const totalValidLandCoverSqm = await getParcelAvailableArea(
     sheetId,
     parcelId,
-    mergedLandCoverCodes,
+    landCoverCodesForAppliedForAction,
     postgresDb,
     logger
   )
@@ -40,8 +42,16 @@ export async function getAvailableAreaForAction(
     `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.code} for parcel: ${sheetId}-${parcelId}`
   )
 
+  const existingActionsWithLandCoverInCommonWithAppliedForAction =
+    await filterActionsWithLandCoverInCommon(
+      existingActions || [],
+      landCoverCodesForAppliedForAction,
+      postgresDb,
+      logger
+    )
+
   const availableArea = calculateAvailableArea(
-    existingActions || [],
+    existingActionsWithLandCoverInCommonWithAppliedForAction,
     { code: action.code },
     totalValidLandCoverSqm,
     compatibilityCheckFn
@@ -52,4 +62,40 @@ export async function getAvailableAreaForAction(
   )
 
   return availableArea
+}
+
+/**
+ * Filter existing actions to find those that share at least one land cover code
+ * with the applied for action.
+ * @param {string[]} existingActions - The list of existing actions
+ * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @param {object} postgresDb - The database connection object
+ * @param {object} logger - The logger object
+ * @returns {Promise<string[]>} - A list of existing actions that share land cover codes
+ */
+async function filterActionsWithLandCoverInCommon(
+  existingActions,
+  landCoverCodesForAppliedForAction,
+  postgresDb,
+  logger
+) {
+  const actionsWithLandCoverInCommon = []
+
+  for (const action of existingActions) {
+    const actionLandCoverCodes = await getLandCoversForAction(
+      action.code,
+      postgresDb,
+      logger
+    )
+
+    const hasLandCoverInCommon = actionLandCoverCodes.some((code) =>
+      landCoverCodesForAppliedForAction.includes(code)
+    )
+
+    if (hasLandCoverInCommon) {
+      actionsWithLandCoverInCommon.push(action)
+    }
+  }
+
+  return actionsWithLandCoverInCommon
 }
