@@ -266,7 +266,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
       }
 
       if (remainingAreaForAction >= existingStack.areaSqm) {
-        existingStack.actionCodes.push(action.code)
+        existingStack.actionCodes.push(action.actionCode)
         remainingAreaForAction -= existingStack.areaSqm
         explanations.push(explain.addedToStack(action, existingStack))
       } else {
@@ -290,7 +290,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
 
     if (currentActionHasAreaNotAssignedToAnyStack) {
       const { stack: newStack, explanation } = createStack(
-        [action.code],
+        [action.actionCode],
         remainingAreaForAction
       )
       stacks.push(newStack)

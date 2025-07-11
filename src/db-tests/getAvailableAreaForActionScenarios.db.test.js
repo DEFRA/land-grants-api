@@ -18,6 +18,7 @@ import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
+import { json } from 'stream/consumers'
 
 const logger = {
   log: console.log,
@@ -105,6 +106,9 @@ describe('Calculate available area', () => {
         connection,
         logger
       )
+
+      console.log(JSON.stringify(result.explanations, null, 2))
+      console.log(JSON.stringify(result.stacks, null, 2))
 
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
