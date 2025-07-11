@@ -1,7 +1,7 @@
 import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
-import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 export async function getAvailableAreaForAction(
   action,
@@ -87,10 +87,19 @@ async function filterActionsWithLandCoverInCommon(
       postgresDb,
       logger
     )
+    const mergedLandCoverCodesForAppliedForExistingAction =
+      mergeLandCoverCodes(actionLandCoverCodes)
 
-    const hasLandCoverInCommon = actionLandCoverCodes.some((code) =>
-      landCoverCodesForAppliedForAction.includes(code)
+    logger.info(
+      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesForAppliedForExistingAction.length} for action: ${action.code}: ${JSON.stringify(
+        mergedLandCoverCodesForAppliedForExistingAction
+      )}`
     )
+
+    const hasLandCoverInCommon =
+      mergedLandCoverCodesForAppliedForExistingAction.some((code) =>
+        landCoverCodesForAppliedForAction.includes(code)
+      )
 
     if (hasLandCoverInCommon) {
       actionsWithLandCoverInCommon.push(action)
