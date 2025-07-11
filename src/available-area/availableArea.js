@@ -24,7 +24,7 @@ export async function getAvailableAreaForAction(
   logger
 ) {
   logger.info(
-    `Getting actionAvailableArea for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
+    `Getting available area for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
   const landCoverCodes = await getLandCoversForAction(

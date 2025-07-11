@@ -79,6 +79,11 @@ const ParcelsController = {
           plannedActions
         )
 
+        request.logger.info(
+          `Merged actions for parcel ${sheetId}-${parcelId}:`,
+          mergedActions
+        )
+
         const parcelResponse = {
           parcelId: landParcel['0'].parcel_id,
           sheetId: landParcel['0'].sheet_id
@@ -100,14 +105,10 @@ const ParcelsController = {
             return Boom.notFound(errorMessage)
           }
 
-          request.logger.info(
-            `Found ${actions.length} actions for parcel: ${sheetId}-${parcelId}`
-          )
+          request.logger.info(`Found ${actions.length} action configs from DB`)
 
           const codes = actions.map((a) => a.code)
-          request.logger.info(
-            `Found ${codes.length} codes for parcel: ${sheetId}-${parcelId}`
-          )
+
           const compatibilityCheckFn = await createCompatibilityMatrix(
             codes,
             request.logger
@@ -118,7 +119,7 @@ const ParcelsController = {
               .filter((a) => a.display)
               .map(async (action) => {
                 const availableArea = await getAvailableAreaForAction(
-                  action,
+                  action.code,
                   sheetId,
                   parcelId,
                   compatibilityCheckFn,

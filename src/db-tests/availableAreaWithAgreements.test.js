@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'

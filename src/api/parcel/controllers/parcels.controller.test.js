@@ -417,7 +417,7 @@ describe('Parcels controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(mockGetAvailableAreaForAction).toHaveBeenCalledWith(
-        mockActions[0],
+        'CMOR1',
         'SX0679',
         '9238',
         mockCompatibilityCheckFn,
