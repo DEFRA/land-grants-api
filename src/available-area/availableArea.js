@@ -5,7 +5,7 @@ import { calculateAvailableArea } from './calculateAvailableArea.js'
 
 /**
  *
- * @param {Action} action
+ * @param {string} actionCodeAppliedFor
  * @param {string} sheetId
  * @param {string} parcelId
  * @param {CompatibilityCheckFn} compatibilityCheckFn
@@ -15,7 +15,7 @@ import { calculateAvailableArea } from './calculateAvailableArea.js'
  * @returns
  */
 export async function getAvailableAreaForAction(
-  action,
+  actionCodeAppliedFor,
   sheetId,
   parcelId,
   compatibilityCheckFn,
@@ -24,11 +24,11 @@ export async function getAvailableAreaForAction(
   logger
 ) {
   logger.info(
-    `Getting actionAvailableArea for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
+    `Getting actionAvailableArea for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
   const landCoverCodes = await getLandCoversForAction(
-    action.actionCode,
+    actionCodeAppliedFor,
     postgresDb,
     logger
   )
@@ -36,7 +36,7 @@ export async function getAvailableAreaForAction(
   const landCoverCodesForAppliedForAction = mergeLandCoverCodes(landCoverCodes)
 
   logger.info(
-    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
+    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
       landCoverCodesForAppliedForAction
     )}`
   )
@@ -50,7 +50,7 @@ export async function getAvailableAreaForAction(
   )
 
   logger.info(
-    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
+    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
   const existingActionsWithLandCoverInCommonWithAppliedForAction =
@@ -63,13 +63,13 @@ export async function getAvailableAreaForAction(
 
   const availableArea = calculateAvailableArea(
     existingActionsWithLandCoverInCommonWithAppliedForAction,
-    { actionCode: action.actionCode },
+    actionCodeAppliedFor,
     totalValidLandCoverSqm,
     compatibilityCheckFn
   )
 
   logger.info(
-    `availableArea ${availableArea.availableAreaHectares} for action: ${action.actionCode} for parcel: ${sheetId}-${parcelId}`
+    `availableArea ${availableArea.availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
   return availableArea

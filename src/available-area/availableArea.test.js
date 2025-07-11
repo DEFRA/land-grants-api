@@ -14,10 +14,7 @@ const mockGetParcelAvailableArea = getParcelAvailableArea
 const mockCalculateAvailableArea = calculateAvailableArea
 
 describe('getAvailableAreaForAction', () => {
-  const mockAction = {
-    code: 'CMOR1',
-    landCoverClassCodes: ['130', '240']
-  }
+  const mockActionCode = 'CMOR1'
 
   const mockSheetId = 'SX0679'
   const mockParcelId = '9238'
@@ -58,7 +55,7 @@ describe('getAvailableAreaForAction', () => {
 
   test('should return available area calculation result', async () => {
     const result = await getAvailableAreaForAction(
-      mockAction,
+      mockActionCode,
       mockSheetId,
       mockParcelId,
       mockCompatibilityCheckFn,
@@ -70,7 +67,7 @@ describe('getAvailableAreaForAction', () => {
     expect(result).toEqual(mockAvailableAreaResult)
 
     expect(mockGetLandCoversForAction).toHaveBeenCalledWith(
-      mockAction.code,
+      mockActionCode,
       mockPostgresDb,
       mockLogger
     )
@@ -83,7 +80,7 @@ describe('getAvailableAreaForAction', () => {
     )
     expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
       mockExistingActions,
-      { code: mockAction.code },
+      { code: mockActionCode },
       mockTotalValidLandCoverSqm,
       mockCompatibilityCheckFn
     )

@@ -60,9 +60,10 @@ describe('Calculate available area', () => {
     async (
       name,
       {
+        applyingForAction,
         sheetId,
         parcelId,
-        applyingForAction,
+
         existingActions: existingActionsStr,
         expectedAvailableArea
       }
@@ -81,25 +82,22 @@ describe('Calculate available area', () => {
         logger
       )
 
-      const landCoverClassCodes = await getLandCoversForAction(
-        applyingForAction,
-        connection,
-        logger
-      )
+      // const landCoverClassCodes = await getLandCoversForAction(
+      //   applyingForAction,
+      //   connection,
+      //   logger
+      // )
 
-      console.info(
-        `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
-          landCoverClassCodes
-        )}`
-      )
+      // console.info(
+      //   `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
+      //     landCoverClassCodes
+      //   )}`
+      // )
 
-      const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
+      // const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
 
       const result = await getAvailableAreaForAction(
-        {
-          code: applyingForAction,
-          landCoverClassCodes: mergedLandCoverCodes
-        },
+        applyingForAction,
         sheetId,
         parcelId,
         compatibilityCheckFn,

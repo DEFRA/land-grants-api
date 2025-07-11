@@ -17,14 +17,14 @@ export const createCompatibilityMatrix = async (codes, logger) => {
 /**
  *
  * @param {Action[]} processedActions
- * @param {Action} action
+ * @param {string} actionCodeAppliedFor
  * @param {number} totalValidLandCoverSqm
  * @param {CompatibilityCheckFn} compatibilityCheckFn
  * @returns
  */
 export function calculateAvailableArea(
   processedActions,
-  action,
+  actionCodeAppliedFor,
   totalValidLandCoverSqm,
   compatibilityCheckFn
 ) {
@@ -33,7 +33,7 @@ export function calculateAvailableArea(
 
   // subtract areas of stacks where any action is not compatible
   const availableAreaSqm = subtractIncompatibleStacks(
-    action.actionCode,
+    actionCodeAppliedFor,
     totalValidLandCoverSqm,
     result.stacks,
     compatibilityCheckFn
