@@ -422,7 +422,7 @@ describe('Parcels controller', () => {
         '9238',
         mockCompatibilityCheckFn,
         plannedActions.map((a) => ({
-          code: a.code,
+          actionCode: a.actionCode,
           areaSqm: haToSqm(a.quantity)
         })),
         expect.any(Object),

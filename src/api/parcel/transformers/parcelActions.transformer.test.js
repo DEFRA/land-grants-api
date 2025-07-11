@@ -276,11 +276,13 @@ describe('parcelActionsTransformer', () => {
 
 describe('plannedActionsTransformer', () => {
   test('should transform current actions to actions with area in square meters', () => {
-    const plannedActions = [{ code: 'UPL1', quantity: 0.00001 }]
+    const plannedActions = [
+      { actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }
+    ]
 
     const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ code: 'UPL1', areaSqm: 0.1 }])
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 0.1 }])
   })
 
   test('should return empty array when plannedActions is null', () => {

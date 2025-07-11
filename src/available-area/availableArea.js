@@ -48,8 +48,6 @@ export async function getAvailableAreaForAction(
     logger
   )
 
-  console.log(JSON.stringify(landCoversForParcel, null, 2))
-
   const totalValidLandCoverSqm = landCoversForParcel.reduce((total, cover) => {
     if (landCoverCodesForAppliedForAction.includes(cover.landCoverClassCode)) {
       return total + cover.areaSqm
@@ -103,9 +101,9 @@ async function filterActionsWithLandCoverInCommon(
 ) {
   const actionsWithLandCoverInCommon = []
 
-  for (const action of existingActions) {
+  for (const existingAction of existingActions) {
     const actionLandCoverCodes = await getLandCoversForAction(
-      action.actionCode,
+      existingAction.actionCode,
       postgresDb,
       logger
     )
@@ -113,7 +111,7 @@ async function filterActionsWithLandCoverInCommon(
       mergeLandCoverCodes(actionLandCoverCodes)
 
     logger.info(
-      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesExistingAction.length} for action: ${action.actionCode}: ${JSON.stringify(
+      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesExistingAction.length} for action: ${existingAction.actionCode}: ${JSON.stringify(
         mergedLandCoverCodesExistingAction
       )}`
     )
@@ -140,10 +138,10 @@ async function filterActionsWithLandCoverInCommon(
           0
         )
 
-      const revisedArea = action.areaSqm - totalAreaNotInCommon
+      const revisedArea = existingAction.areaSqm - totalAreaNotInCommon
 
       const existingActionWithRevisedArea = {
-        ...action,
+        ...existingAction,
         areaSqm: revisedArea < 0 ? 0 : revisedArea
       }
 

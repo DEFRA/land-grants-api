@@ -1,16 +1,16 @@
 import { getAvailableAreaForAction } from './availableArea.js'
 import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
-import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
+import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
 import { calculateAvailableArea } from './calculateAvailableArea.js'
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 jest.mock('../api/land-cover-codes/queries/getLandCoversForAction.query.js')
-jest.mock('../api/parcel/queries/getParcelAvailableArea.query.js')
+jest.mock('../api/parcel/queries/getLandCoversForParcel.query.js')
 jest.mock('../api/parcel/transformers/parcelActions.transformer.js')
 jest.mock('./calculateAvailableArea.js')
 
 const mockGetLandCoversForAction = getLandCoversForAction
-const mockGetParcelAvailableArea = getParcelAvailableArea
+const mockGetLandCoversForParcel = getLandCoversForParcel
 const mockCalculateAvailableArea = calculateAvailableArea
 
 describe('getAvailableAreaForAction', () => {
@@ -36,7 +36,10 @@ describe('getAvailableAreaForAction', () => {
     { land_cover_code: '240', land_cover_class_code: '240' }
   ]
 
-  const mockTotalValidLandCoverSqm = 5000
+  const mockLandCoversForParcel = [
+    { land_cover_code: '130', area: 3000 },
+    { land_cover_code: '240', area: 2000 }
+  ]
   const mockAvailableAreaResult = {
     stacks: [{ code: 'CMOR1', quantity: 3000 }],
     explanations: ['Test explanation'],
@@ -49,7 +52,7 @@ describe('getAvailableAreaForAction', () => {
     jest.clearAllMocks()
 
     mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
-    mockGetParcelAvailableArea.mockResolvedValue(mockTotalValidLandCoverSqm)
+    mockGetLandCoversForParcel.mockResolvedValue(mockLandCoversForParcel)
     mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
 
