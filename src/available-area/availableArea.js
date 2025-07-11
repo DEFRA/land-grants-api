@@ -4,6 +4,21 @@ import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForPa
 import { calculateAvailableArea } from './calculateAvailableArea.js'
 
 /**
+ * Calculates total valid land cover area, based on an array of LandCovers and a list of allowed codes
+ * @param {LandCover[]} landCovers
+ * @param {string[]} allowedCodes
+ * @returns {number}
+ */
+const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) =>
+  landCovers.reduce(
+    (total, cover) =>
+      allowedCodes.includes(cover.landCoverClassCode)
+        ? total + cover.areaSqm
+        : total,
+    0
+  )
+
+/**
  *
  * @param {string} actionCodeAppliedFor
  * @param {string} sheetId
@@ -27,13 +42,9 @@ export async function getAvailableAreaForAction(
     `Getting available area for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
-  const landCoverCodes = await getLandCoversForAction(
-    actionCodeAppliedFor,
-    postgresDb,
-    logger
+  const landCoverCodesForAppliedForAction = mergeLandCoverCodes(
+    await getLandCoversForAction(actionCodeAppliedFor, postgresDb, logger)
   )
-
-  const landCoverCodesForAppliedForAction = mergeLandCoverCodes(landCoverCodes)
 
   logger.info(
     `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
@@ -48,12 +59,10 @@ export async function getAvailableAreaForAction(
     logger
   )
 
-  const totalValidLandCoverSqm = landCoversForParcel.reduce((total, cover) => {
-    if (landCoverCodesForAppliedForAction.includes(cover.landCoverClassCode)) {
-      return total + cover.areaSqm
-    }
-    return total
-  }, 0)
+  const totalValidLandCoverSqm = calculateTotalValidLandCoverArea(
+    landCoversForParcel,
+    landCoverCodesForAppliedForAction
+  )
 
   logger.info(
     `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
@@ -83,6 +92,26 @@ export async function getAvailableAreaForAction(
 }
 
 /**
+ * Calculates not common land covers total area, based on parcel covers that are present on existing action codes but are not in common with appliedActionCodes
+ * @param {LandCover[]} parcelCovers
+ * @param {string[]} existingActionCodes
+ * @param {string[]} appliedActionCodes
+ * @returns
+ */
+const calculateNotCommonLandCoversTotalArea = (
+  parcelCovers,
+  existingActionCodes,
+  appliedActionCodes
+) =>
+  parcelCovers
+    .filter(
+      (cover) =>
+        existingActionCodes.includes(cover.landCoverClassCode) &&
+        !appliedActionCodes.includes(cover.landCoverClassCode)
+    )
+    .reduce((total, cover) => total + cover.areaSqm, 0)
+
+/**
  * Filter existing actions to find those that share at least one land cover code
  * with the applied for action.
  * @param {Action[]} existingActions - The list of existing actions
@@ -102,41 +131,30 @@ async function filterActionsWithLandCoverInCommon(
   const actionsWithLandCoverInCommon = []
 
   for (const existingAction of existingActions) {
-    const actionLandCoverCodes = await getLandCoversForAction(
-      existingAction.actionCode,
-      postgresDb,
-      logger
+    const landCoverCodesForExistingAction = mergeLandCoverCodes(
+      await getLandCoversForAction(
+        existingAction.actionCode,
+        postgresDb,
+        logger
+      )
     )
-    const mergedLandCoverCodesExistingAction =
-      mergeLandCoverCodes(actionLandCoverCodes)
 
     logger.info(
-      `filterActionsWithLandCoverInCommon - Found ${mergedLandCoverCodesExistingAction.length} for action: ${existingAction.actionCode}: ${JSON.stringify(
-        mergedLandCoverCodesExistingAction
+      `filterActionsWithLandCoverInCommon - Found ${landCoverCodesForExistingAction.length} for action: ${existingAction.actionCode}: ${JSON.stringify(
+        landCoverCodesForExistingAction
       )}`
     )
 
-    const hasLandCoverInCommon = mergedLandCoverCodesExistingAction.some(
-      (code) => landCoverCodesForAppliedForAction.includes(code)
+    const hasLandCoverInCommon = landCoverCodesForExistingAction.some((code) =>
+      landCoverCodesForAppliedForAction.includes(code)
     )
 
     if (hasLandCoverInCommon) {
-      const landCoversNotInCommonWithAppliedForAction =
-        landCoversForParcel.filter(
-          (cover) =>
-            mergedLandCoverCodesExistingAction.includes(
-              cover.landCoverClassCode
-            ) &&
-            !landCoverCodesForAppliedForAction.includes(
-              cover.landCoverClassCode
-            )
-        )
-
-      const totalAreaNotInCommon =
-        landCoversNotInCommonWithAppliedForAction.reduce(
-          (total, cover) => total + cover.areaSqm,
-          0
-        )
+      const totalAreaNotInCommon = calculateNotCommonLandCoversTotalArea(
+        landCoversForParcel,
+        landCoverCodesForExistingAction,
+        landCoverCodesForAppliedForAction
+      )
 
       const revisedArea = existingAction.areaSqm - totalAreaNotInCommon
 
