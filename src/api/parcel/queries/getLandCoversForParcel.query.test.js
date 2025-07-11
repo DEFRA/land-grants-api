@@ -84,19 +84,17 @@ describe('getLandCoversForParcel', () => {
   test('should handle errors and return undefined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const error = new Error('Database error')
+    const error = new Error('Connection error')
     mockClient.query = jest.fn().mockRejectedValue(error)
 
-    const result = await getLandCoversForParcel(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+    await expect(
+      getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
+    ).rejects.toThrow('Connection error')
 
-    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Error executing get land covers by parcel id query',
+      expect.stringContaining(
+        'Error retrieving land covers for parcelId: SH123-PA456'
+      ),
       error
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -107,14 +105,10 @@ describe('getLandCoversForParcel', () => {
     const parcelId = 'PA456'
     mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getLandCoversForParcel(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+    await expect(
+      getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
+    ).rejects.toThrow('Connection error')
 
-    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })

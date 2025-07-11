@@ -4,7 +4,7 @@
  * @param {string} parcelId - Parcel ID.
  * @param {object} db - DB connection object
  * @param {object} logger - logger object
- * @returns {Promise<LandCover[]>} Available area in square meters.
+ * @returns {Promise<LandCover[] | undefined>} Available area in square meters.
  */
 async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
   let client
@@ -31,7 +31,8 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     return landCovers
   } catch (err) {
     logger.error(
-      `Error retrieving land covers for parcelId: ${sheetId}-${parcelId} ${err.message}, ${err.stack}`
+      `Error retrieving land covers for parcelId: ${sheetId}-${parcelId} ${err.message}`,
+      err
     )
     throw err
   } finally {
