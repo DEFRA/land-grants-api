@@ -13,8 +13,6 @@ import {
 import actionModel from '../api/actions/models/action.model.js'
 import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
-import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
-import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
@@ -37,12 +35,13 @@ describe('Calculate available area', () => {
       'compatibility-matrix',
       compatibilityMatrix
     )
-    await seedMongo(landCoverCodesModel, 'land-cover-codes', landCoverCodes)
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
       parcels: true,
       covers: true,
-      moorland: false
+      moorland: false,
+      landCoverCodes: true,
+      landCoverCodesActions: true
     })
   }, 60000)
 

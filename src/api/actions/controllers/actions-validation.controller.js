@@ -10,13 +10,14 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandCoverCodesForCodes } from '~/src/api/land-cover-codes/queries/getLandCoverCodes.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 
 /**
  * LandActionsValidateController
@@ -69,18 +70,21 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const landCoverCodes = await getLandCoverCodesForCodes(
-        actions[0].landCoverClassCodes,
-        request.logger
-      )
-
       let results = []
 
       for (const action of landActions[0].actions) {
+        const landCoverCodes = await getLandCoversForAction(
+          action.code,
+          request.server.postgresDb,
+          request.logger
+        )
+
+        const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
+
         const parcelAvailableArea = await getParcelAvailableArea(
           landActions[0].sheetId,
           landActions[0].parcelId,
-          landCoverCodes,
+          mergedLandCoverCodes,
           request.server.postgresDb,
           request.logger
         )

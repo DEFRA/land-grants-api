@@ -3,8 +3,6 @@ import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/comp
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
 import actionModel from '../api/actions/models/action.model.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
-import landCoverCodes from '../api/common/helpers/seed-data/land-cover-codes.js'
-import landCoverCodesModel from '../api/land-cover-codes/models/land-cover-codes.model.js'
 
 import {
   connectToTestDatbase,
@@ -34,13 +32,14 @@ describe('Calculate available area with agreements', () => {
       'compatibility-matrix',
       compatibilityMatrix
     )
-    await seedMongo(landCoverCodesModel, 'land-cover-codes', landCoverCodes)
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
       parcels: true,
       covers: true,
       moorland: false,
-      agreements: true
+      agreements: true,
+      landCoverCodes: true,
+      landCoverCodesActions: true
     })
   }, 60000)
 
@@ -195,7 +194,6 @@ describe('Calculate available area with agreements', () => {
 
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
-    // console.log(JSON.stringify(data, null, 2))
     expect(data.parcels).toEqual([
       {
         parcelId: '7268',

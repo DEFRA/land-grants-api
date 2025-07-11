@@ -77,6 +77,16 @@ export const postgresDb = {
             pool,
             server.logger
           )
+          await loadPostgresData(
+            'land-cover-codes-data.sql.gz',
+            pool,
+            server.logger
+          )
+          await loadPostgresData(
+            'land-cover-codes-actions-data.sql.gz',
+            pool,
+            server.logger
+          )
         }
 
         server.decorate('server', 'postgresDb', pool)
