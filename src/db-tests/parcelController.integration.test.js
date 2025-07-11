@@ -1,6 +1,10 @@
 /* eslint-disable no-console */
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
+import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
+import actionModel from '../api/actions/models/action.model.js'
+import actions from '../api/common/helpers/seed-data/action-data.js'
+
 import {
   connectToTestDatbase,
   resetDatabase,
@@ -9,26 +13,20 @@ import {
 import {
   closeMongo,
   connectMongo,
+  createResponseCapture,
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
-import actionModel from '../api/actions/models/action.model.js'
-import actions from '../api/common/helpers/seed-data/action-data.js'
-import { getAvailableAreaForAction } from '../available-area/availableArea.js'
-import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
-import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
 const logger = {
-  log: console.log,
-  warn: console.warn,
   info: console.info,
-  error: console.error
+  error: console.error,
+  warn: console.warn,
+  debug: console.debug
 }
 
 let connection
 
-describe('Calculate available area', () => {
-  const fixtures = getAvailableAreaFixtures()
-
+describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
     await connectMongo()
     await seedMongo(actionModel, 'action-data', actions)
@@ -42,6 +40,7 @@ describe('Calculate available area', () => {
       parcels: true,
       covers: true,
       moorland: false,
+      agreements: true,
       landCoverCodes: true,
       landCoverCodesActions: true
     })
@@ -53,63 +52,282 @@ describe('Calculate available area', () => {
     await connection.end()
   })
 
-  test.each(fixtures)(
-    `%p`,
-    async (
-      name,
+  test('should return 1 stack for 1 existing agreement actions', async () => {
+    const { h, getResponse } = createResponseCapture()
+
+    await ParcelsController.handler(
       {
-        applyingForAction,
-        sheetId,
-        parcelId,
+        payload: {
+          parcelIds: ['SD6743-7268'],
+          fields: ['size', 'actions.availableArea', 'actions.results'],
+          plannedActions: []
+        },
+        logger,
+        server: {
+          postgresDb: connection
+        }
+      },
+      h
+    )
 
-        existingActions: existingActionsStr,
-        expectedAvailableArea
+    const { data, statusCode } = getResponse()
+    expect(statusCode).toBe(200)
+    expect(data.message).toBe('success')
+    expect(data.parcels).toEqual([
+      {
+        parcelId: '7268',
+        sheetId: 'SD6743',
+        size: {
+          unit: 'ha',
+          value: 0.656374
+        },
+        actions: [
+          {
+            code: 'CMOR1',
+            description: 'CMOR1: Assess moorland and produce a written record',
+            availableArea: {
+              unit: 'ha',
+              value: 0.59268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL1',
+            description: 'UPL1: Moderate livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.49268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL2',
+            description: 'UPL2: Low livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.49268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL3',
+            description: 'UPL3: Limited livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.49268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha'
+              ]
+            }
+          }
+        ]
       }
-    ) => {
-      let existingActions = []
-      try {
-        existingActions = JSON.parse(existingActionsStr)
-      } catch (e) {
-        logger.error(
-          `Error parsing existing actions in CSV file for parcelId ${parcelId}, sheetId ${sheetId}`
-        )
+    ])
+  })
+
+  test('should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action', async () => {
+    const { h, getResponse } = createResponseCapture()
+
+    await ParcelsController.handler(
+      {
+        payload: {
+          parcelIds: ['SD6743-7268'],
+          fields: ['size', 'actions.availableArea', 'actions.results'],
+          plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
+        },
+        logger,
+        server: {
+          postgresDb: connection
+        }
+      },
+      h
+    )
+
+    const { data, statusCode } = getResponse()
+
+    expect(statusCode).toBe(200)
+    expect(data.message).toBe('success')
+    expect(data.parcels).toEqual([
+      {
+        parcelId: '7268',
+        sheetId: 'SD6743',
+        size: {
+          unit: 'ha',
+          value: 0.656374
+        },
+        actions: [
+          {
+            code: 'CMOR1',
+            description: 'CMOR1: Assess moorland and produce a written record',
+            availableArea: {
+              unit: 'ha',
+              value: 0.59268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                },
+                {
+                  stackNumber: 2,
+                  actionCodes: ['UPL2'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha',
+                'Adding UPL2 (area 0.1 ha)',
+                '  UPL2 is not compatible with: UPL1 in Stack 1',
+                '  Created Stack 2 for UPL2 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL1',
+            description: 'UPL1: Moderate livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.39268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                },
+                {
+                  stackNumber: 2,
+                  actionCodes: ['UPL2'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha',
+                'Adding UPL2 (area 0.1 ha)',
+                '  UPL2 is not compatible with: UPL1 in Stack 1',
+                '  Created Stack 2 for UPL2 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL2',
+            description: 'UPL2: Low livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.39268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                },
+                {
+                  stackNumber: 2,
+                  actionCodes: ['UPL2'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha',
+                'Adding UPL2 (area 0.1 ha)',
+                '  UPL2 is not compatible with: UPL1 in Stack 1',
+                '  Created Stack 2 for UPL2 with area 0.1 ha'
+              ]
+            }
+          },
+          {
+            code: 'UPL3',
+            description: 'UPL3: Limited livestock grazing on moorland',
+            availableArea: {
+              unit: 'ha',
+              value: 0.39268576
+            },
+            results: {
+              totalValidLandCoverSqm: 5926.857555290695,
+              stacks: [
+                {
+                  stackNumber: 1,
+                  actionCodes: ['UPL1'],
+                  areaSqm: 1000
+                },
+                {
+                  stackNumber: 2,
+                  actionCodes: ['UPL2'],
+                  areaSqm: 1000
+                }
+              ],
+              explanations: [
+                'Adding UPL1 (area 0.1 ha)',
+                '  Created Stack 1 for UPL1 with area 0.1 ha',
+                'Adding UPL2 (area 0.1 ha)',
+                '  UPL2 is not compatible with: UPL1 in Stack 1',
+                '  Created Stack 2 for UPL2 with area 0.1 ha'
+              ]
+            }
+          }
+        ]
       }
-
-      const compatibilityCheckFn = await createCompatibilityMatrix(
-        ['CMOR1', 'UPL1', 'UPL2', 'UPL3', 'SAM1', 'SPM4', 'OFM3', 'CAHL3'],
-        logger
-      )
-
-      // const landCoverClassCodes = await getLandCoversForAction(
-      //   applyingForAction,
-      //   connection,
-      //   logger
-      // )
-
-      // console.info(
-      //   `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
-      //     landCoverClassCodes
-      //   )}`
-      // )
-
-      // const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
-
-      const result = await getAvailableAreaForAction(
-        applyingForAction,
-        sheetId,
-        parcelId,
-        compatibilityCheckFn,
-        existingActions,
-        connection,
-        logger
-      )
-
-      console.log(JSON.stringify(result.explanations, null, 2))
-      console.log(JSON.stringify(result.stacks, null, 2))
-
-      expect(result.availableAreaHectares).toEqual(
-        Number(expectedAvailableArea)
-      )
-    }
-  )
+    ])
+  })
 })
