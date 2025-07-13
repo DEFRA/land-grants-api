@@ -75,8 +75,10 @@ export function subtractIncompatibleStacks(
       )
   )
 
-  return incompatibleStacks.reduce(
+  const result = incompatibleStacks.reduce(
     (acc, stack) => acc - stack.areaSqm,
     totalValidLandCoverSqm
   )
+
+  return result < 0 ? 0 : result
 }
