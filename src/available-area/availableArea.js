@@ -77,6 +77,10 @@ export async function getAvailableAreaForAction(
       logger
     )
 
+  logger.info(
+    `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
+  )
+
   const availableArea = calculateAvailableArea(
     existingActionsWithLandCoverInCommonWithAppliedForAction,
     actionCodeAppliedFor,
@@ -140,7 +144,7 @@ async function filterActionsWithLandCoverInCommon(
     )
 
     logger.info(
-      `filterActionsWithLandCoverInCommon - Found ${landCoverCodesForExistingAction.length} for action: ${existingAction.actionCode}: ${JSON.stringify(
+      `filterActionsWithLandCoverInCommon - Found ${landCoverCodesForExistingAction.length} land cover codes for action: ${existingAction.actionCode}: ${JSON.stringify(
         landCoverCodesForExistingAction
       )}`
     )
@@ -154,6 +158,10 @@ async function filterActionsWithLandCoverInCommon(
         landCoversForParcel,
         landCoverCodesForExistingAction,
         landCoverCodesForAppliedForAction
+      )
+
+      logger.info(
+        `totalAreaNotInCommon = ${totalAreaNotInCommon} - landCoversForParcel: ${JSON.stringify(landCoversForParcel)} - landCoverCodesForExistingAction ${JSON.stringify(landCoverCodesForExistingAction)}: landCoverCodesForAppliedForAction: ${JSON.stringify(landCoverCodesForAppliedForAction)}}`
       )
 
       const revisedArea = existingAction.areaSqm - totalAreaNotInCommon
