@@ -4,7 +4,8 @@
  * @param {string} parcelId - Parcel ID.
  * @param {object} db - DB connection object
  * @param {object} logger - logger object
- * @returns {Promise<LandCover[] | undefined>} Available area in square meters.
+ * @returns {Promise<LandCover[]>} Available area in square meters.
+ * @throws {Error} Throws error if something goes wrong
  */
 async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
   let client

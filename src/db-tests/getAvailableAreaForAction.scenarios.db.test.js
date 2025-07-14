@@ -75,26 +75,23 @@ describe('Calculate available area', () => {
         )
       }
 
-      const compatibilityCheckFn = await createCompatibilityMatrix(
-        [
-          'CMOR1',
-          'UPL1',
-          'UPL2',
-          'UPL3',
-          'SAM1',
-          'SPM4',
-          'OFM3',
-          'CAHL3',
-          'CHRW1',
-          'CHRW2',
-          'CHRW3',
-          'PRF1',
-          'PRF2',
-          'GRH6',
-          'GRH7'
-        ],
-        logger
-      )
+      const compatibilityCheckFn = await createCompatibilityMatrix(logger, [
+        'CMOR1',
+        'UPL1',
+        'UPL2',
+        'UPL3',
+        'SAM1',
+        'SPM4',
+        'OFM3',
+        'CAHL3',
+        'CHRW1',
+        'CHRW2',
+        'CHRW3',
+        'PRF1',
+        'PRF2',
+        'GRH6',
+        'GRH7'
+      ])
 
       // const landCoverClassCodes = await getLandCoversForAction(
       //   applyingForAction,
