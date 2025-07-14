@@ -10,7 +10,7 @@ import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
  * @returns
  */
 export const createCompatibilityMatrix = async (logger, codes = null) => {
-  const compatibilityMatrices = await getCompatibilityMatrix(codes, logger)
+  const compatibilityMatrices = await getCompatibilityMatrix(logger, codes)
   return (action1, action2) => {
     return compatibilityMatrices.some(
       (a) =>

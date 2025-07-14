@@ -33,9 +33,9 @@ describe('Available Area', () => {
 
       mockGetCompatibilityMatrix.mockResolvedValue(mockCompatibilityData)
 
-      const compatibilityFn = await createCompatibilityMatrix(codes, mockLogger)
+      const compatibilityFn = await createCompatibilityMatrix(mockLogger, codes)
 
-      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(codes, mockLogger)
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(mockLogger, codes)
       expect(typeof compatibilityFn).toBe('function')
 
       expect(compatibilityFn('CMOR1', 'UPL1')).toBe(true)
@@ -52,9 +52,9 @@ describe('Available Area', () => {
 
       mockGetCompatibilityMatrix.mockResolvedValue(mockCompatibilityData)
 
-      const compatibilityFn = await createCompatibilityMatrix(codes, mockLogger)
+      const compatibilityFn = await createCompatibilityMatrix(mockLogger, codes)
 
-      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(codes, mockLogger)
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(mockLogger, codes)
       expect(typeof compatibilityFn).toBe('function')
 
       expect(compatibilityFn('CMOR1', 'UPL1')).toBe(true)
@@ -65,7 +65,7 @@ describe('Available Area', () => {
       const codes = ['CMOR1', 'UPL1']
       mockGetCompatibilityMatrix.mockResolvedValue([])
 
-      const compatibilityFn = await createCompatibilityMatrix(codes, mockLogger)
+      const compatibilityFn = await createCompatibilityMatrix(mockLogger, codes)
 
       expect(compatibilityFn('CMOR1', 'UPL1')).toBe(false)
       expect(compatibilityFn('UPL1', 'CMOR1')).toBe(false)
@@ -77,7 +77,7 @@ describe('Available Area', () => {
       mockGetCompatibilityMatrix.mockRejectedValue(error)
 
       await expect(
-        createCompatibilityMatrix(codes, mockLogger)
+        createCompatibilityMatrix(mockLogger, codes)
       ).rejects.toThrow('Database connection failed')
     })
   })
