@@ -1,12 +1,12 @@
-import {
-  parcelIdSchema,
-  parcelActionsSchema,
-  parcelSuccessResponseSchema,
-  parcelsSuccessResponseSchema,
-  parcelsSchema
-} from './parcel.schema.js'
-import { mockParcelWithActions } from '~/src/api/parcel/fixtures/index.js'
 import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measurement.js'
+import { mockParcelWithActions } from '~/src/api/parcel/fixtures/index.js'
+import {
+  parcelActionsSchema,
+  parcelIdSchema,
+  parcelSuccessResponseSchema,
+  parcelsSchema,
+  parcelsSuccessResponseSchema
+} from './parcel.schema.js'
 
 describe('Parcel Schema Validation', () => {
   describe('parcelIdSchema', () => {
@@ -143,7 +143,7 @@ describe('Parcel Schema Validation', () => {
     const validParcelsRequest = {
       parcelIds: ['SX0679-9238', 'AB1234-5678'],
       fields: ['size', 'actions'],
-      plannedActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
+      plannedActions: [{ actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }]
     }
 
     it('should validate correct parcels request', () => {
@@ -241,7 +241,7 @@ describe('Parcel Schema Validation', () => {
     it('should reject array plannedActions with invalid quantity', () => {
       const invalid = {
         ...validParcelsRequest,
-        plannedActions: [{ code: 'UPL1', quantity: null }]
+        plannedActions: [{ actionCode: 'UPL1', quantity: null }]
       }
       const result = parcelsSchema.validate(invalid)
       expect(result.error).toBeDefined()
@@ -250,7 +250,9 @@ describe('Parcel Schema Validation', () => {
     it('should reject invalid unit', () => {
       const invalid = {
         ...validParcelsRequest,
-        plannedActions: [{ code: 'UPL1', quantity: 0.00001, unit: 'acres' }]
+        plannedActions: [
+          { actionCode: 'UPL1', quantity: 0.00001, unit: 'acres' }
+        ]
       }
       const result = parcelsSchema.validate(invalid)
       expect(result.error).toBeDefined()
