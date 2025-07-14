@@ -106,6 +106,6 @@ export {
 }
 
 /**
- * @import { AgreementAction, AgreementActionSqm } from "../../agreements/agreements.d.js"
+ * @import { AgreementAction } from "../../agreements/agreements.d.js"
  * @import { Action } from "~/src/available-area/available-area.d.js"
  */
