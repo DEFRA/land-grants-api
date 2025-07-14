@@ -3,7 +3,13 @@ import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/g
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 
-export const createCompatibilityMatrix = async (codes, logger) => {
+/**
+ * Creates a compatibility checking function based on the database and the codes passed
+ * @param {object} logger
+ * @param {string[]} codes
+ * @returns
+ */
+export const createCompatibilityMatrix = async (logger, codes = null) => {
   const compatibilityMatrices = await getCompatibilityMatrix(codes, logger)
   return (action1, action2) => {
     return compatibilityMatrices.some(

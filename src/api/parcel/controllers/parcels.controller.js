@@ -107,10 +107,7 @@ const ParcelsController = {
 
           request.logger.info(`Found ${actions.length} action configs from DB`)
 
-          const codes = actions.map((a) => a.code)
-
           const compatibilityCheckFn = await createCompatibilityMatrix(
-            codes,
             request.logger
           )
 
