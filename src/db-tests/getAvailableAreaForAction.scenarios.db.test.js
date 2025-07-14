@@ -93,20 +93,6 @@ describe('Calculate available area', () => {
         'GRH7'
       ])
 
-      // const landCoverClassCodes = await getLandCoversForAction(
-      //   applyingForAction,
-      //   connection,
-      //   logger
-      // )
-
-      // console.info(
-      //   `Land cover class codes for action ${applyingForAction}: ${JSON.stringify(
-      //     landCoverClassCodes
-      //   )}`
-      // )
-
-      // const mergedLandCoverCodes = mergeLandCoverCodes(landCoverClassCodes)
-
       const result = await getAvailableAreaForAction(
         applyingForAction,
         sheetId,
