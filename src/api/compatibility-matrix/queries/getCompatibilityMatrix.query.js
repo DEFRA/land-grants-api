@@ -1,3 +1,8 @@
+/**
+ * @param {object} logger
+ * @param {object} db
+ * @returns {Promise<CompatibilityMatrix[]>}
+ */
 async function getCompatibilityMatrix(logger, db, codes = null) {
   let client
   try {
@@ -30,3 +35,7 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
 }
 
 export { getCompatibilityMatrix }
+
+/**
+ * @import { CompatibilityMatrix } from '../compatibility-matrix.d.js'
+ */
