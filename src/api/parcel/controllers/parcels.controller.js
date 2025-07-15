@@ -94,8 +94,7 @@ const ParcelsController = {
 
         if (fields.includes('size')) {
           parcelResponse.size = sizeTransformer(
-            sqmToHaRounded(landParcel['0'].area_sqm),
-            true
+            sqmToHaRounded(landParcel['0'].area_sqm)
           )
         }
 
@@ -160,6 +159,8 @@ const ParcelsController = {
         }
         responseParcels.push(parcelResponse)
       }
+
+      request.logger.info('PARCELS RESPONSE', responseParcels)
 
       return h
         .response({

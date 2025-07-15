@@ -3,7 +3,7 @@ import { getCompatibilityMatrix } from '../api/compatibility-matrix/queries/getC
 /**
  * Creates a compatibility checking function based on the database and the codes passed
  * @param {object} logger
- * @param {string[]} codes
+ * @param {string[] | null} codes
  * @returns
  */
 export const createCompatibilityMatrix = async (logger, codes = null) => {

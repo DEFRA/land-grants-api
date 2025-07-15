@@ -20,7 +20,7 @@ async function getLandCoversForAction(actionCode, db, logger) {
     client = await db.connect()
 
     const query = `
-      SELECT DISTINCT land_cover_code as landCoverCode, land_cover_class_code as landCoverClassCode
+      SELECT DISTINCT land_cover_code, land_cover_class_code
         FROM public.land_cover_codes_actions
         WHERE action_code = $1`
 
@@ -35,7 +35,7 @@ async function getLandCoversForAction(actionCode, db, logger) {
       `Retrieved land cover codes for action code: ${actionCode}, items: ${actionLandCovers?.rows?.length}`
     )
 
-    return actionLandCovers?.rows
+    return mapDbLandCoverCodes(actionLandCovers?.rows)
   } catch (error) {
     logger.error(`Unable to get land cover codes`, error)
     throw error
@@ -47,3 +47,15 @@ async function getLandCoversForAction(actionCode, db, logger) {
 }
 
 export { getLandCoversForAction }
+
+/**
+ * Maps database rows to LandCoverCodes format
+ * @param {Array} rows - The database rows to map
+ * @returns {LandCoverCodes[]} The mapped land cover codes
+ */
+function mapDbLandCoverCodes(rows) {
+  return rows.map((row) => ({
+    landCoverCode: row.land_cover_code,
+    landCoverClassCode: row.land_cover_class_code
+  }))
+}

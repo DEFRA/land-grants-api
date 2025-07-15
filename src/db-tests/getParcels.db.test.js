@@ -15,12 +15,7 @@ import {
   createResponseCapture,
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn()
-}
+import { logger } from './testLogger.js'
 
 let connection
 

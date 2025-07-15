@@ -24,7 +24,7 @@ const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) =>
  * @typedef {object} AvailableAreaDataRequirements
  * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @property {{[key: string]: LandCover[]}} landCoversForExistingActions
+ * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
  */
 
 /**
@@ -225,7 +225,7 @@ const calculateNotCommonLandCoversTotalArea = (
 /**
  *
  * @param {Action[]} actions
- * @returns {Promise<{[key: string]: LandCover[]}>}
+ * @returns {Promise<{[key: string]: LandCoverCodes[]}>}
  */
 async function getLandCoversForActions(actions, postgresDb, logger) {
   /** @type {{[key: string]: LandCoverCodes[]}} */
@@ -291,7 +291,9 @@ function actionHasLandCoverInCommon(
 
   return hasLandCoverInCommon
 }
+
 /**
  * @import { Action, CompatibilityCheckFn } from './available-area.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import {LandCoverCodes} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */

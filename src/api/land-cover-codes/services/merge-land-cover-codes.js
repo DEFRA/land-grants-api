@@ -1,8 +1,4 @@
 /**
- * @import {LandCoverCodes} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
- */
-
-/**
  * Merges land cover codes into a single array of unique land cover and land cover class codes.
  * @param {LandCoverCodes[]} landCoverCodes - Array of land cover codes with class codes.
  * @returns {string[]} Merged array of unique land cover class codes.
@@ -24,3 +20,7 @@ export function mergeLandCoverCodes(landCoverCodes) {
 
   return Array.from(mergedCodes).sort()
 }
+
+/**
+ * @import {LandCoverCodes} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */
