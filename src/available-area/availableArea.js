@@ -1,7 +1,7 @@
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 
@@ -19,13 +19,6 @@ const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) =>
         : total,
     0
   )
-
-/**
- * @typedef {object} AvailableAreaDataRequirements
- * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
- * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
- */
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -46,8 +39,10 @@ export async function getAvailableAreaDataRequirements(
   postgresDb,
   logger
 ) {
-  const landCoverCodesForAppliedForAction = mergeLandCoverCodes(
-    await getLandCoversForAction(actionCodeAppliedFor, postgresDb, logger)
+  const landCoverCodesForAppliedForAction = await getLandCoversForAction(
+    actionCodeAppliedFor,
+    postgresDb,
+    logger
   )
 
   logger.info(
@@ -106,9 +101,12 @@ export function getAvailableAreaForAction(
     landCoversForExistingActions
   } = availableAreaDataRequirements
 
+  const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
+    landCoverCodesForAppliedForAction
+  )
   const totalValidLandCoverSqm = calculateTotalValidLandCoverArea(
     landCoversForParcel,
-    landCoverCodesForAppliedForAction
+    mergedLandCoverCodesForAppliedForAction
   )
 
   logger.info(
@@ -119,7 +117,7 @@ export function getAvailableAreaForAction(
     filterActionsWithLandCoverInCommon(
       existingActions || [],
       landCoversForExistingActions,
-      landCoverCodesForAppliedForAction,
+      mergedLandCoverCodesForAppliedForAction,
       logger
     )
 
@@ -131,7 +129,7 @@ export function getAvailableAreaForAction(
     existingActionsWithLandCoverInCommonWithAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
-    landCoverCodesForAppliedForAction,
+    mergedLandCoverCodesForAppliedForAction,
     logger
   )
 
@@ -293,7 +291,7 @@ function actionHasLandCoverInCommon(
 }
 
 /**
- * @import { Action, CompatibilityCheckFn } from './available-area.d.js'
+ * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements} from './available-area.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import {LandCoverCodes} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */

@@ -29,3 +29,15 @@
  * @property {Stack[]} stacks - The list of stacks created from the actions
  * @property {ExplanationSection} explanations
  */
+
+/**
+ * @typedef {object} AvailableAreaDataRequirements
+ * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
+ * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
+ */
+
+/**
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */

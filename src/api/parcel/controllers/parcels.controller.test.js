@@ -3,19 +3,18 @@ import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { haToSqm } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
 import {
-  getAvailableAreaForAction,
-  getAvailableAreaDataRequirements
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
 } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import { logger } from '~/src/db-tests/testLogger.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
-import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForAction.query.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { logger } from '~/src/db-tests/testLogger.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../actions/queries/index.js')
+jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('../../land-cover-codes/queries/getLandCoversForAction.query.js')
 jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
@@ -25,7 +24,6 @@ const mockGetLandData = getLandData
 const mockGetEnabledActions = getEnabledActions
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockGetAvailableAreaForAction = getAvailableAreaForAction
-const mockGetLandCoversForAction = getLandCoversForAction
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 
@@ -43,7 +41,6 @@ describe('Parcels controller', () => {
   ]
 
   const mockCompatibilityCheckFn = jest.fn()
-  const mockDataRequirements = { anything: true }
   const mockAvailableAreaResult = {
     stacks: [],
     explanations: [],
@@ -71,10 +68,13 @@ describe('Parcels controller', () => {
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
     mockGetEnabledActions.mockResolvedValue(mockActions)
+    mockGetAvailableAreaDataRequirements.mockResolvedValue({
+      landCoverCodesForAppliedForAction: [],
+      landCoversForParcel: [],
+      landCoversForExistingActions: []
+    })
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockGetAvailableAreaDataRequirements.mockResolvedValue(mockDataRequirements)
     mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
-    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
     mockGetAgreementsForParcel.mockResolvedValue([])
   })
 
@@ -338,7 +338,7 @@ describe('Parcels controller', () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
-      mockGetAvailableAreaForAction.mockRejectedValue(
+      mockGetAvailableAreaDataRequirements.mockRejectedValue(
         new Error('Area calculation failed')
       )
 
@@ -362,13 +362,13 @@ describe('Parcels controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test.only('should include results when actions.results field is requested', async () => {
+    test('should include results when actions.results field is requested', async () => {
       const mockAvailableAreaWithResults = {
         ...mockAvailableAreaResult,
         stacks: [{ code: 'CMOR1', quantity: 0.00001 }],
         explanations: ['Test explanation']
       }
-      mockGetAvailableAreaForAction.mockResolvedValue(
+      mockGetAvailableAreaForAction.mockReturnValue(
         mockAvailableAreaWithResults
       )
 
