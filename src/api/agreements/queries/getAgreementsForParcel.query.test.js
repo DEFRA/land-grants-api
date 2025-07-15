@@ -40,12 +40,12 @@ describe('getAgreementsForParcel', () => {
     // Expected result after transformation
     expectedTransformedResult = [
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         unit: 'ha',
         quantity: 0.5
       },
       {
-        code: 'CMOR1',
+        actionCode: 'CMOR1',
         unit: 'ha',
         quantity: 1.2
       }

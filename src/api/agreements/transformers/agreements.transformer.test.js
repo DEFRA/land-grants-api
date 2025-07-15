@@ -35,17 +35,17 @@ describe('agreementActionsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       },
       {
-        code: 'CMOR1',
+        actionCode: 'CMOR1',
         quantity: 25,
         unit: 'ha'
       }
@@ -107,12 +107,12 @@ describe('agreementActionsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -136,7 +136,7 @@ describe('agreementActionsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 0,
         unit: 'ha'
       }
@@ -170,17 +170,17 @@ describe('agreementActionsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 200,
         unit: 'm'
       },
       {
-        code: 'CMOR1',
+        actionCode: 'CMOR1',
         quantity: 15,
         unit: 'km'
       }
@@ -192,7 +192,7 @@ describe('mergeAgreementsTransformer', () => {
   test('should merge agreement actions with existing actions', () => {
     const agreementActions = [
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       }
@@ -200,7 +200,7 @@ describe('mergeAgreementsTransformer', () => {
 
     const plannedActions = [
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -210,12 +210,12 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -225,7 +225,7 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle null agreement actions with existing actions', () => {
     const plannedActions = [
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -235,7 +235,7 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -245,7 +245,7 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle agreement actions with null existing actions', () => {
     const agreementActions = [
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       }
@@ -255,7 +255,7 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       }
@@ -275,7 +275,7 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle undefined agreement actions with existing actions', () => {
     const plannedActions = [
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -285,7 +285,7 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       }
@@ -295,7 +295,7 @@ describe('mergeAgreementsTransformer', () => {
   test('should handle agreement actions with undefined existing actions', () => {
     const agreementActions = [
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       }
@@ -305,7 +305,7 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       }
@@ -315,17 +315,17 @@ describe('mergeAgreementsTransformer', () => {
   test('should merge multiple agreement actions with multiple existing actions', () => {
     const agreementActions = [
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'UPL2',
+        actionCode: 'UPL2',
         quantity: 75,
         unit: 'ha'
       },
       {
-        code: 'CMOR1',
+        actionCode: 'CMOR1',
         quantity: 25,
         unit: 'ha'
       }
@@ -333,12 +333,12 @@ describe('mergeAgreementsTransformer', () => {
 
     const plannedActions = [
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       },
       {
-        code: 'SPM5',
+        actionCode: 'SPM5',
         quantity: 30,
         unit: 'm'
       }
@@ -348,27 +348,27 @@ describe('mergeAgreementsTransformer', () => {
 
     expect(result).toEqual([
       {
-        code: 'UPL1',
+        actionCode: 'UPL1',
         quantity: 100,
         unit: 'ha'
       },
       {
-        code: 'UPL2',
+        actionCode: 'UPL2',
         quantity: 75,
         unit: 'ha'
       },
       {
-        code: 'CMOR1',
+        actionCode: 'CMOR1',
         quantity: 25,
         unit: 'ha'
       },
       {
-        code: 'SPM4',
+        actionCode: 'SPM4',
         quantity: 50,
         unit: 'ha'
       },
       {
-        code: 'SPM5',
+        actionCode: 'SPM5',
         quantity: 30,
         unit: 'm'
       }

@@ -1,6 +1,6 @@
-import { getLandCoversByParcelId } from '~/src/api/land-covers/queries/getLandCoversByParcelId.query.js'
+import { getLandCoversForParcel } from './getLandCoversForParcel.query.js'
 
-describe('getLandCoversByParcelId', () => {
+describe('getLandCoversForParcel', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -9,8 +9,8 @@ describe('getLandCoversByParcelId', () => {
   beforeEach(() => {
     mockResult = {
       rows: [
-        { id: 1, sheet_id: 'SH123', parcel_id: 'PA456', cover_type: 'Grass' },
-        { id: 2, sheet_id: 'SH123', parcel_id: 'PA456', cover_type: 'Trees' }
+        { area_sqm: 123, land_cover_class_code: 'Grass321' },
+        { area_sqm: 456, land_cover_class_code: 'Trees543' }
       ]
     }
 
@@ -33,7 +33,7 @@ describe('getLandCoversByParcelId', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -41,11 +41,16 @@ describe('getLandCoversByParcelId', () => {
   test('should query with the correct parameters', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const expectedQuery =
-      'select * from land_covers where sheet_id = $1 and parcel_id = $2'
+    const expectedQuery = `
+        SELECT
+          lc.land_cover_class_code, ST_Area(lc.geom) AS area_sqm
+        FROM land_covers lc
+        WHERE lc.sheet_id = $1
+          AND lc.parcel_id = $2
+    `
     const expectedValues = [sheetId, parcelId]
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
@@ -54,21 +59,24 @@ describe('getLandCoversByParcelId', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getLandCoversByParcelId(
+    const result = await getLandCoversForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
     )
 
-    expect(result).toEqual(mockResult.rows)
+    expect(result).toEqual([
+      { areaSqm: 123, landCoverClassCode: 'Grass321' },
+      { areaSqm: 456, landCoverClassCode: 'Trees543' }
+    ])
   })
 
   test('should release the client when done', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLandCoversByParcelId(sheetId, parcelId, mockDb, mockLogger)
+    await getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -76,19 +84,17 @@ describe('getLandCoversByParcelId', () => {
   test('should handle errors and return undefined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const error = new Error('Database error')
+    const error = new Error('Connection error')
     mockClient.query = jest.fn().mockRejectedValue(error)
 
-    const result = await getLandCoversByParcelId(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+    await expect(
+      getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
+    ).rejects.toThrow('Connection error')
 
-    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Error executing get land covers by parcel id query',
+      expect.stringContaining(
+        'Error retrieving land covers for parcelId: SH123-PA456'
+      ),
       error
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -99,14 +105,10 @@ describe('getLandCoversByParcelId', () => {
     const parcelId = 'PA456'
     mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getLandCoversByParcelId(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+    await expect(
+      getLandCoversForParcel(sheetId, parcelId, mockDb, mockLogger)
+    ).rejects.toThrow('Connection error')
 
-    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })

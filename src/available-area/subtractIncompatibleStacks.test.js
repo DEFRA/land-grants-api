@@ -96,6 +96,21 @@ describe('Subtract incompatible stacks', function () {
           CMOR1: ['UPL2']
         })
       }
+    ],
+    [
+      'should return zero when calculation returns a negative number',
+      {
+        actionCodeAppliedFor: 'UPL2',
+        totalValidLandCoverSqm: 30,
+        stacks: [
+          {
+            actionCodes: ['UPL1'],
+            areaSqm: 40
+          }
+        ],
+        expectedResult: 0,
+        compatibilityCheckFn: makeCompatibilityCheckFn({})
+      }
     ]
   ]
 

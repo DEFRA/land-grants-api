@@ -70,7 +70,7 @@ const parcelsSchema = Joi.object({
   plannedActions: Joi.array()
     .items(
       Joi.object({
-        code: Joi.string().required(),
+        actionCode: Joi.string().required(),
         quantity: Joi.number().required(),
         unit: Joi.string().valid('ha', 'sqm').required()
       })
@@ -86,7 +86,7 @@ const parcelsSuccessResponseSchema = Joi.object({
 export {
   parcelActionsSchema,
   parcelIdSchema,
-  parcelSuccessResponseSchema,
+  parcelsSchema,
   parcelsSuccessResponseSchema,
-  parcelsSchema
+  parcelSuccessResponseSchema
 }

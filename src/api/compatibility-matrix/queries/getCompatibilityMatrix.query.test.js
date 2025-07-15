@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
-import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
+import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
 jest.mock('~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js')
 
@@ -28,7 +28,7 @@ describe('getCompatibilityMatrix', () => {
       })
     })
 
-    const result = await getCompatibilityMatrix(mockCodes, mockLogger)
+    const result = await getCompatibilityMatrix(mockLogger, mockCodes)
 
     expect(compatibilityMatrixModel.find).toHaveBeenCalledWith({
       optionCode: { $in: mockCodes }
@@ -49,11 +49,33 @@ describe('getCompatibilityMatrix', () => {
       })
     })
 
-    const result = await getCompatibilityMatrix(mockCodes, mockLogger)
+    const result = await getCompatibilityMatrix(mockLogger, mockCodes)
 
     expect(compatibilityMatrixModel.find).toHaveBeenCalledWith({
       optionCode: { $in: mockCodes }
     })
+    expect(result).toEqual(expectedResults)
+    expect(mockLogger.error).not.toHaveBeenCalled()
+  })
+
+  test('should return all codes when no codes are passed', async () => {
+    const expectedResults = [
+      { optionCode: 'CMOR1', optionCodeCompat: 'HEF5', year: '2024' },
+      { optionCode: 'CMOR1', optionCodeCompat: 'UPL1', year: '2024' },
+      { optionCode: 'CMOR2', optionCodeCompat: 'UPL1', year: '2024' }
+    ]
+
+    compatibilityMatrixModel.find.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        sort: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue(expectedResults)
+        })
+      })
+    })
+
+    const result = await getCompatibilityMatrix(mockLogger)
+
+    expect(compatibilityMatrixModel.find).toHaveBeenCalledWith({})
     expect(result).toEqual(expectedResults)
     expect(mockLogger.error).not.toHaveBeenCalled()
   })
@@ -70,7 +92,7 @@ describe('getCompatibilityMatrix', () => {
       })
     })
 
-    await expect(getCompatibilityMatrix(mockCodes, mockLogger)).rejects.toThrow(
+    await expect(getCompatibilityMatrix(mockLogger, mockCodes)).rejects.toThrow(
       mockError
     )
     expect(mockLogger.error).toHaveBeenCalledWith(

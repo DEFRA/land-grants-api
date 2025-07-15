@@ -69,7 +69,7 @@ function splitStacks(
     currentStack.areaSqm - remainingAreaForAction
   )
 
-  currentStack.actionCodes.push(action.code)
+  currentStack.actionCodes.push(action.actionCode)
   currentStack.areaSqm = remainingAreaForAction
 
   newStacks.push(currentStack)
@@ -95,7 +95,7 @@ function checkCompatibility(action, stack, explanations, compatibilityCheckFn) {
   const incompatibleCodes = []
 
   for (const code of stack.actionCodes) {
-    if (compatibilityCheckFn(action.code, code)) {
+    if (compatibilityCheckFn(action.actionCode, code)) {
       compatibleCodes.push(code)
     } else {
       incompatibleCodes.push(code)
@@ -104,13 +104,17 @@ function checkCompatibility(action, stack, explanations, compatibilityCheckFn) {
 
   if (compatibleCodes.length > 0) {
     newExplanations.push(
-      explain.compatible(action.code, compatibleCodes, stack.stackNumber)
+      explain.compatible(action.actionCode, compatibleCodes, stack.stackNumber)
     )
   }
 
   if (incompatibleCodes.length > 0) {
     newExplanations.push(
-      explain.notCompatible(action.code, incompatibleCodes, stack.stackNumber)
+      explain.notCompatible(
+        action.actionCode,
+        incompatibleCodes,
+        stack.stackNumber
+      )
     )
   }
 
@@ -136,7 +140,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   addingAction: (action) =>
-    `Adding ${action.code} (area ${formatSqmToHa(action.areaSqm)})`,
+    `Adding ${action.actionCode} (area ${formatSqmToHa(action.areaSqm)})`,
 
   /**
    * Generates explanation when action is compatible with all codes in a stack
@@ -145,7 +149,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   allCodesCompatible: (action, existingStack) =>
-    `  ${action.code} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
+    `  ${action.actionCode} is compatible with: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
 
   /**
    * Generates explanation when action is not compatible with all codes in a stack
@@ -154,7 +158,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   allCodesNotCompatible: (action, existingStack) =>
-    `  ${action.code} is not compatible with all of: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
+    `  ${action.actionCode} is not compatible with all of: ${existingStack.actionCodes.join(', ')} in Stack ${existingStack.stackNumber}`,
 
   /**
    * Generates explanation when action is added to an existing stack
@@ -163,7 +167,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   addedToStack: (action, existingStack) =>
-    `  Added ${action.code} to Stack ${existingStack.stackNumber} with area ${formatSqmToHa(existingStack.areaSqm)}`,
+    `  Added ${action.actionCode} to Stack ${existingStack.stackNumber} with area ${formatSqmToHa(existingStack.areaSqm)}`,
 
   /**
    * Generates explanation when remaining area is less than stack area, requiring split
@@ -173,7 +177,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   remainingAreaLessThanStack: (action, currentArea, stack) =>
-    `  Remaining area of ${action.code} is ${formatSqmToHa(currentArea)}, this is less than the area of Stack ${stack.stackNumber} (${formatSqmToHa(stack.areaSqm)}), split needed`,
+    `  Remaining area of ${action.actionCode} is ${formatSqmToHa(currentArea)}, this is less than the area of Stack ${stack.stackNumber} (${formatSqmToHa(stack.areaSqm)}), split needed`,
 
   /**
    * Generates explanation when a new stack is created
@@ -192,7 +196,7 @@ const explain = {
    * @returns {string} Explanation message
    */
   shrinkStack: (stack, action) =>
-    `  Shrinking Stack ${stack.stackNumber} area to ${formatSqmToHa(stack.areaSqm)} and adding ${action.code} to it`,
+    `  Shrinking Stack ${stack.stackNumber} area to ${formatSqmToHa(stack.areaSqm)} and adding ${action.actionCode} to it`,
 
   /**
    * Generates explanation for incompatible action codes
@@ -266,7 +270,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
       }
 
       if (remainingAreaForAction >= existingStack.areaSqm) {
-        existingStack.actionCodes.push(action.code)
+        existingStack.actionCodes.push(action.actionCode)
         remainingAreaForAction -= existingStack.areaSqm
         explanations.push(explain.addedToStack(action, existingStack))
       } else {
@@ -290,7 +294,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
 
     if (currentActionHasAreaNotAssignedToAnyStack) {
       const { stack: newStack, explanation } = createStack(
-        [action.code],
+        [action.actionCode],
         remainingAreaForAction
       )
       stacks.push(newStack)

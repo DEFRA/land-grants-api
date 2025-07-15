@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
@@ -17,8 +18,10 @@ import {
 } from '~/src/db-tests/setup/utils.js'
 
 const logger = {
-  info: jest.fn(),
-  error: jest.fn()
+  info: console.info,
+  error: console.error,
+  warn: console.warn,
+  debug: console.debug
 }
 
 let connection
@@ -180,7 +183,7 @@ describe('Calculate available area with agreements', () => {
         payload: {
           parcelIds: ['SD6743-7268'],
           fields: ['size', 'actions.availableArea', 'actions.results'],
-          plannedActions: [{ code: 'UPL2', quantity: 0.1, unit: 'ha' }]
+          plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
         },
         logger,
         server: {

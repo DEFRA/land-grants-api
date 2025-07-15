@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
 import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import {
@@ -11,15 +12,16 @@ import {
   seedMongo
 } from '~/src/db-tests/setup/utils.js'
 import actionModel from '../api/actions/models/action.model.js'
-import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
 import { getAvailableAreaForAction } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
 const logger = {
-  info: jest.fn(),
-  error: jest.fn()
+  log: console.log,
+  warn: console.warn,
+  info: console.info,
+  error: console.error
 }
 
 let connection
@@ -56,9 +58,10 @@ describe('Calculate available area', () => {
     async (
       name,
       {
+        applyingForAction,
         sheetId,
         parcelId,
-        applyingForAction,
+
         existingActions: existingActionsStr,
         expectedAvailableArea
       }
@@ -72,21 +75,26 @@ describe('Calculate available area', () => {
         )
       }
 
-      const compatibilityCheckFn = await createCompatibilityMatrix(
-        ['CMOR1', 'UPL1', 'UPL2', 'UPL3', 'SAM1', 'SPM4', 'OFM3'],
-        logger
-      )
-
-      const enabledActions = await getEnabledActions(logger)
-      const currentAction = enabledActions.find(
-        (action) => action.code === applyingForAction
-      )
+      const compatibilityCheckFn = await createCompatibilityMatrix(logger, [
+        'CMOR1',
+        'UPL1',
+        'UPL2',
+        'UPL3',
+        'SAM1',
+        'SPM4',
+        'OFM3',
+        'CAHL3',
+        'CHRW1',
+        'CHRW2',
+        'CHRW3',
+        'PRF1',
+        'PRF2',
+        'GRH6',
+        'GRH7'
+      ])
 
       const result = await getAvailableAreaForAction(
-        {
-          code: applyingForAction,
-          landCoverClassCodes: currentAction.landCoverClassCodes
-        },
+        applyingForAction,
         sheetId,
         parcelId,
         compatibilityCheckFn,
@@ -94,6 +102,9 @@ describe('Calculate available area', () => {
         connection,
         logger
       )
+
+      console.log(JSON.stringify(result.explanations, null, 2))
+      console.log(JSON.stringify(result.stacks, null, 2))
 
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
