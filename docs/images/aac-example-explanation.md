@@ -9,18 +9,12 @@ Application Info
 Action code - CMOR1
 Parcel Id - SD8447 1509
 
-Land Covers
------------
+Land Covers For Parcel
+----------------------
 
 Arable (110) - 7.9890 ha
 Permanent Grassland (130) - 3.1539 ha
 Hard Standing (551) - 0.0076 ha
-
-Total valid land covers
------------------------
-
-Permanent Grassland (130) - 3.1539 ha
-= 3.1539 ha
 
 Existing actions
 ----------------
@@ -28,6 +22,11 @@ Existing actions
 CHRW1 - 10.0000 ha
 CHRW2 - 8.0000 ha
 CHRW3 - 7.0000 ha
+
+Other actions on this application
+---------------------------------
+
+None
 
 Applying for action
 -------------------
@@ -40,6 +39,12 @@ Valid land covers for CMOR1
 - Permanent Grassland (130)
 - Rock (250)
 - Heaps (270)
+
+Total valid land covers
+-----------------------
+
+Permanent Grassland (130) - 3.1539 ha
+= 3.1539 ha
 
 Common land covers
 ------------------
