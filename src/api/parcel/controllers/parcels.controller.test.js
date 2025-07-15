@@ -1,14 +1,14 @@
 import Hapi from '@hapi/hapi'
+import { mockActions } from '~/src/api/actions/fixtures/index.js'
 import { haToSqm } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
-import { mockActions } from '~/src/api/actions/fixtures/index.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getEnabledActions } from '../../actions/queries/index.js'
-import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
 import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
-import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForAction.query.js'
-import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
+import { getEnabledActions } from '../../actions/queries/index.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { mockLandCoverCodes } from '../../land-cover-codes/fixtures/index.js'
+import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForAction.query.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../actions/queries/index.js')
@@ -396,7 +396,9 @@ describe('Parcels controller', () => {
     })
 
     test('should handle existing actions in available area calculation', async () => {
-      const plannedActions = [{ code: 'UPL1', quantity: 0.00001, unit: 'ha' }]
+      const plannedActions = [
+        { actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }
+      ]
 
       const request = {
         method: 'POST',
@@ -417,12 +419,12 @@ describe('Parcels controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(mockGetAvailableAreaForAction).toHaveBeenCalledWith(
-        mockActions[0],
+        'CMOR1',
         'SX0679',
         '9238',
         mockCompatibilityCheckFn,
         plannedActions.map((a) => ({
-          code: a.code,
+          actionCode: a.actionCode,
           areaSqm: haToSqm(a.quantity)
         })),
         expect.any(Object),
