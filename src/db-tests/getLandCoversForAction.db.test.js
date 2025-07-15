@@ -43,11 +43,11 @@ describe('Get land cover codes', () => {
   test('should return all land cover codes for GRH8', async () => {
     const landCovers = await getLandCoversForAction('GRH8', connection, logger)
     expect(landCovers).toEqual([
-      { land_cover_code: '111', land_cover_class_code: '110' },
-      { land_cover_code: '112', land_cover_class_code: '110' },
-      { land_cover_code: '117', land_cover_class_code: '110' },
-      { land_cover_code: '118', land_cover_class_code: '110' },
-      { land_cover_code: '131', land_cover_class_code: '130' }
+      { landCoverCode: '111', landCoverClassCode: '110' },
+      { landCoverCode: '112', landCoverClassCode: '110' },
+      { landCoverCode: '117', landCoverClassCode: '110' },
+      { landCoverCode: '118', landCoverClassCode: '110' },
+      { landCoverCode: '131', landCoverClassCode: '130' }
     ])
     expect(true).toBe(true)
   })

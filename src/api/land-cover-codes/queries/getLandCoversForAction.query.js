@@ -1,5 +1,5 @@
 /**
- * @import {LandCovers} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ * @import {LandCoverCodes} from '../land-cover-codes.d.js'
  */
 
 /**
@@ -7,7 +7,7 @@
  * @param {string} actionCode - The action code to get land cover codes for
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<LandCovers[]>} The land cover codes
+ * @returns {Promise<LandCoverCodes[]>} The land cover codes
  */
 async function getLandCoversForAction(actionCode, db, logger) {
   let client
@@ -20,7 +20,7 @@ async function getLandCoversForAction(actionCode, db, logger) {
     client = await db.connect()
 
     const query = `
-      SELECT DISTINCT land_cover_code, land_cover_class_code
+      SELECT DISTINCT land_cover_code as landCoverCode, land_cover_class_code as landCoverClassCode
         FROM public.land_cover_codes_actions
         WHERE action_code = $1`
 

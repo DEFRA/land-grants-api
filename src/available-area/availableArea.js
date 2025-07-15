@@ -1,7 +1,9 @@
 import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
-import { calculateAvailableArea } from './calculateAvailableArea.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+import { stackActions } from './stackActions.js'
+import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 
 /**
  * Calculates total valid land cover area, based on an array of LandCovers and a list of allowed codes
@@ -19,29 +21,31 @@ const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) =>
   )
 
 /**
- *
- * @param {string} actionCodeAppliedFor
- * @param {string} sheetId
- * @param {string} parcelId
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @param {Action[]} existingActions
- * @param {object} postgresDb
- * @param {object} logger
- * @returns
+ * @typedef {object} AvailableAreaDataRequirements
+ * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
+ * @property {{[key: string]: LandCover[]}} landCoversForExistingActions
  */
-export async function getAvailableAreaForAction(
+
+/**
+ * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
+ * and the land covers for existing actions.
+ * @param {string} actionCodeAppliedFor - The action code being applied for
+ * @param {string} sheetId - The sheet ID of the parcel
+ * @param {string} parcelId - The parcel ID
+ * @param {Action[]} existingActions - The list of existing actions
+ * @param {object} postgresDb - The Postgres database connection
+ * @param {object} logger - The logger object
+ * @returns {Promise<AvailableAreaDataRequirements>} - An object containing land cover codes for the action, land covers for the parcel, and land covers for existing actions
+ */
+export async function getAvailableAreaDataRequirements(
   actionCodeAppliedFor,
   sheetId,
   parcelId,
-  compatibilityCheckFn,
   existingActions,
   postgresDb,
   logger
 ) {
-  logger.info(
-    `Getting available area for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
-
   const landCoverCodesForAppliedForAction = mergeLandCoverCodes(
     await getLandCoversForAction(actionCodeAppliedFor, postgresDb, logger)
   )
@@ -59,6 +63,49 @@ export async function getAvailableAreaForAction(
     logger
   )
 
+  const landCoversForExistingActions = await getLandCoversForActions(
+    existingActions,
+    postgresDb,
+    logger
+  )
+
+  return {
+    landCoverCodesForAppliedForAction,
+    landCoversForParcel,
+    landCoversForExistingActions
+  }
+}
+
+/**
+ *
+ * @param {string} actionCodeAppliedFor
+ * @param {string} sheetId
+ * @param {string} parcelId
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @param {Action[]} existingActions
+ * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
+ * @param {object} logger
+ * @returns
+ */
+export function getAvailableAreaForAction(
+  actionCodeAppliedFor,
+  sheetId,
+  parcelId,
+  compatibilityCheckFn,
+  existingActions,
+  availableAreaDataRequirements,
+  logger
+) {
+  logger.info(
+    `Getting available area for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
+  )
+
+  const {
+    landCoverCodesForAppliedForAction,
+    landCoversForParcel,
+    landCoversForExistingActions
+  } = availableAreaDataRequirements
+
   const totalValidLandCoverSqm = calculateTotalValidLandCoverArea(
     landCoversForParcel,
     landCoverCodesForAppliedForAction
@@ -66,12 +113,6 @@ export async function getAvailableAreaForAction(
 
   logger.info(
     `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
-
-  const landCoversForExistingActions = await getLandCoversForActions(
-    existingActions,
-    postgresDb,
-    logger
   )
 
   const existingActionsWithLandCoverInCommonWithAppliedForAction =
@@ -94,18 +135,28 @@ export async function getAvailableAreaForAction(
     logger
   )
 
-  const availableArea = calculateAvailableArea(
-    revisedActions,
+  const stackResponse = stackActions(revisedActions, compatibilityCheckFn)
+
+  // subtract areas of stacks where any action is not compatible
+  const availableAreaSqm = subtractIncompatibleStacks(
     actionCodeAppliedFor,
     totalValidLandCoverSqm,
+    stackResponse.stacks,
     compatibilityCheckFn
   )
 
+  const availableAreaHectares = sqmToHaRounded(availableAreaSqm)
+
   logger.info(
-    `availableArea ${availableArea.availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
+    `availableArea ${availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
-  return availableArea
+  return {
+    ...stackResponse,
+    availableAreaSqm,
+    totalValidLandCoverSqm,
+    availableAreaHectares
+  }
 }
 
 /**
@@ -174,9 +225,10 @@ const calculateNotCommonLandCoversTotalArea = (
 /**
  *
  * @param {Action[]} actions
- * @returns {Promise<object>}
+ * @returns {Promise<{[key: string]: LandCover[]}>}
  */
 async function getLandCoversForActions(actions, postgresDb, logger) {
+  /** @type {{[key: string]: LandCoverCodes[]}} */
   const landCoversForActions = {}
   for (const action of actions) {
     landCoversForActions[action.actionCode] =
@@ -190,7 +242,7 @@ async function getLandCoversForActions(actions, postgresDb, logger) {
  * Filter existing actions to find those that share at least one land cover code
  * with the applied for action.
  * @param {Action[]} existingActions - The list of existing actions
- * @param {{[key:string]: LandCover}[]} landCoversForExistingActions - Land cover codes information for existing actions
+ * @param {{[key:string]: LandCoverCodes[]}} landCoversForExistingActions - Land cover codes information for existing actions
  * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {object} logger - The logger object
  * @returns {Action[]} - A list of existing actions that share land cover codes

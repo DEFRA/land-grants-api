@@ -15,8 +15,11 @@ import {
   plannedActionsTransformer,
   sizeTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { getAvailableAreaForAction } from '~/src/available-area/availableArea.js'
-import { createCompatibilityMatrix } from '~/src/available-area/calculateAvailableArea.js'
+import {
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
+} from '~/src/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
@@ -111,28 +114,45 @@ const ParcelsController = {
             request.logger
           )
 
-          const availableAreas = await Promise.all(
-            actions
-              .filter((a) => a.display)
-              .map(async (action) => {
-                const availableArea = await getAvailableAreaForAction(
-                  action.code,
-                  sheetId,
-                  parcelId,
-                  compatibilityCheckFn,
-                  plannedActionsTransformer(mergedActions),
-                  request.server.postgresDb,
-                  request.logger
-                )
-                return actionTransformer(
-                  action,
-                  availableArea,
-                  fields.includes('actions.results')
-                )
-              })
-          )
+          const actionsWithAvailableArea = []
 
-          const sortedParcelActions = availableAreas.sort((a, b) =>
+          for (const action of actions) {
+            if (!action.display) {
+              request.logger.debug(
+                `Action ${action.code} is not displayed, skipping`
+              )
+              continue
+            }
+
+            const aacDataRequirements = await getAvailableAreaDataRequirements(
+              action.code,
+              sheetId,
+              parcelId,
+              plannedActionsTransformer(mergedActions),
+              request.server.postgresDb,
+              request.logger
+            )
+
+            const availableArea = getAvailableAreaForAction(
+              action.code,
+              sheetId,
+              parcelId,
+              compatibilityCheckFn,
+              plannedActionsTransformer(mergedActions),
+              aacDataRequirements,
+              request.logger
+            )
+
+            const actionWithAvailableArea = actionTransformer(
+              action,
+              availableArea,
+              fields.includes('actions.results')
+            )
+
+            actionsWithAvailableArea.push(actionWithAvailableArea)
+          }
+
+          const sortedParcelActions = actionsWithAvailableArea.sort((a, b) =>
             a.code.localeCompare(b.code)
           )
 

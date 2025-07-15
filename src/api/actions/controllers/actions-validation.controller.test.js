@@ -30,12 +30,12 @@ describe('Actions validation controller', () => {
 
   const mockLandCoverCodes = [
     {
-      land_cover_code: '130',
-      land_cover_class_code: '130'
+      landCoverCode: '130',
+      landCoverClassCode: '130'
     },
     {
-      land_cover_code: '240',
-      land_cover_class_code: '240'
+      landCoverCode: '240',
+      landCoverClassCode: '240'
     }
   ]
   const mockLandParcelData = [

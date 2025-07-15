@@ -17,3 +17,15 @@
  * @param {string} code2 - The second action code to check
  * @returns {boolean} true if the two action codes are compatible, false otherwise
  */
+
+/**
+ * @typedef {object} ExplanationSection
+ * @property {string} title - The title of the explanation section
+ * @property {string[]} lines - Individual lines of explanation text
+ */
+
+/**
+ * @typedef {object} StackResponse
+ * @property {Stack[]} stacks - The list of stacks created from the actions
+ * @property {ExplanationSection} explanations
+ */
