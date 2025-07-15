@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import {
   connectToTestDatbase,
   resetDatabase,
@@ -32,18 +30,14 @@ describe('Calculate available area', () => {
   beforeAll(async () => {
     await connectMongo()
     await seedMongo(actionModel, 'action-data', actions)
-    await seedMongo(
-      compatibilityMatrixModel,
-      'compatibility-matrix',
-      compatibilityMatrix
-    )
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
       parcels: true,
       covers: true,
       moorland: false,
       landCoverCodes: true,
-      landCoverCodesActions: true
+      landCoverCodesActions: true,
+      compatibilityMatrix: true
     })
   }, 60000)
 
@@ -61,7 +55,6 @@ describe('Calculate available area', () => {
         applyingForAction,
         sheetId,
         parcelId,
-
         existingActions: existingActionsStr,
         expectedAvailableArea
       }
@@ -75,23 +68,27 @@ describe('Calculate available area', () => {
         )
       }
 
-      const compatibilityCheckFn = await createCompatibilityMatrix(logger, [
-        'CMOR1',
-        'UPL1',
-        'UPL2',
-        'UPL3',
-        'SAM1',
-        'SPM4',
-        'OFM3',
-        'CAHL3',
-        'CHRW1',
-        'CHRW2',
-        'CHRW3',
-        'PRF1',
-        'PRF2',
-        'GRH6',
-        'GRH7'
-      ])
+      const compatibilityCheckFn = await createCompatibilityMatrix(
+        logger,
+        connection,
+        [
+          'CMOR1',
+          'UPL1',
+          'UPL2',
+          'UPL3',
+          'SAM1',
+          'SPM4',
+          'OFM3',
+          'CAHL3',
+          'CHRW1',
+          'CHRW2',
+          'CHRW3',
+          'PRF1',
+          'PRF2',
+          'GRH6',
+          'GRH7'
+        ]
+      )
 
       const result = await getAvailableAreaForAction(
         applyingForAction,

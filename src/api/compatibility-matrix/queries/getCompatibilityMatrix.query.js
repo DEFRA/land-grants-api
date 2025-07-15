@@ -1,18 +1,31 @@
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
-
-async function getCompatibilityMatrix(logger, codes = null) {
-  const whereClause = { optionCode: { $in: codes } }
+async function getCompatibilityMatrix(logger, db, codes = null) {
+  let client
   try {
-    const matrix = await compatibilityMatrixModel
-      .find(codes === null ? {} : whereClause)
-      .select('-_id optionCode optionCodeCompat year')
-      .sort({ optionCodeCompat: 1 })
-      .lean()
+    logger.info(`Connecting to DB to fetch compatibility matrix`)
+    client = await db.connect()
 
-    return matrix
+    if (codes) {
+      const query =
+        'SELECT * FROM compatibility_matrix WHERE option_code = ANY ($1)'
+      const values = [codes]
+      const result = await client.query(query, values)
+
+      return result.rows
+    }
+
+    const query = 'SELECT * FROM compatibility_matrix'
+    const result = await client.query(query)
+
+    return result.rows
   } catch (error) {
-    logger.error(`Unable to get compatibility matrix`, error)
-    throw error
+    logger.error(
+      `Error executing get compatibility matrix query: ${error.message}`
+    )
+    return
+  } finally {
+    if (client) {
+      client.release()
+    }
   }
 }
 
