@@ -1,10 +1,12 @@
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-import { getLandCoversForAction as getLandCoversForActionQuery } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import {
+  getLandCoversForAction,
+  getLandCoversForActions
+} from '../api/land-cover-codes/queries/getLandCoversForActions.query.js'
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
 import { calculateTotalValidLandCoverArea } from './calculateTotalValidLandCoverArea.js'
 import { filterActionsWithCommonLandCover } from './filterActionsWithCommonLandCover.js'
-import { getLandCoversForActions } from './getLandCoversForActions.js'
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleLandCoverAreaFromActions } from './subtractIncompatibleLandCoverAreaFromActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
@@ -28,7 +30,7 @@ export async function getAvailableAreaDataRequirements(
   postgresDb,
   logger
 ) {
-  const landCoverCodesForAppliedForAction = await getLandCoversForActionQuery(
+  const landCoverCodesForAppliedForAction = await getLandCoversForAction(
     actionCodeAppliedFor,
     postgresDb,
     logger
@@ -48,7 +50,7 @@ export async function getAvailableAreaDataRequirements(
   )
 
   const landCoversForExistingActions = await getLandCoversForActions(
-    existingActions,
+    existingActions.map((a) => a.actionCode),
     postgresDb,
     logger
   )

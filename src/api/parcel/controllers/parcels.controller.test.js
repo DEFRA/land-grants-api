@@ -16,7 +16,7 @@ jest.mock('../../parcel/queries/getLandData.query.js')
 jest.mock('../../actions/queries/index.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
-jest.mock('../../land-cover-codes/queries/getLandCoversForAction.query.js')
+jest.mock('../../land-cover-codes/queries/getLandCoversForActions.query.js')
 jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 

@@ -1,4 +1,4 @@
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForActions.query.js'
 import {
   connectToTestDatbase,
   resetDatabase,

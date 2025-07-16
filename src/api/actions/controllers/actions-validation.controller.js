@@ -6,18 +6,18 @@ import {
 } from '~/src/api/actions/schema/action-validation.schema.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
-import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
+import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
  * LandActionsValidateController
