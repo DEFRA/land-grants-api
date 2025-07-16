@@ -62,7 +62,10 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const actions = await getEnabledActions(request.logger)
+      const actions = await getEnabledActions(
+        request.logger,
+        request.server.postgresDb
+      )
 
       if (!actions || actions?.length === 0) {
         const errorMessage = 'Actions not found'

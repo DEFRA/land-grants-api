@@ -16,9 +16,13 @@ function sizeTransformer(area) {
 }
 
 /**
+ * @import {Action} from '../../actions/action.d.js'
+ */
+
+/**
  * Transform parcel and actions to land parcel and actions
  * @returns {object} The land action data with available area
- * @param {object} action - The actions to merge
+ * @param {Action} action - The actions to merge
  * @param {object} availableArea - Total Available Area
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
