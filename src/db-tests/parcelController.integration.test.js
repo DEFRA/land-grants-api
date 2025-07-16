@@ -99,8 +99,66 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
+                {
+                  content: ['Action code - CMOR1', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: CMOR1'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -121,8 +179,66 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL1', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL1'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -143,8 +259,66 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL2', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL2'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -165,8 +339,66 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL3', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL3'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           }
@@ -228,11 +460,70 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
+                {
+                  content: ['Action code - CMOR1', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha', 'UPL2 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: CMOR1'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    'Stack 2 - UPL2 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha',
+                    'Adding UPL2 (area 0.1 ha)',
+                    '  UPL2 is not compatible with: UPL1 in Stack 1',
+                    '  Created Stack 2 for UPL2 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -258,11 +549,70 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL1', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha', 'UPL2 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL1'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    'Stack 2 - UPL2 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha',
+                    'Adding UPL2 (area 0.1 ha)',
+                    '  UPL2 is not compatible with: UPL1 in Stack 1',
+                    '  Created Stack 2 for UPL2 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -288,11 +638,70 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL2', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha', 'UPL2 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL2'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    'Stack 2 - UPL2 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha',
+                    'Adding UPL2 (area 0.1 ha)',
+                    '  UPL2 is not compatible with: UPL1 in Stack 1',
+                    '  Created Stack 2 for UPL2 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           },
@@ -318,11 +727,70 @@ describe('Calculate available area with agreements', () => {
                 }
               ],
               explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
+                {
+                  content: ['Action code - UPL3', 'Parcel Id - SD6743 7268'],
+                  title: 'Application Information'
+                },
+                {
+                  content: [
+                    '371 - 0.00910078 ha',
+                    '551 - 0.01273695 ha',
+                    '631 - 0.02538023 ha',
+                    '131 - 0.16770771 ha',
+                    '551 - 0.01647047 ha',
+                    '131 - 0.00479968 ha',
+                    '130 - 0.42017837 ha'
+                  ],
+                  title: 'Land Covers For Parcel'
+                },
+                {
+                  content: ['UPL1 - 0.1 ha', 'UPL2 - 0.1 ha'],
+                  title: 'Existing actions'
+                },
+                {
+                  content: [
+                    '130 - 131',
+                    '240 - 241',
+                    '240 - 243',
+                    '250 - 251',
+                    '250 - 252',
+                    '250 - 253',
+                    '270 - 271',
+                    '280 - 281',
+                    '280 - 282',
+                    '280 - 283',
+                    '280 - 285',
+                    '280 - 286',
+                    '280 - 287',
+                    '280 - 288',
+                    '300 - 300',
+                    '330 - 347',
+                    '580 - 582',
+                    '580 - 583',
+                    '590 - 591',
+                    '590 - 592',
+                    '590 - 593',
+                    '620 - 621',
+                    '640 - 641',
+                    '640 - 643',
+                    '650 - 651'
+                  ],
+                  title: 'Valid land covers for action: UPL3'
+                },
+                {
+                  content: [
+                    'Stack 1 - UPL1 - 0.1 ha',
+                    'Stack 2 - UPL2 - 0.1 ha',
+                    '',
+                    'Explanation:',
+                    'Adding UPL1 (area 0.1 ha)',
+                    '  Created Stack 1 for UPL1 with area 0.1 ha',
+                    'Adding UPL2 (area 0.1 ha)',
+                    '  UPL2 is not compatible with: UPL1 in Stack 1',
+                    '  Created Stack 2 for UPL2 with area 0.1 ha'
+                  ],
+                  title: 'Stacks'
+                }
               ]
             }
           }

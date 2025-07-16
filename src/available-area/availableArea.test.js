@@ -38,7 +38,28 @@ describe('Available Area', () => {
           },
           expectedResult: {
             stacks: [],
-            explanations: ['No existing actions so no stacks are needed'],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: [`Action code - CMOR1`, `Parcel Id - SD6743 7268`]
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: []
+              },
+              {
+                title: `Valid land covers for action: CMOR1`,
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: ['No existing actions so no stacks are needed']
+              }
+            ],
             availableAreaSqm: 10000,
             totalValidLandCoverSqm: 10000,
             availableAreaHectares: 1
@@ -78,8 +99,32 @@ describe('Available Area', () => {
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['CMOR1'], areaSqm: 1000 }],
             explanations: [
-              'Adding CMOR1 (area 0.1 ha)',
-              '  Created Stack 1 for CMOR1 with area 0.1 ha'
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL1', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CMOR1 - 0.1 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL1',
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CMOR1 - 0.1 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CMOR1 (area 0.1 ha)',
+                  '  Created Stack 1 for CMOR1 with area 0.1 ha'
+                ]
+              }
             ],
             availableAreaSqm: 10000,
             totalValidLandCoverSqm: 10000,
@@ -120,8 +165,32 @@ describe('Available Area', () => {
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 2000 }],
             explanations: [
-              'Adding UPL1 (area 0.2 ha)',
-              '  Created Stack 1 for UPL1 with area 0.2 ha'
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL2', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['UPL1 - 0.2 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL2',
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - UPL1 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.2 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.2 ha'
+                ]
+              }
             ],
             availableAreaSqm: 8000,
             totalValidLandCoverSqm: 10000,
@@ -176,11 +245,35 @@ describe('Available Area', () => {
               { stackNumber: 1, actionCodes: ['CMOR1', 'UPL1'], areaSqm: 1000 }
             ],
             explanations: [
-              'Adding CMOR1 (area 0.1 ha)',
-              '  Created Stack 1 for CMOR1 with area 0.1 ha',
-              'Adding UPL1 (area 0.1 ha)',
-              '  UPL1 is compatible with: CMOR1 in Stack 1',
-              '  Added UPL1 to Stack 1 with area 0.1 ha'
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 0.5 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CMOR1 - 0.1 ha', 'UPL1 - 0.1 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL3',
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CMOR1, UPL1 - 0.1 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CMOR1 (area 0.1 ha)',
+                  '  Created Stack 1 for CMOR1 with area 0.1 ha',
+                  'Adding UPL1 (area 0.1 ha)',
+                  '  UPL1 is compatible with: CMOR1 in Stack 1',
+                  '  Added UPL1 to Stack 1 with area 0.1 ha'
+                ]
+              }
             ],
             availableAreaSqm: 5000,
             totalValidLandCoverSqm: 5000,
@@ -256,18 +349,44 @@ describe('Available Area', () => {
               }
             ],
             explanations: [
-              'Adding CHRW3 (area 0.7 ha)',
-              '  Created Stack 1 for CHRW3 with area 0.7 ha',
-              'Adding CHRW2 (area 0.8 ha)',
-              '  CHRW2 is compatible with: CHRW3 in Stack 1',
-              '  Added CHRW2 to Stack 1 with area 0.7 ha',
-              '  Created Stack 2 for CHRW2 with area 0.1 ha',
-              'Adding CHRW1 (area 1 ha)',
-              '  CHRW1 is compatible with: CHRW3, CHRW2 in Stack 1',
-              '  Added CHRW1 to Stack 1 with area 0.7 ha',
-              '  CHRW1 is compatible with: CHRW2 in Stack 2',
-              '  Added CHRW1 to Stack 2 with area 0.1 ha',
-              '  Created Stack 3 for CHRW1 with area 0.2 ha'
+              {
+                title: 'Application Information',
+                content: ['Action code - CMOR1', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1.1150572 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CHRW1 - 1 ha', 'CHRW2 - 0.8 ha', 'CHRW3 - 0.7 ha']
+              },
+              {
+                title: 'Valid land covers for action: CMOR1',
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha',
+                  'Stack 2 - CHRW2, CHRW1 - 0.1 ha',
+                  'Stack 3 - CHRW1 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CHRW3 (area 0.7 ha)',
+                  '  Created Stack 1 for CHRW3 with area 0.7 ha',
+                  'Adding CHRW2 (area 0.8 ha)',
+                  '  CHRW2 is compatible with: CHRW3 in Stack 1',
+                  '  Added CHRW2 to Stack 1 with area 0.7 ha',
+                  '  Created Stack 2 for CHRW2 with area 0.1 ha',
+                  'Adding CHRW1 (area 1 ha)',
+                  '  CHRW1 is compatible with: CHRW3, CHRW2 in Stack 1',
+                  '  Added CHRW1 to Stack 1 with area 0.7 ha',
+                  '  CHRW1 is compatible with: CHRW2 in Stack 2',
+                  '  Added CHRW1 to Stack 2 with area 0.1 ha',
+                  '  Created Stack 3 for CHRW1 with area 0.2 ha'
+                ]
+              }
             ],
             availableAreaSqm: 1150.5720000000001,
             totalValidLandCoverSqm: 11150.572,
@@ -320,11 +439,36 @@ describe('Available Area', () => {
               { stackNumber: 2, actionCodes: ['UPL2'], areaSqm: 2000 }
             ],
             explanations: [
-              'Adding UPL1 (area 0.1 ha)',
-              '  Created Stack 1 for UPL1 with area 0.1 ha',
-              'Adding UPL2 (area 0.2 ha)',
-              '  UPL2 is not compatible with: UPL1 in Stack 1',
-              '  Created Stack 2 for UPL2 with area 0.2 ha'
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['UPL1 - 0.1 ha', 'UPL2 - 0.2 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL3',
+                content: ['130 - 131']
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - UPL1 - 0.1 ha',
+                  'Stack 2 - UPL2 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.1 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.1 ha',
+                  'Adding UPL2 (area 0.2 ha)',
+                  '  UPL2 is not compatible with: UPL1 in Stack 1',
+                  '  Created Stack 2 for UPL2 with area 0.2 ha'
+                ]
+              }
             ],
             availableAreaSqm: 7000,
             totalValidLandCoverSqm: 10000,
@@ -384,8 +528,11 @@ describe('Available Area', () => {
               {
                 title: 'Stacks',
                 content: [
-                  `Adding UPL1 (area 0.5 ha)`,
-                  `  Created Stack 1 for UPL1 with area 0.5 ha`
+                  'Stack 1 - UPL1 - 0.5 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.5 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.5 ha'
                 ]
               }
             ],
