@@ -1,6 +1,7 @@
 /**
  * @param {object} logger
  * @param {object} db
+ * @param {string[]} codes
  * @returns {Promise<CompatibilityMatrix[]>}
  */
 async function getCompatibilityMatrix(logger, db, codes = null) {
@@ -9,17 +10,8 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
     logger.info(`Connecting to DB to fetch compatibility matrix`)
     client = await db.connect()
 
-    if (codes) {
-      const query =
-        'SELECT * FROM compatibility_matrix WHERE option_code = ANY ($1)'
-      const values = [codes]
-      const result = await client.query(query, values)
-
-      return result.rows
-    }
-
-    const query = 'SELECT * FROM compatibility_matrix'
-    const result = await client.query(query)
+    const query = `SELECT * FROM compatibility_matrix ${codes ? 'WHERE option_code = ANY ($1)' : ''}`
+    const result = await client.query(query, codes ? [codes] : null)
 
     return result.rows
   } catch (error) {

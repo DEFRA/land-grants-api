@@ -28,7 +28,10 @@ describe('getCompatibilityMatrix', () => {
 
     expect(result).toEqual([cm])
     expect(dbMock.connect).toHaveBeenCalled()
-    expect(queryMock).toHaveBeenCalledWith('SELECT * FROM compatibility_matrix')
+    expect(queryMock).toHaveBeenCalledWith(
+      'SELECT * FROM compatibility_matrix ',
+      null
+    )
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Connecting to DB to fetch compatibility matrix'
     )

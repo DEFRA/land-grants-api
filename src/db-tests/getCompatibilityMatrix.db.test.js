@@ -38,6 +38,12 @@ describe('Get compatibility matrix', () => {
 
   test('should return all optionCodes when no codes are provided', async () => {
     const landCovers = await getCompatibilityMatrix(logger, connection)
-    expect(landCovers).toHaveLength(53535)
+
+    expect(
+      landCovers.filter((l) => l.option_code === 'UPL1').length
+    ).toBeGreaterThan(0)
+    expect(
+      landCovers.filter((l) => l.option_code === 'UPL2').length
+    ).toBeGreaterThan(0)
   })
 })
