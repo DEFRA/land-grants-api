@@ -1,5 +1,5 @@
 /**
- * @import { Action, Stack, CompatibilityCheckFn } from './available-area.d.js'
+ * @import { Action, Stack, CompatibilityCheckFn, ExplanationSection } from './available-area.d.js'
  */
 
 /**
@@ -216,17 +216,36 @@ const explain = {
    * @returns {string} Explanation message
    */
   compatible: (code, compatibleCodes, stackNumber) =>
-    `  ${code} is compatible with: ${compatibleCodes.join(', ')} in Stack ${stackNumber}`
+    `  ${code} is compatible with: ${compatibleCodes.join(', ')} in Stack ${stackNumber}`,
+
+  /**
+   * Formats stacks into a readable string
+   * @param {Stack[]} stacks - Array of stacks to format
+   * @returns {string[]} Formatted string of stacks
+   */
+  stacks: (stacks) =>
+    stacks.map(
+      (stack) =>
+        `Stack ${stack.stackNumber} - ${stack.actionCodes.join(', ')} - ${formatSqmToHa(stack.areaSqm)}`
+    )
+}
+
+function createExplanationSection(stacks, explanations) {
+  return {
+    title: 'Stacks',
+    content: [...explain.stacks(stacks), '', 'Explanation:', ...explanations]
+  }
 }
 
 /**
  * Main function that organizes actions into stacks based on compatibility and area constraints
  * @param {Action[]} actions - Array of actions to be stacked
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
- * @returns {{explanations: string[], stacks: Stack[]}}
+ * @returns {{explanations: ExplanationSection, stacks: Stack[]}}
  * @throws {Error} Throws error if actions parameter is not an array
  */
 export function stackActions(actions, compatibilityCheckFn = () => false) {
+  /** @type {Stack[]} */
   let stacks = []
   let explanations = []
   const createStack = makeCreateStack()
@@ -237,7 +256,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
 
   if (actions.length === 0) {
     return {
-      explanations: [explain.noStacksNeeded()],
+      explanations: { title: 'Stacks', content: [explain.noStacksNeeded()] },
       stacks: []
     }
   }
@@ -303,7 +322,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
   }
 
   return {
-    explanations,
+    explanations: createExplanationSection(stacks, explanations),
     stacks
   }
 }

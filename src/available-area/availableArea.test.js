@@ -365,8 +365,29 @@ describe('Available Area', () => {
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 5000 }],
             explanations: [
-              'Adding UPL1 (area 0.5 ha)',
-              '  Created Stack 1 for UPL1 with area 0.5 ha'
+              {
+                title: 'Application Information',
+                content: [`Action code - UPL2`, `Parcel Id - SD6743 7268`]
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: [`130 - 0.5 ha`]
+              },
+              {
+                title: 'Existing actions',
+                content: [`UPL1 - 0.5 ha`]
+              },
+              {
+                title: 'Valid land covers for action: UPL2',
+                content: [`130 - 131`]
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  `Adding UPL1 (area 0.5 ha)`,
+                  `  Created Stack 1 for UPL1 with area 0.5 ha`
+                ]
+              }
             ],
             availableAreaSqm: 0,
             totalValidLandCoverSqm: 5000,
@@ -400,7 +421,9 @@ describe('Available Area', () => {
           logger
         )
 
-        expect(result).toEqual(expectedResult)
+        expect(JSON.stringify(result, 2)).toEqual(
+          JSON.stringify(expectedResult, 2)
+        )
       }
     )
   })

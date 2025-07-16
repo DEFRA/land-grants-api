@@ -21,7 +21,7 @@
 /**
  * @typedef {object} ExplanationSection
  * @property {string} title - The title of the explanation section
- * @property {string[]} lines - Individual lines of explanation text
+ * @property {string[]} content - Individual lines of explanation text
  */
 
 /**
