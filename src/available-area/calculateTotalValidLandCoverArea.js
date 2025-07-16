@@ -1,19 +1,35 @@
+import { createExplanationSection } from './explanations.js'
+
 /**
  * Calculates total valid land cover area, based on an array of LandCovers and a list of allowed codes
  * @param {LandCover[]} landCovers
  * @param {string[]} allowedCodes
- * @returns {number}
+ * @returns {{result: number, explanations: ExplanationSection }}
  */
-export const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) =>
-  landCovers.reduce(
-    (total, cover) =>
-      allowedCodes.includes(cover.landCoverClassCode)
-        ? total + cover.areaSqm
-        : total,
-    0
-  )
+export const calculateTotalValidLandCoverArea = (landCovers, allowedCodes) => {
+  const explanationsContent = []
+  const result = landCovers.reduce((total, cover) => {
+    if (allowedCodes.includes(cover.landCoverClassCode)) {
+      explanationsContent.push(
+        `${cover.landCoverClassCode} - ${cover.areaSqm} sqm`
+      )
+      return total + cover.areaSqm
+    } else {
+      return total
+    }
+  }, 0)
+  explanationsContent.push(`Total = ${result} sqm`)
+
+  return {
+    result,
+    explanations: createExplanationSection(
+      `Total valid land covers`,
+      explanationsContent
+    )
+  }
+}
 
 /**
- * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements} from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
  */

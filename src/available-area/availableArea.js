@@ -8,8 +8,8 @@ import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForPa
 import { calculateTotalValidLandCoverArea } from './calculateTotalValidLandCoverArea.js'
 import { filterActionsWithCommonLandCover } from './filterActionsWithCommonLandCover.js'
 import { stackActions } from './stackActions.js'
-import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 import { subtractIncompatibleLandCoverAreaFromActions } from './subtractIncompatibleLandCoverAreaFromActions.js'
+import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -104,46 +104,56 @@ export function getAvailableAreaForAction(
   const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
   )
-  const totalValidLandCoverSqm = calculateTotalValidLandCoverArea(
+  const {
+    result: totalValidLandCoverSqm,
+    explanations: totalValidLandCoversExplanations
+  } = calculateTotalValidLandCoverArea(
     landCoversForParcel,
     mergedLandCoverCodesForAppliedForAction
   )
+  explanations.push(totalValidLandCoversExplanations)
 
   logger.info(
     `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
-  const existingActionsWithLandCoverInCommonWithAppliedForAction =
-    filterActionsWithCommonLandCover(
-      existingActions || [],
-      landCoversForExistingActions,
-      mergedLandCoverCodesForAppliedForAction,
-      logger
-    )
+  const {
+    result: existingActionsWithLandCoverInCommonWithAppliedForAction,
+    explanations: filterActionsWithLandCoverInCommonExplanations
+  } = filterActionsWithCommonLandCover(
+    existingActions || [],
+    landCoversForExistingActions,
+    mergedLandCoverCodesForAppliedForAction,
+    logger
+  )
+  explanations.push(filterActionsWithLandCoverInCommonExplanations)
 
   logger.info(
     `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
   )
 
-  const revisedActions = subtractIncompatibleLandCoverAreaFromActions(
-    existingActionsWithLandCoverInCommonWithAppliedForAction,
-    landCoversForParcel,
-    landCoversForExistingActions,
-    mergedLandCoverCodesForAppliedForAction,
-    logger
-  )
+  const { result: revisedActions, explanations: actionsExplanations } =
+    subtractIncompatibleLandCoverAreaFromActions(
+      existingActionsWithLandCoverInCommonWithAppliedForAction,
+      landCoversForParcel,
+      landCoversForExistingActions,
+      mergedLandCoverCodesForAppliedForAction,
+      logger
+    )
+  explanations.push(actionsExplanations)
 
   const stackResponse = stackActions(revisedActions, compatibilityCheckFn)
-
   explanations.push(stackResponse.explanations)
 
   // subtract areas of stacks where any action is not compatible
-  const availableAreaSqm = subtractIncompatibleStacks(
-    actionCodeAppliedFor,
-    totalValidLandCoverSqm,
-    stackResponse.stacks,
-    compatibilityCheckFn
-  )
+  const { result: availableAreaSqm, explanations: totalResultExplanations } =
+    subtractIncompatibleStacks(
+      actionCodeAppliedFor,
+      totalValidLandCoverSqm,
+      stackResponse.stacks,
+      compatibilityCheckFn
+    )
+  explanations.push(totalResultExplanations)
 
   const availableAreaHectares = sqmToHaRounded(availableAreaSqm)
 
@@ -210,7 +220,8 @@ function getInitialExplanations(
 }
 
 /**
- * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements, ExplanationSection} from './available-area.d.js'
+ * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements } from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
  * @import { LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
  */

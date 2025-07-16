@@ -2,6 +2,8 @@
  * @import { Action, Stack, CompatibilityCheckFn, ExplanationSection } from './available-area.d.js'
  */
 
+import { createExplanationSection } from './explanations.js'
+
 /**
  * Converts square meters to hectares and formats as a string
  * @param {number} value - Area in square meters
@@ -230,11 +232,13 @@ const explain = {
     )
 }
 
-function createExplanationSection(stacks, explanations) {
-  return {
-    title: 'Stacks',
-    content: [...explain.stacks(stacks), '', 'Explanation:', ...explanations]
-  }
+function createStacksExplanations(stacks, explanations) {
+  return createExplanationSection('Stacks', [
+    ...explain.stacks(stacks),
+    '',
+    'Explanation:',
+    ...explanations
+  ])
 }
 
 /**
@@ -322,7 +326,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
   }
 
   return {
-    explanations: createExplanationSection(stacks, explanations),
+    explanations: createStacksExplanations(stacks, explanations),
     stacks
   }
 }
