@@ -187,6 +187,11 @@ describe('Calculate available area with agreements', () => {
                   title: 'Total valid land covers'
                 },
                 {
+                  title:
+                    'Find area of existing action that must be on the same land cover as CMOR1',
+                  content: []
+                },
+                {
                   content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     '',
@@ -257,6 +262,11 @@ describe('Calculate available area with agreements', () => {
                   title: 'Total valid land covers'
                 },
                 {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL1',
+                  content: []
+                },
+                {
                   content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     '',
@@ -266,6 +276,7 @@ describe('Calculate available area with agreements', () => {
                   ],
                   title: 'Stacks'
                 },
+
                 {
                   title: 'Result',
                   content: [
@@ -326,6 +337,11 @@ describe('Calculate available area with agreements', () => {
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL2',
+                  content: []
                 },
                 {
                   content: [
@@ -397,6 +413,11 @@ describe('Calculate available area with agreements', () => {
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL3',
+                  content: []
                 },
                 {
                   content: [
@@ -537,6 +558,11 @@ describe('Calculate available area with agreements', () => {
                   title: 'Total valid land covers'
                 },
                 {
+                  title:
+                    'Find area of existing action that must be on the same land cover as CMOR1',
+                  content: []
+                },
+                {
                   content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     'Stack 2 - UPL2 - 0.1 ha',
@@ -614,6 +640,11 @@ describe('Calculate available area with agreements', () => {
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL1',
+                  content: []
                 },
                 {
                   content: [
@@ -697,6 +728,11 @@ describe('Calculate available area with agreements', () => {
                   title: 'Total valid land covers'
                 },
                 {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL2',
+                  content: []
+                },
+                {
                   content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     'Stack 2 - UPL2 - 0.1 ha',
@@ -776,6 +812,11 @@ describe('Calculate available area with agreements', () => {
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  title:
+                    'Find area of existing action that must be on the same land cover as UPL3',
+                  content: []
                 },
                 {
                   content: [

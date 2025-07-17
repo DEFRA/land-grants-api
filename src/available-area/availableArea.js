@@ -152,22 +152,32 @@ export function getAvailableAreaForAction(
     `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
   )
 
-  const revisedActions = subtractIncompatibleLandCoverAreaFromActions(
+  const {
+    result: revisedActions,
+    explanations: incompatibleLandCoverExplanations
+  } = subtractIncompatibleLandCoverAreaFromActions(
+    parcelId,
+    sheetId,
+    actionCodeAppliedFor,
     existingActionsWithLandCoverInCommonWithAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
     mergedLandCoverCodesForAppliedForAction,
+    landCoverDefinitions,
     logger
   )
 
-  const stackResponse = stackActions(revisedActions, compatibilityCheckFn)
+  const { stacks, explanations: stackExplanations } = stackActions(
+    revisedActions,
+    compatibilityCheckFn
+  )
 
   // subtract areas of stacks where any action is not compatible
   const { result: availableAreaSqm, explanation: resultExplanation } =
     subtractIncompatibleStacks(
       actionCodeAppliedFor,
       totalValidLandCoverSqm,
-      stackResponse.stacks,
+      stacks,
       compatibilityCheckFn
     )
 
@@ -180,11 +190,12 @@ export function getAvailableAreaForAction(
   const explanations = [
     ...initialExplanations,
     totalValidLandCoverExplanations,
-    stackResponse.explanations,
+    incompatibleLandCoverExplanations,
+    stackExplanations,
     resultExplanation
   ]
   return {
-    stacks: stackResponse.stacks,
+    stacks,
     explanations,
     availableAreaSqm,
     totalValidLandCoverSqm,

@@ -72,6 +72,11 @@ describe('Available Area', () => {
                 content: ['130 - 1 ha', '= 1 ha']
               },
               {
+                title:
+                  'Find area of existing action that must be on the same land cover as CMOR1',
+                content: []
+              },
+              {
                 title: 'Stacks',
                 content: ['No existing actions so no stacks are needed']
               },
@@ -142,6 +147,11 @@ describe('Available Area', () => {
               {
                 title: 'Total valid land covers',
                 content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL1',
+                content: []
               },
               {
                 title: 'Stacks',
@@ -220,6 +230,11 @@ describe('Available Area', () => {
               {
                 title: 'Total valid land covers',
                 content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL2',
+                content: []
               },
               {
                 title: 'Stacks',
@@ -313,6 +328,11 @@ describe('Available Area', () => {
               {
                 title: 'Total valid land covers',
                 content: ['130 - 0.5 ha', '= 0.5 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL3',
+                content: []
               },
               {
                 title: 'Stacks',
@@ -431,6 +451,11 @@ describe('Available Area', () => {
                 content: ['130 - 1.1150572 ha', '= 1.1150572 ha']
               },
               {
+                title:
+                  'Find area of existing action that must be on the same land cover as CMOR1',
+                content: []
+              },
+              {
                 title: 'Stacks',
                 content: [
                   'Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha',
@@ -536,6 +561,11 @@ describe('Available Area', () => {
                 content: ['130 - 1 ha', '= 1 ha']
               },
               {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL3',
+                content: []
+              },
+              {
                 title: 'Stacks',
                 content: [
                   'Stack 1 - UPL1 - 0.1 ha',
@@ -618,6 +648,11 @@ describe('Available Area', () => {
               {
                 title: 'Total valid land covers',
                 content: ['130 - 0.5 ha', '= 0.5 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL2',
+                content: []
               },
               {
                 title: 'Stacks',

@@ -14,8 +14,8 @@ import {
 import actionModel from '../api/actions/models/action.model.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
 import {
-  getAvailableAreaForAction,
-  getAvailableAreaDataRequirements
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
 } from '../available-area/availableArea.js'
 import { createCompatibilityMatrix } from '../available-area/compatibilityMatrix.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
