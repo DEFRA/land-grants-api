@@ -34,6 +34,7 @@ function makeCreateStack() {
 
 /**
  * Splits the last item of stacks into two new stacks, allocating the area in remainingAreaForAction within the two
+ * @param {number} currentStackNumber - Current stackNumber that we want to split
  * @param {Function} createStack - Factory function for creating new stacks
  * @param {Stack[]} stacks - Array of existing stacks
  * @param {string[]} explanations - Array of explanation strings
@@ -42,14 +43,15 @@ function makeCreateStack() {
  * @returns {{newExplanations: string[], newStacks: Stack[]}} object containing updated explanations and stacks
  */
 function splitStacks(
+  currentStackNumber,
   createStack,
   stacks,
   explanations,
   action,
   remainingAreaForAction
 ) {
-  const newStacks = [...stacks]
-  const currentStack = newStacks.pop()
+  const currentStackIndex = currentStackNumber - 1
+  const currentStack = stacks[currentStackIndex]
 
   if (currentStack == null) {
     throw new Error('No stacks available to split')
@@ -68,16 +70,38 @@ function splitStacks(
     [...currentStack.actionCodes],
     currentStack.areaSqm - remainingAreaForAction
   )
+  const createdStackNumber = newStack.stackNumber
+  const shiftedStackNumber = currentStackNumber + 1
+  newStack.stackNumber = shiftedStackNumber
 
   currentStack.actionCodes.push(action.actionCode)
   currentStack.areaSqm = remainingAreaForAction
 
-  newStacks.push(currentStack)
-  newStacks.push(newStack)
+  const stacksAfterNewStack = stacks.slice(currentStackIndex + 1)
+  const newStacks = [
+    ...stacks.slice(0, currentStackIndex),
+    currentStack,
+    newStack,
+    ...stacksAfterNewStack.map((s) => ({
+      ...s,
+      stackNumber: s.stackNumber + 1
+    }))
+  ]
 
   newExplanations.push(explain.shrinkStack(currentStack, action))
   newExplanations.push(newStackExplanation)
 
+  // if stacks have shifted positions, explain it
+  if (createdStackNumber !== shiftedStackNumber) {
+    newExplanations.push(
+      explain.shiftStackPosition(createdStackNumber, shiftedStackNumber)
+    )
+    stacksAfterNewStack.forEach((item) => {
+      newExplanations.push(
+        explain.shiftStackPosition(item.stackNumber, item.stackNumber + 1)
+      )
+    })
+  }
   return { newExplanations, newStacks }
 }
 
@@ -209,6 +233,15 @@ const explain = {
     `  ${code} is not compatible with: ${incompatibleCodes.join(', ')} in Stack ${stackNumber}`,
 
   /**
+   * Generates explanation for shifting stack numbers
+   * @param {number} oldStackNumber - Old stack number being shifted
+   * @param {number} newStackNumber - New stack number being shifted
+   * @returns {string} Explanation message
+   */
+  shiftStackPosition: (oldStackNumber, newStackNumber) =>
+    `  Shifting Stack ${oldStackNumber} position to become ${newStackNumber}`,
+
+  /**
    * Generates explanation for compatible action codes
    * @param {string} code - Action code being checked
    * @param {string[]} compatibleCodes - Array of compatible action codes
@@ -275,6 +308,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
         explanations.push(explain.addedToStack(action, existingStack))
       } else {
         const { newExplanations, newStacks } = splitStacks(
+          existingStack.stackNumber,
           createStack,
           stacks,
           explanations,
