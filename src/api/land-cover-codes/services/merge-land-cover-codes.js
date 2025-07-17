@@ -1,10 +1,6 @@
 /**
- * @import {LandCovers} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
- */
-
-/**
  * Merges land cover codes into a single array of unique land cover and land cover class codes.
- * @param {LandCovers[]} landCoverCodes - Array of land cover codes with class codes.
+ * @param {LandCoverCodes[]} landCoverCodes - Array of land cover codes with class codes.
  * @returns {string[]} Merged array of unique land cover class codes.
  */
 export function mergeLandCoverCodes(landCoverCodes) {
@@ -17,10 +13,14 @@ export function mergeLandCoverCodes(landCoverCodes) {
   const mergedCodes = new Set()
 
   // eslint-disable-next-line camelcase
-  for (const { land_cover_code, land_cover_class_code } of landCoverCodes) {
-    mergedCodes.add(land_cover_code)
-    mergedCodes.add(land_cover_class_code)
+  for (const { landCoverCode, landCoverClassCode } of landCoverCodes) {
+    mergedCodes.add(landCoverCode)
+    mergedCodes.add(landCoverClassCode)
   }
 
   return Array.from(mergedCodes).sort()
 }
+
+/**
+ * @import {LandCoverCodes} from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */

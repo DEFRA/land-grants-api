@@ -132,7 +132,7 @@ describe('Subtract incompatible stacks', function () {
           totalValidLandCoverSqm,
           stacks,
           compatibilityCheckFn
-        )
+        ).result
       ).toEqual(expectedResult)
     }
   )

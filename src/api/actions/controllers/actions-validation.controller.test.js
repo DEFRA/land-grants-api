@@ -3,13 +3,13 @@ import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 import { landactions } from '~/src/api/actions/index.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
-import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js'
+import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js'
+import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
-import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
@@ -18,7 +18,7 @@ jest.mock('~/src/api/parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
-jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForAction.query.js')
+jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
 
 describe('Actions validation controller', () => {
   const server = Hapi.server()
@@ -30,12 +30,12 @@ describe('Actions validation controller', () => {
 
   const mockLandCoverCodes = [
     {
-      land_cover_code: '130',
-      land_cover_class_code: '130'
+      landCoverCode: '130',
+      landCoverClassCode: '130'
     },
     {
-      land_cover_code: '240',
-      land_cover_class_code: '240'
+      landCoverCode: '240',
+      landCoverClassCode: '240'
     }
   ]
   const mockLandParcelData = [

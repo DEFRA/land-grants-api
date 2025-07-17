@@ -1,84 +1,714 @@
+import { logger } from '../db-tests/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
-import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
-import { calculateAvailableArea } from './calculateAvailableArea.js'
+import { makeCompatibilityCheckFn } from './testUtils.js'
 
-jest.mock('../api/land-cover-codes/queries/getLandCoversForAction.query.js')
-jest.mock('../api/parcel/queries/getLandCoversForParcel.query.js')
-jest.mock('../api/parcel/transformers/parcelActions.transformer.js')
-jest.mock('./calculateAvailableArea.js')
+jest.mock(
+  '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
+)
 
-const mockGetLandCoversForAction = getLandCoversForAction
-const mockGetLandCoversForParcel = getLandCoversForParcel
-const mockCalculateAvailableArea = calculateAvailableArea
-
-describe('getAvailableAreaForAction', () => {
-  const mockActionCode = 'CMOR1'
-
-  const mockSheetId = 'SX0679'
-  const mockParcelId = '9238'
-  const mockCompatibilityCheckFn = jest.fn()
-  const mockExistingActions = [{ actionCode: 'UPL1', areaSqm: 100 }]
-  const mockPostgresDb = {
-    query: jest.fn(),
-    connect: jest.fn(),
-    release: jest.fn()
+const landCoverDefinitions = {
+  131: {
+    landCoverCode: 131,
+    landCoverClassCode: 130,
+    landCoverTypeCode: 100,
+    landCoverTypeDescription: 'Arable',
+    landCoverClassDescription: 'Arable',
+    landCoverDescription: 'Arable'
   }
-  const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn()
-  }
+}
 
-  const mockLandCoverCodes = [
-    { land_cover_code: '130', land_cover_class_code: '130' },
-    { land_cover_code: '240', land_cover_class_code: '240' }
-  ]
-
-  const mockLandCoversForParcel = [
-    { landCoverClassCode: '130', areaSqm: 3000 },
-    { landCoverClassCode: '240', areaSqm: 2000 }
-  ]
-  const mockAvailableAreaResult = {
-    stacks: [{ actionCode: 'CMOR1', areaSqm: 3000 }],
-    explanations: ['Test explanation'],
-    availableAreaSqm: 3000,
-    totalValidLandCoverSqm: 5000,
-    availableAreaHectares: 0.3
-  }
-
+describe('Available Area', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-
-    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
-    mockGetLandCoversForParcel.mockResolvedValue(mockLandCoversForParcel)
-    mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
 
-  test('should return available area calculation result', async () => {
-    const result = await getAvailableAreaForAction(
-      mockActionCode,
-      mockSheetId,
-      mockParcelId,
-      mockCompatibilityCheckFn,
-      mockExistingActions,
-      mockPostgresDb,
-      mockLogger
-    )
+  describe('getAvailableAreaForAction', function () {
+    const testConditions = [
+      [
+        'should return full area when no existing actions',
+        {
+          actionCodeAppliedFor: 'CMOR1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: [],
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: [`Action code - CMOR1`, `Parcel Id - SD6743 7268`]
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: []
+              },
+              {
+                title: `Valid land covers for action: CMOR1`,
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as CMOR1',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: ['No existing actions so no stacks are needed']
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '= 1 ha available for CMOR1'
+                ]
+              }
+            ],
+            availableAreaSqm: 10000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 1
+          }
+        }
+      ],
+      [
+        'should calculate available area with one existing compatible action',
+        {
+          actionCodeAppliedFor: 'UPL1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({ CMOR1: ['UPL1'] }),
+          existingActions: [{ actionCode: 'CMOR1', areaSqm: 1000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              CMOR1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['CMOR1'], areaSqm: 1000 }],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL1', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CMOR1 - 0.1 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL1',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL1',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CMOR1 - 0.1 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CMOR1 (area 0.1 ha)',
+                  '  Created Stack 1 for CMOR1 with area 0.1 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '= 1 ha available for UPL1'
+                ]
+              }
+            ],
+            availableAreaSqm: 10000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 1
+          }
+        }
+      ],
+      [
+        'should subtract incompatible stack area from available area',
+        {
+          actionCodeAppliedFor: 'UPL2',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [{ actionCode: 'UPL1', areaSqm: 2000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 2000 }],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL2', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['UPL1 - 0.2 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL2',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL2',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - UPL1 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.2 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.2 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '- 0.2 (Stack 1)',
+                  '= 0.8 ha available for UPL2'
+                ]
+              }
+            ],
+            availableAreaSqm: 8000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 0.8
+          }
+        }
+      ],
+      [
+        'should handle multiple compatible actions in same stack',
+        {
+          actionCodeAppliedFor: 'UPL3',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({
+            CMOR1: ['UPL1', 'UPL3'],
+            UPL1: ['UPL3']
+          }),
+          existingActions: [
+            { actionCode: 'CMOR1', areaSqm: 1000 },
+            { actionCode: 'UPL1', areaSqm: 1000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 5000
+              }
+            ],
+            landCoversForExistingActions: {
+              CMOR1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [
+              { stackNumber: 1, actionCodes: ['CMOR1', 'UPL1'], areaSqm: 1000 }
+            ],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 0.5 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CMOR1 - 0.1 ha', 'UPL1 - 0.1 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL3',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 0.5 ha', '= 0.5 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL3',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CMOR1, UPL1 - 0.1 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CMOR1 (area 0.1 ha)',
+                  '  Created Stack 1 for CMOR1 with area 0.1 ha',
+                  'Adding UPL1 (area 0.1 ha)',
+                  '  UPL1 is compatible with: CMOR1 in Stack 1',
+                  '  Added UPL1 to Stack 1 with area 0.1 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 0.5 ha',
+                  '= 0.5 ha available for UPL3'
+                ]
+              }
+            ],
+            availableAreaSqm: 5000,
+            totalValidLandCoverSqm: 5000,
+            availableAreaHectares: 0.5
+          }
+        }
+      ],
+      [
+        'should handle multiple incompatible actions that are compatible among them in separate stacks',
+        {
+          actionCodeAppliedFor: 'CMOR1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({
+            CHRW1: ['CHRW2', 'CHRW3'],
+            CHRW2: ['CHRW3']
+          }),
+          existingActions: [
+            { actionCode: 'CHRW1', areaSqm: 10000 },
+            { actionCode: 'CHRW2', areaSqm: 8000 },
+            { actionCode: 'CHRW3', areaSqm: 7000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 11150.572
+              }
+            ],
+            landCoversForExistingActions: {
+              CHRW1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              CHRW2: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              CHRW3: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [
+              {
+                stackNumber: 1,
+                actionCodes: ['CHRW3', 'CHRW2', 'CHRW1'],
+                areaSqm: 7000
+              },
+              {
+                stackNumber: 2,
+                actionCodes: ['CHRW2', 'CHRW1'],
+                areaSqm: 1000
+              },
+              {
+                stackNumber: 3,
+                actionCodes: ['CHRW1'],
+                areaSqm: 2000
+              }
+            ],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: ['Action code - CMOR1', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1.1150572 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['CHRW1 - 1 ha', 'CHRW2 - 0.8 ha', 'CHRW3 - 0.7 ha']
+              },
+              {
+                title: 'Valid land covers for action: CMOR1',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1.1150572 ha', '= 1.1150572 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as CMOR1',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha',
+                  'Stack 2 - CHRW2, CHRW1 - 0.1 ha',
+                  'Stack 3 - CHRW1 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding CHRW3 (area 0.7 ha)',
+                  '  Created Stack 1 for CHRW3 with area 0.7 ha',
+                  'Adding CHRW2 (area 0.8 ha)',
+                  '  CHRW2 is compatible with: CHRW3 in Stack 1',
+                  '  Added CHRW2 to Stack 1 with area 0.7 ha',
+                  '  Created Stack 2 for CHRW2 with area 0.1 ha',
+                  'Adding CHRW1 (area 1 ha)',
+                  '  CHRW1 is compatible with: CHRW3, CHRW2 in Stack 1',
+                  '  Added CHRW1 to Stack 1 with area 0.7 ha',
+                  '  CHRW1 is compatible with: CHRW2 in Stack 2',
+                  '  Added CHRW1 to Stack 2 with area 0.1 ha',
+                  '  Created Stack 3 for CHRW1 with area 0.2 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1.1150572 ha',
+                  '- 0.7 (Stack 1)',
+                  '- 0.1 (Stack 2)',
+                  '- 0.2 (Stack 3)',
+                  '= 0.1150572 ha available for CMOR1'
+                ]
+              }
+            ],
+            availableAreaSqm: 1150.5720000000001,
+            totalValidLandCoverSqm: 11150.572,
+            availableAreaHectares: 0.1150572
+          }
+        }
+      ],
+      [
+        'should handle multiple incompatible actions in separate stacks',
+        {
+          actionCodeAppliedFor: 'UPL3',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [
+            { actionCode: 'UPL1', areaSqm: 1000 },
+            { actionCode: 'UPL2', areaSqm: 2000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              UPL2: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [
+              { stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 1000 },
+              { stackNumber: 2, actionCodes: ['UPL2'], areaSqm: 2000 }
+            ],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: ['130 - 1 ha']
+              },
+              {
+                title: 'Existing actions',
+                content: ['UPL1 - 0.1 ha', 'UPL2 - 0.2 ha']
+              },
+              {
+                title: 'Valid land covers for action: UPL3',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL3',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - UPL1 - 0.1 ha',
+                  'Stack 2 - UPL2 - 0.2 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.1 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.1 ha',
+                  'Adding UPL2 (area 0.2 ha)',
+                  '  UPL2 is not compatible with: UPL1 in Stack 1',
+                  '  Created Stack 2 for UPL2 with area 0.2 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '- 0.1 (Stack 1)',
+                  '- 0.2 (Stack 2)',
+                  '= 0.7 ha available for UPL3'
+                ]
+              }
+            ],
+            availableAreaSqm: 7000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 0.7
+          }
+        }
+      ],
+      [
+        'should return zero available area when all land is used by incompatible actions',
+        {
+          actionCodeAppliedFor: 'UPL2',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [{ actionCode: 'UPL1', areaSqm: 5000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 5000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 5000 }],
+            explanations: [
+              {
+                title: 'Application Information',
+                content: [`Action code - UPL2`, `Parcel Id - SD6743 7268`]
+              },
+              {
+                title: 'Land Covers For Parcel',
+                content: [`130 - 0.5 ha`]
+              },
+              {
+                title: 'Existing actions',
+                content: [`UPL1 - 0.5 ha`]
+              },
+              {
+                title: 'Valid land covers for action: UPL2',
+                content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 0.5 ha', '= 0.5 ha']
+              },
+              {
+                title:
+                  'Find area of existing action that must be on the same land cover as UPL2',
+                content: []
+              },
+              {
+                title: 'Stacks',
+                content: [
+                  'Stack 1 - UPL1 - 0.5 ha',
+                  '',
+                  'Explanation:',
+                  'Adding UPL1 (area 0.5 ha)',
+                  '  Created Stack 1 for UPL1 with area 0.5 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 0.5 ha',
+                  '- 0.5 (Stack 1)',
+                  '= 0 ha available for UPL2'
+                ]
+              }
+            ],
+            availableAreaSqm: 0,
+            totalValidLandCoverSqm: 5000,
+            availableAreaHectares: 0
+          }
+        }
+      ]
+    ]
 
-    expect(result).toEqual(mockAvailableAreaResult)
+    test.each(testConditions)(
+      `%p`,
+      (
+        name,
+        {
+          actionCodeAppliedFor,
+          sheetId,
+          parcelId,
+          compatibilityCheckFn,
+          existingActions,
+          availableAreaDataRequirements,
+          expectedResult
+        }
+      ) => {
+        const result = getAvailableAreaForAction(
+          actionCodeAppliedFor,
+          sheetId,
+          parcelId,
+          compatibilityCheckFn,
+          existingActions,
+          availableAreaDataRequirements,
+          logger
+        )
 
-    expect(mockGetLandCoversForAction).toHaveBeenCalledWith(
-      mockActionCode,
-      mockPostgresDb,
-      mockLogger
-    )
-
-    expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
-      mockExistingActions,
-      mockActionCode,
-      5000,
-      mockCompatibilityCheckFn
+        expect(JSON.stringify(result, 2)).toEqual(
+          JSON.stringify(expectedResult, 2)
+        )
+      }
     )
   })
 })
