@@ -88,9 +88,7 @@ describe('Get actions', () => {
     const actions = await getEnabledActions(logger, connection)
 
     // eslint-disable-next-line
-    const upl4 = actions.find(
-      (a) => a.code === 'UPL4'
-    )
+    const upl4 = actions.find((a) => a.code === 'UPL4')
 
     expect(upl4).toBeUndefined()
   })
