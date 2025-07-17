@@ -87,6 +87,11 @@ export const postgresDb = {
             pool,
             server.logger
           )
+          await loadPostgresData(
+            'compatibility-matrix.sql.gz',
+            pool,
+            server.logger
+          )
         }
 
         server.decorate('server', 'postgresDb', pool)

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="create-compatibility-matrix-table" author="system">
+    <createTable tableName="compatibility_matrix" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="option_code" type="TEXT"/>
+      <column name="option_code_compat" type="TEXT"/>
+      <column name="year" type="NUMERIC"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="create-index-option-code" author="system">
+    <createIndex indexName="idx_compatibility_matrix_option_code" tableName="compatibility_matrix" schemaName="public">
+      <column name="option_code"/>
+    </createIndex>
+  </changeSet>
+</databaseChangeLog>
