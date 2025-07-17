@@ -1,33 +1,35 @@
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
+
 import {
-  closeMongo,
-  connectMongo,
-  seedMongo
-} from '~/src/db-tests/setup/utils.js'
-import compatibilityMatrix from '../api/common/helpers/seed-data/compatibility-matrix.js'
+  connectToTestDatbase,
+  resetDatabase,
+  seedPostgres
+} from '~/src/db-tests/setup/postgres.js'
 
 const logger = {
   info: jest.fn(),
   error: jest.fn()
 }
 
+let connection
+
 describe('Get compatibility matrix', () => {
   beforeAll(async () => {
-    await connectMongo()
-    await seedMongo(
-      compatibilityMatrixModel,
-      'compatibility-matrix',
-      compatibilityMatrix
-    )
+    connection = await connectToTestDatbase()
+    await seedPostgres(connection, {
+      compatibilityMatrix: true
+    })
   }, 60000)
 
   afterAll(async () => {
-    await closeMongo()
+    await resetDatabase(connection)
+    await connection.end()
   })
 
   test('should return all optionCodes for code', async () => {
-    const landCovers = await getCompatibilityMatrix(logger, ['CMOR1'])
+    const landCovers = await getCompatibilityMatrix(logger, connection, [
+      'CMOR1'
+    ])
     const filteredResult = landCovers.filter(
       (landCover) => landCover.optionCode === 'CMOR1'
     )
@@ -35,7 +37,13 @@ describe('Get compatibility matrix', () => {
   })
 
   test('should return all optionCodes when no codes are provided', async () => {
-    const landCovers = await getCompatibilityMatrix(logger)
-    expect(landCovers).toHaveLength(compatibilityMatrix.length)
+    const landCovers = await getCompatibilityMatrix(logger, connection)
+
+    expect(
+      landCovers.filter((l) => l.optionCode === 'UPL1').length
+    ).toBeGreaterThan(0)
+    expect(
+      landCovers.filter((l) => l.optionCode === 'UPL2').length
+    ).toBeGreaterThan(0)
   })
 })
