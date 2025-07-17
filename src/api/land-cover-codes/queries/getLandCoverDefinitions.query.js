@@ -3,7 +3,7 @@
  * @param {string[]} landCoverCodes - The land cover codes to get
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<{[key:string]: LandCoverDefinition}>} The land cover codes object
+ * @returns {Promise<LandCoverDefinition[]>}>} The land cover codes object
  */
 export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
   let client
@@ -11,7 +11,7 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
   try {
     if (!Array.isArray(landCoverCodes) || landCoverCodes.length === 0) {
       logger.warn('No land cover codes provided')
-      return {}
+      return []
     }
 
     logger.info(
@@ -29,7 +29,8 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
             land_use_code,
             land_use_description
         FROM public.land_cover_codes
-        WHERE land_cover_code = ANY ($1)`
+        WHERE land_cover_code = ANY ($1)
+        OR land_cover_class_code = ANY ($1)`
 
     const dbResponse = await client.query(query, [landCoverCodes])
 
@@ -37,14 +38,14 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
       logger.warn(
         `No land cover codes found for land cover codes: ${landCoverCodes.join(', ')}`
       )
-      return {}
+      return []
     }
 
     logger.info(
       `Retrieved land covers for land cover definitions: ${landCoverCodes.join(', ')}, items: ${dbResponse?.rows?.length}`
     )
 
-    return transformLandCoversForActions(dbResponse.rows, logger)
+    return transformLandCoverDefinitions(dbResponse.rows)
   } catch (error) {
     logger.error(`Unable to get land cover definitions`, error)
     throw error
@@ -55,24 +56,11 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
   }
 }
 
-/**
- * Transforms action land covers query response
- * @param {object[]} rows
- * @param {object} logger
- * @returns {{[key:string]: LandCoverDefinition}} The land cover codes object
- */
-const transformLandCoversForActions = (rows, logger) => {
-  /** @type {{[key:string]: LandCoverDefinition}} */
-  const transformed = {}
+function transformLandCoverDefinitions(rows) {
+  const landCoverDefinitions = []
 
   for (const row of rows) {
-    if (transformed[row.land_cover_code] != null) {
-      logger.warn(
-        `Duplicate land cover code found for action code: ${row.action_code}`
-      )
-      continue
-    }
-    transformed[row.land_cover_code] = {
+    const landCoverDefinition = {
       landCoverCode: row.land_cover_code,
       landCoverClassCode: row.land_cover_class_code,
       landCoverTypeCode: row.land_cover_type_code,
@@ -80,9 +68,11 @@ const transformLandCoversForActions = (rows, logger) => {
       landCoverClassDescription: row.land_cover_class_description,
       landCoverDescription: row.land_cover_description
     }
+
+    landCoverDefinitions.push(landCoverDefinition)
   }
 
-  return transformed
+  return landCoverDefinitions
 }
 
 /**

@@ -31,7 +31,7 @@ describe('Get land cover definitions', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({})
+    expect(landCovers).toEqual([])
   })
 
   test('should return land cover data for Permanent Grassland 131', async () => {
@@ -40,8 +40,8 @@ describe('Get land cover definitions', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({
-      131: {
+    expect(landCovers).toEqual([
+      {
         landCoverClassCode: '130',
         landCoverClassDescription: 'Permanent grassland',
         landCoverCode: '131',
@@ -49,7 +49,7 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '100',
         landCoverTypeDescription: 'Agricultural area'
       }
-    })
+    ])
   })
 
   test('should return land cover data for a list of covers', async () => {
@@ -58,8 +58,8 @@ describe('Get land cover definitions', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({
-      111: {
+    expect(landCovers).toEqual([
+      {
         landCoverClassCode: '110',
         landCoverClassDescription: 'Arable land',
         landCoverCode: '111',
@@ -67,7 +67,7 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '100',
         landCoverTypeDescription: 'Agricultural area'
       },
-      131: {
+      {
         landCoverClassCode: '130',
         landCoverClassDescription: 'Permanent grassland',
         landCoverCode: '131',
@@ -75,7 +75,7 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '100',
         landCoverTypeDescription: 'Agricultural area'
       },
-      641: {
+      {
         landCoverClassCode: '640',
         landCoverClassDescription: 'Natural transport - tracks and gallops',
         landCoverCode: '641',
@@ -83,7 +83,7 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '300',
         landCoverTypeDescription: 'Non-agricultural area'
       }
-    })
+    ])
   })
 
   test('should skip any missing land covers', async () => {
@@ -92,8 +92,8 @@ describe('Get land cover definitions', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({
-      131: {
+    expect(landCovers).toEqual([
+      {
         landCoverClassCode: '130',
         landCoverClassDescription: 'Permanent grassland',
         landCoverCode: '131',
@@ -101,7 +101,7 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '100',
         landCoverTypeDescription: 'Agricultural area'
       },
-      641: {
+      {
         landCoverClassCode: '640',
         landCoverClassDescription: 'Natural transport - tracks and gallops',
         landCoverCode: '641',
@@ -109,6 +109,6 @@ describe('Get land cover definitions', () => {
         landCoverTypeCode: '300',
         landCoverTypeDescription: 'Non-agricultural area'
       }
-    })
+    ])
   })
 })

@@ -2,6 +2,42 @@
  * @import { Action, Stack, CompatibilityCheckFn } from './available-area.d.js'
  */
 
+import { sqmToHaRounded } from '../api/common/helpers/measurement.js'
+import { createExplanationSection } from './explanations.js'
+
+/**
+ * Explanation message generators for total calculation operations
+ */
+const explain = {
+  /**
+   * Generates explanation for total valid land cover
+   * @param {number} areaSqm - Area in sqm of the land class code
+   * @returns {string} Explanation message
+   */
+  totalValidLandCover: (areaSqm) => {
+    return `Total valid land cover: ${sqmToHaRounded(areaSqm)} ha`
+  },
+
+  /**
+   * Generates explanation for incompatible stack
+   * @param {Stack} stack - Stack object
+   * @returns {string} Explanation message
+   */
+  incompatibleStack: (stack) => {
+    return `- ${sqmToHaRounded(stack.areaSqm)} (Stack ${stack.stackNumber})`
+  },
+
+  /**
+   * Generates explanation for total amount
+   * @param {number} totalAvailableAreaForAction - Total available area
+   * @param {string} actionCode - Action code
+   * @returns {string} Explanation message
+   */
+  totalAvailableAreaForAction: (totalAvailableAreaForAction, actionCode) => {
+    return `= ${sqmToHaRounded(totalAvailableAreaForAction)} ha available for ${actionCode}`
+  }
+}
+
 /**
  * Checks if all action codes in an array are compatible with a given code, according to a compatibility check function
  * @param {string} code - The action code to check compatibility against
@@ -50,7 +86,7 @@ function validateInputParams(
  * @param {number} totalValidLandCoverSqm - Total valid land cover area in square meters
  * @param {Stack[]} stacks - Array of stack objects containing actionCodes and areaSqm
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
- * @returns {number} Remaining land cover area after subtracting incompatible stacks
+ * @returns {{result: number, explanationSection: ExplanationSection}} Remaining land cover area after subtracting incompatible stacks
  * @throws {Error} Throws error if input parameters are invalid
  */
 export function subtractIncompatibleStacks(
@@ -59,6 +95,9 @@ export function subtractIncompatibleStacks(
   stacks,
   compatibilityCheckFn
 ) {
+  const explanations = []
+  explanations.push(explain.totalValidLandCover(totalValidLandCoverSqm))
+
   validateInputParams(
     actionCodeAppliedFor,
     totalValidLandCoverSqm,
@@ -75,10 +114,20 @@ export function subtractIncompatibleStacks(
       )
   )
 
-  const result = incompatibleStacks.reduce(
-    (acc, stack) => acc - stack.areaSqm,
-    totalValidLandCoverSqm
-  )
+  const result = incompatibleStacks.reduce((acc, stack) => {
+    explanations.push(explain.incompatibleStack(stack))
+    return acc - stack.areaSqm
+  }, totalValidLandCoverSqm)
 
-  return result < 0 ? 0 : result
+  explanations.push(
+    explain.totalAvailableAreaForAction(result, actionCodeAppliedFor)
+  )
+  return {
+    result: result < 0 ? 0 : result,
+    explanationSection: createExplanationSection('Result', explanations)
+  }
 }
+
+/**
+ * @import { ExplanationSection } from './explanations.d.js'
+ */

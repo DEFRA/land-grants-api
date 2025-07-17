@@ -6,55 +6,84 @@ import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land
  * @param {Action[]} existingActions - The list of existing actions
  * @param {{[key:string]: LandCoverCodes[]}} landCoversForExistingActions - Land cover codes information for existing actions
  * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
- * @param {object} logger - The logger object
- * @returns {Action[]} - A list of existing actions that share land cover codes
+ * @param {CodeToString} landCoverToString
+ * @returns {{existingActionsWithLandCoverInCommonWithAppliedForAction: Action[], explanationSection: {title: string, explanations: string[]}}} - A list of existing actions that share land cover codes
  */
 export function filterActionsWithCommonLandCover(
   existingActions,
   landCoversForExistingActions,
   landCoverCodesForAppliedForAction,
-  logger
+  landCoverToString
 ) {
   const actionsWithLandCoverInCommon = []
+  const explanations = []
   for (const existingAction of existingActions) {
-    const hasLandCoverInCommon = actionHasLandCoverInCommon(
-      existingAction,
-      landCoversForExistingActions,
-      landCoverCodesForAppliedForAction,
-      logger
-    )
+    const { hasLandCoverInCommon, explanations: commonExplanations } =
+      actionHasLandCoverInCommon(
+        existingAction,
+        landCoversForExistingActions,
+        landCoverCodesForAppliedForAction,
+        landCoverToString
+      )
+
+    explanations.push(...commonExplanations)
+
     if (hasLandCoverInCommon) {
       actionsWithLandCoverInCommon.push(existingAction)
     }
   }
 
-  return actionsWithLandCoverInCommon
+  explanations.push('', 'Actions included for stacking:', '')
+
+  if (actionsWithLandCoverInCommon.length === 0) {
+    explanations.push('None')
+  }
+
+  for (const action of actionsWithLandCoverInCommon) {
+    explanations.push(`- ${action.actionCode}`)
+  }
+
+  return {
+    existingActionsWithLandCoverInCommonWithAppliedForAction:
+      actionsWithLandCoverInCommon,
+    explanationSection: { title: 'Common land covers', content: explanations }
+  }
 }
 
+/**
+ *
+ * @param {Action} existingAction
+ * @param {{[key:string]: LandCoverCodes[]}} landCoversForExistingActions
+ * @param {string[]} landCoverCodesForAppliedForAction
+ * @param {CodeToString} landCoverToString
+ * @returns
+ */
 function actionHasLandCoverInCommon(
   existingAction,
   landCoversForExistingActions,
   landCoverCodesForAppliedForAction,
-  logger
+  landCoverToString
 ) {
   const landCoverCodesForExistingAction = mergeLandCoverCodes(
     landCoversForExistingActions[existingAction.actionCode]
   )
 
-  logger.info(
-    `filterActionsWithLandCoverInCommon - Found ${landCoverCodesForExistingAction.length} land cover codes for action: ${existingAction.actionCode}: ${JSON.stringify(
-      landCoverCodesForExistingAction
-    )}`
-  )
-
-  const hasLandCoverInCommon = landCoverCodesForExistingAction.some((code) =>
+  const commonLandCoverCodes = landCoverCodesForExistingAction.filter((code) =>
     landCoverCodesForAppliedForAction.includes(code)
   )
 
-  return hasLandCoverInCommon
+  const explanation = `${existingAction.actionCode} has the following valid land covers in common with the applied for action: `
+  const coverCodeDescriptions = commonLandCoverCodes.map(
+    (c) => `- ${landCoverToString(c, true)}`
+  )
+
+  return {
+    hasLandCoverInCommon: commonLandCoverCodes.length > 0,
+    explanations: [explanation, ...coverCodeDescriptions]
+  }
 }
 
 /**
- * @import { Action} from './available-area.d.js'
- * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ * @import { Action, CodeToString } from './available-area.d.js'
+ * @import { LandCoverCodes,LandCoverDefinition } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */

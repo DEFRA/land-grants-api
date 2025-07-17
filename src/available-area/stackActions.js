@@ -1,5 +1,6 @@
 /**
- * @import { Action, Stack, CompatibilityCheckFn, ExplanationSection } from './available-area.d.js'
+ * @import { Action, Stack, CompatibilityCheckFn } from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
  */
 
 /**
