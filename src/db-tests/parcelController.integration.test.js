@@ -195,6 +195,13 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 1 for UPL1 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '= 0.59268576 ha available for CMOR1'
+                  ]
                 }
               ]
             }
@@ -258,6 +265,14 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 1 for UPL1 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '= 0.49268576 ha available for UPL1'
+                  ]
                 }
               ]
             }
@@ -321,6 +336,14 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 1 for UPL1 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '= 0.49268576 ha available for UPL2'
+                  ]
                 }
               ]
             }
@@ -384,6 +407,14 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 1 for UPL1 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '= 0.49268576 ha available for UPL3'
+                  ]
                 }
               ]
             }
@@ -518,6 +549,13 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 2 for UPL2 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '= 0.59268576 ha available for CMOR1'
+                  ]
                 }
               ]
             }
@@ -590,6 +628,15 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 2 for UPL2 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '- 0.1 (Stack 2)',
+                    '= 0.39268576 ha available for UPL1'
+                  ]
                 }
               ]
             }
@@ -662,6 +709,15 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 2 for UPL2 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '- 0.1 (Stack 2)',
+                    '= 0.39268576 ha available for UPL2'
+                  ]
                 }
               ]
             }
@@ -734,6 +790,15 @@ describe('Calculate available area with agreements', () => {
                     '  Created Stack 2 for UPL2 with area 0.1 ha'
                   ],
                   title: 'Stacks'
+                },
+                {
+                  title: 'Result',
+                  content: [
+                    'Total valid land cover: 0.59268576 ha',
+                    '- 0.1 (Stack 1)',
+                    '- 0.1 (Stack 2)',
+                    '= 0.39268576 ha available for UPL3'
+                  ]
                 }
               ]
             }

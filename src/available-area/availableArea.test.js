@@ -74,6 +74,13 @@ describe('Available Area', () => {
               {
                 title: 'Stacks',
                 content: ['No existing actions so no stacks are needed']
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '= 1 ha available for CMOR1'
+                ]
               }
             ],
             availableAreaSqm: 10000,
@@ -145,6 +152,13 @@ describe('Available Area', () => {
                   'Adding CMOR1 (area 0.1 ha)',
                   '  Created Stack 1 for CMOR1 with area 0.1 ha'
                 ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '= 1 ha available for UPL1'
+                ]
               }
             ],
             availableAreaSqm: 10000,
@@ -215,6 +229,14 @@ describe('Available Area', () => {
                   'Explanation:',
                   'Adding UPL1 (area 0.2 ha)',
                   '  Created Stack 1 for UPL1 with area 0.2 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '- 0.2 (Stack 1)',
+                  '= 0.8 ha available for UPL2'
                 ]
               }
             ],
@@ -303,6 +325,13 @@ describe('Available Area', () => {
                   'Adding UPL1 (area 0.1 ha)',
                   '  UPL1 is compatible with: CMOR1 in Stack 1',
                   '  Added UPL1 to Stack 1 with area 0.1 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 0.5 ha',
+                  '= 0.5 ha available for UPL3'
                 ]
               }
             ],
@@ -422,6 +451,16 @@ describe('Available Area', () => {
                   '  Added CHRW1 to Stack 2 with area 0.1 ha',
                   '  Created Stack 3 for CHRW1 with area 0.2 ha'
                 ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1.1150572 ha',
+                  '- 0.7 (Stack 1)',
+                  '- 0.1 (Stack 2)',
+                  '- 0.2 (Stack 3)',
+                  '= 0.1150572 ha available for CMOR1'
+                ]
               }
             ],
             availableAreaSqm: 1150.5720000000001,
@@ -509,6 +548,15 @@ describe('Available Area', () => {
                   '  UPL2 is not compatible with: UPL1 in Stack 1',
                   '  Created Stack 2 for UPL2 with area 0.2 ha'
                 ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 1 ha',
+                  '- 0.1 (Stack 1)',
+                  '- 0.2 (Stack 2)',
+                  '= 0.7 ha available for UPL3'
+                ]
               }
             ],
             availableAreaSqm: 7000,
@@ -579,6 +627,14 @@ describe('Available Area', () => {
                   'Explanation:',
                   'Adding UPL1 (area 0.5 ha)',
                   '  Created Stack 1 for UPL1 with area 0.5 ha'
+                ]
+              },
+              {
+                title: 'Result',
+                content: [
+                  'Total valid land cover: 0.5 ha',
+                  '- 0.5 (Stack 1)',
+                  '= 0 ha available for UPL2'
                 ]
               }
             ],

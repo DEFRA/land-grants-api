@@ -163,12 +163,13 @@ export function getAvailableAreaForAction(
   const stackResponse = stackActions(revisedActions, compatibilityCheckFn)
 
   // subtract areas of stacks where any action is not compatible
-  const availableAreaSqm = subtractIncompatibleStacks(
-    actionCodeAppliedFor,
-    totalValidLandCoverSqm,
-    stackResponse.stacks,
-    compatibilityCheckFn
-  )
+  const { result: availableAreaSqm, explanation: resultExplanation } =
+    subtractIncompatibleStacks(
+      actionCodeAppliedFor,
+      totalValidLandCoverSqm,
+      stackResponse.stacks,
+      compatibilityCheckFn
+    )
 
   const availableAreaHectares = sqmToHaRounded(availableAreaSqm)
 
@@ -179,7 +180,8 @@ export function getAvailableAreaForAction(
   const explanations = [
     ...initialExplanations,
     totalValidLandCoverExplanations,
-    stackResponse.explanations
+    stackResponse.explanations,
+    resultExplanation
   ]
   return {
     stacks: stackResponse.stacks,
