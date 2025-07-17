@@ -10,6 +10,7 @@ import { filterActionsWithCommonLandCover } from './filterActionsWithCommonLandC
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 import { subtractIncompatibleLandCoverAreaFromActions } from './subtractIncompatibleLandCoverAreaFromActions.js'
+import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -55,10 +56,29 @@ export async function getAvailableAreaDataRequirements(
     logger
   )
 
+  const landCoverCodesForExistingActions = Object.keys(
+    landCoversForExistingActions
+  ).flatMap((k) => landCoversForExistingActions[k].map((c) => c.landCoverCode))
+
+  const allLandCoverCodes = new Set([
+    ...landCoverCodesForAppliedForAction.map((c) => c.landCoverCode),
+    ...landCoversForParcel.map((c) => c.landCoverClassCode),
+    ...landCoverCodesForExistingActions
+  ])
+
+  logger.info('All land cover codes:', allLandCoverCodes)
+
+  const landCoverDefinitions = await getLandCoverDefinitions(
+    Array.from(allLandCoverCodes),
+    postgresDb,
+    logger
+  )
+
   return {
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
-    landCoversForExistingActions
+    landCoversForExistingActions,
+    landCoverDefinitions
   }
 }
 
@@ -89,7 +109,8 @@ export function getAvailableAreaForAction(
   const {
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
-    landCoversForExistingActions
+    landCoversForExistingActions,
+    landCoverDefinitions
   } = availableAreaDataRequirements
 
   const explanations = getInitialExplanations(
@@ -98,7 +119,8 @@ export function getAvailableAreaForAction(
     parcelId,
     landCoversForParcel,
     existingActions,
-    landCoverCodesForAppliedForAction
+    landCoverCodesForAppliedForAction,
+    landCoverDefinitions
   )
 
   const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
@@ -168,6 +190,7 @@ export function getAvailableAreaForAction(
  * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @param {Action[]} existingActions - The list of existing actions
  * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @param {{[key:string]: LandCoverDefinition}} landCoverDefinitions - The land cover definitions
  * @returns {ExplanationSection[]} - An array of explanation sections
  */
 function getInitialExplanations(
@@ -176,8 +199,10 @@ function getInitialExplanations(
   parcelId,
   landCoversForParcel,
   existingActions,
-  landCoverCodesForAppliedForAction
+  landCoverCodesForAppliedForAction,
+  landCoverDefinitions
 ) {
+  console.log('land cover definitions', landCoverDefinitions)
   return [
     {
       title: 'Application Information',
@@ -188,10 +213,15 @@ function getInitialExplanations(
     },
     {
       title: 'Land Covers For Parcel',
-      content: landCoversForParcel.map(
-        (cover) =>
-          `${cover.landCoverClassCode} - ${sqmToHaRounded(cover.areaSqm)} ha`
-      )
+      content: landCoversForParcel.map((cover) => {
+        const landCoverDefinition =
+          landCoverDefinitions[cover.landCoverClassCode]
+
+        if (landCoverDefinition != null) {
+          return `${landCoverDefinition.landCoverDescription} (${cover.landCoverClassCode}) - ${sqmToHaRounded(cover.areaSqm)} ha`
+        }
+        return `${cover.landCoverClassCode} - ${sqmToHaRounded(cover.areaSqm)} ha`
+      })
     },
     {
       title: 'Existing actions',
@@ -202,9 +232,15 @@ function getInitialExplanations(
     },
     {
       title: `Valid land covers for action: ${actionCodeAppliedFor}`,
-      content: landCoverCodesForAppliedForAction.map(
-        (code) => `${code.landCoverClassCode} - ${code.landCoverCode}`
-      )
+      content: landCoverCodesForAppliedForAction.map((code) => {
+        const landCoverDefinition = landCoverDefinitions[code.landCoverCode]
+
+        if (!landCoverDefinition) {
+          return `${code.landCoverClassCode} - ${code.landCoverCode}`
+        }
+
+        return `${landCoverDefinition.landCoverClassDescription} (${code.landCoverClassCode}) - ${landCoverDefinition.landCoverDescription} (${code.landCoverCode})`
+      })
     }
   ]
 }
@@ -212,5 +248,5 @@ function getInitialExplanations(
 /**
  * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements, ExplanationSection} from './available-area.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
+ * @import { LandCoverCodes, LandCoverDefinition } from '../api/land-cover-codes/land-cover-codes.d.js'
  */

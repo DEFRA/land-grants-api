@@ -6,6 +6,17 @@ jest.mock(
   '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 )
 
+const landCoverDefinitions = {
+  131: {
+    landCoverCode: 131,
+    landCoverClassCode: 130,
+    landCoverTypeCode: 100,
+    landCoverTypeDescription: 'Arable',
+    landCoverClassDescription: 'Arable',
+    landCoverDescription: 'Arable'
+  }
+}
+
 describe('Available Area', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -34,7 +45,8 @@ describe('Available Area', () => {
                 areaSqm: 10000
               }
             ],
-            landCoversForExistingActions: []
+            landCoversForExistingActions: [],
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [],
@@ -53,7 +65,7 @@ describe('Available Area', () => {
               },
               {
                 title: `Valid land covers for action: CMOR1`,
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -94,7 +106,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['CMOR1'], areaSqm: 1000 }],
@@ -113,7 +126,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: UPL1',
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -160,7 +173,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 2000 }],
@@ -179,7 +193,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: UPL2',
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -238,7 +252,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [
@@ -259,7 +274,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: UPL3',
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -328,7 +343,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [
@@ -363,7 +379,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: CMOR1',
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -431,7 +447,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [
@@ -453,7 +470,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: UPL3',
-                content: ['130 - 131']
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',
@@ -504,7 +521,8 @@ describe('Available Area', () => {
                   landCoverCode: 131
                 }
               ]
-            }
+            },
+            landCoverDefinitions
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 5000 }],
@@ -523,7 +541,7 @@ describe('Available Area', () => {
               },
               {
                 title: 'Valid land covers for action: UPL2',
-                content: [`130 - 131`]
+                content: ['Arable (130) - Arable (131)']
               },
               {
                 title: 'Stacks',

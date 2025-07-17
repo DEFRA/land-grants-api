@@ -35,6 +35,7 @@
  * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
+ * @property {{[key:string]: LandCoverDefinition}} landCoverDefinitions - Land cover definitions keyed by land cover code
  */
 
 /**
