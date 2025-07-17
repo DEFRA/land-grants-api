@@ -128,8 +128,8 @@ export function getAvailableAreaForAction(
     landCoverCodesForAppliedForAction
   )
   const {
-    result: totalValidLandCoverSqm
-    // explanations: totalValidLandCoverExplanations
+    result: totalValidLandCoverSqm,
+    explanations: totalValidLandCoverExplanations
   } = calculateTotalValidLandCoverArea(
     landCoversForParcel,
     mergedLandCoverCodesForAppliedForAction,
@@ -178,7 +178,7 @@ export function getAvailableAreaForAction(
 
   const explanations = [
     ...initialExplanations,
-    // totalValidLandCoverExplanations,
+    totalValidLandCoverExplanations,
     stackResponse.explanations
   ]
   return {

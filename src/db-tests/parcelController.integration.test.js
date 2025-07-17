@@ -179,6 +179,15 @@ describe('Calculate available area with agreements', () => {
                 },
                 {
                   content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
+                },
+                {
+                  content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     '',
                     'Explanation:',
@@ -230,6 +239,15 @@ describe('Calculate available area with agreements', () => {
                 {
                   content: landCoversForUPLs,
                   title: 'Valid land covers for action: UPL1'
+                },
+                {
+                  content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
                 },
                 {
                   content: [
@@ -287,6 +305,15 @@ describe('Calculate available area with agreements', () => {
                 },
                 {
                   content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
+                },
+                {
+                  content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     '',
                     'Explanation:',
@@ -338,6 +365,15 @@ describe('Calculate available area with agreements', () => {
                 {
                   content: landCoversForUPLs,
                   title: 'Valid land covers for action: UPL3'
+                },
+                {
+                  content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
                 },
                 {
                   content: [
@@ -462,6 +498,15 @@ describe('Calculate available area with agreements', () => {
                 },
                 {
                   content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
+                },
+                {
+                  content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     'Stack 2 - UPL2 - 0.1 ha',
                     '',
@@ -522,6 +567,15 @@ describe('Calculate available area with agreements', () => {
                 {
                   content: landCoversForUPLs,
                   title: 'Valid land covers for action: UPL1'
+                },
+                {
+                  content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
                 },
                 {
                   content: [
@@ -588,6 +642,15 @@ describe('Calculate available area with agreements', () => {
                 },
                 {
                   content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
+                },
+                {
+                  content: [
                     'Stack 1 - UPL1 - 0.1 ha',
                     'Stack 2 - UPL2 - 0.1 ha',
                     '',
@@ -648,6 +711,15 @@ describe('Calculate available area with agreements', () => {
                 {
                   content: landCoversForUPLs,
                   title: 'Valid land covers for action: UPL3'
+                },
+                {
+                  content: [
+                    'Permanent grassland (131) - 0.16770771 ha',
+                    'Permanent grassland (131) - 0.00479968 ha',
+                    '130 - 0.42017837 ha',
+                    '= 0.59268576 ha'
+                  ],
+                  title: 'Total valid land covers'
                 },
                 {
                   content: [

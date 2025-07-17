@@ -68,6 +68,10 @@ describe('Available Area', () => {
                 content: ['Arable (130) - Arable (131)']
               },
               {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
                 title: 'Stacks',
                 content: ['No existing actions so no stacks are needed']
               }
@@ -127,6 +131,10 @@ describe('Available Area', () => {
               {
                 title: 'Valid land covers for action: UPL1',
                 content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
               },
               {
                 title: 'Stacks',
@@ -194,6 +202,10 @@ describe('Available Area', () => {
               {
                 title: 'Valid land covers for action: UPL2',
                 content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
               },
               {
                 title: 'Stacks',
@@ -275,6 +287,10 @@ describe('Available Area', () => {
               {
                 title: 'Valid land covers for action: UPL3',
                 content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 0.5 ha', '= 0.5 ha']
               },
               {
                 title: 'Stacks',
@@ -382,6 +398,10 @@ describe('Available Area', () => {
                 content: ['Arable (130) - Arable (131)']
               },
               {
+                title: 'Total valid land covers',
+                content: ['130 - 1.1150572 ha', '= 1.1150572 ha']
+              },
+              {
                 title: 'Stacks',
                 content: [
                   'Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha',
@@ -473,6 +493,10 @@ describe('Available Area', () => {
                 content: ['Arable (130) - Arable (131)']
               },
               {
+                title: 'Total valid land covers',
+                content: ['130 - 1 ha', '= 1 ha']
+              },
+              {
                 title: 'Stacks',
                 content: [
                   'Stack 1 - UPL1 - 0.1 ha',
@@ -542,6 +566,10 @@ describe('Available Area', () => {
               {
                 title: 'Valid land covers for action: UPL2',
                 content: ['Arable (130) - Arable (131)']
+              },
+              {
+                title: 'Total valid land covers',
+                content: ['130 - 0.5 ha', '= 0.5 ha']
               },
               {
                 title: 'Stacks',

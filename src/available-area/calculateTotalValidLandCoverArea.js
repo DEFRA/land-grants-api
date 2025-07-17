@@ -1,4 +1,26 @@
-import { createExplanationSection } from './explanations.js'
+import { sqmToHaRounded } from '../api/common/helpers/measurement.js'
+import { aacExplain, createExplanationSection } from './explanations.js'
+
+/**
+ * Explanation message generators for total valid land cover operations
+ */
+const explain = {
+  /**
+   * Generates explanation when adding an action
+   * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions - The land cover definitions
+   * @param {string} landCoverClassCode - Land Cover class code being added
+   * @param {number} areaSqm - Area in sqm of the land class code
+   * @returns {string} Explanation message
+   */
+  addCommonLandCover: (landCoverDefinitions, landCoverClassCode, areaSqm) => {
+    return aacExplain.landCoverClassCodeInfoAndArea(
+      landCoverClassCode,
+      areaSqm,
+      landCoverDefinitions
+    )
+  },
+  totalResult: (areaSqm) => `= ${sqmToHaRounded(areaSqm)} ha`
+}
 
 /**
  * Calculates total valid land cover area, based on an array of LandCovers and a list of allowed codes
@@ -12,31 +34,29 @@ export const calculateTotalValidLandCoverArea = (
   allowedCodes,
   landCoverDefinitions
 ) => {
-  const explanationsContent = []
+  const explanations = []
   const result = landCovers.reduce((total, cover) => {
     if (allowedCodes.includes(cover.landCoverClassCode)) {
-      let description = ''
-      const definition = landCoverDefinitions[cover.landCoverClassCode]
-
-      if (!definition) {
-        description = `${cover.landCoverClassCode}`
-      } else {
-        description = `${definition.landCoverClassDescription} (${cover.landCoverClassCode})`
-      }
-      explanationsContent.push(`${description} - ${cover.areaSqm} sqm`)
+      explanations.push(
+        explain.addCommonLandCover(
+          landCoverDefinitions,
+          cover.landCoverClassCode,
+          cover.areaSqm
+        )
+      )
       return total + cover.areaSqm
     } else {
       return total
     }
   }, 0)
 
-  explanationsContent.push(`= ${result} sqm`)
+  explanations.push(explain.totalResult(result))
 
   return {
     result,
     explanations: createExplanationSection(
       `Total valid land covers`,
-      explanationsContent
+      explanations
     )
   }
 }
