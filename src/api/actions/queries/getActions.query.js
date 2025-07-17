@@ -2,6 +2,8 @@
  * @import {Action} from '../action.d.js'
  */
 
+import { actionTransformer } from '../transformers/action.transformer.js'
+
 /**
  * Get enabled actions
  * @param {object} logger - The logger
@@ -17,7 +19,7 @@ async function getEnabledActions(logger, db) {
     const query = `SELECT * FROM actions WHERE enabled = TRUE`
     const result = await client.query(query)
 
-    return result.rows
+    return result.rows.map(actionTransformer)
   } catch (error) {
     logger.error(`Error executing get action query: ${error.message}`)
     return []
