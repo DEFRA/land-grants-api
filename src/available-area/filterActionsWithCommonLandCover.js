@@ -1,5 +1,4 @@
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
-import { createExplanationSection } from './explanations.js'
 
 /**
  * Filter existing actions to find those that share at least one land cover code
@@ -8,7 +7,7 @@ import { createExplanationSection } from './explanations.js'
  * @param {{[key:string]: LandCoverCodes[]}} landCoversForExistingActions - Land cover codes information for existing actions
  * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {object} logger - The logger object
- * @returns {{result: Action[], explanations: ExplanationSection}} - A list of existing actions that share land cover codes
+ * @returns {Action[]} - A list of existing actions that share land cover codes
  */
 export function filterActionsWithCommonLandCover(
   existingActions,
@@ -16,30 +15,23 @@ export function filterActionsWithCommonLandCover(
   landCoverCodesForAppliedForAction,
   logger
 ) {
-  let landCoversInCommon = []
   const actionsWithLandCoverInCommon = []
   for (const existingAction of existingActions) {
-    landCoversInCommon = getLandCoversInCommonForAction(
+    const hasLandCoverInCommon = actionHasLandCoverInCommon(
       existingAction,
       landCoversForExistingActions,
       landCoverCodesForAppliedForAction,
       logger
     )
-    if (landCoversInCommon.length > 0) {
+    if (hasLandCoverInCommon) {
       actionsWithLandCoverInCommon.push(existingAction)
     }
   }
 
-  return {
-    result: actionsWithLandCoverInCommon,
-    explanations: createExplanationSection(`Common land covers`, [
-      `Land covers in common with applied action: `,
-      ...landCoversInCommon
-    ])
-  }
+  return actionsWithLandCoverInCommon
 }
 
-function getLandCoversInCommonForAction(
+function actionHasLandCoverInCommon(
   existingAction,
   landCoversForExistingActions,
   landCoverCodesForAppliedForAction,
@@ -55,13 +47,14 @@ function getLandCoversInCommonForAction(
     )}`
   )
 
-  return landCoverCodesForExistingAction.filter((code) =>
+  const hasLandCoverInCommon = landCoverCodesForExistingAction.some((code) =>
     landCoverCodesForAppliedForAction.includes(code)
   )
+
+  return hasLandCoverInCommon
 }
 
 /**
  * @import { Action} from './available-area.d.js'
- * @import { ExplanationSection} from './explanations.d.js'
  * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */

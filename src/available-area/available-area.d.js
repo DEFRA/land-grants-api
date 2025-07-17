@@ -19,6 +19,12 @@
  */
 
 /**
+ * @typedef {object} ExplanationSection
+ * @property {string} title - The title of the explanation section
+ * @property {string[]} content - Individual lines of explanation text
+ */
+
+/**
  * @typedef {object} StackResponse
  * @property {Stack[]} stacks - The list of stacks created from the actions
  * @property {ExplanationSection} explanations
@@ -33,6 +39,5 @@
 
 /**
  * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */
