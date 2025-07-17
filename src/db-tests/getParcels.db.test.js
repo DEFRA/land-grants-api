@@ -1,5 +1,3 @@
-import compatibilityMatrix from '~/src/api/common/helpers/seed-data/compatibility-matrix.js'
-import compatibilityMatrixModel from '~/src/api/compatibility-matrix/models/compatibilityMatrix.model.js'
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
 import actionModel from '../api/actions/models/action.model.js'
 import actions from '../api/common/helpers/seed-data/action-data.js'
@@ -28,18 +26,14 @@ describe('Calculate available area', () => {
   beforeAll(async () => {
     await connectMongo()
     await seedMongo(actionModel, 'action-data', actions)
-    await seedMongo(
-      compatibilityMatrixModel,
-      'compatibility-matrix',
-      compatibilityMatrix
-    )
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
       parcels: true,
       covers: true,
       moorland: false,
       landCoverCodes: true,
-      landCoverCodesActions: true
+      landCoverCodesActions: true,
+      compatibilityMatrix: true
     })
   }, 60000)
 
