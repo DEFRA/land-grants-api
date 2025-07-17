@@ -1,21 +1,30 @@
-import actionModel from '~/src/api/actions/models/action.model.js'
+/**
+ * @import {Action} from '../action.d.js'
+ */
 
 /**
  * Get enabled actions
  * @param {object} logger - The logger
- * @returns {Promise<object>} The actions
+ * @param {object} db - The postgres instance
+ * @returns {Promise<Action[]>} The actions
  */
-async function getEnabledActions(logger) {
+async function getEnabledActions(logger, db) {
+  let client
   try {
-    const actions = await actionModel
-      .find({
-        enabled: true
-      })
-      .lean()
-    return actions
+    logger.info(`Connecting to DB to fetch actions`)
+    client = await db.connect()
+
+    const query = `SELECT * FROM actions WHERE enabled = TRUE`
+    const result = await client.query(query)
+
+    return result.rows
   } catch (error) {
-    logger.error(`Unable to get enabled actions`, error)
-    throw error
+    logger.error(`Error executing get action query: ${error.message}`)
+    return []
+  } finally {
+    if (client) {
+      client.release()
+    }
   }
 }
 

@@ -120,7 +120,10 @@ describe('Actions validation controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(getEnabledActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(getEnabledActions).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
       expect(getLandCoversForAction).toHaveBeenCalledWith(
         mockActionData.code,
         expect.any(Object),
