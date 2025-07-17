@@ -27,4 +27,17 @@
     </createTable>
   </changeSet>
 
+  <changeSet id="add-unique-constraint-email" author="system">
+        <addUniqueConstraint 
+            tableName="actions" 
+            columnNames="code"
+            constraintName="unique_constraint_code"/>
+        
+        <rollback>
+            <dropUniqueConstraint 
+                tableName="actions" 
+                constraintName="unique_constraint_code"/>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
