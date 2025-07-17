@@ -110,7 +110,8 @@ const ParcelsController = {
           request.logger.info(`Found ${actions.length} action configs from DB`)
 
           const compatibilityCheckFn = await createCompatibilityMatrix(
-            request.logger
+            request.logger,
+            request.server.postgresDb
           )
 
           const actionsWithAvailableArea = []

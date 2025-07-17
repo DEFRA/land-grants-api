@@ -50,6 +50,10 @@ export async function seedPostgres(connection, options) {
       migrationPath
     )
   }
+
+  if (options.compatibilityMatrix) {
+    await seedDatabase(connection, 'compatibility-matrix.sql.gz', migrationPath)
+  }
 }
 
 export async function seedDatabase(client, seedFile, folderPath) {

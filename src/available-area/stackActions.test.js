@@ -362,6 +362,133 @@ describe('Stacks', function () {
           PRF1: ['SOH1']
         })
       }
+    ],
+    [
+      'UPL2: Multiple compatible and incompatible actions, requiring splitting stacks in the middle of the array of stacks',
+      {
+        existingActionsCompatibleByLandCover: [
+          { actionCode: 'UPL1', areaSqm: 20000 },
+          { actionCode: 'UPL3', areaSqm: 20000 },
+          { actionCode: 'SP1', areaSqm: 20000 },
+          { actionCode: 'WS2', areaSqm: 20000 },
+          { actionCode: 'CMOR1', areaSqm: 30000 },
+          { actionCode: 'OFM1', areaSqm: 30000 },
+          { actionCode: 'OFM2', areaSqm: 30000 },
+          { actionCode: 'WS1', areaSqm: 40000 }
+        ],
+        expectedResult: {
+          explanations: {
+            content: [
+              'Stack 1 - UPL1, CMOR1 - 2 ha',
+              'Stack 2 - UPL3, CMOR1 - 1 ha',
+              'Stack 3 - UPL3 - 1 ha',
+              'Stack 4 - SP1 - 2 ha',
+              'Stack 5 - WS2, WS1 - 2 ha',
+              'Stack 6 - OFM1 - 3 ha',
+              'Stack 7 - OFM2 - 3 ha',
+              'Stack 8 - WS1 - 2 ha',
+              '',
+              'Explanation:',
+              'Adding UPL1 (area 2 ha)',
+              '  Created Stack 1 for UPL1 with area 2 ha',
+              'Adding UPL3 (area 2 ha)',
+              '  UPL3 is not compatible with: UPL1 in Stack 1',
+              '  Created Stack 2 for UPL3 with area 2 ha',
+              'Adding SP1 (area 2 ha)',
+              '  SP1 is not compatible with: UPL1 in Stack 1',
+              '  SP1 is not compatible with: UPL3 in Stack 2',
+              '  Created Stack 3 for SP1 with area 2 ha',
+              'Adding WS2 (area 2 ha)',
+              '  WS2 is not compatible with: UPL1 in Stack 1',
+              '  WS2 is not compatible with: UPL3 in Stack 2',
+              '  WS2 is not compatible with: SP1 in Stack 3',
+              '  Created Stack 4 for WS2 with area 2 ha',
+              'Adding CMOR1 (area 3 ha)',
+              '  CMOR1 is compatible with: UPL1 in Stack 1',
+              '  Added CMOR1 to Stack 1 with area 2 ha',
+              '  CMOR1 is compatible with: UPL3 in Stack 2',
+              '  Remaining area of CMOR1 is 1 ha, this is less than the area of Stack 2 (2 ha), split needed',
+              '  Shrinking Stack 2 area to 1 ha and adding CMOR1 to it',
+              '  Created Stack 5 for UPL3 with area 1 ha',
+              '  Shifting Stack 5 position to become 3',
+              '  Shifting Stack 3 position to become 4',
+              '  Shifting Stack 4 position to become 5',
+              'Adding OFM1 (area 3 ha)',
+              '  OFM1 is not compatible with: UPL1, CMOR1 in Stack 1',
+              '  OFM1 is not compatible with: UPL3, CMOR1 in Stack 2',
+              '  OFM1 is not compatible with: UPL3 in Stack 3',
+              '  OFM1 is not compatible with: SP1 in Stack 4',
+              '  OFM1 is not compatible with: WS2 in Stack 5',
+              '  Created Stack 6 for OFM1 with area 3 ha',
+              'Adding OFM2 (area 3 ha)',
+              '  OFM2 is not compatible with: UPL1, CMOR1 in Stack 1',
+              '  OFM2 is not compatible with: UPL3, CMOR1 in Stack 2',
+              '  OFM2 is not compatible with: UPL3 in Stack 3',
+              '  OFM2 is not compatible with: SP1 in Stack 4',
+              '  OFM2 is not compatible with: WS2 in Stack 5',
+              '  OFM2 is not compatible with: OFM1 in Stack 6',
+              '  Created Stack 7 for OFM2 with area 3 ha',
+              'Adding WS1 (area 4 ha)',
+              '  WS1 is not compatible with: UPL1, CMOR1 in Stack 1',
+              '  WS1 is not compatible with: UPL3, CMOR1 in Stack 2',
+              '  WS1 is not compatible with: UPL3 in Stack 3',
+              '  WS1 is not compatible with: SP1 in Stack 4',
+              '  WS1 is compatible with: WS2 in Stack 5',
+              '  Added WS1 to Stack 5 with area 2 ha',
+              '  WS1 is not compatible with: OFM1 in Stack 6',
+              '  WS1 is not compatible with: OFM2 in Stack 7',
+              '  Created Stack 8 for WS1 with area 2 ha'
+            ],
+            title: 'Stacks'
+          },
+          stacks: [
+            {
+              stackNumber: 1,
+              actionCodes: ['UPL1', 'CMOR1'],
+              areaSqm: 20000
+            },
+            {
+              stackNumber: 2,
+              actionCodes: ['UPL3', 'CMOR1'],
+              areaSqm: 10000
+            },
+            {
+              stackNumber: 3,
+              actionCodes: ['UPL3'],
+              areaSqm: 10000
+            },
+            {
+              stackNumber: 4,
+              actionCodes: ['SP1'],
+              areaSqm: 20000
+            },
+            {
+              stackNumber: 5,
+              actionCodes: ['WS2', 'WS1'],
+              areaSqm: 20000
+            },
+            {
+              stackNumber: 6,
+              actionCodes: ['OFM1'],
+              areaSqm: 30000
+            },
+            {
+              stackNumber: 7,
+              actionCodes: ['OFM2'],
+              areaSqm: 30000
+            },
+            {
+              stackNumber: 8,
+              actionCodes: ['WS1'],
+              areaSqm: 20000
+            }
+          ]
+        },
+        compatibilityCheckFn: makeCompatibilityCheckFn({
+          CMOR1: ['UPL1', 'UPL3'],
+          WS1: ['WS2']
+        })
+      }
     ]
   ]
 
