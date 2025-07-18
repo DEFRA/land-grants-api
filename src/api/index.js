@@ -3,7 +3,6 @@ import path from 'path'
 
 import { failAction } from '~/src/api/common/helpers/fail-action.js'
 import { requestLogger } from '~/src/api/common/helpers/logging/request-logger.js'
-import { mongooseDb } from '~/src/api/common/helpers/mongoose.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
@@ -46,7 +45,6 @@ async function createServer() {
   // requestTracing - trace header logging and propagation
   // secureContext  - loads CA certificates from environment config
   // pulse          - provides shutdown handlers
-  // mongooseDb     - sets up mongoose connection pool and attaches to `server` and `request` objects
   // router         - routes used in the app
   // swagger        - swagger documentation
   await server.register([
@@ -54,7 +52,6 @@ async function createServer() {
     requestTracing,
     secureContext,
     pulse,
-    mongooseDb,
     postgresDb,
     router
   ])

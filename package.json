@@ -32,9 +32,8 @@
     "prestart": "npm run build",
     "start": "NODE_ENV=production node --use-strict .",
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module",
-    "load:data": "npm run load:data:postgres && npm run load:data:mongo",
-    "load:data:postgres": "NODE_ENV=local node src/load-data-postgres.js",
-    "load:data:mongo": "NODE_ENV=local SEED_MONGODB=true node src/load-data-mongodb.js"
+    "load:data": "npm run load:data:postgres",
+    "load:data:postgres": "NODE_ENV=local node src/load-data-postgres.js"
   },
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
@@ -59,7 +58,6 @@
     "https-proxy-agent": "^7.0.5",
     "joi": "^17.13.3",
     "lodash": "^4.17.21",
-    "mongoose": "^8.13.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.15.6",
     "pino": "^9.5.0",
