@@ -1,13 +1,15 @@
+import { create } from 'lodash'
 import { logger } from '../db-tests/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
+import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 
 jest.mock(
   '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 )
 
-const landCoverDefinitions = {
-  131: {
+const landCoverDefinitions = [
+  {
     landCoverCode: 131,
     landCoverClassCode: 130,
     landCoverTypeCode: 100,
@@ -15,7 +17,9 @@ const landCoverDefinitions = {
     landCoverClassDescription: 'Arable',
     landCoverDescription: 'Arable'
   }
-}
+]
+
+const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
 describe('Available Area', () => {
   beforeEach(() => {
@@ -46,48 +50,12 @@ describe('Available Area', () => {
               }
             ],
             landCoversForExistingActions: [],
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: [`Action code - CMOR1`, `Parcel Id - SD6743 7268`]
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 1 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: []
-              },
-              {
-                title: `Valid land covers for action: CMOR1`,
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 1 ha', '= 1 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as CMOR1',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: ['No existing actions so no stacks are needed']
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 1 ha',
-                  '= 1 ha available for CMOR1'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 10000,
             totalValidLandCoverSqm: 10000,
             availableAreaHectares: 1
@@ -123,54 +91,12 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['CMOR1'], areaSqm: 1000 }],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: ['Action code - UPL1', 'Parcel Id - SD6743 7268']
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 1 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: ['CMOR1 - 0.1 ha']
-              },
-              {
-                title: 'Valid land covers for action: UPL1',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 1 ha', '= 1 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as UPL1',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - CMOR1 - 0.1 ha',
-                  '',
-                  'Explanation:',
-                  'Adding CMOR1 (area 0.1 ha)',
-                  '  Created Stack 1 for CMOR1 with area 0.1 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 1 ha',
-                  '= 1 ha available for UPL1'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 10000,
             totalValidLandCoverSqm: 10000,
             availableAreaHectares: 1
@@ -206,55 +132,12 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 2000 }],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: ['Action code - UPL2', 'Parcel Id - SD6743 7268']
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 1 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: ['UPL1 - 0.2 ha']
-              },
-              {
-                title: 'Valid land covers for action: UPL2',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 1 ha', '= 1 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as UPL2',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - UPL1 - 0.2 ha',
-                  '',
-                  'Explanation:',
-                  'Adding UPL1 (area 0.2 ha)',
-                  '  Created Stack 1 for UPL1 with area 0.2 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 1 ha',
-                  '- 0.2 (Stack 1)',
-                  '= 0.8 ha available for UPL2'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 8000,
             totalValidLandCoverSqm: 10000,
             availableAreaHectares: 0.8
@@ -302,59 +185,14 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [
               { stackNumber: 1, actionCodes: ['CMOR1', 'UPL1'], areaSqm: 1000 }
             ],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 0.5 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: ['CMOR1 - 0.1 ha', 'UPL1 - 0.1 ha']
-              },
-              {
-                title: 'Valid land covers for action: UPL3',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 0.5 ha', '= 0.5 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as UPL3',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - CMOR1, UPL1 - 0.1 ha',
-                  '',
-                  'Explanation:',
-                  'Adding CMOR1 (area 0.1 ha)',
-                  '  Created Stack 1 for CMOR1 with area 0.1 ha',
-                  'Adding UPL1 (area 0.1 ha)',
-                  '  UPL1 is compatible with: CMOR1 in Stack 1',
-                  '  Added UPL1 to Stack 1 with area 0.1 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 0.5 ha',
-                  '= 0.5 ha available for UPL3'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 5000,
             totalValidLandCoverSqm: 5000,
             availableAreaHectares: 0.5
@@ -409,7 +247,8 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [
@@ -429,65 +268,7 @@ describe('Available Area', () => {
                 areaSqm: 2000
               }
             ],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: ['Action code - CMOR1', 'Parcel Id - SD6743 7268']
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 1.1150572 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: ['CHRW1 - 1 ha', 'CHRW2 - 0.8 ha', 'CHRW3 - 0.7 ha']
-              },
-              {
-                title: 'Valid land covers for action: CMOR1',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 1.1150572 ha', '= 1.1150572 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as CMOR1',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha',
-                  'Stack 2 - CHRW2, CHRW1 - 0.1 ha',
-                  'Stack 3 - CHRW1 - 0.2 ha',
-                  '',
-                  'Explanation:',
-                  'Adding CHRW3 (area 0.7 ha)',
-                  '  Created Stack 1 for CHRW3 with area 0.7 ha',
-                  'Adding CHRW2 (area 0.8 ha)',
-                  '  CHRW2 is compatible with: CHRW3 in Stack 1',
-                  '  Added CHRW2 to Stack 1 with area 0.7 ha',
-                  '  Created Stack 2 for CHRW2 with area 0.1 ha',
-                  'Adding CHRW1 (area 1 ha)',
-                  '  CHRW1 is compatible with: CHRW3, CHRW2 in Stack 1',
-                  '  Added CHRW1 to Stack 1 with area 0.7 ha',
-                  '  CHRW1 is compatible with: CHRW2 in Stack 2',
-                  '  Added CHRW1 to Stack 2 with area 0.1 ha',
-                  '  Created Stack 3 for CHRW1 with area 0.2 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 1.1150572 ha',
-                  '- 0.7 (Stack 1)',
-                  '- 0.1 (Stack 2)',
-                  '- 0.2 (Stack 3)',
-                  '= 0.1150572 ha available for CMOR1'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 1150.5720000000001,
             totalValidLandCoverSqm: 11150.572,
             availableAreaHectares: 0.1150572
@@ -532,63 +313,15 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [
               { stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 1000 },
               { stackNumber: 2, actionCodes: ['UPL2'], areaSqm: 2000 }
             ],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: ['Action code - UPL3', 'Parcel Id - SD6743 7268']
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: ['130 - 1 ha']
-              },
-              {
-                title: 'Existing actions',
-                content: ['UPL1 - 0.1 ha', 'UPL2 - 0.2 ha']
-              },
-              {
-                title: 'Valid land covers for action: UPL3',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 1 ha', '= 1 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as UPL3',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - UPL1 - 0.1 ha',
-                  'Stack 2 - UPL2 - 0.2 ha',
-                  '',
-                  'Explanation:',
-                  'Adding UPL1 (area 0.1 ha)',
-                  '  Created Stack 1 for UPL1 with area 0.1 ha',
-                  'Adding UPL2 (area 0.2 ha)',
-                  '  UPL2 is not compatible with: UPL1 in Stack 1',
-                  '  Created Stack 2 for UPL2 with area 0.2 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 1 ha',
-                  '- 0.1 (Stack 1)',
-                  '- 0.2 (Stack 2)',
-                  '= 0.7 ha available for UPL3'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 7000,
             totalValidLandCoverSqm: 10000,
             availableAreaHectares: 0.7
@@ -624,55 +357,12 @@ describe('Available Area', () => {
                 }
               ]
             },
-            landCoverDefinitions
+            landCoverDefinitions,
+            landCoverToString
           },
           expectedResult: {
             stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 5000 }],
-            explanations: [
-              {
-                title: 'Application Information',
-                content: [`Action code - UPL2`, `Parcel Id - SD6743 7268`]
-              },
-              {
-                title: 'Land Covers For Parcel',
-                content: [`130 - 0.5 ha`]
-              },
-              {
-                title: 'Existing actions',
-                content: [`UPL1 - 0.5 ha`]
-              },
-              {
-                title: 'Valid land covers for action: UPL2',
-                content: ['Arable (130) - Arable (131)']
-              },
-              {
-                title: 'Total valid land covers',
-                content: ['130 - 0.5 ha', '= 0.5 ha']
-              },
-              {
-                title:
-                  'Find area of existing action that must be on the same land cover as UPL2',
-                content: []
-              },
-              {
-                title: 'Stacks',
-                content: [
-                  'Stack 1 - UPL1 - 0.5 ha',
-                  '',
-                  'Explanation:',
-                  'Adding UPL1 (area 0.5 ha)',
-                  '  Created Stack 1 for UPL1 with area 0.5 ha'
-                ]
-              },
-              {
-                title: 'Result',
-                content: [
-                  'Total valid land cover: 0.5 ha',
-                  '- 0.5 (Stack 1)',
-                  '= 0 ha available for UPL2'
-                ]
-              }
-            ],
+            explanations: expect.any(Array),
             availableAreaSqm: 0,
             totalValidLandCoverSqm: 5000,
             availableAreaHectares: 0
@@ -705,8 +395,9 @@ describe('Available Area', () => {
           logger
         )
 
-        expect(JSON.stringify(result, 2)).toEqual(
-          JSON.stringify(expectedResult, 2)
+        expect(result).toEqual(expectedResult)
+        expect(result.explanations).toMatchSnapshot(
+          `explanations-${actionCodeAppliedFor}-${sheetId}-${parcelId}`
         )
       }
     )
