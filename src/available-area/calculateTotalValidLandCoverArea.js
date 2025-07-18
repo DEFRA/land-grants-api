@@ -7,16 +7,16 @@ import { aacExplain, createExplanationSection } from './explanations.js'
 const explain = {
   /**
    * Generates explanation when adding an action
-   * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions - The land cover definitions
    * @param {string} landCoverClassCode - Land Cover class code being added
    * @param {number} areaSqm - Area in sqm of the land class code
+   * @param {CodeToString} landCoverToString
    * @returns {string} Explanation message
    */
-  addCommonLandCover: (landCoverDefinitions, landCoverClassCode, areaSqm) => {
+  addCommonLandCover: (landCoverToString, landCoverClassCode, areaSqm) => {
     return aacExplain.landCoverClassCodeInfoAndArea(
       landCoverClassCode,
       areaSqm,
-      landCoverDefinitions
+      landCoverToString
     )
   },
   totalResult: (areaSqm) => `= ${sqmToHaRounded(areaSqm)} ha`
@@ -26,20 +26,20 @@ const explain = {
  * Calculates total valid land cover area, based on an array of LandCovers and a list of allowed codes
  * @param {LandCover[]} landCovers
  * @param {string[]} allowedCodes
- * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions - The land cover definitions
+ * @param {CodeToString} landCoverToString
  * @returns {{result: number, explanations: ExplanationSection }}
  */
 export const calculateTotalValidLandCoverArea = (
   landCovers,
   allowedCodes,
-  landCoverDefinitions
+  landCoverToString
 ) => {
   const explanations = []
   const result = landCovers.reduce((total, cover) => {
     if (allowedCodes.includes(cover.landCoverClassCode)) {
       explanations.push(
         explain.addCommonLandCover(
-          landCoverDefinitions,
+          landCoverToString,
           cover.landCoverClassCode,
           cover.areaSqm
         )
@@ -63,6 +63,6 @@ export const calculateTotalValidLandCoverArea = (
 
 /**
  * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCoverDefinition } from '../api/land-cover-codes/land-cover-codes.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { CodeToString } from './available-area.d.js'
  */

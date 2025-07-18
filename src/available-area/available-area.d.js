@@ -25,15 +25,19 @@
  */
 
 /**
+ * @typedef {(code:string, noWarning?: boolean) => string} CodeToString
+ */
+
+/**
  * @typedef {object} AvailableAreaDataRequirements
  * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
- * @property {{[key:string]: LandCoverDefinition}} landCoverDefinitions - Land cover definitions keyed by land cover code
+ * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
  */
 
 /**
  * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { LandCoverCodes, LandCoverDefinition } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */

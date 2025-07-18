@@ -86,7 +86,7 @@ function validateInputParams(
  * @param {number} totalValidLandCoverSqm - Total valid land cover area in square meters
  * @param {Stack[]} stacks - Array of stack objects containing actionCodes and areaSqm
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Function to check if two action codes are compatible
- * @returns {number} Remaining land cover area after subtracting incompatible stacks
+ * @returns {{result: number, explanationSection: ExplanationSection}} Remaining land cover area after subtracting incompatible stacks
  * @throws {Error} Throws error if input parameters are invalid
  */
 export function subtractIncompatibleStacks(
@@ -124,6 +124,10 @@ export function subtractIncompatibleStacks(
   )
   return {
     result: result < 0 ? 0 : result,
-    explanation: createExplanationSection('Result', explanations)
+    explanationSection: createExplanationSection('Result', explanations)
   }
 }
+
+/**
+ * @import { ExplanationSection } from './explanations.d.js'
+ */

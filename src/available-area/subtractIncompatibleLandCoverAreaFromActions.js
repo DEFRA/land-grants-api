@@ -25,14 +25,14 @@ const explain = {
  * @param {LandCover[]} parcelCovers
  * @param {string[]} existingActionCodes
  * @param {string[]} appliedActionCodes
- * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions
+ * @param {CodeToString} landCoverToString
  * @returns
  */
 const calculateNotCommonLandCoversTotalArea = (
   parcelCovers,
   existingActionCodes,
   appliedActionCodes,
-  landCoverDefinitions
+  landCoverToString
 ) => {
   const explanations = []
   const result = parcelCovers
@@ -45,7 +45,7 @@ const calculateNotCommonLandCoversTotalArea = (
           aacExplain.landCoverClassCodeInfoAndArea(
             cover.landCoverClassCode,
             cover.areaSqm,
-            landCoverDefinitions
+            landCoverToString
           )
         )
         return true
@@ -69,7 +69,7 @@ const calculateNotCommonLandCoversTotalArea = (
  * @param {LandCover[]} landCoversForParcel
  * @param {object} landCoversForExistingActions
  * @param {string[]} landCoverCodesForAppliedForAction
- * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions
+ * @param {CodeToString} landCoverToString
  * @param {object} logger
  * @returns
  */
@@ -81,7 +81,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
   landCoversForParcel,
   landCoversForExistingActions,
   landCoverCodesForAppliedForAction,
-  landCoverDefinitions,
+  landCoverToString,
   logger
 ) => {
   const revisedActions = []
@@ -99,7 +99,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
       landCoversForParcel,
       landCoverCodesForExistingAction,
       landCoverCodesForAppliedForAction,
-      landCoverDefinitions
+      landCoverToString
     )
 
     if (totalAreaNotInCommon > 0) {
@@ -136,7 +136,6 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
 }
 
 /**
- * @import { Action } from './available-area.d.js'
+ * @import { Action, CodeToString } from './available-area.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { LandCoverDefinition } from '../api/land-cover-codes/land-cover-codes.d.js'
  */

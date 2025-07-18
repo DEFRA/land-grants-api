@@ -12,6 +12,7 @@ import { filterActionsWithCommonLandCover } from './filterActionsWithCommonLandC
 import { stackActions } from './stackActions.js'
 import { subtractIncompatibleLandCoverAreaFromActions } from './subtractIncompatibleLandCoverAreaFromActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
+import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -75,11 +76,13 @@ export async function getAvailableAreaDataRequirements(
     logger
   )
 
+  const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
+
   return {
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
-    landCoverDefinitions
+    landCoverToString
   }
 }
 
@@ -111,7 +114,7 @@ export function getAvailableAreaForAction(
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
-    landCoverDefinitions
+    landCoverToString
   } = availableAreaDataRequirements
 
   const initialExplanations = getInitialExplanations(
@@ -121,32 +124,35 @@ export function getAvailableAreaForAction(
     landCoversForParcel,
     existingActions,
     landCoverCodesForAppliedForAction,
-    landCoverDefinitions
+    landCoverToString
   )
 
   const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
   )
+
   const {
     result: totalValidLandCoverSqm,
     explanations: totalValidLandCoverExplanations
   } = calculateTotalValidLandCoverArea(
     landCoversForParcel,
     mergedLandCoverCodesForAppliedForAction,
-    landCoverDefinitions
+    landCoverToString
   )
 
   logger.info(
     `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
-  const existingActionsWithLandCoverInCommonWithAppliedForAction =
-    filterActionsWithCommonLandCover(
-      existingActions || [],
-      landCoversForExistingActions,
-      mergedLandCoverCodesForAppliedForAction,
-      logger
-    )
+  const {
+    existingActionsWithLandCoverInCommonWithAppliedForAction,
+    explanationSection: filterExplanations
+  } = filterActionsWithCommonLandCover(
+    existingActions || [],
+    landCoversForExistingActions,
+    mergedLandCoverCodesForAppliedForAction,
+    landCoverToString
+  )
 
   logger.info(
     `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
@@ -163,7 +169,7 @@ export function getAvailableAreaForAction(
     landCoversForParcel,
     landCoversForExistingActions,
     mergedLandCoverCodesForAppliedForAction,
-    landCoverDefinitions,
+    landCoverToString,
     logger
   )
 
@@ -173,7 +179,7 @@ export function getAvailableAreaForAction(
   )
 
   // subtract areas of stacks where any action is not compatible
-  const { result: availableAreaSqm, explanation: resultExplanation } =
+  const { result: availableAreaSqm, explanationSection: resultExplanation } =
     subtractIncompatibleStacks(
       actionCodeAppliedFor,
       totalValidLandCoverSqm,
@@ -191,6 +197,7 @@ export function getAvailableAreaForAction(
     ...initialExplanations,
     totalValidLandCoverExplanations,
     incompatibleLandCoverExplanations,
+    filterExplanations,
     stackExplanations,
     resultExplanation
   ]

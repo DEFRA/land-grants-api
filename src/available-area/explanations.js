@@ -5,20 +5,15 @@ export const aacExplain = {
    * Generates explanation when adding an action
    * @param {string} landCoverClassCode - Land Cover class code being added
    * @param {number} areaSqm - Area in sqm of the land class code
-   * @param {{[key:string]: LandCoverDefinition }} landCoverDefinitions - The land cover definitions
+   * @param {CodeToString} landCoverToString - The land cover definitions
    * @returns {string} Explanation message
    */
   landCoverClassCodeInfoAndArea: (
     landCoverClassCode,
     areaSqm,
-    landCoverDefinitions
-  ) => {
-    const landCoverDefinition = landCoverDefinitions[landCoverClassCode]
-    if (landCoverDefinition != null) {
-      return `${landCoverDefinition.landCoverDescription} (${landCoverClassCode}) - ${sqmToHaRounded(areaSqm)} ha`
-    }
-    return `${landCoverClassCode} - ${sqmToHaRounded(areaSqm)} ha`
-  }
+    landCoverToString
+  ) =>
+    `${landCoverToString(landCoverClassCode)} - ${sqmToHaRounded(areaSqm)} ha`
 }
 
 /**
@@ -45,12 +40,12 @@ const initialExplanationSections = [
   },
   {
     title: 'Land Covers For Parcel',
-    buildContent: ({ landCoversForParcel, landCoverDefinitions }) =>
+    buildContent: ({ landCoversForParcel, landCoverToString }) =>
       landCoversForParcel.map((cover) =>
         aacExplain.landCoverClassCodeInfoAndArea(
           cover.landCoverClassCode,
           cover.areaSqm,
-          landCoverDefinitions
+          landCoverToString
         )
       )
   },
@@ -65,24 +60,24 @@ const initialExplanationSections = [
   {
     title: ({ actionCodeAppliedFor }) =>
       `Valid land covers for action: ${actionCodeAppliedFor}`,
-    buildContent: ({
-      landCoverCodesForAppliedForAction,
-      landCoverDefinitions
-    }) =>
-      landCoverCodesForAppliedForAction.map((code) => {
-        const definition = landCoverDefinitions[code.landCoverCode]
-
-        if (!definition) {
-          return `${code.landCoverClassCode} - ${code.landCoverCode}`
-        }
-
-        return `${definition.landCoverClassDescription} (${code.landCoverClassCode}) - ${definition.landCoverDescription} (${code.landCoverCode})`
-      })
+    buildContent: ({ landCoverCodesForAppliedForAction, landCoverToString }) =>
+      landCoverCodesForAppliedForAction.map(
+        (code) =>
+          `${landCoverToString(code.landCoverClassCode, true)} - ${landCoverToString(code.landCoverCode)}`
+      )
   }
 ]
 
 /**
  * Generates the initial explanations for the available area calculation.
+ * @param {string} actionCodeAppliedFor - The action code being applied for
+ * @param {string} sheetId - The sheet ID of the parcel
+ * @param {string} parcelId - The parcel ID
+ * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
+ * @param {Action[]} existingActions - The list of existing actions
+ * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @param {CodeToString} landCoverToString
+ * @returns {ExplanationSection[]} - The initial explanations
  */
 export function getInitialExplanations(
   actionCodeAppliedFor,
@@ -91,7 +86,7 @@ export function getInitialExplanations(
   landCoversForParcel,
   existingActions,
   landCoverCodesForAppliedForAction,
-  landCoverDefinitions
+  landCoverToString
 ) {
   const data = {
     actionCodeAppliedFor,
@@ -100,7 +95,7 @@ export function getInitialExplanations(
     landCoversForParcel,
     existingActions,
     landCoverCodesForAppliedForAction,
-    landCoverDefinitions
+    landCoverToString
   }
 
   return initialExplanationSections.map((section) => {
@@ -113,5 +108,7 @@ export function getInitialExplanations(
 
 /**
  * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCoverDefinition } from '../api/land-cover-codes/land-cover-codes.d.js'
+ * @import {  LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
+ * @import { CodeToString, Action } from './available-area.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
  */
