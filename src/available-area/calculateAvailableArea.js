@@ -15,8 +15,8 @@ export const createCompatibilityMatrix = async (logger, db, codes = null) => {
   return (action1, action2) => {
     return compatibilityMatrices.some(
       (a) =>
-        (a.option_code === action2 && a.option_code_compat === action1) ||
-        (a.option_code === action1 && a.option_code_compat === action2)
+        (a.optionCode === action2 && a.optionCodeCompat === action1) ||
+        (a.optionCode === action1 && a.optionCodeCompat === action2)
     )
   }
 }
