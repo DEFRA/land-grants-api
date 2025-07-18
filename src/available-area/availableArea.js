@@ -196,8 +196,8 @@ export function getAvailableAreaForAction(
   const explanations = [
     ...initialExplanations,
     totalValidLandCoverExplanations,
-    incompatibleLandCoverExplanations,
     filterExplanations,
+    incompatibleLandCoverExplanations,
     stackExplanations,
     resultExplanation
   ]

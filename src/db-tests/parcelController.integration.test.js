@@ -44,12 +44,51 @@ const landCoversForUPLs = [
   'Inland water (580) - Rivers and Streams Type 2 (582)',
   'Inland water (580) - Rivers and Streams Type 3 (583)',
   'Wetland (590) - Shingle (591)',
-  'Inland wetland (590) - Fen marsh & swamp (592)',
-  'Inland wetland (590) - Bog (593)',
+  'Wetland (590) - Fen marsh & swamp (592)',
+  'Wetland (590) - Bog (593)',
   'Coastal features (620) - Cliffs (621)',
   'Natural transport - tracks and gallops (640) - Gallop (641)',
   'Natural transport - tracks and gallops (640) - Track - natural surface (643)',
   'Heath land and bracken (650) - Heath land and bracken - ungrazeable (651)'
+]
+
+const uplCommonCovers = [
+  '- Permanent grassland (130)',
+  '- Permanent grassland (131)',
+  '- Water/irrigation features (240)',
+  '- Drain/ditch/dyke (241)',
+  '- Pond (243)',
+  '- Rock (250)',
+  '- Scree (251)',
+  '- Boulders (252)',
+  '- Rocky outcrop (253)',
+  '- Heaps (270)',
+  '- Heaps (271)',
+  '- Notional features (280)',
+  '- Notional - rock (281)',
+  '- Notional - bracken (282)',
+  '- Notional - scrub (283)',
+  '- Notional - water (285)',
+  '- Notional - natural (286)',
+  '- Notional - manmade (287)',
+  '- Notional - mixed (288)',
+  '- Non-agricultural area (300)',
+  '- Woodland (330)',
+  '- Scrub - ungrazeable (347)',
+  '- Inland water (580)',
+  '- Rivers and Streams Type 2 (582)',
+  '- Rivers and Streams Type 3 (583)',
+  '- Wetland (590)',
+  '- Shingle (591)',
+  '- Fen marsh & swamp (592)',
+  '- Bog (593)',
+  '- Coastal features (620)',
+  '- Cliffs (621)',
+  '- Natural transport - tracks and gallops (640)',
+  '- Gallop (641)',
+  '- Track - natural surface (643)',
+  '- Heath land and bracken (650)',
+  '- Heath land and bracken - ungrazeable (651)'
 ]
 
 describe('Calculate available area with agreements', () => {
@@ -133,7 +172,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -162,8 +201,8 @@ describe('Calculate available area with agreements', () => {
                     'Inland water (580) - Rivers and Streams Type 2 (582)',
                     'Inland water (580) - Rivers and Streams Type 3 (583)',
                     'Wetland (590) - Shingle (591)',
-                    'Inland wetland (590) - Fen marsh & swamp (592)',
-                    'Inland wetland (590) - Bog (593)',
+                    'Wetland (590) - Fen marsh & swamp (592)',
+                    'Wetland (590) - Bog (593)',
                     'Coastal features (620) - Cliffs (621)',
                     'Natural transport - tracks and gallops (640) - Gallop (641)',
                     'Natural transport - tracks and gallops (640) - Track - natural surface (643)',
@@ -175,10 +214,21 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -234,7 +284,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -250,10 +300,21 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -311,7 +372,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -327,10 +388,21 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -387,7 +459,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -403,10 +475,21 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -504,7 +587,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -533,8 +616,8 @@ describe('Calculate available area with agreements', () => {
                     'Inland water (580) - Rivers and Streams Type 2 (582)',
                     'Inland water (580) - Rivers and Streams Type 3 (583)',
                     'Wetland (590) - Shingle (591)',
-                    'Inland wetland (590) - Fen marsh & swamp (592)',
-                    'Inland wetland (590) - Bog (593)',
+                    'Wetland (590) - Fen marsh & swamp (592)',
+                    'Wetland (590) - Bog (593)',
                     'Coastal features (620) - Cliffs (621)',
                     'Natural transport - tracks and gallops (640) - Gallop (641)',
                     'Natural transport - tracks and gallops (640) - Track - natural surface (643)',
@@ -546,10 +629,24 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    'UPL2 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1',
+                    '- UPL2'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -614,7 +711,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -630,10 +727,24 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    'UPL2 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1',
+                    '- UPL2'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -700,7 +811,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -716,10 +827,24 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    'UPL2 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1',
+                    '- UPL2'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:
@@ -786,7 +911,7 @@ describe('Calculate available area with agreements', () => {
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Hard standing (551) - 0.01647047 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha'
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha'
                   ],
                   title: 'Land Covers For Parcel'
                 },
@@ -802,10 +927,24 @@ describe('Calculate available area with agreements', () => {
                   content: [
                     'Permanent grassland (131) - 0.16770771 ha',
                     'Permanent grassland (131) - 0.00479968 ha',
-                    '130 - 0.42017837 ha',
+                    'Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha',
                     '= 0.59268576 ha'
                   ],
                   title: 'Total valid land covers'
+                },
+                {
+                  content: [
+                    'UPL1 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    'UPL2 has the following valid land covers in common with the applied for action: ',
+                    ...uplCommonCovers,
+                    '',
+                    'Actions included for stacking:',
+                    '',
+                    '- UPL1',
+                    '- UPL2'
+                  ],
+                  title: 'Common land covers'
                 },
                 {
                   title:

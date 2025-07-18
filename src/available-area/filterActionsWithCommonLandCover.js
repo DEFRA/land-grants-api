@@ -46,7 +46,7 @@ export function filterActionsWithCommonLandCover(
   return {
     existingActionsWithLandCoverInCommonWithAppliedForAction:
       actionsWithLandCoverInCommon,
-    explanationSection: { title: 'Common land covers', explanations }
+    explanationSection: { title: 'Common land covers', content: explanations }
   }
 }
 
