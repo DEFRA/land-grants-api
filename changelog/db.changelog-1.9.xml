@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+ <changeSet id="truncate-tables" author="system" runAlways="true">
+    <sql>TRUNCATE TABLE public.actions;</sql>
+    <sql>TRUNCATE TABLE public.agreements;</sql>
+    <sql>TRUNCATE TABLE public.compatibility_matrix;</sql>
+    <sql>TRUNCATE TABLE public.land_cover_codes;</sql>
+    <sql>TRUNCATE TABLE public.land_cover_codes_actions;</sql>
+    <sql>TRUNCATE TABLE public.land_covers;</sql>
+    <sql>TRUNCATE TABLE public.land_parcels;</sql>
+    <sql>TRUNCATE TABLE public.moorland_designations;</sql>
+  </changeSet>
+
+</databaseChangeLog>
