@@ -82,8 +82,7 @@ export const postgresDb = {
         client.release()
 
         if (options.loadPostgresData) {
-          const ddlUser =
-            options.ddlUser !== options.user ? options.ddlUser : options.user
+          const ddlUser = options.ddlUser
           server.logger.info(
             `Creating DDL pool for data seeding with user: ${ddlUser}`
           )
