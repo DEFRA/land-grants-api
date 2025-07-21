@@ -29,22 +29,6 @@ export default async () => {
 
   process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
   containers.push(postgresStarted)
-
-  const mongoContainer = initializeMongo(network)
-  const mongoStarted = await mongoContainer.start()
-
-  const host = mongoStarted.getHost()
-  const port = mongoStarted.getMappedPort(27017)
-  process.env.MONGO_PORT = port
-  process.env.MONGO_HOST = host
-  containers.push(mongoStarted)
-}
-
-function initializeMongo(network) {
-  return new GenericContainer('mongo:6.0.13')
-    .withName('mongo')
-    .withNetwork(network)
-    .withExposedPorts(27017)
 }
 
 function initializeLiquibase(network) {

@@ -131,24 +131,6 @@ const config = convict({
         : ['req', 'res', 'responseTime']
     }
   },
-  mongoUri: {
-    doc: 'URI for mongodb',
-    format: String,
-    default: 'mongodb://127.0.0.1:27017/',
-    env: 'MONGO_URI'
-  },
-  mongoDatabase: {
-    doc: 'database for mongodb',
-    format: String,
-    default: 'land-grants-api',
-    env: 'MONGO_DATABASE'
-  },
-  seedMongoDb: {
-    doc: 'Seed the database',
-    format: Boolean,
-    default: false,
-    env: 'SEED_MONGODB'
-  },
   httpProxy: {
     doc: 'HTTP Proxy',
     format: String,

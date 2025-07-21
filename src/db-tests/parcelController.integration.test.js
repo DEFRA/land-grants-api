@@ -1,19 +1,12 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
-import actionModel from '../api/actions/models/action.model.js'
-import actions from '../api/common/helpers/seed-data/action-data.js'
 
 import {
   connectToTestDatbase,
   resetDatabase,
   seedPostgres
 } from '~/src/db-tests/setup/postgres.js'
-import {
-  closeMongo,
-  connectMongo,
-  createResponseCapture,
-  seedMongo
-} from '~/src/db-tests/setup/utils.js'
+import { createResponseCapture } from './setup/utils.js'
 
 const logger = {
   info: console.info,
@@ -26,8 +19,6 @@ let connection
 
 describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
-    await connectMongo()
-    await seedMongo(actionModel, 'action-data', actions)
     connection = await connectToTestDatbase()
     await seedPostgres(connection, {
       parcels: true,
@@ -36,12 +27,12 @@ describe('Calculate available area with agreements', () => {
       agreements: true,
       landCoverCodes: true,
       landCoverCodesActions: true,
-      compatibilityMatrix: true
+      compatibilityMatrix: true,
+      actions: true
     })
   }, 60000)
 
   afterAll(async () => {
-    await closeMongo()
     await resetDatabase(connection)
     await connection.end()
   })
