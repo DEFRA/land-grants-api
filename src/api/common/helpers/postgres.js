@@ -44,7 +44,9 @@ export const postgresDb = {
 
       const pool = new Pool({
         port: DEFAULT_PORT,
-        user: options.user,
+        user: options.truncatePostgresData
+          ? config.get('postgres.ddlUser')
+          : options.user,
         password: async () => {
           server.logger.info('Getting Postgres authentication token')
           return await getToken(options)
@@ -64,6 +66,9 @@ export const postgresDb = {
         server.logger.info('Postgres connection successful')
         client.release()
 
+        if (options.truncatePostgresData) {
+          await loadPostgresData('truncate-data.sql', pool, server.logger)
+        }
         if (options.loadPostgresData) {
           await loadPostgresData('agreements-data.sql.gz', pool, server.logger)
           await loadPostgresData(
