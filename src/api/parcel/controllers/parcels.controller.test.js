@@ -127,7 +127,10 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
       expect(mockGetAvailableAreaForAction).toHaveBeenCalled()
       expect(mockCreateCompatibilityMatrix).toHaveBeenCalled()
     })
@@ -227,7 +230,10 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(expect.any(Object))
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
     })
 
     test('should return 400 if the request has an invalid parcel in payload', async () => {
