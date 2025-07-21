@@ -93,7 +93,6 @@ export const postgresDb = {
             server.logger.info('Postgres DDL connection successful')
             ddlClient.release()
 
-            // Perform seeding operations with DDL user
             await loadPostgresData(
               'agreements-data.sql.gz',
               ddlPool,
@@ -148,7 +147,6 @@ export const postgresDb = {
           }
         }
 
-        // Expose the main pool (with regular user) to the server
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
