@@ -6,4 +6,5 @@ cd "${projectRoot}"
 
 docker compose down
 docker compose up -d
+npm run truncate:data
 npm run load:data
