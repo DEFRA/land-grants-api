@@ -18,6 +18,14 @@ import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvaila
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
+import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import {
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
+} from '~/src/available-area/availableArea.js'
+import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 
 /**
  * LandActionsValidateController
@@ -45,13 +53,14 @@ const LandActionsValidateController = {
   handler: async (request, h) => {
     try {
       const { landActions } = request.payload
+      const [landAction] = landActions
       request.logger.info(
         `Controller validating land actions ${landActions?.length}`
       )
 
       const landParcel = await getLandData(
-        landActions[0].sheetId,
-        landActions[0].parcelId,
+        landAction.sheetId,
+        landAction.parcelId,
         request.server.postgresDb,
         request.logger
       )
@@ -73,9 +82,29 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      let results = []
+      const agreements = await getAgreementsForParcel(
+        landAction.sheetId,
+        landAction.parcelId,
+        request.server.postgresDb,
+        request.logger
+      )
 
-      for (const action of landActions[0].actions) {
+      const mergedActions = mergeAgreementsTransformer(
+        agreements,
+        landAction.actions.map(a => ({
+          actionCode: a.code,
+          quantity: a.quantity,
+          unit: 'ha'
+        })) // should match parcels endpoint?
+      )
+
+      let results = []
+      const compatibilityCheckFn = await createCompatibilityMatrix(
+        request.logger,
+        request.server.postgresDb
+      )
+
+      for (const action of landAction.actions) {
         const landCoverCodes = await getLandCoversForAction(
           action.code,
           request.server.postgresDb,
@@ -84,19 +113,30 @@ const LandActionsValidateController = {
 
         const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
 
-        const parcelAvailableArea = await getParcelAvailableArea(
-          landActions[0].sheetId,
-          landActions[0].parcelId,
-          mergedLandCoverCodes,
+        const aacDataRequirements = await getAvailableAreaDataRequirements(
+          action.code,
+          landAction.sheetId,
+          landAction.parcelId,
+          plannedActionsTransformer(mergedActions),
           request.server.postgresDb,
+          request.logger
+        )
+
+        const parcelAvailableArea = getAvailableAreaForAction(
+          action.code,
+          landAction.sheetId,
+          landAction.parcelId,
+          compatibilityCheckFn,
+          plannedActionsTransformer(mergedActions),
+          aacDataRequirements,
           request.logger
         )
 
         request.logger.info(`Parcel available area: ${parcelAvailableArea}`)
 
         const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
-          landActions[0].sheetId,
-          landActions[0].parcelId,
+          landAction.sheetId,
+          landAction.parcelId,
           request.server.postgresDb,
           request.logger
         )
@@ -106,7 +146,7 @@ const LandActionsValidateController = {
           action.code,
           sqmToHaRounded(parcelAvailableArea),
           intersectingAreaPercentage,
-          [] // TODO: get existing agreements
+          agreements
         )
 
         const ruleToExecute = actions.find((a) => a.code === action.code)
