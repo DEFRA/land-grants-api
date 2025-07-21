@@ -1,4 +1,3 @@
-import fs from 'fs/promises'
 import path from 'path'
 import { readCompressedFileStream } from './compression.js'
 
@@ -15,10 +14,7 @@ async function loadPostgresData(dataFileName, server, logger) {
       '../common/migration',
       dataFileName
     )
-    const isCompressed = dataFileName.endsWith('.gz')
-    const sql = isCompressed
-      ? await readCompressedFileStream(sqlFilePath)
-      : await fs.readFile(sqlFilePath, 'utf8')
+    const sql = await readCompressedFileStream(sqlFilePath)
 
     await client.query('BEGIN')
     await client.query(sql)
