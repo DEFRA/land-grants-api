@@ -69,7 +69,7 @@ const config = convict({
       doc: 'Postgres Land Data DDL DB username',
       format: String,
       default: 'land_grants_api',
-      env: 'POSTGRES_DDL_USERNAME'
+      env: 'POSTGRES_USERNAME_DDL'
     },
     passwordForLocalDev: {
       doc: 'Postgres Land Data DB password',
