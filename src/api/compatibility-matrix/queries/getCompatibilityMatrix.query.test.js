@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-import { compatibilityMatrixTransformer } from '../compatibility-matrix.transformer.js'
 
 describe('getCompatibilityMatrix', () => {
   const mockLogger = {
@@ -8,12 +7,7 @@ describe('getCompatibilityMatrix', () => {
     info: jest.fn()
   }
   const queryMock = jest.fn()
-  const cm = {
-    id: 1,
-    option_code: 'AFC',
-    option_code_compat: 'ABC',
-    year: 2019
-  }
+  const cm = { option_code: 'AFC', option_code_compat: 'ABC', year: 2019 }
   queryMock.mockResolvedValue({
     rows: [cm]
   })
@@ -32,7 +26,7 @@ describe('getCompatibilityMatrix', () => {
   test('should select all compatibility matrix', async () => {
     const result = await getCompatibilityMatrix(mockLogger, dbMock)
 
-    expect(result).toEqual([compatibilityMatrixTransformer(cm)])
+    expect(result).toEqual([cm])
     expect(dbMock.connect).toHaveBeenCalled()
     expect(queryMock).toHaveBeenCalledWith(
       'SELECT * FROM compatibility_matrix ',
@@ -47,7 +41,7 @@ describe('getCompatibilityMatrix', () => {
     const codes = ['CMOR1']
     const result = await getCompatibilityMatrix(mockLogger, dbMock, codes)
 
-    expect(result).toEqual([compatibilityMatrixTransformer(cm)])
+    expect(result).toEqual([cm])
     expect(dbMock.connect).toHaveBeenCalled()
     expect(queryMock).toHaveBeenCalledWith(
       'SELECT * FROM compatibility_matrix WHERE option_code = ANY ($1)',

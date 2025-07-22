@@ -31,7 +31,7 @@ describe('Get compatibility matrix', () => {
       'CMOR1'
     ])
     const filteredResult = landCovers.filter(
-      (landCover) => landCover.optionCode === 'CMOR1'
+      (landCover) => landCover.option_code === 'CMOR1'
     )
     expect(landCovers).toEqual(filteredResult)
   })
@@ -40,10 +40,10 @@ describe('Get compatibility matrix', () => {
     const landCovers = await getCompatibilityMatrix(logger, connection)
 
     expect(
-      landCovers.filter((l) => l.optionCode === 'UPL1').length
+      landCovers.filter((l) => l.option_code === 'UPL1').length
     ).toBeGreaterThan(0)
     expect(
-      landCovers.filter((l) => l.optionCode === 'UPL2').length
+      landCovers.filter((l) => l.option_code === 'UPL2').length
     ).toBeGreaterThan(0)
   })
 })

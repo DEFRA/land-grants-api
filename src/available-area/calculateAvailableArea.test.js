@@ -32,9 +32,9 @@ describe('Available Area', () => {
     test('should create compatibility function from database results', async () => {
       const codes = ['CMOR1', 'UPL1', 'UPL2']
       const mockCompatibilityData = [
-        { optionCode: 'UPL1', optionCodeCompat: 'CMOR1' },
-        { optionCode: 'CMOR1', optionCodeCompat: 'UPL1' },
-        { optionCode: 'UPL2', optionCodeCompat: 'CMOR1' }
+        { option_code: 'UPL1', option_code_compat: 'CMOR1' },
+        { option_code: 'CMOR1', option_code_compat: 'UPL1' },
+        { option_code: 'UPL2', option_code_compat: 'CMOR1' }
       ]
 
       mockGetCompatibilityMatrix.mockResolvedValue(mockCompatibilityData)
@@ -61,7 +61,7 @@ describe('Available Area', () => {
     test('should create a bidirectional compatibility function', async () => {
       const codes = ['CMOR1', 'UPL1']
       const mockCompatibilityData = [
-        { optionCode: 'UPL1', optionCodeCompat: 'CMOR1' }
+        { option_code: 'UPL1', option_code_compat: 'CMOR1' }
       ]
 
       mockGetCompatibilityMatrix.mockResolvedValue(mockCompatibilityData)
