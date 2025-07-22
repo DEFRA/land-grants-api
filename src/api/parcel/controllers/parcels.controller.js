@@ -97,10 +97,7 @@ const ParcelsController = {
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {
-          const actions = await getEnabledActions(
-            request.logger,
-            request.server.postgresDb
-          )
+          const actions = await getEnabledActions(request.logger)
 
           if (!actions || actions?.length === 0) {
             const errorMessage = 'Actions not found'

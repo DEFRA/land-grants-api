@@ -55,7 +55,7 @@ In order to run the api, you will need `docker` installed, so please make sure t
 
 To run the application in `development` mode run the following commands:
 
-#### Create database
+#### Create databases
 
 You are only required to run this once, unless the schema changes.
 
@@ -63,7 +63,8 @@ This script:
 
 - will start a dockerised postgres database
 - run the liquibase migration, creating the tables
-- seed the postgres database
+- will start dockerised mongodb database
+- seed the postgres and mongodb databases
 
 ```bash
 npm run dev:setup
@@ -79,7 +80,7 @@ npm run dev
 
 #### Reload seed data
 
-This script will seed the postgres database
+This script will seed the postgres and mongodb databases
 
 You are only required to run this when the seed data changes
 
@@ -87,10 +88,14 @@ You are only required to run this when the seed data changes
 npm run load:data
 ```
 
-We can also run these individually for `postgres`
+We can also run these individually for `postgres` and `mongo`
 
 ```bash
 load:data:postgres
+```
+
+```bash
+load:data:mongo
 ```
 
 ### Testing
