@@ -10,6 +10,15 @@ x-common-postgres: &common-postgres
   POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
 
 services:
+  mongodb:
+    image: mongo:6.0.13
+    networks:
+      - cdp-mongo-tenant
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb-data:/data
+    restart: always
 
   database-up:
     image: liquibase/liquibase:4.31-alpine
@@ -45,8 +54,10 @@ services:
 
 volumes:
   postgres_data:
+  mongodb-data:
 
 networks:
   cdp-tenant:
     external: true
-
+  cdp-mongo-tenant:
+    driver: bridge

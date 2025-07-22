@@ -10,6 +10,7 @@ import {
 
 /**
  * LandActionsPaymentController
+ * Finds all entries in a mongodb collection
  * @satisfies {Partial<ServerRoute>}
  */
 const PaymentsCalculateController = {
