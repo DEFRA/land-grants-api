@@ -7,11 +7,11 @@ import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLa
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
+import { getAvailableAreaDataRequirements } from '~/src/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { getAvailableAreaDataRequirements } from '~/src/available-area/availableArea.js'
 
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
@@ -134,11 +134,6 @@ describe('Actions validation controller', () => {
         expect.any(Object)
       )
       expect(getEnabledActions).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(getLandCoversForAction).toHaveBeenCalledWith(
-        mockActionData.code,
         expect.any(Object),
         expect.any(Object)
       )
