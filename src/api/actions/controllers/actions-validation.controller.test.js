@@ -4,12 +4,14 @@ import { landactions } from '~/src/api/actions/index.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import { getAvailableAreaDataRequirements } from '~/src/available-area/availableArea.js'
 
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
@@ -19,6 +21,10 @@ jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
 jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
+jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
+jest.mock('~/src/api/agreements/transformers/agreements.transformer.js')
+jest.mock('~/src/available-area/compatibilityMatrix.js')
+jest.mock('~/src/available-area/availableArea.js')
 
 describe('Actions validation controller', () => {
   const server = Hapi.server()
@@ -88,6 +94,13 @@ describe('Actions validation controller', () => {
       passed: true,
       results: []
     })
+    getAgreementsForParcel.mockResolvedValue([])
+    createCompatibilityMatrix.mockResolvedValue(jest.fn())
+    getAvailableAreaDataRequirements.mockResolvedValue({
+      landCoverCodesForAppliedForAction: [],
+      landCoversForParcel: [],
+      landCoversForExistingActions: []
+    })
   })
 
   describe('POST /actions/validate route', () => {
@@ -135,20 +148,14 @@ describe('Actions validation controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(getParcelAvailableArea).toHaveBeenCalledWith(
-        'SX0679',
-        '9238',
-        mergeLandCoverCodes(mockLandCoverCodes),
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(applicationTransformer).toHaveBeenCalledWith(
+      expect(applicationTransformer).toHaveBeenCalledTimes(2)
+      expect(applicationTransformer.mock.calls[0]).toEqual([
         99.0,
         'BND1',
-        0.1,
+        0,
         50,
         []
-      )
+      ])
       expect(executeRules).toHaveBeenCalledWith(
         rules,
         expect.any(Object),
@@ -352,27 +359,6 @@ describe('Actions validation controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 if getParcelAvailableArea throws an error', async () => {
-      const request = {
-        method: 'POST',
-        url: '/actions/validate',
-        payload: mockLandActions
-      }
-
-      getParcelAvailableArea.mockRejectedValue(
-        new Error('Failed to calculate parcel area')
-      )
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(500)
-      expect(message).toBe('An internal server error occurred')
-    })
-
     test('should handle multiple actions and aggregate results', async () => {
       const multiActionPayload = {
         landActions: [
@@ -436,7 +422,7 @@ describe('Actions validation controller', () => {
         1,
         99.0,
         'BND1',
-        0.1,
+        0,
         50,
         []
       )
@@ -444,7 +430,7 @@ describe('Actions validation controller', () => {
         2,
         200.0,
         'BND2',
-        0.1,
+        0,
         50,
         []
       )
