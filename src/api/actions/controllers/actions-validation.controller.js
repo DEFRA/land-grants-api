@@ -11,13 +11,10 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { mergeLandCoverCodes } from '~/src/api/land-cover-codes/services/merge-land-cover-codes.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
@@ -88,7 +85,7 @@ const LandActionsValidateController = {
 
       const mergedActions = mergeAgreementsTransformer(
         agreements,
-        landAction.actions.map(a => ({
+        landAction.actions.map((a) => ({
           actionCode: a.code,
           quantity: a.quantity,
           unit: 'ha'
@@ -102,14 +99,6 @@ const LandActionsValidateController = {
       )
 
       for (const action of landAction.actions) {
-        const landCoverCodes = await getLandCoversForAction(
-          action.code,
-          request.server.postgresDb,
-          request.logger
-        )
-
-        const mergedLandCoverCodes = mergeLandCoverCodes(landCoverCodes)
-
         const aacDataRequirements = await getAvailableAreaDataRequirements(
           action.code,
           landAction.sheetId,
@@ -129,7 +118,9 @@ const LandActionsValidateController = {
           request.logger
         )
 
-        request.logger.info(`Parcel available area: ${parcelAvailableArea}`)
+        request.logger.info(
+          `Parcel available area: ${JSON.stringify(parcelAvailableArea)}`
+        )
 
         const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
           landAction.sheetId,
