@@ -1,8 +1,14 @@
-import { startOfMonth, addMonths, addDays, isWeekend, isSaturday, addHours } from 'date-fns';
+import {
+  startOfMonth,
+  addMonths,
+  addDays,
+  isWeekend,
+  isSaturday
+} from 'date-fns'
 
 /**
  * Payment rules
-
+ 
 -- assume the user has accepted the agreement today and the agreement start date is the 1st of the next month
 -- The first quarterly payment date is always 3 calendar months + 5 days after the agreement start date
 -- Subsequent payments are every 3 months on the 5th of the relevant month, see below: 
@@ -11,51 +17,113 @@ import { startOfMonth, addMonths, addDays, isWeekend, isSaturday, addHours } fro
 -- If the ‘Due Date’ falls on a weekend, the payment will always occur the following Monday, and payments will never be made before the ‘Due Date’.
  */
 
-export function calculatePaymentSchedule(amountInPennies, schedule = "quarterly") {
-    const agreementStartDate = getAgreementStartDate()
-    return {
-        agreementStartDate,
-        payments: getPaymentDates(agreementStartDate, schedule)
-    }
+/**
+ * @typedef FrequencyConfig
+ * @property {string} name
+ * @property {number} frequencyInMonths
+ * @property {number} totalPayments
+ */
+
+const frequencies = [
+  {
+    name: 'quarterly',
+    frequencyInMonths: 3,
+    totalPayments: 4
+  }
+]
+
+/**
+ *
+ * @param {number} amountInPennies
+ * @param {string=} frequency
+ * @returns {{ agreementStartDate: Date, payments: object[] }} payment schedule
+ */
+export function calculatePaymentSchedule(
+  amountInPennies,
+  frequency = 'quarterly'
+) {
+  const frequencyConfig = frequencies.find((f) => f.name === frequency)
+  if (!frequencyConfig) {
+    throw Error(`Frequency config could not be found for: ${frequency}`)
+  }
+
+  const agreementStartDate = getAgreementStartDate()
+  const paymentDates = getPaymentDates(agreementStartDate, frequencyConfig)
+  const paymentAmounts = calculatePaymentAmounts(
+    amountInPennies,
+    frequencyConfig
+  )
+
+  const payments = paymentDates.map((d, i) => ({
+    ...d,
+    amountInPence: paymentAmounts[i]
+  }))
+
+  return {
+    frequency,
+    agreementStartDate,
+    payments
+  }
 }
 
 /**
- * 
+ *
  * @returns the first of next month
  */
 export function getAgreementStartDate() {
-    return startOfMonth(addMonths(new Date(), 1))
+  return startOfMonth(addMonths(new Date(), 1))
 }
 
 /**
- * @param startDate agreement start date
- * @param schedule quarterly
- * @returns { paymentDate: date }[]
+ * @param {Date} startDate agreement start date
+ * @param {FrequencyConfig} frequencyConfig
+ * @returns {{ paymentDate: Date }[]}
  */
-export function getPaymentDates(startDate, schedule) {
-    const paymentDates = [];
+export function getPaymentDates(startDate, frequencyConfig) {
+  const { totalPayments, frequencyInMonths } = frequencyConfig
+  const paymentDates = []
 
-    if (schedule == "quarterly") {
-        // first payment date is start date plus 3 months and 5 days
-        const firstPaymentDate = addDays(addMonths(startDate, 3), 5)
-        paymentDates.push({ paymentDate: getClosestWorkingDay(firstPaymentDate) })
-        // subsequent payments are plus 3 months or next monday if a weekend
-        for (let i = 0; i < 3; i++) {
-            const paymentDate = getClosestWorkingDay(addMonths(firstPaymentDate, (i + 1) * 3))
-            paymentDates.push({ paymentDate })
-        }
-    }
+  // first payment date is start date plus 3 months and 5 days
+  const firstPaymentDate = addDays(addMonths(startDate, 3), 5)
+  paymentDates.push({ paymentDate: getClosestWorkingDay(firstPaymentDate) })
+  // subsequent payments are plus 3 months or next monday if a weekend
+  for (let i = 0; i < totalPayments - 1; i++) {
+    const paymentDate = getClosestWorkingDay(
+      addMonths(firstPaymentDate, (i + 1) * frequencyInMonths)
+    )
+    paymentDates.push({ paymentDate })
+  }
 
-    return paymentDates
+  return paymentDates
 }
 
 /**
- * 
- * @param {paymentDate} paymentDate 
+ *
+ * @param {Date} paymentDate
  * @returns same date or next working date (mon-fri)
  */
 export function getClosestWorkingDay(paymentDate) {
-    if (!isWeekend(paymentDate)) return paymentDate
+  if (!isWeekend(paymentDate)) return paymentDate
 
-    return addDays(paymentDate, isSaturday(paymentDate) ? 2 : 1)
+  return addDays(paymentDate, isSaturday(paymentDate) ? 2 : 1)
+}
+
+/**
+ *
+ * @param {number} amountInPence
+ * @param {FrequencyConfig} frequencyConfig
+ * @returns {number[]} payment amounts
+ */
+export function calculatePaymentAmounts(amountInPence, frequencyConfig) {
+  const { totalPayments } = frequencyConfig
+
+  const remainder = amountInPence % totalPayments
+  const paymentAmount = (amountInPence - remainder) / totalPayments
+
+  return new Array(totalPayments).fill(0).map((_, i) => {
+    // add the remainder to the first payment
+    if (i === 0) return paymentAmount + remainder
+
+    return paymentAmount
+  })
 }
