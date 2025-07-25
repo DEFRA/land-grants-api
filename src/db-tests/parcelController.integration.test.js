@@ -17,6 +17,10 @@ const logger = {
 
 let connection
 
+function getSnapshotName(testName, parcel, action) {
+  return `${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
+}
+
 describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
@@ -83,10 +87,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -105,10 +106,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -127,10 +125,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -149,15 +144,22 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           }
         ]
       }
     ])
+
+    for (const action of data.parcels[0].actions) {
+      expect(action.results.explanations).toMatchSnapshot(
+        getSnapshotName(
+          'should return 1 stack for 1 existing agreement actions',
+          data.parcels[0],
+          action
+        )
+      )
+    }
   })
 
   test('should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action', async () => {
@@ -212,13 +214,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -242,13 +238,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -272,13 +262,7 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           },
           {
@@ -302,17 +286,21 @@ describe('Calculate available area with agreements', () => {
                   areaSqm: 1000
                 }
               ],
-              explanations: [
-                'Adding UPL1 (area 0.1 ha)',
-                '  Created Stack 1 for UPL1 with area 0.1 ha',
-                'Adding UPL2 (area 0.1 ha)',
-                '  UPL2 is not compatible with: UPL1 in Stack 1',
-                '  Created Stack 2 for UPL2 with area 0.1 ha'
-              ]
+              explanations: expect.any(Array)
             }
           }
         ]
       }
     ])
+
+    for (const action of data.parcels[0].actions) {
+      expect(action.results.explanations).toMatchSnapshot(
+        getSnapshotName(
+          'should return 1 stack for 1 existing agreement actions',
+          data.parcels[0],
+          action
+        )
+      )
+    }
   })
 })

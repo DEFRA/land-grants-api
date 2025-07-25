@@ -1,0 +1,528 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Available Area getAvailableAreaForAction "should calculate available area with one existing compatible action": explanations-UPL1-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - UPL1",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "CMOR1 - 0.1 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: UPL1",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "= 1 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "CMOR1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- CMOR1",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as UPL1",
+  },
+  {
+    "content": [
+      "Stack 1 - CMOR1 - 0.1 ha",
+      "",
+      "Explanation:",
+      "Adding CMOR1 (area 0.1 ha)",
+      "  Created Stack 1 for CMOR1 with area 0.1 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 1 ha",
+      "= 1 ha available for UPL1",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should handle multiple compatible actions in same stack": explanations-UPL3-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - UPL3",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "CMOR1 - 0.1 ha",
+      "UPL1 - 0.1 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: UPL3",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "= 0.5 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "CMOR1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "UPL1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- CMOR1",
+      "- UPL1",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as UPL3",
+  },
+  {
+    "content": [
+      "Stack 1 - CMOR1, UPL1 - 0.1 ha",
+      "",
+      "Explanation:",
+      "Adding CMOR1 (area 0.1 ha)",
+      "  Created Stack 1 for CMOR1 with area 0.1 ha",
+      "Adding UPL1 (area 0.1 ha)",
+      "  UPL1 is compatible with: CMOR1 in Stack 1",
+      "  Added UPL1 to Stack 1 with area 0.1 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 0.5 ha",
+      "= 0.5 ha available for UPL3",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should handle multiple incompatible actions in separate stacks": explanations-UPL3-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - UPL3",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "UPL1 - 0.1 ha",
+      "UPL2 - 0.2 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: UPL3",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "= 1 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "UPL1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "UPL2 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- UPL1",
+      "- UPL2",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as UPL3",
+  },
+  {
+    "content": [
+      "Stack 1 - UPL1 - 0.1 ha",
+      "Stack 2 - UPL2 - 0.2 ha",
+      "",
+      "Explanation:",
+      "Adding UPL1 (area 0.1 ha)",
+      "  Created Stack 1 for UPL1 with area 0.1 ha",
+      "Adding UPL2 (area 0.2 ha)",
+      "  UPL2 is not compatible with: UPL1 in Stack 1",
+      "  Created Stack 2 for UPL2 with area 0.2 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 1 ha",
+      "- 0.1 (Stack 1)",
+      "- 0.2 (Stack 2)",
+      "= 0.7 ha available for UPL3",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should handle multiple incompatible actions that are compatible among them in separate stacks": explanations-CMOR1-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - CMOR1",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1.1150572 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "CHRW1 - 1 ha",
+      "CHRW2 - 0.8 ha",
+      "CHRW3 - 0.7 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: CMOR1",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1.1150572 ha",
+      "= 1.1150572 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "CHRW1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "CHRW2 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "CHRW3 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- CHRW1",
+      "- CHRW2",
+      "- CHRW3",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as CMOR1",
+  },
+  {
+    "content": [
+      "Stack 1 - CHRW3, CHRW2, CHRW1 - 0.7 ha",
+      "Stack 2 - CHRW2, CHRW1 - 0.1 ha",
+      "Stack 3 - CHRW1 - 0.2 ha",
+      "",
+      "Explanation:",
+      "Adding CHRW3 (area 0.7 ha)",
+      "  Created Stack 1 for CHRW3 with area 0.7 ha",
+      "Adding CHRW2 (area 0.8 ha)",
+      "  CHRW2 is compatible with: CHRW3 in Stack 1",
+      "  Added CHRW2 to Stack 1 with area 0.7 ha",
+      "  Created Stack 2 for CHRW2 with area 0.1 ha",
+      "Adding CHRW1 (area 1 ha)",
+      "  CHRW1 is compatible with: CHRW3, CHRW2 in Stack 1",
+      "  Added CHRW1 to Stack 1 with area 0.7 ha",
+      "  CHRW1 is compatible with: CHRW2 in Stack 2",
+      "  Added CHRW1 to Stack 2 with area 0.1 ha",
+      "  Created Stack 3 for CHRW1 with area 0.2 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 1.1150572 ha",
+      "- 0.7 (Stack 1)",
+      "- 0.1 (Stack 2)",
+      "- 0.2 (Stack 3)",
+      "= 0.1150572 ha available for CMOR1",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should return full area when no existing actions": explanations-CMOR1-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - CMOR1",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: CMOR1",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "= 1 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "",
+      "Actions included for stacking:",
+      "",
+      "None",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as CMOR1",
+  },
+  {
+    "content": [
+      "No existing actions so no stacks are needed",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 1 ha",
+      "= 1 ha available for CMOR1",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should return zero available area when all land is used by incompatible actions": explanations-UPL2-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - UPL2",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "UPL1 - 0.5 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: UPL2",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "= 0.5 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "UPL1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- UPL1",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as UPL2",
+  },
+  {
+    "content": [
+      "Stack 1 - UPL1 - 0.5 ha",
+      "",
+      "Explanation:",
+      "Adding UPL1 (area 0.5 ha)",
+      "  Created Stack 1 for UPL1 with area 0.5 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 0.5 ha",
+      "- 0.5 (Stack 1)",
+      "= 0 ha available for UPL2",
+    ],
+    "title": "Result",
+  },
+]
+`;
+
+exports[`Available Area getAvailableAreaForAction "should subtract incompatible stack area from available area": explanations-UPL2-SD6743-7268 1`] = `
+[
+  {
+    "content": [
+      "Action code - UPL2",
+      "Parcel Id - SD6743 7268",
+    ],
+    "title": "Application Information",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+    ],
+    "title": "Land Covers For Parcel",
+  },
+  {
+    "content": [
+      "UPL1 - 0.2 ha",
+    ],
+    "title": "Existing actions",
+  },
+  {
+    "content": [
+      "Arable (130) - Arable (131)",
+    ],
+    "title": "Valid land covers for action: UPL2",
+  },
+  {
+    "content": [
+      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "= 1 ha",
+    ],
+    "title": "Total valid land covers",
+  },
+  {
+    "content": [
+      "UPL1 has the following valid land covers in common with the applied for action: ",
+      "- Arable (130)",
+      "- Arable (131)",
+      "",
+      "Actions included for stacking:",
+      "",
+      "- UPL1",
+    ],
+    "title": "Common land covers",
+  },
+  {
+    "content": [],
+    "title": "Find area of existing action that must be on the same land cover as UPL2",
+  },
+  {
+    "content": [
+      "Stack 1 - UPL1 - 0.2 ha",
+      "",
+      "Explanation:",
+      "Adding UPL1 (area 0.2 ha)",
+      "  Created Stack 1 for UPL1 with area 0.2 ha",
+    ],
+    "title": "Stacks",
+  },
+  {
+    "content": [
+      "Total valid land cover: 1 ha",
+      "- 0.2 (Stack 1)",
+      "= 0.8 ha available for UPL2",
+    ],
+    "title": "Result",
+  },
+]
+`;
