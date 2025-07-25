@@ -3,11 +3,11 @@ import { mergeLandCoverCodes } from './merge-land-cover-codes.js'
 describe('mergeLandCoverCodes', () => {
   it('should merge land cover codes correctly', () => {
     const landCoverCodes = [
-      { land_cover_code: '111', land_cover_class_code: '110' },
-      { land_cover_code: '131', land_cover_class_code: '130' },
-      { land_cover_code: '118', land_cover_class_code: '110' },
-      { land_cover_code: '112', land_cover_class_code: '110' },
-      { land_cover_code: '117', land_cover_class_code: '110' }
+      { landCoverCode: '111', landCoverClassCode: '110' },
+      { landCoverCode: '131', landCoverClassCode: '130' },
+      { landCoverCode: '118', landCoverClassCode: '110' },
+      { landCoverCode: '112', landCoverClassCode: '110' },
+      { landCoverCode: '117', landCoverClassCode: '110' }
     ]
 
     const expectedMerged = ['110', '111', '112', '117', '118', '130', '131']
@@ -23,8 +23,8 @@ describe('mergeLandCoverCodes', () => {
 
   it('should handle duplicate land cover codes', () => {
     const landCoverCodes = [
-      { land_cover_code: '111', land_cover_class_code: '110' },
-      { land_cover_code: '111', land_cover_class_code: '110' }
+      { landCoverCode: '111', landCoverClassCode: '110' },
+      { landCoverCode: '111', landCoverClassCode: '110' }
     ]
     const expectedMerged = ['110', '111']
 

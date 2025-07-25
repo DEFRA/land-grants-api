@@ -1,84 +1,404 @@
+import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
+import { logger } from '../db-tests/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
-import { getLandCoversForAction } from '../api/land-cover-codes/queries/getLandCoversForAction.query.js'
-import { getLandCoversForParcel } from '../api/parcel/queries/getLandCoversForParcel.query.js'
-import { calculateAvailableArea } from './calculateAvailableArea.js'
+import { makeCompatibilityCheckFn } from './testUtils.js'
 
-jest.mock('../api/land-cover-codes/queries/getLandCoversForAction.query.js')
-jest.mock('../api/parcel/queries/getLandCoversForParcel.query.js')
-jest.mock('../api/parcel/transformers/parcelActions.transformer.js')
-jest.mock('./calculateAvailableArea.js')
+jest.mock(
+  '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
+)
 
-const mockGetLandCoversForAction = getLandCoversForAction
-const mockGetLandCoversForParcel = getLandCoversForParcel
-const mockCalculateAvailableArea = calculateAvailableArea
-
-describe('getAvailableAreaForAction', () => {
-  const mockActionCode = 'CMOR1'
-
-  const mockSheetId = 'SX0679'
-  const mockParcelId = '9238'
-  const mockCompatibilityCheckFn = jest.fn()
-  const mockExistingActions = [{ actionCode: 'UPL1', areaSqm: 100 }]
-  const mockPostgresDb = {
-    query: jest.fn(),
-    connect: jest.fn(),
-    release: jest.fn()
+const landCoverDefinitions = [
+  {
+    landCoverCode: 131,
+    landCoverClassCode: 130,
+    landCoverTypeCode: 100,
+    landCoverTypeDescription: 'Arable',
+    landCoverClassDescription: 'Arable',
+    landCoverDescription: 'Arable'
   }
-  const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn()
-  }
+]
 
-  const mockLandCoverCodes = [
-    { land_cover_code: '130', land_cover_class_code: '130' },
-    { land_cover_code: '240', land_cover_class_code: '240' }
-  ]
+const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
-  const mockLandCoversForParcel = [
-    { landCoverClassCode: '130', areaSqm: 3000 },
-    { landCoverClassCode: '240', areaSqm: 2000 }
-  ]
-  const mockAvailableAreaResult = {
-    stacks: [{ actionCode: 'CMOR1', areaSqm: 3000 }],
-    explanations: ['Test explanation'],
-    availableAreaSqm: 3000,
-    totalValidLandCoverSqm: 5000,
-    availableAreaHectares: 0.3
-  }
-
+describe('Available Area', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-
-    mockGetLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
-    mockGetLandCoversForParcel.mockResolvedValue(mockLandCoversForParcel)
-    mockCalculateAvailableArea.mockReturnValue(mockAvailableAreaResult)
   })
 
-  test('should return available area calculation result', async () => {
-    const result = await getAvailableAreaForAction(
-      mockActionCode,
-      mockSheetId,
-      mockParcelId,
-      mockCompatibilityCheckFn,
-      mockExistingActions,
-      mockPostgresDb,
-      mockLogger
-    )
+  describe('getAvailableAreaForAction', function () {
+    const testConditions = [
+      [
+        'should return full area when no existing actions',
+        {
+          actionCodeAppliedFor: 'CMOR1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: [],
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [],
+            explanations: expect.any(Array),
+            availableAreaSqm: 10000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 1
+          }
+        }
+      ],
+      [
+        'should calculate available area with one existing compatible action',
+        {
+          actionCodeAppliedFor: 'UPL1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({ CMOR1: ['UPL1'] }),
+          existingActions: [{ actionCode: 'CMOR1', areaSqm: 1000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              CMOR1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['CMOR1'], areaSqm: 1000 }],
+            explanations: expect.any(Array),
+            availableAreaSqm: 10000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 1
+          }
+        }
+      ],
+      [
+        'should subtract incompatible stack area from available area',
+        {
+          actionCodeAppliedFor: 'UPL2',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [{ actionCode: 'UPL1', areaSqm: 2000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 2000 }],
+            explanations: expect.any(Array),
+            availableAreaSqm: 8000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 0.8
+          }
+        }
+      ],
+      [
+        'should handle multiple compatible actions in same stack',
+        {
+          actionCodeAppliedFor: 'UPL3',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({
+            CMOR1: ['UPL1', 'UPL3'],
+            UPL1: ['UPL3']
+          }),
+          existingActions: [
+            { actionCode: 'CMOR1', areaSqm: 1000 },
+            { actionCode: 'UPL1', areaSqm: 1000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 5000
+              }
+            ],
+            landCoversForExistingActions: {
+              CMOR1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [
+              { stackNumber: 1, actionCodes: ['CMOR1', 'UPL1'], areaSqm: 1000 }
+            ],
+            explanations: expect.any(Array),
+            availableAreaSqm: 5000,
+            totalValidLandCoverSqm: 5000,
+            availableAreaHectares: 0.5
+          }
+        }
+      ],
+      [
+        'should handle multiple incompatible actions that are compatible among them in separate stacks',
+        {
+          actionCodeAppliedFor: 'CMOR1',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({
+            CHRW1: ['CHRW2', 'CHRW3'],
+            CHRW2: ['CHRW3']
+          }),
+          existingActions: [
+            { actionCode: 'CHRW1', areaSqm: 10000 },
+            { actionCode: 'CHRW2', areaSqm: 8000 },
+            { actionCode: 'CHRW3', areaSqm: 7000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 11150.572
+              }
+            ],
+            landCoversForExistingActions: {
+              CHRW1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              CHRW2: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              CHRW3: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [
+              {
+                stackNumber: 1,
+                actionCodes: ['CHRW3', 'CHRW2', 'CHRW1'],
+                areaSqm: 7000
+              },
+              {
+                stackNumber: 2,
+                actionCodes: ['CHRW2', 'CHRW1'],
+                areaSqm: 1000
+              },
+              {
+                stackNumber: 3,
+                actionCodes: ['CHRW1'],
+                areaSqm: 2000
+              }
+            ],
+            explanations: expect.any(Array),
+            availableAreaSqm: 1150.5720000000001,
+            totalValidLandCoverSqm: 11150.572,
+            availableAreaHectares: 0.1150572
+          }
+        }
+      ],
+      [
+        'should handle multiple incompatible actions in separate stacks',
+        {
+          actionCodeAppliedFor: 'UPL3',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [
+            { actionCode: 'UPL1', areaSqm: 1000 },
+            { actionCode: 'UPL2', areaSqm: 2000 }
+          ],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 10000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ],
+              UPL2: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [
+              { stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 1000 },
+              { stackNumber: 2, actionCodes: ['UPL2'], areaSqm: 2000 }
+            ],
+            explanations: expect.any(Array),
+            availableAreaSqm: 7000,
+            totalValidLandCoverSqm: 10000,
+            availableAreaHectares: 0.7
+          }
+        }
+      ],
+      [
+        'should return zero available area when all land is used by incompatible actions',
+        {
+          actionCodeAppliedFor: 'UPL2',
+          sheetId: 'SD6743',
+          parcelId: '7268',
+          compatibilityCheckFn: makeCompatibilityCheckFn({}),
+          existingActions: [{ actionCode: 'UPL1', areaSqm: 5000 }],
+          availableAreaDataRequirements: {
+            landCoverCodesForAppliedForAction: [
+              {
+                landCoverClassCode: 130,
+                landCoverCode: 131
+              }
+            ],
+            landCoversForParcel: [
+              {
+                landCoverClassCode: 130,
+                areaSqm: 5000
+              }
+            ],
+            landCoversForExistingActions: {
+              UPL1: [
+                {
+                  landCoverClassCode: 130,
+                  landCoverCode: 131
+                }
+              ]
+            },
+            landCoverDefinitions,
+            landCoverToString
+          },
+          expectedResult: {
+            stacks: [{ stackNumber: 1, actionCodes: ['UPL1'], areaSqm: 5000 }],
+            explanations: expect.any(Array),
+            availableAreaSqm: 0,
+            totalValidLandCoverSqm: 5000,
+            availableAreaHectares: 0
+          }
+        }
+      ]
+    ]
 
-    expect(result).toEqual(mockAvailableAreaResult)
+    test.each(testConditions)(
+      `%p`,
+      (
+        name,
+        {
+          actionCodeAppliedFor,
+          sheetId,
+          parcelId,
+          compatibilityCheckFn,
+          existingActions,
+          availableAreaDataRequirements,
+          expectedResult
+        }
+      ) => {
+        const result = getAvailableAreaForAction(
+          actionCodeAppliedFor,
+          sheetId,
+          parcelId,
+          compatibilityCheckFn,
+          existingActions,
+          availableAreaDataRequirements,
+          logger
+        )
 
-    expect(mockGetLandCoversForAction).toHaveBeenCalledWith(
-      mockActionCode,
-      mockPostgresDb,
-      mockLogger
-    )
-
-    expect(mockCalculateAvailableArea).toHaveBeenCalledWith(
-      mockExistingActions,
-      mockActionCode,
-      5000,
-      mockCompatibilityCheckFn
+        expect(result).toEqual(expectedResult)
+        expect(result.explanations).toMatchSnapshot(
+          `explanations-${actionCodeAppliedFor}-${sheetId}-${parcelId}`
+        )
+      }
     )
   })
 })
