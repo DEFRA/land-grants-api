@@ -13,15 +13,14 @@ import {
 } from '~/src/api/common/schema/index.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
-import { rules } from '~/src/rules-engine/rules/index.js'
-import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
 } from '~/src/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import { rules } from '~/src/rules-engine/rules/index.js'
+import { executeRules } from '~/src/rules-engine/rulesEngine.js'
+import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 
 /**
@@ -79,20 +78,11 @@ const LandActionsValidateController = {
         return Boom.notFound(errorMessage)
       }
 
-      const agreements = await getAgreementsForParcel(
+      const agreementsActions = await getAgreementsForParcel(
         landAction.sheetId,
         landAction.parcelId,
         request.server.postgresDb,
         request.logger
-      )
-
-      const mergedActions = mergeAgreementsTransformer(
-        agreements,
-        landAction.actions.map((a) => ({
-          actionCode: a.code,
-          quantity: a.quantity,
-          unit: 'ha'
-        })) // should match parcels endpoint?
       )
 
       let results = []
@@ -106,20 +96,21 @@ const LandActionsValidateController = {
           action.code,
           landAction.sheetId,
           landAction.parcelId,
-          plannedActionsTransformer(mergedActions),
+          plannedActionsTransformer(agreementsActions),
           request.server.postgresDb,
           request.logger
         )
 
-        const parcelAvailableArea = getAvailableAreaForAction(
-          action.code,
-          landAction.sheetId,
-          landAction.parcelId,
-          compatibilityCheckFn,
-          plannedActionsTransformer(mergedActions),
-          aacDataRequirements,
-          request.logger
-        )
+        const { availableAreaSqm: parcelAvailableArea } =
+          getAvailableAreaForAction(
+            action.code,
+            landAction.sheetId,
+            landAction.parcelId,
+            compatibilityCheckFn,
+            plannedActionsTransformer(agreementsActions),
+            aacDataRequirements,
+            request.logger
+          )
 
         request.logger.info(
           `Parcel available area: ${JSON.stringify(parcelAvailableArea)}`
@@ -137,7 +128,7 @@ const LandActionsValidateController = {
           action.code,
           sqmToHaRounded(parcelAvailableArea),
           intersectingAreaPercentage,
-          agreements
+          agreementsActions
         )
 
         const ruleToExecute = actions.find((a) => a.code === action.code)
