@@ -4,7 +4,6 @@ import {
   getAgreementStartDate,
   getClosestWorkingDay,
   calculatePaymentSchedule,
-  calculatePaymentAmounts
 } from './payment.schedule.js'
 
 describe('calculatePaymentSchedule', () => {
@@ -14,6 +13,7 @@ describe('calculatePaymentSchedule', () => {
     const dates = calculatePaymentSchedule(27200)
 
     expect(dates.agreementStartDate).toEqual(new Date(2025, 7, 1))
+    expect(dates.agreementEndDate).toEqual(new Date(2026, 7, 6))
     expect(dates.payments).toEqual([
       {
         paymentDate: new Date(2025, 10, 6),
@@ -40,6 +40,7 @@ describe('calculatePaymentSchedule', () => {
     const dates = calculatePaymentSchedule(27233)
 
     expect(dates.agreementStartDate).toEqual(new Date(2025, 8, 1))
+    expect(dates.agreementEndDate).toEqual(new Date(2026, 8, 7))
     expect(dates.payments).toEqual([
       {
         paymentDate: new Date(2025, 11, 8),
@@ -93,25 +94,5 @@ describe('getClosestWorkingDay', () => {
 
     expect(workingDate.getDay()).toBe(1)
     expect(workingDate.getDate()).toBe(21)
-  })
-})
-
-describe('calculatePaymentAmounts', () => {
-  test('returns even split', () => {
-    const res = calculatePaymentAmounts(100, { totalPayments: 4 })
-
-    expect(res).toEqual([25, 25, 25, 25])
-  })
-
-  test('amount not divisble by payments amount', () => {
-    const res = calculatePaymentAmounts(101, { totalPayments: 4 })
-
-    expect(res).toEqual([26, 25, 25, 25])
-  })
-
-  test('large amount not divisble by payments amount', () => {
-    const res = calculatePaymentAmounts(27201, { totalPayments: 4 })
-
-    expect(res).toEqual([6801, 6800, 6800, 6800])
   })
 })

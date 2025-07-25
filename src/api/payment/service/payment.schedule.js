@@ -6,6 +6,8 @@ import {
   isSaturday
 } from 'date-fns'
 
+import { calculatePaymentAmounts } from "./payment.calculation.js"
+
 /**
  * Payment rules
  
@@ -49,6 +51,8 @@ export function calculatePaymentSchedule(
 
   const agreementStartDate = getAgreementStartDate()
   const paymentDates = getPaymentDates(agreementStartDate, frequencyConfig)
+  // agreement end date is last payment date
+  const agreementEndDate = paymentDates[paymentDates.length-1].paymentDate
   const paymentAmounts = calculatePaymentAmounts(
     amountInPennies,
     frequencyConfig
@@ -62,6 +66,7 @@ export function calculatePaymentSchedule(
   return {
     frequency,
     agreementStartDate,
+    agreementEndDate,
     payments
   }
 }
@@ -106,24 +111,4 @@ export function getClosestWorkingDay(paymentDate) {
   if (!isWeekend(paymentDate)) return paymentDate
 
   return addDays(paymentDate, isSaturday(paymentDate) ? 2 : 1)
-}
-
-/**
- *
- * @param {number} amountInPence
- * @param {FrequencyConfig} frequencyConfig
- * @returns {number[]} payment amounts
- */
-export function calculatePaymentAmounts(amountInPence, frequencyConfig) {
-  const { totalPayments } = frequencyConfig
-
-  const remainder = amountInPence % totalPayments
-  const paymentAmount = (amountInPence - remainder) / totalPayments
-
-  return new Array(totalPayments).fill(0).map((_, i) => {
-    // add the remainder to the first payment
-    if (i === 0) return paymentAmount + remainder
-
-    return paymentAmount
-  })
 }
