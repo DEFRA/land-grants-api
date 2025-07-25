@@ -16,6 +16,7 @@ export default {
   reporters: ['default', ['github-actions', { silent: false }], 'summary'],
   setupFiles: ['<rootDir>/.jest/setup.js'],
   collectCoverageFrom: ['src/api/**/*.js', 'src/rules-engine/**/*.js'],
+  testIgnorePatterns: ['<rootDir>/.server'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
@@ -25,6 +26,7 @@ export default {
   transform: {
     '^.+\\.js$': 'babel-jest'
   },
+  testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.server'],
   transformIgnorePatterns: [
     `node_modules/(?!${[
       '@defra/hapi-tracing', // Supports ESM only
