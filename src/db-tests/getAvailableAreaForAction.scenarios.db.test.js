@@ -4,9 +4,11 @@ import {
   resetDatabase,
   seedPostgres
 } from '~/src/db-tests/setup/postgres.js'
-
-import { getAvailableAreaForAction } from '../available-area/availableArea.js'
-import { createCompatibilityMatrix } from '../available-area/calculateAvailableArea.js'
+import {
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
+} from '../available-area/availableArea.js'
+import { createCompatibilityMatrix } from '../available-area/compatibilityMatrix.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
 const logger = {
@@ -87,18 +89,27 @@ describe('Calculate available area', () => {
         ]
       )
 
-      const result = await getAvailableAreaForAction(
+      const aacDataRequirements = await getAvailableAreaDataRequirements(
         applyingForAction,
         sheetId,
         parcelId,
-        compatibilityCheckFn,
         existingActions,
         connection,
         logger
       )
 
-      console.log(JSON.stringify(result.explanations, null, 2))
-      console.log(JSON.stringify(result.stacks, null, 2))
+      const result = getAvailableAreaForAction(
+        applyingForAction,
+        sheetId,
+        parcelId,
+        compatibilityCheckFn,
+        existingActions,
+        aacDataRequirements,
+        logger
+      )
+
+      // console.log(JSON.stringify(result.explanations, null, 2))
+      // console.log(JSON.stringify(result.stacks, null, 2))
 
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
