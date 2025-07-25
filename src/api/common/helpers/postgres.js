@@ -92,6 +92,7 @@ export const postgresDb = {
             pool,
             server.logger
           )
+          await loadPostgresData('actions-data.sql.gz', pool, server.logger)
         }
 
         server.decorate('server', 'postgresDb', pool)
