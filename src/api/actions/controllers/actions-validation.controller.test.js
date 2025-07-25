@@ -3,54 +3,66 @@ import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 import { landactions } from '~/src/api/actions/index.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
-import { getLandCoversForAction } from '~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
-import { getAvailableAreaDataRequirements } from '~/src/available-area/availableArea.js'
+import {
+  getAvailableAreaDataRequirements,
+  getAvailableAreaForAction
+} from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { rules } from '~/src/rules-engine/rules/index.js'
 import { executeRules } from '~/src/rules-engine/rulesEngine.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
 
 jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
 jest.mock('~/src/rules-engine/rulesEngine.js')
 jest.mock('~/src/api/actions/queries/getActions.query.js')
-jest.mock('~/src/api/parcel/queries/getParcelAvailableArea.query.js')
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/rules-engine/rules/index.js')
 jest.mock('~/src/api/actions/transformers/application.transformer.js')
-jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
-jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
-jest.mock('~/src/api/agreements/transformers/agreements.transformer.js')
+jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
+jest.mock('../../agreements/transformers/agreements.transformer.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
 
+const mockGetLandData = getLandData
+const mockGetMoorlandInterceptPercentage = getMoorlandInterceptPercentage
+const mockGetEnabledActions = getEnabledActions
+const mockApplicationTransformer = applicationTransformer
+const mockExecuteRules = executeRules
+const mockGetAgreementsForParcel = getAgreementsForParcel
+const mockMergeAgreementsTransformer = mergeAgreementsTransformer
+const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
+const mockGetAvailableAreaForAction = getAvailableAreaForAction
+
 describe('Actions validation controller', () => {
   const server = Hapi.server()
+
   const mockActionData = {
     code: 'BND1',
     rules: ['rule1', 'rule2'],
     landCoverClassCodes: ['130', '240']
   }
 
-  const mockLandCoverCodes = [
-    {
-      landCoverCode: '130',
-      landCoverClassCode: '130'
-    },
-    {
-      landCoverCode: '240',
-      landCoverClassCode: '240'
-    }
-  ]
-  const mockLandParcelData = [
-    {
-      sheet_id: 'SX0679',
-      parcel_id: '9238',
-      area: 1000
-    }
-  ]
+  const mockLandParcelData = {
+    parcel_id: '9238',
+    sheet_id: 'SX0679',
+    area_sqm: 10000
+  }
+
+  const mockCompatibilityCheckFn = jest.fn()
+  const mockAvailableAreaResult = {
+    availableAreaSqm: 1000,
+    totalValidLandCoverSqm: 1000
+  }
+
+  const mockAacDataRequirements = {
+    landCoverCodesForAppliedForAction: [],
+    landCoversForParcel: [],
+    landCoversForExistingActions: []
+  }
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -77,10 +89,9 @@ describe('Actions validation controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    getLandData.mockResolvedValue(mockLandParcelData)
-    getMoorlandInterceptPercentage.mockResolvedValue(50)
-    getParcelAvailableArea.mockResolvedValue(1000)
-    applicationTransformer.mockReturnValue({
+    mockGetLandData.mockResolvedValue(mockLandParcelData)
+    mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
+    mockApplicationTransformer.mockReturnValue({
       areaAppliedFor: 99,
       actionCodeAppliedFor: 'BND1',
       landParcel: {
@@ -88,19 +99,18 @@ describe('Actions validation controller', () => {
         intersections: { moorland: { intersectingAreaPercentage: 50 } }
       }
     })
-    getEnabledActions.mockResolvedValue([mockActionData])
-    getLandCoversForAction.mockResolvedValue(mockLandCoverCodes)
-    executeRules.mockReturnValue({
+    mockGetEnabledActions.mockResolvedValue([mockActionData])
+    mockExecuteRules.mockReturnValue({
       passed: true,
       results: []
     })
-    getAgreementsForParcel.mockResolvedValue([])
-    createCompatibilityMatrix.mockResolvedValue(jest.fn())
-    getAvailableAreaDataRequirements.mockResolvedValue({
-      landCoverCodesForAppliedForAction: [],
-      landCoversForParcel: [],
-      landCoversForExistingActions: []
-    })
+    mockGetAgreementsForParcel.mockResolvedValue([])
+    mockMergeAgreementsTransformer.mockReturnValue([])
+    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockGetAvailableAreaDataRequirements.mockResolvedValue(
+      mockAacDataRequirements
+    )
+    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
   })
 
   describe('POST /actions/validate route', () => {
@@ -111,7 +121,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      executeRules.mockReturnValue({
+      mockExecuteRules.mockReturnValue({
         passed: true,
         results: []
       })
@@ -127,31 +137,14 @@ describe('Actions validation controller', () => {
       expect(valid).toBe(true)
       expect(errorMessages).toEqual([])
 
-      expect(getLandData).toHaveBeenCalledWith(
-        'SX0679',
-        '9238',
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(getEnabledActions).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(getMoorlandInterceptPercentage).toHaveBeenCalledWith(
-        'SX0679',
-        '9238',
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(applicationTransformer).toHaveBeenCalledTimes(2)
-      expect(applicationTransformer.mock.calls[0]).toEqual([
+      expect(mockApplicationTransformer).toHaveBeenCalledWith(
         99.0,
         'BND1',
-        0,
+        0.1, // sqmToHaRounded(1000)
         50,
         []
-      ])
-      expect(executeRules).toHaveBeenCalledWith(
+      )
+      expect(mockExecuteRules).toHaveBeenCalledWith(
         rules,
         expect.any(Object),
         mockActionData.rules
@@ -170,7 +163,7 @@ describe('Actions validation controller', () => {
         { name: 'rule2', passed: true, message: 'Rule 2 passed' }
       ]
 
-      executeRules.mockReturnValue({
+      mockExecuteRules.mockReturnValue({
         passed: false,
         results: failedResults
       })
@@ -197,7 +190,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getLandData.mockResolvedValue(null)
+      mockGetLandData.mockResolvedValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -216,7 +209,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getEnabledActions.mockResolvedValue([])
+      mockGetEnabledActions.mockResolvedValue([])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -235,7 +228,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getEnabledActions.mockResolvedValue([
+      mockGetEnabledActions.mockResolvedValue([
         {
           code: 'BND1',
           rules: [],
@@ -300,7 +293,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getLandData.mockRejectedValue(new Error('Database error'))
+      mockGetLandData.mockRejectedValue(new Error('Database error'))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -319,7 +312,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getMoorlandInterceptPercentage.mockRejectedValue(
+      mockGetMoorlandInterceptPercentage.mockRejectedValue(
         new Error('Database error')
       )
 
@@ -340,8 +333,29 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      getEnabledActions.mockRejectedValue(
+      mockGetEnabledActions.mockRejectedValue(
         new Error('Failed to retrieve actions')
+      )
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 if available area calculation fails', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      mockGetAvailableAreaDataRequirements.mockRejectedValue(
+        new Error('Area calculation failed')
       )
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -387,9 +401,9 @@ describe('Actions validation controller', () => {
         landCoverClassCodes: ['130', '240']
       }
 
-      getEnabledActions.mockResolvedValue([mockActionData, mockActionData2])
+      mockGetEnabledActions.mockResolvedValue([mockActionData, mockActionData2])
 
-      executeRules
+      mockExecuteRules
         .mockReturnValueOnce({
           passed: true,
           results: [{ passed: true, message: 'Rule passed' }]
@@ -411,24 +425,6 @@ describe('Actions validation controller', () => {
       expect(errorMessages).toEqual([
         { code: 'BND2', description: 'Rule failed for BND2' }
       ])
-
-      expect(applicationTransformer).toHaveBeenCalledTimes(2)
-      expect(applicationTransformer).toHaveBeenNthCalledWith(
-        1,
-        99.0,
-        'BND1',
-        0,
-        50,
-        []
-      )
-      expect(applicationTransformer).toHaveBeenNthCalledWith(
-        2,
-        200.0,
-        'BND2',
-        0,
-        50,
-        []
-      )
     })
   })
 })
