@@ -36,7 +36,7 @@ describe('Get actions', () => {
     const actions = await getEnabledActions(logger, connection)
 
     // eslint-disable-next-line
-    const { last_updated, id, ...cmor1 } = actions.find(
+    const { lastUpdated, id, ...cmor1 } = actions.find(
       (a) => a.code === 'CMOR1'
     )
 
@@ -44,15 +44,15 @@ describe('Get actions', () => {
       version: '1',
       enabled: true,
       display: true,
-      start_date: new Date('2025-01-01T00:00:00.000Z'),
+      startDate: new Date('2025-01-01T00:00:00.000Z'),
       code: 'CMOR1',
       description: 'CMOR1: Assess moorland and produce a written record',
-      application_unit_of_measurement: 'ha',
+      applicationUnitOfMeasurement: 'ha',
       payment: {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272
       },
-      land_cover_class_codes: [
+      landCoverClassCodes: [
         '130',
         '240',
         '250',
@@ -80,5 +80,16 @@ describe('Get actions', () => {
         }
       ]
     })
+    expect(id).toBeGreaterThan(0)
+    expect(lastUpdated).not.toBeNull()
+  })
+
+  test('should not return UPL4', async () => {
+    const actions = await getEnabledActions(logger, connection)
+
+    // eslint-disable-next-line
+    const upl4 = actions.find((a) => a.code === 'UPL4')
+
+    expect(upl4).toBeUndefined()
   })
 })

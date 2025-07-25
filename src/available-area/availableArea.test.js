@@ -1,8 +1,7 @@
-import { create } from 'lodash'
+import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 import { logger } from '../db-tests/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
-import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 
 jest.mock(
   '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'

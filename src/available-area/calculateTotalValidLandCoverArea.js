@@ -7,9 +7,9 @@ import { aacExplain, createExplanationSection } from './explanations.js'
 const explain = {
   /**
    * Generates explanation when adding an action
+   * @param {CodeToString} landCoverToString
    * @param {string} landCoverClassCode - Land Cover class code being added
    * @param {number} areaSqm - Area in sqm of the land class code
-   * @param {CodeToString} landCoverToString
    * @returns {string} Explanation message
    */
   addCommonLandCover: (landCoverToString, landCoverClassCode, areaSqm) => {

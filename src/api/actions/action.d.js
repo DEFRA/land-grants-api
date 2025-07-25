@@ -4,14 +4,14 @@
  * @property {number} version
  * @property {boolean} display
  * @property {boolean} enabled
- * @property {Date} start_date
+ * @property {Date} startDate
  * @property {string} code
  * @property {string} description
- * @property {string} application_unit_of_measurement
+ * @property {string} applicationUnitOfMeasurement
  * @property {ActionPayment} payment
- * @property {string[]} land_cover_class_codes
+ * @property {string[]} landCoverClassCodes
  * @property {ActionRule[]} rules
- * @property {Date} last_updated
+ * @property {Date} lastUpdated
  */
 
 /**
