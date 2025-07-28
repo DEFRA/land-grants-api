@@ -1,12 +1,12 @@
 import {
-  startOfMonth,
-  addMonths,
   addDays,
+  addMonths,
+  isSaturday,
   isWeekend,
-  isSaturday
+  startOfMonth
 } from 'date-fns'
 
-import { calculatePaymentAmounts } from "./payment.calculation.js"
+import { calculatePaymentAmounts } from './paymentCalculation.js'
 
 /**
  * Payment rules
@@ -57,7 +57,7 @@ export function calculatePaymentSchedule(
   const agreementStartDate = getAgreementStartDate()
   const paymentDates = getPaymentDates(agreementStartDate, frequencyConfig)
   // agreement end date is last payment date
-  const agreementEndDate = paymentDates[paymentDates.length-1].paymentDate
+  const agreementEndDate = paymentDates[paymentDates.length - 1].paymentDate
   const paymentAmounts = calculatePaymentAmounts(
     amountInPennies,
     frequencyConfig
@@ -109,12 +109,12 @@ export function getPaymentDates(startDate, frequencyConfig) {
 }
 
 /**
- * 
- * @param {Date} startDate 
+ *
+ * @param {Date} startDate
  * @returns {Date} first payment date
  */
 function getFirstPaymentDate(startDate) {
-  const {days,months} = initialPaymentConfig
+  const { days, months } = initialPaymentConfig
   return addDays(addMonths(startDate, months), days)
 }
 
@@ -129,8 +129,7 @@ export function getClosestWorkingDay(paymentDate) {
   return addDays(paymentDate, isSaturday(paymentDate) ? 2 : 1)
 }
 
-
 function calculateTotalPayments(years, frequencyInMonths) {
   const months = 12 * years
-  return months/frequencyInMonths
+  return months / frequencyInMonths
 }
