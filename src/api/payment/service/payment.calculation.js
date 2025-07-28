@@ -8,7 +8,8 @@ import actions from "~/src/api/common/helpers/seed-data/action-data.js"
  * @returns {number[]} payment amounts
  */
 export function calculatePaymentAmounts(amountInPence, frequencyConfig) {
-  const { totalPayments } = frequencyConfig
+  const { years, frequencyInMonths } = frequencyConfig
+  const totalPayments = calculateTotalPayments(years, frequencyInMonths)
 
   const remainder = amountInPence % totalPayments
   const paymentAmount = (amountInPence - remainder) / totalPayments
@@ -19,6 +20,11 @@ export function calculatePaymentAmounts(amountInPence, frequencyConfig) {
 
     return paymentAmount
   })
+}
+
+function calculateTotalPayments(years, frequencyInMonths) {
+  const months = 12 * years
+  return months/frequencyInMonths
 }
 
 /**
