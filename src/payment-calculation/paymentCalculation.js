@@ -1,5 +1,4 @@
-import actions from "~/src/api/common/helpers/seed-data/action-data.js"
-
+import actions from '~/src/api/common/helpers/seed-data/action-data.js'
 
 /**
  *
@@ -24,31 +23,36 @@ export function calculatePaymentAmounts(amountInPence, frequencyConfig) {
 
 function calculateTotalPayments(years, frequencyInMonths) {
   const months = 12 * years
-  return months/frequencyInMonths
+  return months / frequencyInMonths
 }
 
 /**
- * 
- * @param {Action} action 
+ *
+ * @param {Action} action
  * @returns {number} action amount in pennies
  */
 export function calculateActionPayment(action) {
-  const {code, quantity} = action
+  const { code, quantity } = action
 
-  const actionData = actions.find(a => a.code === code)
+  const actionData = actions.find((a) => a.code === code)
   if (!actionData) {
     throw Error(`No action data found for code: ${code}`)
   }
 
-  const {payment: {ratePerAgreementPerYearGbp, ratePerUnitGbp}} = actionData
+  const {
+    payment: { ratePerAgreementPerYearGbp, ratePerUnitGbp }
+  } = actionData
 
-  const ratePerAgreementPerYearGbpPennies = Math.round(ratePerAgreementPerYearGbp * 100);
-  const ratePerUnitGbpPennies = Math.round(ratePerUnitGbp * 100);
+  const ratePerAgreementPerYearGbpPennies = Math.round(
+    ratePerAgreementPerYearGbp * 100
+  )
+  const ratePerUnitGbpPennies = Math.round(ratePerUnitGbp * 100)
 
-  return (ratePerAgreementPerYearGbpPennies || 0) + (ratePerUnitGbpPennies * quantity)
+  return (
+    (ratePerAgreementPerYearGbpPennies || 0) + ratePerUnitGbpPennies * quantity
+  )
 }
 
-
 /**
- * @import { Action } from '../payment.d.js'
+ * @import { Action } from '../api/payment/payment.d.js'
  */
