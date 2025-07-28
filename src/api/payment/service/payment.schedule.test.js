@@ -13,23 +13,55 @@ describe('calculatePaymentSchedule', () => {
     const dates = calculatePaymentSchedule(27200)
 
     expect(dates.agreementStartDate).toEqual(new Date(2025, 7, 1))
-    expect(dates.agreementEndDate).toEqual(new Date(2026, 7, 6))
+    expect(dates.agreementEndDate).toEqual(new Date(2028, 7, 7))
     expect(dates.payments).toEqual([
       {
-        paymentDate: new Date(2025, 10, 6),
-        amountInPence: 6800
+        paymentDate: new Date(2025, 10, 5),
+        amountInPence: 2274
       },
       {
-        paymentDate: new Date(2026, 1, 6),
-        amountInPence: 6800
+        paymentDate: new Date(2026, 1, 5),
+        amountInPence: 2266
       },
       {
-        paymentDate: new Date(2026, 4, 6),
-        amountInPence: 6800
+        paymentDate: new Date(2026, 4, 5),
+        amountInPence: 2266
       },
       {
-        paymentDate: new Date(2026, 7, 6),
-        amountInPence: 6800
+        paymentDate: new Date(2026, 7, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2026, 10, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2027, 1, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2027, 4, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2027, 7, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2027, 10, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2028, 1, 7),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2028, 4, 5),
+        amountInPence: 2266
+      },
+      {
+        paymentDate: new Date(2028, 7, 7),
+        amountInPence: 2266
       }
     ])
   })
@@ -40,23 +72,55 @@ describe('calculatePaymentSchedule', () => {
     const dates = calculatePaymentSchedule(27233)
 
     expect(dates.agreementStartDate).toEqual(new Date(2025, 8, 1))
-    expect(dates.agreementEndDate).toEqual(new Date(2026, 8, 7))
+    expect(dates.agreementEndDate).toEqual(new Date(2028, 8, 5))
     expect(dates.payments).toEqual([
       {
-        paymentDate: new Date(2025, 11, 8),
-        amountInPence: 6809
+        paymentDate: new Date(2025, 11, 5),
+        amountInPence: 2274
       },
       {
-        paymentDate: new Date(2026, 2, 6),
-        amountInPence: 6808
+        paymentDate: new Date(2026, 2, 5),
+        amountInPence: 2269
       },
       {
-        paymentDate: new Date(2026, 5, 8),
-        amountInPence: 6808
+        paymentDate: new Date(2026, 5, 5),
+        amountInPence: 2269
       },
       {
         paymentDate: new Date(2026, 8, 7),
-        amountInPence: 6808
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2026, 11, 7),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2027, 2, 5),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2027, 5, 7),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2027, 8, 6),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2027, 11, 6),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2028, 2, 6),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2028, 5, 5),
+        amountInPence: 2269
+      },
+      {
+        paymentDate: new Date(2028, 8, 5),
+        amountInPence: 2269
       }
     ])
   })

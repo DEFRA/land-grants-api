@@ -2,21 +2,21 @@ import { calculatePaymentAmounts, calculateActionPayment } from "./payment.calcu
 
 describe('calculatePaymentAmounts', () => {
   test('returns even split', () => {
-    const res = calculatePaymentAmounts(100, { totalPayments: 4 })
+    const res = calculatePaymentAmounts(96, { years: 3, frequencyInMonths: 3 })
 
-    expect(res).toEqual([25, 25, 25, 25])
+    expect(res).toEqual([8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8])
   })
 
   test('amount not divisble by payments amount', () => {
-    const res = calculatePaymentAmounts(101, { totalPayments: 4 })
+    const res = calculatePaymentAmounts(101, { years: 3, frequencyInMonths: 3 })
 
-    expect(res).toEqual([26, 25, 25, 25])
+    expect(res).toEqual([13, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8])
   })
 
   test('large amount not divisble by payments amount', () => {
-    const res = calculatePaymentAmounts(27203, { totalPayments: 4 })
+    const res = calculatePaymentAmounts(27203, { years: 3, frequencyInMonths: 3 })
 
-    expect(res).toEqual([6803, 6800, 6800, 6800])
+    expect(res).toEqual([2277, 2266, 2266, 2266, 2266, 2266, 2266, 2266, 2266, 2266, 2266, 2266])
   })
 })
 
