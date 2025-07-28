@@ -1,25 +1,23 @@
+import { calculateActionPayment } from "./payment.calculation.js"
+import { calculatePaymentSchedule } from "./payment.schedule.js"
 /**
  * calculate payment amount for given land actions data
  * @returns {object} The land actions payment amount
- * @param {object} landActions - The land actions
+ * @param {LandAction[]} landActions - The land actions
  * @param {object} logger - Logger instance
  */
 function calculatePayment(landActions, logger) {
-  // mock error condition, replace with actual error condition
-  if (
-    !landActions ||
-    landActions?.length === 0 ||
-    landActions[0]?.sheetId === ''
-  ) {
-    logger.error('Unable to calculate payment')
-    return null
-  }
+  // get actions date for each action
+  
+  const actionTotals = landActions.actions.map(calculateActionPayment)
+  const paymentSchedule = calculatePaymentSchedule(actionTotals)
 
-  return {
-    payment: {
-      total: 100.98
-    }
-  }
+  return paymentSchedule
 }
 
 export { calculatePayment }
+
+
+/**
+ * @import { LandAction } from '../payment.d.js'
+ */
