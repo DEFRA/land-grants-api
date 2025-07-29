@@ -1,10 +1,7 @@
 const gbpToPence = (gbp = 0) => gbp * 100
 
-const findActionByCode = (actions, code) => {
+const findActionByCode = (actions = [], code) => {
   const action = actions.find((a) => a.code === code)
-  if (!action) {
-    throw new Error(`Action with code '${code}' not found`)
-  }
   return action
 }
 
@@ -100,19 +97,21 @@ export const calculateScheduledPayments = (
 }
 
 const createParcelPaymentItem = (action, actionData, parcel) => ({
-  code: actionData.code,
-  description: actionData.description,
-  unit: actionData.applicationUnitOfMeasurement,
+  code: actionData?.code,
+  description: actionData?.description,
+  unit: actionData?.applicationUnitOfMeasurement,
   quantity: action.quantity,
-  rateInPence: gbpToPence(actionData.payment.ratePerUnitGbp),
+  rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
+  annualPaymentPence:
+    gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity,
   sheetId: parcel.sheetId,
   parcelId: parcel.parcelId
 })
 
 const createAgreementPaymentItem = (actionData) => ({
-  code: actionData.code,
-  description: actionData.description,
-  annualPaymentPence: gbpToPence(actionData.payment.ratePerAgreementPerYearGbp)
+  code: actionData?.code,
+  description: actionData?.description,
+  annualPaymentPence: gbpToPence(actionData?.payment.ratePerAgreementPerYearGbp)
 })
 
 export const createPaymentItems = (parcels, actions) => {
@@ -134,7 +133,7 @@ export const createPaymentItems = (parcels, actions) => {
         index
       )
 
-      if (actionData.payment.ratePerAgreementPerYearGbp) {
+      if (actionData?.payment.ratePerAgreementPerYearGbp) {
         const hasAgreementItemBeenAdded = Object.values(
           paymentItems.agreementItems
         ).find((item) => item.code === action.code)
