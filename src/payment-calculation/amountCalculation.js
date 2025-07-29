@@ -43,7 +43,7 @@ const calculatePaymentForParcel = (parcelActions, actions) => {
   }
 }
 
-export const calculatePayments = (parcels, actions) => {
+export const calculateTotalPayments = (parcels, actions) => {
   let agreementTotalPence = 0
   let annualTotalPence = 0
 
@@ -60,13 +60,51 @@ export const calculatePayments = (parcels, actions) => {
   }
 }
 
+export const calculateScheduledPayments = (
+  parcelItems,
+  agreementLevelItems,
+  schedule
+) => {
+  const scheduleLength = schedule.length
+  const scheduledPayments = schedule.map((date) => {
+    const lineItems = []
+    let totalPaymentPence = 0
+
+    Object.entries(parcelItems).forEach(([id, parcelItem]) => {
+      const paymentPence =
+        (parcelItem.quantity * parcelItem.rateInPence) / scheduleLength
+      lineItems.push({
+        parcelItemId: Number(id),
+        paymentPence
+      })
+      totalPaymentPence += paymentPence
+    })
+
+    Object.entries(agreementLevelItems).forEach(([id, agreementItem]) => {
+      const paymentPence = agreementItem.annualPaymentPence / scheduleLength
+      lineItems.push({
+        agreementLevelItemId: Number(id),
+        paymentPence
+      })
+      totalPaymentPence += paymentPence
+    })
+
+    return {
+      totalPaymentPence,
+      paymentDate: date,
+      lineItems
+    }
+  })
+
+  return scheduledPayments
+}
+
 const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData.code,
   description: actionData.description,
   unit: actionData.applicationUnitOfMeasurement,
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData.payment.ratePerUnitGbp),
-  annualPaymentPence: gbpToPence(actionData.payment.ratePerAgreementPerYearGbp),
   sheetId: parcel.sheetId,
   parcelId: parcel.parcelId
 })
@@ -97,8 +135,13 @@ export const createPaymentItems = (parcels, actions) => {
       )
 
       if (actionData.payment.ratePerAgreementPerYearGbp) {
-        paymentItems.agreementItems[parcelKey] =
-          createAgreementPaymentItem(actionData)
+        const hasAgreementItemBeenAdded = Object.values(
+          paymentItems.agreementItems
+        ).find((item) => item.code === action.code)
+
+        if (!hasAgreementItemBeenAdded)
+          paymentItems.agreementItems[parcelKey] =
+            createAgreementPaymentItem(actionData)
       }
     }
   })
