@@ -1,19 +1,40 @@
+const gbpToPence = (gbp = 0) => gbp * 100
+
+const findActionByCode = (actions, code) => {
+  const action = actions.find((a) => a.code === code)
+  if (!action) {
+    throw new Error(`Action with code '${code}' not found`)
+  }
+  return action
+}
+
+const calculatePaymentForAction = (action, actionData) => {
+  const { durationYears, payment } = actionData
+  const { ratePerUnitGbp = 0, ratePerAgreementPerYearGbp = 0 } = payment
+
+  const unitPaymentPence = gbpToPence(ratePerUnitGbp) * action.quantity
+  const agreementPaymentPence = gbpToPence(ratePerAgreementPerYearGbp)
+  const annualTotalPence = unitPaymentPence + agreementPaymentPence
+
+  return {
+    annualTotalPence,
+    totalPence: durationYears * annualTotalPence
+  }
+}
+
 const calculatePaymentForParcel = (parcelActions, actions) => {
   let parcelTotalPence = 0
   let parcelAnnualTotalPence = 0
 
   for (const action of parcelActions) {
-    const actionData = actions.find((a) => a.code === action.code)
+    const actionData = findActionByCode(actions, action.code)
+    const { annualTotalPence, totalPence } = calculatePaymentForAction(
+      action,
+      actionData
+    )
 
-    const {
-      durationYears,
-      payment: { ratePerUnitGbp = 0, ratePerAgreementPerYearGbp = 0 }
-    } = actionData
-
-    const actionAnnualTotalPence =
-      ratePerUnitGbp * 100 * action.quantity + ratePerAgreementPerYearGbp * 100
-    parcelTotalPence += durationYears * actionAnnualTotalPence
-    parcelAnnualTotalPence += actionAnnualTotalPence
+    parcelTotalPence += totalPence
+    parcelAnnualTotalPence += annualTotalPence
   }
 
   return {
@@ -39,36 +60,48 @@ export const calculatePayments = (parcels, actions) => {
   }
 }
 
+const createParcelPaymentItem = (action, actionData, parcel) => ({
+  code: actionData.code,
+  description: actionData.description,
+  unit: actionData.applicationUnitOfMeasurement,
+  quantity: action.quantity,
+  rateInPence: gbpToPence(actionData.payment.ratePerUnitGbp),
+  annualPaymentPence: gbpToPence(actionData.payment.ratePerAgreementPerYearGbp),
+  sheetId: parcel.sheetId,
+  parcelId: parcel.parcelId
+})
+
+const createAgreementPaymentItem = (actionData) => ({
+  code: actionData.code,
+  description: actionData.description,
+  annualPaymentPence: gbpToPence(actionData.payment.ratePerAgreementPerYearGbp)
+})
+
 export const createPaymentItems = (parcels, actions) => {
   const paymentItems = {
     parcelItems: {},
     agreementItems: {}
   }
 
-  for (let i = 0; i < parcels.length; i++) {
-    for (const action of parcels[i].actions) {
-      const actionData = actions.find((a) => a.code === action.code)
+  parcels.forEach((parcel, index) => {
+    const parcelKey = index + 1
 
-      paymentItems.parcelItems[i + 1] = {
-        code: actionData.code,
-        description: actionData.description,
-        unit: actionData.applicationUnitOfMeasurement,
-        quantity: action.quantity,
-        rateInPence: actionData.payment.ratePerUnitGbp * 100,
-        annualPaymentPence: actionData.payment.ratePerAgreementPerYearGbp * 100,
-        sheetId: parcels[i].sheetId,
-        parcelId: parcels[i].parcelId
-      }
+    for (const action of parcel.actions) {
+      const actionData = findActionByCode(actions, action.code)
+
+      paymentItems.parcelItems[parcelKey] = createParcelPaymentItem(
+        action,
+        actionData,
+        parcel,
+        index
+      )
 
       if (actionData.payment.ratePerAgreementPerYearGbp) {
-        paymentItems.agreementItems[i + 1] = {
-          code: actionData.code,
-          description: actionData.description,
-          annualPaymentPence:
-            actionData.payment.ratePerAgreementPerYearGbp * 100
-        }
+        paymentItems.agreementItems[parcelKey] =
+          createAgreementPaymentItem(actionData)
       }
     }
-  }
+  })
+
   return paymentItems
 }
