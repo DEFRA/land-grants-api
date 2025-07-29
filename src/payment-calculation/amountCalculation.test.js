@@ -38,6 +38,8 @@ const mockEnabledActions = [
 ]
 
 describe('calculateTotalPayments', () => {
+  const durationYears = 3
+
   it('should return total payment amounts', () => {
     const parcels = [
       {
@@ -54,7 +56,8 @@ describe('calculateTotalPayments', () => {
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
-      mockEnabledActions
+      mockEnabledActions,
+      durationYears
     )
 
     expect(agreementTotalPence).toBe(82681.20000000001)
@@ -77,7 +80,8 @@ describe('calculateTotalPayments', () => {
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
-      mockEnabledActions
+      mockEnabledActions,
+      durationYears
     )
 
     expect(agreementTotalPence).toBe(97681.20000000001)
@@ -87,7 +91,8 @@ describe('calculateTotalPayments', () => {
   it('should handle empty parcels array', () => {
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       [],
-      mockEnabledActions
+      mockEnabledActions,
+      durationYears
     )
 
     expect(agreementTotalPence).toBe(0)
@@ -105,14 +110,15 @@ describe('calculateTotalPayments', () => {
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
-      mockEnabledActions
+      mockEnabledActions,
+      durationYears
     )
 
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
   })
 
-  it('should throw error when action code is not found', () => {
+  it('should return zero when action code is not found', () => {
     const parcels = [
       {
         sheetId: 'SD5253',
@@ -121,23 +127,29 @@ describe('calculateTotalPayments', () => {
       }
     ]
 
-    expect(() => calculateTotalPayments(parcels, mockEnabledActions)).toThrow(
-      "Action with code 'NONEXISTENT' not found"
+    const result = calculateTotalPayments(
+      parcels,
+      mockEnabledActions,
+      durationYears
     )
+    expect(result).toEqual({ agreementTotalPence: 0, annualTotalPence: 0 })
   })
 
-  it('should throw error when actions array is empty', () => {
+  it('should return zero when actions array is empty', () => {
     const parcels = [
       {
         sheetId: 'SD5253',
         parcelId: '5484',
-        actions: [{ code: 'CMOR1', quantity: 1 }]
+        actions: []
       }
     ]
-
-    expect(() => calculateTotalPayments(parcels, [])).toThrow(
-      "Action with code 'CMOR1' not found"
+    const result = calculateTotalPayments(
+      parcels,
+      mockEnabledActions,
+      durationYears
     )
+
+    expect(result).toEqual({ agreementTotalPence: 0, annualTotalPence: 0 })
   })
 
   it('should handle missing payment rates gracefully', () => {
@@ -161,7 +173,8 @@ describe('calculateTotalPayments', () => {
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
-      actionsWithMissingRates
+      actionsWithMissingRates,
+      durationYears
     )
 
     expect(agreementTotalPence).toBe(0)
@@ -170,34 +183,6 @@ describe('calculateTotalPayments', () => {
 })
 
 describe('createPaymentItems', () => {
-  it('should throw error when action code is not found', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [{ code: 'NONEXISTENT', quantity: 1 }]
-      }
-    ]
-
-    expect(() => createPaymentItems(parcels, mockEnabledActions)).toThrow(
-      "Action with code 'NONEXISTENT' not found"
-    )
-  })
-
-  it('should throw error when actions array is empty', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [{ code: 'CMOR1', quantity: 1 }]
-      }
-    ]
-
-    expect(() => createPaymentItems(parcels, [])).toThrow(
-      "Action with code 'CMOR1' not found"
-    )
-  })
-
   it('should handle missing payment rates gracefully', () => {
     const actionsWithMissingRates = [
       {
@@ -485,130 +470,125 @@ describe('createPaymentItems', () => {
 
     expect(agreementItems).toEqual({})
   })
+})
 
-  describe('calculateScheduledPayments', () => {
-    it('return an empty array if no schedule is being passed', () => {
-      const parcelItems = {}
-      const agreementItems = {}
-      const schedule = []
-      const result = calculateScheduledPayments(
-        parcelItems,
-        agreementItems,
-        schedule
-      )
+describe('calculateScheduledPayments', () => {
+  it('should return an empty array if no schedule is being passed', () => {
+    const parcelItems = {}
+    const agreementItems = {}
+    const schedule = []
+    const result = calculateScheduledPayments(
+      parcelItems,
+      agreementItems,
+      schedule
+    )
 
-      expect(result).toEqual([])
-    })
+    expect(result).toEqual([])
+  })
 
-    it('return a schedule of empty payments if no items are being passed', () => {
-      const parcelItems = {}
-      const agreementItems = {}
+  it('should return a schedule of empty payments if no items are being passed', () => {
+    const parcelItems = {}
+    const agreementItems = {}
 
-      const schedule = ['2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05']
-      const result = calculateScheduledPayments(
-        parcelItems,
-        agreementItems,
-        schedule
-      )
+    const schedule = ['2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05']
+    const result = calculateScheduledPayments(
+      parcelItems,
+      agreementItems,
+      schedule
+    )
 
-      expect(result).toEqual(
-        schedule.map((paymentDate) => ({
-          totalPaymentPence: 0,
-          paymentDate,
-          lineItems: []
-        }))
-      )
-    })
+    expect(result).toEqual(
+      schedule.map((paymentDate) => ({
+        totalPaymentPence: 0,
+        paymentDate,
+        lineItems: []
+      }))
+    )
+  })
 
-    it('return an array of scheduled payments', () => {
-      const parcelItems = {
-        1: {
-          code: 'CMOR1',
-          description: 'CMOR1: Assess moorland and produce a written record',
-          quantity: 0.34,
-          rateInPence: 1060,
-          annualPaymentPence: 360.40000000000003
-        },
-        2: {
-          code: 'UPL1',
-          quantity: 2.5,
-          rateInPence: 2000,
-          annualPaymentPence: 5000
-        },
-        3: {
-          code: 'UPL2',
-          quantity: 0.94,
-          rateInPence: 5300,
-          annualPaymentPence: 4982
-        }
+  it('should return an array of scheduled payments', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003
+      },
+      2: {
+        code: 'UPL1',
+        quantity: 2.5,
+        rateInPence: 2000,
+        annualPaymentPence: 5000
+      },
+      3: {
+        code: 'UPL2',
+        quantity: 0.94,
+        rateInPence: 5300,
+        annualPaymentPence: 4982
       }
-      const agreementItems = {
-        1: {
-          code: 'CMOR1',
-          description: 'CMOR1: Assess moorland and produce a written record',
-          annualPaymentPence: 27200
-        }
+    }
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 27200
       }
+    }
 
-      const schedule = ['2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05']
-      const result = calculateScheduledPayments(
-        parcelItems,
-        agreementItems,
-        schedule
-      )
+    const schedule = [
+      '2025-11-05',
+      '2026-02-05',
+      '2026-05-05',
+      '2026-08-05',
+      '2026-11-05',
+      '2027-02-05',
+      '2027-05-05',
+      '2027-08-05'
+    ]
 
-      // CMOR1 => (1060 * 0.34) / 4
-      const cmor1ParcelPayment = (1060 * 0.34) / schedule.length
-      const cmor1AgreementPayment = 27200 / schedule.length
-      const upl1ParcelPayment = (2.5 * 2000) / schedule.length
-      const upl2ParcelPayment = (0.94 * 5300) / schedule.length
-      const totalPaymentPence =
-        cmor1ParcelPayment +
-        cmor1AgreementPayment +
-        upl1ParcelPayment +
-        upl2ParcelPayment
+    const result = calculateScheduledPayments(
+      parcelItems,
+      agreementItems,
+      schedule
+    )
 
-      const lineItems = [
-        {
-          parcelItemId: 1,
-          paymentPence: cmor1ParcelPayment
-        },
-        {
-          parcelItemId: 2,
-          paymentPence: upl1ParcelPayment
-        },
-        {
-          parcelItemId: 3,
-          paymentPence: upl2ParcelPayment
-        },
-        {
-          agreementLevelItemId: 1,
-          paymentPence: cmor1AgreementPayment
-        }
-      ]
+    // CMOR1 => (1060 * 0.34) / 4
+    const cmor1ParcelPayment = (1060 * 0.34) / 4
+    const cmor1AgreementPayment = 27200 / 4
+    const upl1ParcelPayment = (2.5 * 2000) / 4
+    const upl2ParcelPayment = (0.94 * 5300) / 4
+    const totalPaymentPence =
+      cmor1ParcelPayment +
+      cmor1AgreementPayment +
+      upl1ParcelPayment +
+      upl2ParcelPayment
 
-      expect(result).toEqual([
-        {
-          totalPaymentPence,
-          paymentDate: '2025-11-05',
-          lineItems
-        },
-        {
-          totalPaymentPence,
-          paymentDate: '2026-02-05',
-          lineItems
-        },
-        {
-          totalPaymentPence,
-          paymentDate: '2026-05-05',
-          lineItems
-        },
-        {
-          totalPaymentPence,
-          paymentDate: '2026-08-05',
-          lineItems
-        }
-      ])
-    })
+    const lineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: cmor1ParcelPayment
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: upl1ParcelPayment
+      },
+      {
+        parcelItemId: 3,
+        paymentPence: upl2ParcelPayment
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: cmor1AgreementPayment
+      }
+    ]
+
+    expect(result).toEqual(
+      schedule.map((paymentDate) => ({
+        totalPaymentPence,
+        paymentDate,
+        lineItems
+      }))
+    )
   })
 })

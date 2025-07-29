@@ -1,10 +1,17 @@
 import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import {
+  calculateScheduledPayments,
   calculateTotalPayments,
   createPaymentItems
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
+/**
+ * Gets payment calculation data requirements
+ * @param {object} postgresDb
+ * @param {object} logger
+ * @returns {Promise<Array<Action>>}
+ */
 export const getPaymentCalculationDataRequirements = async (
   postgresDb,
   logger
@@ -13,22 +20,37 @@ export const getPaymentCalculationDataRequirements = async (
   return actions
 }
 
-export const getPaymentCalculationForParcels = (parcels, actions) => {
+/**
+ * Returns the payment calculation for an array of parcels
+ * @param {Array<PaymentParcel>} parcels
+ * @param {Array<Action>} actions
+ * @param {number} durationYears
+ * @returns
+ */
+export const getPaymentCalculationForParcels = (
+  parcels,
+  actions,
+  durationYears
+) => {
   const frequency = 'Quarterly'
-  const agreementLengthYears = 3
 
   if (!actions) return {}
 
   const { annualTotalPence, agreementTotalPence } = calculateTotalPayments(
     parcels,
-    actions
+    actions,
+    durationYears
   )
-  const { agreementStartDate, agreementEndDate } = generatePaymentSchedule(
-    new Date(),
-    agreementLengthYears
-  )
+  const { agreementStartDate, agreementEndDate, schedule } =
+    generatePaymentSchedule(new Date(), durationYears)
 
   const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
+
+  const payments = calculateScheduledPayments(
+    parcelItems,
+    agreementItems,
+    schedule
+  )
 
   return {
     agreementStartDate,
@@ -37,6 +59,12 @@ export const getPaymentCalculationForParcels = (parcels, actions) => {
     agreementTotalPence,
     annualTotalPence,
     parcelItems,
+    payments,
     agreementLevelItems: agreementItems
   }
 }
+
+/**
+ * @import { PaymentParcel } from './payment-calculation.d.js'
+ * @import { Action } from '../api/actions/action.d.js'
+ */

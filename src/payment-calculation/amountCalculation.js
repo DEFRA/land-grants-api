@@ -1,12 +1,29 @@
+import { differenceInMonths } from 'date-fns'
+
+/**
+ * Gbp to pence
+ * @param {number} gbp
+ * @returns {number}
+ */
 const gbpToPence = (gbp = 0) => gbp * 100
 
+/**
+ * Find an action by code
+ * @param {Array<Action>} actions
+ * @returns {Action | undefined}
+ */
 const findActionByCode = (actions = [], code) => {
   const action = actions.find((a) => a.code === code)
   return action
 }
 
-const calculatePaymentForAction = (action, actionData) => {
-  const { durationYears, payment } = actionData
+/**
+ * Calculates annual and total payments in pence for a given action
+ * @param {PaymentParcelAction} action
+ * @returns {{annualTotalPence: number, totalPence: number}}
+ */
+const calculateTotalPaymentForAction = (action, actionData = {}) => {
+  const { durationYears = 0, payment = {} } = actionData
   const { ratePerUnitGbp = 0, ratePerAgreementPerYearGbp = 0 } = payment
 
   const unitPaymentPence = gbpToPence(ratePerUnitGbp) * action.quantity
@@ -19,13 +36,18 @@ const calculatePaymentForAction = (action, actionData) => {
   }
 }
 
-const calculatePaymentForParcel = (parcelActions, actions) => {
+/**
+ * Calculates annual and total payments in pence for a given parcel
+ * @param {Array<PaymentParcelAction>} parcelActions
+ * @returns {{parcelAnnualTotalPence: number, parcelTotalPence: number}}
+ */
+const calculateTotalPaymentForParcel = (parcelActions, actions) => {
   let parcelTotalPence = 0
   let parcelAnnualTotalPence = 0
 
   for (const action of parcelActions) {
     const actionData = findActionByCode(actions, action.code)
-    const { annualTotalPence, totalPence } = calculatePaymentForAction(
+    const { annualTotalPence, totalPence } = calculateTotalPaymentForAction(
       action,
       actionData
     )
@@ -40,36 +62,60 @@ const calculatePaymentForParcel = (parcelActions, actions) => {
   }
 }
 
-export const calculateTotalPayments = (parcels, actions) => {
-  let agreementTotalPence = 0
+/**
+ * Calculates annual and total payments in pence for all parcels of an application
+ * @param {Array<PaymentParcel>} parcels
+ * @param {Array<Action>} actions
+ * @param {number} durationYears
+ * @returns {{annualTotalPence: number, agreementTotalPence: number}}
+ */
+export const calculateTotalPayments = (parcels, actions, durationYears) => {
   let annualTotalPence = 0
 
   for (const parcel of parcels) {
-    const { parcelTotalPence, parcelAnnualTotalPence } =
-      calculatePaymentForParcel(parcel.actions, actions)
-    agreementTotalPence += parcelTotalPence
+    const { parcelAnnualTotalPence } = calculateTotalPaymentForParcel(
+      parcel.actions,
+      actions
+    )
     annualTotalPence += parcelAnnualTotalPence
   }
 
   return {
     annualTotalPence,
-    agreementTotalPence
+    agreementTotalPence: annualTotalPence * durationYears
   }
 }
 
+/**
+ * Calculate payments per year based on month intervals
+ * @param {Array<string>} schedule
+ * @returns {number}
+ */
+const calculatePaymentsPerYear = (schedule) => {
+  if (schedule.length < 2) return schedule.length
+  const monthDiff = differenceInMonths(schedule[1], schedule[0])
+  return 12 / monthDiff
+}
+
+/**
+ * Calculates scheduled payments information for all parcels items and agreement level items
+ * @param {Array<PaymentParcelItem>} parcelItems
+ * @param {Array<PaymentAgreementItem>} agreementLevelItems
+ * @param {Array<string>} schedule
+ * @returns {Array<ScheduledPayment>}
+ */
 export const calculateScheduledPayments = (
   parcelItems,
   agreementLevelItems,
   schedule
 ) => {
-  const scheduleLength = schedule.length
-  const scheduledPayments = schedule.map((date) => {
+  const paymentsPerYear = calculatePaymentsPerYear(schedule)
+  const scheduledPayments = schedule.map((paymentDate) => {
     const lineItems = []
     let totalPaymentPence = 0
 
     Object.entries(parcelItems).forEach(([id, parcelItem]) => {
-      const paymentPence =
-        (parcelItem.quantity * parcelItem.rateInPence) / scheduleLength
+      const paymentPence = parcelItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         parcelItemId: Number(id),
         paymentPence
@@ -78,7 +124,7 @@ export const calculateScheduledPayments = (
     })
 
     Object.entries(agreementLevelItems).forEach(([id, agreementItem]) => {
-      const paymentPence = agreementItem.annualPaymentPence / scheduleLength
+      const paymentPence = agreementItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         agreementLevelItemId: Number(id),
         paymentPence
@@ -88,7 +134,7 @@ export const calculateScheduledPayments = (
 
     return {
       totalPaymentPence,
-      paymentDate: date,
+      paymentDate,
       lineItems
     }
   })
@@ -96,10 +142,17 @@ export const calculateScheduledPayments = (
   return scheduledPayments
 }
 
+/**
+ * Creates a parcel payment item to be included on the response payload
+ * @param {PaymentParcelAction} action
+ * @param {Action | undefined} actionData
+ * @param {PaymentParcel} parcel
+ * @returns {PaymentParcelItem}
+ */
 const createParcelPaymentItem = (action, actionData, parcel) => ({
-  code: actionData?.code,
-  description: actionData?.description,
-  unit: actionData?.applicationUnitOfMeasurement,
+  code: actionData?.code ?? '',
+  description: actionData?.description ?? '',
+  unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
   annualPaymentPence:
@@ -108,12 +161,23 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
   parcelId: parcel.parcelId
 })
 
+/**
+ * Creates an agreement level  payment item to be included on the response payload
+ * @param {Action} actionData
+ * @returns {PaymentAgreementItem}
+ */
 const createAgreementPaymentItem = (actionData) => ({
   code: actionData?.code,
   description: actionData?.description,
   annualPaymentPence: gbpToPence(actionData?.payment.ratePerAgreementPerYearGbp)
 })
 
+/**
+ * Creates parcel and agreement items to be included on the response payload
+ * @param {Array<PaymentParcel>} parcels
+ * @param {Array<Action>} actions
+ * @returns {{parcelItems: object, agreementItems: object}}
+ */
 export const createPaymentItems = (parcels, actions) => {
   const paymentItems = {
     parcelItems: {},
@@ -129,8 +193,7 @@ export const createPaymentItems = (parcels, actions) => {
       paymentItems.parcelItems[parcelKey] = createParcelPaymentItem(
         action,
         actionData,
-        parcel,
-        index
+        parcel
       )
 
       if (actionData?.payment.ratePerAgreementPerYearGbp) {
@@ -147,3 +210,8 @@ export const createPaymentItems = (parcels, actions) => {
 
   return paymentItems
 }
+
+/**
+ * @import { PaymentParcel, ScheduledPayment, PaymentParcelAction, PaymentParcelItem, PaymentAgreementItem } from './payment-calculation.d.js'
+ * @import { Action } from '../api/actions/action.d.js'
+ */
