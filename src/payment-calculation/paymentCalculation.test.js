@@ -55,6 +55,7 @@ describe('getPaymentCalculationForParcels', () => {
 
   it('should return a valid payload for valid parcel data', () => {
     jest.useFakeTimers().setSystemTime(new Date(2025, 6, 2))
+    const durationYears = 1
 
     const parcels = [
       {
@@ -79,12 +80,29 @@ describe('getPaymentCalculationForParcels', () => {
       }
     ]
 
+    const lineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 90.10000000000001
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 217.5
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: 6800
+      },
+      {
+        agreementLevelItemId: 2,
+        paymentPence: 2425
+      }
+    ]
     const expectedResponse = {
       agreementStartDate: '2025-08-01',
-      agreementEndDate: '2028-08-01',
-
+      agreementEndDate: '2026-08-01',
       frequency: 'Quarterly',
-      agreementTotalPence: 114391.20000000001,
+      agreementTotalPence: 38130.4,
       annualTotalPence: 38130.4, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
 
       parcelItems: {
@@ -122,13 +140,35 @@ describe('getPaymentCalculationForParcels', () => {
             'Assess soil, test soil organic matter and produce a soil management plan',
           annualPaymentPence: 9700
         }
-      }
-      // payments: []
+      },
+      payments: [
+        {
+          lineItems,
+          paymentDate: '2025-11-05',
+          totalPaymentPence: 9532.6
+        },
+        {
+          lineItems,
+          paymentDate: '2026-02-05',
+          totalPaymentPence: 9532.6
+        },
+        {
+          lineItems,
+          paymentDate: '2026-05-05',
+          totalPaymentPence: 9532.6
+        },
+        {
+          lineItems,
+          paymentDate: '2026-08-05',
+          totalPaymentPence: 9532.6
+        }
+      ]
     }
 
     const response = getPaymentCalculationForParcels(
       parcels,
-      mockEnabledActions
+      mockEnabledActions,
+      durationYears
     )
 
     expect(response).toEqual(expectedResponse)
