@@ -1,4 +1,8 @@
-import { calculatePayments, createPaymentItems } from './amountCalculation.js'
+import {
+  calculateScheduledPayments,
+  calculateTotalPayments,
+  createPaymentItems
+} from './amountCalculation.js'
 
 const mockEnabledActions = [
   {
@@ -33,7 +37,7 @@ const mockEnabledActions = [
   }
 ]
 
-describe('calculatePayments', () => {
+describe('calculateTotalPayments', () => {
   it('should return total payment amounts', () => {
     const parcels = [
       {
@@ -48,7 +52,7 @@ describe('calculatePayments', () => {
       }
     ]
 
-    const { agreementTotalPence, annualTotalPence } = calculatePayments(
+    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
       mockEnabledActions
     )
@@ -71,17 +75,17 @@ describe('calculatePayments', () => {
       }
     ]
 
-    const { agreementTotalPence, annualTotalPence } = calculatePayments(
+    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
       mockEnabledActions
     )
 
     expect(agreementTotalPence).toBe(97681.20000000001)
-    expect(annualTotalPence).toBe(32560.4) // 0.34 * 1060 + 27200 + 2.5 * 2000
+    expect(annualTotalPence).toBe(32560.4) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
   })
 
   it('should handle empty parcels array', () => {
-    const { agreementTotalPence, annualTotalPence } = calculatePayments(
+    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       [],
       mockEnabledActions
     )
@@ -99,7 +103,7 @@ describe('calculatePayments', () => {
       }
     ]
 
-    const { agreementTotalPence, annualTotalPence } = calculatePayments(
+    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
       mockEnabledActions
     )
@@ -117,7 +121,7 @@ describe('calculatePayments', () => {
       }
     ]
 
-    expect(() => calculatePayments(parcels, mockEnabledActions)).toThrow(
+    expect(() => calculateTotalPayments(parcels, mockEnabledActions)).toThrow(
       "Action with code 'NONEXISTENT' not found"
     )
   })
@@ -131,7 +135,7 @@ describe('calculatePayments', () => {
       }
     ]
 
-    expect(() => calculatePayments(parcels, [])).toThrow(
+    expect(() => calculateTotalPayments(parcels, [])).toThrow(
       "Action with code 'CMOR1' not found"
     )
   })
@@ -155,7 +159,7 @@ describe('calculatePayments', () => {
       }
     ]
 
-    const { agreementTotalPence, annualTotalPence } = calculatePayments(
+    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
       parcels,
       actionsWithMissingRates
     )
@@ -218,8 +222,17 @@ describe('createPaymentItems', () => {
       actionsWithMissingRates
     )
 
-    expect(parcelItems[1].rateInPence).toBe(0)
-    expect(parcelItems[1].annualPaymentPence).toBe(0)
+    expect(parcelItems).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'Test action',
+        parcelId: '5484',
+        quantity: 0.34,
+        rateInPence: 0,
+        sheetId: 'SD5253',
+        unit: 'ha'
+      }
+    })
     expect(agreementItems).toEqual({})
   })
 
@@ -274,7 +287,6 @@ describe('createPaymentItems', () => {
         unit: 'ha',
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 27200,
         sheetId: 'SD5253',
         parcelId: '5484'
       }
@@ -286,6 +298,89 @@ describe('createPaymentItems', () => {
       {
         sheetId: 'SD5253',
         parcelId: '5484',
+        actions: [
+          {
+            code: 'CMOR1',
+            quantity: 0.34
+          }
+        ]
+      }
+    ]
+
+    const { agreementItems } = createPaymentItems(parcels, mockEnabledActions)
+
+    expect(agreementItems).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 27200
+      }
+    })
+  })
+
+  it('should return a list of parcel items with payment info for different parcel ids', () => {
+    const parcels = [
+      {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [
+          {
+            code: 'CMOR1',
+            quantity: 0.34
+          }
+        ]
+      },
+      {
+        sheetId: 'SD5444',
+        parcelId: '1234',
+        actions: [
+          {
+            code: 'CMOR1',
+            quantity: 0.99
+          }
+        ]
+      }
+    ]
+
+    const { parcelItems } = createPaymentItems(parcels, mockEnabledActions)
+
+    expect(parcelItems).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        unit: 'ha',
+        quantity: 0.34,
+        rateInPence: 1060,
+        sheetId: 'SD5253',
+        parcelId: '5484'
+      },
+      2: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        unit: 'ha',
+        quantity: 0.99,
+        rateInPence: 1060,
+        sheetId: 'SD5444',
+        parcelId: '1234'
+      }
+    })
+  })
+
+  it('should return a single agreement items per action with payment info', () => {
+    const parcels = [
+      {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [
+          {
+            code: 'CMOR1',
+            quantity: 0.34
+          }
+        ]
+      },
+      {
+        sheetId: 'SD5111',
+        parcelId: '2222',
         actions: [
           {
             code: 'CMOR1',
@@ -327,7 +422,6 @@ describe('createPaymentItems', () => {
 
     expect(parcelItems).toEqual({
       1: {
-        annualPaymentPence: 27200,
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
@@ -337,7 +431,6 @@ describe('createPaymentItems', () => {
         unit: 'ha'
       },
       2: {
-        annualPaymentPence: 0,
         code: 'UPL1',
         description: 'UPL1: Moderate livestock grazing on moorland',
         parcelId: '5485',
@@ -373,7 +466,6 @@ describe('createPaymentItems', () => {
 
     expect(parcelItems).toEqual({
       1: {
-        annualPaymentPence: 0,
         code: 'UPL1',
         description: 'UPL1: Moderate livestock grazing on moorland',
         parcelId: '5485',
@@ -385,5 +477,128 @@ describe('createPaymentItems', () => {
     })
 
     expect(agreementItems).toEqual({})
+  })
+
+  describe('calculateScheduledPayments', () => {
+    it('return an empty array if no schedule is being passed', () => {
+      const parcelItems = {}
+      const agreementItems = {}
+      const schedule = []
+      const result = calculateScheduledPayments(
+        parcelItems,
+        agreementItems,
+        schedule
+      )
+
+      expect(result).toEqual([])
+    })
+
+    it('return a schedule of empty payments if no items are being passed', () => {
+      const parcelItems = {}
+      const agreementItems = {}
+
+      const schedule = ['2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05']
+      const result = calculateScheduledPayments(
+        parcelItems,
+        agreementItems,
+        schedule
+      )
+
+      expect(result).toEqual(
+        schedule.map((paymentDate) => ({
+          totalPaymentPence: 0,
+          paymentDate,
+          lineItems: []
+        }))
+      )
+    })
+
+    it('return an array of scheduled payments', () => {
+      const parcelItems = {
+        1: {
+          code: 'CMOR1',
+          description: 'CMOR1: Assess moorland and produce a written record',
+          quantity: 0.34,
+          rateInPence: 1060
+        },
+        2: {
+          code: 'UPL1',
+          quantity: 2.5,
+          rateInPence: 2000
+        },
+        3: {
+          code: 'UPL2',
+          quantity: 0.94,
+          rateInPence: 5300
+        }
+      }
+      const agreementItems = {
+        1: {
+          code: 'CMOR1',
+          description: 'CMOR1: Assess moorland and produce a written record',
+          annualPaymentPence: 27200
+        }
+      }
+
+      const schedule = ['2025-11-05', '2026-02-05', '2026-05-05', '2026-08-05']
+      const result = calculateScheduledPayments(
+        parcelItems,
+        agreementItems,
+        schedule
+      )
+
+      // CMOR1 => (1060 * 0.34) / 4
+      const cmor1ParcelPayment = (1060 * 0.34) / schedule.length
+      const cmor1AgreementPayment = 27200 / schedule.length
+      const upl1ParcelPayment = (2.5 * 2000) / schedule.length
+      const upl2ParcelPayment = (0.94 * 5300) / schedule.length
+      const totalPaymentPence =
+        cmor1ParcelPayment +
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+
+      const lineItems = [
+        {
+          parcelItemId: 1,
+          paymentPence: cmor1ParcelPayment
+        },
+        {
+          parcelItemId: 2,
+          paymentPence: upl1ParcelPayment
+        },
+        {
+          parcelItemId: 3,
+          paymentPence: upl2ParcelPayment
+        },
+        {
+          agreementLevelItemId: 1,
+          paymentPence: cmor1AgreementPayment
+        }
+      ]
+
+      expect(result).toEqual([
+        {
+          totalPaymentPence,
+          paymentDate: '2025-11-05',
+          lineItems
+        },
+        {
+          totalPaymentPence,
+          paymentDate: '2026-02-05',
+          lineItems
+        },
+        {
+          totalPaymentPence,
+          paymentDate: '2026-05-05',
+          lineItems
+        },
+        {
+          totalPaymentPence,
+          paymentDate: '2026-08-05',
+          lineItems
+        }
+      ])
+    })
   })
 })
