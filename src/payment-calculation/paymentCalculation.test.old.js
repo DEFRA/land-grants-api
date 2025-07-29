@@ -1,7 +1,7 @@
 import {
   calculateActionPayment,
   calculatePaymentAmounts
-} from './paymentCalculation.js'
+} from './paymentCalculation.old.js'
 
 describe('calculatePaymentAmounts', () => {
   test('returns even split', () => {

@@ -6,7 +6,7 @@ import {
   startOfMonth
 } from 'date-fns'
 
-import { calculatePaymentAmounts } from './paymentCalculation.js'
+import { calculatePaymentAmounts } from './paymentCalculation.old.js'
 
 /**
  * Payment rules
