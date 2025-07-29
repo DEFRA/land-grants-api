@@ -229,6 +229,7 @@ describe('createPaymentItems', () => {
         parcelId: '5484',
         quantity: 0.34,
         rateInPence: 0,
+        annualPaymentPence: 0,
         sheetId: 'SD5253',
         unit: 'ha'
       }
@@ -287,6 +288,7 @@ describe('createPaymentItems', () => {
         unit: 'ha',
         quantity: 0.34,
         rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003,
         sheetId: 'SD5253',
         parcelId: '5484'
       }
@@ -351,6 +353,7 @@ describe('createPaymentItems', () => {
         unit: 'ha',
         quantity: 0.34,
         rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003,
         sheetId: 'SD5253',
         parcelId: '5484'
       },
@@ -360,6 +363,7 @@ describe('createPaymentItems', () => {
         unit: 'ha',
         quantity: 0.99,
         rateInPence: 1060,
+        annualPaymentPence: 1049.4,
         sheetId: 'SD5444',
         parcelId: '1234'
       }
@@ -427,6 +431,7 @@ describe('createPaymentItems', () => {
         parcelId: '5484',
         quantity: 0.34,
         rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003,
         sheetId: 'SD5253',
         unit: 'ha'
       },
@@ -436,6 +441,7 @@ describe('createPaymentItems', () => {
         parcelId: '5485',
         quantity: 2.5,
         rateInPence: 2000,
+        annualPaymentPence: 5000,
         sheetId: 'SD5254',
         unit: 'ha'
       }
@@ -471,6 +477,7 @@ describe('createPaymentItems', () => {
         parcelId: '5485',
         quantity: 2.5,
         rateInPence: 2000,
+        annualPaymentPence: 5000,
         sheetId: 'SD5254',
         unit: 'ha'
       }
@@ -519,17 +526,20 @@ describe('createPaymentItems', () => {
           code: 'CMOR1',
           description: 'CMOR1: Assess moorland and produce a written record',
           quantity: 0.34,
-          rateInPence: 1060
+          rateInPence: 1060,
+          annualPaymentPence: 360.40000000000003
         },
         2: {
           code: 'UPL1',
           quantity: 2.5,
-          rateInPence: 2000
+          rateInPence: 2000,
+          annualPaymentPence: 5000
         },
         3: {
           code: 'UPL2',
           quantity: 0.94,
-          rateInPence: 5300
+          rateInPence: 5300,
+          annualPaymentPence: 4982
         }
       }
       const agreementItems = {
