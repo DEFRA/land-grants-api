@@ -51,6 +51,7 @@ export const postgresDb = {
         },
         host: options.host,
         database: options.database,
+        maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
         ...(!options.isLocal &&
           server.secureContext && {
             ssl: {
