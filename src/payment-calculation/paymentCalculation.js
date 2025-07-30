@@ -2,7 +2,8 @@ import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import {
   calculateScheduledPayments,
   calculateTotalPayments,
-  createPaymentItems
+  createPaymentItems,
+  shiftPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
@@ -52,6 +53,8 @@ export const getPaymentCalculationForParcels = (
     schedule
   )
 
+  const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+
   return {
     agreementStartDate,
     agreementEndDate,
@@ -59,7 +62,7 @@ export const getPaymentCalculationForParcels = (
     agreementTotalPence,
     annualTotalPence,
     parcelItems,
-    payments,
+    payments: revisedPayments,
     agreementLevelItems: agreementItems
   }
 }

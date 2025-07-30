@@ -479,6 +479,18 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
       {
         parcelItemId: 1,
         paymentPence: 9000.75
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 217.5
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: 6800.5
+      },
+      {
+        agreementLevelItemId: 2,
+        paymentPence: 2425
       }
     ]
     const payments = [
@@ -512,6 +524,18 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           {
             parcelItemId: 1,
             paymentPence: 9003
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 219
+          },
+          {
+            agreementLevelItemId: 1,
+            paymentPence: 6802
+          },
+          {
+            agreementLevelItemId: 2,
+            paymentPence: 2425
           }
         ],
         paymentDate: '2025-11-05',
@@ -522,6 +546,18 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           {
             parcelItemId: 1,
             paymentPence: 9000
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 217
+          },
+          {
+            agreementLevelItemId: 1,
+            paymentPence: 6800
+          },
+          {
+            agreementLevelItemId: 2,
+            paymentPence: 2425
           }
         ],
         paymentDate: '2026-02-05',
@@ -532,6 +568,18 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           {
             parcelItemId: 1,
             paymentPence: 9000
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 217
+          },
+          {
+            agreementLevelItemId: 1,
+            paymentPence: 6800
+          },
+          {
+            agreementLevelItemId: 2,
+            paymentPence: 2425
           }
         ],
         paymentDate: '2026-05-05',
@@ -542,6 +590,18 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           {
             parcelItemId: 1,
             paymentPence: 9000
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 217
+          },
+          {
+            agreementLevelItemId: 1,
+            paymentPence: 6800
+          },
+          {
+            agreementLevelItemId: 2,
+            paymentPence: 2425
           }
         ],
         paymentDate: '2026-08-05',
@@ -555,10 +615,6 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
       {
         parcelItemId: 1,
         paymentPence: 9000.66
-      },
-      {
-        parcelItemId: 2,
-        paymentPence: 800
       }
     ]
     const payments = [

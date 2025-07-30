@@ -1,0 +1,2 @@
+scenarioName,dateToday,parcels,expectedPaymentAnnual,expectedPaymentFirstQuarter,expectedPaymentOtherQuarters,expectedStartDate,expectedEndDate,expectedFirstPaymentDate
+CMOR1 - One single parcel with one action,2025-07-02,"[{ ""sheetId"": ""SD5253"", ""parcelId"": ""5484"", ""actions"": [ { ""code"": ""CMOR1"", ""quantity"": ""0.59268576"" } ] }]",27828.2469056,6957.0617264,6957.0617264,2025-08-01,2028-08-01,2025-11-05

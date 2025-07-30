@@ -80,14 +80,32 @@ describe('getPaymentCalculationForParcels', () => {
       }
     ]
 
-    const lineItems = [
+    const expectedFirstLineItems = [
       {
         parcelItemId: 1,
-        paymentPence: 90.10000000000001
+        paymentPence: 90
       },
       {
         parcelItemId: 2,
-        paymentPence: 217.5
+        paymentPence: 219
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: 6800
+      },
+      {
+        agreementLevelItemId: 2,
+        paymentPence: 2425
+      }
+    ]
+    const expectedLineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 90
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 217
       },
       {
         agreementLevelItemId: 1,
@@ -143,22 +161,22 @@ describe('getPaymentCalculationForParcels', () => {
       },
       payments: [
         {
-          lineItems,
+          lineItems: expectedFirstLineItems,
           paymentDate: '2025-11-05',
           totalPaymentPence: 9532.6
         },
         {
-          lineItems,
+          lineItems: expectedLineItems,
           paymentDate: '2026-02-05',
           totalPaymentPence: 9532.6
         },
         {
-          lineItems,
+          lineItems: expectedLineItems,
           paymentDate: '2026-05-05',
           totalPaymentPence: 9532.6
         },
         {
-          lineItems,
+          lineItems: expectedLineItems,
           paymentDate: '2026-08-05',
           totalPaymentPence: 9532.6
         }
