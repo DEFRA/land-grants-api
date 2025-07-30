@@ -86,6 +86,25 @@ export const calculateTotalPayments = (parcels, actions, durationYears) => {
   }
 }
 
+export const shiftPenniesToFirstScheduledPayment = (payments) => {
+  let totalPennies = 0
+
+  const adjustedPayments = payments.map((payment) => ({
+    ...payment,
+    lineItems: payment.lineItems.map((item) => {
+      const decimals = item.paymentPence % 1
+      totalPennies += decimals
+      return {
+        ...item,
+        paymentPence: Math.floor(item.paymentPence)
+      }
+    })
+  }))
+
+  adjustedPayments[0].lineItems[0].paymentPence += totalPennies
+  return adjustedPayments
+}
+
 /**
  * Calculate payments per year based on month intervals
  * @param {Array<string>} schedule

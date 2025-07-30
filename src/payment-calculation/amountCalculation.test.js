@@ -1,7 +1,8 @@
 import {
   calculateScheduledPayments,
   calculateTotalPayments,
-  createPaymentItems
+  createPaymentItems,
+  shiftPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 
 const mockEnabledActions = [
@@ -469,6 +470,84 @@ describe('createPaymentItems', () => {
     })
 
     expect(agreementItems).toEqual({})
+  })
+})
+
+describe('shiftPenniesToFirstScheduledPayment', () => {
+  it('should shift extra pennies to the first scheduled payment', () => {
+    const lineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 9000.75
+      }
+    ]
+    const payments = [
+      {
+        lineItems,
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 308.25
+      }
+    ]
+
+    const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+
+    expect(revisedPayments).toEqual([
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9003
+          }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 308.25
+      }
+    ])
   })
 })
 
