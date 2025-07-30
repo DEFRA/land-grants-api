@@ -549,6 +549,86 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
       }
     ])
   })
+
+  it('should round if extra pennies left on shifted payment amount', () => {
+    const lineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 9000.66
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 800
+      }
+    ]
+    const payments = [
+      {
+        lineItems,
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems,
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 308.25
+      }
+    ]
+
+    const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+
+    expect(revisedPayments).toEqual([
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9002
+          }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 308.25
+      },
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 9000
+          }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 308.25
+      }
+    ])
+  })
 })
 
 describe('calculateScheduledPayments', () => {

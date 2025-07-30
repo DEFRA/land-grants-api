@@ -87,22 +87,43 @@ export const calculateTotalPayments = (parcels, actions, durationYears) => {
 }
 
 export const shiftPenniesToFirstScheduledPayment = (payments) => {
-  let totalPennies = 0
-
+  const lineItemsWithDecimals = new Set()
   const adjustedPayments = payments.map((payment) => ({
     ...payment,
-    lineItems: payment.lineItems.map((item) => {
-      const decimals = item.paymentPence % 1
-      totalPennies += decimals
-      return {
-        ...item,
-        paymentPence: Math.floor(item.paymentPence)
-      }
-    })
+    lineItems: payment.lineItems.map((item) => ({ ...item }))
   }))
 
-  adjustedPayments[0].lineItems[0].paymentPence += totalPennies
-  return adjustedPayments
+  // Check if we have to shift pennies for every line item on the payment info
+  for (let i = 0; i < adjustedPayments[0].lineItems.length; i++) {
+    const hasDecimals = adjustedPayments.some(
+      (payment) => payment.lineItems[i].paymentPence % 1 > 0
+    )
+
+    if (hasDecimals) {
+      let totalDecimals = 0
+      adjustedPayments.forEach((payment) => {
+        const decimals = payment.lineItems[i].paymentPence % 1
+        totalDecimals += decimals
+        payment.lineItems[i].paymentPence = Math.floor(
+          payment.lineItems[i].paymentPence
+        )
+      })
+
+      adjustedPayments[0].lineItems[i].paymentPence += totalDecimals
+      adjustedPayments[0].lineItems[i].paymentPence = Math.floor(
+        adjustedPayments[0].lineItems[i].paymentPence
+      )
+
+      lineItemsWithDecimals.add(i)
+    }
+  }
+
+  return adjustedPayments.map((payment) => ({
+    ...payment,
+    lineItems: payment.lineItems.filter((_, index) =>
+      lineItemsWithDecimals.has(index)
+    )
+  }))
 }
 
 /**
