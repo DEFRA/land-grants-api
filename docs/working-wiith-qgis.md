@@ -1,6 +1,6 @@
 ## Mapping with QGIS
 
-- [Back home](../readme.md)
+- [Back home](../README.md)
 
 ### Installation
 

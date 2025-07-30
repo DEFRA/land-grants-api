@@ -12,10 +12,10 @@ import { createCompatibilityMatrix } from '../available-area/compatibilityMatrix
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
 const logger = {
-  log: console.log,
-  warn: console.warn,
-  info: console.info,
-  error: console.error
+  log: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
 }
 
 let connection
