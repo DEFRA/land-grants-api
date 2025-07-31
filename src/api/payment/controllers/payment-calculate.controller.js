@@ -12,7 +12,7 @@ import {
 } from '~/src/payment-calculation/paymentCalculation.js'
 
 /**
- * LandActionsPaymentController
+ * PaymentsCalculateController
  * @satisfies {Partial<ServerRoute>}
  */
 const PaymentsCalculateController = {
@@ -41,23 +41,37 @@ const PaymentsCalculateController = {
         `Controller calculating land actions payment ${landActions}`
       )
 
-      if (!landActions?.actions?.length === 0) {
+      if (landActions.length === 0) {
         const errorMessage =
           'Error calculating payment land actions, no land or actions data provided'
         request.logger.error(errorMessage)
         return Boom.badRequest(errorMessage)
       }
 
-      const paymentCalculationData =
-        await getPaymentCalculationDataRequirements(
-          request.server.postgresDb,
-          request.logger
-        )
+      const { enabledActions } = await getPaymentCalculationDataRequirements(
+        request.server.postgresDb,
+        request.logger
+      )
+
+      // for day 1, we assume duration years is 3 because all actions are 3 years long
+      // but this will change and our payment algorithm will have to support having actions with different lengths!
+      let totalDurationYears = 0
+      const landActionCodes = landActions.flatMap((landAction) =>
+        landAction.actions.map((a) => a.code)
+      )
+      enabledActions.forEach((enabledAction) => {
+        if (
+          landActionCodes.includes(enabledAction.code) &&
+          enabledAction.durationYears > totalDurationYears
+        ) {
+          totalDurationYears = enabledAction.durationYears
+        }
+      })
 
       const calculateResponse = getPaymentCalculationForParcels(
         landActions,
-        paymentCalculationData,
-        request.logger
+        enabledActions,
+        totalDurationYears
       )
 
       if (!calculateResponse) {
@@ -67,7 +81,7 @@ const PaymentsCalculateController = {
       }
 
       return h
-        .response({ message: 'success', ...calculateResponse })
+        .response({ message: 'success', payment: calculateResponse })
         .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = `Error calculating land actions payment: ${error.message}`
