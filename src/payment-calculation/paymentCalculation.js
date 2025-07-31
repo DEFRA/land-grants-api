@@ -18,8 +18,8 @@ export const getPaymentCalculationDataRequirements = async (
   postgresDb,
   logger
 ) => {
-  const actions = await getEnabledActions(logger, postgresDb)
-  return actions
+  const enabledActions = await getEnabledActions(logger, postgresDb)
+  return { enabledActions }
 }
 
 /**

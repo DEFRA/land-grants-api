@@ -67,12 +67,14 @@ describe('Calculate payments', () => {
       }
 
       const durationYears = 3
-      const paymentDataRequirements =
-        await getPaymentCalculationDataRequirements(connection, logger)
+      const { enabledActions } = await getPaymentCalculationDataRequirements(
+        connection,
+        logger
+      )
 
       const result = getPaymentCalculationForParcels(
         parcels,
-        paymentDataRequirements,
+        enabledActions,
         durationYears
       )
 
