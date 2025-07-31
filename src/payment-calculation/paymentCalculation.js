@@ -38,7 +38,7 @@ export const getPaymentCalculationForParcels = (
   if (!actions) return {}
 
   const { agreementStartDate, agreementEndDate, schedule } =
-    generatePaymentSchedule(new Date(), durationYears)
+    generatePaymentSchedule(new Date(), durationYears, frequency)
 
   const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
 
@@ -63,8 +63,8 @@ export const getPaymentCalculationForParcels = (
     agreementTotalPence,
     annualTotalPence,
     parcelItems,
-    payments: revisedPayments,
-    agreementLevelItems: agreementItems
+    agreementLevelItems: agreementItems,
+    payments: revisedPayments
   }
 }
 
