@@ -66,29 +66,30 @@ describe('Calculate payments', () => {
         logger.error(`Error parsing parcels in CSV file`)
       }
 
+      const durationYears = 3
       const paymentDataRequirements =
         await getPaymentCalculationDataRequirements(connection, logger)
 
       const result = getPaymentCalculationForParcels(
         parcels,
         paymentDataRequirements,
-        3
+        durationYears
       )
 
+      const firstPayment = result.payments[0]
+      const secondPayment = result.payments[1]
+
       expect(result.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
-      expect(result.payments[0].totalPaymentPence).toEqual(
+      expect(firstPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentFirstQuarter)
       )
-      expect(result.payments[1].totalPaymentPence).toEqual(
-        Number(expectedPaymentOtherQuarters)
-      )
-      expect(result.payments[1].totalPaymentPence).toEqual(
+      expect(secondPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentOtherQuarters)
       )
 
       expect(result.agreementStartDate).toEqual(expectedStartDate)
       expect(result.agreementEndDate).toEqual(expectedEndDate)
-      expect(result.payments[0].paymentDate).toEqual(expectedFirstPaymentDate)
+      expect(firstPayment.paymentDate).toEqual(expectedFirstPaymentDate)
     }
   )
 })

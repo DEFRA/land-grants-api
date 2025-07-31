@@ -37,52 +37,28 @@ const calculateTotalPaymentForAction = (action, actionData = {}) => {
 }
 
 /**
- * Calculates annual and total payments in pence for a given parcel
- * @param {Array<PaymentParcelAction>} parcelActions
- * @returns {{parcelAnnualTotalPence: number, parcelTotalPence: number}}
- */
-const calculateTotalPaymentForParcel = (parcelActions, actions) => {
-  let parcelTotalPence = 0
-  let parcelAnnualTotalPence = 0
-
-  for (const action of parcelActions) {
-    const actionData = findActionByCode(actions, action.code)
-    const { annualTotalPence, totalPence } = calculateTotalPaymentForAction(
-      action,
-      actionData
-    )
-
-    parcelTotalPence += totalPence
-    parcelAnnualTotalPence += annualTotalPence
-  }
-
-  return {
-    parcelAnnualTotalPence,
-    parcelTotalPence
-  }
-}
-
-/**
  * Calculates annual and total payments in pence for all parcels of an application
- * @param {Array<PaymentParcel>} parcels
- * @param {Array<Action>} actions
+ * @param {Array<PaymentParcelItem>} parcelItems
+ * @param {Array<PaymentAgreementItem>} agreementItems
  * @param {number} durationYears
  * @returns {{annualTotalPence: number, agreementTotalPence: number}}
  */
-export const calculateTotalPayments = (parcels, actions, durationYears) => {
+export const calculateTotalPayments = (
+  parcelItems,
+  agreementItems,
+  durationYears
+) => {
   let annualTotalPence = 0
-
-  for (const parcel of parcels) {
-    const { parcelAnnualTotalPence } = calculateTotalPaymentForParcel(
-      parcel.actions,
-      actions
-    )
-    annualTotalPence += parcelAnnualTotalPence
-  }
+  Object.entries(parcelItems).forEach(([, parcelItem]) => {
+    annualTotalPence += parcelItem.annualPaymentPence ?? 0
+  })
+  Object.entries(agreementItems).forEach(([, agreementItem]) => {
+    annualTotalPence += agreementItem.annualPaymentPence ?? 0
+  })
 
   return {
-    annualTotalPence,
-    agreementTotalPence: annualTotalPence * durationYears
+    annualTotalPence: Math.floor(annualTotalPence),
+    agreementTotalPence: Math.floor(annualTotalPence * durationYears)
   }
 }
 
@@ -113,6 +89,13 @@ export const shiftPenniesToFirstScheduledPayment = (payments) => {
       )
     }
   }
+
+  // recalculate totalPaymentPence based on rounding
+  adjustedPayments.forEach((payment, index) => {
+    adjustedPayments[index].totalPaymentPence = adjustedPayments[
+      index
+    ].lineItems.reduce((acc, item) => acc + item.paymentPence, 0)
+  })
 
   return adjustedPayments
 }
@@ -215,13 +198,14 @@ export const createPaymentItems = (parcels, actions) => {
     agreementItems: {}
   }
 
-  parcels.forEach((parcel, index) => {
-    const parcelKey = index + 1
+  let parcelItemKey = 1
+  let agreementItemKey = 1
 
+  parcels.forEach((parcel) => {
     for (const action of parcel.actions) {
       const actionData = findActionByCode(actions, action.code)
 
-      paymentItems.parcelItems[parcelKey] = createParcelPaymentItem(
+      paymentItems.parcelItems[parcelItemKey] = createParcelPaymentItem(
         action,
         actionData,
         parcel
@@ -233,9 +217,13 @@ export const createPaymentItems = (parcels, actions) => {
         ).find((item) => item.code === action.code)
 
         if (!hasAgreementItemBeenAdded)
-          paymentItems.agreementItems[parcelKey] =
+          paymentItems.agreementItems[agreementItemKey] =
             createAgreementPaymentItem(actionData)
+
+        agreementItemKey++
       }
+
+      parcelItemKey++
     }
   })
 
