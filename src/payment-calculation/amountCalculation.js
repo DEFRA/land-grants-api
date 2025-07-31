@@ -1,4 +1,4 @@
-import { differenceInMonths } from 'date-fns'
+import { differenceInCalendarMonths } from 'date-fns'
 
 /**
  * Gbp to pence
@@ -15,25 +15,6 @@ const gbpToPence = (gbp = 0) => gbp * 100
 const findActionByCode = (actions = [], code) => {
   const action = actions.find((a) => a.code === code)
   return action
-}
-
-/**
- * Calculates annual and total payments in pence for a given action
- * @param {PaymentParcelAction} action
- * @returns {{annualTotalPence: number, totalPence: number}}
- */
-const calculateTotalPaymentForAction = (action, actionData = {}) => {
-  const { durationYears = 0, payment = {} } = actionData
-  const { ratePerUnitGbp = 0, ratePerAgreementPerYearGbp = 0 } = payment
-
-  const unitPaymentPence = gbpToPence(ratePerUnitGbp) * action.quantity
-  const agreementPaymentPence = gbpToPence(ratePerAgreementPerYearGbp)
-  const annualTotalPence = unitPaymentPence + agreementPaymentPence
-
-  return {
-    annualTotalPence,
-    totalPence: durationYears * annualTotalPence
-  }
 }
 
 /**
@@ -107,7 +88,7 @@ export const shiftPenniesToFirstScheduledPayment = (payments) => {
  */
 const calculatePaymentsPerYear = (schedule) => {
   if (schedule.length < 2) return schedule.length
-  const monthDiff = differenceInMonths(schedule[1], schedule[0])
+  const monthDiff = differenceInCalendarMonths(schedule[1], schedule[0])
   return 12 / monthDiff
 }
 
