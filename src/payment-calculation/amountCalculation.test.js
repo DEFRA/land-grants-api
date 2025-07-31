@@ -41,140 +41,126 @@ const mockEnabledActions = [
 describe('calculateTotalPayments', () => {
   const durationYears = 3
 
-  it('should return total payment amounts', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
+  it('should return total payment amounts for parcel and agreement items', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
-        actions: [
-          {
-            code: 'CMOR1',
-            quantity: 0.34
-          }
-        ]
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360.4,
+        sheetId: 'SD5253',
+        unit: 'ha'
       }
-    ]
+    }
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 27200
+      }
+    }
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcels,
-      mockEnabledActions,
+      parcelItems,
+      agreementItems,
       durationYears
     )
 
-    expect(agreementTotalPence).toBe(82681.20000000001)
-    expect(annualTotalPence).toBe(27560.4)
+    expect(agreementTotalPence).toBe(82681)
+    expect(annualTotalPence).toBe(27560)
   })
 
-  it('should handle multiple parcels with different actions', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
+  it('should handle multiple parcels items and agreement items with different actions', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
-        actions: [{ code: 'CMOR1', quantity: 0.34 }]
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360.4,
+        sheetId: 'SD5253',
+        unit: 'ha'
       },
-      {
-        sheetId: 'SD5254',
+      2: {
+        code: 'UPL1',
+        description: 'Moderate livestock grazing on moorland',
         parcelId: '5485',
-        actions: [{ code: 'UPL1', quantity: 2.5 }]
+        quantity: 2.5,
+        rateInPence: 2000,
+        annualPaymentPence: 5000,
+        sheetId: 'SD5254',
+        unit: 'ha'
       }
-    ]
+    }
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 27200
+      }
+    }
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcels,
-      mockEnabledActions,
+      parcelItems,
+      agreementItems,
       durationYears
     )
 
-    expect(agreementTotalPence).toBe(97681.20000000001)
-    expect(annualTotalPence).toBe(32560.4) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
+    expect(agreementTotalPence).toBe(97681)
+    expect(annualTotalPence).toBe(32560) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
   })
 
-  it('should handle empty parcels array', () => {
+  it('should handle no parcel items and agreement items', () => {
+    const parcelItems = {}
+    const agreementItems = {}
+
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      [],
-      mockEnabledActions,
+      parcelItems,
+      agreementItems,
       durationYears
     )
 
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
-  })
-
-  it('should handle parcels with no actions', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: []
-      }
-    ]
-
-    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcels,
-      mockEnabledActions,
-      durationYears
-    )
-
-    expect(agreementTotalPence).toBe(0)
-    expect(annualTotalPence).toBe(0)
-  })
-
-  it('should return zero when action code is not found', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [{ code: 'NONEXISTENT', quantity: 1 }]
-      }
-    ]
-
-    const result = calculateTotalPayments(
-      parcels,
-      mockEnabledActions,
-      durationYears
-    )
-    expect(result).toEqual({ agreementTotalPence: 0, annualTotalPence: 0 })
-  })
-
-  it('should return zero when actions array is empty', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: []
-      }
-    ]
-    const result = calculateTotalPayments(
-      parcels,
-      mockEnabledActions,
-      durationYears
-    )
-
-    expect(result).toEqual({ agreementTotalPence: 0, annualTotalPence: 0 })
   })
 
   it('should handle missing payment rates gracefully', () => {
-    const actionsWithMissingRates = [
-      {
+    const parcelItems = {
+      1: {
         code: 'CMOR1',
-        description: 'Test action',
-        applicationUnitOfMeasurement: 'ha',
-        durationYears: 3,
-        payment: {}
-      }
-    ]
-
-    const parcels = [
-      {
-        sheetId: 'SD5253',
+        description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
-        actions: [{ code: 'CMOR1', quantity: 0.34 }]
+        quantity: undefined,
+        rateInPence: undefined,
+        annualPaymentPence: undefined,
+        sheetId: 'SD5253',
+        unit: 'ha'
+      },
+      2: {
+        code: 'UPL1',
+        description: 'Moderate livestock grazing on moorland',
+        parcelId: '5485',
+        quantity: undefined,
+        rateInPence: undefined,
+        annualPaymentPence: undefined,
+        sheetId: 'SD5254',
+        unit: 'ha'
       }
-    ]
+    }
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: undefined
+      }
+    }
 
     const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcels,
-      actionsWithMissingRates,
+      parcelItems,
+      agreementItems,
       durationYears
     )
 
@@ -356,7 +342,7 @@ describe('createPaymentItems', () => {
     })
   })
 
-  it('should return a single agreement items per action with payment info', () => {
+  it('should only add agreement level items once for the same action', () => {
     const parcels = [
       {
         sheetId: 'SD5253',
@@ -478,41 +464,29 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
     const lineItems = [
       {
         parcelItemId: 1,
-        paymentPence: 9000.75
-      },
-      {
-        parcelItemId: 2,
-        paymentPence: 217.5
-      },
-      {
-        agreementLevelItemId: 1,
-        paymentPence: 6800.5
-      },
-      {
-        agreementLevelItemId: 2,
-        paymentPence: 2425
+        paymentPence: 1902.92366
       }
     ]
     const payments = [
       {
         lineItems,
         paymentDate: '2025-11-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902.92366
       },
       {
         lineItems,
         paymentDate: '2026-02-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902.92366
       },
       {
         lineItems,
         paymentDate: '2026-05-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902.92366
       },
       {
         lineItems,
         paymentDate: '2026-08-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902.92366
       }
     ]
 
@@ -523,89 +497,41 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
         lineItems: [
           {
             parcelItemId: 1,
-            paymentPence: 9003
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 219
-          },
-          {
-            agreementLevelItemId: 1,
-            paymentPence: 6802
-          },
-          {
-            agreementLevelItemId: 2,
-            paymentPence: 2425
+            paymentPence: 1905
           }
         ],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1905
       },
       {
         lineItems: [
           {
             parcelItemId: 1,
-            paymentPence: 9000
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 217
-          },
-          {
-            agreementLevelItemId: 1,
-            paymentPence: 6800
-          },
-          {
-            agreementLevelItemId: 2,
-            paymentPence: 2425
+            paymentPence: 1902
           }
         ],
         paymentDate: '2026-02-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902
       },
       {
         lineItems: [
           {
             parcelItemId: 1,
-            paymentPence: 9000
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 217
-          },
-          {
-            agreementLevelItemId: 1,
-            paymentPence: 6800
-          },
-          {
-            agreementLevelItemId: 2,
-            paymentPence: 2425
+            paymentPence: 1902
           }
         ],
         paymentDate: '2026-05-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902
       },
       {
         lineItems: [
           {
             parcelItemId: 1,
-            paymentPence: 9000
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 217
-          },
-          {
-            agreementLevelItemId: 1,
-            paymentPence: 6800
-          },
-          {
-            agreementLevelItemId: 2,
-            paymentPence: 2425
+            paymentPence: 1902
           }
         ],
         paymentDate: '2026-08-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 1902
       }
     ])
   })
@@ -621,22 +547,22 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
       {
         lineItems,
         paymentDate: '2025-11-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000.66
       },
       {
         lineItems,
         paymentDate: '2026-02-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000.66
       },
       {
         lineItems,
         paymentDate: '2026-05-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000.66
       },
       {
         lineItems,
         paymentDate: '2026-08-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000.66
       }
     ]
 
@@ -651,7 +577,7 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           }
         ],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9002
       },
       {
         lineItems: [
@@ -661,7 +587,7 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           }
         ],
         paymentDate: '2026-02-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000
       },
       {
         lineItems: [
@@ -671,7 +597,7 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           }
         ],
         paymentDate: '2026-05-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000
       },
       {
         lineItems: [
@@ -681,7 +607,7 @@ describe('shiftPenniesToFirstScheduledPayment', () => {
           }
         ],
         paymentDate: '2026-08-05',
-        totalPaymentPence: 308.25
+        totalPaymentPence: 9000
       }
     ])
   })
