@@ -3,7 +3,8 @@ import {
   calculateScheduledPayments,
   calculateTotalPayments,
   createPaymentItems,
-  shiftPenniesToFirstScheduledPayment
+  roundLineItemsPayments,
+  shiftTotalPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
@@ -54,7 +55,8 @@ export const getPaymentCalculationForParcels = (
     schedule
   )
 
-  const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+  const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
+  const revisedPayments = roundLineItemsPayments(shiftedPayments)
 
   return {
     agreementStartDate,
