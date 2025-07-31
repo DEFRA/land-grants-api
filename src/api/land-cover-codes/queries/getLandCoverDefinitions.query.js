@@ -1,3 +1,5 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} landCoverCodes - The land cover codes to get
@@ -7,6 +9,8 @@
  */
 export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
 
   try {
     if (!Array.isArray(landCoverCodes) || landCoverCodes.length === 0) {
@@ -20,7 +24,7 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
 
     client = await db.connect()
     const query = `
-      SELECT DISTINCT land_cover_type_code, 
+      SELECT DISTINCT land_cover_type_code,
             land_cover_type_description,
             land_cover_class_code,
             land_cover_class_description,
@@ -48,11 +52,13 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
     return transformLandCoverDefinitions(dbResponse.rows)
   } catch (error) {
     logger.error(`Unable to get land cover definitions`, error)
+    success = false
     throw error
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getLandCoverDefinitions', start, success)
   }
 }
 

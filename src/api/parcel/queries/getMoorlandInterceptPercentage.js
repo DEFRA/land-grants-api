@@ -1,5 +1,9 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
 
   try {
     client = await db.connect()
@@ -40,11 +44,13 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       'Error executing get moorland intercept percentage query',
       error
     )
+    success = false
     return
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getMoorlandInterceptPercentage', start, success)
   }
 }
 

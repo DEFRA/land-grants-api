@@ -1,3 +1,4 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
 import { compatibilityMatrixTransformer } from '../compatibility-matrix.transformer.js'
 
 /**
@@ -8,6 +9,9 @@ import { compatibilityMatrixTransformer } from '../compatibility-matrix.transfor
  */
 async function getCompatibilityMatrix(logger, db, codes = null) {
   let client
+  let success = true
+  const start = startTiming()
+
   try {
     logger.info(`Connecting to DB to fetch compatibility matrix`)
     client = await db.connect()
@@ -20,11 +24,13 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
     logger.error(
       `Error executing get compatibility matrix query: ${error.message}`
     )
+    success = false
     return
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getCompatibilityMatrix', start, success)
   }
 }
 

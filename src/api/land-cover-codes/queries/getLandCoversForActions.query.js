@@ -1,3 +1,5 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} actionCodes - The action code(s) to get land cover codes for
@@ -7,6 +9,8 @@
  */
 async function getLandCoversForActions(actionCodes, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
 
   try {
     if (!Array.isArray(actionCodes) || actionCodes.length === 0) {
@@ -40,11 +44,13 @@ async function getLandCoversForActions(actionCodes, db, logger) {
     return transformLandCoversForActions(actionLandCovers, actionCodes)
   } catch (error) {
     logger.error(`Unable to get land cover codes`, error)
+    success = false
     throw error
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getLandCoversForActions', start, success)
   }
 }
 

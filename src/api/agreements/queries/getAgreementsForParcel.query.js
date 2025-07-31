@@ -1,3 +1,4 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
 import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
 
 /**
@@ -14,6 +15,8 @@ import { agreementActionsTransformer } from '../transformers/agreements.transfor
  */
 async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
 
   try {
     logger.info(
@@ -34,11 +37,13 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
     return agreementActionsTransformer(result.rows)
   } catch (error) {
     logger.error(`Error executing get agreements query: ${error}`)
+    success = false
     return
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getAgreementsForParcel', start, success)
   }
 }
 export { getAgreementsForParcel }
