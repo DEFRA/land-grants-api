@@ -1,12 +1,15 @@
 import Boom from '@hapi/boom'
-import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
 import { landActionSchema } from '~/src/api/actions/schema/action-validation.schema.js'
-import { PaymentCalculateResponseSchema } from '~/src/api/payment/schema/payment-calculate.schema.js'
+import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
+import { PaymentCalculateResponseSchema } from '~/src/api/payment/schema/payment-calculate.schema.js'
+import {
+  getPaymentCalculationDataRequirements,
+  getPaymentCalculationForParcels
+} from '~/src/payment-calculation/paymentCalculation.js'
 
 /**
  * LandActionsPaymentController
@@ -45,8 +48,15 @@ const PaymentsCalculateController = {
         return Boom.badRequest(errorMessage)
       }
 
-      const calculateResponse = await calculatePayment(
+      const paymentCalculationData =
+        await getPaymentCalculationDataRequirements(
+          request.server.postgresDb,
+          request.logger
+        )
+
+      const calculateResponse = getPaymentCalculationForParcels(
         landActions,
+        paymentCalculationData,
         request.logger
       )
 

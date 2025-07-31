@@ -60,7 +60,7 @@ function getFrequencyIntervalMonths(frequency = 'quarterly') {
     quarterly: 3,
     yearly: 12
   }
-  return intervals[frequency] || 3
+  return intervals[frequency.toLowerCase()] || 3
 }
 
 /**
