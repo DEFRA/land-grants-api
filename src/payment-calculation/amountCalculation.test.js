@@ -2,7 +2,8 @@ import {
   calculateScheduledPayments,
   calculateTotalPayments,
   createPaymentItems,
-  shiftPenniesToFirstScheduledPayment
+  roundLineItemsPayments,
+  shiftTotalPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 
 const mockEnabledActions = [
@@ -459,155 +460,151 @@ describe('createPaymentItems', () => {
   })
 })
 
-describe('shiftPenniesToFirstScheduledPayment', () => {
+describe('shiftTotalPenniesToFirstScheduledPayment', () => {
   it('should shift extra pennies to the first scheduled payment', () => {
-    const lineItems = [
-      {
-        parcelItemId: 1,
-        paymentPence: 1902.92366
-      }
-    ]
     const payments = [
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 1902.92366
+        totalPaymentPence: 1916.783
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-02-05',
-        totalPaymentPence: 1902.92366
+        totalPaymentPence: 1916.783
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-05-05',
-        totalPaymentPence: 1902.92366
+        totalPaymentPence: 1916.783
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-08-05',
-        totalPaymentPence: 1902.92366
+        totalPaymentPence: 1916.783
       }
     ]
 
-    const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+    const revisedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
 
     expect(revisedPayments).toEqual([
       {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 1905
-          }
-        ],
+        lineItems: [],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 1905
+        totalPaymentPence: 1919
       },
       {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 1902
-          }
-        ],
+        lineItems: [],
         paymentDate: '2026-02-05',
-        totalPaymentPence: 1902
+        totalPaymentPence: 1916
       },
       {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 1902
-          }
-        ],
+        lineItems: [],
         paymentDate: '2026-05-05',
-        totalPaymentPence: 1902
+        totalPaymentPence: 1916
       },
       {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 1902
-          }
-        ],
+        lineItems: [],
         paymentDate: '2026-08-05',
-        totalPaymentPence: 1902
+        totalPaymentPence: 1916
       }
     ])
   })
 
   it('should round if extra pennies left on shifted payment amount', () => {
-    const lineItems = [
-      {
-        parcelItemId: 1,
-        paymentPence: 9000.66
-      }
-    ]
     const payments = [
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2025-11-05',
         totalPaymentPence: 9000.66
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-02-05',
         totalPaymentPence: 9000.66
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-05-05',
         totalPaymentPence: 9000.66
       },
       {
-        lineItems,
+        lineItems: [],
         paymentDate: '2026-08-05',
         totalPaymentPence: 9000.66
       }
     ]
 
-    const revisedPayments = shiftPenniesToFirstScheduledPayment(payments)
+    const revisedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
+
+    expect(revisedPayments).toEqual([
+      {
+        lineItems: [],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 9002
+      },
+      {
+        lineItems: [],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 9000
+      },
+      {
+        lineItems: [],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 9000
+      },
+      {
+        lineItems: [],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 9000
+      }
+    ])
+  })
+})
+
+describe('roundLineItemsPayments', () => {
+  it('should floor round line items payments from payments input', () => {
+    const payments = [
+      {
+        lineItems: [
+          {
+            parcelItemId: 1,
+            paymentPence: 123.88
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 555
+          },
+          {
+            parcelItemId: 3,
+            paymentPence: 19337.8
+          }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 20016.68
+      }
+    ]
+
+    const revisedPayments = roundLineItemsPayments(payments)
 
     expect(revisedPayments).toEqual([
       {
         lineItems: [
           {
             parcelItemId: 1,
-            paymentPence: 9002
+            paymentPence: 123
+          },
+          {
+            parcelItemId: 2,
+            paymentPence: 555
+          },
+          {
+            parcelItemId: 3,
+            paymentPence: 19337
           }
         ],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 9002
-      },
-      {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 9000
-          }
-        ],
-        paymentDate: '2026-02-05',
-        totalPaymentPence: 9000
-      },
-      {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 9000
-          }
-        ],
-        paymentDate: '2026-05-05',
-        totalPaymentPence: 9000
-      },
-      {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 9000
-          }
-        ],
-        paymentDate: '2026-08-05',
-        totalPaymentPence: 9000
+        totalPaymentPence: 20016.68
       }
     ])
   })

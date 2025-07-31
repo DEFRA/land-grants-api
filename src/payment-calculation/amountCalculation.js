@@ -43,43 +43,39 @@ export const calculateTotalPayments = (
   }
 }
 
-export const shiftPenniesToFirstScheduledPayment = (payments) => {
-  const adjustedPayments = payments.map((payment) => ({
-    ...payment,
-    lineItems: payment.lineItems.map((item) => ({ ...item }))
-  }))
+export const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
+  let adjustedPayments = structuredClone(payments)
+  const firstPayment = adjustedPayments[0]
+  const hasDecimals = firstPayment.totalPaymentPence % 1
 
-  for (let i = 0; i < adjustedPayments[0].lineItems.length; i++) {
-    const hasDecimals = adjustedPayments.some(
-      (payment) => payment.lineItems[i].paymentPence % 1 > 0
+  if (hasDecimals) {
+    const decimalsForAllPayments = adjustedPayments.reduce((acc, payment) => {
+      const decimals = payment.totalPaymentPence % 1
+      return acc + decimals
+    }, 0)
+
+    adjustedPayments = adjustedPayments.map((adjustedPayment) => ({
+      ...adjustedPayment,
+      totalPaymentPence: Math.floor(adjustedPayment.totalPaymentPence)
+    }))
+
+    adjustedPayments[0].totalPaymentPence += decimalsForAllPayments
+    adjustedPayments[0].totalPaymentPence = Math.floor(
+      adjustedPayments[0].totalPaymentPence
     )
-
-    if (hasDecimals) {
-      let totalDecimals = 0
-      adjustedPayments.forEach((payment) => {
-        const decimals = payment.lineItems[i].paymentPence % 1
-        totalDecimals += decimals
-        payment.lineItems[i].paymentPence = Math.floor(
-          payment.lineItems[i].paymentPence
-        )
-      })
-
-      adjustedPayments[0].lineItems[i].paymentPence += totalDecimals
-      adjustedPayments[0].lineItems[i].paymentPence = Math.floor(
-        adjustedPayments[0].lineItems[i].paymentPence
-      )
-    }
   }
-
-  // recalculate totalPaymentPence based on rounding
-  adjustedPayments.forEach((payment, index) => {
-    adjustedPayments[index].totalPaymentPence = adjustedPayments[
-      index
-    ].lineItems.reduce((acc, item) => acc + item.paymentPence, 0)
-  })
 
   return adjustedPayments
 }
+
+export const roundLineItemsPayments = (payments) =>
+  structuredClone(payments).map((adjustedPayment) => ({
+    ...adjustedPayment,
+    lineItems: adjustedPayment.lineItems.map((lineItem) => ({
+      ...lineItem,
+      paymentPence: Math.floor(lineItem.paymentPence)
+    }))
+  }))
 
 /**
  * Calculate payments per year based on month intervals
