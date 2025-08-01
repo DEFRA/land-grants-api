@@ -65,6 +65,10 @@ describe('Payment calculate controller', () => {
       debug: jest.fn(),
       error: jest.fn()
     })
+    server.decorate('server', 'postgresDb', {
+      connect: jest.fn(),
+      query: jest.fn()
+    })
 
     await server.register([payments])
     await server.initialize()
@@ -162,6 +166,53 @@ describe('Payment calculate controller', () => {
       expect(message).toBe(
         'Error calculating payment land actions, no land or actions data provided'
       )
+    })
+
+    test('should calculate payment and return 200', async () => {
+      const payload = {
+        landActions: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            sbi: 123456789,
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              },
+              {
+                code: 'BND2',
+                quantity: 200.0
+              }
+            ]
+          }
+        ]
+      }
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(mockGetPaymentCalculationDataRequirements).toHaveBeenCalledTimes(1)
+      expect(mockGetPaymentCalculationDataRequirements).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(mockGetPaymentCalculationForParcels).toHaveBeenCalledTimes(1)
+      expect(mockGetPaymentCalculationForParcels).toHaveBeenCalledWith(
+        payload.landActions,
+        [],
+        0
+      )
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
     })
   })
 })
