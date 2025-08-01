@@ -116,7 +116,7 @@ describe('getPaymentCalculationForParcels', () => {
           unit: 'ha',
           quantity: 0.34,
           rateInPence: 1060,
-          annualPaymentPence: 360.40000000000003,
+          annualPaymentPence: 360,
           sheetId: 'SD5253',
           parcelId: '5484'
         },
