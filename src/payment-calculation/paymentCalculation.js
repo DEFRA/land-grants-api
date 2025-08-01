@@ -12,7 +12,7 @@ import { generatePaymentSchedule } from './generateSchedule.js'
  * Gets payment calculation data requirements
  * @param {object} postgresDb
  * @param {object} logger
- * @returns {Promise<Array<Action>>}
+ * @returns {Promise<{enabledActions: Array<Action>}>}
  */
 export const getPaymentCalculationDataRequirements = async (
   postgresDb,
