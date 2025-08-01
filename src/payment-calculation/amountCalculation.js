@@ -143,6 +143,7 @@ export const calculateScheduledPayments = (
 const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData?.code ?? '',
   description: actionData?.description ?? '',
+  version: actionData?.version ?? '',
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
@@ -160,6 +161,7 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
 const createAgreementPaymentItem = (actionData) => ({
   code: actionData?.code,
   description: actionData?.description,
+  version: actionData?.version,
   annualPaymentPence: gbpToPence(actionData?.payment.ratePerAgreementPerYearGbp)
 })
 

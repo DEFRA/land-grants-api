@@ -4,6 +4,7 @@ const mockEnabledActions = [
   {
     code: 'CMOR1',
     description: 'Assess moorland and produce a written record',
+    version: 1,
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -14,6 +15,7 @@ const mockEnabledActions = [
   {
     code: 'UPL1',
     description: 'Moderate livestock grazing on moorland',
+    version: 1,
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -25,6 +27,7 @@ const mockEnabledActions = [
     code: 'CSAM1',
     description:
       'Assess soil, test soil organic matter and produce a soil management plan',
+    version: 1,
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -109,6 +112,7 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
+          version: 1,
           unit: 'ha',
           quantity: 0.34,
           rateInPence: 1060,
@@ -120,6 +124,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
+          version: 1,
           unit: 'ha',
           quantity: 1.45,
           rateInPence: 600,
@@ -132,12 +137,14 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
+          version: 1,
           annualPaymentPence: 27200
         },
         2: {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
+          version: 1,
           annualPaymentPence: 9700
         }
       },
