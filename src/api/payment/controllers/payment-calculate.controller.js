@@ -68,6 +68,13 @@ const PaymentsCalculateController = {
         }
       })
 
+      if (totalDurationYears === 0) {
+        const errorMessage =
+          'Error getting total duration, no valid actions data provided'
+        request.logger.error(errorMessage)
+        return Boom.badRequest(errorMessage)
+      }
+
       const calculateResponse = getPaymentCalculationForParcels(
         landActions,
         enabledActions,
