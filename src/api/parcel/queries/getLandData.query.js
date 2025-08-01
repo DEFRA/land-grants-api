@@ -1,3 +1,5 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 /**
  * Get a land data
  * @param {string} sheetId - The sheetId
@@ -8,6 +10,8 @@
  */
 async function getLandData(sheetId, parcelId, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
 
   try {
     logger.info(
@@ -28,11 +32,13 @@ async function getLandData(sheetId, parcelId, db, logger) {
     return result.rows
   } catch (error) {
     logger.error(`Error executing get Land parcels query: ${error}`)
+    success = false
     return
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getLandData', start, success)
   }
 }
 export { getLandData }

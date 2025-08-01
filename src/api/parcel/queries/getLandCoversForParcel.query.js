@@ -1,3 +1,5 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 /**
  * Get available area of a land parcel excluding specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
@@ -9,6 +11,9 @@
  */
 async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
   let client
+  let success = true
+  const start = startTiming()
+
   try {
     client = await db.connect()
 
@@ -35,11 +40,13 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
       `Error retrieving land covers for parcelId: ${sheetId}-${parcelId} ${err.message}`,
       err
     )
+    success = false
     throw err
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getLandCoversForParcel', start, success)
   }
 }
 

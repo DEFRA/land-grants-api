@@ -1,3 +1,5 @@
+import { startTiming, endTiming } from '~/src/api/common/helpers/performance.js'
+
 /**
  * @import {Action} from '../action.d.js'
  */
@@ -12,6 +14,9 @@ import { actionTransformer } from '../transformers/action.transformer.js'
  */
 async function getEnabledActions(logger, db) {
   let client
+  let success = true
+  const start = startTiming()
+
   try {
     logger.info(`Connecting to DB to fetch actions`)
     client = await db.connect()
@@ -22,11 +27,13 @@ async function getEnabledActions(logger, db) {
     return result.rows.map(actionTransformer)
   } catch (error) {
     logger.error(`Error executing get action query: ${error.message}`)
+    success = false
     return []
   } finally {
     if (client) {
       client.release()
     }
+    endTiming(logger, 'getEnabledActions', start, success)
   }
 }
 
