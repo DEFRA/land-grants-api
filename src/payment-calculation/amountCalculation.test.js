@@ -1,8 +1,9 @@
 import {
+  calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
-  calculateTotalPayments,
   createPaymentItems,
-  roundLineItemsPayments,
+  roundAnnualPaymentAmountForItems,
+  roundPaymentAmountForPaymentLineItems,
   shiftTotalPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 
@@ -54,7 +55,7 @@ const mockEnabledActions = [
   }
 ]
 
-describe('calculateTotalPayments', () => {
+describe('calculateAnnualAndAgreementTotals', () => {
   const durationYears = 3
 
   it('should return total payment amounts for parcel and agreement items', () => {
@@ -78,11 +79,12 @@ describe('calculateTotalPayments', () => {
       }
     }
 
-    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(
+        parcelItems,
+        agreementItems,
+        durationYears
+      )
 
     expect(agreementTotalPence).toBe(82681)
     expect(annualTotalPence).toBe(27560)
@@ -119,11 +121,12 @@ describe('calculateTotalPayments', () => {
       }
     }
 
-    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(
+        parcelItems,
+        agreementItems,
+        durationYears
+      )
 
     expect(agreementTotalPence).toBe(97681)
     expect(annualTotalPence).toBe(32560) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
@@ -133,11 +136,12 @@ describe('calculateTotalPayments', () => {
     const parcelItems = {}
     const agreementItems = {}
 
-    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(
+        parcelItems,
+        agreementItems,
+        durationYears
+      )
 
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
@@ -177,11 +181,12 @@ describe('calculateTotalPayments', () => {
       }
     }
 
-    const { agreementTotalPence, annualTotalPence } = calculateTotalPayments(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(
+        parcelItems,
+        agreementItems,
+        durationYears
+      )
 
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
@@ -618,7 +623,7 @@ describe('shiftTotalPenniesToFirstScheduledPayment', () => {
   })
 })
 
-describe('roundLineItemsPayments', () => {
+describe('roundPaymentAmountForPaymentLineItems', () => {
   it('should floor round line items payments from payments input', () => {
     const payments = [
       {
@@ -641,9 +646,9 @@ describe('roundLineItemsPayments', () => {
       }
     ]
 
-    const revisedPayments = roundLineItemsPayments(payments)
+    const result = roundPaymentAmountForPaymentLineItems(payments)
 
-    expect(revisedPayments).toEqual([
+    expect(result).toEqual([
       {
         lineItems: [
           {
@@ -663,6 +668,64 @@ describe('roundLineItemsPayments', () => {
         totalPaymentPence: 20016.68
       }
     ])
+  })
+})
+
+describe('roundAnnualPaymentAmountForItems', () => {
+  it('should round parcel level items payment amount from input', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003
+      },
+      2: {
+        code: 'UPL1',
+        quantity: 2.5,
+        rateInPence: 2000,
+        annualPaymentPence: 5000.23
+      }
+    }
+
+    const result = roundAnnualPaymentAmountForItems(parcelItems)
+
+    expect(result).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360
+      },
+      2: {
+        code: 'UPL1',
+        quantity: 2.5,
+        rateInPence: 2000,
+        annualPaymentPence: 5000
+      }
+    })
+  })
+
+  it('should round agreement level items payment amount from input', () => {
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 272.123
+      }
+    }
+
+    const result = roundAnnualPaymentAmountForItems(agreementItems)
+
+    expect(result).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 272
+      }
+    })
   })
 })
 

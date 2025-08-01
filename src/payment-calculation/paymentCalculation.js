@@ -1,9 +1,10 @@
 import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import {
+  calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
-  calculateTotalPayments,
   createPaymentItems,
-  roundLineItemsPayments,
+  roundAnnualPaymentAmountForItems,
+  roundPaymentAmountForPaymentLineItems,
   shiftTotalPenniesToFirstScheduledPayment
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
@@ -38,25 +39,37 @@ export const getPaymentCalculationForParcels = (
 
   if (!actions) return {}
 
+  // generate parcel and agreement level items
+  const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
+
+  // calculate total amounts
+  const { annualTotalPence, agreementTotalPence } =
+    calculateAnnualAndAgreementTotals(
+      parcelItems,
+      agreementItems,
+      durationYears
+    )
+
+  // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
     generatePaymentSchedule(new Date(), durationYears, frequency)
 
-  const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
-
-  const { annualTotalPence, agreementTotalPence } = calculateTotalPayments(
-    parcelItems,
-    agreementItems,
-    durationYears
-  )
-
+  // calculate payments based on schedule and parcel/agreement items amounts
   const payments = calculateScheduledPayments(
     parcelItems,
     agreementItems,
     schedule
   )
 
+  // shift quarter payments pennies to first scheduled payment
   const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
-  const revisedPayments = roundLineItemsPayments(shiftedPayments)
+
+  // now that we have shifted pennies, round items amounts if they have decimals
+  const roundedItems = {
+    parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
+    agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
+    payments: roundPaymentAmountForPaymentLineItems(shiftedPayments)
+  }
 
   return {
     agreementStartDate,
@@ -64,9 +77,7 @@ export const getPaymentCalculationForParcels = (
     frequency,
     agreementTotalPence,
     annualTotalPence,
-    parcelItems,
-    agreementLevelItems: agreementItems,
-    payments: revisedPayments
+    ...roundedItems
   }
 }
 

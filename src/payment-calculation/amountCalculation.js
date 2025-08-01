@@ -24,7 +24,7 @@ const findActionByCode = (actions = [], code) => {
  * @param {number} durationYears
  * @returns {{annualTotalPence: number, agreementTotalPence: number}}
  */
-export const calculateTotalPayments = (
+export const calculateAnnualAndAgreementTotals = (
   parcelItems,
   agreementItems,
   durationYears
@@ -68,10 +68,29 @@ export const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
   return adjustedPayments
 }
 
-export const roundLineItemsPayments = (payments) =>
-  structuredClone(payments).map((adjustedPayment) => ({
-    ...adjustedPayment,
-    lineItems: adjustedPayment.lineItems.map((lineItem) => ({
+/**
+ * Round annual payment pence amount for parcelItems / agreementLevelItems
+ * @param {object} items
+ * @returns {object}
+ */
+export const roundAnnualPaymentAmountForItems = (items) => {
+  return Object.fromEntries(
+    Object.entries(items).map(([id, item]) => [
+      id,
+      { ...item, annualPaymentPence: Math.floor(item.annualPaymentPence) }
+    ])
+  )
+}
+
+/**
+ * Round pence amounts for payment lineItems
+ * @param {Array<ScheduledPayment>} payments
+ * @returns
+ */
+export const roundPaymentAmountForPaymentLineItems = (payments) =>
+  structuredClone(payments).map((payment) => ({
+    ...payment,
+    lineItems: payment.lineItems.map((lineItem) => ({
       ...lineItem,
       paymentPence: Math.floor(lineItem.paymentPence)
     }))
