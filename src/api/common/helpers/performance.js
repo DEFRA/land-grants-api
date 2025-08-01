@@ -7,7 +7,7 @@ export const endTiming = (logger, operation, start, success) => {
   const end = Date.now()
   const duration = end - start
 
-  logger.info(
-    `${operation} ${success ? 'completed successfully' : 'failed'} and took ${duration}ms`
-  )
+  const message = `${operation} ${success ? 'completed successfully' : 'failed'} and took ${duration}ms`
+
+  logger.info(message)
 }

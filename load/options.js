@@ -3,7 +3,7 @@ const { TEST_ENV } = __ENV
 
 export const defaultOptions = {
   vus: 20, // equivalent to -c 20 (20 concurrent users)
-  duration: '10s' // equivalent to -d 10 (run for 10 seconds)
+  duration: '30s' // equivalent to -d 30 (run for 30 seconds)
 }
 
 export const url =
