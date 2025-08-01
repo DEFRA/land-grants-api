@@ -8,6 +8,7 @@
  * @property {string} code
  * @property {string} description
  * @property {string} applicationUnitOfMeasurement
+ * @property {string} durationYears
  * @property {ActionPayment} payment
  * @property {string[]} landCoverClassCodes
  * @property {ActionRule[]} rules
