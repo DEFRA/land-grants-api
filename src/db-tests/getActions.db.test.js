@@ -44,7 +44,7 @@ describe('Get actions', () => {
       version: '1',
       enabled: true,
       display: true,
-      duration_years: '3',
+      durationYears: 3,
       startDate: new Date('2025-01-01T00:00:00.000Z'),
       code: 'CMOR1',
       description: 'CMOR1: Assess moorland and produce a written record',

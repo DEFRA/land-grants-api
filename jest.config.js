@@ -11,7 +11,8 @@ export default {
   testMatch: [
     '**/src/api/**/*.test.js',
     '**/src/rules-engine/**/*.test.js',
-    '**/src/available-area/**/*.test.js'
+    '**/src/available-area/**/*.test.js',
+    '**/src/payment-calculation/**/*.test.js'
   ],
   reporters: ['default', ['github-actions', { silent: false }], 'summary'],
   setupFiles: ['<rootDir>/.jest/setup.js'],
