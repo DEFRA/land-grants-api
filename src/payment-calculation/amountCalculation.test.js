@@ -36,6 +36,17 @@ const mockEnabledActions = [
       ratePerUnitGbp: 20,
       ratePerAgreementPerYearGbp: 0
     }
+  },
+  {
+    code: 'CSAM1',
+    description:
+      'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    payment: {
+      ratePerUnitGbp: 600,
+      ratePerAgreementPerYearGbp: 9700
+    }
   }
 ]
 
@@ -356,12 +367,32 @@ describe('createPaymentItems', () => {
         ]
       },
       {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [
+          {
+            code: 'UPL1',
+            quantity: 1.45
+          }
+        ]
+      },
+      {
         sheetId: 'SD5111',
         parcelId: '2222',
         actions: [
           {
             code: 'CMOR1',
             quantity: 0.34
+          }
+        ]
+      },
+      {
+        sheetId: 'SD5111',
+        parcelId: '2222',
+        actions: [
+          {
+            code: 'CSAM1',
+            quantity: 9.48
           }
         ]
       }
@@ -374,6 +405,12 @@ describe('createPaymentItems', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         annualPaymentPence: 27200
+      },
+      2: {
+        code: 'CSAM1',
+        description:
+          'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
+        annualPaymentPence: 970000
       }
     })
   })

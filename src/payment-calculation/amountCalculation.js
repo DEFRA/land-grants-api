@@ -193,11 +193,11 @@ export const createPaymentItems = (parcels, actions) => {
           paymentItems.agreementItems
         ).find((item) => item.code === action.code)
 
-        if (!hasAgreementItemBeenAdded)
+        if (!hasAgreementItemBeenAdded) {
           paymentItems.agreementItems[agreementItemKey] =
             createAgreementPaymentItem(actionData)
-
-        agreementItemKey++
+          agreementItemKey++
+        }
       }
 
       parcelItemKey++
