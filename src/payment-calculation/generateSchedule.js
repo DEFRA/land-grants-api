@@ -56,9 +56,7 @@ export function getAgreementEndDate(startDate, agreementYears) {
  */
 function getFrequencyIntervalMonths(frequency = 'quarterly') {
   const intervals = {
-    monthly: 1,
-    quarterly: 3,
-    yearly: 12
+    quarterly: 3
   }
   return intervals[frequency.toLowerCase()] || 3
 }
