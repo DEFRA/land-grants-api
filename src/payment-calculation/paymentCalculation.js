@@ -3,9 +3,7 @@ import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
-  roundAnnualPaymentAmountForItems,
-  roundPaymentAmountForPaymentLineItems,
-  shiftTotalPenniesToFirstScheduledPayment
+  reconcilePaymentAmounts
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
@@ -28,7 +26,7 @@ export const getPaymentCalculationDataRequirements = async (
  * @param {Array<PaymentParcel>} parcels
  * @param {Array<Action>} actions
  * @param {number} durationYears
- * @returns
+ * @returns {PaymentCalculationResponse}
  */
 export const getPaymentCalculationForParcels = (
   parcels,
@@ -36,8 +34,6 @@ export const getPaymentCalculationForParcels = (
   durationYears
 ) => {
   const frequency = 'Quarterly'
-
-  if (!actions) return {}
 
   // generate parcel and agreement level items
   const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
@@ -61,15 +57,12 @@ export const getPaymentCalculationForParcels = (
     schedule
   )
 
-  // shift quarter payments pennies to first scheduled payment
-  const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
-
-  // now that we have shifted pennies, round items amounts if they have decimals
-  const roundedItems = {
-    parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
-    agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
-    payments: roundPaymentAmountForPaymentLineItems(shiftedPayments)
-  }
+  // reconcile payment amounts (shift pennies and round final amounts after calculations)
+  const {
+    parcelItems: revisedParcelItems,
+    agreementLevelItems: revisedAgreementItems,
+    payments: revisedPayments
+  } = reconcilePaymentAmounts(parcelItems, agreementItems, payments)
 
   return {
     agreementStartDate,
@@ -77,11 +70,13 @@ export const getPaymentCalculationForParcels = (
     frequency,
     agreementTotalPence,
     annualTotalPence,
-    ...roundedItems
+    parcelItems: revisedParcelItems,
+    agreementLevelItems: revisedAgreementItems,
+    payments: revisedPayments
   }
 }
 
 /**
- * @import { PaymentParcel } from './payment-calculation.d.js'
+ * @import { PaymentParcel, PaymentCalculationResponse } from './payment-calculation.d.js'
  * @import { Action } from '../api/actions/action.d.js'
  */
