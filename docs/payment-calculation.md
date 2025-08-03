@@ -18,10 +18,8 @@ flowchart TD
   and agreement totals]
   calculateScheduled[Calculate
     scheduled payments]
-  shiftPennies[Shift payment pennies
-  to first scheduled payment]
-  roundAmounts[Round decimals
-  from final items amounts]
+  reconcileAmounts[Reconcile amounts:
+  shift pennies and round]
 
   result[/Final Payment Calculation/]
 
@@ -31,8 +29,7 @@ flowchart TD
   createItems --> calculateScheduled
   generateSchedule --> calculateScheduled
   calculateTotals
-  calculateScheduled --> shiftPennies
-  shiftPennies --> roundAmounts
+  calculateScheduled --> reconcileAmounts
   calculateTotals --> result
-  roundAmounts --> result
+  reconcileAmounts --> result
 ```

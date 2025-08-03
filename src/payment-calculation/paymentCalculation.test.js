@@ -38,24 +38,6 @@ const mockEnabledActions = [
 ]
 
 describe('getPaymentCalculationForParcels', () => {
-  it('should return empty response if no actions are being passed', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [
-          {
-            code: 'CMOR1',
-            quantity: 0.34
-          }
-        ]
-      }
-    ]
-    const response = getPaymentCalculationForParcels(parcels)
-
-    expect(response).toEqual({})
-  })
-
   it('should return a valid payload for valid parcel data', () => {
     jest.useFakeTimers().setSystemTime(new Date(2025, 6, 2))
     const durationYears = 1

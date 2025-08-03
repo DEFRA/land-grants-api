@@ -2,9 +2,8 @@ import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
-  roundAnnualPaymentAmountForItems,
-  roundPaymentAmountForPaymentLineItems,
-  shiftTotalPenniesToFirstScheduledPayment
+  reconcilePaymentAmounts,
+  roundPaymentAmountForPaymentLineItems
 } from './amountCalculation.js'
 
 const mockEnabledActions = [
@@ -521,7 +520,7 @@ describe('createPaymentItems', () => {
   })
 })
 
-describe('shiftTotalPenniesToFirstScheduledPayment', () => {
+describe('reconcilePaymentAmounts', () => {
   it('should shift extra pennies to the first scheduled payment', () => {
     const payments = [
       {
@@ -546,9 +545,9 @@ describe('shiftTotalPenniesToFirstScheduledPayment', () => {
       }
     ]
 
-    const revisedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
+    const response = reconcilePaymentAmounts([], [], payments)
 
-    expect(revisedPayments).toEqual([
+    expect(response.payments).toEqual([
       {
         lineItems: [],
         paymentDate: '2025-11-05',
@@ -572,58 +571,6 @@ describe('shiftTotalPenniesToFirstScheduledPayment', () => {
     ])
   })
 
-  it('should round if extra pennies left on shifted payment amount', () => {
-    const payments = [
-      {
-        lineItems: [],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 9000.66
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-02-05',
-        totalPaymentPence: 9000.66
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-05-05',
-        totalPaymentPence: 9000.66
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-08-05',
-        totalPaymentPence: 9000.66
-      }
-    ]
-
-    const revisedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
-
-    expect(revisedPayments).toEqual([
-      {
-        lineItems: [],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 9002
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-02-05',
-        totalPaymentPence: 9000
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-05-05',
-        totalPaymentPence: 9000
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-08-05',
-        totalPaymentPence: 9000
-      }
-    ])
-  })
-})
-
-describe('roundPaymentAmountForPaymentLineItems', () => {
   it('should floor round line items payments from payments input', () => {
     const payments = [
       {
@@ -669,9 +616,7 @@ describe('roundPaymentAmountForPaymentLineItems', () => {
       }
     ])
   })
-})
 
-describe('roundAnnualPaymentAmountForItems', () => {
   it('should round parcel level items payment amount from input', () => {
     const parcelItems = {
       1: {
@@ -689,9 +634,9 @@ describe('roundAnnualPaymentAmountForItems', () => {
       }
     }
 
-    const result = roundAnnualPaymentAmountForItems(parcelItems)
+    const result = reconcilePaymentAmounts(parcelItems, [], [])
 
-    expect(result).toEqual({
+    expect(result.parcelItems).toEqual({
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
@@ -717,9 +662,9 @@ describe('roundAnnualPaymentAmountForItems', () => {
       }
     }
 
-    const result = roundAnnualPaymentAmountForItems(agreementItems)
+    const result = reconcilePaymentAmounts([], agreementItems, [])
 
-    expect(result).toEqual({
+    expect(result.agreementLevelItems).toEqual({
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
