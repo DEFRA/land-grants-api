@@ -69,8 +69,7 @@ const PaymentsCalculateController = {
       })
 
       if (totalDurationYears === 0) {
-        const errorMessage =
-          'Error getting total duration, no valid actions data provided'
+        const errorMessage = 'Error getting actions information'
         request.logger.error(errorMessage)
         return Boom.badRequest(errorMessage)
       }
