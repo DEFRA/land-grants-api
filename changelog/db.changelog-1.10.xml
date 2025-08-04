@@ -8,7 +8,6 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <!-- Create new actions_config table -->
   <changeSet id="create-actions-config-table" author="system">
     <createTable tableName="actions_config" schemaName="public">
       <column name="id" type="SERIAL" autoIncrement="true">
