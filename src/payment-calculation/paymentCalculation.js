@@ -26,12 +26,14 @@ export const getPaymentCalculationDataRequirements = async (
  * @param {Array<PaymentParcel>} parcels
  * @param {Array<Action>} actions
  * @param {number} durationYears
+ * @param {string} startDate
  * @returns {PaymentCalculationResponse}
  */
 export const getPaymentCalculationForParcels = (
   parcels,
   actions,
-  durationYears
+  durationYears,
+  startDate
 ) => {
   const frequency = 'Quarterly'
 
@@ -48,7 +50,7 @@ export const getPaymentCalculationForParcels = (
 
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
-    generatePaymentSchedule(new Date(), durationYears, frequency)
+    generatePaymentSchedule(startDate ?? new Date(), durationYears, frequency)
 
   // calculate payments based on schedule and parcel/agreement items amounts
   const payments = calculateScheduledPayments(
