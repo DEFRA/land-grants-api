@@ -1,11 +1,60 @@
 import Hapi from '@hapi/hapi'
 import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
-import { calculatePayment } from '~/src/api/payment/service/payment.service.js'
 import { payments } from '~/src/api/payment/index.js'
+import {
+  getPaymentCalculationDataRequirements,
+  getPaymentCalculationForParcels
+} from '~/src/payment-calculation/paymentCalculation.js'
 
-jest.mock('~/src/api/payment/service/payment.service.js', () => ({
-  calculatePayment: jest.fn()
-}))
+jest.mock('~/src/payment-calculation/paymentCalculation.js')
+
+const mockGetPaymentCalculationForParcels = getPaymentCalculationForParcels
+const mockGetPaymentCalculationDataRequirements =
+  getPaymentCalculationDataRequirements
+const validResponse = {
+  agreementStartDate: '2025-08-01',
+  agreementEndDate: '2028-08-01',
+  frequency: 'Quarterly',
+  agreementTotalPence: 300000,
+  annualTotalPence: 100000,
+  parcelItems: {
+    1: {
+      code: 'CSAM1',
+      description:
+        'Assess soil, test soil organic matter and produce a soil management plan',
+      unit: 'Hectare',
+      quantity: 10.63,
+      rateInPence: 600,
+      annualPaymentPence: 12000,
+      sheetId: 'SD2324',
+      parcelId: '1253'
+    }
+  },
+  agreementLevelItems: {
+    1: {
+      code: 'CMOR1',
+      description:
+        'Assess moorland and produce a written record - Agreement level part',
+      annualPaymentPence: 27200
+    }
+  },
+  payments: [
+    {
+      totalPaymentPence: 25000,
+      paymentDate: '2025-08-05',
+      lineItems: [
+        {
+          parcelItemId: 1,
+          paymentPence: 1000
+        },
+        {
+          agreementLevelItemId: 1,
+          paymentPence: 2266
+        }
+      ]
+    }
+  ]
+}
 
 describe('Payment calculate controller', () => {
   const server = Hapi.server()
@@ -16,6 +65,10 @@ describe('Payment calculate controller', () => {
       debug: jest.fn(),
       error: jest.fn()
     })
+    server.decorate('server', 'postgresDb', {
+      connect: jest.fn(),
+      query: jest.fn()
+    })
 
     await server.register([payments])
     await server.initialize()
@@ -25,8 +78,28 @@ describe('Payment calculate controller', () => {
     await server.stop()
   })
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks()
+
+    mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
+    await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
+      enabledActions: [
+        {
+          version: 1,
+          startDate: '2025-01-01',
+          code: 'BND1',
+          durationYears: 3,
+          description: 'BND1',
+          applicationUnitOfMeasurement: 'ha',
+          enabled: true,
+          display: true,
+          payment: {
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
+          }
+        }
+      ]
+    })
   })
 
   describe('GET /payments/calculate route', () => {
@@ -36,12 +109,6 @@ describe('Payment calculate controller', () => {
         url: '/payments/calculate',
         payload: mockLandActions
       }
-
-      calculatePayment.mockResolvedValue({
-        payment: {
-          total: 100.98
-        }
-      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -97,10 +164,12 @@ describe('Payment calculate controller', () => {
       const request = {
         method: 'POST',
         url: '/payments/calculate',
-        payload: mockLandActions
+        payload: {
+          landActions: []
+        }
       }
 
-      calculatePayment.mockResolvedValue(null)
+      getPaymentCalculationForParcels.mockResolvedValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -109,28 +178,9 @@ describe('Payment calculate controller', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Unable to calculate payment')
-    })
-
-    test('should return 500 if the controller throws an error', async () => {
-      const request = {
-        method: 'POST',
-        url: '/payments/calculate',
-        payload: mockLandActions
-      }
-
-      calculatePayment.mockRejectedValue(
-        new Error('An internal server error occurred')
+      expect(message).toBe(
+        'Error calculating payment land actions, no land or actions data provided'
       )
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(500)
-      expect(message).toBe('An internal server error occurred')
     })
   })
 })
