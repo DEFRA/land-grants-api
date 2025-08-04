@@ -24,7 +24,7 @@ const findActionByCode = (actions = [], code) => {
  * @param {number} durationYears
  * @returns {{annualTotalPence: number, agreementTotalPence: number}}
  */
-export const calculateTotalPayments = (
+export const calculateAnnualAndAgreementTotals = (
   parcelItems,
   agreementItems,
   durationYears
@@ -43,7 +43,34 @@ export const calculateTotalPayments = (
   }
 }
 
-export const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
+/**
+ * Reconciles payment amounts (shifting pennies and rounding final amounts)
+ * @param {Array<PaymentParcelItem>} parcelItems
+ * @param {Array<PaymentAgreementItem>} agreementItems
+ * @param {Array<ScheduledPayment>} payments
+ * @returns {{parcelItems: Array<PaymentParcelItem>, agreementLevelItems: Array<PaymentAgreementItem>, payments: Array<ScheduledPayment>}}
+ */
+export const reconcilePaymentAmounts = (
+  parcelItems,
+  agreementItems,
+  payments
+) => {
+  const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
+  return {
+    parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
+    agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
+    payments: roundPaymentAmountForPaymentLineItems(shiftedPayments)
+  }
+}
+
+/**
+ * Shifts payment pennies from all payments to the first scheduled payment
+ * @param {Array<ScheduledPayment>} payments
+ * @returns {Array<ScheduledPayment>}
+ */
+const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
+  if (!payments.length) return []
+
   let adjustedPayments = structuredClone(payments)
   const firstPayment = adjustedPayments[0]
   const hasDecimals = firstPayment.totalPaymentPence % 1
@@ -68,10 +95,28 @@ export const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
   return adjustedPayments
 }
 
-export const roundLineItemsPayments = (payments) =>
-  structuredClone(payments).map((adjustedPayment) => ({
-    ...adjustedPayment,
-    lineItems: adjustedPayment.lineItems.map((lineItem) => ({
+/**
+ * Round annual payment pence amount for parcelItems / agreementLevelItems
+ * @param {Array<PaymentAgreementItem | PaymentParcelItem>} items
+ * @returns {object}
+ */
+const roundAnnualPaymentAmountForItems = (items) =>
+  Object.fromEntries(
+    Object.entries(items).map(([id, item]) => [
+      id,
+      { ...item, annualPaymentPence: Math.floor(item.annualPaymentPence) }
+    ])
+  )
+
+/**
+ * Round pence amounts for payment lineItems
+ * @param {Array<ScheduledPayment>} payments
+ * @returns
+ */
+export const roundPaymentAmountForPaymentLineItems = (payments) =>
+  structuredClone(payments).map((payment) => ({
+    ...payment,
+    lineItems: payment.lineItems.map((lineItem) => ({
       ...lineItem,
       paymentPence: Math.floor(lineItem.paymentPence)
     }))

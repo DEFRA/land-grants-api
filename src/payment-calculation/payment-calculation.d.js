@@ -51,3 +51,15 @@
  * @property {string} paymentDate - The payment date
  * @property {number} totalPaymentPence - The annual payment paid for the action
  */
+
+/**
+ * @typedef {object} PaymentCalculationResponse
+ * @property {string} agreementStartDate - Agreement start date in ISO format (YYYY-MM-DD)
+ * @property {string} agreementEndDate - Agreement end date in ISO format (YYYY-MM-DD)
+ * @property {string} frequency - Payment frequency (e.g., "Quarterly", "Annual")
+ * @property {number} agreementTotalPence - Total payment amount for entire agreement in pence
+ * @property {number} annualTotalPence - Annual payment total in pence
+ * @property {object} parcelItems - Parcel-level payment items keyed by ID
+ * @property {object} agreementLevelItems - Agreement-level payment items keyed by ID
+ * @property {Array<ScheduledPayment>} payments - Scheduled payment breakdown
+ */

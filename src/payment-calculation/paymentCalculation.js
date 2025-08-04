@@ -1,10 +1,9 @@
 import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
 import {
+  calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
-  calculateTotalPayments,
   createPaymentItems,
-  roundLineItemsPayments,
-  shiftTotalPenniesToFirstScheduledPayment
+  reconcilePaymentAmounts
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
@@ -27,7 +26,7 @@ export const getPaymentCalculationDataRequirements = async (
  * @param {Array<PaymentParcel>} parcels
  * @param {Array<Action>} actions
  * @param {number} durationYears
- * @returns
+ * @returns {PaymentCalculationResponse}
  */
 export const getPaymentCalculationForParcels = (
   parcels,
@@ -36,27 +35,34 @@ export const getPaymentCalculationForParcels = (
 ) => {
   const frequency = 'Quarterly'
 
-  if (!actions) return {}
+  // generate parcel and agreement level items
+  const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
 
+  // calculate total amounts
+  const { annualTotalPence, agreementTotalPence } =
+    calculateAnnualAndAgreementTotals(
+      parcelItems,
+      agreementItems,
+      durationYears
+    )
+
+  // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
     generatePaymentSchedule(new Date(), durationYears, frequency)
 
-  const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
-
-  const { annualTotalPence, agreementTotalPence } = calculateTotalPayments(
-    parcelItems,
-    agreementItems,
-    durationYears
-  )
-
+  // calculate payments based on schedule and parcel/agreement items amounts
   const payments = calculateScheduledPayments(
     parcelItems,
     agreementItems,
     schedule
   )
 
-  const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
-  const revisedPayments = roundLineItemsPayments(shiftedPayments)
+  // reconcile payment amounts (shift pennies and round final amounts after calculations)
+  const {
+    parcelItems: revisedParcelItems,
+    agreementLevelItems: revisedAgreementItems,
+    payments: revisedPayments
+  } = reconcilePaymentAmounts(parcelItems, agreementItems, payments)
 
   return {
     agreementStartDate,
@@ -64,13 +70,13 @@ export const getPaymentCalculationForParcels = (
     frequency,
     agreementTotalPence,
     annualTotalPence,
-    parcelItems,
-    agreementLevelItems: agreementItems,
+    parcelItems: revisedParcelItems,
+    agreementLevelItems: revisedAgreementItems,
     payments: revisedPayments
   }
 }
 
 /**
- * @import { PaymentParcel } from './payment-calculation.d.js'
+ * @import { PaymentParcel, PaymentCalculationResponse } from './payment-calculation.d.js'
  * @import { Action } from '../api/actions/action.d.js'
  */
