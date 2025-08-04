@@ -1,5 +1,4 @@
 import Boom from '@hapi/boom'
-import { landActionSchema } from '~/src/api/actions/schema/action-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import {
   errorResponseSchema,
@@ -10,6 +9,7 @@ import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
+import { paymentCalculateSchema } from '../../actions/schema/payment-calculate.schema.js'
 
 /**
  * PaymentsCalculateController
@@ -22,7 +22,7 @@ const PaymentsCalculateController = {
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
     validate: {
-      payload: landActionSchema
+      payload: paymentCalculateSchema
     },
     response: {
       status: {
@@ -35,7 +35,7 @@ const PaymentsCalculateController = {
 
   handler: async (request, h) => {
     try {
-      const { landActions } = request.payload
+      const { landActions, startDate } = request.payload
 
       request.logger.info(
         `Controller calculating land actions payment ${landActions}`
@@ -77,7 +77,8 @@ const PaymentsCalculateController = {
       const calculateResponse = getPaymentCalculationForParcels(
         landActions,
         enabledActions,
-        totalDurationYears
+        totalDurationYears,
+        startDate
       )
 
       if (!calculateResponse) {
