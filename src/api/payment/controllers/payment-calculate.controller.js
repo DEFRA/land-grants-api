@@ -68,6 +68,12 @@ const PaymentsCalculateController = {
         }
       })
 
+      if (totalDurationYears === 0) {
+        const errorMessage = 'Error getting actions information'
+        request.logger.error(errorMessage)
+        return Boom.badRequest(errorMessage)
+      }
+
       const calculateResponse = getPaymentCalculationForParcels(
         landActions,
         enabledActions,
