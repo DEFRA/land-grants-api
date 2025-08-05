@@ -48,7 +48,7 @@ describe('Calculate available area with agreements', () => {
       {
         payload: {
           parcelIds: ['SD6743-7268'],
-          fields: ['size', 'actions.availableArea', 'actions.results'],
+          fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
         logger,
@@ -169,7 +169,7 @@ describe('Calculate available area with agreements', () => {
       {
         payload: {
           parcelIds: ['SD6743-7268'],
-          fields: ['size', 'actions.availableArea', 'actions.results'],
+          fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
         },
         logger,

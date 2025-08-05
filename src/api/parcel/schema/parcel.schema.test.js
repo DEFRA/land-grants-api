@@ -160,19 +160,10 @@ describe('Parcel Schema Validation', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should validate with actions.availableArea field', () => {
-      const valid = {
-        ...validParcelsRequest,
-        fields: ['actions.availableArea']
-      }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
-    })
-
     it('should validate with all valid fields', () => {
       const valid = {
         ...validParcelsRequest,
-        fields: ['size', 'actions', 'actions.availableArea']
+        fields: ['size', 'actions', 'actions.results']
       }
       const result = parcelsSchema.validate(valid)
       expect(result.error).toBeUndefined()
