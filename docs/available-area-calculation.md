@@ -1,6 +1,6 @@
 ## Available Area Calculation (AAC)
 
-- [Back home](../readme.md)
+- [Back home](../README.md)
 
 ### AAC Process Diagram
 
