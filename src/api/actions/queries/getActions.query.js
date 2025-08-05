@@ -21,7 +21,21 @@ async function getEnabledActions(logger, db) {
     logger.info(`Connecting to DB to fetch actions`)
     client = await db.connect()
 
-    const query = `SELECT * FROM actions WHERE enabled = TRUE`
+    const query = `
+      SELECT 
+        a.*,
+        ac.version,
+        ac.config->>'start_date' as start_date,
+        ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
+        (ac.config->>'duration_years')::numeric as duration_years,
+        ac.config->'payment' as payment,
+        ac.config->'land_cover_class_codes' as land_cover_class_codes,
+        ac.config->'rules' as rules,
+        ac.last_updated_at as last_updated
+      FROM actions a
+      JOIN actions_config ac ON a.code = ac.code
+      WHERE a.enabled = TRUE AND ac.is_active = TRUE
+    `
     const result = await client.query(query)
 
     return result.rows.map(actionTransformer)
