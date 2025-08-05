@@ -58,14 +58,7 @@ const parcelSchema = Joi.object({
 const parcelsSchema = Joi.object({
   parcelIds: Joi.array().items(parcelIdSchema).required(),
   fields: Joi.array()
-    .items(
-      Joi.string().valid(
-        'size',
-        'actions',
-        'actions.availableArea',
-        'actions.results'
-      )
-    )
+    .items(Joi.string().valid('size', 'actions', 'actions.results'))
     .required(),
   plannedActions: Joi.array()
     .items(
