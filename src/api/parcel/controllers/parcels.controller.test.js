@@ -352,7 +352,7 @@ describe('Parcels controller', () => {
         method: 'POST',
         url: `/parcels`,
         payload: {
-          fields: ['actions.availableArea'],
+          fields: ['actions'],
           parcelIds: [`${sheetId}-${parcelId}`],
           plannedActions: []
         }
