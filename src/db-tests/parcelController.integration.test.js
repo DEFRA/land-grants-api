@@ -9,10 +9,10 @@ import {
 import { createResponseCapture } from './setup/utils.js'
 
 const logger = {
-  info: console.info,
-  error: console.error,
-  warn: console.warn,
-  debug: console.debug
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn()
 }
 
 let connection
