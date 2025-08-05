@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="create-actions-config-table" author="system">
+    <createTable tableName="actions_config" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="code" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="version" type="NUMERIC">
+        <constraints nullable="false"/>
+      </column>
+      <column name="config" type="JSONB">
+        <constraints nullable="false"/>
+      </column>
+      <column name="is_active" type="BOOLEAN" defaultValueBoolean="false">
+        <constraints nullable="false"/>
+      </column>
+      <column name="last_updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="add-foreign-key-actions-config" author="system">
+    <addForeignKeyConstraint 
+      baseTableName="actions_config" 
+      baseColumnNames="code" 
+      constraintName="fk_actions_config_code"
+      referencedTableName="actions" 
+      referencedColumnNames="code"
+      onDelete="CASCADE"/>
+  </changeSet>
+
+  <changeSet id="add-unique-constraint-action-config-version" author="system">
+    <addUniqueConstraint 
+      tableName="actions_config" 
+      columnNames="code,version"
+      constraintName="unique_code_version"/>
+  </changeSet>
+
+  <changeSet id="add-unique-constraint-active-config" author="system">
+    <sql>
+      CREATE UNIQUE INDEX unique_active_config_per_code 
+      ON actions_config (code) 
+      WHERE is_active = true;
+    </sql>
+    <rollback>
+      DROP INDEX unique_active_config_per_code;
+    </rollback>
+  </changeSet>
+
+  <changeSet id="add-index-code-active" author="system">
+    <createIndex tableName="actions_config" indexName="idx_actions_config_code_active">
+      <column name="code"/>
+      <column name="is_active"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="remove-config-columns-from-actions" author="system">
+    <dropColumn tableName="actions" columnName="version"/>
+    <dropColumn tableName="actions" columnName="start_date"/>
+    <dropColumn tableName="actions" columnName="application_unit_of_measurement"/>
+    <dropColumn tableName="actions" columnName="payment"/>
+    <dropColumn tableName="actions" columnName="land_cover_class_codes"/>
+    <dropColumn tableName="actions" columnName="rules"/>
+    <dropColumn tableName="actions" columnName="duration_years"/>
+    <dropColumn tableName="actions" columnName="last_updated"/>
+  </changeSet>
+
+</databaseChangeLog>
