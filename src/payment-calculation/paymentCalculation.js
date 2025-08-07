@@ -81,7 +81,7 @@ export const getPaymentCalculationForParcels = (
       `First payment date: ${schedule[0]}`
     ]),
     ...paymentItemsExplanations,
-    createExplanationSection('Payment calculation', reconciliationExplanations),
+    reconciliationExplanations,
     createExplanationSection('Summary', [
       `Total agreement payment: ${agreementTotalPence} pence/year`,
       `Total annual payment: ${annualTotalPence} pence/year`,

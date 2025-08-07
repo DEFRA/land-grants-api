@@ -49,7 +49,7 @@ export const calculateAnnualAndAgreementTotals = (
  * @param {Array<PaymentParcelItem>} parcelItems
  * @param {Array<PaymentAgreementItem>} agreementItems
  * @param {Array<ScheduledPayment>} payments
- * @returns {{parcelItems: Array<PaymentParcelItem>, agreementLevelItems: Array<PaymentAgreementItem>, payments: Array<ScheduledPayment>, explanations: Array<string>}}
+ * @returns {{parcelItems: Array<PaymentParcelItem>, agreementLevelItems: Array<PaymentAgreementItem>, payments: Array<ScheduledPayment>, explanations: ExplanationSection}}
  */
 export const reconcilePaymentAmounts = (
   parcelItems,
@@ -63,7 +63,7 @@ export const reconcilePaymentAmounts = (
     parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
     agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
     payments: roundPaymentAmountForPaymentLineItems(adjustedPayments),
-    explanations
+    explanations: createExplanationSection('Payment calculation', explanations)
   }
 }
 
