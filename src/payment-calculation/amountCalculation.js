@@ -1,4 +1,5 @@
 import { differenceInCalendarMonths } from 'date-fns'
+import { createExplanationSection } from '../available-area/explanations.js'
 
 /**
  * Gbp to pence
@@ -48,35 +49,41 @@ export const calculateAnnualAndAgreementTotals = (
  * @param {Array<PaymentParcelItem>} parcelItems
  * @param {Array<PaymentAgreementItem>} agreementItems
  * @param {Array<ScheduledPayment>} payments
- * @returns {{parcelItems: Array<PaymentParcelItem>, agreementLevelItems: Array<PaymentAgreementItem>, payments: Array<ScheduledPayment>}}
+ * @returns {{parcelItems: Array<PaymentParcelItem>, agreementLevelItems: Array<PaymentAgreementItem>, payments: Array<ScheduledPayment>, explanations: ExplanationSection}}
  */
 export const reconcilePaymentAmounts = (
   parcelItems,
   agreementItems,
   payments
 ) => {
-  const shiftedPayments = shiftTotalPenniesToFirstScheduledPayment(payments)
+  const { adjustedPayments, explanations } =
+    shiftTotalPenniesToFirstScheduledPayment(payments)
+
   return {
     parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
     agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
-    payments: roundPaymentAmountForPaymentLineItems(shiftedPayments)
+    payments: roundPaymentAmountForPaymentLineItems(adjustedPayments),
+    explanations: createExplanationSection('Payment calculation', explanations)
   }
 }
 
 /**
  * Shifts payment pennies from all payments to the first scheduled payment
  * @param {Array<ScheduledPayment>} payments
- * @returns {Array<ScheduledPayment>}
+ * @returns {{adjustedPayments: Array<ScheduledPayment>, explanations: Array<string>}}
  */
 const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
-  if (!payments.length) return []
+  if (!payments.length) return { adjustedPayments: [], explanations: [] }
+
+  const explanations = []
 
   let adjustedPayments = structuredClone(payments)
   const firstPayment = adjustedPayments[0]
   const hasDecimals = firstPayment.totalPaymentPence % 1
+  let decimalsForAllPayments = 0
 
   if (hasDecimals) {
-    const decimalsForAllPayments = adjustedPayments.reduce((acc, payment) => {
+    decimalsForAllPayments = adjustedPayments.reduce((acc, payment) => {
       const decimals = payment.totalPaymentPence % 1
       return acc + decimals
     }, 0)
@@ -90,9 +97,19 @@ const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
     adjustedPayments[0].totalPaymentPence = Math.floor(
       adjustedPayments[0].totalPaymentPence
     )
+
+    explanations.push(
+      `- Shifting pennies to first payment: ${hasDecimals} x 4 quarters x 3 years => ${decimalsForAllPayments} pence`
+    )
   }
 
-  return adjustedPayments
+  explanations.push(
+    `- TOTAL: ${adjustedPayments[0].totalPaymentPence} pence/year`,
+    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1].totalPaymentPence} + ${decimalsForAllPayments} = ${adjustedPayments[0].totalPaymentPence}} pence`,
+    `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1].totalPaymentPence} pence`
+  )
+
+  return { adjustedPayments, explanations }
 }
 
 /**
@@ -214,26 +231,39 @@ const createAgreementPaymentItem = (actionData) => ({
  * Creates parcel and agreement items to be included on the response payload
  * @param {Array<PaymentParcel>} parcels
  * @param {Array<Action>} actions
- * @returns {{parcelItems: object, agreementItems: object}}
+ * @returns {{parcelItems: object, agreementItems: object, explanations: ExplanationSection[]}}
  */
 export const createPaymentItems = (parcels, actions) => {
   const paymentItems = {
     parcelItems: {},
-    agreementItems: {}
+    agreementItems: {},
+    explanations: []
   }
 
   let parcelItemKey = 1
   let agreementItemKey = 1
 
   parcels.forEach((parcel) => {
+    let explanations = []
+
     for (const action of parcel.actions) {
       const actionData = findActionByCode(actions, action.code)
+
+      explanations = explanations.concat([
+        `Calculating payment for ${action?.code}`,
+        `- Quantity applied for: ${action?.quantity} ${actionData?.applicationUnitOfMeasurement}`,
+        `- Rate per ${actionData?.applicationUnitOfMeasurement} per year: ${actionData?.payment?.ratePerUnitGbp} pence`
+      ])
 
       paymentItems.parcelItems[parcelItemKey] = createParcelPaymentItem(
         action,
         actionData,
         parcel
       )
+
+      const total = action.quantity * actionData?.payment.ratePerUnitGbp
+      const ratePerAgreementPerYearGbp =
+        actionData?.payment.ratePerAgreementPerYearGbp
 
       if (actionData?.payment.ratePerAgreementPerYearGbp) {
         const hasAgreementItemBeenAdded = Object.values(
@@ -244,11 +274,32 @@ export const createPaymentItems = (parcels, actions) => {
           paymentItems.agreementItems[agreementItemKey] =
             createAgreementPaymentItem(actionData)
           agreementItemKey++
+
+          explanations.push(
+            `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
+            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) + ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + ratePerAgreementPerYearGbp} pence/year`
+          )
+        } else {
+          explanations.push(
+            `- Ignoring rate per agreement/year, already applied.`,
+            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+          )
         }
+      } else {
+        explanations.push(
+          `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+        )
       }
 
       parcelItemKey++
     }
+
+    paymentItems.explanations.push(
+      createExplanationSection(
+        `Parcel ${parcel.sheetId}-${parcel.parcelId}`,
+        explanations
+      )
+    )
   })
 
   return paymentItems
@@ -257,4 +308,5 @@ export const createPaymentItems = (parcels, actions) => {
 /**
  * @import { PaymentParcel, ScheduledPayment, PaymentParcelAction, PaymentParcelItem, PaymentAgreementItem } from './payment-calculation.d.js'
  * @import { Action } from '../api/actions/action.d.js'
+ * @import { ExplanationSection } from '../available-area/explanations.d.js'
  */
