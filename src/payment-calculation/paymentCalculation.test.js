@@ -151,7 +151,8 @@ describe('getPaymentCalculationForParcels', () => {
           paymentDate: '2026-08-05',
           totalPaymentPence: 9532
         }
-      ]
+      ],
+      explanations: expect.any(Array)
     }
 
     const response = getPaymentCalculationForParcels(
@@ -276,7 +277,8 @@ describe('getPaymentCalculationForParcels', () => {
           paymentDate: '2027-02-05',
           totalPaymentPence: 9532
         }
-      ]
+      ],
+      explanations: expect.any(Array)
     }
 
     const response = getPaymentCalculationForParcels(
