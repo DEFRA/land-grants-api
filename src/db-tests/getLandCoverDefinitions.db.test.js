@@ -1,9 +1,5 @@
 import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from './setup/postgres.js'
+import { connectToTestDatbase } from './setup/postgres.js'
 import { logger } from './testLogger.js'
 
 let connection
@@ -11,17 +7,9 @@ let connection
 describe('Get land cover definitions', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: false,
-      covers: false,
-      moorland: false,
-      landCoverCodes: true,
-      landCoverCodesActions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

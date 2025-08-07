@@ -1,11 +1,7 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
 
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 
 const logger = {
@@ -24,20 +20,9 @@ function getSnapshotName(testName, parcel, action) {
 describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: false,
-      agreements: true,
-      landCoverCodes: true,
-      landCoverCodesActions: true,
-      compatibilityMatrix: true,
-      actions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

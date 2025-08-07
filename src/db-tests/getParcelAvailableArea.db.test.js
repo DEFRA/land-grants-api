@@ -2,11 +2,7 @@
 
 import { mockActions } from '../api/actions/fixtures/index.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from './setup/postgres.js'
+import { connectToTestDatbase } from './setup/postgres.js'
 
 let connection
 
@@ -18,15 +14,9 @@ const logger = {
 describe('Available Area query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: false
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 
