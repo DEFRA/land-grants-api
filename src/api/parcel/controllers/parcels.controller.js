@@ -158,7 +158,6 @@ const ParcelsController = {
           const sortedParcelActions = actionsWithAvailableArea.sort((a, b) =>
             a.code.localeCompare(b.code)
           )
-          console.log(JSON.stringify(sortedParcelActions, null, 2))
 
           parcelResponse.actions = sortedParcelActions
         }

@@ -1,6 +1,10 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
-import { connectToTestDatbase, resetParcelControllerTestData, seedForParcelControllerTest } from '~/src/db-tests/setup/postgres.js'
+import {
+  connectToTestDatbase,
+  resetParcelControllerTestData,
+  seedForParcelControllerTest
+} from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 
 const logger = {

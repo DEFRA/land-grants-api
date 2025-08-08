@@ -18,8 +18,8 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
         FROM land_covers lc
         WHERE lc.sheet_id = $1
           AND lc.parcel_id = $2
-          ORDER BY lc.sheet_id, lc.parcel_id, lc.land_cover_class_code
-          `
+        ORDER BY lc.land_cover_class_code, lc.area_sqm
+    `
 
     logger.info(`Retrieving land covers for parcelId: ${sheetId}-${parcelId}`)
 
