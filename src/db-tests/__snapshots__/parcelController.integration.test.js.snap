@@ -1,23 +1,23 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: SD6743-7268 CMOR1-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action,SD6743-7269 CMOR1-explanations 1`] = `
 [
   {
     "content": [
       "Action code - CMOR1",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -60,9 +60,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -179,24 +179,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: SD6743-7268 UPL1-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action,SD6743-7269 UPL1-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL1",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -239,9 +239,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -360,24 +360,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: SD6743-7268 UPL2-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action,SD6743-7269 UPL2-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL2",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -420,9 +420,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -541,24 +541,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: SD6743-7268 UPL3-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action: should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action,SD6743-7269 UPL3-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL3",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -601,9 +601,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -722,24 +722,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: SD6743-7268 CMOR1-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: should return 1 stack for 1 existing agreement actions,SD6743-7269 CMOR1-explanations 1`] = `
 [
   {
     "content": [
       "Action code - CMOR1",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -781,9 +781,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -858,24 +858,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: SD6743-7268 UPL1-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: should return 1 stack for 1 existing agreement actions,SD6743-7269 UPL1-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL1",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -917,9 +917,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -995,24 +995,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: SD6743-7268 UPL2-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: should return 1 stack for 1 existing agreement actions,SD6743-7269 UPL2-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL2",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -1054,9 +1054,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",
@@ -1132,24 +1132,24 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
 ]
 `;
 
-exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: SD6743-7268 UPL3-explanations 1`] = `
+exports[`Calculate available area with agreements should return 1 stack for 1 existing agreement actions: should return 1 stack for 1 existing agreement actions,SD6743-7269 UPL3-explanations 1`] = `
 [
   {
     "content": [
       "Action code - UPL3",
-      "Parcel Id - SD6743 7268",
+      "Parcel Id - SD6743 7269",
     ],
     "title": "Application Information",
   },
   {
     "content": [
+      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "Farm building (371) - 0.00910078 ha",
+      "Hard standing (551) - 0.01647047 ha",
       "Hard standing (551) - 0.01273695 ha",
       "Metalled track (631) - 0.02538023 ha",
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Hard standing (551) - 0.01647047 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
-      "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -1191,9 +1191,9 @@ exports[`Calculate available area with agreements should return 1 stack for 1 ex
   },
   {
     "content": [
-      "Permanent grassland (131) - 0.16770771 ha",
-      "Permanent grassland (131) - 0.00479968 ha",
       "Permanent grassland (130) Warning: This is a land cover class - 0.42017837 ha",
+      "Permanent grassland (131) - 0.00479968 ha",
+      "Permanent grassland (131) - 0.16770771 ha",
       "= 0.59268576 ha",
     ],
     "title": "Total valid land covers",

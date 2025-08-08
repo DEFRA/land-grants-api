@@ -42,8 +42,8 @@ describe('Get agreement actions for parcel query', () => {
       logger
     )
 
-    expect(actions[0].actionCode).toBe('UPL1')
+    expect(actions[0].actionCode).toBe('CMOR1')
     expect(actions[0].unit).toBe('ha')
-    expect(actions[0].quantity).toBe(0.1)
+    expect(actions[0].quantity).toBe(10)
   })
 })
