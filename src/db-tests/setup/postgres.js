@@ -1,9 +1,9 @@
-import { resolve } from 'node:path'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import { Pool } from 'pg'
+import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'url'
+import path from 'node:path'
+
 import { DB_CONFIG } from './jestSetup.js'
-import { readCompressedFileStream } from '../../api/common/helpers/compression.js'
 
 export const connectToTestDatbase = () => {
   return new Pool({
@@ -12,75 +12,33 @@ export const connectToTestDatbase = () => {
   })
 }
 
-export async function seedPostgres(connection, options) {
-  const migrationPath = '../../api/common/migration'
-
-  if (options.parcels) {
-    await seedDatabase(connection, 'land-parcels-data.sql.gz', migrationPath)
-  }
-
-  if (options.covers) {
-    await seedDatabase(connection, 'land-covers-data.sql.gz', migrationPath)
-  }
-
-  if (options.landCoverCodes) {
-    await seedDatabase(
-      connection,
-      'land-cover-codes-data.sql.gz',
-      migrationPath
-    )
-  }
-
-  if (options.landCoverCodesActions) {
-    await seedDatabase(
-      connection,
-      'land-cover-codes-actions-data.sql.gz',
-      migrationPath
-    )
-  }
-
-  if (options.agreements) {
-    await seedDatabase(connection, 'agreements-data.sql.gz', '../fixtures')
-  }
-
-  if (options.moorland) {
-    await seedDatabase(
-      connection,
-      'moorland-designations-data.sql.gz',
-      migrationPath
-    )
-  }
-
-  if (options.compatibilityMatrix) {
-    await seedDatabase(connection, 'compatibility-matrix.sql.gz', migrationPath)
-  }
-
-  if (options.actions) {
-    await seedDatabase(connection, 'actions-data.sql.gz', migrationPath)
-  }
-}
-
-export async function seedDatabase(client, seedFile, folderPath) {
+export async function runSqlScript(client, seedFile, folderPath) {
   const filename = fileURLToPath(import.meta.url)
   const dirname = path.resolve(path.dirname(filename), folderPath)
-  const seedFileContent = await readCompressedFileStream(
-    resolve(dirname, seedFile)
-  )
+  const seedFileContent = await readFile(path.join(dirname, seedFile), 'utf8')
   await client.query(seedFileContent)
 }
 
-export async function resetDatabase(client) {
-  await client.query(`
-      DO
-      $func$
-      BEGIN
-        EXECUTE (
-          SELECT 'TRUNCATE TABLE ' || string_agg(oid::regclass::text, ', ') || ' CASCADE'
-            FROM pg_class
-            WHERE relkind = 'r'
-            AND relnamespace = 'public'::regnamespace
-        );
-      END
-      $func$;
-    `)
+export async function seedForParcelControllerTest(connection) {
+  await runSqlScript(
+    connection,
+    'parcel-controller-int-test-data.sql',
+    '../fixtures'
+  )
+}
+
+export async function resetParcelControllerTestData(connection) {
+  await runSqlScript(
+    connection,
+    'parcel-controller-int-test-data-down.sql',
+    '../fixtures'
+  )
+}
+
+export async function seedForGetParcelTest(connection) {
+  await runSqlScript(connection, 'getParcel-test-data.sql', '../fixtures')
+}
+
+export async function resetGetParcelTestData(connection) {
+  await runSqlScript(connection, 'getParcel-test-data-down.sql', '../fixtures')
 }

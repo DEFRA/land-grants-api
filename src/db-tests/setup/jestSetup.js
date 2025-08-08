@@ -1,6 +1,7 @@
 import { type } from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
+// import { execSync } from 'child_process'
 import { GenericContainer, Network, Wait } from 'testcontainers'
 import { config } from '../../config/index.js'
 
@@ -21,6 +22,9 @@ const log = (stream, name) => {
 }
 
 export default async () => {
+  // unpack gz to sql
+  // execSync('scripts/extrac', (err, stdout, stderr) => {
+
   const network = await new Network().start()
   const postgresContainer = initializePostgres(network)
   const postgresStarted = await postgresContainer.start()
@@ -39,6 +43,7 @@ function initializeLiquibase(network) {
     .withWaitStrategy(
       Wait.forLogMessage("Liquibase command 'update' was executed successfully")
     )
+    .withStartupTimeout(120_000)
     .withCopyDirectoriesToContainer([
       {
         source: path.resolve(

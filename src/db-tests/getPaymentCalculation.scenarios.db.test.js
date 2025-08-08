@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
@@ -24,13 +20,9 @@ describe('Calculate payments', () => {
 
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      actions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

@@ -1,10 +1,6 @@
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 const logger = {
   info: jest.fn(),
@@ -16,13 +12,9 @@ let connection
 describe('Get actions', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      actions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

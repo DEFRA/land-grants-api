@@ -28,6 +28,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Make extract seed file script executable
+        run: chmod +x ./scripts/extract-gz-to-sql.sh
+
+      - name: Extract seed files
+        run:
+          ./scripts/extract-gz-to-sql src/api/common/migration changelog/
+
       - name: Publish Database Schema
         uses: DEFRA/cdp-build-action/publish-db-migrations@main
         with:

@@ -1,11 +1,7 @@
 /* eslint-disable no-console */
 
 import { getMoorlandInterceptPercentage } from '../api/parcel/queries/getMoorlandInterceptPercentage.js'
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from './setup/postgres.js'
+import { connectToTestDatbase } from './setup/postgres.js'
 
 let connection
 
@@ -17,15 +13,9 @@ const logger = {
 describe('Get moorland intercept percentage query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

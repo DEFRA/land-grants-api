@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
@@ -25,19 +21,9 @@ describe('Calculate available area', () => {
 
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: false,
-      landCoverCodes: true,
-      landCoverCodesActions: true,
-      compatibilityMatrix: true,
-      actions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

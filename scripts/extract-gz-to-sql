@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Script to extract .gz files to .sql files
+# Usage: ./extract-gz-to-sql.sh [source_directory] [destination_directory]
+
+set -e  # Exit on any error
+
+# Default directories
+SOURCE_DIR="${1:-./}"
+DEST_DIR="${2:-./extracted}"
+
+echo "Source directory: $SOURCE_DIR"
+echo "Destination directory: $DEST_DIR"
+
+# Find and process all .gz files
+while IFS= read -r -d '' gz_file; do
+    echo "Processing: $gz_file"
+    
+    # Get the base filename without the .gz extension
+    base_name=$(basename "$gz_file" .gz)
+    
+    # Ensure the output has .sql extension
+    if [[ "$base_name" != *.sql ]]; then
+        base_name="${base_name}.sql"
+    fi
+    
+    output_file="$DEST_DIR/$base_name"
+    
+    # Check if output file already exists
+    if [[ -f "$output_file" ]]; then
+        echo "  Warning: $output_file already exists, skipping..."
+        continue
+    fi
+    
+    # Extract the file
+    if gunzip -c "$gz_file" > "$output_file"; then
+        echo "  ✓ Extracted to: $output_file"
+    else
+        echo "  ✗ Failed to extract: $gz_file"
+        # Remove incomplete file if it was created
+        [[ -f "$output_file" ]] && rm "$output_file"
+    fi
+    
+done < <(find "$SOURCE_DIR" -name "*.gz" -type f -print0)
+
+echo ""
+echo "Extraction complete!"

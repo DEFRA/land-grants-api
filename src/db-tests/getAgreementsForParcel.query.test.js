@@ -1,9 +1,5 @@
 import { getAgreementsForParcel } from '../api/agreements/queries/getAgreementsForParcel.query.js'
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from './setup/postgres.js'
+import { connectToTestDatbase } from './setup/postgres.js'
 
 let connection
 
@@ -15,13 +11,9 @@ const logger = {
 describe('Get agreement actions for parcel query', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      agreements: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 
@@ -50,8 +42,8 @@ describe('Get agreement actions for parcel query', () => {
       logger
     )
 
-    expect(actions[0].actionCode).toBe('UPL1')
+    expect(actions[0].actionCode).toBe('CMOR1')
     expect(actions[0].unit).toBe('ha')
-    expect(actions[0].quantity).toBe(0.1)
+    expect(actions[0].quantity).toBe(10)
   })
 })
