@@ -6,6 +6,7 @@ import {
   reconcilePaymentAmounts
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
+import { createExplanationSection } from '../available-area/explanations.js'
 
 /**
  * Gets payment calculation data requirements
@@ -38,7 +39,11 @@ export const getPaymentCalculationForParcels = (
   const frequency = 'Quarterly'
 
   // generate parcel and agreement level items
-  const { parcelItems, agreementItems } = createPaymentItems(parcels, actions)
+  const {
+    parcelItems,
+    agreementItems,
+    explanations: paymentItemsExplanations
+  } = createPaymentItems(parcels, actions)
 
   // calculate total amounts
   const { annualTotalPence, agreementTotalPence } =
@@ -63,10 +68,30 @@ export const getPaymentCalculationForParcels = (
   const {
     parcelItems: revisedParcelItems,
     agreementLevelItems: revisedAgreementItems,
-    payments: revisedPayments
+    payments: revisedPayments,
+    explanations: reconciliationExplanations
   } = reconcilePaymentAmounts(parcelItems, agreementItems, payments)
 
+  const explanations = [
+    createExplanationSection('Schedule Information', [
+      `Agreement duration: ${durationYears} years`,
+      `Payment frequency: ${frequency}`,
+      `Agreement start date: ${agreementStartDate}`,
+      `Agreement end date: ${agreementEndDate}`,
+      `First payment date: ${schedule[0]}`
+    ]),
+    ...paymentItemsExplanations,
+    reconciliationExplanations,
+    createExplanationSection('Summary', [
+      `Total agreement payment: ${agreementTotalPence} pence/year`,
+      `Total annual payment: ${annualTotalPence} pence/year`,
+      `First quarter payment: ${revisedPayments[0].totalPaymentPence} pence`,
+      `Rest quarters payment: ${revisedPayments[1].totalPaymentPence} pence`
+    ])
+  ]
+
   return {
+    explanations,
     agreementStartDate,
     agreementEndDate,
     frequency,
