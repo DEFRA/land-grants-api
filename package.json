@@ -26,13 +26,13 @@
     "test": "npm run test:unit && npm run test:db",
     "test:unit": "jest --coverage --verbose --runInBand",
     "test:watch": "jest --watch",
-    "test:db": "npx jest --projects=src/db-tests --runInBand",
+    "test:db": "npm run extractsql && npx jest --projects=src/db-tests --runInBand",
+    "extractsql": "scripts/extract-gz-to-sql src/api/common/migration changelog/",
     "server:watch": "nodemon --exec tsx --enable-source-maps ./src",
     "server:debug": "nodemon --exec tsx --enable-source-maps --inspect ./src",
     "prestart": "npm run build",
     "start": "NODE_ENV=production node --use-strict .",
-    "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module",
-    "load:data": "NODE_ENV=local node src/load-data-postgres.js"
+    "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module"
   },
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",

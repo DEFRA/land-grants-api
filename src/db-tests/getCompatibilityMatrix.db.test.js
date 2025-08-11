@@ -1,10 +1,6 @@
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 const logger = {
   info: jest.fn(),
@@ -16,13 +12,9 @@ let connection
 describe('Get compatibility matrix', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      compatibilityMatrix: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 

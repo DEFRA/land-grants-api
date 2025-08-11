@@ -1,10 +1,9 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
-
 import {
   connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
+  resetParcelControllerTestData,
+  seedForParcelControllerTest
 } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 
@@ -18,26 +17,17 @@ const logger = {
 let connection
 
 function getSnapshotName(testName, parcel, action) {
-  return `${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
+  return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
 
 describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: false,
-      agreements: true,
-      landCoverCodes: true,
-      landCoverCodesActions: true,
-      compatibilityMatrix: true,
-      actions: true
-    })
-  }, 60000)
+    await seedForParcelControllerTest(connection)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
+    await resetParcelControllerTestData(connection)
     await connection.end()
   })
 
@@ -47,7 +37,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7268'],
+          parcelIds: ['SD6743-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
@@ -64,7 +54,7 @@ describe('Calculate available area with agreements', () => {
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
       {
-        parcelId: '7268',
+        parcelId: '7269',
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
@@ -160,7 +150,7 @@ describe('Calculate available area with agreements', () => {
         )
       )
     }
-  })
+  }, 120000)
 
   test('should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action', async () => {
     const { h, getResponse } = createResponseCapture()
@@ -168,7 +158,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7268'],
+          parcelIds: ['SD6743-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
         },
@@ -186,7 +176,7 @@ describe('Calculate available area with agreements', () => {
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
       {
-        parcelId: '7268',
+        parcelId: '7269',
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
@@ -296,7 +286,7 @@ describe('Calculate available area with agreements', () => {
     for (const action of data.parcels[0].actions) {
       expect(action.results.explanations).toMatchSnapshot(
         getSnapshotName(
-          'should return 1 stack for 1 existing agreement actions',
+          'should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action',
           data.parcels[0],
           action
         )

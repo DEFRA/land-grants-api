@@ -16,3 +16,5 @@ globalConfig.json
 
 tsconfig.tsbuildinfo
 
+# ignore extracted sql files
+changelog/*.sql

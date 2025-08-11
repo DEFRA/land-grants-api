@@ -47,6 +47,7 @@ describe('getLandCoversForParcel', () => {
         FROM land_covers lc
         WHERE lc.sheet_id = $1
           AND lc.parcel_id = $2
+        ORDER BY lc.land_cover_class_code, lc.area_sqm
     `
     const expectedValues = [sheetId, parcelId]
 

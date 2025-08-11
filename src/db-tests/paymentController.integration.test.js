@@ -1,11 +1,7 @@
 /* eslint-disable no-console */
 import { PaymentsCalculateController } from '~/src/api/payment/controllers/payment-calculate.controller.js'
 
-import {
-  connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
 
@@ -24,13 +20,9 @@ describe('payment calculate controller integration', () => {
 
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      actions: true
-    })
-  }, 60000)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
     await connection.end()
   })
 
