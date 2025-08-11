@@ -2,8 +2,8 @@ import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controll
 
 import {
   connectToTestDatbase,
-  resetDatabase,
-  seedPostgres
+  resetGetParcelTestData,
+  seedForGetParcelTest
 } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
 import { logger } from './testLogger.js'
@@ -13,24 +13,16 @@ let connection
 describe('Calculate available area', () => {
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await seedPostgres(connection, {
-      parcels: true,
-      covers: true,
-      moorland: false,
-      landCoverCodes: true,
-      landCoverCodesActions: true,
-      compatibilityMatrix: true,
-      actions: true
-    })
-  }, 60000)
+    await seedForGetParcelTest(connection)
+  })
 
   afterAll(async () => {
-    await resetDatabase(connection)
+    await resetGetParcelTestData(connection)
     await connection.end()
   })
 
   // All valid area SD6743-6006
-  // Valid and Invalid area SD6743-7268
+  // Valid and Invalid area SD6743-7271
   // All Invalid area (Farmhouse) SD6943-0085
 
   test('should return 0 stacks for 0 existing actions', async () => {
@@ -39,7 +31,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7268'],
+          parcelIds: ['SD6743-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
@@ -56,7 +48,7 @@ describe('Calculate available area', () => {
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
       {
-        parcelId: '7268',
+        parcelId: '7271',
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
@@ -126,7 +118,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7268'],
+          parcelIds: ['SD6743-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'CMOR1', quantity: 0.1, unit: 'ha' }]
         },
@@ -144,7 +136,7 @@ describe('Calculate available area', () => {
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
       {
-        parcelId: '7268',
+        parcelId: '7271',
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
@@ -238,7 +230,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7268'],
+          parcelIds: ['SD6743-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [
             { actionCode: 'UPL1', quantity: 0.1, unit: 'ha' },
@@ -259,7 +251,7 @@ describe('Calculate available area', () => {
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
       {
-        parcelId: '7268',
+        parcelId: '7271',
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
