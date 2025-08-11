@@ -3,6 +3,12 @@ import Joi from 'joi'
 const PaymentCalculateResponseSchema = Joi.object({
   message: Joi.string().required(),
   payment: Joi.object({
+    explanations: Joi.array().items(
+      Joi.object({
+        title: Joi.string().required(),
+        content: Joi.array().items(Joi.string()).required()
+      })
+    ),
     agreementStartDate: Joi.string().isoDate().required(),
     agreementEndDate: Joi.string().isoDate().required(),
     frequency: Joi.string()
