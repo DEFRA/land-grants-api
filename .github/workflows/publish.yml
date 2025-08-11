@@ -29,7 +29,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Make extract seed file script executable
-        run: chmod +x ./scripts/extract-gz-to-sql.sh
+        run: chmod +x ./scripts/extract-gz-to-sql
 
       - name: Extract seed files
         run:
