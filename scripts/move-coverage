@@ -1,0 +1,11 @@
+#!/bin/bash
+
+mkdir -p coverage/tmp
+
+# copy coverage files to tmp folder if they exist
+if [ -f "coverage/unit/coverage-final.json" ]; then
+  cp coverage/unit/coverage-final.json coverage/tmp/coverage-final-unit.json
+fi
+if [ -f "coverage/db/coverage-final.json" ]; then
+  cp coverage/db/coverage-final.json coverage/tmp/coverage-final-db.json
+fi
