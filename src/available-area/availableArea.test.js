@@ -38,13 +38,13 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 10000
               }
             ],
@@ -72,21 +72,21 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 10000
               }
             ],
             landCoversForExistingActions: {
               CMOR1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
@@ -113,21 +113,21 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 10000
               }
             ],
             landCoversForExistingActions: {
               UPL1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
@@ -160,27 +160,27 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 5000
               }
             ],
             landCoversForExistingActions: {
               CMOR1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ],
               UPL1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
@@ -216,33 +216,33 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 11150.572
               }
             ],
             landCoversForExistingActions: {
               CHRW1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ],
               CHRW2: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ],
               CHRW3: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
@@ -288,27 +288,27 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 10000
               }
             ],
             landCoversForExistingActions: {
               UPL1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ],
               UPL2: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
@@ -338,21 +338,21 @@ describe('Available Area', () => {
           availableAreaDataRequirements: {
             landCoverCodesForAppliedForAction: [
               {
-                landCoverClassCode: 130,
-                landCoverCode: 131
+                landCoverClassCode: '130',
+                landCoverCode: '131'
               }
             ],
             landCoversForParcel: [
               {
-                landCoverClassCode: 130,
+                landCoverClassCode: '130',
                 areaSqm: 5000
               }
             ],
             landCoversForExistingActions: {
               UPL1: [
                 {
-                  landCoverClassCode: 130,
-                  landCoverCode: 131
+                  landCoverClassCode: '130',
+                  landCoverCode: '131'
                 }
               ]
             },
