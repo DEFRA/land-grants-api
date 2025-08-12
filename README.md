@@ -62,8 +62,8 @@ You are only required to run this once, unless the schema changes.
 This script:
 
 - will start a dockerised postgres database
+- extract the data seed files into the changelog folder
 - run the liquibase migration, creating the tables
-- seed the postgres database
 
 ```bash
 npm run dev:setup
@@ -77,21 +77,13 @@ This script will start the api
 npm run dev
 ```
 
-#### Reload seed data
+#### Seed data
 
-This script will seed the postgres database
+The seed data is in `src/api/common/migration` and are compressed sql files.
 
-You are only required to run this when the seed data changes
+They are uncompressed when you run `npm run dev:setup` or the db tests, and are instered as part of the migrations.
 
-```bash
-npm run load:data
-```
-
-We can also run these individually for `postgres`
-
-```bash
-load:data:postgres
-```
+When updating seed data we cannot update the existing files, we will need to create a new migration updating the seed data.
 
 ### Testing
 
