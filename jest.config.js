@@ -11,7 +11,7 @@ export default {
     {
       displayName: 'db-tests',
       ...(await import('./jest.db.config.js')).default,
-      coverageDirectory: '<rootDir>/coverage/integration'
+      coverageDirectory: '<rootDir>/coverage/db'
     }
   ],
   collectCoverage: true,
