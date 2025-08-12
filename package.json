@@ -27,7 +27,7 @@
     "test:unit": "jest --config=jest.unit.config.js --coverage --verbose --runInBand",
     "test:watch": "jest --watch",
     "test:db": "npm run extractsql && npx jest --config=jest.db.config.js --runInBand --coverage",
-    "merge:coverage": "./scripts/move-coverage && nyc report --temp-dir coverage/tmp --reporter=html --reporter=lcov --report-dir coverage/merged",
+    "merge:coverage": "./scripts/move-coverage && nyc merge coverage/tmp coverage/merged/coverage.json && nyc report --temp-dir coverage/merged --reporter=html --reporter=lcov --report-dir coverage/merged",
     "coverage:open": "open coverage/merged/index.html",
     "extractsql": "scripts/extract-gz-to-sql src/api/common/migration changelog/",
     "server:watch": "nodemon --exec tsx --enable-source-maps ./src",
