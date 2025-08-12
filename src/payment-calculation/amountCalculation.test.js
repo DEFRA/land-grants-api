@@ -672,6 +672,16 @@ describe('reconcilePaymentAmounts', () => {
       }
     })
   })
+
+  it('should return empty arrays if no payments are passed', () => {
+    const result = reconcilePaymentAmounts([], [], [])
+
+    expect(result.payments).toEqual([])
+    expect(result.explanations).toEqual({
+      content: [],
+      title: 'Payment calculation'
+    })
+  })
 })
 
 describe('calculateScheduledPayments', () => {
@@ -760,6 +770,83 @@ describe('calculateScheduledPayments', () => {
     const cmor1AgreementPayment = 27200 / 4
     const upl1ParcelPayment = (2.5 * 2000) / 4
     const upl2ParcelPayment = (0.94 * 5300) / 4
+    const totalPaymentPence =
+      cmor1ParcelPayment +
+      cmor1AgreementPayment +
+      upl1ParcelPayment +
+      upl2ParcelPayment
+
+    const lineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: cmor1ParcelPayment
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: upl1ParcelPayment
+      },
+      {
+        parcelItemId: 3,
+        paymentPence: upl2ParcelPayment
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: cmor1AgreementPayment
+      }
+    ]
+
+    expect(result).toEqual(
+      schedule.map((paymentDate) => ({
+        totalPaymentPence,
+        paymentDate,
+        lineItems
+      }))
+    )
+  })
+
+  it('should return a schedule of payments if schedule has 1 date being passed', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        quantity: 0.34,
+        rateInPence: 1060,
+        annualPaymentPence: 360.40000000000003
+      },
+      2: {
+        code: 'UPL1',
+        quantity: 2.5,
+        rateInPence: 2000,
+        annualPaymentPence: 5000
+      },
+      3: {
+        code: 'UPL2',
+        quantity: 0.94,
+        rateInPence: 5300,
+        annualPaymentPence: 4982
+      }
+    }
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        annualPaymentPence: 27200
+      }
+    }
+
+    const schedule = ['2025-11-05']
+
+    const result = calculateScheduledPayments(
+      parcelItems,
+      agreementItems,
+      schedule
+    )
+
+    // CMOR1 => (1060 * 0.34) / 4
+    const cmor1ParcelPayment = 1060 * 0.34
+    const cmor1AgreementPayment = 27200
+    const upl1ParcelPayment = 2.5 * 2000
+    const upl2ParcelPayment = 0.94 * 5300
     const totalPaymentPence =
       cmor1ParcelPayment +
       cmor1AgreementPayment +
