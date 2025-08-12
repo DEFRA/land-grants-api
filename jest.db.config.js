@@ -10,5 +10,11 @@ export default {
   testEnvironment: 'node',
   globalSetup: `<rootDir>${currentPath}/setup/jestSetup.js`,
   globalTeardown: `<rootDir>${currentPath}/setup/jestTeardown.js`,
+  collectCoverageFrom: [
+    'src/**/*.js',
+    '!src/**/*.test.js',
+    '!**/__tests__/**',
+    '!**/__snapshots__/**'
+  ],
   coverageDirectory: '<rootDir>/coverage/db'
 }
