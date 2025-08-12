@@ -16,11 +16,21 @@ export default {
   ],
   reporters: ['default', ['github-actions', { silent: false }], 'summary'],
   setupFiles: ['<rootDir>/.jest/setup.js'],
-  collectCoverageFrom: ['src/api/**/*.js', 'src/rules-engine/**/*.js'],
+  collectCoverageFrom: [
+    'src/api/**/*.js',
+    'src/rules-engine/**/*.js',
+    '!src/**/*.test.js',
+    '!**/__tests__/**',
+    '!**/__snapshots__/**'
+  ],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/.server',
-    'index.js'
+    'index.js',
+    'index.js',
+    '/__tests__/',
+    '/__snapshots__/',
+    '\\.test\\.js$'
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   transform: {
