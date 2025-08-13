@@ -14,8 +14,6 @@ import {
   getParcelActionsWithAvailableArea
 } from '~/src/api/parcel/service/parcel.service.js'
 import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { getEnabledActions } from '../../actions/queries/index.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
@@ -95,34 +93,12 @@ const ParcelsController = {
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {
-          const enabledActions = await getEnabledActions(
-            request.logger,
-            request.server.postgresDb
-          )
-
-          if (!enabledActions || enabledActions?.length === 0) {
-            const errorMessage = 'Actions not found'
-            request.logger.error(errorMessage)
-            return Boom.notFound(errorMessage)
-          }
-
-          request.logger.info(
-            `Found ${enabledActions.length} action configs from DB`
-          )
-
-          const compatibilityCheckFn = await createCompatibilityMatrix(
-            request.logger,
-            request.server.postgresDb
-          )
-
           const actionsWithAvailableArea =
             await getParcelActionsWithAvailableArea(
-              enabledActions,
               sheetId,
               parcelId,
               mergedActions,
               showActionResults,
-              compatibilityCheckFn,
               request.server.postgresDb,
               request.logger
             )
@@ -145,6 +121,10 @@ const ParcelsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
+      if (error instanceof Error && error.message === 'Actions not found') {
+        return Boom.notFound(error.message)
+      }
+
       const errorMessage = 'Error fetching parcels'
       request.logger.error(errorMessage, {
         error: error.message,

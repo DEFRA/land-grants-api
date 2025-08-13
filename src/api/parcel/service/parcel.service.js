@@ -6,6 +6,8 @@ import {
   actionTransformer,
   plannedActionsTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 
 /**
  * Split id into sheet id and parcel id
@@ -34,26 +36,35 @@ export function splitParcelId(id, logger) {
 
 /**
  * Get parcel actions with available area
- * @param {any[]} enabledActions - All enabled actions
  * @param {string} sheetId - The sheet id
  * @param {string} parcelId - The parcel id
  * @param {object} actions - The actions to get
  * @param {boolean} showActionResults - Whether to show action results
- * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {object} postgresDb - The postgres database
  * @param {object} logger - The logger
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 export async function getParcelActionsWithAvailableArea(
-  enabledActions,
   sheetId,
   parcelId,
   actions,
   showActionResults,
-  compatibilityCheckFn,
   postgresDb,
   logger
 ) {
+  const enabledActions = await getEnabledActions(logger, postgresDb)
+  if (!enabledActions || enabledActions?.length === 0) {
+    const errorMessage = 'Actions not found'
+    throw Error(errorMessage)
+  }
+
+  logger.info(`Found ${enabledActions.length} action configs from DB`)
+
+  const compatibilityCheckFn = await createCompatibilityMatrix(
+    logger,
+    postgresDb
+  )
+
   const actionsWithAvailableArea = []
 
   for (const action of enabledActions) {
