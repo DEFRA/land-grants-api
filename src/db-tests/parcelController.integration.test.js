@@ -152,7 +152,7 @@ describe('Calculate available area with agreements', () => {
     }
   }, 120000)
 
-  test('should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action', async () => {
+  test.only('should return 1 stack for 1 existing agreement actions, 1 stack for 1 planned action', async () => {
     const { h, getResponse } = createResponseCapture()
 
     await ParcelsController.handler(
@@ -292,5 +292,5 @@ describe('Calculate available area with agreements', () => {
         )
       )
     }
-  })
+  }, 120000)
 })

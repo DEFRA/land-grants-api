@@ -70,7 +70,7 @@ export async function getParcelActionsWithAvailableArea(
   for (const action of enabledActions) {
     if (!action.display) {
       logger.debug(`Action ${action.code} is not displayed, skipping`)
-      return []
+      continue
     }
 
     const transformedActions = plannedActionsTransformer(actions)
