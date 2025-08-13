@@ -9,16 +9,11 @@ import {
   parcelsSchema,
   parcelsSuccessResponseSchema
 } from '~/src/api/parcel/schema/parcel.schema.js'
-import { splitParcelId } from '~/src/api/parcel/service/parcel.service.js'
 import {
-  actionTransformer,
-  plannedActionsTransformer,
-  sizeTransformer
-} from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/available-area/availableArea.js'
+  splitParcelId,
+  getParcelActionsWithAvailableArea
+} from '~/src/api/parcel/service/parcel.service.js'
+import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { getEnabledActions } from '../../actions/queries/index.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
@@ -54,6 +49,7 @@ const ParcelsController = {
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 
       const responseParcels = []
+      const showActionResults = fields.includes('actions.results')
 
       for (const parcel of parcelIds) {
         const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
@@ -99,61 +95,37 @@ const ParcelsController = {
         }
 
         if (fields.some((f) => f.startsWith('actions'))) {
-          const actions = await getEnabledActions(
+          const enabledActions = await getEnabledActions(
             request.logger,
             request.server.postgresDb
           )
 
-          if (!actions || actions?.length === 0) {
+          if (!enabledActions || enabledActions?.length === 0) {
             const errorMessage = 'Actions not found'
             request.logger.error(errorMessage)
             return Boom.notFound(errorMessage)
           }
 
-          request.logger.info(`Found ${actions.length} action configs from DB`)
+          request.logger.info(
+            `Found ${enabledActions.length} action configs from DB`
+          )
 
           const compatibilityCheckFn = await createCompatibilityMatrix(
             request.logger,
             request.server.postgresDb
           )
 
-          const actionsWithAvailableArea = []
-
-          for (const action of actions) {
-            if (!action.display) {
-              request.logger.debug(
-                `Action ${action.code} is not displayed, skipping`
-              )
-              continue
-            }
-
-            const aacDataRequirements = await getAvailableAreaDataRequirements(
-              action.code,
+          const actionsWithAvailableArea =
+            await getParcelActionsWithAvailableArea(
+              enabledActions,
               sheetId,
               parcelId,
-              plannedActionsTransformer(mergedActions),
+              mergedActions,
+              showActionResults,
+              compatibilityCheckFn,
               request.server.postgresDb,
               request.logger
             )
-
-            const availableArea = getAvailableAreaForAction(
-              action.code,
-              sheetId,
-              parcelId,
-              compatibilityCheckFn,
-              plannedActionsTransformer(mergedActions),
-              aacDataRequirements,
-              request.logger
-            )
-
-            const actionWithAvailableArea = actionTransformer(
-              action,
-              availableArea,
-              fields.includes('actions.results')
-            )
-
-            actionsWithAvailableArea.push(actionWithAvailableArea)
-          }
 
           const sortedParcelActions = actionsWithAvailableArea.sort((a, b) =>
             a.code.localeCompare(b.code)
