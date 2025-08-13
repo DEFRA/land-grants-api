@@ -39,6 +39,7 @@ jobs:
         uses: DEFRA/cdp-build-action/publish-db-migrations@main
         with:
           path: ./changelog
+          force: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Test Coverage Reports
