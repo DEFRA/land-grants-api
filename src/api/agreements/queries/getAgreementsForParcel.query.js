@@ -34,7 +34,7 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
     return agreementActionsTransformer(result.rows)
   } catch (error) {
     logger.error(`Error executing get agreements query: ${error}`)
-    return
+    return []
   } finally {
     if (client) {
       client.release()

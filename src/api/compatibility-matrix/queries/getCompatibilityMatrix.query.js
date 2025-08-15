@@ -20,7 +20,7 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
     logger.error(
       `Error executing get compatibility matrix query: ${error.message}`
     )
-    return
+    return []
   } finally {
     if (client) {
       client.release()
