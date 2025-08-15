@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import path from 'node:path'
 
 import { DB_CONFIG } from './jestSetup.js'
+const fixtureDirPath = '../fixtures'
 
 export const connectToTestDatbase = () => {
   return new Pool({
@@ -23,7 +24,7 @@ export async function seedForParcelControllerTest(connection) {
   await runSqlScript(
     connection,
     'parcel-controller-int-test-data.sql',
-    '../fixtures'
+    fixtureDirPath
   )
 }
 
@@ -31,14 +32,14 @@ export async function resetParcelControllerTestData(connection) {
   await runSqlScript(
     connection,
     'parcel-controller-int-test-data-down.sql',
-    '../fixtures'
+    fixtureDirPath
   )
 }
 
 export async function seedForGetParcelTest(connection) {
-  await runSqlScript(connection, 'getParcel-test-data.sql', '../fixtures')
+  await runSqlScript(connection, 'getParcel-test-data.sql', fixtureDirPath)
 }
 
 export async function resetGetParcelTestData(connection) {
-  await runSqlScript(connection, 'getParcel-test-data-down.sql', '../fixtures')
+  await runSqlScript(connection, 'getParcel-test-data-down.sql', fixtureDirPath)
 }
