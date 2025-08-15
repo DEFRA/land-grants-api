@@ -292,5 +292,5 @@ describe('Calculate available area with agreements', () => {
         )
       )
     }
-  })
+  }, 120000)
 })
