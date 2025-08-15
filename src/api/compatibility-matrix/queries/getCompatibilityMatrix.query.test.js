@@ -67,7 +67,7 @@ describe('getCompatibilityMatrix', () => {
 
     const result = await getCompatibilityMatrix(mockLogger, dbMock)
 
-    expect(result).toBeUndefined()
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       `Error executing get compatibility matrix query: ${error.message}`
     )

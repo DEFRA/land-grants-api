@@ -71,7 +71,7 @@ const transformLandCoversForActions = (actionLandCovers, actionCodes) => {
   for (const code of actionCodes) {
     landCovers[code] = []
   }
-  for (const landCover of actionLandCovers?.rows) {
+  for (const landCover of actionLandCovers?.rows || []) {
     landCovers[landCover.action_code].push({
       landCoverCode: landCover.land_cover_code,
       landCoverClassCode: landCover.land_cover_class_code

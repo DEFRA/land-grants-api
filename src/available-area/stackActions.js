@@ -298,7 +298,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
   // sort actions by area in ascending order
   // this ensures that smaller actions are considered first
   // which helps in filling stacks more efficiently
-  const sortedActionsAsc = actions.sort((a, b) => a.areaSqm - b.areaSqm)
+  const sortedActionsAsc = actions.toSorted((a, b) => a.areaSqm - b.areaSqm)
 
   for (const action of sortedActionsAsc) {
     let remainingAreaForAction = action.areaSqm
