@@ -73,7 +73,9 @@ export const reconcilePaymentAmounts = (
  * @returns {{adjustedPayments: Array<ScheduledPayment>, explanations: Array<string>}}
  */
 const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
-  if (!payments.length) return { adjustedPayments: [], explanations: [] }
+  if (!payments.length) {
+    return { adjustedPayments: [], explanations: [] }
+  }
 
   const explanations = []
 
@@ -145,7 +147,9 @@ export const roundPaymentAmountForPaymentLineItems = (payments) =>
  * @returns {number}
  */
 const calculatePaymentsPerYear = (schedule) => {
-  if (schedule.length < 2) return schedule.length
+  if (schedule.length < 2) {
+    return schedule.length
+  }
   const monthDiff = differenceInCalendarMonths(schedule[1], schedule[0])
   return 12 / monthDiff
 }

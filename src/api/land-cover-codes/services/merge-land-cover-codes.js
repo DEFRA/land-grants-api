@@ -18,7 +18,7 @@ export function mergeLandCoverCodes(landCoverCodes) {
     mergedCodes.add(landCoverClassCode)
   }
 
-  return Array.from(mergedCodes).sort()
+  return Array.from(mergedCodes).sort((a, b) => a.localeCompare(b))
 }
 
 /**
