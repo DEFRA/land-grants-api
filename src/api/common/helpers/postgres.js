@@ -2,7 +2,6 @@ import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
-import { loadPostgresData } from './load-land-data.js'
 
 const DEFAULT_PORT = 5432
 
@@ -64,38 +63,6 @@ export const postgresDb = {
         const client = await pool.connect()
         server.logger.info('Postgres connection successful')
         client.release()
-
-        if (options.loadPostgresData) {
-          await loadPostgresData('agreements-data.sql.gz', pool, server.logger)
-          await loadPostgresData(
-            'land-parcels-data.sql.gz',
-            pool,
-            server.logger
-          )
-          await loadPostgresData('land-covers-data.sql.gz', pool, server.logger)
-          await loadPostgresData(
-            'moorland-designations-data.sql.gz',
-            pool,
-            server.logger
-          )
-          await loadPostgresData(
-            'land-cover-codes-data.sql.gz',
-            pool,
-            server.logger
-          )
-          await loadPostgresData(
-            'land-cover-codes-actions-data.sql.gz',
-            pool,
-            server.logger
-          )
-          await loadPostgresData(
-            'compatibility-matrix.sql.gz',
-            pool,
-            server.logger
-          )
-          await loadPostgresData('actions-data.sql.gz', pool, server.logger)
-        }
-
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
