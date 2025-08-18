@@ -30,7 +30,10 @@ export default {
     'index.js',
     '/__tests__/',
     '/__snapshots__/',
-    '\\.test\\.js$'
+    '\\.test\\.js$',
+    'src/db-tests/testLogger.js',
+    'src/db-tests/setup/',
+    'src/db-tests/fixtures/'
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   transform: {
