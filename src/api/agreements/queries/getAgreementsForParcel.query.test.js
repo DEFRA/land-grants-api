@@ -138,7 +138,7 @@ describe('getAgreementsForParcel', () => {
       mockLogger
     )
 
-    expect(result).toBeUndefined()
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       `Error executing get agreements query: Error: ${error.message}`
     )
@@ -158,7 +158,7 @@ describe('getAgreementsForParcel', () => {
       mockLogger
     )
 
-    expect(result).toBeUndefined()
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       `Error executing get agreements query: Error: ${connectionError.message}`
     )
@@ -177,7 +177,7 @@ describe('getAgreementsForParcel', () => {
       mockLogger
     )
 
-    expect(result).toBeUndefined()
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })
