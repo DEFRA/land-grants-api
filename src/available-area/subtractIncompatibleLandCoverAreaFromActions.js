@@ -106,8 +106,8 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
       explanations.push(
         '',
         explain.actionMayBeApplied(
-          parcelId,
           sheetId,
+          parcelId,
           action.actionCode,
           actionCodeAppliedFor
         ),
