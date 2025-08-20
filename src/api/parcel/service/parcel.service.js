@@ -8,6 +8,8 @@ import {
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
 
 /**
  * Split id into sheet id and parcel id
@@ -104,4 +106,37 @@ export async function getParcelActionsWithAvailableArea(
   }
 
   return actionsWithAvailableArea
+}
+
+/**
+ * Get all merged actions for a parcel
+ * @param {string} sheetId - The sheet id
+ * @param {string} parcelId - The parcel id
+ * @param {object} plannedActions - The planned actions
+ * @param {object} postgresDb - The postgres database
+ * @param {object} logger - The logger
+ * @returns {Promise<Action[]>} The merged actions
+ */
+export async function mergeActionsAndCurrentAgreements(
+  sheetId,
+  parcelId,
+  plannedActions,
+  postgresDb,
+  logger
+) {
+  const agreements = await getAgreementsForParcel(
+    sheetId,
+    parcelId,
+    postgresDb,
+    logger
+  )
+
+  const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
+
+  logger.info(
+    `Merged actions for parcel ${sheetId}-${parcelId}:`,
+    mergedActions
+  )
+
+  return mergedActions
 }

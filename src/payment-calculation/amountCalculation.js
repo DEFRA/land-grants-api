@@ -10,10 +10,11 @@ const gbpToPence = (gbp = 0) => gbp * 100
 
 /**
  * Find an action by code
+ * @param {string} code
  * @param {Array<Action>} actions
  * @returns {Action | undefined}
  */
-const findActionByCode = (actions = [], code) => {
+const findActionByCode = (code, actions = []) => {
   const action = actions.find((a) => a.code === code)
   return action
 }
@@ -141,6 +142,7 @@ export const roundPaymentAmountForPaymentLineItems = (payments) =>
     }))
   }))
 
+const MONTHS_PER_YEAR = 12
 /**
  * Calculate payments per year based on month intervals
  * @param {Array<string>} schedule
@@ -151,7 +153,7 @@ const calculatePaymentsPerYear = (schedule) => {
     return schedule.length
   }
   const monthDiff = differenceInCalendarMonths(schedule[1], schedule[0])
-  return 12 / monthDiff
+  return MONTHS_PER_YEAR / monthDiff
 }
 
 /**
@@ -209,7 +211,7 @@ export const calculateScheduledPayments = (
 const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData?.code ?? '',
   description: actionData?.description ?? '',
-  version: Number(actionData?.version) ?? '',
+  version: Number(actionData?.version),
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
@@ -251,7 +253,7 @@ export const createPaymentItems = (parcels, actions) => {
     let explanations = []
 
     for (const action of parcel.actions) {
-      const actionData = findActionByCode(actions, action.code)
+      const actionData = findActionByCode(action.code, actions)
 
       explanations = explanations.concat([
         `Calculating payment for ${action?.code}`,

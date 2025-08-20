@@ -11,11 +11,10 @@ import {
 } from '~/src/api/parcel/schema/parcel.schema.js'
 import {
   splitParcelId,
-  getParcelActionsWithAvailableArea
+  getParcelActionsWithAvailableArea,
+  mergeActionsAndCurrentAgreements
 } from '~/src/api/parcel/service/parcel.service.js'
 import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 /**
@@ -64,21 +63,12 @@ const ParcelsController = {
           return Boom.notFound(errorMessage)
         }
 
-        const agreements = await getAgreementsForParcel(
+        const mergedActions = await mergeActionsAndCurrentAgreements(
           sheetId,
           parcelId,
+          plannedActions,
           request.server.postgresDb,
           request.logger
-        )
-
-        const mergedActions = mergeAgreementsTransformer(
-          agreements,
-          plannedActions
-        )
-
-        request.logger.info(
-          `Merged actions for parcel ${sheetId}-${parcelId}:`,
-          mergedActions
         )
 
         const parcelResponse = {
