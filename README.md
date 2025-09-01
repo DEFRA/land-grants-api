@@ -4,14 +4,21 @@ To read more about the farming grants platform, see this docs repo:
 
 https://github.com/DEFRA/farming-grants-docs
 
-## Contents
+To read more about Land Grants API see
+https://github.com/DEFRA/farming-grants-docs/docs/projects/land-grants-api
+
+or the same on confluence:
+https://eaflood.atlassian.net/wiki/spaces/LGS/pages/5866356750/Land+Grants+Service+Home
 
 The capabilities of the `land-grants-api` include:
 
-- [Working wiith qgis](docs/working-wiith-qgis.md)
 - [Available area calculation](docs/available-area-calculation.md)
 - [Land based grant application eligibility checks](docs/eligibility-checks.md)
 - [Grant payment calculations](docs/payment-calculation.md)
+
+## Contents
+
+- [Working wiith qgis](docs/working-wiith-qgis.md)
 
 ## Requirements
 
