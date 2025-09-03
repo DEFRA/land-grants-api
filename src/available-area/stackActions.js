@@ -312,13 +312,9 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
         explanations,
         compatibilityCheckFn
       )
-
-      const actionIsCompatibleWithAllActionsInExistingStack =
-        compatibility.allCompatible
-
       explanations = compatibility.newExplanations
 
-      if (!actionIsCompatibleWithAllActionsInExistingStack) {
+      if (!compatibility.allCompatible) {
         continue
       }
 
