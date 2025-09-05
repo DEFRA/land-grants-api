@@ -33,7 +33,8 @@ function actionTransformer(action, availableArea = null, showResults = false) {
       availableArea?.availableAreaHectares ||
       availableArea?.availableAreaHectares === 0
         ? sizeTransformer(availableArea?.availableAreaHectares)
-        : undefined
+        : undefined,
+    ...action.payment
   }
 
   if (showResults) {
