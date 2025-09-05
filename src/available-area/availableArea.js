@@ -121,10 +121,8 @@ export function getAvailableAreaForAction(
     actionCodeAppliedFor,
     sheetId,
     parcelId,
-    landCoversForParcel,
-    existingActions,
-    landCoverCodesForAppliedForAction,
-    landCoverToString
+    availableAreaDataRequirements,
+    existingActions
   )
 
   const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
@@ -175,8 +173,7 @@ export function getAvailableAreaForAction(
 
   const {
     stacks,
-    stackExplanations,
-    resultExplanation,
+    explanations: stackExplanations,
     availableAreaSqm,
     availableAreaHectares
   } = stackAndSubtractIncompatibleStacks(
@@ -194,10 +191,9 @@ export function getAvailableAreaForAction(
     ...initialExplanations,
     totalValidLandCoverExplanations,
     filterExplanations,
-    incompatibleLandCoverExplanations,
-    stackExplanations,
-    resultExplanation
+    incompatibleLandCoverExplanations
   ]
+
   return {
     stacks,
     explanations,
@@ -243,9 +239,11 @@ export function stackAndSubtractIncompatibleStacks(
 
   return {
     stacks,
-    stackExplanations,
-    resultExplanation,
     availableAreaSqm,
-    availableAreaHectares
+    availableAreaHectares,
+    explanations: {
+      stackExplanations,
+      resultExplanation
+    }
   }
 }

@@ -50,9 +50,8 @@
 
 /**
  * @typedef {object} StackResult
+ * @property {Stack[]} stacks - The stacks
  * @property {number} availableAreaSqm - The available area
  * @property {number} availableAreaHectares - The available area
- * @property {ExplanationSection} stackExplanations - The explanation section
- * @property {ExplanationSection} resultExplanation - The explanation section
- * @property {Stack[]} stacks - The stacks
+ * @property {{ stackExplanations: ExplanationSection, resultExplanation: ExplanationSection }} explanations - The explanation section
  */
