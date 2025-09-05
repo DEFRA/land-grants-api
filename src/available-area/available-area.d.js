@@ -41,3 +41,18 @@
  * @import { LandCover } from '../api/parcel/parcel.d.js'
  * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
  */
+
+/**
+ * @typedef {object} ActionWithArea
+ * @property {number} areaSqm - The action area
+ * @augments Action
+ */
+
+/**
+ * @typedef {object} StackResult
+ * @property {number} availableAreaSqm - The available area
+ * @property {number} availableAreaHectares - The available area
+ * @property {ExplanationSection} stackExplanations - The explanation section
+ * @property {ExplanationSection} resultExplanation - The explanation section
+ * @property {Stack[]} stacks - The stacks
+ */

@@ -66,26 +66,27 @@ const calculateNotCommonLandCoversTotalArea = (
  * @param {string} sheetId
  * @param {string} actionCodeAppliedFor
  * @param {Action[]} actions
- * @param {LandCover[]} landCoversForParcel
- * @param {object} landCoversForExistingActions
- * @param {string[]} landCoverCodesForAppliedForAction
- * @param {CodeToString} landCoverToString
+ * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
  * @param {object} logger
- * @returns
+ * @returns {Promise<{result: ActionWithArea[], explanations: ExplanationSection}>}
  */
 export const subtractIncompatibleLandCoverAreaFromActions = (
   parcelId,
   sheetId,
   actionCodeAppliedFor,
   actions,
-  landCoversForParcel,
-  landCoversForExistingActions,
-  landCoverCodesForAppliedForAction,
-  landCoverToString,
+  availableAreaDataRequirements,
   logger
 ) => {
   const revisedActions = []
   const explanations = []
+
+  const {
+    landCoversForParcel,
+    landCoversForExistingActions,
+    landCoverCodesForAppliedForAction,
+    landCoverToString
+  } = availableAreaDataRequirements
 
   for (const action of actions) {
     const landCoverCodesForExistingAction = mergeLandCoverCodes(
@@ -136,6 +137,6 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
 }
 
 /**
- * @import { Action, CodeToString } from './available-area.d.js'
+ * @import { Action, CodeToString, ActionWithArea, ExplanationSection } from './available-area.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
  */
