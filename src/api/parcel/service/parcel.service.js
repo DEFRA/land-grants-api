@@ -67,12 +67,7 @@ export async function getParcelActionsWithAvailableArea(
 
   const actionsWithAvailableArea = []
 
-  for (const action of enabledActions) {
-    if (!action.display) {
-      logger.debug(`Action ${action.code} is not displayed, skipping`)
-      continue
-    }
-
+  for (const action of enabledActions.filter((a) => a.display)) {
     const transformedActions = plannedActionsTransformer(actions)
 
     const aacDataRequirements = await getAvailableAreaDataRequirements(
