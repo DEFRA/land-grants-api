@@ -66,7 +66,9 @@ describe('Calculate available area', () => {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
           },
           {
             code: 'UPL1',
@@ -79,7 +81,8 @@ describe('Calculate available area', () => {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 20
           },
           {
             code: 'UPL2',
@@ -92,7 +95,8 @@ describe('Calculate available area', () => {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 53
           },
           {
             code: 'UPL3',
@@ -105,7 +109,8 @@ describe('Calculate available area', () => {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 66
           }
         ]
       }
@@ -160,7 +165,9 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
           },
           {
             code: 'UPL1',
@@ -179,7 +186,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 20
           },
           {
             code: 'UPL2',
@@ -198,7 +206,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 53
           },
           {
             code: 'UPL3',
@@ -217,7 +226,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 66
           }
         ]
       }
@@ -280,7 +290,9 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
           },
           {
             code: 'UPL1',
@@ -304,7 +316,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 20
           },
           {
             code: 'UPL2',
@@ -328,7 +341,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 53
           },
           {
             code: 'UPL3',
@@ -352,7 +366,8 @@ describe('Calculate available area', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
+            ratePerUnitGbp: 66
           }
         ]
       }
