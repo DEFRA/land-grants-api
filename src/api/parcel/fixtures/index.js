@@ -38,7 +38,9 @@ const mockParcelWithActions = {
         availableArea: {
           unit: applicationUnitOfMeasurement,
           value: applicationUnitOfMeasurement === 'sqm' ? 200 : 0.02
-        }
+        },
+        ratePerUnitGbp: 10.6,
+        ratePerAgreementPerYearGbp: 272
       }
     ]
   }
