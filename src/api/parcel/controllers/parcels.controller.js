@@ -43,21 +43,71 @@ const ParcelsController = {
 
   handler: async (request, h) => {
     try {
-      const { parcelIds, fields } = request.payload
+      const { parcelIds, fields, plannedActions } = request.payload
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 
       const responseParcels = []
       const showActionResults = fields.includes('actions.results')
 
       for (const parcel of parcelIds) {
-        const { parcelResponse, error } = await getActionsForParcel(
-          parcel,
-          request.payload,
-          showActionResults,
-          request
+        const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+        const landParcel = await getLandData(
+          sheetId,
+          parcelId,
+          request.server.postgresDb,
+          request.logger
         )
-        if (error) {
-          return Boom.notFound(error)
+
+        if (!landParcel || landParcel.length === 0) {
+          const errorMessage = `Land parcel not found: ${parcel}`
+          request.logger.error(errorMessage)
+          return Boom.notFound(errorMessage)
+        }
+
+        const agreements = await getAgreementsForParcel(
+          sheetId,
+          parcelId,
+          request.server.postgresDb,
+          request.logger
+        )
+
+        const mergedActions = mergeAgreementsTransformer(
+          agreements,
+          plannedActions
+        )
+
+        request.logger.info(
+          `Merged actions for parcel ${sheetId}-${parcelId}:`,
+          mergedActions
+        )
+
+        const parcelResponse = {
+          parcelId: landParcel['0'].parcel_id,
+          sheetId: landParcel['0'].sheet_id
+        }
+
+        if (fields.includes('size')) {
+          parcelResponse.size = sizeTransformer(
+            sqmToHaRounded(landParcel['0'].area_sqm)
+          )
+        }
+
+        if (fields.some((f) => f.startsWith('actions'))) {
+          const actionsWithAvailableArea =
+            await getParcelActionsWithAvailableArea(
+              sheetId,
+              parcelId,
+              mergedActions,
+              showActionResults,
+              request.server.postgresDb,
+              request.logger
+            )
+
+          const sortedParcelActions = actionsWithAvailableArea.toSorted(
+            (a, b) => a.code.localeCompare(b.code)
+          )
+
+          parcelResponse.actions = sortedParcelActions
         }
         responseParcels.push(parcelResponse)
       }
@@ -89,69 +139,3 @@ export { ParcelsController }
 /**
  * @import { ServerRoute } from '@hapi/hapi'
  */
-
-async function getActionsForParcel(
-  parcel,
-  payload,
-  showActionResults,
-  request
-) {
-  const { fields, plannedActions } = payload
-  const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
-
-  const landParcel = await getLandData(
-    sheetId,
-    parcelId,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  if (!landParcel || landParcel.length === 0) {
-    const errorMessage = `Land parcel not found: ${parcel}`
-    request.logger.error(errorMessage)
-    return { parcelResponse: null, error: errorMessage }
-  }
-
-  const agreements = await getAgreementsForParcel(
-    sheetId,
-    parcelId,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
-
-  request.logger.info(
-    `Merged actions for parcel ${sheetId}-${parcelId}:`,
-    mergedActions
-  )
-
-  const parcelResponse = {
-    parcelId: landParcel['0'].parcel_id,
-    sheetId: landParcel['0'].sheet_id
-  }
-
-  if (fields.includes('size')) {
-    parcelResponse.size = sizeTransformer(
-      sqmToHaRounded(landParcel['0'].area_sqm)
-    )
-  }
-
-  if (fields.some((f) => f.startsWith('actions'))) {
-    const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
-      sheetId,
-      parcelId,
-      mergedActions,
-      showActionResults,
-      request.server.postgresDb,
-      request.logger
-    )
-
-    const sortedParcelActions = actionsWithAvailableArea.toSorted((a, b) =>
-      a.code.localeCompare(b.code)
-    )
-
-    parcelResponse.actions = sortedParcelActions
-  }
-  return { parcelResponse, error: null }
-}

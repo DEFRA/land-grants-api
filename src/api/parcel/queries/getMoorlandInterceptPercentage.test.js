@@ -124,7 +124,7 @@ describe('getMoorlandInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalledWith(
       'Error executing get moorland intercept percentage query',
       error
@@ -144,7 +144,7 @@ describe('getMoorlandInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeUndefined()
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })

@@ -114,7 +114,9 @@ describe('Parcels controller', () => {
               availableArea: {
                 unit: 'ha',
                 value: 0.03
-              }
+              },
+              ratePerAgreementPerYearGbp: 272,
+              ratePerUnitGbp: 10.6
             }
           ],
           size: {
@@ -216,7 +218,9 @@ describe('Parcels controller', () => {
               availableArea: {
                 unit: 'ha',
                 value: 0.03
-              }
+              },
+              ratePerAgreementPerYearGbp: 272,
+              ratePerUnitGbp: 10.6
             }
           ]
         }

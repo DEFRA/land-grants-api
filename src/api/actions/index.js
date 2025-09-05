@@ -1,4 +1,7 @@
-import { LandActionsValidateController } from './controllers/actions-validation.controller.js'
+import {
+  LandActionsValidateController,
+  ActionsController
+} from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -12,6 +15,11 @@ const landactions = {
           method: 'POST',
           path: '/actions/validate',
           ...LandActionsValidateController
+        },
+        {
+          method: 'GET',
+          path: '/actions',
+          ...ActionsController
         }
       ])
     }

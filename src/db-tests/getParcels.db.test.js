@@ -62,6 +62,8 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
@@ -75,6 +77,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 20,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
@@ -88,6 +91,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 53,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
@@ -101,6 +105,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 66,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [],
@@ -150,6 +155,8 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.49268576
             },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -169,6 +176,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 20,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -188,6 +196,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 53,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -207,6 +216,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 66,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -265,6 +275,8 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.59268576
             },
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -289,6 +301,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.29268576
             },
+            ratePerUnitGbp: 20,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -313,6 +326,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.29268576
             },
+            ratePerUnitGbp: 53,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [
@@ -337,6 +351,7 @@ describe('Calculate available area', () => {
               unit: 'ha',
               value: 0.29268576
             },
+            ratePerUnitGbp: 66,
             results: {
               totalValidLandCoverSqm: 5926.857555290695,
               stacks: [

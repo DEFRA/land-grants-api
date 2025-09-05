@@ -141,7 +141,6 @@ export const roundPaymentAmountForPaymentLineItems = (payments) =>
     }))
   }))
 
-const monthsInYear = 12
 /**
  * Calculate payments per year based on month intervals
  * @param {Array<string>} schedule
@@ -152,7 +151,7 @@ const calculatePaymentsPerYear = (schedule) => {
     return schedule.length
   }
   const monthDiff = differenceInCalendarMonths(schedule[1], schedule[0])
-  return monthsInYear / monthDiff
+  return 12 / monthDiff
 }
 
 /**
@@ -210,7 +209,7 @@ export const calculateScheduledPayments = (
 const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData?.code ?? '',
   description: actionData?.description ?? '',
-  version: Number(actionData?.version),
+  version: Number(actionData?.version) ?? '',
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),

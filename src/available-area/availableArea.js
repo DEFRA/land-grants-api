@@ -166,25 +166,28 @@ export function getAvailableAreaForAction(
     sheetId,
     actionCodeAppliedFor,
     existingActionsWithLandCoverInCommonWithAppliedForAction,
-    {
-      ...availableAreaDataRequirements,
-      landCoverCodesForAppliedForAction: mergedLandCoverCodesForAppliedForAction
-    },
+    landCoversForParcel,
+    landCoversForExistingActions,
+    mergedLandCoverCodesForAppliedForAction,
+    landCoverToString,
     logger
   )
 
-  const {
-    stacks,
-    stackExplanations,
-    resultExplanation,
-    availableAreaSqm,
-    availableAreaHectares
-  } = stackAndSubtractIncompatibleStacks(
+  const { stacks, explanations: stackExplanations } = stackActions(
     revisedActions,
-    compatibilityCheckFn,
-    actionCodeAppliedFor,
-    totalValidLandCoverSqm
+    compatibilityCheckFn
   )
+
+  // subtract areas of stacks where any action is not compatible
+  const { result: availableAreaSqm, explanationSection: resultExplanation } =
+    subtractIncompatibleStacks(
+      actionCodeAppliedFor,
+      totalValidLandCoverSqm,
+      stacks,
+      compatibilityCheckFn
+    )
+
+  const availableAreaHectares = sqmToHaRounded(availableAreaSqm)
 
   logger.info(
     `availableArea ${availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
@@ -210,42 +213,3 @@ export function getAvailableAreaForAction(
 /**
  * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements } from './available-area.d.js'
  */
-
-/**
- *
- * @param {ActionWithArea[]} revisedActions
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @param {string} actionCodeAppliedFor
- * @param {number} totalValidLandCoverSqm
- * @returns {StackResult}
- */
-export function stackAndSubtractIncompatibleStacks(
-  revisedActions,
-  compatibilityCheckFn,
-  actionCodeAppliedFor,
-  totalValidLandCoverSqm
-) {
-  const { stacks, explanations: stackExplanations } = stackActions(
-    revisedActions,
-    compatibilityCheckFn
-  )
-
-  // subtract areas of stacks where any action is not compatible
-  const { result: availableAreaSqm, explanationSection: resultExplanation } =
-    subtractIncompatibleStacks(
-      actionCodeAppliedFor,
-      totalValidLandCoverSqm,
-      stacks,
-      compatibilityCheckFn
-    )
-
-  const availableAreaHectares = sqmToHaRounded(availableAreaSqm)
-
-  return {
-    stacks,
-    stackExplanations,
-    resultExplanation,
-    availableAreaSqm,
-    availableAreaHectares
-  }
-}

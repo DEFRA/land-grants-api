@@ -40,7 +40,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       'Error executing get moorland intercept percentage query',
       error
     )
-    return 0
+    return
   } finally {
     if (client) {
       client.release()
