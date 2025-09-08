@@ -10,10 +10,11 @@ const gbpToPence = (gbp = 0) => gbp * 100
 
 /**
  * Find an action by code
+ * @param {string} code
  * @param {Array<Action>} actions
  * @returns {Action | undefined}
  */
-const findActionByCode = (actions = [], code) => {
+const findActionByCode = (code, actions = []) => {
   const action = actions.find((a) => a.code === code)
   return action
 }
@@ -252,7 +253,7 @@ export const createPaymentItems = (parcels, actions) => {
     let explanations = []
 
     for (const action of parcel.actions) {
-      const actionData = findActionByCode(actions, action.code)
+      const actionData = findActionByCode(action.code, actions)
 
       explanations = explanations.concat([
         `Calculating payment for ${action?.code}`,
