@@ -87,15 +87,166 @@ export async function getAvailableAreaDataRequirements(
 }
 
 /**
- *
- * @param {string} actionCodeAppliedFor
- * @param {string} sheetId
- * @param {string} parcelId
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @param {Action[]} existingActions
- * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
- * @param {object} logger
- * @returns
+ * Processes land cover data and calculates total valid area
+ * @param {object} params - Parameters object
+ * @param {object} params.landCoversForParcel - Land covers for the parcel
+ * @param {object[]} params.landCoverCodesForAppliedForAction - Land cover codes for the applied action
+ * @param {Function} params.landCoverToString - Function to convert land cover codes to strings
+ * @param {string} params.actionCodeAppliedFor - The action code being applied for
+ * @param {string} params.sheetId - The sheet ID
+ * @param {string} params.parcelId - The parcel ID
+ * @param {object} params.logger - Logger instance
+ * @returns {object} Total valid land cover area and explanations
+ */
+function processLandCoverData({
+  landCoversForParcel,
+  landCoverCodesForAppliedForAction,
+  landCoverToString,
+  actionCodeAppliedFor,
+  sheetId,
+  parcelId,
+  logger
+}) {
+  const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
+    landCoverCodesForAppliedForAction
+  )
+
+  const {
+    result: totalValidLandCoverSqm,
+    explanations: totalValidLandCoverExplanations
+  } = calculateTotalValidLandCoverArea(
+    landCoversForParcel,
+    mergedLandCoverCodesForAppliedForAction,
+    landCoverToString
+  )
+
+  logger.info(
+    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
+  )
+
+  return {
+    mergedLandCoverCodesForAppliedForAction,
+    totalValidLandCoverSqm,
+    totalValidLandCoverExplanations
+  }
+}
+
+/**
+ * Filters and processes existing actions based on land cover compatibility
+ * @param {Action[]} existingActions - Existing actions
+ * @param {object} landCoversForExistingActions - Land covers for existing actions
+ * @param {object[]} mergedLandCoverCodesForAppliedForAction - Merged land cover codes
+ * @param {Function} landCoverToString - Function to convert land cover codes to strings
+ * @param {object} logger - Logger instance
+ * @returns {object} Filtered actions and explanations
+ */
+function processExistingActions(
+  existingActions,
+  landCoversForExistingActions,
+  mergedLandCoverCodesForAppliedForAction,
+  landCoverToString,
+  logger
+) {
+  const {
+    existingActionsWithLandCoverInCommonWithAppliedForAction,
+    explanationSection: filterExplanations
+  } = filterActionsWithCommonLandCover(
+    existingActions || [],
+    landCoversForExistingActions,
+    mergedLandCoverCodesForAppliedForAction,
+    landCoverToString
+  )
+
+  logger.info(
+    `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
+  )
+
+  return {
+    existingActionsWithLandCoverInCommonWithAppliedForAction,
+    filterExplanations
+  }
+}
+
+/**
+ * Processes incompatible land cover areas and revises actions
+ * @param {object} params - Parameters object
+ * @param {string} params.parcelId - The parcel ID
+ * @param {string} params.sheetId - The sheet ID
+ * @param {string} params.actionCodeAppliedFor - The action code being applied for
+ * @param {Action[]} params.existingActionsWithLandCoverInCommonWithAppliedForAction - Filtered existing actions
+ * @param {AvailableAreaDataRequirements} params.availableAreaDataRequirements - Available area data requirements
+ * @param {object[]} params.mergedLandCoverCodesForAppliedForAction - Merged land cover codes
+ * @param {object} params.logger - Logger instance
+ * @returns {object} Revised actions and explanations
+ */
+function processIncompatibleAreas({
+  parcelId,
+  sheetId,
+  actionCodeAppliedFor,
+  existingActionsWithLandCoverInCommonWithAppliedForAction,
+  availableAreaDataRequirements,
+  mergedLandCoverCodesForAppliedForAction,
+  logger
+}) {
+  const {
+    result: revisedActions,
+    explanations: incompatibleLandCoverExplanations
+  } = subtractIncompatibleLandCoverAreaFromActions(
+    parcelId,
+    sheetId,
+    actionCodeAppliedFor,
+    existingActionsWithLandCoverInCommonWithAppliedForAction,
+    {
+      ...availableAreaDataRequirements,
+      landCoverCodesForAppliedForAction: mergedLandCoverCodesForAppliedForAction
+    },
+    logger
+  )
+
+  return {
+    revisedActions,
+    incompatibleLandCoverExplanations
+  }
+}
+
+/**
+ * Builds the complete explanation array from all processing steps
+ * @param {object[]} initialExplanations - Initial explanations
+ * @param {object} totalValidLandCoverExplanations - Total valid land cover explanations
+ * @param {object} filterExplanations - Filter explanations
+ * @param {object} incompatibleLandCoverExplanations - Incompatible land cover explanations
+ * @param {object} stackExplanations - Stack explanations
+ * @param {object} resultExplanation - Result explanation
+ * @returns {object[]} Complete explanations array
+ */
+function buildExplanations(
+  initialExplanations,
+  totalValidLandCoverExplanations,
+  filterExplanations,
+  incompatibleLandCoverExplanations,
+  stackExplanations,
+  resultExplanation
+) {
+  return [
+    ...initialExplanations,
+    totalValidLandCoverExplanations,
+    filterExplanations,
+    incompatibleLandCoverExplanations,
+    stackExplanations,
+    resultExplanation
+  ]
+}
+
+/**
+ * Main function to get available area for an action
+ * @param {string} actionCodeAppliedFor - The action code being applied for
+ * @param {string} sheetId - The sheet ID
+ * @param {string} parcelId - The parcel ID
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ * @param {Action[]} existingActions - The list of existing actions
+ * @param {AvailableAreaDataRequirements} availableAreaDataRequirements - Data requirements
+ * @param {object} logger - The logger object
+ * @returns {object} Available area calculation results
  */
 export function getAvailableAreaForAction(
   actionCodeAppliedFor,
@@ -127,51 +278,41 @@ export function getAvailableAreaForAction(
     landCoverToString
   )
 
-  const mergedLandCoverCodesForAppliedForAction = mergeLandCoverCodes(
-    landCoverCodesForAppliedForAction
-  )
-
   const {
-    result: totalValidLandCoverSqm,
-    explanations: totalValidLandCoverExplanations
-  } = calculateTotalValidLandCoverArea(
-    landCoversForParcel,
     mergedLandCoverCodesForAppliedForAction,
-    landCoverToString
-  )
-
-  logger.info(
-    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
+    totalValidLandCoverSqm,
+    totalValidLandCoverExplanations
+  } = processLandCoverData({
+    landCoversForParcel,
+    landCoverCodesForAppliedForAction,
+    landCoverToString,
+    actionCodeAppliedFor,
+    sheetId,
+    parcelId,
+    logger
+  })
 
   const {
     existingActionsWithLandCoverInCommonWithAppliedForAction,
-    explanationSection: filterExplanations
-  } = filterActionsWithCommonLandCover(
-    existingActions || [],
+    filterExplanations
+  } = processExistingActions(
+    existingActions,
     landCoversForExistingActions,
     mergedLandCoverCodesForAppliedForAction,
-    landCoverToString
-  )
-
-  logger.info(
-    `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
-  )
-
-  const {
-    result: revisedActions,
-    explanations: incompatibleLandCoverExplanations
-  } = subtractIncompatibleLandCoverAreaFromActions(
-    parcelId,
-    sheetId,
-    actionCodeAppliedFor,
-    existingActionsWithLandCoverInCommonWithAppliedForAction,
-    {
-      ...availableAreaDataRequirements,
-      landCoverCodesForAppliedForAction: mergedLandCoverCodesForAppliedForAction
-    },
+    landCoverToString,
     logger
   )
+
+  const { revisedActions, incompatibleLandCoverExplanations } =
+    processIncompatibleAreas({
+      parcelId,
+      sheetId,
+      actionCodeAppliedFor,
+      existingActionsWithLandCoverInCommonWithAppliedForAction,
+      availableAreaDataRequirements,
+      mergedLandCoverCodesForAppliedForAction,
+      logger
+    })
 
   const {
     stacks,
@@ -190,14 +331,15 @@ export function getAvailableAreaForAction(
     `availableArea ${availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
   )
 
-  const explanations = [
-    ...initialExplanations,
+  const explanations = buildExplanations(
+    initialExplanations,
     totalValidLandCoverExplanations,
     filterExplanations,
     incompatibleLandCoverExplanations,
     stackExplanations,
     resultExplanation
-  ]
+  )
+
   return {
     stacks,
     explanations,
