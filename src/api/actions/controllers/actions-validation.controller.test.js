@@ -178,8 +178,18 @@ describe('Actions validation controller', () => {
       expect(message).toBe('success')
       expect(valid).toBe(false)
       expect(errorMessages).toEqual([
-        { code: 'BND1', description: 'Rule 1 failed' },
-        { code: 'BND2', description: 'Rule 1 failed' }
+        {
+          code: 'BND1',
+          description: 'Rule 1 failed',
+          sheetId: 'SX0679',
+          parcelId: '9238'
+        },
+        {
+          code: 'BND2',
+          description: 'Rule 1 failed',
+          sheetId: 'SX0679',
+          parcelId: '9238'
+        }
       ])
     })
 
@@ -199,7 +209,7 @@ describe('Actions validation controller', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(404)
-      expect(message).toBe('Land parcel not found')
+      expect(message).toBe('Land parcel not found: SX0679 9238')
     })
 
     test('should return 404 if no actions found', async () => {
@@ -267,7 +277,7 @@ describe('Actions validation controller', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 500 if the request has no land actions in payload', async () => {
+    test('should return 400 if the request has no land actions in payload', async () => {
       const request = {
         method: 'POST',
         url: '/actions/validate',
@@ -282,8 +292,40 @@ describe('Actions validation controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(500)
-      expect(message).toBe('An internal server error occurred')
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 if the request has no sbi in payload', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: {
+          landActions: [
+            {
+              sheetId: 'SX0679',
+              parcelId: '9238',
+              sbi: '123456789',
+              actions: []
+            },
+            {
+              sheetId: 'SX0679',
+              parcelId: '9238',
+              sbi: '111111111',
+              actions: []
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('All land actions must have the same SBI')
     })
 
     test('should return 500 if getLandData throws an error', async () => {
@@ -423,7 +465,105 @@ describe('Actions validation controller', () => {
       expect(message).toBe('success')
       expect(valid).toBe(false)
       expect(errorMessages).toEqual([
-        { code: 'BND2', description: 'Rule failed for BND2' }
+        {
+          code: 'BND2',
+          description: 'Rule failed for BND2',
+          sheetId: 'SX0679',
+          parcelId: '9238'
+        }
+      ])
+    })
+
+    test('should handle multiple land/actions', async () => {
+      const multiActionPayload = {
+        landActions: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            sbi: '123456789',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              },
+              {
+                code: 'BND2',
+                quantity: 200.0
+              }
+            ]
+          },
+          {
+            sheetId: 'SX0677',
+            parcelId: '9236',
+            sbi: '123456789',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              },
+              {
+                code: 'BND2',
+                quantity: 200.0
+              }
+            ]
+          }
+        ]
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: multiActionPayload
+      }
+
+      const mockActionData2 = {
+        code: 'BND2',
+        rules: ['rule3', 'rule4'],
+        landCoverClassCodes: ['130', '240']
+      }
+
+      mockGetEnabledActions.mockResolvedValue([mockActionData, mockActionData2])
+
+      mockExecuteRules
+        .mockReturnValueOnce({
+          passed: true,
+          results: [{ passed: true, message: 'Rule passed' }]
+        })
+        .mockReturnValueOnce({
+          passed: false,
+          results: [{ passed: false, message: 'Rule failed for BND2' }]
+        })
+        .mockReturnValueOnce({
+          passed: true,
+          results: [{ passed: true, message: 'Rule passed' }]
+        })
+        .mockReturnValueOnce({
+          passed: false,
+          results: [{ passed: false, message: 'Rule failed for BND2' }]
+        })
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, valid, errorMessages }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(valid).toBe(false)
+      expect(errorMessages).toEqual([
+        {
+          code: 'BND2',
+          description: 'Rule failed for BND2',
+          sheetId: 'SX0679',
+          parcelId: '9238'
+        },
+        {
+          code: 'BND2',
+          description: 'Rule failed for BND2',
+          sheetId: 'SX0677',
+          parcelId: '9236'
+        }
       ])
     })
   })
