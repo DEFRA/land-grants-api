@@ -57,7 +57,7 @@ describe('Calculate available area', () => {
         actions: [
           {
             code: 'CMOR1',
-            description: 'CMOR1: Assess moorland and produce a written record',
+            description: 'Assess moorland and produce a written record :CMOR1',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -72,7 +72,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL1',
-            description: 'UPL1: Moderate livestock grazing on moorland',
+            description: 'Moderate livestock grazing on moorland :UPL1',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -86,7 +86,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL2',
-            description: 'UPL2: Low livestock grazing on moorland',
+            description: 'Low livestock grazing on moorland :UPL2',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -100,7 +100,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL3',
-            description: 'UPL3: Limited livestock grazing on moorland',
+            description: 'Limited livestock grazing on moorland :UPL3',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -150,7 +150,7 @@ describe('Calculate available area', () => {
         actions: [
           {
             code: 'CMOR1',
-            description: 'CMOR1: Assess moorland and produce a written record',
+            description: 'Assess moorland and produce a written record :CMOR1',
             availableArea: {
               unit: 'ha',
               value: 0.49268576
@@ -171,7 +171,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL1',
-            description: 'UPL1: Moderate livestock grazing on moorland',
+            description: 'Moderate livestock grazing on moorland :UPL1',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -191,7 +191,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL2',
-            description: 'UPL2: Low livestock grazing on moorland',
+            description: 'Low livestock grazing on moorland :UPL2',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -211,7 +211,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL3',
-            description: 'UPL3: Limited livestock grazing on moorland',
+            description: 'Limited livestock grazing on moorland :UPL3',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -270,7 +270,7 @@ describe('Calculate available area', () => {
         actions: [
           {
             code: 'CMOR1',
-            description: 'CMOR1: Assess moorland and produce a written record',
+            description: 'Assess moorland and produce a written record :CMOR1',
             availableArea: {
               unit: 'ha',
               value: 0.59268576
@@ -296,7 +296,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL1',
-            description: 'UPL1: Moderate livestock grazing on moorland',
+            description: 'Moderate livestock grazing on moorland :UPL1',
             availableArea: {
               unit: 'ha',
               value: 0.29268576
@@ -321,7 +321,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL2',
-            description: 'UPL2: Low livestock grazing on moorland',
+            description: 'Low livestock grazing on moorland :UPL2',
             availableArea: {
               unit: 'ha',
               value: 0.29268576
@@ -346,7 +346,7 @@ describe('Calculate available area', () => {
           },
           {
             code: 'UPL3',
-            description: 'UPL3: Limited livestock grazing on moorland',
+            description: 'Limited livestock grazing on moorland :UPL3',
             availableArea: {
               unit: 'ha',
               value: 0.29268576
