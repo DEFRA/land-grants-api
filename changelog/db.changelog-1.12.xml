@@ -11,12 +11,12 @@
   <changeSet id="update-actions-description" author="system">
      <sql>
             UPDATE actions 
-            SET description = trim(split_part(description, ':', 2)) || ' :' || split_part(description, ':', 1);
+            SET description = trim(split_part(description, ':', 2));
       </sql>
       <rollback>
           <sql>
               UPDATE actions 
-              SET description = trim(split_part(description, ':', 2)) || ': ' || trim(split_part(description, ':', 1));
+              SET description = code || ': ' || description;
           </sql>
       </rollback>
   </changeSet>

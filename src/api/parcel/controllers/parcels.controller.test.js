@@ -109,8 +109,7 @@ describe('Parcels controller', () => {
           actions: [
             {
               code: 'CMOR1',
-              description:
-                'Assess moorland and produce a written record :CMOR1',
+              description: 'Assess moorland and produce a written record',
               availableArea: {
                 unit: 'ha',
                 value: 0.03
@@ -213,8 +212,7 @@ describe('Parcels controller', () => {
           actions: [
             {
               code: 'CMOR1',
-              description:
-                'Assess moorland and produce a written record :CMOR1',
+              description: 'Assess moorland and produce a written record',
               availableArea: {
                 unit: 'ha',
                 value: 0.03

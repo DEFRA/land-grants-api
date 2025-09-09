@@ -34,7 +34,7 @@ const mockParcelWithActions = {
     actions: [
       {
         code: 'CMOR1',
-        description: 'Assess moorland and produce a written record :CMOR1',
+        description: 'Assess moorland and produce a written record',
         availableArea: {
           unit: applicationUnitOfMeasurement,
           value: applicationUnitOfMeasurement === 'sqm' ? 200 : 0.02

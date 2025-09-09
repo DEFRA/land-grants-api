@@ -39,7 +39,7 @@ describe('Get actions', () => {
       durationYears: 3,
       startDate: '2025-01-01',
       code: 'CMOR1',
-      description: 'Assess moorland and produce a written record :CMOR1',
+      description: 'Assess moorland and produce a written record',
       applicationUnitOfMeasurement: 'ha',
       payment: {
         ratePerUnitGbp: 10.6,
