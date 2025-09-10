@@ -17,6 +17,7 @@ const landActionSchema = Joi.object({
           .required()
       })
     )
+    .min(1)
     .required()
 })
 
@@ -25,7 +26,9 @@ const landActionValidationResponseSchema = Joi.object({
   errorMessages: Joi.array().items(
     Joi.object({
       code: Joi.string().required(),
-      description: Joi.string().required()
+      description: Joi.string().required(),
+      sheetId: Joi.string().required(),
+      parcelId: Joi.string().required()
     })
   ),
   valid: Joi.boolean().required()
