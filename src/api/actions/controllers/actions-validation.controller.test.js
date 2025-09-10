@@ -212,7 +212,26 @@ describe('Actions validation controller', () => {
       expect(message).toBe('Land parcel not found: SX0679 9238')
     })
 
-    test('should return 404 if no actions found', async () => {
+    test('should return 404 if actions is empty', async () => {
+      const request = {
+        method: 'POST',
+        url: '/actions/validate',
+        payload: mockLandActions
+      }
+
+      mockGetEnabledActions.mockResolvedValue([])
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Actions not found')
+    })
+
+    test('should return 404 if actions is null', async () => {
       const request = {
         method: 'POST',
         url: '/actions/validate',
