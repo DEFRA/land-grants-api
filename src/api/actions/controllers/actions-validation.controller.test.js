@@ -219,7 +219,7 @@ describe('Actions validation controller', () => {
         payload: mockLandActions
       }
 
-      mockGetEnabledActions.mockResolvedValue([])
+      mockGetEnabledActions.mockResolvedValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
