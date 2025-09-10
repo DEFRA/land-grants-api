@@ -1,8 +1,14 @@
 /**
+ * @import {ApplicationResult} from '../application.d.js'
+ */
+
+/**
  * Save application
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {object} application - The application
+ * @returns {Promise<ApplicationResult>} The application
+ * @returns {null} If an error occurs
  */
 async function saveApplication(logger, db, application) {
   let client
@@ -26,7 +32,7 @@ async function saveApplication(logger, db, application) {
     return result.rows[0]
   } catch (error) {
     logger.error(`Error executing get action query: ${error.message}`)
-    return
+    return null
   } finally {
     if (client) {
       client.release()
