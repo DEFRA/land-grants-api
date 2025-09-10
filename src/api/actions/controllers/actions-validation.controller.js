@@ -148,14 +148,6 @@ const LandActionsValidateController = {
           )
 
           const ruleToExecute = actions.find((a) => a.code === action.code)
-
-          if (ruleToExecute?.rules?.length === 0) {
-            const errorMessage =
-              'Error validating land actions, no rules found for action'
-            request.logger.error(errorMessage)
-            return Boom.notFound(errorMessage)
-          }
-
           const result = executeRules(rules, application, ruleToExecute?.rules)
           request.logger.info(`Result: ${JSON.stringify(result)}`)
 

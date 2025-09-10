@@ -231,33 +231,6 @@ describe('Actions validation controller', () => {
       expect(message).toBe('Actions not found')
     })
 
-    test('should return 404 if no rules found for action', async () => {
-      const request = {
-        method: 'POST',
-        url: '/actions/validate',
-        payload: mockLandActions
-      }
-
-      mockGetEnabledActions.mockResolvedValue([
-        {
-          code: 'BND1',
-          rules: [],
-          landCoverClassCodes: ['130', '240']
-        }
-      ])
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(404)
-      expect(message).toBe(
-        'Error validating land actions, no rules found for action'
-      )
-    })
-
     test('should return 400 if the request has an invalid parcel payload', async () => {
       const request = {
         method: 'POST',
