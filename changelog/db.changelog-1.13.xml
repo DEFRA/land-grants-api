@@ -15,9 +15,21 @@
       </column>
       <column name="application_id" type="TEXT"/>
       <column name="sbi" type="TEXT"/>
+      <column name="crn" type="TEXT"/>
       <column name="data" type="JSONB"/>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
 
+  <changeSet id="add-application-results-index" author="system">
+      <createIndex indexName="idx_application_results_sbi" tableName="application_results" schemaName="public">
+        <column name="sbi"/>
+      </createIndex>
+      <createIndex indexName="idx_application_results_crn" tableName="application_results" schemaName="public">
+        <column name="crn"/>
+      </createIndex>
+       <createIndex indexName="idx_application_results_application_id" tableName="application_results" schemaName="public">
+        <column name="application_id"/>
+      </createIndex>
+  </changeSet>
 </databaseChangeLog>
