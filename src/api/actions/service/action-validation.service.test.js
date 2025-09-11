@@ -16,8 +16,8 @@ describe('Action Validation Service', () => {
     quantity: 100
   }
   const mockParcelDetails = {
-    sheetId: 'SX0679',
-    parcelId: '9238'
+    sheet_id: 'SX0679',
+    parcel_id: '9238'
   }
   const mockAgreements = {
     agreements: [{ area: 100, code: 'UPL1' }]
@@ -70,24 +70,24 @@ describe('Action Validation Service', () => {
     })
     expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
       mockAction.code,
-      mockParcelDetails.sheetId,
-      mockParcelDetails.parcelId,
+      mockParcelDetails.sheet_id,
+      mockParcelDetails.parcel_id,
       mockPlannedActions,
       mockRequest.server.postgresDb,
       mockRequest.logger
     )
     expect(getAvailableAreaForAction).toHaveBeenCalledWith(
       mockAction.code,
-      mockParcelDetails.sheetId,
-      mockParcelDetails.parcelId,
+      mockParcelDetails.sheet_id,
+      mockParcelDetails.parcel_id,
       mockCompatibilityCheckFn,
       mockPlannedActions,
       mockAacDataRequirements,
       mockRequest.logger
     )
     expect(getMoorlandInterceptPercentage).toHaveBeenCalledWith(
-      mockParcelDetails.sheetId,
-      mockParcelDetails.parcelId,
+      mockParcelDetails.sheet_id,
+      mockParcelDetails.parcel_id,
       mockRequest.server.postgresDb,
       mockRequest.logger
     )

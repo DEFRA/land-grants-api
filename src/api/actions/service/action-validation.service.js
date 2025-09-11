@@ -11,7 +11,7 @@ import { rules } from '~/src/rules-engine/rules/index.js'
 /**
  * Validate a land action
  * @param {Action} action - The action
- * @param {ParcelDetails} parcelDetails - The parcel details
+ * @param {LandParcel} landParcel - The parcel details
  * @param {Agreement[]} agreements - The agreements
  * @param {Action[]} plannedActions - planned actions
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
@@ -20,7 +20,7 @@ import { rules } from '~/src/rules-engine/rules/index.js'
  */
 export const validateLandAction = async (
   action,
-  parcelDetails,
+  landParcel,
   agreements,
   plannedActions,
   compatibilityCheckFn,
@@ -29,8 +29,8 @@ export const validateLandAction = async (
 ) => {
   const aacDataRequirements = await getAvailableAreaDataRequirements(
     action.code,
-    parcelDetails.sheetId,
-    parcelDetails.parcelId,
+    landParcel.sheet_id,
+    landParcel.parcel_id,
     plannedActions,
     request.server.postgresDb,
     request.logger
@@ -38,8 +38,8 @@ export const validateLandAction = async (
 
   const { availableAreaSqm: parcelAvailableArea } = getAvailableAreaForAction(
     action.code,
-    parcelDetails.sheetId,
-    parcelDetails.parcelId,
+    landParcel.sheet_id,
+    landParcel.parcel_id,
     compatibilityCheckFn,
     plannedActions,
     aacDataRequirements,
@@ -51,8 +51,8 @@ export const validateLandAction = async (
   )
 
   const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
-    parcelDetails.sheetId,
-    parcelDetails.parcelId,
+    landParcel.sheet_id,
+    landParcel.parcel_id,
     request.server.postgresDb,
     request.logger
   )
@@ -70,8 +70,8 @@ export const validateLandAction = async (
 }
 
 /**
- * @import { ParcelDetails } from '~/src/api/common/common.d.js'
+ * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
  */
 /**
- * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
+ * @import { LandParcel } from '~/src/api/parcel/queries/getLandData.query.js'
  */

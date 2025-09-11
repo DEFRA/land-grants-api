@@ -12,14 +12,14 @@ import { validateLandAction } from '~/src/api/actions/service/action-validation.
  * @returns {Promise<{ code: string, description: string, sheetId: string, parcelId: string, passed: boolean }[]>} The validation result
  */
 export const validateLandParcelActions = async (landAction, request) => {
-  const landParcel = await getLandData(
+  const landParcels = await getLandData(
     landAction.sheetId,
     landAction.parcelId,
     request.server.postgresDb,
     request.logger
   )
 
-  if (!landParcel || landParcel.length === 0) {
+  if (!landParcels || landParcels.length === 0) {
     const errorMessage = `Land parcel not found: ${landAction.sheetId} ${landAction.parcelId}`
     request.logger.error(errorMessage)
     throw new Error(errorMessage)
@@ -54,7 +54,7 @@ export const validateLandParcelActions = async (landAction, request) => {
   for (const action of landAction.actions) {
     const result = await validateLandAction(
       action,
-      landParcel,
+      landParcels[0],
       agreements,
       plannedActions,
       compatibilityCheckFn,
