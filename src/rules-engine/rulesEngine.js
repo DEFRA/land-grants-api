@@ -3,7 +3,7 @@
  * @param {object} rules - The rules we can execute.
  * @param {object} application - The application to execute the rules on.
  * @param {ActionRule[]} actionRules - The action rules to execute.
- * @returns {object} - The results of the rules.
+ * @returns {RulesResult} - The results of the rules.
  */
 
 export const executeRules = (rules, application, actionRules = []) => {
@@ -24,4 +24,7 @@ export const executeRules = (rules, application, actionRules = []) => {
 
 /**
  * @import {ActionRule} from '../api/actions/action.d.js'
+ */
+/**
+ * @import {RulesResult} from '../rules-engine/rules.d.js'
  */
