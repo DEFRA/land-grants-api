@@ -47,16 +47,7 @@ describe('Application Validation Controller', () => {
         passed: true
       }
     ])
-    saveApplication.mockResolvedValue({
-      id: 1,
-      application_id: '123',
-      sbi: 123456789,
-      crn: '345',
-      data: {
-        requester: 'grants-ui',
-        results: [{ code: 'BND1', passed: true }]
-      }
-    })
+    saveApplication.mockResolvedValue(1)
     applicationTransformer.mockReturnValue(mockApplicationTransformed)
   })
 
@@ -134,6 +125,7 @@ describe('Application Validation Controller', () => {
       const result = JSON.parse(payload)
 
       expect(statusCode).toBe(200)
+      expect(result.id).toBe(1)
       expect(result.valid).toBe(true)
       expect(result.message).toBe('Application validated successfully')
       expect(validateLandParcelActions).toHaveBeenCalledWith(
