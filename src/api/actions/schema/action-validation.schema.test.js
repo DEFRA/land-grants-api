@@ -257,13 +257,15 @@ describe('Action Validation Schema', () => {
           code: 'INVALID_ACTION',
           description: 'Action code UPL1 is not valid for this parcel',
           sheetId: 'SHEET001',
-          parcelId: 'SX0679-9238'
+          parcelId: 'SX0679-9238',
+          passed: false
         },
         {
           code: 'INVALID_QUANTITY',
           description: 'Quantity must be greater than 0',
           sheetId: 'SHEET002',
-          parcelId: 'AB1234-5678'
+          parcelId: 'AB1234-5678',
+          passed: false
         }
       ],
       valid: false

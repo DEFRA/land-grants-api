@@ -28,7 +28,8 @@ const landActionValidationResponseSchema = Joi.object({
       code: Joi.string().required(),
       description: Joi.string().required(),
       sheetId: Joi.string().required(),
-      parcelId: Joi.string().required()
+      parcelId: Joi.string().required(),
+      passed: Joi.boolean().required()
     })
   ),
   valid: Joi.boolean().required()

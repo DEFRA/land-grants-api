@@ -4,7 +4,7 @@
  * @param {string} parcelId - The parcelId
  * @param {{object}} db connection
  * @param {{object}} logger object
- * @returns {object} The land data
+ * @returns {Promise<LandParcel[]>} The land data
  */
 async function getLandData(sheetId, parcelId, db, logger) {
   let client
@@ -36,3 +36,13 @@ async function getLandData(sheetId, parcelId, db, logger) {
   }
 }
 export { getLandData }
+
+/**
+ * @typedef {object} LandParcel
+ * @property {number} id
+ * @property {string} sheet_id
+ * @property {string} parcel_id
+ * @property {number} area_sqm
+ * @property {string} geom
+ * @property {Date} last_updated
+ */
