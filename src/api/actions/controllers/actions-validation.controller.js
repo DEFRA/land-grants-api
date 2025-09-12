@@ -1,27 +1,14 @@
 import Boom from '@hapi/boom'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import {
   landActionSchema,
   landActionValidationResponseSchema
 } from '~/src/api/actions/schema/action-validation.schema.js'
-import { applicationTransformer } from '~/src/api/actions/transformers/application.transformer.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
-import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/available-area/availableArea.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { rules } from '~/src/rules-engine/rules/index.js'
-import { executeRules } from '~/src/rules-engine/rulesEngine.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
+import { validateLandParcelActions } from '../service/land-parcel-validation.service.js'
 
 /**
  * LandActionsValidateController
@@ -49,7 +36,7 @@ const LandActionsValidateController = {
   handler: async (request, h) => {
     try {
       const { landActions } = request.payload
-      let results = []
+      const results = []
 
       const sbis = new Set(landActions.map((landAction) => landAction.sbi))
 
@@ -70,110 +57,35 @@ const LandActionsValidateController = {
           `Controller validating land actions ${landAction.sheetId} ${landAction.parcelId}`
         )
 
-        const landParcel = await getLandData(
-          landAction.sheetId,
-          landAction.parcelId,
-          request.server.postgresDb,
-          request.logger
+        const validationResults = await validateLandParcelActions(
+          landAction,
+          request
         )
-
-        if (!landParcel || landParcel.length === 0) {
-          const errorMessage = `Land parcel not found: ${landAction.sheetId} ${landAction.parcelId}`
-          request.logger.error(errorMessage)
-          return Boom.notFound(errorMessage)
-        }
-
-        const actions = await getEnabledActions(
-          request.logger,
-          request.server.postgresDb
-        )
-
-        if (!actions || actions?.length === 0) {
-          const errorMessage = 'Actions not found'
-          request.logger.error(errorMessage)
-          return Boom.notFound(errorMessage)
-        }
-
-        const agreements = await getAgreementsForParcel(
-          landAction.sheetId,
-          landAction.parcelId,
-          request.server.postgresDb,
-          request.logger
-        )
-
-        const compatibilityCheckFn = await createCompatibilityMatrix(
-          request.logger,
-          request.server.postgresDb
-        )
-
-        for (const action of landAction.actions) {
-          const aacDataRequirements = await getAvailableAreaDataRequirements(
-            action.code,
-            landAction.sheetId,
-            landAction.parcelId,
-            plannedActionsTransformer(agreements),
-            request.server.postgresDb,
-            request.logger
-          )
-
-          const { availableAreaSqm: parcelAvailableArea } =
-            getAvailableAreaForAction(
-              action.code,
-              landAction.sheetId,
-              landAction.parcelId,
-              compatibilityCheckFn,
-              plannedActionsTransformer(agreements),
-              aacDataRequirements,
-              request.logger
-            )
-
-          request.logger.info(
-            `Parcel available area: ${JSON.stringify(parcelAvailableArea)}`
-          )
-
-          const intersectingAreaPercentage =
-            await getMoorlandInterceptPercentage(
-              landAction.sheetId,
-              landAction.parcelId,
-              request.server.postgresDb,
-              request.logger
-            )
-
-          const application = applicationTransformer(
-            action.quantity,
-            action.code,
-            sqmToHaRounded(parcelAvailableArea),
-            intersectingAreaPercentage,
-            agreements
-          )
-
-          const ruleToExecute = actions.find((a) => a.code === action.code)
-          const result = executeRules(rules, application, ruleToExecute?.rules)
-          request.logger.info(`Result: ${JSON.stringify(result)}`)
-
-          results = results.concat(
-            result.results
-              .filter((r) => !r.passed)
-              .map((r) => {
-                return {
-                  code: action.code,
-                  description: r.message,
-                  sheetId: landAction.sheetId,
-                  parcelId: landAction.parcelId
-                }
-              })
-          )
-        }
+        results.push(...validationResults)
       }
 
       return h
         .response({
           message: 'success',
           valid: results.every((r) => r.passed),
-          errorMessages: results
+          errorMessages: results.filter((r) => !r.passed)
         })
         .code(statusCodes.ok)
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes('Land parcel not found')
+      ) {
+        return Boom.notFound(error.message)
+      }
+
+      if (
+        error instanceof Error &&
+        error.message.includes('Actions not found')
+      ) {
+        return Boom.notFound(error.message)
+      }
+
       const errorMessage = `Error validating land actions: ${error.message}`
       request.logger.error(errorMessage, {
         error: error.message,
