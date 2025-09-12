@@ -29,7 +29,7 @@ async function saveApplication(logger, db, application) {
       application.data
     ])
 
-    return result.rows[0]
+    return result.rows[0].id
   } catch (error) {
     logger.error(`Error executing get action query: ${error.message}`)
     return null

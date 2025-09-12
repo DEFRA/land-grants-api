@@ -25,7 +25,8 @@ const mockResult = {
   description: 'CMOR1 failed',
   sheetId: 'SX0679',
   parcelId: '9238',
-  passed: false
+  passed: false,
+  rule: 'rule-name'
 }
 
 describe('LandParcelValidationService', () => {
@@ -52,7 +53,7 @@ describe('LandParcelValidationService', () => {
   ]
   const mockCompatibilityCheckFn = jest.fn()
   const mockValidateLandActionResult = {
-    results: [{ passed: false, message: 'CMOR1 failed' }]
+    results: [{ passed: false, message: 'CMOR1 failed', name: 'rule-name' }]
   }
 
   beforeEach(() => {
@@ -84,7 +85,7 @@ describe('LandParcelValidationService', () => {
     createCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     validateLandAction.mockResolvedValueOnce(mockValidateLandActionResult)
     validateLandAction.mockResolvedValueOnce({
-      results: [{ passed: false, message: 'UPL1 failed' }]
+      results: [{ passed: false, message: 'UPL1 failed', name: 'rule-name' }]
     })
 
     const mockLandAction = {
@@ -105,7 +106,8 @@ describe('LandParcelValidationService', () => {
         description: 'UPL1 failed',
         sheetId: 'SX0679',
         parcelId: '9238',
-        passed: false
+        passed: false,
+        rule: 'rule-name'
       }
     ])
   })

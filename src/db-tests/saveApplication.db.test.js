@@ -34,7 +34,7 @@ describe('Save application', () => {
       application
     )
 
-    expect(savedApplication).toMatchObject(application)
+    expect(savedApplication).toBeGreaterThan(0)
   })
 
   test('should release client in finally block when error occurs', async () => {
