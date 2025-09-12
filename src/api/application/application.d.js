@@ -1,5 +1,5 @@
 /**
- * @typedef {object} ApplicationResult
+ * @typedef {object} ApplicationValidationRun
  * @property {number} id
  * @property {string} application_id
  * @property {string} sbi
