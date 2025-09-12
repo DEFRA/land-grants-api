@@ -7,6 +7,7 @@ import {
 import { validateLandParcelActions } from '~/src/api/actions/service/land-parcel-validation.service.js'
 import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationTransformer } from '../transformers/application.transformer.js'
+import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 
 export const ApplicationValidationController = {
   options: {
@@ -67,7 +68,7 @@ export const ApplicationValidationController = {
           valid: allPassed,
           id
         })
-        .code(200)
+        .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = 'Error validating application'
       request.logger.error(errorMessage, {
