@@ -9,6 +9,7 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { validateLandParcelActions } from '../service/land-parcel-validation.service.js'
+import { mapRuleResult } from '../transformers/validation-results.transformer.js'
 
 /**
  * LandActionsValidateController
@@ -68,7 +69,7 @@ const LandActionsValidateController = {
         .response({
           message: 'success',
           valid: results.every((r) => r.passed),
-          errorMessages: results.filter((r) => !r.passed)
+          errorMessages: results.filter((r) => !r.passed).map(mapRuleResult)
         })
         .code(statusCodes.ok)
     } catch (error) {

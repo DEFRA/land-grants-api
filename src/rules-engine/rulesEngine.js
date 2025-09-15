@@ -24,7 +24,5 @@ export const executeRules = (rules, application, actionRules = []) => {
 
 /**
  * @import {ActionRule} from '../api/actions/action.d.js'
- */
-/**
  * @import {RulesResult} from '../rules-engine/rules.d.js'
  */
