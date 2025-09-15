@@ -5,6 +5,7 @@ const rules = {
   'parcel-has-intersection-with-data-layer': {
     execute: () => {
       return {
+        name: 'parcel-has-intersection-with-data-layer',
         passed: true,
         message: 'Success'
       }
@@ -13,6 +14,7 @@ const rules = {
   'applied-for-total-available-area': {
     execute: () => {
       return {
+        name: 'applied-for-total-available-area',
         passed: true,
         message: 'Success'
       }

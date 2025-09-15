@@ -23,14 +23,38 @@ describe('parcelHasIntersectionWithDataLayer', () => {
     const application = createApplication(49)
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
-    expect(result).toEqual({ passed: true })
+    expect(result).toEqual({
+      name: 'undefined-moorland',
+      passed: true,
+      reason: 'This parcel is majority on the moorland',
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'This parcel has a 49% intersection with the moorland layer. The target is 51%.'
+          ]
+        }
+      ]
+    })
   })
 
   test('should pass when intersection is exactly equal to minimumIntersectionPercent', () => {
     const application = createApplication(50)
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
-    expect(result).toEqual({ passed: true })
+    expect(result).toEqual({
+      name: 'undefined-moorland',
+      passed: true,
+      reason: 'This parcel is majority on the moorland',
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'This parcel has a 50% intersection with the moorland layer. The target is 51%.'
+          ]
+        }
+      ]
+    })
   })
 
   test('should fail when intersection is less than minimumIntersectionPercent - tolerancePercent', () => {
@@ -38,9 +62,17 @@ describe('parcelHasIntersectionWithDataLayer', () => {
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
     expect(result).toEqual({
+      name: 'undefined-moorland',
       passed: false,
-      message:
-        'The parcel has a 48% intersection with the moorland layer, the minimum is 50% with a tolerance of 1%'
+      reason: 'This parcel is not majority on the moorland',
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'This parcel has a 48% intersection with the moorland layer. The target is 51%.'
+          ]
+        }
+      ]
     })
   })
 
@@ -49,9 +81,18 @@ describe('parcelHasIntersectionWithDataLayer', () => {
     const result = parcelHasIntersectionWithDataLayer.execute(application, rule)
 
     expect(result).toEqual({
+      name: 'undefined-moorland',
       passed: false,
-      message:
-        'An intersection with the moorland layer was not provided in the application data'
+      reason:
+        'An intersection with the moorland layer was not provided in the application data',
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'An intersection with the moorland layer was not provided in the application data'
+          ]
+        }
+      ]
     })
   })
 })
