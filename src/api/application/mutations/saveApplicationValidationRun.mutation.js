@@ -1,5 +1,5 @@
 /**
- * @import {ApplicationValidationRun} from '../application.d.js'
+ * @import {ApplicationResult} from '../application.d.js'
  */
 
 /**
@@ -7,7 +7,7 @@
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {object} applicationValidationRun - The application
- * @returns {Promise<ApplicationValidationRun>} The application validation run result
+ * @returns {Promise<ApplicationResult>} The application validation run result
  * @returns {null} If an error occurs
  */
 async function saveApplicationValidationRun(

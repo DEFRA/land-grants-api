@@ -8,6 +8,7 @@ import {
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema
 } from '../schema/application-validation.schema.js'
+import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 
 export const ApplicationValidationRunController = {
   options: {
@@ -43,7 +44,7 @@ export const ApplicationValidationRunController = {
           message: 'Application validation run retrieved successfully',
           applicationValidationRun
         })
-        .code(200)
+        .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = 'Error getting application validation run'
       request.logger.error(errorMessage, {

@@ -12,9 +12,10 @@ import { rules } from '~/src/rules-engine/rules/index.js'
  * Validate a land action
  * @param {Action} action - The action
  * @param {LandParcel} landParcel - The parcel details
- * @param {Agreement[]} agreements - The agreements
+ * @param {object[]} agreements - The agreements
  * @param {Action[]} plannedActions - planned actions
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ * @param {Action[]} allEnabledActions - All enabled actions
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
  * @returns {Promise<RulesResult>} The validation result
  */
@@ -71,7 +72,7 @@ export const validateLandAction = async (
 
 /**
  * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
- */
-/**
  * @import { LandParcel } from '~/src/api/parcel/queries/getLandData.query.js'
+ * @import { Action } from '~/src/api/actions/action.d.js'
+ * @import { CompatibilityCheckFn } from '~/src/available-area/available-area.d.js'
  */

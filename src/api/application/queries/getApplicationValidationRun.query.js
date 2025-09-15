@@ -1,5 +1,5 @@
 /**
- * @import {ApplicationValidationRun} from '../application.d.js'
+ * @import {ApplicationResult} from '../application.d.js'
  */
 
 /**
@@ -7,7 +7,7 @@
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {string} applicationId - The application id of the application validation run
- * @returns {Promise<ApplicationValidationRun>} The application validation run
+ * @returns {Promise<ApplicationResult>} The application validation run
  */
 async function getApplicationValidationRun(logger, db, applicationId) {
   let client
