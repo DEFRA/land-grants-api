@@ -9,7 +9,7 @@ import { validateLandAction } from '~/src/api/actions/service/action-validation.
  * Validate the actions for a land parcel
  * @param {{ sheetId: string, parcelId: string, actions: Action[] }} landAction - The land action
  * @param {{ logger: object, server: { postgresDb: object } }} request - The request object
- * @returns {Promise<{ code: string, description: string, sheetId: string, parcelId: string, passed: boolean, rule: string }[]>} The validation result
+ * @returns {Promise<ValidationResult[]>} The validation result
  */
 export const validateLandParcelActions = async (landAction, request) => {
   const landParcels = await getLandData(
@@ -80,4 +80,5 @@ export const validateLandParcelActions = async (landAction, request) => {
 
 /**
  * @import { Action } from '../action.d.js'
+ * @import { ValidationResult } from '~/src/api/common/common.d.js'
  */
