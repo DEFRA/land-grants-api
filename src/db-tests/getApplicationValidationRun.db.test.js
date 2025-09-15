@@ -28,6 +28,11 @@ describe('Get application validation run', () => {
       connection,
       applicationValidationRun
     )
+    await saveApplicationValidationRun(
+      logger,
+      connection,
+      applicationValidationRun
+    )
   })
 
   afterAll(async () => {
@@ -41,9 +46,10 @@ describe('Get application validation run', () => {
       applicationValidationRun.application_id
     )
 
-    expect(getApplicationValidationRunResult).toMatchObject(
-      applicationValidationRun
-    )
+    expect(getApplicationValidationRunResult).toMatchObject({
+      id: 2,
+      ...applicationValidationRun
+    })
   })
 
   test('should release client in finally block when error occurs', async () => {
