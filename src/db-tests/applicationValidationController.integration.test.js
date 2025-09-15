@@ -1,6 +1,7 @@
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 import { ApplicationValidationController } from '~/src/api/application/controllers/application-validation.controller.js'
+import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 
 const logger = {
   info: jest.fn(),
@@ -20,8 +21,9 @@ describe('Application Validation Controller', () => {
     await connection.end()
   })
 
-  test('should return a 200 status code', async () => {
+  test('should return a 200 status code and save application result', async () => {
     const { h, getResponse } = createResponseCapture()
+
     await ApplicationValidationController.handler(
       {
         payload: {
@@ -53,11 +55,19 @@ describe('Application Validation Controller', () => {
       },
       h
     )
-
     const { data, statusCode } = getResponse()
+    const applicationResult = await getApplicationValidationRun(
+      logger,
+      connection,
+      '123'
+    )
+
     expect(statusCode).toBe(200)
     expect(data.message).toBe('Application validated successfully')
     expect(data.valid).toBe(false)
-    expect(data.id).toBeGreaterThan(0)
+    expect(applicationResult).toMatchObject({
+      id: data.id,
+      application_id: '123'
+    })
   })
 })
