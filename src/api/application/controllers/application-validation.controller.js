@@ -27,7 +27,7 @@ export const ApplicationValidationController = {
   },
   handler: async (request, h) => {
     try {
-      const { applicationId, requester, applicationCrn, landActions } =
+      const { applicationId, requester, applicantCrn, landActions } =
         request.payload
 
       const results = []
@@ -46,7 +46,7 @@ export const ApplicationValidationController = {
       const applicationData = applicationTransformer({
         requester,
         hasPassed: allPassed,
-        applicationCrn,
+        applicantCrn,
         landActions,
         validationResults: results
       })
@@ -57,7 +57,7 @@ export const ApplicationValidationController = {
         {
           application_id: applicationId,
           sbi: landActions[0].sbi,
-          crn: applicationCrn,
+          crn: applicantCrn,
           data: applicationData
         }
       )
