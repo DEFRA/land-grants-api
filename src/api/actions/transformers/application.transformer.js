@@ -1,10 +1,15 @@
 /**
+ * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ */
+
+/**
  * Transform the application data
  * @param {number} areaAppliedFor - The area applied for
  * @param {string} code - The code of the action
  * @param {number} area - The area of the parcel
  * @param {number} intersectingAreaPercentage - The intersecting area percentage
  * @param {Array} existingAgreements - The existing agreements
+ * @returns {RuleEngineApplication} - The application
  */
 function applicationTransformer(
   areaAppliedFor,
