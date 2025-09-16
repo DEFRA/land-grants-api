@@ -82,7 +82,7 @@ describe('Application Validation Controller', () => {
         payload: {
           applicationId: '123',
           requester: 'grants-ui',
-          applicationCrn: '345',
+          applicantCrn: '345',
           landActions: []
         }
       }
@@ -99,7 +99,7 @@ describe('Application Validation Controller', () => {
       const testPayload = {
         applicationId: '123',
         requester: 'grants-ui',
-        applicationCrn: '345',
+        applicantCrn: '345',
         landActions: [
           {
             sheetId: 'SX0679',
