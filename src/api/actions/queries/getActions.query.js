@@ -17,7 +17,7 @@ async function getEnabledActions(logger, db) {
     client = await db.connect()
 
     const query = `
-      SELECT 
+      SELECT
         a.*,
         ac.version,
         ac.config->>'start_date' as start_date,

@@ -1,23 +1,28 @@
+import packageJson from '~/package.json'
+
 export const mapActionResults = (actions) => {
   return actions.reduce((acc, action) => {
     const existingAction = acc.find((a) => a.code === action.code)
+
     if (existingAction) {
       existingAction.rules.push({
         name: action.rule,
         hasPassed: action.passed,
-        reason: action.description
+        reason: action.description,
+        explanations: action.explanations
       })
       existingAction.hasPassed = existingAction.rules.every((r) => r.hasPassed)
     } else {
       acc.push({
         code: action.code,
-        actionConfigVersion: '', // TODO
+        actionConfigVersion: action.actionConfigVersion || '',
         hasPassed: action.passed,
         rules: [
           {
             name: action.rule,
             hasPassed: action.passed,
-            reason: action.description
+            reason: action.description,
+            explanations: action.explanations
           }
         ]
       })
@@ -34,7 +39,7 @@ export const applicationTransformer = (application) => {
   return {
     date: new Date(),
     requester: application.requester,
-    landGrantsApiVersion: '0.0.0', // TODO
+    landGrantsApiVersion: packageJson.version,
     hasPassed: application.hasPassed,
     application: {
       applicantCrn: application.applicantCrn,

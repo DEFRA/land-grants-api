@@ -61,15 +61,20 @@ export const validateLandParcelActions = async (landAction, request) => {
       actions,
       request
     )
+
+    const actionConfig = actions.find((a) => a.code === action.code)
+
     results = results.concat(
       result.results.map((r) => {
         return {
           code: action.code,
-          description: r.message,
+          description: r.reason,
           sheetId: landAction.sheetId,
           parcelId: landAction.parcelId,
           passed: r.passed,
-          rule: r.name
+          rule: r.name,
+          actionConfigVersion: actionConfig?.version ?? '',
+          explanations: r.explanations
         }
       })
     )

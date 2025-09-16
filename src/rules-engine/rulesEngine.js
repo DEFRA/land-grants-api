@@ -9,7 +9,7 @@
 export const executeRules = (rules, application, actionRules = []) => {
   const results = actionRules.map((rule) =>
     rules[rule.name]
-      ? { ...rules[rule.name].execute(application, rule), name: rule.name }
+      ? { ...rules[rule.name].execute(application, rule) }
       : { name: rule.name, passed: false, message: 'Rule not found' }
   )
 

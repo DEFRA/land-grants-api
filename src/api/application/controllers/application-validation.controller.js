@@ -31,7 +31,7 @@ export const ApplicationValidationController = {
         request.payload
 
       const results = []
-      // validate each parcel and land action
+
       for (const landAction of landActions) {
         const result = await validateLandParcelActions(landAction, request)
         results.push({
@@ -56,7 +56,7 @@ export const ApplicationValidationController = {
         request.server.postgresDb,
         {
           application_id: applicationId,
-          sbi: landActions[0].sbi, // should pass this in the payload
+          sbi: landActions[0].sbi,
           crn: applicationCrn,
           data: applicationData
         }
