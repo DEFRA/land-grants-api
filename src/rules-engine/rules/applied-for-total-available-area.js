@@ -6,25 +6,30 @@ export const appliedForTotalAvailableArea = {
     } = application
 
     const name = rule.name
+    const explanations = [
+      {
+        title: 'Total valid land cover',
+        lines: [
+          `Applied for: ${parseFloat(areaAppliedFor)} ha`,
+          `Parcel area: ${parseFloat(area)} ha`
+        ]
+      }
+    ]
 
     if (parseFloat(areaAppliedFor) !== parseFloat(area)) {
       return {
         name,
         passed: false,
-        reason: `There is not sufficient available area (${areaAppliedFor} ha) for the applied figure (${area} ha)`
+        reason: `There is not sufficient available area (${parseFloat(area)} ha) for the applied figure (${parseFloat(areaAppliedFor)} ha)`,
+        explanations
       }
     }
 
     return {
       name,
       passed: true,
-      reason: `There is sufficient available area (${areaAppliedFor} ha) for the applied figure (${area} ha)`,
-      explanations: [
-        {
-          title: 'Total valid land cover',
-          lines: [area]
-        }
-      ]
+      reason: `There is sufficient available area (${parseFloat(area)} ha) for the applied figure (${parseFloat(areaAppliedFor)} ha)`,
+      explanations
     }
   }
 }

@@ -25,7 +25,7 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['10.5']
+          lines: ['Applied for: 10.5 ha', 'Parcel area: 10.5 ha']
         }
       ]
     })
@@ -44,7 +44,7 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['10.5']
+          lines: ['Applied for: 10.5 ha', 'Parcel area: 10.5 ha']
         }
       ]
     })
@@ -59,12 +59,18 @@ describe('appliedForTotalAvailableArea', () => {
       name: 'applied-for-total-available-area',
       passed: false,
       reason:
-        'There is not sufficient available area (9.5 ha) for the applied figure (10.5 ha)'
+        'There is not sufficient available area (10.5 ha) for the applied figure (9.5 ha)',
+      explanations: [
+        {
+          title: 'Total valid land cover',
+          lines: ['Applied for: 9.5 ha', 'Parcel area: 10.5 ha']
+        }
+      ]
     })
   })
 
   test('should handle string and number comparison correctly', () => {
-    const application = createApplication(10, '10.0')
+    const application = createApplication(10.1, '10.1')
     const rule = createRule()
     const result = appliedForTotalAvailableArea.execute(application, rule)
 
@@ -72,11 +78,11 @@ describe('appliedForTotalAvailableArea', () => {
       name: 'applied-for-total-available-area',
       passed: true,
       reason:
-        'There is sufficient available area (10 ha) for the applied figure (10.0 ha)',
+        'There is sufficient available area (10.1 ha) for the applied figure (10.1 ha)',
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['10.0']
+          lines: ['Applied for: 10.1 ha', 'Parcel area: 10.1 ha']
         }
       ]
     })
