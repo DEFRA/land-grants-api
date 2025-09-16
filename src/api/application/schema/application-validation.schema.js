@@ -3,7 +3,7 @@ import Joi from 'joi'
 const applicationValidationSchema = Joi.object({
   applicationId: Joi.string().required(),
   requester: Joi.string().required(),
-  applicationCrn: Joi.string().required(),
+  applicantCrn: Joi.string().required(),
   landActions: Joi.array()
     .items(
       Joi.object({
