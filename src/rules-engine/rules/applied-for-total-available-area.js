@@ -1,3 +1,13 @@
+/**
+ * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ * @import { ActionRule } from '~/src/api/actions/action.d.js'
+ */
+
+/**
+ * @param {RuleEngineApplication} application - The application to execute the rule on
+ * @param {ActionRule} rule - The rule to execute
+ * @returns {RulesResult} - The result of the rule
+ */
 export const appliedForTotalAvailableArea = {
   execute: (application, rule) => {
     const {
