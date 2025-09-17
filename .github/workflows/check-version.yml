@@ -43,44 +43,14 @@ jobs:
           git checkout HEAD -- package.json
           
       - name: Compare versions
-        run: |
-          CURRENT="${{ steps.current-version.outputs.version }}"
-          BASE="${{ steps.base-version.outputs.version }}"
-          
-          echo "Comparing versions:"
-          echo "Base branch: $BASE"
-          echo "Current branch: $CURRENT"
-          
-          # Use node to compare semantic versions
-          node -e "
-            const semver = require('semver');
-            const current = '$CURRENT';
-            const base = '$BASE';
-            
-            console.log('Base version:', base);
-            console.log('Current version:', current);
-            
-            if (semver.valid(current) && semver.valid(base)) {
-              if (semver.gt(current, base)) {
-                console.log('✅ Version has been incremented correctly');
-                console.log('Version change:', base, '->', current);
-              } else if (semver.eq(current, base)) {
-                console.log('❌ Version has not been incremented');
-                console.log('Please increment the version in package.json');
-                process.exit(1);
-              } else {
-                console.log('❌ Version has been decremented');
-                console.log('Current version is lower than base version');
-                process.exit(1);
-              }
-            } else {
-              console.log('❌ Invalid version format detected');
-              process.exit(1);
-            }
-          "
+        uses: aleoyakas/check-semver-increased-action@v1
+        id: check-version
+        with:
+          current-version: ${{ steps.current-version.outputs.version }}
+          previous-version: ${{ steps.base-version.outputs.version }}
           
       - name: Version check summary
-        if: success()
+        if: steps.action.outputs.is-version-increased == 'true'
         run: |
           echo "## ✅ Version Check Passed" >> $GITHUB_STEP_SUMMARY
           echo "Version successfully incremented from ${{ steps.base-version.outputs.version }} to ${{ steps.current-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
