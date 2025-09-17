@@ -49,8 +49,16 @@ jobs:
           current-version: ${{ steps.current-version.outputs.version }}
           previous-version: ${{ steps.base-version.outputs.version }}
           
-      - name: Version check summary
-        if: steps.action.outputs.is-version-increased == 'true'
+      - name: Version check summary - Success
+        if: steps.check-version.outputs.is-version-increased == 'true'
         run: |
           echo "## ✅ Version Check Passed" >> $GITHUB_STEP_SUMMARY
-          echo "Version successfully incremented from ${{ steps.base-version.outputs.version }} to ${{ steps.current-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Version has been properly incremented from ${{ steps.base-version.outputs.version }} to ${{ steps.current-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Version check summary - Failure
+        if: steps.check-version.outputs.is-version-increased != 'true'
+        run: |
+          echo "## ❌ Version Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Version needs to be incremented. Current: ${{ steps.current-version.outputs.version }}, Base: ${{ steps.base-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Please update the version in package.json using semantic versioning (patch, minor, or major)." >> $GITHUB_STEP_SUMMARY
+          exit 1
