@@ -1,0 +1,85 @@
+name: Check Package Version
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+          
+      - name: Get base branch version
+        id: base-version
+        run: |
+          BASE_BRANCH="${{ github.base_ref || 'main' }}"
+          
+          git fetch origin $BASE_BRANCH
+          git checkout origin/$BASE_BRANCH -- package.json
+          
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "Base branch version: $BASE_VERSION"
+          git checkout HEAD -- package.json
+          
+      - name: Compare versions
+        run: |
+          CURRENT="${{ steps.current-version.outputs.version }}"
+          BASE="${{ steps.base-version.outputs.version }}"
+          
+          echo "Comparing versions:"
+          echo "Base branch: $BASE"
+          echo "Current branch: $CURRENT"
+          
+          # Use node to compare semantic versions
+          node -e "
+            const semver = require('semver');
+            const current = '$CURRENT';
+            const base = '$BASE';
+            
+            console.log('Base version:', base);
+            console.log('Current version:', current);
+            
+            if (semver.valid(current) && semver.valid(base)) {
+              if (semver.gt(current, base)) {
+                console.log('✅ Version has been incremented correctly');
+                console.log('Version change:', base, '->', current);
+              } else if (semver.eq(current, base)) {
+                console.log('❌ Version has not been incremented');
+                console.log('Please increment the version in package.json');
+                process.exit(1);
+              } else {
+                console.log('❌ Version has been decremented');
+                console.log('Current version is lower than base version');
+                process.exit(1);
+              }
+            } else {
+              console.log('❌ Invalid version format detected');
+              process.exit(1);
+            }
+          "
+          
+      - name: Version check summary
+        if: success()
+        run: |
+          echo "## ✅ Version Check Passed" >> $GITHUB_STEP_SUMMARY
+          echo "Version successfully incremented from ${{ steps.base-version.outputs.version }} to ${{ steps.current-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
