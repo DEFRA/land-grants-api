@@ -17,7 +17,7 @@ import { rules } from '~/src/rules-engine/rules/index.js'
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {Action[]} allEnabledActions - All enabled actions
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<RulesResult>} The validation result
+ * @returns {Promise<ActionRuleResult>} The validation result
  */
 export const validateLandAction = async (
   action,
@@ -81,7 +81,7 @@ export const validateLandAction = async (
 }
 
 /**
- * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
+ * @import { ActionRuleResult } from '~/src/api/actions/action.d.js'
  * @import { LandParcel } from '~/src/api/parcel/queries/getLandData.query.js'
  * @import { Action } from '~/src/api/actions/action.d.js'
  * @import { CompatibilityCheckFn } from '~/src/available-area/available-area.d.js'
