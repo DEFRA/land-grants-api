@@ -34,22 +34,6 @@ describe('Application Validation Run Controller', () => {
   })
 
   describe('GET /application/{id}/validation-run', () => {
-    test('should return 404 if application validation run does not exist', async () => {
-      getApplicationValidationRun.mockResolvedValue(null)
-
-      const request = {
-        method: 'GET',
-        url: '/application/123/validation-run'
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
-
-      expect(statusCode).toBe(404)
-      expect(result.message).toBe('Application validation run not found')
-    })
-
     test('should return 200 and application validation run', async () => {
       const applicationValidationRun = {
         id: '123',
@@ -135,8 +119,8 @@ describe('Application Validation Run Controller', () => {
       getApplicationValidationRun.mockResolvedValue(applicationValidationRun)
 
       const request = {
-        method: 'GET',
-        url: '/application/123/validation-run'
+        method: 'POST',
+        url: '/application/validation-run/123'
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -150,14 +134,30 @@ describe('Application Validation Run Controller', () => {
       expect(result.applicationValidationRun).toEqual(applicationValidationRun)
     })
 
+    test('should return 404 if application validation run does not exist', async () => {
+      getApplicationValidationRun.mockResolvedValue(null)
+
+      const request = {
+        method: 'POST',
+        url: '/application/validation-run/123'
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
+
+      expect(statusCode).toBe(404)
+      expect(result.message).toBe('Application validation run not found')
+    })
+
     test('should return 500 if application validation run query fails', async () => {
       getApplicationValidationRun.mockRejectedValue(
         new Error('Error getting application validation run')
       )
 
       const request = {
-        method: 'GET',
-        url: '/application/123/validation-run'
+        method: 'POST',
+        url: '/application/validation-run/123'
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */

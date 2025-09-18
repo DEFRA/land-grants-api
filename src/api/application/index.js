@@ -15,8 +15,8 @@ const application = {
           ...ApplicationValidationController
         },
         {
-          method: 'GET',
-          path: '/application/{id}/validation-run',
+          method: 'POST',
+          path: '/application/validation-run/{id}',
           ...ApplicationValidationRunController
         }
       ])
