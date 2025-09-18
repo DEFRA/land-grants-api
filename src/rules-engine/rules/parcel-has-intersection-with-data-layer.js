@@ -1,3 +1,14 @@
+/**
+ * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ * @import { ActionRule } from '~/src/api/actions/action.d.js'
+ * @import { RuleResultItem } from '~/src/rules-engine/rules.d.js'
+ */
+
+/**
+ * @param {RuleEngineApplication} application - The application to execute the rule on
+ * @param {ActionRule} rule - The rule to execute
+ * @returns {RuleResultItem} - The result of the rule
+ */
 export const parcelHasIntersectionWithDataLayer = {
   execute: (application, rule) => {
     const { layerName, minimumIntersectionPercent, tolerancePercent } =
