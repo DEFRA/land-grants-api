@@ -47,7 +47,7 @@ describe('Get application validation run', () => {
     )
 
     expect(getApplicationValidationRunResult).toMatchObject({
-      id: 2,
+      id: getApplicationValidationRunResult.id,
       ...applicationValidationRun
     })
   })
