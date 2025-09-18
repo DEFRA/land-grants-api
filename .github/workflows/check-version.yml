@@ -1,0 +1,64 @@
+name: Check Package Version
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'package.json'
+  workflow_call:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+          
+      - name: Get base branch version
+        id: base-version
+        run: |
+          BASE_BRANCH="${{ github.base_ref || 'main' }}"
+          
+          git fetch origin $BASE_BRANCH
+          git checkout origin/$BASE_BRANCH -- package.json
+          
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "Base branch version: $BASE_VERSION"
+          git checkout HEAD -- package.json
+          
+      - name: Compare versions
+        uses: aleoyakas/check-semver-increased-action@v1
+        id: check-version
+        with:
+          current-version: ${{ steps.current-version.outputs.version }}
+          previous-version: ${{ steps.base-version.outputs.version }}
+          
+      - name: Version check summary - Success
+        if: steps.check-version.outputs.is-version-increased == 'true'
+        run: |
+          echo "## ✅ Version Check Passed" >> $GITHUB_STEP_SUMMARY
+          echo "Version has been properly incremented from ${{ steps.base-version.outputs.version }} to ${{ steps.current-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Version check summary - Failure
+        if: steps.check-version.outputs.is-version-increased != 'true'
+        run: |
+          echo "## ❌ Version Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Version needs to be incremented. Current: ${{ steps.current-version.outputs.version }}, Base: ${{ steps.base-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Please update the version in package.json using semantic versioning (patch, minor, or major)." >> $GITHUB_STEP_SUMMARY
+          exit 1
