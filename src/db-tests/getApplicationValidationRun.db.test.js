@@ -23,16 +23,6 @@ describe('Get application validation run', () => {
 
   beforeAll(async () => {
     connection = await connectToTestDatbase()
-    await saveApplicationValidationRun(
-      logger,
-      connection,
-      applicationValidationRun
-    )
-    await saveApplicationValidationRun(
-      logger,
-      connection,
-      applicationValidationRun
-    )
   })
 
   afterAll(async () => {
@@ -40,14 +30,20 @@ describe('Get application validation run', () => {
   })
 
   test('should get application validation run', async () => {
+    const savedApplicationValidationRun = await saveApplicationValidationRun(
+      logger,
+      connection,
+      applicationValidationRun
+    )
+
     const getApplicationValidationRunResult = await getApplicationValidationRun(
       logger,
       connection,
-      applicationValidationRun.application_id
+      savedApplicationValidationRun.id
     )
 
     expect(getApplicationValidationRunResult).toMatchObject({
-      id: expect.any(Number),
+      id: savedApplicationValidationRun.id,
       ...applicationValidationRun
     })
   })
@@ -60,10 +56,16 @@ describe('Get application validation run', () => {
       })
     }
 
+    const savedApplicationValidationRun = await saveApplicationValidationRun(
+      logger,
+      connection,
+      applicationValidationRun
+    )
+
     const result = await getApplicationValidationRun(
       logger,
       mockDb,
-      applicationValidationRun.application_id
+      savedApplicationValidationRun.id
     )
 
     expect(mockDb.connect).toHaveBeenCalled()

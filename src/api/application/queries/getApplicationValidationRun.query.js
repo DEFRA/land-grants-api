@@ -6,10 +6,10 @@
  * Get latest application validation run
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
- * @param {string} applicationId - The application id of the application validation run
+ * @param {string} id - The id of the application validation run
  * @returns {Promise<ApplicationResult>} The application validation run
  */
-async function getApplicationValidationRun(logger, db, applicationId) {
+async function getApplicationValidationRun(logger, db, id) {
   let client
   try {
     logger.info(
@@ -18,9 +18,9 @@ async function getApplicationValidationRun(logger, db, applicationId) {
     client = await db.connect()
 
     const query = `
-      SELECT * FROM application_results WHERE application_id = $1 ORDER BY created_at DESC LIMIT 1
+      SELECT * FROM application_results WHERE id = $1 ORDER BY created_at DESC LIMIT 1
     `
-    const result = await client.query(query, [applicationId])
+    const result = await client.query(query, [id])
 
     return result.rows[0]
   } catch (error) {

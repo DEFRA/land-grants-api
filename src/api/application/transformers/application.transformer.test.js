@@ -1,3 +1,4 @@
+import packageJson from '~/package.json'
 import {
   applicationTransformer,
   mapActionResults
@@ -47,7 +48,7 @@ describe('applicationTransformer', () => {
       date: expect.any(Date),
       requester: 'grants-ui',
       hasPassed: true,
-      landGrantsApiVersion: '0.0.0',
+      landGrantsApiVersion: packageJson.version,
       application: {
         applicantCrn: '345',
         parcels: [
