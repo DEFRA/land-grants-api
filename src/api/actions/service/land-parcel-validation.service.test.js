@@ -48,16 +48,24 @@ describe('LandParcelValidationService', () => {
   ]
   const mockCompatibilityCheckFn = jest.fn()
   const mockValidateLandActionResult = {
-    results: [
-      {
-        passed: false,
-        reason: 'CMOR1 failed',
-        name: 'rule-name',
-        explanations: [
-          `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
-        ]
-      }
-    ]
+    ruleResult: {
+      results: [
+        {
+          passed: false,
+          reason: 'CMOR1 failed',
+          name: 'rule-name',
+          explanations: [
+            `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
+          ]
+        }
+      ]
+    },
+    availableArea: {
+      explanations: [
+        `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
+      ],
+      areaInHa: 567
+    }
   }
 
   beforeEach(() => {
@@ -88,6 +96,12 @@ describe('LandParcelValidationService', () => {
         passed: false,
         rule: 'rule-name',
         actionConfigVersion: '1',
+        availableArea: {
+          explanations: [
+            `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
+          ],
+          areaInHa: 567
+        },
         explanations: [
           `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
         ]
@@ -97,14 +111,20 @@ describe('LandParcelValidationService', () => {
 
   it('should validate multiple land parcel actions', async () => {
     validateLandAction.mockResolvedValueOnce({
-      results: [
-        {
-          passed: false,
-          reason: 'UPL1 failed',
-          name: 'rule-name',
-          explanations: []
-        }
-      ]
+      ruleResult: {
+        results: [
+          {
+            passed: false,
+            reason: 'UPL1 failed',
+            name: 'rule-name',
+            explanations: []
+          }
+        ]
+      },
+      availableArea: {
+        explanations: [],
+        areaInHa: 567
+      }
     })
 
     const mockLandAction = {
@@ -127,6 +147,12 @@ describe('LandParcelValidationService', () => {
         passed: false,
         rule: 'rule-name',
         actionConfigVersion: '1',
+        availableArea: {
+          explanations: [
+            `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
+          ],
+          areaInHa: 567
+        },
         explanations: [
           `This parcel has a 100%  intersection with the moorland layer. The target is 51%.`
         ]
@@ -139,6 +165,10 @@ describe('LandParcelValidationService', () => {
         passed: false,
         rule: 'rule-name',
         actionConfigVersion: '1',
+        availableArea: {
+          explanations: [],
+          areaInHa: 567
+        },
         explanations: []
       }
     ])

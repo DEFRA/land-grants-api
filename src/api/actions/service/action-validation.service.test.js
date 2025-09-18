@@ -65,9 +65,10 @@ describe('Action Validation Service', () => {
     )
 
     expect(result).toEqual({
-      passed: true,
-      results: []
+      ruleResult: { passed: true, results: [] },
+      availableArea: { explanations: undefined, areaInHa: 567 }
     })
+
     expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
       mockAction.code,
       mockParcelDetails.sheet_id,

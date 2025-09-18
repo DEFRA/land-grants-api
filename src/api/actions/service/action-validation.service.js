@@ -17,7 +17,7 @@ import { rules } from '~/src/rules-engine/rules/index.js'
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {Action[]} allEnabledActions - All enabled actions
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<RulesResult>} The validation result
+ * @returns {Promise<ActionRuleResult>} The validation result
  */
 export const validateLandAction = async (
   action,
@@ -37,7 +37,10 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const { availableAreaSqm: parcelAvailableArea } = getAvailableAreaForAction(
+  const {
+    availableAreaSqm: parcelAvailableArea,
+    explanations: availableAreaExplanations
+  } = getAvailableAreaForAction(
     action.code,
     landParcel.sheet_id,
     landParcel.parcel_id,
@@ -67,11 +70,18 @@ export const validateLandAction = async (
   )
 
   const ruleToExecute = allEnabledActions.find((a) => a.code === action.code)
-  return executeRules(rules, application, ruleToExecute?.rules)
+  const ruleResult = executeRules(rules, application, ruleToExecute?.rules)
+  return {
+    ruleResult,
+    availableArea: {
+      explanations: availableAreaExplanations,
+      areaInHa: parcelAvailableArea
+    }
+  }
 }
 
 /**
- * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
+ * @import { ActionRuleResult } from '~/src/api/actions/action.d.js'
  * @import { LandParcel } from '~/src/api/parcel/queries/getLandData.query.js'
  * @import { Action } from '~/src/api/actions/action.d.js'
  * @import { CompatibilityCheckFn } from '~/src/available-area/available-area.d.js'

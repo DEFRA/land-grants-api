@@ -1,4 +1,9 @@
 /**
+ * @import { Explanation } from '~/src/rules-engine/rules.d.js'
+ * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
+ */
+
+/**
  * @typedef {object} Action
  * @property {number} id
  * @property {number} version
@@ -32,4 +37,16 @@
  * @property {string} layerName
  * @property {number} minimumIntersectionPercent
  * @property {number} tolerancePercent
+ */
+
+/**
+ * @typedef {object} AvailableArea
+ * @property {Explanation[]} explanations
+ * @property {number} areaInHa
+ */
+
+/**
+ * @typedef {object} ActionRuleResult
+ * @property {RulesResult} ruleResult
+ * @property {AvailableArea} availableArea
  */

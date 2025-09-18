@@ -31,7 +31,11 @@ describe('applicationTransformer', () => {
               code: 'ACTION1',
               passed: true,
               rule: 'rule-name',
-              description: 'rule-description'
+              description: 'rule-description',
+              availableArea: {
+                explanations: [],
+                areaInHa: 567
+              }
             }
           ]
         }
@@ -69,11 +73,16 @@ describe('applicationTransformer', () => {
               code: 'ACTION1',
               hasPassed: true,
               actionConfigVersion: '',
+              availableArea: {
+                areaInHa: 567,
+                explanations: []
+              },
               rules: [
                 {
                   name: 'rule-name',
                   hasPassed: true,
-                  reason: 'rule-description'
+                  reason: 'rule-description',
+                  explanations: []
                 }
               ]
             }
@@ -100,8 +109,14 @@ describe('mapActionResults', () => {
         code: 'ACTION1',
         hasPassed: true,
         actionConfigVersion: '',
+        availableArea: undefined,
         rules: [
-          { name: 'rule-name', hasPassed: true, reason: 'rule-description' }
+          {
+            name: 'rule-name',
+            hasPassed: true,
+            reason: 'rule-description',
+            explanations: []
+          }
         ]
       }
     ])
@@ -113,19 +128,31 @@ describe('mapActionResults', () => {
         code: 'ACTION1',
         passed: true,
         rule: 'rule-1',
-        description: 'rule-description'
+        description: 'rule-description',
+        availableArea: {
+          explanations: [],
+          areaInHa: 567
+        }
       },
       {
         code: 'ACTION1',
         passed: false,
         rule: 'rule-2',
-        description: 'rule-description-2'
+        description: 'rule-description-2',
+        availableArea: {
+          explanations: [],
+          areaInHa: 567
+        }
       },
       {
         code: 'ACTION2',
         passed: true,
         rule: 'rule-1',
-        description: 'rule-description'
+        description: 'rule-description',
+        availableArea: {
+          explanations: [],
+          areaInHa: 567
+        }
       }
     ]
     const result = mapActionResults(actions)
@@ -134,16 +161,41 @@ describe('mapActionResults', () => {
         code: 'ACTION1',
         hasPassed: false,
         actionConfigVersion: '',
+        availableArea: {
+          areaInHa: 567,
+          explanations: []
+        },
         rules: [
-          { name: 'rule-1', hasPassed: true, reason: 'rule-description' },
-          { name: 'rule-2', hasPassed: false, reason: 'rule-description-2' }
+          {
+            name: 'rule-1',
+            hasPassed: true,
+            reason: 'rule-description',
+            explanations: []
+          },
+          {
+            name: 'rule-2',
+            hasPassed: false,
+            reason: 'rule-description-2',
+            explanations: []
+          }
         ]
       },
       {
         code: 'ACTION2',
         hasPassed: true,
         actionConfigVersion: '',
-        rules: [{ name: 'rule-1', hasPassed: true, reason: 'rule-description' }]
+        availableArea: {
+          areaInHa: 567,
+          explanations: []
+        },
+        rules: [
+          {
+            name: 'rule-1',
+            hasPassed: true,
+            reason: 'rule-description',
+            explanations: []
+          }
+        ]
       }
     ])
   })

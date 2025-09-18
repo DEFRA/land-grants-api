@@ -9,7 +9,7 @@ export const mapActionResults = (actions) => {
         name: action.rule,
         hasPassed: action.passed,
         reason: action.description,
-        explanations: action.explanations
+        explanations: action.explanations || []
       })
       existingAction.hasPassed = existingAction.rules.every((r) => r.hasPassed)
     } else {
@@ -17,12 +17,13 @@ export const mapActionResults = (actions) => {
         code: action.code,
         actionConfigVersion: action.actionConfigVersion || '',
         hasPassed: action.passed,
+        availableArea: action.availableArea,
         rules: [
           {
             name: action.rule,
             hasPassed: action.passed,
             reason: action.description,
-            explanations: action.explanations
+            explanations: action.explanations || []
           }
         ]
       })

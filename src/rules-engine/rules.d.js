@@ -5,9 +5,17 @@
  */
 
 /**
+ * @typedef {object} RuleResultItem
+ * @property {string} name
+ * @property {boolean} passed
+ * @property {string} reason
+ * @property {Explanation[]} explanations
+ */
+
+/**
  * @typedef {object} RulesResult
  * @property {boolean} passed
- * @property {{name: string, passed: boolean, reason: string, explanations: Explanation[]}[]} results
+ * @property {RuleResultItem[]} results
  */
 
 /**
