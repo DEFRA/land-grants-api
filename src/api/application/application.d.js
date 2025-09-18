@@ -48,6 +48,7 @@
  * @property {boolean} hasPassed
  * @property {Application} application
  * @property {ParcelResult[]} parcelLevelResults
+ * @property {object} availableArea
  * @property {Date} created_at
  */
 

@@ -59,7 +59,7 @@ describe('Application Validation Controller', () => {
     const applicationResult = await getApplicationValidationRun(
       logger,
       connection,
-      '123'
+      data.id
     )
 
     expect(statusCode).toBe(200)
