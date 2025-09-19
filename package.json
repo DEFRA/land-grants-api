@@ -1,6 +1,6 @@
 {
   "name": "land-grants-api",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Land grants API",
   "main": ".server/index.js",
   "type": "module",
@@ -17,7 +17,6 @@
     "format": "prettier --write \"src/**/*.js\" \"**/*.{js,cjs,md,json,config.js,test.js,graphql.js}\"",
     "format:check": "prettier --check \"src/**/*.js\" \"**/*.{js,cjs,md,json,config.js,test.js,graphql.js}\"",
     "git:pre-commit-hook": "npm run format:check && npm run lint && npm test",
-    "postinstall": "npm run setup:husky",
     "lint": "run-s lint:js lint:types",
     "lint:fix": "eslint --cache . --fix",
     "lint:js": "eslint --cache .",
