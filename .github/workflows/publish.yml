@@ -43,7 +43,7 @@ jobs:
 
       - name: Create Test Coverage Reports
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm run build
           npm test
 
