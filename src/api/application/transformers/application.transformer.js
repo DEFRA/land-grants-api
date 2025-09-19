@@ -1,5 +1,3 @@
-import packageJson from '~/package.json'
-
 export const mapActionResults = (actions) => {
   return actions.reduce((acc, action) => {
     const existingAction = acc.find((a) => a.code === action.code)
@@ -40,7 +38,7 @@ export const applicationTransformer = (application) => {
   return {
     date: new Date(),
     requester: application.requester,
-    landGrantsApiVersion: packageJson.version,
+    landGrantsApiVersion: '1.0.0',
     hasPassed: application.hasPassed,
     application: {
       applicantCrn: application.applicantCrn,
