@@ -37,7 +37,6 @@ const LandActionsValidateController = {
   handler: async (request, h) => {
     try {
       const { landActions } = request.payload
-      const results = []
 
       const sbis = new Set(landActions.map((landAction) => landAction.sbi))
 
@@ -53,17 +52,17 @@ const LandActionsValidateController = {
         return Boom.badRequest(errorMessage)
       }
 
+      const validationPromises = []
+
       for (const landAction of landActions) {
         request.logger.info(
           `Controller validating land actions ${landAction.sheetId} ${landAction.parcelId}`
         )
 
-        const validationResults = await validateLandParcelActions(
-          landAction,
-          request
-        )
-        results.push(...validationResults)
+        validationPromises.push(validateLandParcelActions(landAction, request))
       }
+
+      const results = (await Promise.all(validationPromises)).flat()
 
       return h
         .response({
