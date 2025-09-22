@@ -48,7 +48,7 @@ describe('applicationTransformer', () => {
       requester: 'grants-ui',
       hasPassed: true,
 
-      landGrantsApiVersion: '1.0.0',
+      landGrantsApiVersion: process.env.npm_package_version ?? 'unknown',
       application: {
         applicantCrn: '345',
         parcels: [
