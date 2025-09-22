@@ -38,7 +38,7 @@ export const applicationTransformer = (application) => {
   return {
     date: new Date(),
     requester: application.requester,
-    landGrantsApiVersion: '1.0.0',
+    landGrantsApiVersion: process.env.npm_package_version ?? 'unknown',
     hasPassed: application.hasPassed,
     application: {
       applicantCrn: application.applicantCrn,
