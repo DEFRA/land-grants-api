@@ -1,3 +1,5 @@
+import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
+
 export const mapActionResults = (actions) => {
   return actions.reduce((acc, action) => {
     const existingAction = acc.find((a) => a.code === action.code)
@@ -15,7 +17,10 @@ export const mapActionResults = (actions) => {
         code: action.code,
         actionConfigVersion: action.actionConfigVersion || '',
         hasPassed: action.passed,
-        availableArea: action.availableArea,
+        availableArea: {
+          ...action.availableArea.explanations,
+          areaInHa: sqmToHaRounded(action.availableArea.areaInHa)
+        },
         rules: [
           {
             name: action.rule,
@@ -38,13 +43,14 @@ export const applicationTransformer = (application) => {
   return {
     date: new Date(),
     requester: application.requester,
-    landGrantsApiVersion: process.env.npm_package_version ?? 'unknown',
+    landGrantsApiVersion: process.env.SERVICE_VERSION ?? 'unknown',
     hasPassed: application.hasPassed,
+    applicationLevelResults: {},
     application: {
-      applicantCrn: application.applicantCrn,
+      agreementLevelActions: [],
       parcels: application.landActions.map((parcel) => ({
-        sheetId: parcel.sheet_id,
-        parcelId: parcel.parcel_id,
+        sheetId: parcel.sheetId,
+        parcelId: parcel.parcelId,
         actions: parcel.actions
       }))
     },

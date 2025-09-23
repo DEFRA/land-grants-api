@@ -11,8 +11,8 @@ describe('applicationTransformer', () => {
       applicantCrn: '345',
       landActions: [
         {
-          sheet_id: 'SX0679',
-          parcel_id: '9238',
+          sheetId: 'SX0679',
+          parcelId: '9238',
           actions: [
             {
               code: 'ACTION1',
@@ -47,10 +47,10 @@ describe('applicationTransformer', () => {
       date: expect.any(Date),
       requester: 'grants-ui',
       hasPassed: true,
-
-      landGrantsApiVersion: process.env.npm_package_version ?? 'unknown',
+      landGrantsApiVersion: process.env.SERVICE_VERSION ?? 'unknown',
+      applicationLevelResults: {},
       application: {
-        applicantCrn: '345',
+        agreementLevelActions: [],
         parcels: [
           {
             sheetId: 'SX0679',
@@ -74,8 +74,7 @@ describe('applicationTransformer', () => {
               hasPassed: true,
               actionConfigVersion: '',
               availableArea: {
-                areaInHa: 567,
-                explanations: []
+                areaInHa: 0.0567
               },
               rules: [
                 {
@@ -100,7 +99,11 @@ describe('mapActionResults', () => {
         code: 'ACTION1',
         passed: true,
         rule: 'rule-name',
-        description: 'rule-description'
+        description: 'rule-description',
+        availableArea: {
+          explanations: [],
+          areaInHa: 0
+        }
       }
     ]
     const result = mapActionResults(actions)
@@ -109,7 +112,9 @@ describe('mapActionResults', () => {
         code: 'ACTION1',
         hasPassed: true,
         actionConfigVersion: '',
-        availableArea: undefined,
+        availableArea: {
+          areaInHa: 0
+        },
         rules: [
           {
             name: 'rule-name',
@@ -162,8 +167,7 @@ describe('mapActionResults', () => {
         hasPassed: false,
         actionConfigVersion: '',
         availableArea: {
-          areaInHa: 567,
-          explanations: []
+          areaInHa: 0.0567
         },
         rules: [
           {
@@ -185,8 +189,7 @@ describe('mapActionResults', () => {
         hasPassed: true,
         actionConfigVersion: '',
         availableArea: {
-          areaInHa: 567,
-          explanations: []
+          areaInHa: 0.0567
         },
         rules: [
           {
