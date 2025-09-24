@@ -62,5 +62,5 @@ export const validateRequest = async (landActions, actions, request) => {
     errors.push(landActionsErrors)
   }
 
-  return errors
+  return errors.map((ve) => ({ description: ve, passed: false }))
 }

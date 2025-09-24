@@ -223,7 +223,9 @@ describe('Application Validation', () => {
       getLandData.mockResolvedValue([])
 
       const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual(['Land parcels not found: sheet1-parcel1'])
+      expect(result).toEqual([
+        { description: 'Land parcels not found: sheet1-parcel1', passed: false }
+      ])
     })
 
     test('should return actions error when actions are invalid', async () => {
@@ -241,7 +243,9 @@ describe('Application Validation', () => {
       ])
 
       const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual(['Actions not found: INVALID_ACTION'])
+      expect(result).toEqual([
+        { description: 'Actions not found: INVALID_ACTION', passed: false }
+      ])
     })
 
     test('should return both errors when both validations fail', async () => {
@@ -258,8 +262,11 @@ describe('Application Validation', () => {
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([
-        'Land parcels not found: sheet1-parcel1',
-        'Actions not found: INVALID_ACTION'
+        {
+          description: 'Land parcels not found: sheet1-parcel1',
+          passed: false
+        },
+        { description: 'Actions not found: INVALID_ACTION', passed: false }
       ])
     })
 
@@ -286,8 +293,11 @@ describe('Application Validation', () => {
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([
-        'Land parcels not found: sheet2-parcel2',
-        'Actions not found: INVALID_ACTION'
+        {
+          description: 'Land parcels not found: sheet2-parcel2',
+          passed: false
+        },
+        { description: 'Actions not found: INVALID_ACTION', passed: false }
       ])
     })
 
@@ -314,7 +324,9 @@ describe('Application Validation', () => {
       ])
 
       const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual(['Actions not found: UPL1'])
+      expect(result).toEqual([
+        { description: 'Actions not found: UPL1', passed: false }
+      ])
     })
 
     test('should handle null/undefined landActions', async () => {
