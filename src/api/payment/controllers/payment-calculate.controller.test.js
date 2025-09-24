@@ -1,10 +1,29 @@
 import Hapi from '@hapi/hapi'
-import { mockLandActions } from '~/src/api/actions/fixtures/index.js'
 import { payments } from '~/src/api/payment/index.js'
 import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
+
+const mockLandActions = {
+  landActions: [
+    {
+      sheetId: 'SX0679',
+      parcelId: '9238',
+      sbi: '123456789',
+      actions: [
+        {
+          code: 'BND1',
+          quantity: 99.0
+        },
+        {
+          code: 'BND2',
+          quantity: 200.0
+        }
+      ]
+    }
+  ]
+}
 
 jest.mock('~/src/payment-calculation/paymentCalculation.js')
 
