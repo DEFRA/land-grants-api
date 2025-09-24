@@ -1,4 +1,4 @@
-CREATE TABLE land_parcels_tmp (
+CREATE TABLE IF NOT EXISTS land_parcels_tmp (
     geometry_wkt TEXT,
     object_id INTEGER,
     record_id INTEGER,

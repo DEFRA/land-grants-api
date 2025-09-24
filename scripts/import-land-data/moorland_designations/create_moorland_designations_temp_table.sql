@@ -1,4 +1,4 @@
-CREATE TABLE moorland_designations_tmp (
+CREATE TABLE IF NOT EXISTS moorland_designations_tmp (
     geom TEXT,
     OBJECTID INTEGER,
     OBJECTID_12 INTEGER,

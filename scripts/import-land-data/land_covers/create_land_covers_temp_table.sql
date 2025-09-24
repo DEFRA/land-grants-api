@@ -1,4 +1,4 @@
-CREATE TABLE land_covers_tmp (
+CREATE TABLE IF NOT EXISTS land_covers_tmp (
     geom TEXT,
     OBJECTID INTEGER,
     SHEET_ID VARCHAR(10),
