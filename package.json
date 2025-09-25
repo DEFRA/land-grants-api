@@ -40,7 +40,7 @@
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.808.0",
     "@aws-sdk/rds-signer": "^3.808.0",
-    "@babel/runtime": "^7.26.0",
+    "@babel/runtime": "^7.28.3",
     "@defra/hapi-tracing": "^1.0.0",
     "@elastic/ecs-pino-format": "^1.5.0",
     "@hapi/boom": "^10.0.1",
