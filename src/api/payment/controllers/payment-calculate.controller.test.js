@@ -6,11 +6,11 @@ import {
 } from '~/src/payment-calculation/paymentCalculation.js'
 
 const mockLandActions = {
+  sbi: '123456789',
   landActions: [
     {
       sheetId: 'SX0679',
       parcelId: '9238',
-      sbi: '123456789',
       actions: [
         {
           code: 'BND1',
