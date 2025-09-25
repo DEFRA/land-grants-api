@@ -63,5 +63,18 @@ export const applicationTransformer = (application) => {
 }
 
 /**
+ * @param {ApplicationValidationRun[]} applicationValidationRuns
+ * @returns {ApplicationValidationRun[]}
+ */
+export const applicationValidationRunTransformer = (
+  applicationValidationRuns
+) => {
+  return applicationValidationRuns.map((run) => ({
+    id: run.id,
+    created_at: run.created_at
+  }))
+}
+
+/**
  * @import { ApplicationResultData } from '../application.d.js'
  */
