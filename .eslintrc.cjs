@@ -2,7 +2,13 @@
  * @type {ESLint.ConfigData}
  */
 module.exports = {
-  ignorePatterns: ['.server', '.public', 'src/__fixtures__', 'coverage'],
+  ignorePatterns: [
+    '.server',
+    '.public',
+    'src/__fixtures__',
+    'coverage',
+    'scripts'
+  ],
   overrides: [
     {
       extends: [

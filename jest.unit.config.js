@@ -33,7 +33,8 @@ export default {
     '\\.test\\.js$',
     'src/db-tests/testLogger.js',
     'src/db-tests/setup/',
-    'src/db-tests/fixtures/'
+    'src/db-tests/fixtures/',
+    'scripts/'
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   transform: {

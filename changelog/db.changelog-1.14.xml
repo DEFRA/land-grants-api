@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="add-spatial-index-land-covers" author="system">
+      <sql>
+            CREATE INDEX IF NOT EXISTS idx_land_parcels_geom_spatial 
+            ON land_parcels USING GIST (geom);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_land_covers_geom_spatial 
+            ON land_covers USING GIST (geom);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_land_parcels_sheet_parcel 
+            ON land_parcels (sheet_id, parcel_id);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_land_covers_sheet 
+            ON land_covers (sheet_id);
+        </sql>
+         <sql>
+            CREATE INDEX IF NOT EXISTS idx_moorland_designations_spatial 
+            ON moorland_designations USING GIST (geom);
+        </sql>
+        <sql>
+            CREATE INDEX IF NOT EXISTS idx_agreements_sheet_parcel 
+            ON agreements (sheet_id, parcel_id);
+        </sql>
+        
+        <rollback>
+            DROP INDEX IF EXISTS idx_land_parcels_geom_spatial;
+            DROP INDEX IF EXISTS idx_land_covers_geom_spatial;
+            DROP INDEX IF EXISTS idx_land_parcels_sheet_parcel;
+            DROP INDEX IF EXISTS idx_land_covers_sheet;
+            DROP INDEX IF EXISTS idx_moorland_designations_spatial;
+            DROP INDEX IF EXISTS idx_agreements_sheet_parcel;
+        </rollback>
+  </changeSet>
+</databaseChangeLog>

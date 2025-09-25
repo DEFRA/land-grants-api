@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+table=$1
+
+echo "importing land data for ${table}"
+
+PGUSER=land_grants_api_ddl source /usr/local/bin/pg_auth
+
+psqlcmd="/usr/bin/psql -U land_grants_api_ddl -v ON_ERROR_STOP=1"
+psqlf="/usr/bin/psql -U land_grants_api_ddl"
+
+${psqlf} < ./create_${table}_temp_table.sql
+
+echo "truncating table ${table}"
+${psqlcmd} -c "TRUNCATE TABLE ${table};"
+
+echo "finding csv files"
+# find csv files
+if [[ "$table" == "land_parcels" ]]; then
+  files=(parcels_[0-9]*.csv)
+elif [[ "$table" == "land_covers" ]]; then
+  files=(covers_[0-9]*.csv)
+elif [[ "$table" == "moorland_designations" ]]; then
+  files=(moorland.csv)
+fi
+
+for csvFile in ${files[@]}; do
+  echo "copying ${csvFile} to ${table}_tmp"
+  ${psqlcmd} -c "\copy ${table}_tmp FROM '/home/cdpshell/${csvFile}' WITH (FORMAT csv, HEADER true, DELIMITER ',');"
+done
+
+echo "inserting data into ${table}"
+${psqlf} < ./insert_${table}.sql
+
+echo "dropping temp table ${table}_tmp"
+${psqlcmd} -c "DROP TABLE ${table}_tmp;"
