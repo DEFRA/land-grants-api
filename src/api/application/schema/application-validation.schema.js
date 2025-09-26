@@ -42,6 +42,10 @@ const applicationValidationRunRequestSchema = Joi.object({
   id: Joi.number().integer().required()
 })
 
+const applicationValidationRunsRequestSchema = Joi.object({
+  applicationId: Joi.string().required()
+})
+
 const applicationValidationResponseSchema = Joi.object({
   message: Joi.string().required(),
   id: Joi.number().integer().required(),
@@ -57,10 +61,26 @@ const applicationValidationResponseSchema = Joi.object({
   valid: Joi.boolean().required()
 })
 
+const applicationValidationRunsResponseSchema = Joi.alternatives(
+  Joi.object({
+    message: Joi.string().required(),
+    applicationValidationRuns: Joi.array().items(applicationValidationRunSchema)
+  }),
+  Joi.object({
+    message: Joi.string().required(),
+    applicationValidationRuns: Joi.array().items({
+      id: Joi.number().integer().required(),
+      created_at: Joi.date().required()
+    })
+  })
+)
+
 export {
   applicationValidationSchema,
   applicationValidationRunSchema,
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema,
-  applicationValidationResponseSchema
+  applicationValidationResponseSchema,
+  applicationValidationRunsRequestSchema,
+  applicationValidationRunsResponseSchema
 }
