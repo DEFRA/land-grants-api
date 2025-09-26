@@ -35,8 +35,7 @@ describe('Parcels controller', () => {
       parcel_id: '9238',
       sheet_id: 'SX0679',
       area_sqm: 440,
-      geom: 'POLYGON((...))',
-      land_cover_type: 'grassland'
+      geom: 'POLYGON((...))'
     }
   ]
 
