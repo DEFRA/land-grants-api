@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-import { mockActions } from '../api/actions/fixtures/index.js'
+import { mockActionConfig } from '../api/actions/fixtures/index.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { connectToTestDatbase } from './setup/postgres.js'
 
@@ -56,7 +56,9 @@ describe('Available Area query', () => {
     const sheetId = 'SD7565'
     const parcelId = '6976'
     const landCoverCodes = Array.from(
-      new Set(mockActions[0].landCoverClassCodes.concat(['131', '241', '243']))
+      new Set(
+        mockActionConfig[0].landCoverClassCodes.concat(['131', '241', '243'])
+      )
     )
 
     const availableArea = await getParcelAvailableArea(

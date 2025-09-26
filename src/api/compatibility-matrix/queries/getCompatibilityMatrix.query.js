@@ -1,4 +1,4 @@
-import { compatibilityMatrixTransformer } from '../compatibility-matrix.transformer.js'
+import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
 
 /**
  * @param {object} logger

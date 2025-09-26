@@ -1,205 +1,542 @@
 import {
-  applicationTransformer,
-  mapActionResults
+  actionResultTransformer,
+  errorMessagesTransformer,
+  applicationDataTransformer,
+  ruleEngineApplicationTransformer
 } from './application.transformer.js'
 
-describe('applicationTransformer', () => {
-  test('should transform application data correctly', () => {
-    const application = {
-      requester: 'grants-ui',
-      hasPassed: true,
-      applicantCrn: '345',
-      landActions: [
-        {
-          sheetId: 'SX0679',
-          parcelId: '9238',
-          actions: [
-            {
-              code: 'ACTION1',
-              quantity: 100
-            }
-          ]
-        }
-      ],
-      validationResults: [
-        {
-          sheetId: 'SX0679',
-          parcelId: '9238',
-          actions: [
-            {
-              code: 'ACTION1',
-              passed: true,
-              rule: 'rule-name',
-              description: 'rule-description',
-              availableArea: {
-                explanations: [],
-                areaInHa: 567
-              }
-            }
-          ]
-        }
-      ]
+describe('actionResultTransformer', () => {
+  test('should transform action result correctly', () => {
+    const action = { code: 'UPL1' }
+    const actions = [
+      { code: 'UPL1', actionConfigVersion: '1.0' },
+      { code: 'SPM4', actionConfigVersion: '2.0' }
+    ]
+    const availableArea = {
+      explanations: ['explanation1', 'explanation2'],
+      availableAreaSqm: 10000
+    }
+    const ruleResult = {
+      passed: true,
+      results: { rule: 'test rule' }
     }
 
-    const result = applicationTransformer(application)
+    const result = actionResultTransformer(
+      action,
+      actions,
+      availableArea,
+      ruleResult
+    )
 
     expect(result).toEqual({
-      date: expect.any(Date),
-      requester: 'grants-ui',
       hasPassed: true,
+      code: 'UPL1',
+      actionConfigVersion: '1.0',
+      availableArea: {
+        explanations: ['explanation1', 'explanation2'],
+        areaInHa: 1
+      },
+      rules: [{ rule: 'test rule' }]
+    })
+  })
+
+  test('should handle action not found in actions array', () => {
+    const action = { code: 'UNKNOWN' }
+    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const availableArea = {
+      explanations: [],
+      availableAreaSqm: 5000
+    }
+    const ruleResult = {
+      passed: false,
+      results: { rule: 'test rule' }
+    }
+
+    const result = actionResultTransformer(
+      action,
+      actions,
+      availableArea,
+      ruleResult
+    )
+
+    expect(result).toEqual({
+      hasPassed: false,
+      code: 'UNKNOWN',
+      actionConfigVersion: '',
+      availableArea: {
+        explanations: [],
+        areaInHa: 0.5
+      },
+      rules: [{ rule: 'test rule' }]
+    })
+  })
+
+  test('should handle zero available area', () => {
+    const action = { code: 'UPL1' }
+    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const availableArea = {
+      explanations: [],
+      availableAreaSqm: 0
+    }
+    const ruleResult = {
+      passed: true,
+      results: { rule: 'test rule' }
+    }
+
+    const result = actionResultTransformer(
+      action,
+      actions,
+      availableArea,
+      ruleResult
+    )
+
+    expect(result.availableArea.areaInHa).toBe(0)
+  })
+
+  test('should handle negative available area', () => {
+    const action = { code: 'UPL1' }
+    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const availableArea = {
+      explanations: [],
+      availableAreaSqm: -1000
+    }
+    const ruleResult = {
+      passed: true,
+      results: { rule: 'test rule' }
+    }
+
+    const result = actionResultTransformer(
+      action,
+      actions,
+      availableArea,
+      ruleResult
+    )
+
+    expect(result.availableArea.areaInHa).toBe(-0.1)
+  })
+})
+
+describe('errorMessagesTransformer', () => {
+  test('should transform error messages correctly', () => {
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          {
+            code: 'UPL1',
+            hasPassed: false,
+            rules: [
+              [
+                { passed: false, reason: 'Area too small' },
+                { passed: true, reason: 'Valid action' }
+              ]
+            ]
+          },
+          {
+            code: 'SPM4',
+            hasPassed: true,
+            rules: [[{ passed: true, reason: 'Valid action' }]]
+          }
+        ]
+      },
+      {
+        sheetId: 'S2',
+        parcelId: 'P2',
+        actions: [
+          {
+            code: 'CMOR1',
+            hasPassed: false,
+            rules: [[{ passed: false, reason: 'Invalid configuration' }]]
+          }
+        ]
+      }
+    ]
+
+    const result = errorMessagesTransformer(parcelResults)
+
+    expect(result).toEqual([
+      {
+        code: 'UPL1',
+        description: 'Area too small',
+        sheetId: 'S1',
+        parcelId: 'P1',
+        passed: false
+      },
+      {
+        code: 'CMOR1',
+        description: 'Invalid configuration',
+        sheetId: 'S2',
+        parcelId: 'P2',
+        passed: false
+      }
+    ])
+  })
+
+  test('should return empty array when all actions pass', () => {
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          {
+            code: 'UPL1',
+            hasPassed: true,
+            rules: [[{ passed: true, reason: 'Valid action' }]]
+          }
+        ]
+      }
+    ]
+
+    const result = errorMessagesTransformer(parcelResults)
+
+    expect(result).toEqual([])
+  })
+
+  test('should return empty array when parcelResults is empty', () => {
+    const result = errorMessagesTransformer([])
+    expect(result).toEqual([])
+  })
+
+  test('should handle actions with no rules', () => {
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          {
+            code: 'UPL1',
+            hasPassed: false,
+            rules: []
+          }
+        ]
+      }
+    ]
+
+    const result = errorMessagesTransformer(parcelResults)
+
+    expect(result).toEqual([])
+  })
+
+  test('should handle actions with empty rules array', () => {
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          {
+            code: 'UPL1',
+            hasPassed: false,
+            rules: [[]]
+          }
+        ]
+      }
+    ]
+
+    const result = errorMessagesTransformer(parcelResults)
+
+    expect(result).toEqual([])
+  })
+})
+
+describe('applicationDataTransformer', () => {
+  const mockDate = new Date('2023-01-01T00:00:00.000Z')
+  const originalDate = Date
+
+  beforeEach(() => {
+    global.Date = jest.fn(() => mockDate)
+    global.Date.now = originalDate.now
+  })
+
+  afterEach(() => {
+    global.Date = originalDate
+  })
+
+  test('should transform application data when all parcels pass', () => {
+    const applicationId = 'APP123'
+    const applicantCrn = 'CRN456'
+    const sbi = 'SBI789'
+    const requester = 'test@example.com'
+    const landActions = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          { code: 'UPL1', hasPassed: true },
+          { code: 'SPM4', hasPassed: true }
+        ]
+      }
+    ]
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          { code: 'UPL1', hasPassed: true },
+          { code: 'SPM4', hasPassed: true }
+        ]
+      }
+    ]
+
+    const result = applicationDataTransformer(
+      applicationId,
+      applicantCrn,
+      sbi,
+      requester,
+      landActions,
+      parcelResults
+    )
+
+    expect(result).toEqual({
+      date: mockDate,
+      applicationId: 'APP123',
+      applicantCrn: 'CRN456',
+      sbi: 'SBI789',
+      requester: 'test@example.com',
       landGrantsApiVersion: process.env.SERVICE_VERSION ?? 'unknown',
+      hasPassed: true,
       applicationLevelResults: {},
       application: {
         agreementLevelActions: [],
         parcels: [
           {
-            sheetId: 'SX0679',
-            parcelId: '9238',
+            sheetId: 'S1',
+            parcelId: 'P1',
             actions: [
-              {
-                code: 'ACTION1',
-                quantity: 100
-              }
+              { code: 'UPL1', hasPassed: true },
+              { code: 'SPM4', hasPassed: true }
             ]
           }
         ]
       },
-      parcelLevelResults: [
-        {
-          sheetId: 'SX0679',
-          parcelId: '9238',
-          actions: [
-            {
-              code: 'ACTION1',
-              hasPassed: true,
-              actionConfigVersion: '',
-              availableArea: {
-                areaInHa: 0.0567
-              },
-              rules: [
-                {
-                  name: 'rule-name',
-                  hasPassed: true,
-                  reason: 'rule-description',
-                  explanations: []
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      parcelLevelResults: parcelResults
     })
+  })
+
+  test('should transform application data when some parcels fail', () => {
+    const applicationId = 'APP123'
+    const applicantCrn = 'CRN456'
+    const sbi = 'SBI789'
+    const requester = 'test@example.com'
+    const landActions = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          { code: 'UPL1', hasPassed: true },
+          { code: 'SPM4', hasPassed: false }
+        ]
+      }
+    ]
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [
+          { code: 'UPL1', hasPassed: true },
+          { code: 'SPM4', hasPassed: false }
+        ]
+      }
+    ]
+
+    const result = applicationDataTransformer(
+      applicationId,
+      applicantCrn,
+      sbi,
+      requester,
+      landActions,
+      parcelResults
+    )
+
+    expect(result.hasPassed).toBe(false)
+  })
+
+  test('should handle empty landActions and parcelResults', () => {
+    const applicationId = 'APP123'
+    const applicantCrn = 'CRN456'
+    const sbi = 'SBI789'
+    const requester = 'test@example.com'
+    const landActions = []
+    const parcelResults = []
+
+    const result = applicationDataTransformer(
+      applicationId,
+      applicantCrn,
+      sbi,
+      requester,
+      landActions,
+      parcelResults
+    )
+
+    expect(result.hasPassed).toBe(true)
+    expect(result.application.parcels).toEqual([])
+    expect(result.parcelLevelResults).toEqual([])
+  })
+
+  test('should handle multiple parcels with mixed results', () => {
+    const applicationId = 'APP123'
+    const applicantCrn = 'CRN456'
+    const sbi = 'SBI789'
+    const requester = 'test@example.com'
+    const landActions = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [{ code: 'UPL1', hasPassed: true }]
+      },
+      {
+        sheetId: 'S2',
+        parcelId: 'P2',
+        actions: [{ code: 'SPM4', hasPassed: false }]
+      }
+    ]
+    const parcelResults = [
+      {
+        sheetId: 'S1',
+        parcelId: 'P1',
+        actions: [{ code: 'UPL1', hasPassed: true }]
+      },
+      {
+        sheetId: 'S2',
+        parcelId: 'P2',
+        actions: [{ code: 'SPM4', hasPassed: false }]
+      }
+    ]
+
+    const result = applicationDataTransformer(
+      applicationId,
+      applicantCrn,
+      sbi,
+      requester,
+      landActions,
+      parcelResults
+    )
+
+    expect(result.hasPassed).toBe(false)
+    expect(result.application.parcels).toHaveLength(2)
   })
 })
 
-describe('mapActionResults', () => {
-  test('should map action results correctly', () => {
-    const actions = [
-      {
-        code: 'ACTION1',
-        passed: true,
-        rule: 'rule-name',
-        description: 'rule-description',
-        availableArea: {
-          explanations: [],
-          areaInHa: 0
+describe('ruleEngineApplicationTransformer', () => {
+  test('should transform rule engine application correctly', () => {
+    const areaAppliedFor = 100
+    const code = 'UPL1'
+    const area = 500
+    const intersectingAreaPercentage = 25.5
+    const existingAgreements = [
+      { id: 'AG1', type: 'agreement1' },
+      { id: 'AG2', type: 'agreement2' }
+    ]
+
+    const result = ruleEngineApplicationTransformer(
+      areaAppliedFor,
+      code,
+      area,
+      intersectingAreaPercentage,
+      existingAgreements
+    )
+
+    expect(result).toEqual({
+      areaAppliedFor: 100,
+      actionCodeAppliedFor: 'UPL1',
+      landParcel: {
+        area: 500,
+        existingAgreements: [
+          { id: 'AG1', type: 'agreement1' },
+          { id: 'AG2', type: 'agreement2' }
+        ],
+        intersections: {
+          moorland: { intersectingAreaPercentage: 25.5 }
         }
       }
-    ]
-    const result = mapActionResults(actions)
-    expect(result).toEqual([
-      {
-        code: 'ACTION1',
-        hasPassed: true,
-        actionConfigVersion: '',
-        availableArea: {
-          areaInHa: 0
-        },
-        rules: [
-          {
-            name: 'rule-name',
-            hasPassed: true,
-            reason: 'rule-description',
-            explanations: []
-          }
-        ]
-      }
-    ])
+    })
   })
 
-  test('should map multiple actions and rules correctly', () => {
-    const actions = [
-      {
-        code: 'ACTION1',
-        passed: true,
-        rule: 'rule-1',
-        description: 'rule-description',
-        availableArea: {
-          explanations: [],
-          areaInHa: 567
+  test('should handle zero values', () => {
+    const result = ruleEngineApplicationTransformer(0, 'UPL1', 0, 0, [])
+
+    expect(result).toEqual({
+      areaAppliedFor: 0,
+      actionCodeAppliedFor: 'UPL1',
+      landParcel: {
+        area: 0,
+        existingAgreements: [],
+        intersections: {
+          moorland: { intersectingAreaPercentage: 0 }
         }
-      },
-      {
-        code: 'ACTION1',
-        passed: false,
-        rule: 'rule-2',
-        description: 'rule-description-2',
-        availableArea: {
-          explanations: [],
-          areaInHa: 567
+      }
+    })
+  })
+
+  test('should handle negative values', () => {
+    const result = ruleEngineApplicationTransformer(
+      -100,
+      'UPL1',
+      -500,
+      -25.5,
+      []
+    )
+
+    expect(result).toEqual({
+      areaAppliedFor: -100,
+      actionCodeAppliedFor: 'UPL1',
+      landParcel: {
+        area: -500,
+        existingAgreements: [],
+        intersections: {
+          moorland: { intersectingAreaPercentage: -25.5 }
         }
-      },
-      {
-        code: 'ACTION2',
-        passed: true,
-        rule: 'rule-1',
-        description: 'rule-description',
-        availableArea: {
-          explanations: [],
-          areaInHa: 567
+      }
+    })
+  })
+
+  test('should handle null and undefined values', () => {
+    const result = ruleEngineApplicationTransformer(
+      null,
+      'UPL1',
+      undefined,
+      0,
+      null
+    )
+
+    expect(result).toEqual({
+      areaAppliedFor: null,
+      actionCodeAppliedFor: 'UPL1',
+      landParcel: {
+        area: undefined,
+        existingAgreements: null,
+        intersections: {
+          moorland: { intersectingAreaPercentage: 0 }
         }
+      }
+    })
+  })
+
+  test('should handle empty existingAgreements array', () => {
+    const result = ruleEngineApplicationTransformer(100, 'UPL1', 500, 25.5, [])
+
+    expect(result.landParcel.existingAgreements).toEqual([])
+  })
+
+  test('should handle complex existingAgreements', () => {
+    const existingAgreements = [
+      { id: 'AG1', type: 'agreement1', status: 'active' },
+      {
+        id: 'AG2',
+        type: 'agreement2',
+        status: 'inactive',
+        details: { amount: 1000 }
       }
     ]
-    const result = mapActionResults(actions)
-    expect(result).toEqual([
-      {
-        code: 'ACTION1',
-        hasPassed: false,
-        actionConfigVersion: '',
-        availableArea: {
-          areaInHa: 0.0567
-        },
-        rules: [
-          {
-            name: 'rule-1',
-            hasPassed: true,
-            reason: 'rule-description',
-            explanations: []
-          },
-          {
-            name: 'rule-2',
-            hasPassed: false,
-            reason: 'rule-description-2',
-            explanations: []
-          }
-        ]
-      },
-      {
-        code: 'ACTION2',
-        hasPassed: true,
-        actionConfigVersion: '',
-        availableArea: {
-          areaInHa: 0.0567
-        },
-        rules: [
-          {
-            name: 'rule-1',
-            hasPassed: true,
-            reason: 'rule-description',
-            explanations: []
-          }
-        ]
-      }
-    ])
+
+    const result = ruleEngineApplicationTransformer(
+      100,
+      'UPL1',
+      500,
+      25.5,
+      existingAgreements
+    )
+
+    expect(result.landParcel.existingAgreements).toEqual(existingAgreements)
   })
 })

@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-import { compatibilityMatrixTransformer } from '../compatibility-matrix.transformer.js'
+import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
 
 describe('getCompatibilityMatrix', () => {
   const mockLogger = {
