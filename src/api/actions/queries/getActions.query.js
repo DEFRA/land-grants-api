@@ -2,13 +2,13 @@
  * @import {Action} from '../action.d.js'
  */
 
-import { actionTransformer } from '../transformers/action.transformer.js'
+import { actionConfigTransformer } from '../transformers/actionConfig.transformer.js'
 
 /**
- * Get enabled actions
+ * Get enabled action configs
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
- * @returns {Promise<Action[]>} The actions
+ * @returns {Promise<Action[]>} The action configs
  */
 async function getEnabledActions(logger, db) {
   let client
@@ -33,7 +33,7 @@ async function getEnabledActions(logger, db) {
     `
     const result = await client.query(query)
 
-    return result.rows.map(actionTransformer)
+    return result.rows.map(actionConfigTransformer)
   } catch (error) {
     logger.error(`Error executing get action query: ${error.message}`)
     return []
