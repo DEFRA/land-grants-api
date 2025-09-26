@@ -1,5 +1,6 @@
 import { ApplicationValidationController } from './controllers/application-validation.controller.js'
 import { ApplicationValidationRunController } from './controllers/application-validation-run.controller.js'
+import { ApplicationValidationRunsController } from './controllers/application-validation-runs.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -18,6 +19,11 @@ const application = {
           method: 'POST',
           path: '/application/validation-run/{id}',
           ...ApplicationValidationRunController
+        },
+        {
+          method: 'POST',
+          path: '/application/{applicationId}/validation-run',
+          ...ApplicationValidationRunsController
         }
       ])
     }

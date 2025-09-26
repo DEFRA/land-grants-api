@@ -2,7 +2,8 @@ import {
   actionResultTransformer,
   errorMessagesTransformer,
   applicationDataTransformer,
-  ruleEngineApplicationTransformer
+  ruleEngineApplicationTransformer,
+  applicationValidationRunTransformer
 } from './application.transformer.js'
 
 describe('actionResultTransformer', () => {
@@ -538,5 +539,38 @@ describe('ruleEngineApplicationTransformer', () => {
     )
 
     expect(result.landParcel.existingAgreements).toEqual(existingAgreements)
+  })
+})
+
+describe('applicationValidationRunTransformer', () => {
+  test('should transform simple detail validation run correctly', () => {
+    const applicationValidationRuns = [
+      {
+        id: 1,
+        created_at: '2024-01-15T10:30:00Z',
+        ignore: true
+      }
+    ]
+
+    const result = applicationValidationRunTransformer(
+      applicationValidationRuns
+    )
+
+    expect(result).toEqual([
+      {
+        id: 1,
+        created_at: '2024-01-15T10:30:00Z'
+      }
+    ])
+  })
+
+  test('should handle empty array', () => {
+    const applicationValidationRuns = []
+
+    const result = applicationValidationRunTransformer(
+      applicationValidationRuns
+    )
+
+    expect(result).toEqual([])
   })
 })
