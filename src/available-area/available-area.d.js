@@ -1,4 +1,10 @@
 /**
+ * @import { ExplanationSection } from './explanations.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */
+
+/**
  * @typedef {object} Stack
  * @property {number} stackNumber - The unique identifier for the stack
  * @property {string[]} actionCodes - The action codes associated with the stack
@@ -37,15 +43,9 @@
  */
 
 /**
- * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
- */
-
-/**
  * @typedef {object} ActionWithArea
+ * @property {string} actionCode - The action code
  * @property {number} areaSqm - The action area
- * @augments Action
  */
 
 /**

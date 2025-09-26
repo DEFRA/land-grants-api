@@ -127,7 +127,22 @@ export function ruleEngineApplicationTransformer(
 }
 
 /**
+ * @param {ApplicationValidationRunList[]} applicationValidationRuns
+ * @returns {ApplicationValidationRunList[]}
+ */
+export const applicationValidationRunTransformer = (
+  applicationValidationRuns
+) => {
+  return applicationValidationRuns.map((run) => ({
+    id: run.id,
+    created_at: run.created_at
+  }))
+}
+
+/**
+ * @import { Action } from '~/src/api/actions/action.d.js'
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ * @import {ApplicationValidationRunList} from '../application.d.js'
  */
 
 /**

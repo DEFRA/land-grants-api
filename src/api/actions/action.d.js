@@ -18,6 +18,7 @@
  * @property {string[]} landCoverClassCodes
  * @property {ActionRule[]} rules
  * @property {Date} lastUpdated
+ * @property {string} actionConfigVersion
  */
 
 /**

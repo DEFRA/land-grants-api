@@ -137,6 +137,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
 }
 
 /**
- * @import { Action, CodeToString, ActionWithArea, ExplanationSection } from './available-area.d.js'
+ * @import { Action, CodeToString, ActionWithArea } from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCover } from '../api/parcel/parcel.d.js'
  */
