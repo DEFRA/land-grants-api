@@ -13,6 +13,10 @@ import {
 } from '../transformers/application.transformer.js'
 
 /**
+ * @import {LandAction} from '~/src/api/payment/payment.d.js'
+ */
+
+/**
  * Validate a land action
  * @param {Action} action - The action
  * @param {Action[]} actions - All enabled actions

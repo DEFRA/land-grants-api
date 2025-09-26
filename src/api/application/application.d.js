@@ -61,3 +61,15 @@
  * @property {ApplicationResultData} data
  * @property {Date} created_at
  */
+
+/**
+ * @typedef {object} ApplicationValidationRunList
+ * @property {number} id
+ * @property {Date} created_at
+ */
+
+/**
+ * @typedef {object} ApplicationValidationError
+ * @property {string} description
+ * @property {boolean} passed
+ */

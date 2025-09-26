@@ -40,7 +40,7 @@ export const ApplicationValidationRunsController = {
 
       const response = fields.includes('details')
         ? applicationValidationRuns
-        : applicationValidationRunTransformer(applicationValidationRuns)
+        : applicationValidationRunTransformer(applicationValidationRuns ?? [])
 
       return h
         .response({

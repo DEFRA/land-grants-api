@@ -1,9 +1,13 @@
 /**
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ */
+
+/**
  * Get a land data
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
- * @param {{object}} db connection
- * @param {{object}} logger object
+ * @param {any} db - Database connection
+ * @param {Logger} logger - Logger object
  * @returns {Promise<LandParcel[]>} The land data
  */
 async function getLandData(sheetId, parcelId, db, logger) {

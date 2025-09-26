@@ -19,9 +19,14 @@ import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 
 /**
- * ApplicationValidateController
- * Validates a full application including all parcels and land actions
- * @satisfies {Partial<ServerRoute>}
+ * @typedef {Object} ApplicationValidationController
+ * @property {Object} options - Hapi route options
+ * @property {Function} handler - Route handler function
+ */
+
+/**
+ * Application validation controller for handling land grant application validation
+ * @type {ApplicationValidationController}
  */
 const ApplicationValidationController = {
   options: {
@@ -41,6 +46,12 @@ const ApplicationValidationController = {
     }
   },
 
+  /**
+   * Handler function for application validation
+   * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   */
   handler: async (request, h) => {
     try {
       const { landActions, applicationId, sbi, applicantCrn, requester } =
@@ -134,6 +145,6 @@ const ApplicationValidationController = {
 
 export { ApplicationValidationController }
 
-/**
- * @import { ServerRoute } from '@hapi/hapi'
- */
+// /**
+//  * @import { ServerRoute } from '@hapi/hapi'
+//  */

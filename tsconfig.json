@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "module": "NodeNext",
     "noEmit": true,
     "paths": {
@@ -11,15 +11,10 @@
     "skipLibCheck": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
-    "types": ["jest"]
+    "types": ["jest", "node", "@hapi/hapi"]
   },
-  "exclude": [".cache", ".public", ".server", "coverage", "node_modules"],
   "include": [
-    "**/*.cjs",
-    "**/*.js",
-    ".*.cjs",
-    ".*.js",
-    ".eslintrc.*",
-    ".prettierrc.*"
+    "types.d.ts",
+    "src/api/application/controllers/application-validation.controller.js"
   ]
 }
