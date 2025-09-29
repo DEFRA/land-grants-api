@@ -5,6 +5,7 @@ import {
 } from '~/src/api/common/schema/index.js'
 import {
   applicationValidationRunsRequestSchema,
+  applicationValidationRunsBodyRequestSchema,
   applicationValidationRunsResponseSchema
 } from '../schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
@@ -17,7 +18,8 @@ export const ApplicationValidationRunsController = {
     description: 'Returns all application validation runs',
     notes: 'Returns all validation runs for a specific application',
     validate: {
-      params: applicationValidationRunsRequestSchema
+      params: applicationValidationRunsRequestSchema,
+      payload: applicationValidationRunsBodyRequestSchema
     },
     response: {
       status: {
