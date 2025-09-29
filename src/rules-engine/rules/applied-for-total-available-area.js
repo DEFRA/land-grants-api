@@ -1,7 +1,6 @@
 /**
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/api/actions/action.d.js'
- * @import { RuleResultItem } from '~/src/rules-engine/rules.d.js'
  */
 
 /**
@@ -21,6 +20,7 @@ export const appliedForTotalAvailableArea = {
       {
         title: 'Total valid land cover',
         lines: [
+          'Applied for total available area',
           `Applied for: ${parseFloat(areaAppliedFor)} ha`,
           `Parcel area: ${parseFloat(area)} ha`
         ]

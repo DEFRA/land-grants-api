@@ -1,7 +1,6 @@
 /**
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/api/actions/action.d.js'
- * @import { RuleResultItem } from '~/src/rules-engine/rules.d.js'
  */
 
 /**
@@ -19,7 +18,7 @@ export const parcelHasIntersectionWithDataLayer = {
     const explanations = [
       {
         title: `${layerName} check`,
-        lines: []
+        lines: ['Parcel has intersection with data layer']
       }
     ]
 
