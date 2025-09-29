@@ -3,7 +3,8 @@ import {
   applicationValidationRunSchema,
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema,
-  applicationValidationResponseSchema
+  applicationValidationResponseSchema,
+  applicationValidationRunsBodyRequestSchema
 } from './application-validation.schema.js'
 
 describe('Application Validation Schema', () => {
@@ -441,6 +442,60 @@ describe('Application Validation Schema', () => {
       }
       const { error } = applicationValidationResponseSchema.validate(data)
       expect(error).toBeUndefined()
+    })
+  })
+
+  describe('applicationValidationRunsBodyRequestSchema', () => {
+    const validData = {
+      fields: ['details']
+    }
+
+    it('should validate valid data', () => {
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(validData)
+      expect(error).toBeUndefined()
+    })
+
+    it('should require fields array', () => {
+      const data = {}
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error.details[0].message).toContain('fields')
+    })
+
+    it('should require fields to be an array', () => {
+      const data = { fields: 'not-an-array' }
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error.details[0].message).toContain('fields')
+    })
+
+    it('should require fields array to contain only valid values', () => {
+      const data = { fields: ['invalid-value'] }
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error.details[0].message).toContain('must be [details]')
+    })
+
+    it('should accept multiple valid field values', () => {
+      const data = { fields: ['details', 'details'] }
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error).toBeUndefined()
+    })
+
+    it('should accept empty fields array', () => {
+      const data = { fields: [] }
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error).toBeUndefined()
+    })
+
+    it('should reject mixed valid and invalid values', () => {
+      const data = { fields: ['details', 'invalid-value'] }
+      const { error } =
+        applicationValidationRunsBodyRequestSchema.validate(data)
+      expect(error.details[0].message).toContain('must be [details]')
     })
   })
 })
