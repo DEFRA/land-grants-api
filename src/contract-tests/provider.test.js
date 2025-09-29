@@ -21,7 +21,6 @@ jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
 jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
 
 const mockGetLandData = getLandData
 const mockGetEnabledActions = getEnabledActions
