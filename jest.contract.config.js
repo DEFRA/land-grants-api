@@ -12,5 +12,5 @@ export default {
     '!**/__tests__/**',
     '!**/__snapshots__/**'
   ],
-  coverageDirectory: '<rootDir>/coverage/db'
+  coverageDirectory: '<rootDir>/coverage/contract'
 }
