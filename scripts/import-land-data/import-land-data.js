@@ -101,7 +101,9 @@ const insertCovers = async (client) => {
 const insertMoorland = async (client) => {
   console.log('inserting moorland')
   await client.query(
-    await readFile('moorland_designations/create_moorland_designations_temp_table.sql')
+    await readFile(
+      'moorland_designations/create_moorland_designations_temp_table.sql'
+    )
   )
 
   const landParcelsFiles = await getTableCsvFiles('moorland')
@@ -112,8 +114,10 @@ const insertMoorland = async (client) => {
   await client.query(`
     truncate table moorland_designations;
   `)
-  
-  await client.query(await readFile('moorland_designations/insert_moorland_designations.sql'))
+
+  await client.query(
+    await readFile('moorland_designations/insert_moorland_designations.sql')
+  )
 
   await client.query(`
     drop table moorland_designations_tmp;
