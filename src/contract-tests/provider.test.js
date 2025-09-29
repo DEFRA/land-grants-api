@@ -1,4 +1,5 @@
-import path from 'path'
+import { env } from 'node:process'
+import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
@@ -39,6 +40,8 @@ const mockAvailableAreaResult = {
   availableAreaHectares: 0.03
 }
 
+dotenv.config()
+
 function createParcel(sheetId, parcelId) {
   return {
     parcel_id: parcelId,
@@ -48,7 +51,25 @@ function createParcel(sheetId, parcelId) {
   }
 }
 
-// (2) Verify that the provider meets all consumer expectations
+const pactVerifierOptions = {
+  provider: 'land-grants-api',
+  providerBaseUrl: 'http://localhost:3001',
+  pactBrokerUrl:
+    env.PACT_BROKER_URL ?? 'https://ffc-pact-broker.azure.defra.cloud',
+  consumerVersionSelectors: [{ latest: true }],
+  pactBrokerUsername: env.PACT_BROKER_USERNAME,
+  pactBrokerPassword: env.PACT_BROKER_PASSWORD,
+  publishVerificationResult: true,
+  providerVersion: process.env.GIT_COMMIT ?? '1.0.0',
+
+  stateHandlers: {
+    'has a parcel with ID': ({ sheetId, parcelId }) => {
+      const parcel = createParcel(sheetId, parcelId)
+      mockGetLandData.mockResolvedValue([parcel])
+    }
+  }
+}
+
 describe('Pact Verification', () => {
   const server = Hapi.server({ port: 3001, host: 'localhost' })
 
@@ -81,24 +102,8 @@ describe('Pact Verification', () => {
     await server.stop()
   })
 
-  it('validates the expectations of Matching Service', () => {
-    const options = {
-      providerBaseUrl: 'http://localhost:3001', // <- location of your running provider
-      pactUrls: [
-        path.resolve(
-          process.cwd(),
-          './src/pacts/grants-ui-land-grants-api.json'
-        )
-      ],
-      stateHandlers: {
-        'has a parcel with ID': ({ sheetId, parcelId }) => {
-          const parcel = createParcel(sheetId, parcelId)
-
-          mockGetLandData.mockResolvedValue([parcel])
-        }
-      }
-    }
-
-    return new Verifier(options).verifyProvider()
+  it('validates the expectations of Matching Service', async () => {
+    const results = await new Verifier(pactVerifierOptions).verifyProvider()
+    expect(results).toBeTruthy()
   })
 })
