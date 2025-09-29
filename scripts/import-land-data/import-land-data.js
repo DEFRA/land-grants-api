@@ -15,20 +15,6 @@ const readFile = async (path) => {
   return await fs.readFile(join(__dirname, path), 'utf8')
 }
 
-const createTempTables = async (client) => {
-  await client.query(
-    await readFile('land_parcels/create_land_parcels_temp_table.sql')
-  )
-  await client.query(
-    await readFile('land_covers/create_land_covers_temp_table.sql')
-  )
-  await client.query(
-    await readFile(
-      'moorland_designations/create_moorland_designations_temp_table.sql'
-    )
-  )
-}
-
 const getTableCsvFiles = async (name) => {
   const files = await fs.readdir(__dirname)
   return files.filter((f) => f.startsWith(name) && f.endsWith('.csv'))
@@ -128,8 +114,6 @@ const insertMoorland = async (client) => {
 
 const importLandData = async () => {
   const client = await connection.connect()
-
-  await createTempTables(client)
 
   await insertParcels(client)
   await insertCovers(client)
