@@ -14,11 +14,7 @@ on:
 jobs:
   pr-validator:
     name: Run Pull Request Checks
-    runs-on: self-hosted # Required for pact tests
-    env:
-      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
-      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
-      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +30,6 @@ jobs:
           npm run format:check
           npm run lint
           npm test
-          npm run test:contracts
 
       - name: Test Docker Image Build
         run: |
@@ -49,6 +44,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+jobs:
+  pr-validator:
+    name: Run Pact Contract Tests
+    runs-on: self-hosted
+    env:
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Contract Tests
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: |
+          npm ci --ignore-scripts
+          npm test
+          npm run test:contracts
 
   version-check:
     uses: ./.github/workflows/check-version.yml
