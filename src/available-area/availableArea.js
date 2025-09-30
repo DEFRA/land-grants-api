@@ -83,9 +83,7 @@ export async function getAvailableAreaDataRequirements(
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
   return {
-    landCoverCodesForAppliedForAction: landCoverCodesForAppliedForAction.map(
-      (c) => c.landCoverCode
-    ),
+    landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
     landCoverToString

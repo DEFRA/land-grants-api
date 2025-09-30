@@ -43,9 +43,9 @@ const PaymentsCalculateController = {
    */
   handler: async (request, h) => {
     try {
-      // @ts-expect-error - postgresDb is added via server decoration
+      // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
-      // @ts-expect-error - payload is added via server decoration
+      // @ts-expect-error - payload
       const { landActions, startDate } = request.payload
 
       request.logger.info(

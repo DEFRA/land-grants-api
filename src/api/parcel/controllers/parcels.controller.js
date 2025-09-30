@@ -49,7 +49,7 @@ const ParcelsController = {
    */
   handler: async (request, h) => {
     try {
-      // @ts-expect-error - postgresDb is added via server decoration
+      // @ts-expect-error - postgresDb
       const { parcelIds, fields } = request.payload
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 

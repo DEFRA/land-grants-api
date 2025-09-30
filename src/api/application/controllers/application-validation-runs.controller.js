@@ -37,11 +37,11 @@ export const ApplicationValidationRunsController = {
    */
   handler: async (request, h) => {
     try {
-      // @ts-expect-error - postgresDb is added via server decoration
+      // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
-      // @ts-expect-error - payload is added via server decoration
+      // @ts-expect-error - params
       const { applicationId } = request.params
-      // @ts-expect-error - payload is added via server decoration
+      // @ts-expect-error - payload
       const { fields } = request.payload
 
       const applicationValidationRuns = await getApplicationValidationRuns(
