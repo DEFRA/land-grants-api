@@ -4,12 +4,14 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { PaymentCalculateResponseSchema } from '~/src/api/payment/schema/payment-calculate.schema.js'
+import {
+  PaymentCalculateResponseSchema,
+  paymentCalculateSchema
+} from '~/src/api/payment/schema/payment-calculate.schema.js'
 import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
-import { paymentCalculateSchema } from '../../actions/schema/payment-calculate.schema.js'
 
 /**
  * PaymentsCalculateController

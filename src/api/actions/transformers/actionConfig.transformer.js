@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
 
 /**
- * Get enabled actions
- * @param {object} action - db action
- * @returns {import("../action.d.js").Action} The actions
+ * Transform action config
+ * @param {object} action - db action config
+ * @returns {import("../action.d.js").Action} The action config
  */
-export function actionTransformer(action) {
+export function actionConfigTransformer(action) {
   const {
     application_unit_of_measurement,
     land_cover_class_codes,

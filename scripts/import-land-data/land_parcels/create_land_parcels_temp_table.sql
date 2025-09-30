@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS land_parcels_tmp (
     object_id INTEGER,
     record_id INTEGER,
     sheet_id VARCHAR(10),
-    parcel_id INTEGER,
+    parcel_id VARCHAR(4),
     valid_start TIMESTAMP WITH TIME ZONE,
     valid_end TIMESTAMP WITH TIME ZONE,
     area_sqm DECIMAL(20,4),
