@@ -18,7 +18,7 @@ export const parcelHasIntersectionWithDataLayer = {
     const explanations = [
       {
         title: `${layerName} check`,
-        lines: ['Parcel has intersection with data layer']
+        lines: []
       }
     ]
 

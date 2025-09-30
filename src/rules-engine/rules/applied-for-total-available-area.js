@@ -20,7 +20,6 @@ export const appliedForTotalAvailableArea = {
       {
         title: 'Total valid land cover',
         lines: [
-          'Applied for total available area',
           `Applied for: ${parseFloat(areaAppliedFor)} ha`,
           `Parcel area: ${parseFloat(area)} ha`
         ]

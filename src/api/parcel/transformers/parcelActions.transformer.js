@@ -28,7 +28,7 @@ function sizeTransformer(area) {
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
-    results: {},
+    // results: {},
     code: action.code,
     description: action.description,
     availableArea:

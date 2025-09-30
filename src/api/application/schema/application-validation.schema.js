@@ -46,6 +46,10 @@ const applicationValidationRunsRequestSchema = Joi.object({
   applicationId: Joi.string().required()
 })
 
+const applicationValidationRunsBodyRequestSchema = Joi.object({
+  fields: Joi.array().items(Joi.string().valid('details')).required()
+})
+
 const applicationValidationResponseSchema = Joi.object({
   message: Joi.string().required(),
   id: Joi.number().integer().required(),
@@ -82,5 +86,6 @@ export {
   applicationValidationRunResponseSchema,
   applicationValidationResponseSchema,
   applicationValidationRunsRequestSchema,
-  applicationValidationRunsResponseSchema
+  applicationValidationRunsResponseSchema,
+  applicationValidationRunsBodyRequestSchema
 }

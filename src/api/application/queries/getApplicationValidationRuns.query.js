@@ -18,9 +18,9 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
     client = await db.connect()
 
     const query = `
-      SELECT * FROM application_results WHERE application_id = $1 ORDER BY created_at DESC LIMIT 1
+      SELECT * FROM application_results WHERE application_id = $1 ORDER BY created_at DESC
     `
-    const result = await client.query(query, [applicationId])
+    const result = await client.query(query, [applicationId?.toLowerCase()])
 
     return result.rows
   } catch (error) {
