@@ -25,13 +25,7 @@ while IFS= read -r -d '' gz_file; do
     fi
     
     output_file="$DEST_DIR/$base_name"
-    
-    # Check if output file already exists
-    if [[ -f "$output_file" ]]; then
-        echo "  Warning: $output_file already exists, skipping..."
-        continue
-    fi
-    
+
     # Extract the file
     if gunzip -c "$gz_file" > "$output_file"; then
         echo "  ✓ Extracted to: $output_file"
