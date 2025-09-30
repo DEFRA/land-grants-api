@@ -1,8 +1,15 @@
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
+ * @import { ActionRequest } from '~/src/api/application/application.d.js'
+ * @import { Action } from '~/src/api/actions/action.d.js'
+ * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ * @import {ApplicationValidationRunList} from '../application.d.js'
+ */
+
+/**
  * Transform the action result
- * @param {Action} action - The action
+ * @param {ActionRequest} action - The action
  * @param {Action[]} actions - The actions
  * @param {object} availableArea - The available area
  * @param {object} ruleResult - The rule result
@@ -19,7 +26,7 @@ export const actionResultTransformer = (
   return {
     hasPassed: ruleResult.passed,
     code: action.code,
-    actionConfigVersion: actionConfig?.actionConfigVersion || '',
+    actionConfigVersion: actionConfig?.actionConfigVersion ?? '',
     availableArea: {
       explanations: availableArea.explanations,
       areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
@@ -138,9 +145,3 @@ export const applicationValidationRunTransformer = (
     created_at: run.created_at
   }))
 }
-
-/**
- * @import { Action } from '~/src/api/actions/action.d.js'
- * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
- * @import {ApplicationValidationRunList} from '../application.d.js'
- */

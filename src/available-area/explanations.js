@@ -1,5 +1,12 @@
 import { sqmToHaRounded } from '../api/common/helpers/measurement.js'
 
+/**
+ * @import { ExplanationSection } from './explanations.d.js'
+ * @import { CodeToString, Action } from './available-area.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
+ */
+
 export const aacExplain = {
   /**
    * Generates explanation when adding an action
@@ -75,7 +82,7 @@ const initialExplanationSections = [
  * @param {string} parcelId - The parcel ID
  * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @param {Action[]} existingActions - The list of existing actions
- * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {CodeToString} landCoverToString
  * @returns {ExplanationSection[]} - The initial explanations
  */
@@ -105,10 +112,3 @@ export function getInitialExplanations(
     return createExplanationSection(title, content)
   })
 }
-
-/**
- * @import { ExplanationSection } from './explanations.d.js'
- * @import {  LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
- * @import { CodeToString, Action } from './available-area.d.js'
- * @import { LandCover } from '../api/parcel/parcel.d.js'
- */

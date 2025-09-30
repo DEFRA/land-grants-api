@@ -36,9 +36,9 @@
 
 /**
  * @typedef {object} AvailableAreaDataRequirements
- * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
+ * @property {{[key: string]: LandCoverCodes[]} | never[]} landCoversForExistingActions
  * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
  */
 

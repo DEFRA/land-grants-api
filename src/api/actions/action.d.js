@@ -51,3 +51,9 @@
  * @property {RulesResult} ruleResult
  * @property {AvailableArea} availableArea
  */
+
+/**
+ * @typedef {object} ActionRequest
+ * @property {string} actionCode - The action code
+ * @property {number} areaSqm - The action area in sqm
+ */

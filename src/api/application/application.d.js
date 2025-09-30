@@ -22,7 +22,7 @@
  */
 
 /**
- * @typedef {object} Action
+ * @typedef {object} ActionRequest
  * @property {string} code
  * @property {number} quantity
  */
@@ -31,7 +31,7 @@
  * @typedef {object} Parcel
  * @property {string} sheetId
  * @property {string} parcelId
- * @property {Action[]} actions
+ * @property {ActionRequest[]} actions
  */
 
 /**

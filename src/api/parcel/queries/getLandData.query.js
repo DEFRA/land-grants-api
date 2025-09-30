@@ -1,5 +1,6 @@
 /**
  * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'
  */
 
 /**
@@ -8,7 +9,7 @@
  * @param {string} parcelId - The parcelId
  * @param {any} db - Database connection
  * @param {Logger} logger - Logger object
- * @returns {Promise<LandParcel[]>} The land data
+ * @returns {Promise<LandParcelDb[] | null>} The land data
  */
 async function getLandData(sheetId, parcelId, db, logger) {
   let client
@@ -32,7 +33,7 @@ async function getLandData(sheetId, parcelId, db, logger) {
     return result.rows
   } catch (error) {
     logger.error(`Error executing get Land parcels query: ${error}`)
-    return
+    return null
   } finally {
     if (client) {
       client.release()
@@ -40,13 +41,3 @@ async function getLandData(sheetId, parcelId, db, logger) {
   }
 }
 export { getLandData }
-
-/**
- * @typedef {object} LandParcel
- * @property {number} id
- * @property {string} sheet_id
- * @property {string} parcel_id
- * @property {number} area_sqm
- * @property {string} geom
- * @property {Date} last_updated
- */

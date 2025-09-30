@@ -13,12 +13,16 @@ import {
 } from '../transformers/application.transformer.js'
 
 /**
- * @import {LandAction} from '~/src/api/payment/payment.d.js'
+ * @import { ActionRuleResult, Action } from '~/src/api/actions/action.d.js'
+ * @import { CompatibilityCheckFn } from '~/src/available-area/available-area.d.js'
+ * @import { AgreementAction } from '~/src/api/agreements/agreements.d.js'
+ * @import { LandAction } from '~/src/api/payment/payment.d.js'
+ * @import { ActionRequest } from '~/src/api/application/application.d.js'
  */
 
 /**
  * Validate a land action
- * @param {Action} action - The action
+ * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
@@ -76,10 +80,3 @@ export const validateLandAction = async (
   const ruleResult = executeRules(rules, application, ruleToExecute?.rules)
   return actionResultTransformer(action, actions, availableArea, ruleResult)
 }
-
-/**
- * @import { ActionRuleResult } from '~/src/api/actions/action.d.js'
- * @import { Action } from '~/src/api/actions/action.d.js'
- * @import { CompatibilityCheckFn } from '~/src/available-area/available-area.d.js'
- * @import { AgreementAction } from '~/src/api/agreements/agreements.d.js'
- */

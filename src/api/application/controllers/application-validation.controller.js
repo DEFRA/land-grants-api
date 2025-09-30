@@ -18,16 +18,6 @@ import {
 import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 
-/**
- * @typedef {Object} ApplicationValidationController
- * @property {Object} options - Hapi route options
- * @property {Function} handler - Route handler function
- */
-
-/**
- * Application validation controller for handling land grant application validation
- * @type {ApplicationValidationController}
- */
 const ApplicationValidationController = {
   options: {
     tags: ['api'],
@@ -54,14 +44,14 @@ const ApplicationValidationController = {
    */
   handler: async (request, h) => {
     try {
+      // @ts-expect-error - postgresDb is added via server decoration
+      const postgresDb = request.server.postgresDb
+      // @ts-expect-error - postgresDb is added via server decoration
       const { landActions, applicationId, sbi, applicantCrn, requester } =
         request.payload
 
       // Get all the enabled actions
-      const actions = await getEnabledActions(
-        request.logger,
-        request.server.postgresDb
-      )
+      const actions = await getEnabledActions(request.logger, postgresDb)
 
       // Validate the entire request
       const validationErrors = await validateRequest(
@@ -86,7 +76,7 @@ const ApplicationValidationController = {
       // Create a compatibility check function
       const compatibilityCheckFn = await createCompatibilityMatrix(
         request.logger,
-        request.server.postgresDb
+        postgresDb
       )
 
       // Validate each land action
@@ -112,16 +102,12 @@ const ApplicationValidationController = {
       )
 
       // Save the application
-      const id = await saveApplication(
-        request.logger,
-        request.server.postgresDb,
-        {
-          application_id: applicationId,
-          sbi,
-          crn: applicantCrn,
-          data: applicationData
-        }
-      )
+      const id = await saveApplication(request.logger, postgresDb, {
+        application_id: applicationId,
+        sbi,
+        crn: applicantCrn,
+        data: applicationData
+      })
 
       // Return the application validation result
       return h
@@ -144,7 +130,3 @@ const ApplicationValidationController = {
 }
 
 export { ApplicationValidationController }
-
-// /**
-//  * @import { ServerRoute } from '@hapi/hapi'
-//  */
