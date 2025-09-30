@@ -2,8 +2,7 @@ import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controll
 
 import {
   connectToTestDatbase,
-  resetGetParcelTestData,
-  seedForGetParcelTest
+  resetGetParcelTestData
 } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
 import { logger } from './testLogger.js'
@@ -11,9 +10,8 @@ import { logger } from './testLogger.js'
 let connection
 
 describe('Calculate available area', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
-    await seedForGetParcelTest(connection)
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

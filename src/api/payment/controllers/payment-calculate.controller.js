@@ -35,8 +35,17 @@ const PaymentsCalculateController = {
     }
   },
 
+  /**
+   * Handler function for application validation
+   * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   */
   handler: async (request, h) => {
     try {
+      // @ts-expect-error - postgresDb is added via server decoration
+      const postgresDb = request.server.postgresDb
+      // @ts-expect-error - payload is added via server decoration
       const { landActions, startDate } = request.payload
 
       request.logger.info(
@@ -51,7 +60,7 @@ const PaymentsCalculateController = {
       }
 
       const { enabledActions } = await getPaymentCalculationDataRequirements(
-        request.server.postgresDb,
+        postgresDb,
         request.logger
       )
 

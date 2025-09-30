@@ -194,7 +194,6 @@ function processIncompatibleAreas({
   mergedLandCoverCodesForAppliedForAction,
   logger
 }) {
-  console.log('============-------------2')
   const {
     result: revisedActions,
     explanations: incompatibleLandCoverExplanations
@@ -209,8 +208,6 @@ function processIncompatibleAreas({
     },
     logger
   )
-
-  console.log('============-------------3')
 
   return {
     revisedActions,
@@ -311,8 +308,6 @@ export function getAvailableAreaForAction(
     landCoverToString,
     logger
   )
-
-  console.log('============-------------1')
 
   const { revisedActions, incompatibleLandCoverExplanations } =
     processIncompatibleAreas({

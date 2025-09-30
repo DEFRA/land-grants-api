@@ -1,4 +1,8 @@
 /**
+ * @import { ExplanationSection } from '../available-area/explanations.d.js'
+ */
+
+/**
  * @typedef {object} PaymentSchedule
  * @property {string} agreementStartDate - The agreement start date
  * @property {string} agreementEndDate - The agreement end date
@@ -62,4 +66,5 @@
  * @property {object} parcelItems - Parcel-level payment items keyed by ID
  * @property {object} agreementLevelItems - Agreement-level payment items keyed by ID
  * @property {Array<ScheduledPayment>} payments - Scheduled payment breakdown
+ * @property {Array<ExplanationSection>} explanations - Explanations for the payment calculation
  */

@@ -22,7 +22,7 @@ function getSnapshotName(testName, parcel, action) {
 
 describe('Calculate available area with agreements', () => {
   beforeAll(async () => {
-    connection = await connectToTestDatbase()
+    connection = connectToTestDatbase()
     await seedForParcelControllerTest(connection)
   })
 

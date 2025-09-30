@@ -1,5 +1,4 @@
 import { appliedForTotalAvailableArea } from './applied-for-total-available-area.js'
-import { addExplanation } from '../rulesEngine.js'
 
 describe('appliedForTotalAvailableArea', () => {
   const createApplication = (areaAppliedFor, parcelArea) => ({
