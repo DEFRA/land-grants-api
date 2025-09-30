@@ -36,7 +36,8 @@ export default async () => {
 }
 
 function initializeLiquibase(network) {
-  return new GenericContainer('liquibase/liquibase')
+  // Pinning Liquibase version for now, we were getting an error with 5.0.0. This should removed later
+  return new GenericContainer('liquibase/liquibase:4.32.0')
     .withName('liquibase')
     .withNetwork(network)
     .withLogConsumer((stream) => log(stream, 'Liquibase'))
