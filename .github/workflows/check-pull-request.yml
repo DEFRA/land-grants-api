@@ -14,7 +14,7 @@ on:
 jobs:
   pr-validator:
     name: Run Pull Request Checks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted # Required for pact tests
     env:
       PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
       PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
