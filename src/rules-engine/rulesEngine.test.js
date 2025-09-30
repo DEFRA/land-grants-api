@@ -1,5 +1,5 @@
 import { executeRules } from './rulesEngine.js'
-import { mockActions } from '../api/actions/fixtures/index.js'
+import { mockActionConfig } from '../api/actions/fixtures/index.js'
 
 const rules = {
   'parcel-has-intersection-with-data-layer': {
@@ -36,7 +36,9 @@ const application = {
 
 describe('Rules Engine', function () {
   test('should return passed=true if a single rule is valid', function () {
-    const result = executeRules(rules, application, [mockActions[0].rules[0]])
+    const result = executeRules(rules, application, [
+      mockActionConfig[0].rules[0]
+    ])
 
     expect(result).toStrictEqual({
       passed: true,
@@ -51,7 +53,7 @@ describe('Rules Engine', function () {
   })
 
   test('should return passed=true if all rules are valid', function () {
-    const result = executeRules(rules, application, mockActions[0].rules)
+    const result = executeRules(rules, application, mockActionConfig[0].rules)
 
     expect(result).toStrictEqual({
       passed: true,
@@ -85,7 +87,7 @@ describe('Rules Engine', function () {
 
   test('should return passed=false if mixed response with valid and missing rules', function () {
     const result = executeRules(rules, application, [
-      mockActions[0].rules[0],
+      mockActionConfig[0].rules[0],
       { name: 'missing-rule', config: {} }
     ])
 

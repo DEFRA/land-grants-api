@@ -1,5 +1,5 @@
 import Hapi from '@hapi/hapi'
-import { mockActions } from '~/src/api/actions/fixtures/index.js'
+import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
 import { haToSqm } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
 import {
@@ -66,7 +66,7 @@ describe('Parcels controller', () => {
     jest.clearAllMocks()
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetEnabledActions.mockResolvedValue(mockActions)
+    mockGetEnabledActions.mockResolvedValue(mockActionConfig)
     mockGetAvailableAreaDataRequirements.mockResolvedValue({
       landCoverCodesForAppliedForAction: [],
       landCoversForParcel: [],
