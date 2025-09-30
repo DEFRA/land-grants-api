@@ -40,7 +40,7 @@ export default {
   transform: {
     '^.+\\.js$': 'babel-jest'
   },
-  testPathIgnorePatterns: ['<rootDir>/.server', 'src/contract-tests/'],
+  testPathIgnorePatterns: ['<rootDir>/.server'],
   transformIgnorePatterns: [
     `node_modules/(?!${[
       '@defra/hapi-tracing', // Supports ESM only
