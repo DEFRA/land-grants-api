@@ -5,7 +5,7 @@ import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import Hapi from '@hapi/hapi'
-import { mockActions } from '~/src/api/actions/fixtures/index.js'
+import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
 import { parcel } from '~/src/api/parcel/index.js'
 import {
   getAvailableAreaDataRequirements,
@@ -66,6 +66,23 @@ const pactVerifierOptions = {
       const parcel = createParcel(sheetId, parcelId)
       mockGetLandData.mockResolvedValue([parcel])
     }
+  },
+
+  beforeEach: () => {
+    mockGetEnabledActions.mockResolvedValue(mockActionConfig)
+
+    mockGetAvailableAreaDataRequirements.mockResolvedValue({
+      landCoverCodesForAppliedForAction: [],
+      landCoversForParcel: [],
+      landCoversForExistingActions: []
+    })
+    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
+    mockGetAgreementsForParcel.mockResolvedValue([])
+  },
+
+  afterEach: () => {
+    jest.clearAllMocks()
   }
 }
 
@@ -81,20 +98,6 @@ describe('Pact Verification', () => {
     await server.register([parcel])
     await server.initialize()
     await server.start()
-  })
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-
-    mockGetEnabledActions.mockResolvedValue(mockActions)
-    mockGetAvailableAreaDataRequirements.mockResolvedValue({
-      landCoverCodesForAppliedForAction: [],
-      landCoversForParcel: [],
-      landCoversForExistingActions: []
-    })
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
-    mockGetAgreementsForParcel.mockResolvedValue([])
   })
 
   afterAll(async () => {
