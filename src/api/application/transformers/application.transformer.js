@@ -80,7 +80,7 @@ export const applicationDataTransformer = (
     date: new Date(),
     applicationId,
     applicantCrn,
-    sbi,
+    sbi: sbi?.toString(),
     requester,
     landGrantsApiVersion: process.env.SERVICE_VERSION ?? 'unknown',
     hasPassed,
