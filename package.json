@@ -1,6 +1,6 @@
 {
   "name": "land-grants-api",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Land grants API",
   "main": ".server/index.js",
   "type": "module",
