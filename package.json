@@ -27,7 +27,7 @@
     "test:quick": "jest --config=jest.unit.config.js ",
     "test:watch": "jest --watch",
     "test:db": "npm run extractsql && npx jest --config=jest.db.config.js --runInBand --coverage",
-    "test:contract": "npx jest --config=jest.contract.config.js",
+    "test:contracts": "npx jest --config=jest.contract.config.js",
     "merge:coverage": "./scripts/move-coverage && nyc merge coverage/tmp coverage/merged/coverage.json && nyc report --temp-dir coverage/merged --reporter=html --reporter=lcov --report-dir coverage/merged",
     "coverage:open": "open coverage/merged/index.html",
     "extractsql": "scripts/extract-gz-to-sql src/api/common/migration changelog/",
