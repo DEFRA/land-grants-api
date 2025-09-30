@@ -73,21 +73,23 @@ const initialExplanationSections = [
  * @param {string} actionCodeAppliedFor - The action code being applied for
  * @param {string} sheetId - The sheet ID of the parcel
  * @param {string} parcelId - The parcel ID
- * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @param {Action[]} existingActions - The list of existing actions
- * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
- * @param {CodeToString} landCoverToString
+ * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
  * @returns {ExplanationSection[]} - The initial explanations
  */
 export function getInitialExplanations(
   actionCodeAppliedFor,
   sheetId,
   parcelId,
-  landCoversForParcel,
   existingActions,
-  landCoverCodesForAppliedForAction,
-  landCoverToString
+  availableAreaDataRequirements
 ) {
+  const {
+    landCoversForParcel,
+    landCoverCodesForAppliedForAction,
+    landCoverToString
+  } = availableAreaDataRequirements
+
   const data = {
     actionCodeAppliedFor,
     sheetId,
