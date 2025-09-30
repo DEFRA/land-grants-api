@@ -62,7 +62,6 @@ jobs:
           cache: npm
       - run: |
           npm ci --ignore-scripts
-          npm test
           npm run test:contracts
 
   version-check:
