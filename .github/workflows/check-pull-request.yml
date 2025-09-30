@@ -15,6 +15,10 @@ jobs:
   pr-validator:
     name: Run Pull Request Checks
     runs-on: ubuntu-latest
+    env:
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
