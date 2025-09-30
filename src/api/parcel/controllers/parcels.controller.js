@@ -14,9 +14,9 @@ import {
   getParcelActionsWithAvailableArea
 } from '~/src/api/parcel/service/parcel.service.js'
 import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { mergeAgreementsTransformer } from '../../agreements/transformers/agreements.transformer.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
+import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
 /**
  * ParcelsController
