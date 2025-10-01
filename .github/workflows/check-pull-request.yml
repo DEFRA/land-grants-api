@@ -44,6 +44,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  
+
+  contract-tests:
+    name: Run Pact Contract Tests
+    runs-on: self-hosted
+    env:
+      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Contract Tests
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: |
+          npm ci --ignore-scripts
+          npm run test:contracts
+
   version-check:
-        uses: ./.github/workflows/check-version.yml
+    uses: ./.github/workflows/check-version.yml
