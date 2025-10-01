@@ -39,7 +39,6 @@ export const ApplicationValidationRunsController = {
     try {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
-      // @ts-expect-error - params
       const { applicationId } = request.params
       // @ts-expect-error - payload
       const { fields } = request.payload

@@ -83,6 +83,7 @@ export async function getAvailableAreaDataRequirements(
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
   return {
+    // @ts-expect-error - lines
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,

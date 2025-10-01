@@ -7,6 +7,7 @@ export default {
   resetModules: true,
   clearMocks: true,
   silent: false,
+  displayName: 'unit',
   watchPathIgnorePatterns: ['globalConfig'],
   testMatch: [
     '**/src/api/**/*.test.js',

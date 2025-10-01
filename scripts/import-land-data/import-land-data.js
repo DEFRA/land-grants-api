@@ -119,6 +119,7 @@ const importLandData = async () => {
   await insertCovers(client)
   await insertMoorland(client)
 
+  // @ts-expect-error - end
   await client.end()
 }
 

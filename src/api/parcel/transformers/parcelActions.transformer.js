@@ -28,7 +28,6 @@ function sizeTransformer(area) {
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
-    // results: {},
     code: action.code,
     description: action.description,
     availableArea:
@@ -40,10 +39,13 @@ function actionTransformer(action, availableArea = null, showResults = false) {
   }
 
   if (showResults) {
-    response.results = {
-      totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
-      stacks: availableArea?.stacks,
-      explanations: availableArea?.explanations
+    return {
+      ...response,
+      results: {
+        totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
+        stacks: availableArea?.stacks,
+        explanations: availableArea?.explanations
+      }
     }
   }
 
