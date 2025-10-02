@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "checkJs": false
+  },
+  "extends": "./tsconfig.json",
+  "exclude": [".cache", ".public", ".server", "coverage", "node_modules"]
+}
