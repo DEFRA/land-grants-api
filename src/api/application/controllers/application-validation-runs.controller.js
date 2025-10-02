@@ -29,20 +29,29 @@ export const ApplicationValidationRunsController = {
       }
     }
   },
+  /**
+   * Handler function for application validation
+   * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   */
   handler: async (request, h) => {
     try {
+      // @ts-expect-error - postgresDb
+      const postgresDb = request.server.postgresDb
       const { applicationId } = request.params
+      // @ts-expect-error - payload
       const { fields } = request.payload
 
       const applicationValidationRuns = await getApplicationValidationRuns(
         request.logger,
-        request.server.postgresDb,
+        postgresDb,
         applicationId
       )
 
       const response = fields.includes('details')
         ? applicationValidationRuns
-        : applicationValidationRunTransformer(applicationValidationRuns)
+        : applicationValidationRunTransformer(applicationValidationRuns ?? [])
 
       return h
         .response({

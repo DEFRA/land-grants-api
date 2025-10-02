@@ -18,8 +18,8 @@ describe('payment calculate controller integration', () => {
   const fixtures = getPaymentCalculationFixtures()
   const { h, getResponse } = createResponseCapture()
 
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

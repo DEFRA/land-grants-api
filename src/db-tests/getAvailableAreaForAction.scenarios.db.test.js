@@ -19,8 +19,8 @@ let connection
 describe('Calculate available area', () => {
   const fixtures = getAvailableAreaFixtures()
 
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

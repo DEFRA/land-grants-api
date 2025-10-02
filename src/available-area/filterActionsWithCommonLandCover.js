@@ -1,13 +1,19 @@
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 
 /**
+ * @import { Action, CodeToString } from './available-area.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
+ */
+
+/**
  * Filter existing actions to find those that share at least one land cover code
  * with the applied for action.
  * @param {Action[]} existingActions - The list of existing actions
  * @param {{[key:string]: LandCoverCodes[]}} landCoversForExistingActions - Land cover codes information for existing actions
  * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {CodeToString} landCoverToString
- * @returns {{existingActionsWithLandCoverInCommonWithAppliedForAction: Action[], explanationSection: {title: string, explanations: string[]}}} - A list of existing actions that share land cover codes
+ * @returns {{existingActionsWithLandCoverInCommonWithAppliedForAction: Action[], explanationSection: ExplanationSection}}} - A list of existing actions that share land cover codes
  */
 export function filterActionsWithCommonLandCover(
   existingActions,
@@ -82,8 +88,3 @@ function actionHasLandCoverInCommon(
     explanations: [explanation, ...coverCodeDescriptions]
   }
 }
-
-/**
- * @import { Action, CodeToString } from './available-area.d.js'
- * @import { LandCoverCodes,LandCoverDefinition } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
- */

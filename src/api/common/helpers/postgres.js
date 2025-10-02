@@ -36,7 +36,7 @@ export const postgresDb = {
      *
      * @param { import('@hapi/hapi').Server } server
      * @param {{user: string, host: string, database: string, isLocal: boolean, region: string, passwordForLocalDev?: string}} options
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
@@ -52,8 +52,10 @@ export const postgresDb = {
         database: options.database,
         maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
         ...(!options.isLocal &&
+          // @ts-expect-error - secureContext
           server.secureContext && {
             ssl: {
+              // @ts-expect-error - secureContext
               secureContext: server.secureContext
             }
           })

@@ -3,7 +3,7 @@
  * @param {string[]} actionCodes - The action code(s) to get land cover codes for
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<{[key:string]: LandCoverCodes[]}>} The land cover codes object
+ * @returns {Promise<{[key:string]: LandCoverCodes[]} | Array<never>>}> The land cover codes object
  */
 async function getLandCoversForActions(actionCodes, db, logger) {
   let client
@@ -62,9 +62,9 @@ async function getLandCoversForAction(actionCode, db, logger) {
 }
 /**
  * Transforms action land covers query response
- * @param {object[]} actionLandCovers
+ * @param {{ rows: LandCoverDefinitionDB[] | Array<never>}} actionLandCovers
  * @param {string[]} actionCodes
- * @returns {Promise<{[key:string]: LandCoverCodes[]}>} The land cover codes object
+ * @returns {{[key:string]: LandCoverCodes[]} | object} The land cover codes object
  */
 const transformLandCoversForActions = (actionLandCovers, actionCodes) => {
   const landCovers = {}
@@ -84,5 +84,5 @@ const transformLandCoversForActions = (actionLandCovers, actionCodes) => {
 export { getLandCoversForAction, getLandCoversForActions }
 
 /**
- * @import { LandCoverCodes } from '../land-cover-codes.d.js'
+ * @import { LandCoverCodes, LandCoverDefinitionDB } from '../land-cover-codes.d.js'
  */

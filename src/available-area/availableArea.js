@@ -15,6 +15,10 @@ import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 
 /**
+ * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements, ActionWithArea, StackResult, CodeToString } from './available-area.d.js'
+ */
+
+/**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
  * and the land covers for existing actions.
  * @param {string} actionCodeAppliedFor - The action code being applied for
@@ -79,6 +83,7 @@ export async function getAvailableAreaDataRequirements(
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
   return {
+    // @ts-expect-error - lines
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
@@ -91,7 +96,7 @@ export async function getAvailableAreaDataRequirements(
  * @param {object} params - Parameters object
  * @param {object} params.landCoversForParcel - Land covers for the parcel
  * @param {object[]} params.landCoverCodesForAppliedForAction - Land cover codes for the applied action
- * @param {Function} params.landCoverToString - Function to convert land cover codes to strings
+ * @param {CodeToString} params.landCoverToString - Function to convert land cover codes to strings
  * @param {string} params.actionCodeAppliedFor - The action code being applied for
  * @param {string} params.sheetId - The sheet ID
  * @param {string} params.parcelId - The parcel ID
@@ -136,7 +141,7 @@ function processLandCoverData({
  * @param {Action[]} existingActions - Existing actions
  * @param {object} landCoversForExistingActions - Land covers for existing actions
  * @param {object[]} mergedLandCoverCodesForAppliedForAction - Merged land cover codes
- * @param {Function} landCoverToString - Function to convert land cover codes to strings
+ * @param {CodeToString} landCoverToString - Function to convert land cover codes to strings
  * @param {object} logger - Logger instance
  * @returns {object} Filtered actions and explanations
  */
@@ -348,10 +353,6 @@ export function getAvailableAreaForAction(
     availableAreaHectares
   }
 }
-
-/**
- * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements } from './available-area.d.js'
- */
 
 /**
  *

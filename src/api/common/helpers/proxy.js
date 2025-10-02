@@ -64,6 +64,7 @@ function proxyFetch(url, options) {
 
   return fetch(url, {
     ...options,
+    // @ts-expect-error - dispatcher
     dispatcher: proxy.proxyAgent
   })
 }

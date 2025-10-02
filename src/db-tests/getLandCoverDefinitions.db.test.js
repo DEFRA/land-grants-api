@@ -5,8 +5,8 @@ import { logger } from './testLogger.js'
 let connection
 
 describe('Get land cover definitions', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

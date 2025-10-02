@@ -4,6 +4,9 @@ import Vision from '@hapi/vision'
 
 import { config } from '~/src/config/index.js'
 
+const isProduction = config.get('isProduction')
+const serviceVersion = config.get('serviceVersion')
+
 /**
  * Registers Swagger UI plugins (Inert, Vision, and HapiSwagger)
  */
@@ -19,10 +22,10 @@ const swagger = {
             definitionPrefix: 'useLabel',
             info: {
               title: 'Land Grants API',
-              version: config.serviceVersion
+              version: serviceVersion
             },
-            swaggerUI: !config.isProduction,
-            documentationPage: !config.isProduction
+            swaggerUI: !isProduction,
+            documentationPage: !isProduction
           }
         }
       ])

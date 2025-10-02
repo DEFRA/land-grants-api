@@ -2,14 +2,15 @@ import { agreementActionsTransformer } from '../transformers/agreements.transfor
 
 /**
  * @import {AgreementAction} from '~/src/api/agreements/agreements.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
  */
 
 /**
  * Get agreements for a parcel
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
- * @param {{object}} db connection
- * @param {{object}} logger object
+ * @param {any} db - Database connection
+ * @param {Logger} logger - Logger object
  * @returns {Promise<AgreementAction[]>} The agreements
  */
 async function getAgreementsForParcel(sheetId, parcelId, db, logger) {

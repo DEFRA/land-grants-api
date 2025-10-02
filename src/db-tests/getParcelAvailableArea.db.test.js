@@ -12,8 +12,8 @@ const logger = {
 }
 
 describe('Available Area query', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {
