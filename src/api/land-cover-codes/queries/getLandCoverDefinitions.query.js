@@ -20,7 +20,7 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
 
     client = await db.connect()
     const query = `
-      SELECT DISTINCT land_cover_type_code, 
+      SELECT DISTINCT land_cover_type_code,
             land_cover_type_description,
             land_cover_class_code,
             land_cover_class_description,
@@ -56,6 +56,11 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
   }
 }
 
+/**
+ * Transforms the rows from the database into an array of land cover definitions
+ * @param {object[]} rows - The rows from the database
+ * @returns {LandCoverDefinition[]} The land cover definitions
+ */
 function transformLandCoverDefinitions(rows) {
   const landCoverDefinitions = []
 

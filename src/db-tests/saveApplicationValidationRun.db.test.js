@@ -10,8 +10,8 @@ const logger = {
 let connection
 
 describe('Save application validation run result', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

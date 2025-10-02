@@ -3,7 +3,7 @@ import { compatibilityMatrixTransformer } from '../transformers/compatibility-ma
 /**
  * @param {object} logger
  * @param {object} db
- * @param {string[]} codes
+ * @param {string[] | null} codes
  * @returns {Promise<CompatibilityMatrix[]>}
  */
 async function getCompatibilityMatrix(logger, db, codes = null) {

@@ -4,6 +4,11 @@ import {
 } from '~/src/api/common/helpers/measurement.js'
 
 /**
+ * @import { AgreementAction } from "../../agreements/agreements.d.js"
+ * @import { Action, ActionRequest } from "../../actions/action.d.js"
+ */
+
+/**
  * Transform size to application unit of measurement
  * @param {number} area - The area to transform
  * @returns {object} The transformed size
@@ -14,10 +19,6 @@ function sizeTransformer(area) {
     value: area
   }
 }
-
-/**
- * @import {Action} from '../../actions/action.d.js'
- */
 
 /**
  * Transform parcel and actions to land parcel and actions
@@ -38,10 +39,13 @@ function actionTransformer(action, availableArea = null, showResults = false) {
   }
 
   if (showResults) {
-    response.results = {
-      totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
-      stacks: availableArea?.stacks,
-      explanations: availableArea?.explanations
+    return {
+      ...response,
+      results: {
+        totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
+        stacks: availableArea?.stacks,
+        explanations: availableArea?.explanations
+      }
     }
   }
 
@@ -91,7 +95,7 @@ function parcelActionsTransformer(landParcel, actions) {
 /**
  * Transform current actions to actions with area in square meters
  * @param {AgreementAction[] | null} plannedActions - The planned actions to transform
- * @returns {Action[]} The transformed current actions
+ * @returns {ActionRequest[]} The transformed current actions
  */
 function plannedActionsTransformer(plannedActions) {
   return (plannedActions ?? []).map((a) => {
@@ -109,8 +113,3 @@ export {
   plannedActionsTransformer,
   sizeTransformer
 }
-
-/**
- * @import { AgreementAction } from "../../agreements/agreements.d.js"
- * @import { Action } from "~/src/available-area/available-area.d.js"
- */

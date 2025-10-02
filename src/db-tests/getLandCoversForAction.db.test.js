@@ -13,8 +13,8 @@ const logger = {
 }
 
 describe('Get land cover codes', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

@@ -13,3 +13,10 @@
  * @property {string} landCoverDescription - The description of the land cover
  * @property {string} landCoverCode - The code of the land cover
  */
+
+/**
+ * @typedef {object} LandCoverDefinitionDB
+ * @property {string} action_code - The code of the action
+ * @property {string} land_cover_code - The code of the land cover
+ * @property {string} land_cover_class_code - The code of the land cover class
+ */

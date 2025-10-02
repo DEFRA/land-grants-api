@@ -10,8 +10,8 @@ const logger = {
 let connection
 
 describe('Get compatibility matrix', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

@@ -18,8 +18,8 @@ let connection
 describe('Calculate payments', () => {
   const fixtures = getPaymentCalculationFixtures()
 
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

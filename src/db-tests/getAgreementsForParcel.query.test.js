@@ -9,8 +9,8 @@ const logger = {
 }
 
 describe('Get agreement actions for parcel query', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

@@ -12,7 +12,7 @@ let connection
 
 describe('Calculate available area', () => {
   beforeAll(async () => {
-    connection = await connectToTestDatbase()
+    connection = connectToTestDatbase()
     await seedForGetParcelTest(connection)
   })
 

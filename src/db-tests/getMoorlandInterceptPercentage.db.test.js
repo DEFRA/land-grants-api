@@ -11,8 +11,8 @@ const logger = {
 }
 
 describe('Get moorland intercept percentage query', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

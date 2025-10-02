@@ -29,6 +29,7 @@ const mockParcelWithActions = {
     sheetId: 'SX0679',
     size: {
       unit: applicationUnitOfMeasurement,
+      // @ts-expect-error - applicationUnitOfMeasurement is a string
       value: applicationUnitOfMeasurement === 'sqm' ? 300 : 0.03
     },
     actions: [
@@ -37,6 +38,7 @@ const mockParcelWithActions = {
         description: 'Assess moorland and produce a written record',
         availableArea: {
           unit: applicationUnitOfMeasurement,
+          // @ts-expect-error - applicationUnitOfMeasurement is a string
           value: applicationUnitOfMeasurement === 'sqm' ? 200 : 0.02
         },
         ratePerUnitGbp: 10.6,

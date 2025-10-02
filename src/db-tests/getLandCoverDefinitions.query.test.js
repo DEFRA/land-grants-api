@@ -10,8 +10,8 @@ const logger = {
 }
 
 describe('Get land cover definitions query', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

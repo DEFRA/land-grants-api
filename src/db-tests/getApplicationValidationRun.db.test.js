@@ -21,8 +21,8 @@ describe('Get application validation run', () => {
     }
   }
 
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

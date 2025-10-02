@@ -96,7 +96,7 @@ describe('getLandData', () => {
         `Error executing get Land parcels query: ${connectionError.toString()}`
       )
       expect(mockClient.release).not.toHaveBeenCalled()
-      expect(result).toBeUndefined()
+      expect(result).toBeNull()
     })
 
     it('should handle query execution error', async () => {
@@ -115,7 +115,7 @@ describe('getLandData', () => {
         `Error executing get Land parcels query: ${queryError.toString()}`
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
-      expect(result).toBeUndefined()
+      expect(result).toBeNull()
     })
 
     it('should release client even when query fails', async () => {
@@ -138,7 +138,7 @@ describe('getLandData', () => {
       )
 
       expect(mockClient.release).not.toHaveBeenCalled()
-      expect(result).toBeUndefined()
+      expect(result).toBeNull()
     })
   })
 

@@ -10,8 +10,8 @@ const logger = {
 let connection
 
 describe('Get actions', () => {
-  beforeAll(async () => {
-    connection = await connectToTestDatbase()
+  beforeAll(() => {
+    connection = connectToTestDatbase()
   })
 
   afterAll(async () => {

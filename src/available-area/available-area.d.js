@@ -1,4 +1,10 @@
 /**
+ * @import { ExplanationSection } from './explanations.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
+ */
+
+/**
  * @typedef {object} Stack
  * @property {number} stackNumber - The unique identifier for the stack
  * @property {string[]} actionCodes - The action codes associated with the stack
@@ -30,22 +36,16 @@
 
 /**
  * @typedef {object} AvailableAreaDataRequirements
- * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
+ * @property {{[key: string]: LandCoverCodes[]} | never[]} landCoversForExistingActions
  * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
  */
 
 /**
- * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCover } from '../api/parcel/parcel.d.js'
- * @import { LandCoverCodes } from '~/src/api/land-cover-codes/land-cover-codes.d.js'
- */
-
-/**
  * @typedef {object} ActionWithArea
+ * @property {string} actionCode - The action code
  * @property {number} areaSqm - The action area
- * @augments Action
  */
 
 /**

@@ -1,7 +1,6 @@
 /**
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/api/actions/action.d.js'
- * @import { RuleResultItem } from '~/src/rules-engine/rules.d.js'
  */
 
 /**
@@ -25,6 +24,7 @@ export const parcelHasIntersectionWithDataLayer = {
 
     if (intersection == null) {
       explanations[0].lines.push(
+        // @ts-expect-error - lines
         `An intersection with the ${layerName} layer was not provided in the application data`
       )
       return {
@@ -40,6 +40,7 @@ export const parcelHasIntersectionWithDataLayer = {
       minimumIntersectionPercent - tolerancePercent
 
     explanations[0].lines.push(
+      // @ts-expect-error - lines
       `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${minimumIntersectionPercent + tolerancePercent}%.`
     )
 

@@ -1,7 +1,6 @@
 /**
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/api/actions/action.d.js'
- * @import { RuleResultItem } from '~/src/rules-engine/rules.d.js'
  */
 
 /**

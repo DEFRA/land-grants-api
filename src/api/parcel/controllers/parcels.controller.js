@@ -41,8 +41,15 @@ const ParcelsController = {
     }
   },
 
+  /**
+   * Handler function for application validation
+   * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   */
   handler: async (request, h) => {
     try {
+      // @ts-expect-error - postgresDb
       const { parcelIds, fields } = request.payload
       request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
 

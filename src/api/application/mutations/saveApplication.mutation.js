@@ -7,8 +7,7 @@
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {object} application - The application
- * @returns {Promise<ApplicationResult>} The application
- * @returns {null} If an error occurs
+ * @returns {Promise<ApplicationResult | null>} The application or null if an error occurs
  */
 async function saveApplication(logger, db, application) {
   let client
