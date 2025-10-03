@@ -2,6 +2,12 @@ import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land
 import { aacExplain, createExplanationSection } from './explanations.js'
 
 /**
+ * @import { Action, CodeToString, ActionWithArea, AvailableAreaDataRequirements } from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ */
+
+/**
  * Explanation message generators for total calculation operations
  */
 const explain = {
@@ -68,7 +74,7 @@ const calculateNotCommonLandCoversTotalArea = (
  * @param {Action[]} actions
  * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
  * @param {object} logger
- * @returns {Promise<{result: ActionWithArea[], explanations: ExplanationSection}>}
+ * @returns {{result: ActionWithArea[], explanations: ExplanationSection}}}
  */
 export const subtractIncompatibleLandCoverAreaFromActions = (
   parcelId,
@@ -90,7 +96,9 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
 
   for (const action of actions) {
     const landCoverCodesForExistingAction = mergeLandCoverCodes(
-      landCoversForExistingActions[action.actionCode]
+      landCoversForExistingActions
+        ? landCoversForExistingActions[action.actionCode]
+        : []
     )
 
     const {
@@ -135,8 +143,3 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
     )
   }
 }
-
-/**
- * @import { Action, CodeToString, ActionWithArea, ExplanationSection } from './available-area.d.js'
- * @import { LandCover } from '../api/parcel/parcel.d.js'
- */

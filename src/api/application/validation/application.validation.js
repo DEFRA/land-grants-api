@@ -1,5 +1,11 @@
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
+/**
+ * Validate land actions request
+ * @param {object[]} landActions - The land actions
+ * @param {object[]} actions - The actions
+ * @returns {string | null} The error message
+ */
 export const validateLandActionsRequest = (landActions, actions) => {
   const invalidActions = landActions
     .flatMap((landAction) => landAction.actions.map((action) => action.code))
@@ -12,6 +18,12 @@ export const validateLandActionsRequest = (landActions, actions) => {
   return null
 }
 
+/**
+ * Validate land parcels request
+ * @param {object[]} landActions - The land actions
+ * @param {object} request - The request
+ * @returns {Promise<string | null>} The error message
+ */
 export const validateLandParcelsRequest = async (landActions, request) => {
   const errors = (
     await Promise.all(
@@ -40,7 +52,7 @@ export const validateLandParcelsRequest = async (landActions, request) => {
  * @param {object[]} landActions - The land actions
  * @param {object[]} actions - The actions
  * @param {object} request - The request
- * @returns {Promise<string | null>} The error message
+ * @returns {Promise<ApplicationValidationError[] | null>} The error message
  */
 export const validateRequest = async (landActions, actions, request) => {
   const errors = []
@@ -64,3 +76,7 @@ export const validateRequest = async (landActions, actions, request) => {
 
   return errors.map((ve) => ({ description: ve, passed: false }))
 }
+
+/**
+ * @import { ApplicationValidationError } from '../application.d.js'
+ */

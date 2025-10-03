@@ -18,11 +18,6 @@ import {
 import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 
-/**
- * ApplicationValidateController
- * Validates a full application including all parcels and land actions
- * @satisfies {Partial<ServerRoute>}
- */
 const ApplicationValidationController = {
   options: {
     tags: ['api'],
@@ -41,16 +36,22 @@ const ApplicationValidationController = {
     }
   },
 
+  /**
+   * Handler function for application validation
+   * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   */
   handler: async (request, h) => {
     try {
+      // @ts-expect-error - postgresDb
+      const postgresDb = request.server.postgresDb
+      // @ts-expect-error - payload
       const { landActions, applicationId, sbi, applicantCrn, requester } =
         request.payload
 
       // Get all the enabled actions
-      const actions = await getEnabledActions(
-        request.logger,
-        request.server.postgresDb
-      )
+      const actions = await getEnabledActions(request.logger, postgresDb)
 
       // Validate the entire request
       const validationErrors = await validateRequest(
@@ -75,7 +76,7 @@ const ApplicationValidationController = {
       // Create a compatibility check function
       const compatibilityCheckFn = await createCompatibilityMatrix(
         request.logger,
-        request.server.postgresDb
+        postgresDb
       )
 
       // Validate each land action
@@ -101,16 +102,12 @@ const ApplicationValidationController = {
       )
 
       // Save the application
-      const id = await saveApplication(
-        request.logger,
-        request.server.postgresDb,
-        {
-          application_id: applicationId,
-          sbi,
-          crn: applicantCrn,
-          data: applicationData
-        }
-      )
+      const id = await saveApplication(request.logger, postgresDb, {
+        application_id: applicationId,
+        sbi,
+        crn: applicantCrn,
+        data: applicationData
+      })
 
       // Return the application validation result
       return h
@@ -133,7 +130,3 @@ const ApplicationValidationController = {
 }
 
 export { ApplicationValidationController }
-
-/**
- * @import { ServerRoute } from '@hapi/hapi'
- */

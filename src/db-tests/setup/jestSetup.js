@@ -31,7 +31,7 @@ export default async () => {
   const liquibaseContainer = initializeLiquibase(network)
   await liquibaseContainer.start()
 
-  process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432)
+  process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432).toString()
   containers.push(postgresStarted)
 }
 
@@ -74,6 +74,6 @@ function initializePostgres(network) {
       POSTGRES_USER: DB_CONFIG.user,
       POSTGRES_PASSWORD: DB_CONFIG.password,
       POSTGRES_DB: DB_CONFIG.database,
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: '5432'
     })
 }

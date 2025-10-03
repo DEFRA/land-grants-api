@@ -243,7 +243,12 @@ export const createPaymentItems = (parcels, actions) => {
   const paymentItems = {
     parcelItems: {},
     agreementItems: {},
-    explanations: []
+    explanations: [
+      {
+        title: 'Payment items',
+        content: ['Starting payment items']
+      }
+    ]
   }
 
   let parcelItemKey = 1
@@ -267,7 +272,7 @@ export const createPaymentItems = (parcels, actions) => {
         parcel
       )
 
-      const total = action.quantity * actionData?.payment.ratePerUnitGbp
+      const total = action.quantity * (actionData?.payment?.ratePerUnitGbp ?? 0)
       const ratePerAgreementPerYearGbp =
         actionData?.payment.ratePerAgreementPerYearGbp
 
@@ -283,7 +288,8 @@ export const createPaymentItems = (parcels, actions) => {
 
           explanations.push(
             `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
-            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) + ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + ratePerAgreementPerYearGbp} pence/year`
+            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) +
+            ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + (ratePerAgreementPerYearGbp ?? 0)} pence/year`
           )
         } else {
           explanations.push(

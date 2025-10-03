@@ -7,7 +7,7 @@
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {string} id - The id of the application validation run
- * @returns {Promise<ApplicationResult>} The application validation run
+ * @returns {Promise<ApplicationResult | null>} The application validation run
  */
 async function getApplicationValidationRun(logger, db, id) {
   let client

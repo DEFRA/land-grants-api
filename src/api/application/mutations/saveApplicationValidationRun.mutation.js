@@ -7,8 +7,7 @@
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {object} applicationValidationRun - The application
- * @returns {Promise<ApplicationResult>} The application validation run result
- * @returns {null} If an error occurs
+ * @returns {Promise<ApplicationResult | null>} The application validation run result
  */
 async function saveApplicationValidationRun(
   logger,
