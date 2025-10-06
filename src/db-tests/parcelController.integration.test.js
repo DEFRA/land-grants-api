@@ -58,7 +58,7 @@ describe('Calculate available area with agreements', () => {
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
-          value: 0.656374
+          value: 0.6564
         },
         actions: [
           {
@@ -185,7 +185,7 @@ describe('Calculate available area with agreements', () => {
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
-          value: 0.656374
+          value: 0.6564
         },
         actions: [
           {
