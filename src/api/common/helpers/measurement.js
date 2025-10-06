@@ -1,7 +1,7 @@
 export const applicationUnitOfMeasurement = 'ha'
 
 export const sqmToHaRounded = (sqm) => {
-  const decimalPlaces = 8
+  const decimalPlaces = 4
 
   if (typeof sqm === 'string') {
     sqm = Number(sqm)
@@ -26,4 +26,8 @@ export const haToSqm = (ha) => {
 
   const hectares = ha * 10000
   return hectares
+}
+
+export const roundSqm = (sqm) => {
+  return Math.round(Number(sqm) || 0)
 }

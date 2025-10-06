@@ -3,6 +3,8 @@
  * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'
  */
 
+import { roundSqm } from '../../common/helpers/measurement.js'
+
 /**
  * Get a land data
  * @param {string} sheetId - The sheetId
@@ -30,7 +32,10 @@ async function getLandData(sheetId, parcelId, db, logger) {
       `Retrieved land parcels for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
     )
 
-    return result.rows
+    return result.rows.map((row) => ({
+      ...row,
+      area: roundSqm(row.area)
+    }))
   } catch (error) {
     logger.error(`Error executing get Land parcels query: ${error}`)
     return null

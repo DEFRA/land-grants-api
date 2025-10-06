@@ -66,12 +66,12 @@ describe('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -87,11 +87,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.49268576
+              value: 0.4927
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -107,11 +107,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.49268576
+              value: 0.4927
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -127,11 +127,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.49268576
+              value: 0.4927
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -193,12 +193,12 @@ describe('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -219,11 +219,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.39268576
+              value: 0.3927
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -244,11 +244,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.39268576
+              value: 0.3927
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -269,11 +269,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.39268576
+              value: 0.3927
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,

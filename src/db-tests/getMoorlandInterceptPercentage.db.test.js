@@ -30,7 +30,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe(98.63846812482574)
+    expect(result).toBe(99)
   })
 
   test('when tiny amount of moorland and sheet_id = SD5942 AND parcel_id = 2744', async () => {
@@ -44,7 +44,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe(0.060174140617365424)
+    expect(result).toBe(0)
   })
 
   test('when large ammount of moorland and sheet_id = SD4964 AND parcel_id = 7210', async () => {
@@ -58,7 +58,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe(96.11421332219413)
+    expect(result).toBe(96)
   })
 
   test('when small ammount of moorland and sheet_id = SD6743 AND parcel_id = 5422', async () => {
@@ -72,7 +72,7 @@ describe('Get moorland intercept percentage query', () => {
       logger
     )
 
-    expect(result).toBe(31.50518807213718)
+    expect(result).toBe(32)
   })
 
   test('when full ammount of moorland and sheet_id = SD6743 AND parcel_id = 3385', async () => {

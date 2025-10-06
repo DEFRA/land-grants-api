@@ -48,10 +48,6 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     const expectedQuery = `
       SELECT
-          p.sheet_id,
-          p.parcel_id,
-          ST_Area(p.geom)::float8, 2 AS parcel_area_m2,
-          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) AS moorland_overlap_m2,
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
               / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS moorland_overlap_percent
       FROM
