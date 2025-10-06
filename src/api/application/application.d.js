@@ -11,7 +11,14 @@
  * @property {boolean} hasPassed
  * @property {string} code
  * @property {string} actionConfigVersion
- * @property {object[]} rules
+ * @property {RuleResult[]} rules
+ * @property {AvailableAreaResult} availableArea
+ */
+
+/**
+ * @typedef {object} AvailableAreaResult
+ * @property {number} areaInHa
+ * @property {ExplanationSection} explanations
  */
 
 /**
@@ -73,3 +80,25 @@
  * @property {string} description
  * @property {boolean} passed
  */
+
+/**
+ * @typedef {object} ApplicationValidationRun
+ * @property {Date} date
+ * @property {string} applicationId
+ * @property {string} applicantCrn
+ * @property {string} sbi
+ * @property {string} requester
+ * @property {string} landGrantsApiVersion
+ * @property {boolean} hasPassed
+ * @property {object} applicationLevelResults
+ * @property {ApplicationResponse} application
+ * @property {ParcelResult[]} parcelLevelResults
+ */
+
+/**
+ * @typedef {object} ApplicationResponse
+ * @property {Parcel[]} parcels
+ * @property {object[]} agreementLevelActions
+ */
+
+/** @import {ExplanationSection} from "~/src/available-area/explanations.d.js" */
