@@ -10,7 +10,9 @@ describe('getLandCoversForParcel', () => {
     mockResult = {
       rows: [
         { area_sqm: 123, land_cover_class_code: 'Grass321' },
-        { area_sqm: 456, land_cover_class_code: 'Trees543' }
+        { area_sqm: 456, land_cover_class_code: 'Trees543' },
+        { area_sqm: 450.44, land_cover_class_code: 'Trees543' },
+        { area_sqm: 450.54, land_cover_class_code: 'Trees543' }
       ]
     }
 
@@ -67,9 +69,13 @@ describe('getLandCoversForParcel', () => {
       mockLogger
     )
 
+    console.log('--------> result', result)
+
     expect(result).toEqual([
       { areaSqm: 123, landCoverClassCode: 'Grass321' },
-      { areaSqm: 456, landCoverClassCode: 'Trees543' }
+      { areaSqm: 456, landCoverClassCode: 'Trees543' },
+      { areaSqm: 450, landCoverClassCode: 'Trees543' },
+      { areaSqm: 451, landCoverClassCode: 'Trees543' }
     ])
   })
 
