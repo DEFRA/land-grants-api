@@ -223,7 +223,7 @@ describe('Available Area', () => {
             landCoversForParcel: [
               {
                 landCoverClassCode: '130',
-                areaSqm: 11150.572
+                areaSqm: 11151
               }
             ],
             landCoversForExistingActions: {
@@ -268,9 +268,9 @@ describe('Available Area', () => {
               }
             ],
             explanations: expect.any(Array),
-            availableAreaSqm: 1150.5720000000001,
-            totalValidLandCoverSqm: 11150.572,
-            availableAreaHectares: 0.1150572
+            availableAreaSqm: 1151,
+            totalValidLandCoverSqm: 11151,
+            availableAreaHectares: 0.1151
           }
         }
       ],

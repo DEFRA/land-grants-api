@@ -23,7 +23,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts 12345.6789 sqm with high precision', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789)
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
     })
   })
 
@@ -33,7 +33,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles very small areas (less than 1 sqm)', () => {
-      expect(sqmToHaRounded(0.5)).toBe(0.00005)
+      expect(sqmToHaRounded(0.5)).toBe(0.0001)
     })
 
     test('handles very small areas (1 sqm)', () => {
@@ -45,7 +45,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles decimal input', () => {
-      expect(sqmToHaRounded(12345.67)).toBe(1.234567)
+      expect(sqmToHaRounded(12345.67)).toBe(1.2346)
     })
 
     test('handles negative numbers', () => {
@@ -89,7 +89,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts decimal string to hectares', () => {
-      expect(sqmToHaRounded('12345.67')).toBe(1.234567)
+      expect(sqmToHaRounded('12345.67')).toBe(1.2346)
     })
 
     test('converts negative string to hectares', () => {
@@ -145,15 +145,15 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles very small number as string', () => {
-      expect(sqmToHaRounded('0.5')).toBe(0.00005)
+      expect(sqmToHaRounded('0.5')).toBe(0.0001)
     })
   })
 
-  describe('precision and rounding with 8 decimal places', () => {
-    test('rounds correctly to 8 decimal places', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789) // 1.23456789 exactly
-      expect(sqmToHaRounded(12344.4444)).toBe(1.23444444) // 1.23444444 exactly
-      expect(sqmToHaRounded(12344.5555)).toBe(1.23445555) // 1.23445555 exactly
+  describe('precision and rounding with 4 decimal places', () => {
+    test('rounds correctly to 4 decimal places', () => {
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
+      expect(sqmToHaRounded(12344.4444)).toBe(1.2344)
+      expect(sqmToHaRounded(12344.5555)).toBe(1.2345)
     })
 
     test('handles precise calculations', () => {
@@ -163,15 +163,15 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles rounding at different thresholds', () => {
-      expect(sqmToHaRounded(12344.99994)).toBe(1.23449999) // 8 decimal places
-      expect(sqmToHaRounded(12344.99995)).toBe(1.2345) // rounds to 8 decimal places
-      expect(sqmToHaRounded(12345.00001)).toBe(1.2345) // rounds to 8 decimal places
+      expect(sqmToHaRounded(12344.99994)).toBe(1.2345)
+      expect(sqmToHaRounded(12344.99995)).toBe(1.2345)
+      expect(sqmToHaRounded(12345.00001)).toBe(1.2345)
     })
 
-    test('handles very precise inputs requiring 8 decimal place rounding', () => {
-      // Test cases that specifically exercise 8 decimal place precision
-      expect(sqmToHaRounded(12345.67891234)).toBe(1.23456789) // rounds to 8 decimal places
-      expect(sqmToHaRounded(12345.678912345)).toBe(1.23456789) // rounds to 8 decimal places
+    test('handles very precise inputs requiring 4 decimal place rounding', () => {
+      // Test cases that specifically exercise 4 decimal place precision
+      expect(sqmToHaRounded(12345.5)).toBe(1.2346) // rounds to 4 decimal places
+      expect(sqmToHaRounded(12346.49999999999)).toBe(1.2346) // rounds to 4 decimal places
     })
   })
 
@@ -189,13 +189,13 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts complex area measurements', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789)
-      expect(sqmToHaRounded(987654.321)).toBe(98.7654321)
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
+      expect(sqmToHaRounded(987654.321)).toBe(98.7654)
     })
 
     test('converts areas requiring high precision', () => {
-      expect(sqmToHaRounded(1.23456)).toBe(0.00012346) // Very small area with 8 decimal places
-      expect(sqmToHaRounded(99.9999)).toBe(0.00999999) // Almost 0.01 hectare with 8 decimal places
+      expect(sqmToHaRounded(1.23456)).toBe(0.0001) // Very small area with 4 decimal places
+      expect(sqmToHaRounded(99.9999)).toBe(0.01)
     })
   })
 })
