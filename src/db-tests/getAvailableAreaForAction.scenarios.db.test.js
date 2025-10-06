@@ -94,9 +94,6 @@ describe('Calculate available area', () => {
         logger
       )
 
-      // console.log(JSON.stringify(result.explanations, null, 2))
-      // console.log(JSON.stringify(result.stacks, null, 2))
-
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
       )

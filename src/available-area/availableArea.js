@@ -273,8 +273,6 @@ export function getAvailableAreaForAction(
     landCoverToString
   } = availableAreaDataRequirements
 
-  console.log('landCoversForParcel', landCoversForParcel)
-
   const initialExplanations = getInitialExplanations(
     actionCodeAppliedFor,
     sheetId,
@@ -284,8 +282,6 @@ export function getAvailableAreaForAction(
     landCoverCodesForAppliedForAction,
     landCoverToString
   )
-
-  console.log('initialExplanations', initialExplanations)
 
   const {
     mergedLandCoverCodesForAppliedForAction,
@@ -300,8 +296,6 @@ export function getAvailableAreaForAction(
     parcelId,
     logger
   })
-
-  console.log('totalValidLandCoverSqm', totalValidLandCoverSqm)
 
   const {
     existingActionsWithLandCoverInCommonWithAppliedForAction,
@@ -337,9 +331,6 @@ export function getAvailableAreaForAction(
     actionCodeAppliedFor,
     totalValidLandCoverSqm
   )
-
-  console.log('availableAreaSqm', availableAreaSqm)
-  console.log('availableAreaHectares', availableAreaHectares)
 
   logger.info(
     `availableArea ${availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`

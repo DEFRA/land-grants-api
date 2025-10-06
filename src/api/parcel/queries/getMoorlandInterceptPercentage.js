@@ -36,11 +36,6 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       result?.rows?.[0]?.moorland_overlap_percent || 0
     )
 
-    console.log(
-      '--------> moorland_overlap_percent',
-      result?.rows?.[0]?.moorland_overlap_percent || 0,
-      roundedMoorlandOverlapPercent
-    )
     return roundedMoorlandOverlapPercent
   } catch (error) {
     logger.error(

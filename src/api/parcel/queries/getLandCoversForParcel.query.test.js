@@ -69,8 +69,6 @@ describe('getLandCoversForParcel', () => {
       mockLogger
     )
 
-    console.log('--------> result', result)
-
     expect(result).toEqual([
       { areaSqm: 123, landCoverClassCode: 'Grass321' },
       { areaSqm: 456, landCoverClassCode: 'Trees543' },
