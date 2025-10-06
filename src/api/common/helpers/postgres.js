@@ -63,9 +63,6 @@ export const postgresDb = {
 
       try {
         const client = await pool.connect()
-        if (options.isLocal) {
-          await client.query('SET log_min_duration_statement = 0;')
-        }
         server.logger.info('Postgres connection successful')
         client.release()
         server.decorate('server', 'postgresDb', pool)
