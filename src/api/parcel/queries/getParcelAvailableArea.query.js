@@ -1,3 +1,5 @@
+import { roundSqm } from '../../common/helpers/measurement.js'
+
 /**
  * Get available area of a land parcel excluding specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
@@ -57,7 +59,9 @@ async function getParcelAvailableArea(
       `Calculated area for parcelId: ${sheetId}-${parcelId}, result: ${totalLandCoverArea}`
     )
 
-    return totalLandCoverArea
+    const roundedTotalLandCoverArea = roundSqm(totalLandCoverArea)
+
+    return roundedTotalLandCoverArea
   } catch (err) {
     logger.error(
       `Error calculating area for parcelId: ${sheetId}-${parcelId} ${err.message}, ${err.stack}`

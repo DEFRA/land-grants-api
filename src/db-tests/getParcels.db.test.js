@@ -52,7 +52,7 @@ describe('Calculate available area', () => {
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
-          value: 0.656374
+          value: 0.6564
         },
         actions: [
           {
@@ -60,10 +60,10 @@ describe('Calculate available area', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [],
               explanations: expect.any(Array)
             },
@@ -75,10 +75,10 @@ describe('Calculate available area', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [],
               explanations: expect.any(Array)
             },
@@ -89,10 +89,10 @@ describe('Calculate available area', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [],
               explanations: expect.any(Array)
             },
@@ -103,10 +103,10 @@ describe('Calculate available area', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [],
               explanations: expect.any(Array)
             },
@@ -145,7 +145,7 @@ describe('Calculate available area', () => {
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
-          value: 0.656374
+          value: 0.6564
         },
         actions: [
           {
@@ -153,10 +153,10 @@ describe('Calculate available area', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.49268576
+              value: 0.4927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -174,10 +174,10 @@ describe('Calculate available area', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -194,10 +194,10 @@ describe('Calculate available area', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -214,10 +214,10 @@ describe('Calculate available area', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -256,7 +256,6 @@ describe('Calculate available area', () => {
     )
 
     const { data, statusCode } = getResponse()
-    // console.log(JSON.stringify(data, null, 2))
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
@@ -265,7 +264,7 @@ describe('Calculate available area', () => {
         sheetId: 'SD6743',
         size: {
           unit: 'ha',
-          value: 0.656374
+          value: 0.6564
         },
         actions: [
           {
@@ -273,10 +272,10 @@ describe('Calculate available area', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.59268576
+              value: 0.5927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -299,10 +298,10 @@ describe('Calculate available area', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.29268576
+              value: 0.2927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -324,10 +323,10 @@ describe('Calculate available area', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.29268576
+              value: 0.2927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
@@ -349,10 +348,10 @@ describe('Calculate available area', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.29268576
+              value: 0.2927
             },
             results: {
-              totalValidLandCoverSqm: 5926.857555290695,
+              totalValidLandCoverSqm: 5927,
               stacks: [
                 {
                   stackNumber: 1,
