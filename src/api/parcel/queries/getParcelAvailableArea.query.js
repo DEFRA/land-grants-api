@@ -61,12 +61,6 @@ async function getParcelAvailableArea(
 
     const roundedTotalLandCoverArea = roundSqm(totalLandCoverArea)
 
-    console.log(
-      '--------> totalLandCoverArea',
-      totalLandCoverArea,
-      roundedTotalLandCoverArea
-    )
-
     return roundedTotalLandCoverArea
   } catch (err) {
     logger.error(

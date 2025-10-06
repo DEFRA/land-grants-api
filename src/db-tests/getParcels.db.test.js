@@ -256,7 +256,6 @@ describe('Calculate available area', () => {
     )
 
     const { data, statusCode } = getResponse()
-    // console.log(JSON.stringify(data, null, 2))
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
