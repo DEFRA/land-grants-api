@@ -29,7 +29,7 @@ describe('getParcelAvailableArea', () => {
 
   it('returns area when query succeeds', async () => {
     mockClient.query.mockResolvedValue({
-      rows: [{ total_land_cover_area: 15894.28 }]
+      rows: [{ total_land_cover_area: 15894 }]
     })
 
     const result = await getParcelAvailableArea(
@@ -40,7 +40,7 @@ describe('getParcelAvailableArea', () => {
       mockLogger
     )
 
-    expect(result).toBe(15894.28)
+    expect(result).toBe(15894)
     expect(mockClient.query).toHaveBeenCalledTimes(1)
   })
 

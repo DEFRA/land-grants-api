@@ -1,3 +1,5 @@
+import { roundSqm } from '../../common/helpers/measurement.js'
+
 async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
   let client
 
@@ -9,10 +11,6 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
 
     const query = `
       SELECT
-          p.sheet_id,
-          p.parcel_id,
-          ST_Area(p.geom)::float8, 2 AS parcel_area_m2,
-          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) AS moorland_overlap_m2,
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
               / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS moorland_overlap_percent
       FROM
@@ -34,7 +32,11 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       `Retrieved moorland intercept percentage for ${sheetId}-${parcelId} , ${result.rows}`
     )
 
-    return result?.rows?.[0]?.moorland_overlap_percent || 0
+    const roundedMoorlandOverlapPercent = roundSqm(
+      result?.rows?.[0]?.moorland_overlap_percent || 0
+    )
+
+    return roundedMoorlandOverlapPercent
   } catch (error) {
     logger.error(
       'Error executing get moorland intercept percentage query',
