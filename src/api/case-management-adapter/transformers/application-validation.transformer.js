@@ -5,6 +5,7 @@
  */
 
 const DETAILS_SUMMARY_TEXT_CLASSES = 'govuk-details__summary-text'
+const LEVEL_3 = 3
 
 /**
  * Creates a heading component
@@ -162,7 +163,7 @@ export const applicationValidationRunToCaseManagement = (
     (parcel) => [
       createHeadingComponent(
         `Parcel ID: ${parcel.sheetId} ${parcel.parcelId} checks`,
-        3
+        LEVEL_3
       ),
       ...parcel.actions.map((action) => createActionDetails(action))
     ]
