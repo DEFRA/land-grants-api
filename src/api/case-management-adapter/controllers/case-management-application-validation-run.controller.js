@@ -4,8 +4,11 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
-import { applicationValidationRunRequestSchema } from '~/src/api/application/schema/application-validation.schema.js'
+import { caseManagementApplicationValidationRunRequestSchema } from '~/src/api/case-management-adapter/schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { applicationValidationRunToCaseManagement } from '../transformers/application-validation.transformer.js'
+
+/** @typedef {import('~/src/api/application/application.d.js').ApplicationValidationRun} ApplicationValidationRun */
 
 export const ApplicationValidationRunController = {
   options: {
@@ -13,7 +16,7 @@ export const ApplicationValidationRunController = {
     description: 'Returns an application validation run',
     notes: 'Returns a validation run for a specific application',
     validate: {
-      params: applicationValidationRunRequestSchema
+      params: caseManagementApplicationValidationRunRequestSchema
     },
     response: {
       status: {
@@ -44,10 +47,16 @@ export const ApplicationValidationRunController = {
         return Boom.notFound('Application validation run not found')
       }
 
+      /** @type {ApplicationValidationRun} */
+      const applicationValidationRunData = applicationValidationRun.data
+      const response = applicationValidationRunToCaseManagement(
+        applicationValidationRunData
+      )
+
       return h
         .response({
           message: 'Application validation run retrieved successfully',
-          applicationValidationRun
+          response
         })
         .code(statusCodes.ok)
     } catch (error) {
