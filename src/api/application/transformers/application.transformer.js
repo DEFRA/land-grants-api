@@ -1,7 +1,7 @@
 import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
 
 /**
- * @import { ActionRequest } from '~/src/api/application/application.d.js'
+ * @import { ActionRequest, ApplicationValidationRun } from '~/src/api/application/application.d.js'
  * @import { Action } from '~/src/api/actions/action.d.js'
  * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
  * @import {ApplicationValidationRunList} from '../application.d.js'
@@ -69,7 +69,7 @@ export const errorMessagesTransformer = (parcelResults) => {
  * @param {string} requester - The requester
  * @param {object[]} landActions - The land actions
  * @param {object[]} parcelResults - The parcel results
- * @returns {object} The application data
+ * @returns {ApplicationValidationRun} The application data
  */
 export const applicationDataTransformer = (
   applicationId,
