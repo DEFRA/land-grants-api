@@ -1,9 +1,9 @@
-import { ApplicationValidationRunController } from './controllers/case-management-application-validation-run.controller.js'
+import { CaseManagementApplicationValidationRunController } from './controllers/case-management-application-validation-run.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
  */
-const application = {
+const caseManagementAdapter = {
   plugin: {
     name: 'case-management-adapter',
     register: (server) => {
@@ -11,14 +11,14 @@ const application = {
         {
           method: 'GET',
           path: '/case-management-adapter/application/validation-run/{id}',
-          ...ApplicationValidationRunController
+          ...CaseManagementApplicationValidationRunController
         }
       ])
     }
   }
 }
 
-export { application }
+export { caseManagementAdapter }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

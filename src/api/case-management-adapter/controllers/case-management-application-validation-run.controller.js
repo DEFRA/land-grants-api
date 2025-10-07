@@ -4,13 +4,16 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
-import { caseManagementApplicationValidationRunRequestSchema } from '~/src/api/case-management-adapter/schema/application-validation.schema.js'
+import {
+  caseManagementApplicationValidationRunRequestSchema,
+  caseManagementApplicationValidationRunResponseSchema
+} from '~/src/api/case-management-adapter/schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { applicationValidationRunToCaseManagement } from '../transformers/application-validation.transformer.js'
 
 /** @typedef {import('~/src/api/application/application.d.js').ApplicationValidationRun} ApplicationValidationRun */
 
-export const ApplicationValidationRunController = {
+export const CaseManagementApplicationValidationRunController = {
   options: {
     tags: ['api'],
     description: 'Returns an application validation run',
@@ -20,7 +23,7 @@ export const ApplicationValidationRunController = {
     },
     response: {
       status: {
-        // 200: applicationValidationRunResponseSchema,
+        200: caseManagementApplicationValidationRunResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }

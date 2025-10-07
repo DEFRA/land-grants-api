@@ -1,10 +1,10 @@
 import Hapi from '@hapi/hapi'
-import { application } from '../index.js'
+import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 
 jest.mock('~/src/api/application/queries/getApplicationValidationRun.query.js')
 
-describe('Application Validation Run Controller', () => {
+describe('Case Management Application Validation Run Controller', () => {
   const server = Hapi.server()
 
   beforeAll(async () => {
@@ -21,7 +21,7 @@ describe('Application Validation Run Controller', () => {
       }))
     })
 
-    await server.register([application])
+    await server.register([caseManagementAdapter])
     await server.initialize()
   })
 
