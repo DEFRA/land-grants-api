@@ -72,7 +72,7 @@ const createDetailsComponent = (
 export const getRuleFriendlyTitle = (ruleName) => {
   const titleMap = {
     'parcel-has-intersection-with-data-layer-moorland':
-      'Is this parcel on the moorland',
+      'Is this parcel on the moorland?',
     'applied-for-total-available-area':
       'Has the total available area been applied for?'
   }

@@ -525,7 +525,7 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Is this parcel on the moorland',
+                    text: 'Is this parcel on the moorland?',
                     classes: 'govuk-details__summary-text'
                   },
                   {
@@ -722,7 +722,7 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Is this parcel on the moorland',
+                    text: 'Is this parcel on the moorland?',
                     classes: 'govuk-details__summary-text'
                   },
                   {

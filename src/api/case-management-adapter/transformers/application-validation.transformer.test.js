@@ -50,7 +50,7 @@ describe('getRuleFriendlyTitle', () => {
       'parcel-has-intersection-with-data-layer-moorland'
     )
 
-    expect(result).toBe('Is this parcel on the moorland')
+    expect(result).toBe('Is this parcel on the moorland?')
   })
 
   test('should return friendly title for known rule: applied-for-total-available-area', () => {
@@ -151,7 +151,7 @@ describe('createRuleDetails', () => {
       component: 'details',
       summaryItems: [
         {
-          text: 'Is this parcel on the moorland',
+          text: 'Is this parcel on the moorland?',
           classes: 'govuk-details__summary-text'
         },
         {
@@ -177,7 +177,7 @@ describe('createRuleDetails', () => {
       component: 'details',
       summaryItems: [
         {
-          text: 'Is this parcel on the moorland',
+          text: 'Is this parcel on the moorland?',
           classes: 'govuk-details__summary-text'
         },
         {
@@ -354,7 +354,7 @@ describe('createActionDetails', () => {
           component: 'details',
           summaryItems: [
             {
-              text: 'Is this parcel on the moorland',
+              text: 'Is this parcel on the moorland?',
               classes: 'govuk-details__summary-text'
             },
             {
@@ -865,7 +865,7 @@ describe('applicationValidationRunToCaseManagement', () => {
             component: 'details',
             summaryItems: [
               {
-                text: 'Is this parcel on the moorland',
+                text: 'Is this parcel on the moorland?',
                 classes: 'govuk-details__summary-text'
               },
               {
@@ -1062,7 +1062,7 @@ describe('applicationValidationRunToCaseManagement', () => {
             component: 'details',
             summaryItems: [
               {
-                text: 'Is this parcel on the moorland',
+                text: 'Is this parcel on the moorland?',
                 classes: 'govuk-details__summary-text'
               },
               {
