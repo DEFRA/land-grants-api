@@ -4,6 +4,9 @@ const caseManagementApplicationValidationRunRequestSchema = Joi.object({
   id: Joi.number().integer().required()
 })
 
+const MIN_LEVEL = 1
+const MAX_LEVEL = 6
+
 // Schema for paragraph component
 const paragraphComponentSchema = Joi.object({
   component: Joi.string().valid('paragraph').required(),
@@ -24,7 +27,7 @@ const statusComponentSchema = Joi.object({
 const headingComponentSchema = Joi.object({
   component: Joi.string().valid('heading').required(),
   text: Joi.string().required(),
-  level: Joi.number().integer().min(1).max(6).required(),
+  level: Joi.number().integer().min(MIN_LEVEL).max(MAX_LEVEL).required(),
   id: Joi.string().optional()
 })
 
@@ -40,8 +43,8 @@ const summaryItemSchema = Joi.alternatives().try(
 // Forward reference for details component (for recursive structure)
 const detailsComponentSchema = Joi.object({
   component: Joi.string().valid('details').required(),
-  summaryItems: Joi.array().items(summaryItemSchema).min(1).required(),
-  items: Joi.array().items(Joi.link('#component')).min(1).required()
+  summaryItems: Joi.array().items(summaryItemSchema).min(MIN_LEVEL).required(),
+  items: Joi.array().items(Joi.link('#component')).min(MIN_LEVEL).required()
 }).id('details')
 
 // Combined component schema (for use in details items)

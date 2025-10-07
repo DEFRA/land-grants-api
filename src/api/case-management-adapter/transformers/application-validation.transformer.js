@@ -4,6 +4,8 @@
  * @import { ExplanationSection } from '~/src/available-area/explanations.d.js'
  */
 
+const DETAILS_SUMMARY_TEXT_CLASSES = 'govuk-details__summary-text'
+
 /**
  * Creates a heading component
  * @param {string} text - The heading text
@@ -53,7 +55,7 @@ export const createStatusComponent = (hasPassed) => ({
 const createDetailsComponent = (
   text,
   items,
-  classes = 'govuk-details__summary-text',
+  classes = DETAILS_SUMMARY_TEXT_CLASSES,
   summaryItems = []
 ) => ({
   component: 'details',
@@ -106,7 +108,7 @@ export const createRuleDetails = (rule) => {
   return createDetailsComponent(
     getRuleFriendlyTitle(rule[0].name),
     items,
-    'govuk-details__summary-text',
+    DETAILS_SUMMARY_TEXT_CLASSES,
     [createStatusComponent(rule[0].hasPassed)]
   )
 }
@@ -139,7 +141,7 @@ export const createActionDetails = (action) => {
   return createDetailsComponent(
     action.code,
     actionItems,
-    'govuk-details__summary-text',
+    DETAILS_SUMMARY_TEXT_CLASSES,
     [createStatusComponent(action.hasPassed)]
   )
 }
