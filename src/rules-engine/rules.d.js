@@ -7,6 +7,7 @@
 /**
  * @typedef {object} RuleResultItem
  * @property {string} name
+ * @property {string} description
  * @property {boolean} passed
  * @property {string} reason
  * @property {Explanation[]} explanations

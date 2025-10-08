@@ -31,7 +31,7 @@ export const actionResultTransformer = (
       explanations: availableArea.explanations,
       areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
     },
-    rules: [ruleResult.results]
+    rules: ruleResult.results
   }
 }
 

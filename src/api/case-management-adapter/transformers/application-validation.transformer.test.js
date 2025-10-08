@@ -2,7 +2,6 @@ import {
   applicationValidationRunToCaseManagement,
   createHeadingComponent,
   createParagraphComponent,
-  getRuleFriendlyTitle,
   createAvailableAreaDetails,
   createStatusComponent,
   createRuleDetails,
@@ -41,28 +40,6 @@ describe('createParagraphComponent', () => {
       component: 'paragraph',
       text: 'This is a paragraph.'
     })
-  })
-})
-
-describe('getRuleFriendlyTitle', () => {
-  test('should return friendly title for known rule: parcel-has-intersection-with-data-layer-moorland', () => {
-    const result = getRuleFriendlyTitle(
-      'parcel-has-intersection-with-data-layer-moorland'
-    )
-
-    expect(result).toBe('Is this parcel on the moorland?')
-  })
-
-  test('should return friendly title for known rule: applied-for-total-available-area', () => {
-    const result = getRuleFriendlyTitle('applied-for-total-available-area')
-
-    expect(result).toBe('Has the total available area been applied for?')
-  })
-
-  test('should return original rule name for unknown rule', () => {
-    const result = getRuleFriendlyTitle('unknown-rule-name')
-
-    expect(result).toBe('unknown-rule-name')
   })
 })
 
@@ -129,23 +106,22 @@ describe('createAvailableAreaDetails', () => {
 })
 
 describe('createRuleDetails', () => {
-  const rule = [
-    {
-      name: 'parcel-has-intersection-with-data-layer-moorland',
-      hasPassed: true,
-      explanations: [
-        {
-          title: 'moorland check',
-          lines: [
-            'This parcel has a 99.99% intersection with the moorland layer.'
-          ]
-        }
-      ]
-    }
-  ]
+  const rule = {
+    name: 'parcel-has-intersection-with-data-layer-moorland',
+    description: 'Is this parcel on the moorland?',
+    hasPassed: true,
+    explanations: [
+      {
+        title: 'moorland check',
+        lines: [
+          'This parcel has a 99.99% intersection with the moorland layer.'
+        ]
+      }
+    ]
+  }
 
   test('should create rule details component for passed rule', () => {
-    const result = createRuleDetails([{ ...rule[0], hasPassed: true }])
+    const result = createRuleDetails({ ...rule, hasPassed: true })
 
     expect(result).toEqual({
       component: 'details',
@@ -171,7 +147,7 @@ describe('createRuleDetails', () => {
   })
 
   test('should create rule details component for failed rule', () => {
-    const result = createRuleDetails([{ ...rule[0], hasPassed: false }])
+    const result = createRuleDetails({ ...rule, hasPassed: false })
 
     expect(result).toEqual({
       component: 'details',
@@ -203,7 +179,7 @@ describe('createRuleDetails', () => {
       explanations: []
     }
 
-    const result = createRuleDetails([rule])
+    const result = createRuleDetails(rule)
 
     expect(result.items).toHaveLength(0)
   })
@@ -220,7 +196,7 @@ describe('createRuleDetails', () => {
       ]
     }
 
-    const result = createRuleDetails([rule])
+    const result = createRuleDetails(rule)
 
     expect(result.items).toHaveLength(0)
   })
@@ -228,11 +204,12 @@ describe('createRuleDetails', () => {
   test('should use friendly title for known rule names', () => {
     const rule = {
       name: 'applied-for-total-available-area',
+      description: 'Has the total available area been applied for?',
       hasPassed: true,
       explanations: []
     }
 
-    const result = createRuleDetails([rule])
+    const result = createRuleDetails(rule)
 
     expect(result.summaryItems[0].text).toBe(
       'Has the total available area been applied for?'
@@ -242,11 +219,12 @@ describe('createRuleDetails', () => {
   test('should use original name for unknown rule names', () => {
     const rule = {
       name: 'unknown-custom-rule',
+      description: 'unknown-custom-rule',
       hasPassed: true,
       explanations: []
     }
 
-    const result = createRuleDetails([rule])
+    const result = createRuleDetails(rule)
 
     expect(result.summaryItems[0].text).toBe('unknown-custom-rule')
     expect(result.summaryItems[1]).toEqual({
@@ -297,20 +275,19 @@ describe('createActionDetails', () => {
         ]
       },
       rules: [
-        [
-          {
-            name: 'parcel-has-intersection-with-data-layer-moorland',
-            hasPassed: true,
-            explanations: [
-              {
-                title: 'moorland check',
-                lines: [
-                  'This parcel has a 99.99% intersection with the moorland layer.'
-                ]
-              }
-            ]
-          }
-        ]
+        {
+          name: 'parcel-has-intersection-with-data-layer-moorland',
+          description: 'Is this parcel on the moorland?',
+          hasPassed: true,
+          explanations: [
+            {
+              title: 'moorland check',
+              lines: [
+                'This parcel has a 99.99% intersection with the moorland layer.'
+              ]
+            }
+          ]
+        }
       ]
     }
 
@@ -441,36 +418,36 @@ describe('applicationValidationRunToCaseManagement', () => {
             {
               code: 'CMOR1',
               rules: [
-                [
-                  {
-                    name: 'parcel-has-intersection-with-data-layer-moorland',
-                    passed: true,
-                    reason: 'This parcel is majority on the moorland',
-                    explanations: [
-                      {
-                        lines: [
-                          'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
-                        ],
-                        title: 'moorland check'
-                      }
-                    ]
-                  },
-                  {
-                    name: 'applied-for-total-available-area',
-                    passed: false,
-                    reason:
-                      'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
-                    explanations: [
-                      {
-                        lines: [
-                          'Applied for: 4.53411071 ha',
-                          'Parcel area: 4.53411078 ha'
-                        ],
-                        title: 'Total valid land cover'
-                      }
-                    ]
-                  }
-                ]
+                {
+                  name: 'parcel-has-intersection-with-data-layer-moorland',
+                  description: 'Is this parcel on the moorland?',
+                  passed: true,
+                  reason: 'This parcel is majority on the moorland',
+                  explanations: [
+                    {
+                      lines: [
+                        'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                      ],
+                      title: 'moorland check'
+                    }
+                  ]
+                },
+                {
+                  name: 'applied-for-total-available-area',
+                  description: 'Has the total available area been applied for?',
+                  passed: false,
+                  reason:
+                    'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
+                  explanations: [
+                    {
+                      lines: [
+                        'Applied for: 4.53411071 ha',
+                        'Parcel area: 4.53411078 ha'
+                      ],
+                      title: 'Total valid land cover'
+                    }
+                  ]
+                }
               ],
               hasPassed: false,
               availableArea: {
@@ -554,36 +531,36 @@ describe('applicationValidationRunToCaseManagement', () => {
             {
               code: 'UPL1',
               rules: [
-                [
-                  {
-                    name: 'parcel-has-intersection-with-data-layer-moorland',
-                    passed: true,
-                    reason: 'This parcel is majority on the moorland',
-                    explanations: [
-                      {
-                        lines: [
-                          'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
-                        ],
-                        title: 'moorland check'
-                      }
-                    ]
-                  },
-                  {
-                    name: 'applied-for-total-available-area',
-                    passed: true,
-                    reason:
-                      'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
-                    explanations: [
-                      {
-                        lines: [
-                          'Applied for: 4.53411078 ha',
-                          'Parcel area: 4.53411078 ha'
-                        ],
-                        title: 'Total valid land cover'
-                      }
-                    ]
-                  }
-                ]
+                {
+                  name: 'parcel-has-intersection-with-data-layer-moorland',
+                  description: 'Is this parcel on the moorland?',
+                  passed: true,
+                  reason: 'This parcel is majority on the moorland',
+                  explanations: [
+                    {
+                      lines: [
+                        'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                      ],
+                      title: 'moorland check'
+                    }
+                  ]
+                },
+                {
+                  name: 'applied-for-total-available-area',
+                  description: 'Has the total available area been applied for?',
+                  passed: true,
+                  reason:
+                    'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
+                  explanations: [
+                    {
+                      lines: [
+                        'Applied for: 4.53411078 ha',
+                        'Parcel area: 4.53411078 ha'
+                      ],
+                      title: 'Total valid land cover'
+                    }
+                  ]
+                }
               ],
               hasPassed: true,
               availableArea: {
@@ -881,6 +858,31 @@ describe('applicationValidationRunToCaseManagement', () => {
                 text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
               }
             ]
+          },
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Has the total available area been applied for?',
+                classes: 'govuk-details__summary-text'
+              },
+              {
+                classes: 'govuk-!-margin-left-8',
+                component: 'status',
+                text: 'Failed',
+                colour: 'red'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'Applied for: 4.53411071 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Parcel area: 4.53411078 ha'
+              }
+            ]
           }
         ]
       },
@@ -1076,6 +1078,31 @@ describe('applicationValidationRunToCaseManagement', () => {
               {
                 component: 'paragraph',
                 text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+              }
+            ]
+          },
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Has the total available area been applied for?',
+                classes: 'govuk-details__summary-text'
+              },
+              {
+                classes: 'govuk-!-margin-left-8',
+                component: 'status',
+                text: 'Failed',
+                colour: 'red'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'Applied for: 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Parcel area: 4.53411078 ha'
               }
             ]
           }
