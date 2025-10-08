@@ -30,6 +30,7 @@ export const appliedForTotalAvailableArea = {
       return {
         name,
         passed: false,
+        description: rule.description,
         reason: `There is not sufficient available area (${parseFloat(area)} ha) for the applied figure (${parseFloat(areaAppliedFor)} ha)`,
         explanations
       }
@@ -38,6 +39,7 @@ export const appliedForTotalAvailableArea = {
     return {
       name,
       passed: true,
+      description: rule.description,
       reason: `There is sufficient available area (${parseFloat(area)} ha) for the applied figure (${parseFloat(areaAppliedFor)} ha)`,
       explanations
     }
