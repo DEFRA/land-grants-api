@@ -30,14 +30,14 @@ describe('getLandData', () => {
           id: 1,
           sheet_id: testSheetId,
           parcel_id: testParcelId,
-          area: 100.5,
+          area: 101,
           land_use: 'agricultural'
         },
         {
           id: 2,
           sheet_id: testSheetId,
           parcel_id: testParcelId,
-          area: 50.2,
+          area: 50,
           land_use: 'forestry'
         }
       ]
@@ -147,7 +147,7 @@ describe('getLandData', () => {
       const numericSheetId = 123
       const numericParcelId = 456
       const mockLandData = [
-        { id: 1, sheet_id: numericSheetId, parcel_id: numericParcelId }
+        { id: 1, sheet_id: numericSheetId, parcel_id: numericParcelId, area: 0 }
       ]
 
       mockClient.query.mockResolvedValue({ rows: mockLandData })

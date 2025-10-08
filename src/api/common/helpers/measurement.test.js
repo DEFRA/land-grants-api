@@ -1,4 +1,4 @@
-import { sqmToHaRounded, haToSqm } from './measurement.js'
+import { sqmToHaRounded, haToSqm, roundSqm } from './measurement.js'
 
 describe('sqmToHaRounded', () => {
   describe('normal conversions', () => {
@@ -23,7 +23,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts 12345.6789 sqm with high precision', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789)
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
     })
   })
 
@@ -33,7 +33,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles very small areas (less than 1 sqm)', () => {
-      expect(sqmToHaRounded(0.5)).toBe(0.00005)
+      expect(sqmToHaRounded(0.5)).toBe(0.0001)
     })
 
     test('handles very small areas (1 sqm)', () => {
@@ -45,7 +45,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles decimal input', () => {
-      expect(sqmToHaRounded(12345.67)).toBe(1.234567)
+      expect(sqmToHaRounded(12345.67)).toBe(1.2346)
     })
 
     test('handles negative numbers', () => {
@@ -89,7 +89,7 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts decimal string to hectares', () => {
-      expect(sqmToHaRounded('12345.67')).toBe(1.234567)
+      expect(sqmToHaRounded('12345.67')).toBe(1.2346)
     })
 
     test('converts negative string to hectares', () => {
@@ -145,15 +145,15 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles very small number as string', () => {
-      expect(sqmToHaRounded('0.5')).toBe(0.00005)
+      expect(sqmToHaRounded('0.5')).toBe(0.0001)
     })
   })
 
-  describe('precision and rounding with 8 decimal places', () => {
-    test('rounds correctly to 8 decimal places', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789) // 1.23456789 exactly
-      expect(sqmToHaRounded(12344.4444)).toBe(1.23444444) // 1.23444444 exactly
-      expect(sqmToHaRounded(12344.5555)).toBe(1.23445555) // 1.23445555 exactly
+  describe('precision and rounding with 4 decimal places', () => {
+    test('rounds correctly to 4 decimal places', () => {
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
+      expect(sqmToHaRounded(12344.4444)).toBe(1.2344)
+      expect(sqmToHaRounded(12344.5555)).toBe(1.2345)
     })
 
     test('handles precise calculations', () => {
@@ -163,15 +163,15 @@ describe('sqmToHaRounded', () => {
     })
 
     test('handles rounding at different thresholds', () => {
-      expect(sqmToHaRounded(12344.99994)).toBe(1.23449999) // 8 decimal places
-      expect(sqmToHaRounded(12344.99995)).toBe(1.2345) // rounds to 8 decimal places
-      expect(sqmToHaRounded(12345.00001)).toBe(1.2345) // rounds to 8 decimal places
+      expect(sqmToHaRounded(12344.99994)).toBe(1.2345)
+      expect(sqmToHaRounded(12344.99995)).toBe(1.2345)
+      expect(sqmToHaRounded(12345.00001)).toBe(1.2345)
     })
 
-    test('handles very precise inputs requiring 8 decimal place rounding', () => {
-      // Test cases that specifically exercise 8 decimal place precision
-      expect(sqmToHaRounded(12345.67891234)).toBe(1.23456789) // rounds to 8 decimal places
-      expect(sqmToHaRounded(12345.678912345)).toBe(1.23456789) // rounds to 8 decimal places
+    test('handles very precise inputs requiring 4 decimal place rounding', () => {
+      // Test cases that specifically exercise 4 decimal place precision
+      expect(sqmToHaRounded(12345.5)).toBe(1.2346) // rounds to 4 decimal places
+      expect(sqmToHaRounded(12346.49999999999)).toBe(1.2346) // rounds to 4 decimal places
     })
   })
 
@@ -189,13 +189,13 @@ describe('sqmToHaRounded', () => {
     })
 
     test('converts complex area measurements', () => {
-      expect(sqmToHaRounded(12345.6789)).toBe(1.23456789)
-      expect(sqmToHaRounded(987654.321)).toBe(98.7654321)
+      expect(sqmToHaRounded(12345.6789)).toBe(1.2346)
+      expect(sqmToHaRounded(987654.321)).toBe(98.7654)
     })
 
     test('converts areas requiring high precision', () => {
-      expect(sqmToHaRounded(1.23456)).toBe(0.00012346) // Very small area with 8 decimal places
-      expect(sqmToHaRounded(99.9999)).toBe(0.00999999) // Almost 0.01 hectare with 8 decimal places
+      expect(sqmToHaRounded(1.23456)).toBe(0.0001) // Very small area with 4 decimal places
+      expect(sqmToHaRounded(99.9999)).toBe(0.01)
     })
   })
 })
@@ -346,6 +346,161 @@ describe('haToSqm', () => {
     test('handles floating point precision issues', () => {
       expect(haToSqm(0.1 + 0.2)).toBe(3000.0000000000005)
       expect(haToSqm(0.1 + 0.2)).not.toBe(0.3)
+    })
+  })
+})
+
+describe('roundSqm', () => {
+  describe('normal rounding', () => {
+    test('rounds whole number without change', () => {
+      expect(roundSqm(100)).toBe(100)
+    })
+
+    test('rounds down when decimal is less than 0.5', () => {
+      expect(roundSqm(100.4)).toBe(100)
+      expect(roundSqm(100.49)).toBe(100)
+    })
+
+    test('rounds up when decimal is 0.5 or greater', () => {
+      expect(roundSqm(100.5)).toBe(101)
+      expect(roundSqm(100.6)).toBe(101)
+      expect(roundSqm(100.9)).toBe(101)
+    })
+
+    test('rounds typical area measurements', () => {
+      expect(roundSqm(12345.67)).toBe(12346)
+      expect(roundSqm(987.12)).toBe(987)
+      expect(roundSqm(5432.89)).toBe(5433)
+    })
+  })
+
+  describe('edge cases', () => {
+    test('handles 0', () => {
+      expect(roundSqm(0)).toBe(0)
+    })
+
+    test('handles negative numbers', () => {
+      expect(roundSqm(-100.4)).toBe(-100)
+      expect(roundSqm(-100.5)).toBe(-100)
+      expect(roundSqm(-100.6)).toBe(-101)
+    })
+
+    test('handles very small positive numbers', () => {
+      expect(roundSqm(0.1)).toBe(0)
+      expect(roundSqm(0.4)).toBe(0)
+      expect(roundSqm(0.5)).toBe(1)
+      expect(roundSqm(0.9)).toBe(1)
+    })
+
+    test('handles very small negative numbers', () => {
+      expect(roundSqm(-0.1)).toBe(-0)
+      expect(roundSqm(-0.4)).toBe(-0)
+      expect(roundSqm(-0.5)).toBe(-0)
+      expect(roundSqm(-0.6)).toBe(-1)
+    })
+
+    test('handles very large numbers', () => {
+      expect(roundSqm(1000000.3)).toBe(1000000)
+      expect(roundSqm(1000000.7)).toBe(1000001)
+      expect(roundSqm(9999999.5)).toBe(10000000)
+    })
+  })
+
+  describe('precision and rounding behavior', () => {
+    test('rounds at 0.5 boundary correctly', () => {
+      expect(roundSqm(1.5)).toBe(2)
+      expect(roundSqm(2.5)).toBe(3)
+      expect(roundSqm(3.5)).toBe(4)
+    })
+
+    test('rounds very close to 0.5', () => {
+      expect(roundSqm(100.49999999)).toBe(100)
+      expect(roundSqm(100.50000001)).toBe(101)
+    })
+
+    test('handles high precision decimals', () => {
+      expect(roundSqm(123.456789123)).toBe(123)
+      expect(roundSqm(123.987654321)).toBe(124)
+    })
+  })
+
+  describe('invalid input handling', () => {
+    test('handles null input (Math.round coerces to 0)', () => {
+      expect(roundSqm(null)).toBe(0)
+    })
+
+    test('returns 0 for undefined input', () => {
+      expect(roundSqm(undefined)).toBe(0)
+    })
+
+    test('handles numeric string input (Math.round coerces)', () => {
+      expect(roundSqm('123.45')).toBe(123)
+      expect(roundSqm('100.7')).toBe(101)
+    })
+
+    test('returns 0 for non-numeric string', () => {
+      expect(roundSqm('abc')).toBe(0)
+      expect(roundSqm('not a number')).toBe(0)
+    })
+
+    test('handles boolean input (Math.round coerces)', () => {
+      expect(roundSqm(true)).toBe(1)
+      expect(roundSqm(false)).toBe(0)
+    })
+
+    test('returns 0 for object input', () => {
+      expect(roundSqm({})).toBe(0)
+      expect(roundSqm({ value: 123 })).toBe(0)
+    })
+
+    test('handles array input (Math.round coerces single element arrays)', () => {
+      expect(roundSqm([123])).toBe(123)
+      expect(roundSqm([123.7])).toBe(124)
+      expect(roundSqm([])).toBe(0)
+      expect(roundSqm([1, 2])).toBe(0)
+    })
+
+    test('returns 0 for NaN input', () => {
+      expect(roundSqm(NaN)).toBe(0)
+    })
+  })
+
+  describe('real world scenarios', () => {
+    test('rounds typical field measurements', () => {
+      expect(roundSqm(25000.3)).toBe(25000)
+      expect(roundSqm(25000.7)).toBe(25001)
+    })
+
+    test('rounds small garden measurements', () => {
+      expect(roundSqm(100.2)).toBe(100)
+      expect(roundSqm(100.8)).toBe(101)
+    })
+
+    test('rounds large farm measurements', () => {
+      expect(roundSqm(5000000.4)).toBe(5000000)
+      expect(roundSqm(5000000.6)).toBe(5000001)
+    })
+
+    test('rounds GPS-derived measurements with decimals', () => {
+      expect(roundSqm(12345.6789)).toBe(12346)
+      expect(roundSqm(98765.4321)).toBe(98765)
+    })
+  })
+
+  describe('floating point precision', () => {
+    test('handles floating point arithmetic results', () => {
+      expect(roundSqm(0.1 + 0.2)).toBe(0)
+      expect(roundSqm(10.1 + 10.2)).toBe(20)
+    })
+
+    test('handles division results', () => {
+      expect(roundSqm(10 / 3)).toBe(3)
+      expect(roundSqm(20 / 3)).toBe(7)
+    })
+
+    test('handles multiplication results', () => {
+      expect(roundSqm(1.1 * 100)).toBe(110)
+      expect(roundSqm(0.9 * 100)).toBe(90)
     })
   })
 })

@@ -240,7 +240,7 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple incomp
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1.1150572 ha",
+      "Arable (130) Warning: This is a land cover class - 1.1151 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -260,8 +260,8 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple incomp
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1.1150572 ha",
-      "= 1.1150572 ha",
+      "Arable (130) Warning: This is a land cover class - 1.1151 ha",
+      "= 1.1151 ha",
     ],
     "title": "Total valid land covers",
   },
@@ -313,11 +313,11 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple incomp
   },
   {
     "content": [
-      "Total valid land cover: 1.1150572 ha",
+      "Total valid land cover: 1.1151 ha",
       "- 0.7 (Stack 1)",
       "- 0.1 (Stack 2)",
       "- 0.2 (Stack 3)",
-      "= 0.1150572 ha available for CMOR1",
+      "= 0.1151 ha available for CMOR1",
     ],
     "title": "Result",
   },

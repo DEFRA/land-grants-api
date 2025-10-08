@@ -1,0 +1,1086 @@
+import {
+  applicationValidationRunToCaseManagement,
+  createHeadingComponent,
+  createParagraphComponent,
+  getRuleFriendlyTitle,
+  createAvailableAreaDetails,
+  createStatusComponent,
+  createRuleDetails,
+  createActionDetails
+} from './application-validation.transformer.js'
+
+describe('createHeadingComponent', () => {
+  test('should create heading component with text and level', () => {
+    const result = createHeadingComponent('Test Heading', 2)
+
+    expect(result).toEqual({
+      component: 'heading',
+      text: 'Test Heading',
+      level: 2,
+      id: undefined
+    })
+  })
+
+  test('should create heading component with text, level, and id', () => {
+    const result = createHeadingComponent('Test Heading', 2, 'test-id')
+
+    expect(result).toEqual({
+      component: 'heading',
+      text: 'Test Heading',
+      level: 2,
+      id: 'test-id'
+    })
+  })
+})
+
+describe('createParagraphComponent', () => {
+  test('should create paragraph component with text', () => {
+    const result = createParagraphComponent('This is a paragraph.')
+
+    expect(result).toEqual({
+      component: 'paragraph',
+      text: 'This is a paragraph.'
+    })
+  })
+})
+
+describe('getRuleFriendlyTitle', () => {
+  test('should return friendly title for known rule: parcel-has-intersection-with-data-layer-moorland', () => {
+    const result = getRuleFriendlyTitle(
+      'parcel-has-intersection-with-data-layer-moorland'
+    )
+
+    expect(result).toBe('Is this parcel on the moorland?')
+  })
+
+  test('should return friendly title for known rule: applied-for-total-available-area', () => {
+    const result = getRuleFriendlyTitle('applied-for-total-available-area')
+
+    expect(result).toBe('Has the total available area been applied for?')
+  })
+
+  test('should return original rule name for unknown rule', () => {
+    const result = getRuleFriendlyTitle('unknown-rule-name')
+
+    expect(result).toBe('unknown-rule-name')
+  })
+})
+
+describe('createAvailableAreaDetails', () => {
+  test('should create details component with explanation sections', () => {
+    const explanations = [
+      {
+        title: 'Section 1',
+        content: ['Line 1', 'Line 2']
+      },
+      {
+        title: 'Section 2',
+        content: ['Line 3']
+      },
+      {
+        title: 'Section 3',
+        content: ['Line 4', 'Line 5', 'Line 6']
+      }
+    ]
+
+    const result = createAvailableAreaDetails(explanations)
+
+    expect(result.items).toHaveLength(6)
+    expect(result.items).toEqual([
+      {
+        component: 'paragraph',
+        text: 'Line 1'
+      },
+      {
+        component: 'paragraph',
+        text: 'Line 2'
+      },
+      {
+        component: 'paragraph',
+        text: 'Line 3'
+      },
+      {
+        component: 'paragraph',
+        text: 'Line 4'
+      },
+      {
+        component: 'paragraph',
+        text: 'Line 5'
+      },
+      {
+        component: 'paragraph',
+        text: 'Line 6'
+      }
+    ])
+  })
+
+  test('should handle empty content array', () => {
+    const explanations = [
+      {
+        title: 'Empty Section',
+        content: []
+      }
+    ]
+
+    const result = createAvailableAreaDetails(explanations)
+
+    expect(result.items).toHaveLength(0)
+  })
+})
+
+describe('createRuleDetails', () => {
+  const rule = [
+    {
+      name: 'parcel-has-intersection-with-data-layer-moorland',
+      hasPassed: true,
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'This parcel has a 99.99% intersection with the moorland layer.'
+          ]
+        }
+      ]
+    }
+  ]
+
+  test('should create rule details component for passed rule', () => {
+    const result = createRuleDetails([{ ...rule[0], hasPassed: true }])
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Is this parcel on the moorland?',
+          classes: 'govuk-details__summary-text'
+        },
+        {
+          classes: 'govuk-!-margin-left-8',
+          component: 'status',
+          text: 'Passed',
+          colour: 'green'
+        }
+      ],
+      items: [
+        {
+          component: 'paragraph',
+          text: 'This parcel has a 99.99% intersection with the moorland layer.'
+        }
+      ]
+    })
+  })
+
+  test('should create rule details component for failed rule', () => {
+    const result = createRuleDetails([{ ...rule[0], hasPassed: false }])
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Is this parcel on the moorland?',
+          classes: 'govuk-details__summary-text'
+        },
+        {
+          classes: 'govuk-!-margin-left-8',
+          component: 'status',
+          text: 'Failed',
+          colour: 'red'
+        }
+      ],
+      items: [
+        {
+          component: 'paragraph',
+          text: 'This parcel has a 99.99% intersection with the moorland layer.'
+        }
+      ]
+    })
+  })
+
+  test('should handle empty explanations array', () => {
+    const rule = {
+      name: 'test-rule',
+      hasPassed: true,
+      explanations: []
+    }
+
+    const result = createRuleDetails([rule])
+
+    expect(result.items).toHaveLength(0)
+  })
+
+  test('should handle explanation with empty lines array', () => {
+    const rule = {
+      name: 'test-rule',
+      hasPassed: false,
+      explanations: [
+        {
+          title: 'Empty explanation',
+          lines: []
+        }
+      ]
+    }
+
+    const result = createRuleDetails([rule])
+
+    expect(result.items).toHaveLength(0)
+  })
+
+  test('should use friendly title for known rule names', () => {
+    const rule = {
+      name: 'applied-for-total-available-area',
+      hasPassed: true,
+      explanations: []
+    }
+
+    const result = createRuleDetails([rule])
+
+    expect(result.summaryItems[0].text).toBe(
+      'Has the total available area been applied for?'
+    )
+  })
+
+  test('should use original name for unknown rule names', () => {
+    const rule = {
+      name: 'unknown-custom-rule',
+      hasPassed: true,
+      explanations: []
+    }
+
+    const result = createRuleDetails([rule])
+
+    expect(result.summaryItems[0].text).toBe('unknown-custom-rule')
+    expect(result.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Passed',
+      colour: 'green'
+    })
+  })
+})
+
+describe('createStatusComponent', () => {
+  test('should create passed status component when hasPassed is true', () => {
+    const result = createStatusComponent(true)
+
+    expect(result).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Passed',
+      colour: 'green'
+    })
+  })
+
+  test('should create failed status component when hasPassed is false', () => {
+    const result = createStatusComponent(false)
+
+    expect(result).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Failed',
+      colour: 'red'
+    })
+  })
+})
+
+describe('createActionDetails', () => {
+  test('should create action details component with available area and rules', () => {
+    const action = {
+      code: 'SAM1',
+      hasPassed: true,
+      availableArea: {
+        areaInHa: 10.5,
+        explanations: [
+          {
+            title: 'Total valid land cover',
+            content: ['Applied for: 10.50 ha', 'Available: 10.50 ha']
+          }
+        ]
+      },
+      rules: [
+        [
+          {
+            name: 'parcel-has-intersection-with-data-layer-moorland',
+            hasPassed: true,
+            explanations: [
+              {
+                title: 'moorland check',
+                lines: [
+                  'This parcel has a 99.99% intersection with the moorland layer.'
+                ]
+              }
+            ]
+          }
+        ]
+      ]
+    }
+
+    const result = createActionDetails(action)
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'SAM1',
+          classes: 'govuk-details__summary-text'
+        },
+        {
+          classes: 'govuk-!-margin-left-8',
+          component: 'status',
+          text: 'Passed',
+          colour: 'green'
+        }
+      ],
+      items: [
+        {
+          component: 'details',
+          summaryItems: [
+            {
+              text: 'Available area calculation explaination',
+              classes: 'govuk-details__summary-text'
+            }
+          ],
+          items: [
+            {
+              component: 'paragraph',
+              text: 'Applied for: 10.50 ha'
+            },
+            {
+              component: 'paragraph',
+              text: 'Available: 10.50 ha'
+            }
+          ]
+        },
+        {
+          component: 'details',
+          summaryItems: [
+            {
+              text: 'Is this parcel on the moorland?',
+              classes: 'govuk-details__summary-text'
+            },
+            {
+              classes: 'govuk-!-margin-left-8',
+              component: 'status',
+              text: 'Passed',
+              colour: 'green'
+            }
+          ],
+          items: [
+            {
+              component: 'paragraph',
+              text: 'This parcel has a 99.99% intersection with the moorland layer.'
+            }
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should handle action with empty rules array', () => {
+    const action = {
+      code: 'SAM4',
+      hasPassed: true,
+      rules: []
+    }
+
+    const result = createActionDetails(action)
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'SAM4',
+          classes: 'govuk-details__summary-text'
+        },
+        {
+          classes: 'govuk-!-margin-left-8',
+          component: 'status',
+          text: 'Passed',
+          colour: 'green'
+        }
+      ],
+      items: []
+    })
+  })
+})
+
+describe('applicationValidationRunToCaseManagement', () => {
+  test('should return null when input is null', () => {
+    expect(applicationValidationRunToCaseManagement(null)).toBeNull()
+  })
+
+  test('should return response when input is valid', () => {
+    const input = {
+      sbi: 106284736,
+      date: '2025-09-30T08:29:21.263Z',
+      hasPassed: false,
+      requester: 'grants-ui',
+      application: {
+        parcels: [
+          {
+            actions: [
+              {
+                code: 'CMOR1',
+                quantity: 4.53411071
+              },
+              {
+                code: 'UPL1',
+                quantity: 4.53411078
+              }
+            ],
+            sheetId: 'SD6743',
+            parcelId: '8083'
+          }
+        ],
+        agreementLevelActions: []
+      },
+      applicantCrn: '1102838829',
+      applicationId: 'app-validation-test1',
+      parcelLevelResults: [
+        {
+          actions: [
+            {
+              code: 'CMOR1',
+              rules: [
+                [
+                  {
+                    name: 'parcel-has-intersection-with-data-layer-moorland',
+                    passed: true,
+                    reason: 'This parcel is majority on the moorland',
+                    explanations: [
+                      {
+                        lines: [
+                          'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                        ],
+                        title: 'moorland check'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'applied-for-total-available-area',
+                    passed: false,
+                    reason:
+                      'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
+                    explanations: [
+                      {
+                        lines: [
+                          'Applied for: 4.53411071 ha',
+                          'Parcel area: 4.53411078 ha'
+                        ],
+                        title: 'Total valid land cover'
+                      }
+                    ]
+                  }
+                ]
+              ],
+              hasPassed: false,
+              availableArea: {
+                areaInHa: 4.53411078,
+                explanations: [
+                  {
+                    title: 'Application Information',
+                    content: ['Action code - CMOR1', 'Parcel Id - SD6743 8083']
+                  },
+                  {
+                    title: 'Land Covers For Parcel',
+                    content: [
+                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                    ]
+                  },
+                  {
+                    title: 'Existing actions',
+                    content: []
+                  },
+                  {
+                    title: 'Valid land covers for action: CMOR1',
+                    content: [
+                      'Permanent grassland (130) - Permanent grassland (131)',
+                      'Water/irrigation features (240) - Drain/ditch/dyke (241)',
+                      'Water/irrigation features (240) - Pond (243)',
+                      'Rock (250) - Scree (251)',
+                      'Rock (250) - Boulders (252)',
+                      'Rock (250) - Rocky outcrop (253)',
+                      'Heaps (270) - Heaps (271)',
+                      'Notional features (280) - Notional - rock (281)',
+                      'Notional features (280) - Notional - bracken (282)',
+                      'Notional features (280) - Notional - scrub (283)',
+                      'Notional features (280) - Notional - water (285)',
+                      'Notional features (280) - Notional - natural (286)',
+                      'Notional features (280) - Notional - manmade (287)',
+                      'Notional features (280) - Notional - mixed (288)',
+                      'Non-agricultural area (300) - Non-agricultural area (300)',
+                      'Woodland (330) - Scrub - ungrazeable (347)',
+                      'Inland water (580) - Rivers and Streams Type 2 (582)',
+                      'Inland water (580) - Rivers and Streams Type 3 (583)',
+                      'Inland wetland (590) - Shingle (591)',
+                      'Inland wetland (590) - Fen marsh & swamp (592)',
+                      'Inland wetland (590) - Bog (593)',
+                      'Coastal features (620) - Cliffs (621)',
+                      'Natural transport - tracks and gallops (640) - Gallop (641)',
+                      'Natural transport - tracks and gallops (640) - Track - natural surface (643)',
+                      'Heath land and bracken (650) - Heath land and bracken - ungrazeable (651)'
+                    ]
+                  },
+                  {
+                    title: 'Total valid land covers',
+                    content: [
+                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha',
+                      '= 4.53411078 ha'
+                    ]
+                  },
+                  {
+                    title: 'Common land covers',
+                    content: ['', 'Actions included for stacking:', '', 'None']
+                  },
+                  {
+                    title:
+                      'Find area of existing action that must be on the same land cover as CMOR1',
+                    content: []
+                  },
+                  {
+                    title: 'Stacks',
+                    content: ['No existing actions so no stacks are needed']
+                  },
+                  {
+                    title: 'Result',
+                    content: [
+                      'Total valid land cover: 4.53411078 ha',
+                      '= 4.53411078 ha available for CMOR1'
+                    ]
+                  }
+                ]
+              },
+              actionConfigVersion: ''
+            },
+            {
+              code: 'UPL1',
+              rules: [
+                [
+                  {
+                    name: 'parcel-has-intersection-with-data-layer-moorland',
+                    passed: true,
+                    reason: 'This parcel is majority on the moorland',
+                    explanations: [
+                      {
+                        lines: [
+                          'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                        ],
+                        title: 'moorland check'
+                      }
+                    ]
+                  },
+                  {
+                    name: 'applied-for-total-available-area',
+                    passed: true,
+                    reason:
+                      'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
+                    explanations: [
+                      {
+                        lines: [
+                          'Applied for: 4.53411078 ha',
+                          'Parcel area: 4.53411078 ha'
+                        ],
+                        title: 'Total valid land cover'
+                      }
+                    ]
+                  }
+                ]
+              ],
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 4.53411078,
+                explanations: [
+                  {
+                    title: 'Application Information',
+                    content: ['Action code - UPL1', 'Parcel Id - SD6743 8083']
+                  },
+                  {
+                    title: 'Land Covers For Parcel',
+                    content: [
+                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                    ]
+                  },
+                  {
+                    title: 'Existing actions',
+                    content: []
+                  },
+                  {
+                    title: 'Valid land covers for action: UPL1',
+                    content: [
+                      'Permanent grassland (130) - Permanent grassland (131)',
+                      'Water/irrigation features (240) - Drain/ditch/dyke (241)',
+                      'Water/irrigation features (240) - Pond (243)',
+                      'Rock (250) - Scree (251)',
+                      'Rock (250) - Boulders (252)',
+                      'Rock (250) - Rocky outcrop (253)',
+                      'Heaps (270) - Heaps (271)',
+                      'Notional features (280) - Notional - rock (281)',
+                      'Notional features (280) - Notional - bracken (282)',
+                      'Notional features (280) - Notional - scrub (283)',
+                      'Notional features (280) - Notional - water (285)',
+                      'Notional features (280) - Notional - natural (286)',
+                      'Notional features (280) - Notional - manmade (287)',
+                      'Notional features (280) - Notional - mixed (288)',
+                      'Non-agricultural area (300) - Non-agricultural area (300)',
+                      'Woodland (330) - Scrub - ungrazeable (347)',
+                      'Inland water (580) - Rivers and Streams Type 2 (582)',
+                      'Inland water (580) - Rivers and Streams Type 3 (583)',
+                      'Inland wetland (590) - Shingle (591)',
+                      'Inland wetland (590) - Fen marsh & swamp (592)',
+                      'Inland wetland (590) - Bog (593)',
+                      'Coastal features (620) - Cliffs (621)',
+                      'Natural transport - tracks and gallops (640) - Gallop (641)',
+                      'Natural transport - tracks and gallops (640) - Track - natural surface (643)',
+                      'Heath land and bracken (650) - Heath land and bracken - ungrazeable (651)'
+                    ]
+                  },
+                  {
+                    title: 'Total valid land covers',
+                    content: [
+                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha',
+                      '= 4.53411078 ha'
+                    ]
+                  },
+                  {
+                    title: 'Common land covers',
+                    content: ['', 'Actions included for stacking:', '', 'None']
+                  },
+                  {
+                    title:
+                      'Find area of existing action that must be on the same land cover as UPL1',
+                    content: []
+                  },
+                  {
+                    title: 'Stacks',
+                    content: ['No existing actions so no stacks are needed']
+                  },
+                  {
+                    title: 'Result',
+                    content: [
+                      'Total valid land cover: 4.53411078 ha',
+                      '= 4.53411078 ha available for UPL1'
+                    ]
+                  }
+                ]
+              },
+              actionConfigVersion: ''
+            }
+          ],
+          sheetId: 'SD6743',
+          parcelId: '8083'
+        }
+      ],
+      landGrantsApiVersion: 'unknown',
+      applicationLevelResults: {}
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result).toEqual([
+      {
+        component: 'heading',
+        text: 'Land parcel rules checks',
+        level: 2,
+        id: 'title'
+      },
+      {
+        component: 'heading',
+        text: 'Parcel ID: SD6743 8083 checks',
+        level: 3
+      },
+      {
+        component: 'details',
+        summaryItems: [
+          {
+            text: 'CMOR1',
+            classes: 'govuk-details__summary-text'
+          },
+          {
+            classes: 'govuk-!-margin-left-8',
+            component: 'status',
+            text: 'Failed',
+            colour: 'red'
+          }
+        ],
+        items: [
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Available area calculation explaination',
+                classes: 'govuk-details__summary-text'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'Action code - CMOR1'
+              },
+              {
+                component: 'paragraph',
+                text: 'Parcel Id - SD6743 8083'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) - Permanent grassland (131)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Water/irrigation features (240) - Drain/ditch/dyke (241)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Water/irrigation features (240) - Pond (243)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Scree (251)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Boulders (252)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Rocky outcrop (253)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Heaps (270) - Heaps (271)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - rock (281)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - bracken (282)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - scrub (283)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - water (285)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - natural (286)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - manmade (287)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - mixed (288)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Non-agricultural area (300) - Non-agricultural area (300)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Woodland (330) - Scrub - ungrazeable (347)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland water (580) - Rivers and Streams Type 2 (582)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland water (580) - Rivers and Streams Type 3 (583)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Shingle (591)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Fen marsh & swamp (592)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Bog (593)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Coastal features (620) - Cliffs (621)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Natural transport - tracks and gallops (640) - Gallop (641)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Natural transport - tracks and gallops (640) - Track - natural surface (643)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Heath land and bracken (650) - Heath land and bracken - ungrazeable (651)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: '= 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: ''
+              },
+              {
+                component: 'paragraph',
+                text: 'Actions included for stacking:'
+              },
+              {
+                component: 'paragraph',
+                text: ''
+              },
+              {
+                component: 'paragraph',
+                text: 'None'
+              },
+              {
+                component: 'paragraph',
+                text: 'No existing actions so no stacks are needed'
+              },
+              {
+                component: 'paragraph',
+                text: 'Total valid land cover: 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: '= 4.53411078 ha available for CMOR1'
+              }
+            ]
+          },
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Is this parcel on the moorland?',
+                classes: 'govuk-details__summary-text'
+              },
+              {
+                classes: 'govuk-!-margin-left-8',
+                component: 'status',
+                text: 'Failed',
+                colour: 'red'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        component: 'details',
+        summaryItems: [
+          {
+            text: 'UPL1',
+            classes: 'govuk-details__summary-text'
+          },
+          {
+            classes: 'govuk-!-margin-left-8',
+            component: 'status',
+            text: 'Passed',
+            colour: 'green'
+          }
+        ],
+        items: [
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Available area calculation explaination',
+                classes: 'govuk-details__summary-text'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'Action code - UPL1'
+              },
+              {
+                component: 'paragraph',
+                text: 'Parcel Id - SD6743 8083'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) - Permanent grassland (131)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Water/irrigation features (240) - Drain/ditch/dyke (241)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Water/irrigation features (240) - Pond (243)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Scree (251)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Boulders (252)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Rock (250) - Rocky outcrop (253)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Heaps (270) - Heaps (271)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - rock (281)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - bracken (282)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - scrub (283)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - water (285)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - natural (286)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - manmade (287)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Notional features (280) - Notional - mixed (288)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Non-agricultural area (300) - Non-agricultural area (300)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Woodland (330) - Scrub - ungrazeable (347)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland water (580) - Rivers and Streams Type 2 (582)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland water (580) - Rivers and Streams Type 3 (583)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Shingle (591)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Fen marsh & swamp (592)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Inland wetland (590) - Bog (593)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Coastal features (620) - Cliffs (621)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Natural transport - tracks and gallops (640) - Gallop (641)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Natural transport - tracks and gallops (640) - Track - natural surface (643)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Heath land and bracken (650) - Heath land and bracken - ungrazeable (651)'
+              },
+              {
+                component: 'paragraph',
+                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: '= 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: ''
+              },
+              {
+                component: 'paragraph',
+                text: 'Actions included for stacking:'
+              },
+              {
+                component: 'paragraph',
+                text: ''
+              },
+              {
+                component: 'paragraph',
+                text: 'None'
+              },
+              {
+                component: 'paragraph',
+                text: 'No existing actions so no stacks are needed'
+              },
+              {
+                component: 'paragraph',
+                text: 'Total valid land cover: 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: '= 4.53411078 ha available for UPL1'
+              }
+            ]
+          },
+          {
+            component: 'details',
+            summaryItems: [
+              {
+                text: 'Is this parcel on the moorland?',
+                classes: 'govuk-details__summary-text'
+              },
+              {
+                classes: 'govuk-!-margin-left-8',
+                component: 'status',
+                text: 'Failed',
+                colour: 'red'
+              }
+            ],
+            items: [
+              {
+                component: 'paragraph',
+                text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+              }
+            ]
+          }
+        ]
+      }
+    ])
+  })
+})

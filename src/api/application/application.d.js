@@ -11,7 +11,14 @@
  * @property {boolean} hasPassed
  * @property {string} code
  * @property {string} actionConfigVersion
- * @property {object[]} rules
+ * @property {RuleResult[]} rules
+ * @property {AvailableAreaResult} availableArea
+ */
+
+/**
+ * @typedef {object} AvailableAreaResult
+ * @property {number} areaInHa
+ * @property {ExplanationSection[]} explanations
  */
 
 /**
@@ -41,24 +48,12 @@
  */
 
 /**
- * @typedef {object} ApplicationResultData
- * @property {Date} date
- * @property {string} requester
- * @property {string} landGrantsApiVersion
- * @property {boolean} hasPassed
- * @property {Application} application
- * @property {ParcelResult[]} parcelLevelResults
- * @property {object} availableArea
- * @property {Date} created_at
- */
-
-/**
  * @typedef {object} ApplicationResult
  * @property {number} id
  * @property {string} application_id
  * @property {string} sbi
  * @property {string} crn
- * @property {ApplicationResultData} data
+ * @property {ApplicationValidationRun} data
  * @property {Date} created_at
  */
 
@@ -73,3 +68,37 @@
  * @property {string} description
  * @property {boolean} passed
  */
+
+// /**
+//  * @typedef {object} ApplicationResultData
+//  * @property {Date} date
+//  * @property {string} requester
+//  * @property {string} landGrantsApiVersion
+//  * @property {boolean} hasPassed
+//  * @property {Application} application
+//  * @property {ParcelResult[]} parcelLevelResults
+//  * @property {object} availableArea
+//  * @property {Date} created_at
+//  */
+
+/**
+ * @typedef {object} ApplicationValidationRun
+ * @property {Date} date
+ * @property {string} applicationId
+ * @property {string} applicantCrn
+ * @property {string} sbi
+ * @property {string} requester
+ * @property {string} landGrantsApiVersion
+ * @property {boolean} hasPassed
+ * @property {object} applicationLevelResults
+ * @property {ApplicationResponse} application
+ * @property {ParcelResult[]} parcelLevelResults
+ */
+
+/**
+ * @typedef {object} ApplicationResponse
+ * @property {Parcel[]} parcels
+ * @property {object[]} agreementLevelActions
+ */
+
+/** @import {ExplanationSection} from "~/src/available-area/explanations.d.js" */
