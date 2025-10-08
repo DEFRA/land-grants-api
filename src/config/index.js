@@ -2,6 +2,7 @@ import convict from 'convict'
 import 'dotenv/config'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import packageJson from '~/package.json' with { type: 'json' }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -14,7 +15,7 @@ const config = convict({
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
     format: String,
     nullable: true,
-    default: '1.0.0',
+    default: packageJson.version,
     env: 'SERVICE_VERSION'
   },
   env: {
