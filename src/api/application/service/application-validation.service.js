@@ -50,14 +50,9 @@ export const validateApplication = async (
 
   // Validate each land action
   const parcelResults = await Promise.all(
-    landAction.map(async (la) => {
-      return await validateLandParcelActions(
-        la,
-        actions,
-        compatibilityCheckFn,
-        request
-      )
-    })
+    landAction.map(async (la) =>
+      validateLandParcelActions(la, actions, compatibilityCheckFn, request)
+    )
   )
 
   // Transform the application data
