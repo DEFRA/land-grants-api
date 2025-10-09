@@ -62,6 +62,7 @@ describe('Get actions', () => {
       rules: [
         {
           name: 'parcel-has-intersection-with-data-layer',
+          description: 'Is this parcel on the moorland?',
           config: {
             layerName: 'moorland',
             minimumIntersectionPercent: 50,
@@ -69,7 +70,8 @@ describe('Get actions', () => {
           }
         },
         {
-          name: 'applied-for-total-available-area'
+          name: 'applied-for-total-available-area',
+          description: 'Has the total available area been applied for?'
         }
       ]
     })

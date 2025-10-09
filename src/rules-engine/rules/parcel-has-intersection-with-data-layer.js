@@ -1,5 +1,5 @@
 /**
- * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
+ * @import { RuleEngineApplication, RuleResultItem } from '~/src/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/api/actions/action.d.js'
  */
 
@@ -30,6 +30,7 @@ export const parcelHasIntersectionWithDataLayer = {
       return {
         name,
         passed: false,
+        description: rule.description,
         reason: `An intersection with the ${layerName} layer was not provided in the application data`,
         explanations
       }
@@ -48,6 +49,7 @@ export const parcelHasIntersectionWithDataLayer = {
       name,
       passed: isGreaterThanOrEqualToMin,
       reason: `This parcel is ${isGreaterThanOrEqualToMin ? 'majority' : 'not majority'} on the ${layerName}`,
+      description: rule.description,
       explanations
     }
   }

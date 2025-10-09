@@ -2,6 +2,7 @@
  * @typedef {object} RuleResult
  * @property {boolean} hasPassed
  * @property {string} name
+ * @property {string} description
  * @property {string} reason
  * @property {object[]} explanations
  */
