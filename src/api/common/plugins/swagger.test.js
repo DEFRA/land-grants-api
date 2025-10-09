@@ -1,5 +1,6 @@
 import { swagger } from '~/src/api/common/plugins/swagger.js'
 import { config } from '~/src/config/index.js'
+import packageJson from '~/package.json' with { type: 'json' }
 
 const mockRegister = jest.fn()
 const mockServer = {
@@ -13,7 +14,6 @@ jest.mock('hapi-swagger', () => 'mock-hapi-swagger')
 describe('#swagger', () => {
   beforeEach(() => {
     mockRegister.mockClear()
-    config.serviceVersion = '1.0.0'
   })
 
   test('Should have the correct plugin name', () => {
@@ -33,7 +33,7 @@ describe('#swagger', () => {
           definitionPrefix: 'useLabel',
           info: {
             title: 'Land Grants API',
-            version: config.serviceVersion
+            version: packageJson.version
           },
           swaggerUI: true,
           documentationPage: true
