@@ -1,5 +1,4 @@
 import { swagger } from '~/src/api/common/plugins/swagger.js'
-import { config } from '~/src/config/index.js'
 import packageJson from '~/package.json' with { type: 'json' }
 
 const mockRegister = jest.fn()
