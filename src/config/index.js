@@ -2,7 +2,7 @@ import convict from 'convict'
 import 'dotenv/config'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import packageJson from '~/package.json' with { type: 'json' }
+import packageJson from '../../package.json' with { type: 'json' }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
