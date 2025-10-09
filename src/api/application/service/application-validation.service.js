@@ -50,9 +50,9 @@ export const validateApplication = async (
 
   // Validate each land action
   const parcelResults = await Promise.all(
-    landAction.map(async (landAction) => {
+    landAction.map(async (la) => {
       return await validateLandParcelActions(
-        landAction,
+        la,
         actions,
         compatibilityCheckFn,
         request
