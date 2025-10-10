@@ -4,6 +4,11 @@ import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
+import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+
+jest.mock('~/src/api/application/validation/application.validation.js')
+
+const mockValidateRequest = validateRequest
 
 const mockLandActions = {
   sbi: '123456789',
@@ -100,6 +105,7 @@ describe('Payment calculate controller', () => {
   beforeEach(async () => {
     jest.clearAllMocks()
 
+    mockValidateRequest.mockResolvedValue([])
     mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
     await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
       enabledActions: [
@@ -156,6 +162,37 @@ describe('Payment calculate controller', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 422 if the request has invalid quantity', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: {
+          sbi: '123456789',
+          landActions: [
+            {
+              sheetId: 'SX0679',
+              parcelId: '9238',
+              actions: [
+                {
+                  code: 'BND1',
+                  quantity: -99.0
+                }
+              ]
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(422)
+      expect(message).toBe('Quantity must be a positive number')
     })
 
     test('should return 400 if the request has no land actions in payload', async () => {
