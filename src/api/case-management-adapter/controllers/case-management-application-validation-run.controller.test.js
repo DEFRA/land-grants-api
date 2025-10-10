@@ -91,7 +91,7 @@ describe('Case Management Application Validation Run Controller', () => {
                       passed: false,
                       reason:
                         'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
-                      description: 'Available area calculation explaination',
+                      description: 'Available area calculation explanation',
                       explanations: [
                         {
                           lines: [
@@ -163,12 +163,7 @@ describe('Case Management Application Validation Run Controller', () => {
                       },
                       {
                         title: 'Common land covers',
-                        content: [
-                          '',
-                          'Actions included for stacking:',
-                          '',
-                          'None'
-                        ]
+                        content: ['Actions included for stacking:', 'None']
                       },
                       {
                         title:
@@ -212,7 +207,7 @@ describe('Case Management Application Validation Run Controller', () => {
                       passed: true,
                       reason:
                         'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
-                      description: 'Available area calculation explaination',
+                      description: 'Available area calculation explanation',
                       explanations: [
                         {
                           lines: [
@@ -284,12 +279,7 @@ describe('Case Management Application Validation Run Controller', () => {
                       },
                       {
                         title: 'Common land covers',
-                        content: [
-                          '',
-                          'Actions included for stacking:',
-                          '',
-                          'None'
-                        ]
+                        content: ['Actions included for stacking:', 'None']
                       },
                       {
                         title:
@@ -366,7 +356,7 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Available area calculation explaination',
+                    text: 'Available area calculation explanation',
                     classes: 'govuk-details__summary-text'
                   }
                 ],
@@ -493,15 +483,7 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
-                    text: ''
-                  },
-                  {
-                    component: 'paragraph',
                     text: 'Actions included for stacking:'
-                  },
-                  {
-                    component: 'paragraph',
-                    text: ''
                   },
                   {
                     component: 'paragraph',
@@ -531,8 +513,8 @@ describe('Case Management Application Validation Run Controller', () => {
                   {
                     classes: 'govuk-!-margin-left-8',
                     component: 'status',
-                    text: 'Failed',
-                    colour: 'red'
+                    text: 'Passed',
+                    colour: 'green'
                   }
                 ],
                 items: [
@@ -546,7 +528,7 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Available area calculation explaination',
+                    text: 'Available area calculation explanation',
                     classes: 'govuk-details__summary-text'
                   },
                   {
@@ -588,7 +570,7 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Available area calculation explaination',
+                    text: 'Available area calculation explanation',
                     classes: 'govuk-details__summary-text'
                   }
                 ],
@@ -715,15 +697,7 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
-                    text: ''
-                  },
-                  {
-                    component: 'paragraph',
                     text: 'Actions included for stacking:'
-                  },
-                  {
-                    component: 'paragraph',
-                    text: ''
                   },
                   {
                     component: 'paragraph',
@@ -753,8 +727,8 @@ describe('Case Management Application Validation Run Controller', () => {
                   {
                     classes: 'govuk-!-margin-left-8',
                     component: 'status',
-                    text: 'Failed',
-                    colour: 'red'
+                    text: 'Passed',
+                    colour: 'green'
                   }
                 ],
                 items: [
@@ -768,14 +742,14 @@ describe('Case Management Application Validation Run Controller', () => {
                 component: 'details',
                 summaryItems: [
                   {
-                    text: 'Available area calculation explaination',
+                    text: 'Available area calculation explanation',
                     classes: 'govuk-details__summary-text'
                   },
                   {
                     classes: 'govuk-!-margin-left-8',
                     component: 'status',
-                    text: 'Failed',
-                    colour: 'red'
+                    text: 'Passed',
+                    colour: 'green'
                   }
                 ],
                 items: [

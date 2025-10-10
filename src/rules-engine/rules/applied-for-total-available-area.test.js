@@ -25,7 +25,9 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['Applied for: 10.5 ha', 'Parcel area: 10.5 ha']
+          lines: [
+            'The available area was (10.5 ha) the applicant applied for (10.5 ha)'
+          ]
         }
       ]
     })
@@ -44,7 +46,9 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['Applied for: 10.5 ha', 'Parcel area: 10.5 ha']
+          lines: [
+            'The available area was (10.5 ha) the applicant applied for (10.5 ha)'
+          ]
         }
       ]
     })
@@ -63,7 +67,9 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['Applied for: 9.5 ha', 'Parcel area: 10.5 ha']
+          lines: [
+            'The available area was (10.5 ha) the applicant applied for (9.5 ha)'
+          ]
         }
       ]
     })
@@ -82,7 +88,9 @@ describe('appliedForTotalAvailableArea', () => {
       explanations: [
         {
           title: 'Total valid land cover',
-          lines: ['Applied for: 10.1 ha', 'Parcel area: 10.1 ha']
+          lines: [
+            'The available area was (10.1 ha) the applicant applied for (10.1 ha)'
+          ]
         }
       ]
     })
