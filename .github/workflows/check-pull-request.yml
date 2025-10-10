@@ -19,6 +19,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Get latest tag
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags --abbrev=0)
+          echo "LATEST_TAG=$TAG" >> $GITHUB_ENV
+
       - name: Test code and Create Test Coverage Reports
         uses: actions/setup-node@v4
         with:
