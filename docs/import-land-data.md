@@ -24,7 +24,7 @@ List of files to upload:
 
 - [import-land-data](../scripts/import-land-data/import-land-data)
 - [create_land_covers_temp_table.sql](../scripts/import-land-data/land_covers/create_land_covers_temp_table.sql)
-  = [insert_land_covers.sql](../scripts/import-land-data/land_covers/insert_land_covers.sql)
+- [insert_land_covers.sql](../scripts/import-land-data/land_covers/insert_land_covers.sql)
 - [create_land_parcels_temp_table.sql](../scripts/import-land-data/land_parcels/create_land_parcels_temp_table.sql)
 - [insert_land_parcels.sql](../scripts/import-land-data/land_parcels/insert_land_parcels.sql)
 - [create_moorland_designations_temp_table.sql](../scripts/import-land-data/moorland_designations/create_moorland_designations_temp_table.sql)
@@ -43,7 +43,7 @@ run the batch file for each entity:
 chmod +x import-land-data
 ./import-land-data land_covers
 ./import-land-data land_parcels
-./import-land-data land_moorland_designations
+./import-land-data moorland_designations
 ```
 
 ## Local dev
