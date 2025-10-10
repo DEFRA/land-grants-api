@@ -109,7 +109,7 @@ describe('createRuleDetails', () => {
   const rule = {
     name: 'parcel-has-intersection-with-data-layer-moorland',
     description: 'Is this parcel on the moorland?',
-    hasPassed: true,
+    passed: true,
     explanations: [
       {
         title: 'moorland check',
@@ -121,7 +121,7 @@ describe('createRuleDetails', () => {
   }
 
   test('should create rule details component for passed rule', () => {
-    const result = createRuleDetails({ ...rule, hasPassed: true })
+    const result = createRuleDetails({ ...rule, passed: true })
 
     expect(result).toEqual({
       component: 'details',
@@ -147,7 +147,7 @@ describe('createRuleDetails', () => {
   })
 
   test('should create rule details component for failed rule', () => {
-    const result = createRuleDetails({ ...rule, hasPassed: false })
+    const result = createRuleDetails({ ...rule, passed: false })
 
     expect(result).toEqual({
       component: 'details',
@@ -175,7 +175,7 @@ describe('createRuleDetails', () => {
   test('should handle empty explanations array', () => {
     const rule = {
       name: 'test-rule',
-      hasPassed: true,
+      passed: true,
       explanations: []
     }
 
@@ -187,7 +187,7 @@ describe('createRuleDetails', () => {
   test('should handle explanation with empty lines array', () => {
     const rule = {
       name: 'test-rule',
-      hasPassed: false,
+      passed: false,
       explanations: [
         {
           title: 'Empty explanation',
@@ -205,7 +205,7 @@ describe('createRuleDetails', () => {
     const rule = {
       name: 'applied-for-total-available-area',
       description: 'Has the total available area been applied for?',
-      hasPassed: true,
+      passed: true,
       explanations: []
     }
 
@@ -220,7 +220,7 @@ describe('createRuleDetails', () => {
     const rule = {
       name: 'unknown-custom-rule',
       description: 'unknown-custom-rule',
-      hasPassed: true,
+      passed: true,
       explanations: []
     }
 
@@ -278,7 +278,7 @@ describe('createActionDetails', () => {
         {
           name: 'parcel-has-intersection-with-data-layer-moorland',
           description: 'Is this parcel on the moorland?',
-          hasPassed: true,
+          passed: true,
           explanations: [
             {
               title: 'moorland check',
@@ -312,7 +312,7 @@ describe('createActionDetails', () => {
           component: 'details',
           summaryItems: [
             {
-              text: 'Available area calculation explaination',
+              text: 'Available area calculation explanation',
               classes: 'govuk-details__summary-text'
             }
           ],
@@ -435,21 +435,20 @@ describe('applicationValidationRunToCaseManagement', () => {
                 {
                   name: 'applied-for-total-available-area',
                   description: 'Has the total available area been applied for?',
-                  passed: false,
+                  passed: true,
                   reason:
                     'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
                   explanations: [
                     {
                       lines: [
-                        'Applied for: 4.53411071 ha',
-                        'Parcel area: 4.53411078 ha'
+                        'There is sufficient available area (4.5341 ha) for the applied figure (4.5341 ha)'
                       ],
                       title: 'Total valid land cover'
                     }
                   ]
                 }
               ],
-              hasPassed: false,
+              hasPassed: true,
               availableArea: {
                 areaInHa: 4.53411078,
                 explanations: [
@@ -554,8 +553,7 @@ describe('applicationValidationRunToCaseManagement', () => {
                   explanations: [
                     {
                       lines: [
-                        'Applied for: 4.53411078 ha',
-                        'Parcel area: 4.53411078 ha'
+                        'There is sufficient available area (4.5341 ha) for the applied figure (4.5341 ha)'
                       ],
                       title: 'Total valid land cover'
                     }
@@ -674,8 +672,8 @@ describe('applicationValidationRunToCaseManagement', () => {
           {
             classes: 'govuk-!-margin-left-8',
             component: 'status',
-            text: 'Failed',
-            colour: 'red'
+            text: 'Passed',
+            colour: 'green'
           }
         ],
         items: [
@@ -683,7 +681,7 @@ describe('applicationValidationRunToCaseManagement', () => {
             component: 'details',
             summaryItems: [
               {
-                text: 'Available area calculation explaination',
+                text: 'Available area calculation explanation',
                 classes: 'govuk-details__summary-text'
               }
             ],
@@ -810,15 +808,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: ''
-              },
-              {
-                component: 'paragraph',
                 text: 'Actions included for stacking:'
-              },
-              {
-                component: 'paragraph',
-                text: ''
               },
               {
                 component: 'paragraph',
@@ -848,8 +838,8 @@ describe('applicationValidationRunToCaseManagement', () => {
               {
                 classes: 'govuk-!-margin-left-8',
                 component: 'status',
-                text: 'Failed',
-                colour: 'red'
+                text: 'Passed',
+                colour: 'green'
               }
             ],
             items: [
@@ -869,18 +859,14 @@ describe('applicationValidationRunToCaseManagement', () => {
               {
                 classes: 'govuk-!-margin-left-8',
                 component: 'status',
-                text: 'Failed',
-                colour: 'red'
+                text: 'Passed',
+                colour: 'green'
               }
             ],
             items: [
               {
                 component: 'paragraph',
-                text: 'Applied for: 4.53411071 ha'
-              },
-              {
-                component: 'paragraph',
-                text: 'Parcel area: 4.53411078 ha'
+                text: 'There is sufficient available area (4.5341 ha) for the applied figure (4.5341 ha)'
               }
             ]
           }
@@ -905,7 +891,7 @@ describe('applicationValidationRunToCaseManagement', () => {
             component: 'details',
             summaryItems: [
               {
-                text: 'Available area calculation explaination',
+                text: 'Available area calculation explanation',
                 classes: 'govuk-details__summary-text'
               }
             ],
@@ -1032,15 +1018,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: ''
-              },
-              {
-                component: 'paragraph',
                 text: 'Actions included for stacking:'
-              },
-              {
-                component: 'paragraph',
-                text: ''
               },
               {
                 component: 'paragraph',
@@ -1070,8 +1048,8 @@ describe('applicationValidationRunToCaseManagement', () => {
               {
                 classes: 'govuk-!-margin-left-8',
                 component: 'status',
-                text: 'Failed',
-                colour: 'red'
+                text: 'Passed',
+                colour: 'green'
               }
             ],
             items: [
@@ -1091,18 +1069,14 @@ describe('applicationValidationRunToCaseManagement', () => {
               {
                 classes: 'govuk-!-margin-left-8',
                 component: 'status',
-                text: 'Failed',
-                colour: 'red'
+                text: 'Passed',
+                colour: 'green'
               }
             ],
             items: [
               {
                 component: 'paragraph',
-                text: 'Applied for: 4.53411078 ha'
-              },
-              {
-                component: 'paragraph',
-                text: 'Parcel area: 4.53411078 ha'
+                text: 'There is sufficient available area (4.5341 ha) for the applied figure (4.5341 ha)'
               }
             ]
           }

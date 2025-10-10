@@ -26,24 +26,30 @@ export const createHeadingComponent = (text, level, id) => {
 /**
  * Creates a paragraph component
  * @param {string} text - The paragraph text
- * @returns {ParagraphComponent}
+ * @returns {ParagraphComponent | null}
  */
-export const createParagraphComponent = (text) => ({
-  component: 'paragraph',
-  text
-})
+export const createParagraphComponent = (text) => {
+  if (text === '') return null
+
+  return {
+    component: 'paragraph',
+    text
+  }
+}
 
 /**
  * Creates a status component (Passed/Failed)
  * @param {boolean} hasPassed - Whether the check has passed
  * @returns {StatusComponent} - Status component with appropriate text and color
  */
-export const createStatusComponent = (hasPassed) => ({
-  classes: 'govuk-!-margin-left-8',
-  component: 'status',
-  text: hasPassed ? 'Passed' : 'Failed',
-  colour: hasPassed ? 'green' : 'red'
-})
+export const createStatusComponent = (hasPassed) => {
+  return {
+    classes: 'govuk-!-margin-left-8',
+    component: 'status',
+    text: hasPassed ? 'Passed' : 'Failed',
+    colour: hasPassed ? 'green' : 'red'
+  }
+}
 
 /**
  * Creates a details component
@@ -70,14 +76,13 @@ const createDetailsComponent = (
  * @returns {DetailsComponent}
  */
 export const createAvailableAreaDetails = (explanations) => {
-  const items = explanations.flatMap((explanation) =>
-    explanation.content.map((line) => createParagraphComponent(line))
-  )
+  const items = explanations
+    .flatMap((explanation) =>
+      explanation.content.map((line) => createParagraphComponent(line))
+    )
+    .filter((item) => item !== null)
 
-  return createDetailsComponent(
-    'Available area calculation explaination',
-    items
-  )
+  return createDetailsComponent('Available area calculation explanation', items)
 }
 
 /**
@@ -86,15 +91,16 @@ export const createAvailableAreaDetails = (explanations) => {
  * @returns {DetailsComponent}
  */
 export const createRuleDetails = (rule) => {
-  const items = rule.explanations.flatMap((explanation) =>
-    explanation.lines.map((line) => createParagraphComponent(line))
-  )
-
+  const items = rule.explanations
+    .flatMap((explanation) =>
+      explanation.lines.map((line) => createParagraphComponent(line))
+    )
+    .filter((item) => item !== null)
   return createDetailsComponent(
     rule.description,
     items,
     DETAILS_SUMMARY_TEXT_CLASSES,
-    [createStatusComponent(rule.hasPassed)]
+    [createStatusComponent(rule.passed)]
   )
 }
 
