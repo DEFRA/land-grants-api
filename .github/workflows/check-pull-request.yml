@@ -30,7 +30,8 @@ jobs:
 
           npm version "$LATEST_TAG"
           git add package.json
-          git commit -m "update version" --no-verify
+          git commit -m "update version [skip ci]" --no-verify
+          git push origin ${{ github.event.pull_request.head.ref }}
           echo "$LATEST_TAG"
 
       - name: Test code and Create Test Coverage Reports
