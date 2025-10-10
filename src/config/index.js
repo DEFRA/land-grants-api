@@ -1,8 +1,8 @@
 import convict from 'convict'
 import 'dotenv/config'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import packageJson from '../../package.json' with { type: 'json' }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -10,12 +10,21 @@ const isProduction = process.env.NODE_ENV === 'production'
 const isDev = process.env.NODE_ENV === 'development'
 const isTest = process.env.NODE_ENV === 'test'
 const isLocal = process.env.NODE_ENV === 'local'
+
+let defaultServiceVersion = '0.0.0'
+
+if (isTest) {
+  const file = readFileSync(path.resolve(dirname, '../../package.json'), 'utf8')
+  const json = JSON.parse(file)
+  defaultServiceVersion = json.version
+}
+
 const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
     format: String,
     nullable: true,
-    default: packageJson.version,
+    default: defaultServiceVersion,
     env: 'SERVICE_VERSION'
   },
   env: {

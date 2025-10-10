@@ -61,7 +61,7 @@ const pactVerifierOptions = {
   pactBrokerUsername: env.PACT_BROKER_USERNAME,
   pactBrokerPassword: env.PACT_BROKER_PASSWORD,
   publishVerificationResult: true,
-  providerVersion: config.get('serviceVersion') ?? '1.0.0',
+  providerVersion: config.get('serviceVersion') ?? '0.0.0',
 
   stateHandlers: {
     'has a parcel with ID': ({ sheetId, parcelId }) => {
