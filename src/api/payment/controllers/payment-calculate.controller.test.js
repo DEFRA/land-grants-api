@@ -216,6 +216,24 @@ describe('Payment calculate controller', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
+    test('should return 400 if there is an error validating land data', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      mockValidateRequest.mockResolvedValue(['Error validating data'])
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Error validating data')
+    })
+
     test('should return 400 if the request has an invalid land action', async () => {
       const request = {
         method: 'POST',

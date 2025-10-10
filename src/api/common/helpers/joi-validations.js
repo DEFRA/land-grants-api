@@ -3,11 +3,11 @@ import Boom from '@hapi/boom'
 
 /**
  * Custom fail action handler for Joi validation that returns 422 for negative quantity errors
- * @param {import('@hapi/hapi').Request} request - Hapi request object
- * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+ * @param {import('@hapi/hapi').Request} _request - Hapi request object
+ * @param {import('@hapi/hapi').ResponseToolkit} _h - Hapi response toolkit
  * @param {Error | undefined} err - Validation error
  */
-const quantityValidationFailAction = (request, h, err) => {
+const quantityValidationFailAction = (_request, _h, err) => {
   const error = /** @type {Joi.ValidationError} */ (err)
   if (error.details) {
     const hasQuantityError = error.details.some(
