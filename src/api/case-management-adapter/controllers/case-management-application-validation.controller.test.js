@@ -237,10 +237,9 @@ describe('Case Management Application Validation Controller', () => {
 
       expect(statusCode).toBe(400)
       expect(result).toEqual({
-        message: 'Application validation failed',
-        valid: false,
-        date: expect.any(String),
-        id: null
+        message: validationErrors.map((err) => err.message).join(', '),
+        error: 'Bad Request',
+        statusCode: 400
       })
 
       expect(mockLogger.error).toHaveBeenCalledWith(

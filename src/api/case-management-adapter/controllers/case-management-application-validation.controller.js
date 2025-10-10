@@ -64,14 +64,9 @@ const CaseManagementApplicationValidationController = {
 
       if (validationErrors && validationErrors.length > 0) {
         request.logger.error('Validation errors', validationErrors)
-        return h
-          .response({
-            message: 'Application validation failed',
-            valid: false,
-            date: new Date(),
-            id: null
-          })
-          .code(statusCodes.badRequest)
+        return Boom.badRequest(
+          validationErrors.map((err) => err.message).join(', ')
+        )
       }
 
       // Return the application validation result

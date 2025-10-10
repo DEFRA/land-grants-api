@@ -10,13 +10,14 @@ import {
 } from '~/src/api/common/schema/index.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { validateLandParcelActions } from '../service/land-parcel-validation.service.js'
-import { saveApplication } from '../mutations/saveApplication.mutation.js'
+import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import {
   errorMessagesTransformer,
   applicationDataTransformer
 } from '../transformers/application.transformer.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 
 const ApplicationValidationController = {
   options: {
@@ -25,7 +26,8 @@ const ApplicationValidationController = {
     notes:
       'Validates a full application including all parcels and land actions',
     validate: {
-      payload: applicationValidationSchema
+      payload: applicationValidationSchema,
+      failAction: quantityValidationFailAction
     },
     response: {
       status: {
@@ -63,14 +65,7 @@ const ApplicationValidationController = {
       // If there are validation errors, return a bad request response
       if (validationErrors && validationErrors.length > 0) {
         request.logger.error('Validation errors', validationErrors)
-        return h
-          .response({
-            message: 'Application validation failed',
-            valid: false,
-            errorMessages: validationErrors,
-            id: null
-          })
-          .code(statusCodes.badRequest)
+        return Boom.badRequest(validationErrors.join(', '))
       }
 
       // Create a compatibility check function

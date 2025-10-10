@@ -259,6 +259,9 @@ export const createPaymentItems = (parcels, actions) => {
 
     for (const action of parcel.actions) {
       const actionData = findActionByCode(action.code, actions)
+      if (!actionData) {
+        continue
+      }
 
       explanations = explanations.concat([
         `Calculating payment for ${action?.code}`,

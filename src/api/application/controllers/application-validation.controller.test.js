@@ -265,14 +265,13 @@ describe('ApplicationValidationController', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, valid, errorMessages, id }
+        result: { message }
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Application validation failed')
-      expect(valid).toBe(false)
-      expect(errorMessages).toEqual(validationErrors)
-      expect(id).toBeNull()
+      expect(message).toBe(
+        'Land parcels not found: SX0679-9999, Actions not found: INVALID1'
+      )
 
       // Verify validation was called but not the rest of the flow
       expect(mockValidateRequest).toHaveBeenCalled()
@@ -300,14 +299,11 @@ describe('ApplicationValidationController', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, valid, errorMessages, id }
+        result: { message }
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Application validation failed')
-      expect(valid).toBe(false)
-      expect(errorMessages).toEqual(validationErrors)
-      expect(id).toBeNull()
+      expect(message).toBe('Some validation error')
     })
 
     test('should handle multiple land actions correctly', async () => {
@@ -579,6 +575,40 @@ describe('ApplicationValidationController', () => {
       expect(message).toBe('Application validated successfully')
       expect(valid).toBe(false)
       expect(responseErrorMessages).toEqual(errorMessages)
+    })
+
+    test('should return 422 when quantity is not a valid number', async () => {
+      const request = {
+        method: 'POST',
+        url: '/applications/validate',
+        payload: {
+          applicationId: 'APP-123',
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi: 123456789,
+          landActions: [
+            {
+              sheetId: 'SX0679',
+              parcelId: '9238',
+              actions: [
+                {
+                  code: 'BND1',
+                  quantity: -1.5
+                }
+              ]
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(422)
+      expect(message).toBe('Quantity must be a positive number')
     })
 
     test('should return 400 when land actions array is empty', async () => {
