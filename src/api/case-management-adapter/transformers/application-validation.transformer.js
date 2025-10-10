@@ -29,7 +29,9 @@ export const createHeadingComponent = (text, level, id) => {
  * @returns {ParagraphComponent | null}
  */
 export const createParagraphComponent = (text) => {
-  if (text === '') return null
+  if (text === '') {
+    return null
+  }
 
   return {
     component: 'paragraph',
