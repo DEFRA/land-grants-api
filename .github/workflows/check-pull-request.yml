@@ -24,6 +24,10 @@ jobs:
           git fetch --tags
           git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
+
+          git config --global user.email "ci@defra.gov.uk"
+          git config --global user.name "ci"
+
           npm version "$LATEST_TAG"
           git add package.json
           git commit -S -m "update version" --no-verify
