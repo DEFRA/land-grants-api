@@ -1,4 +1,5 @@
 import { CaseManagementApplicationValidationRunController } from './controllers/case-management-application-validation-run.controller.js'
+import { CaseManagementApplicationValidationController } from './controllers/case-management-application-validation.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -12,6 +13,11 @@ const caseManagementAdapter = {
           method: 'GET',
           path: '/case-management-adapter/application/validation-run/{id}',
           ...CaseManagementApplicationValidationRunController
+        },
+        {
+          method: 'POST',
+          path: '/case-management-adapter/application/validation-run/rerun',
+          ...CaseManagementApplicationValidationController
         }
       ])
     }
