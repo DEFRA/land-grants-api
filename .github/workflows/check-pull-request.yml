@@ -25,13 +25,17 @@ jobs:
           git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
 
-          git config --global user.email "ci@defra.gov.uk"
-          git config --global user.name "ci"
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          git fetch origin "$BRANCH_NAME"
+          git checkout "$BRANCH_NAME"
 
-          npm version "$LATEST_TAG"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+          npm version "$LATEST_TAG" --no-git-tag-version
           git add package.json
           git commit -m "update version [skip ci]" --no-verify
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git push origin "$BRANCH_NAME"
           echo "$LATEST_TAG"
 
       - name: Test code and Create Test Coverage Reports
