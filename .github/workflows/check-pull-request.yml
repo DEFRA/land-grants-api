@@ -30,7 +30,7 @@ jobs:
 
           npm version "$LATEST_TAG"
           git add package.json
-          git commit -S -m "update version" --no-verify
+          git commit -m "update version" --no-verify
           echo "$LATEST_TAG"
 
       - name: Test code and Create Test Coverage Reports
