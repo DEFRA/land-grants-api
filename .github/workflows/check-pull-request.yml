@@ -22,8 +22,8 @@ jobs:
       - name: Get latest tag
         run: |
           git fetch --tags
-          TAG=$(git describe --tags --abbrev=0)
-          echo "LATEST_TAG=$TAG" >> $GITHUB_ENV
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "$LATEST_TAG"
 
       - name: Test code and Create Test Coverage Reports
         uses: actions/setup-node@v4
