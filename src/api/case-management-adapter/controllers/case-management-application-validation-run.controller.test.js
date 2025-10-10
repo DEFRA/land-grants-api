@@ -72,36 +72,36 @@ describe('Case Management Application Validation Run Controller', () => {
                 {
                   code: 'CMOR1',
                   rules: [
-                    [
-                      {
-                        name: 'parcel-has-intersection-with-data-layer-moorland',
-                        passed: true,
-                        reason: 'This parcel is majority on the moorland',
-                        explanations: [
-                          {
-                            lines: [
-                              'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
-                            ],
-                            title: 'moorland check'
-                          }
-                        ]
-                      },
-                      {
-                        name: 'applied-for-total-available-area',
-                        passed: false,
-                        reason:
-                          'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
-                        explanations: [
-                          {
-                            lines: [
-                              'Applied for: 4.53411071 ha',
-                              'Parcel area: 4.53411078 ha'
-                            ],
-                            title: 'Total valid land cover'
-                          }
-                        ]
-                      }
-                    ]
+                    {
+                      name: 'parcel-has-intersection-with-data-layer-moorland',
+                      passed: true,
+                      reason: 'This parcel is majority on the moorland',
+                      description: 'Is this parcel on the moorland?',
+                      explanations: [
+                        {
+                          lines: [
+                            'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                          ],
+                          title: 'moorland check'
+                        }
+                      ]
+                    },
+                    {
+                      name: 'applied-for-total-available-area',
+                      passed: false,
+                      reason:
+                        'There is not sufficient available area (4.53411078 ha) for the applied figure (4.53411071 ha)',
+                      description: 'Available area calculation explaination',
+                      explanations: [
+                        {
+                          lines: [
+                            'Applied for: 4.53411071 ha',
+                            'Parcel area: 4.53411078 ha'
+                          ],
+                          title: 'Total valid land cover'
+                        }
+                      ]
+                    }
                   ],
                   hasPassed: false,
                   availableArea: {
@@ -193,36 +193,36 @@ describe('Case Management Application Validation Run Controller', () => {
                 {
                   code: 'UPL1',
                   rules: [
-                    [
-                      {
-                        name: 'parcel-has-intersection-with-data-layer-moorland',
-                        passed: true,
-                        reason: 'This parcel is majority on the moorland',
-                        explanations: [
-                          {
-                            lines: [
-                              'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
-                            ],
-                            title: 'moorland check'
-                          }
-                        ]
-                      },
-                      {
-                        name: 'applied-for-total-available-area',
-                        passed: true,
-                        reason:
-                          'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
-                        explanations: [
-                          {
-                            lines: [
-                              'Applied for: 4.53411078 ha',
-                              'Parcel area: 4.53411078 ha'
-                            ],
-                            title: 'Total valid land cover'
-                          }
-                        ]
-                      }
-                    ]
+                    {
+                      name: 'parcel-has-intersection-with-data-layer-moorland',
+                      passed: true,
+                      reason: 'This parcel is majority on the moorland',
+                      description: 'Is this parcel on the moorland?',
+                      explanations: [
+                        {
+                          lines: [
+                            'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                          ],
+                          title: 'moorland check'
+                        }
+                      ]
+                    },
+                    {
+                      name: 'applied-for-total-available-area',
+                      passed: true,
+                      reason:
+                        'There is sufficient available area (4.53411078 ha) for the applied figure (4.53411078 ha)',
+                      description: 'Available area calculation explaination',
+                      explanations: [
+                        {
+                          lines: [
+                            'Applied for: 4.53411078 ha',
+                            'Parcel area: 4.53411078 ha'
+                          ],
+                          title: 'Total valid land cover'
+                        }
+                      ]
+                    }
                   ],
                   hasPassed: true,
                   availableArea: {
@@ -541,6 +541,31 @@ describe('Case Management Application Validation Run Controller', () => {
                     text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
                   }
                 ]
+              },
+              {
+                component: 'details',
+                summaryItems: [
+                  {
+                    text: 'Available area calculation explaination',
+                    classes: 'govuk-details__summary-text'
+                  },
+                  {
+                    classes: 'govuk-!-margin-left-8',
+                    component: 'status',
+                    text: 'Failed',
+                    colour: 'red'
+                  }
+                ],
+                items: [
+                  {
+                    component: 'paragraph',
+                    text: 'Applied for: 4.53411071 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Parcel area: 4.53411078 ha'
+                  }
+                ]
               }
             ]
           },
@@ -736,6 +761,31 @@ describe('Case Management Application Validation Run Controller', () => {
                   {
                     component: 'paragraph',
                     text: 'This parcel has a 99.99999599399895% intersection with the moorland layer. The target is 51%.'
+                  }
+                ]
+              },
+              {
+                component: 'details',
+                summaryItems: [
+                  {
+                    text: 'Available area calculation explaination',
+                    classes: 'govuk-details__summary-text'
+                  },
+                  {
+                    classes: 'govuk-!-margin-left-8',
+                    component: 'status',
+                    text: 'Failed',
+                    colour: 'red'
+                  }
+                ],
+                items: [
+                  {
+                    component: 'paragraph',
+                    text: 'Applied for: 4.53411078 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Parcel area: 4.53411078 ha'
                   }
                 ]
               }

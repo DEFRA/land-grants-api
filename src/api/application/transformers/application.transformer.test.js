@@ -19,7 +19,7 @@ describe('actionResultTransformer', () => {
     }
     const ruleResult = {
       passed: true,
-      results: { rule: 'test rule' }
+      results: [{ rule: 'test rule' }]
     }
 
     const result = actionResultTransformer(
@@ -50,7 +50,7 @@ describe('actionResultTransformer', () => {
     }
     const ruleResult = {
       passed: false,
-      results: { rule: 'test rule' }
+      results: [{ rule: 'test rule' }]
     }
 
     const result = actionResultTransformer(

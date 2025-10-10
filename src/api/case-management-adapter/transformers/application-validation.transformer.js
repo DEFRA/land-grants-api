@@ -65,22 +65,6 @@ const createDetailsComponent = (
 })
 
 /**
- * Maps rule names to user-friendly titles (should replace)
- * @param {string} ruleName - The rule name
- * @returns {string} - User-friendly title
- */
-export const getRuleFriendlyTitle = (ruleName) => {
-  const titleMap = {
-    'parcel-has-intersection-with-data-layer-moorland':
-      'Is this parcel on the moorland?',
-    'applied-for-total-available-area':
-      'Has the total available area been applied for?'
-  }
-
-  return titleMap[ruleName] || ruleName
-}
-
-/**
  * Creates available area calculation details component
  * @param {ExplanationSection[]} explanations - The available area explanations
  * @returns {DetailsComponent}
@@ -102,15 +86,15 @@ export const createAvailableAreaDetails = (explanations) => {
  * @returns {DetailsComponent}
  */
 export const createRuleDetails = (rule) => {
-  const items = rule[0].explanations.flatMap((explanation) =>
+  const items = rule.explanations.flatMap((explanation) =>
     explanation.lines.map((line) => createParagraphComponent(line))
   )
 
   return createDetailsComponent(
-    getRuleFriendlyTitle(rule[0].name),
+    rule.description,
     items,
     DETAILS_SUMMARY_TEXT_CLASSES,
-    [createStatusComponent(rule[0].hasPassed)]
+    [createStatusComponent(rule.hasPassed)]
   )
 }
 
@@ -134,7 +118,6 @@ export const createActionDetails = (action) => {
     }
   }
 
-  // Process rules
   for (const rule of action.rules) {
     actionItems.push(createRuleDetails(rule))
   }
