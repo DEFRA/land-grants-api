@@ -22,6 +22,7 @@ jobs:
       - name: Get latest tag
         run: |
           git fetch --tags
+          git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
           echo "$LATEST_TAG"
 
