@@ -1,13 +1,9 @@
 /**
- * @import {ApplicationResult} from '../application.d.js'
- */
-
-/**
  * Save application
  * @param {object} logger - The logger
  * @param {object} db - The postgres instance
  * @param {object} application - The application
- * @returns {Promise<ApplicationResult | null>} The application or null if an error occurs
+ * @returns {Promise<string | null>} The application or null if an error occurs
  */
 async function saveApplication(logger, db, application) {
   let client
