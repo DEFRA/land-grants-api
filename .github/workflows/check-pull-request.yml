@@ -24,6 +24,9 @@ jobs:
           git fetch --tags
           git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
+          npm version "$LATEST_TAG"
+          git add package.json
+          git commit -S -m "update version" --no-verify
           echo "$LATEST_TAG"
 
       - name: Test code and Create Test Coverage Reports
