@@ -63,7 +63,13 @@ const caseManagementApplicationValidationRunResponseSchema = Joi.object({
   response: Joi.array().items(componentSchema).required()
 })
 
+const caseManagementApplicationValidationRerunRequestSchema = Joi.object({
+  requesterUsername: Joi.string().required(),
+  id: Joi.number().integer().required()
+})
+
 export {
   caseManagementApplicationValidationRunRequestSchema,
-  caseManagementApplicationValidationRunResponseSchema
+  caseManagementApplicationValidationRunResponseSchema,
+  caseManagementApplicationValidationRerunRequestSchema
 }
