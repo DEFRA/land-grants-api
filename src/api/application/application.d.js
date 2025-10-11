@@ -1,6 +1,6 @@
 /**
  * @typedef {object} RuleResult
- * @property {boolean} hasPassed
+ * @property {boolean} passed
  * @property {string} name
  * @property {string} description
  * @property {string} reason
