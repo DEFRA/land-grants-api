@@ -52,7 +52,7 @@ export const validateLandParcelsRequest = async (landActions, request) => {
  * @param {object[]} landActions - The land actions
  * @param {object[]} actions - The actions
  * @param {object} request - The request
- * @returns {Promise<ApplicationValidationError[] | null>} The error message
+ * @returns {Promise<string[] | null>} The error message
  */
 export const validateRequest = async (landActions, actions, request) => {
   const errors = []
@@ -74,7 +74,7 @@ export const validateRequest = async (landActions, actions, request) => {
     errors.push(landActionsErrors)
   }
 
-  return errors.map((ve) => ({ description: ve, passed: false }))
+  return errors
 }
 
 /**

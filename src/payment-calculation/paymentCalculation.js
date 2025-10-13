@@ -1,4 +1,4 @@
-import { getEnabledActions } from '../api/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
