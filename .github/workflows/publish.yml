@@ -28,6 +28,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Update package version
+        uses: ./.github/workflows/update-version.yml
+
       - name: Make extract seed file script executable
         run: chmod +x ./scripts/extract-gz-to-sql
 
