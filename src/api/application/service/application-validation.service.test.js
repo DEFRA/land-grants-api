@@ -216,7 +216,7 @@ describe('Application Validation Service', () => {
         mockLogger,
         mockPostgresDb,
         {
-          applicationId: mockApplicationId,
+          application_id: mockApplicationId,
           sbi: mockSbi,
           crn: mockCrn,
           data: mockApplicationData
@@ -398,7 +398,7 @@ describe('Application Validation Service', () => {
         mockLogger,
         mockPostgresDb,
         {
-          applicationId: mockApplicationId,
+          application_id: mockApplicationId,
           sbi: mockSbi,
           crn: mockCrn,
           data: mockApplicationData

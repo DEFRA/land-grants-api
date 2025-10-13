@@ -78,13 +78,15 @@ const createDetailsComponent = (
  * @returns {DetailsComponent}
  */
 export const createAvailableAreaDetails = (explanations) => {
-  const items = explanations
-    .flatMap((explanation) =>
-      explanation.content.map((line) => createParagraphComponent(line))
-    )
-    .filter((item) => item !== null)
+  const items = explanations.flatMap((explanation) => [
+    createParagraphComponent(explanation.title),
+    ...explanation.content.map((line) => createParagraphComponent(line))
+  ])
 
-  return createDetailsComponent('Available area calculation explanation', items)
+  return createDetailsComponent(
+    'Available area calculation explanation',
+    items.filter((item) => item !== null)
+  )
 }
 
 /**

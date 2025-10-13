@@ -62,33 +62,26 @@ describe('createAvailableAreaDetails', () => {
 
     const result = createAvailableAreaDetails(explanations)
 
-    expect(result.items).toHaveLength(6)
-    expect(result.items).toEqual([
-      {
-        component: 'paragraph',
-        text: 'Line 1'
-      },
-      {
-        component: 'paragraph',
-        text: 'Line 2'
-      },
-      {
-        component: 'paragraph',
-        text: 'Line 3'
-      },
-      {
-        component: 'paragraph',
-        text: 'Line 4'
-      },
-      {
-        component: 'paragraph',
-        text: 'Line 5'
-      },
-      {
-        component: 'paragraph',
-        text: 'Line 6'
-      }
-    ])
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Available area calculation explanation',
+          classes: 'govuk-details__summary-text'
+        }
+      ],
+      items: [
+        { component: 'paragraph', text: 'Section 1' },
+        { component: 'paragraph', text: 'Line 1' },
+        { component: 'paragraph', text: 'Line 2' },
+        { component: 'paragraph', text: 'Section 2' },
+        { component: 'paragraph', text: 'Line 3' },
+        { component: 'paragraph', text: 'Section 3' },
+        { component: 'paragraph', text: 'Line 4' },
+        { component: 'paragraph', text: 'Line 5' },
+        { component: 'paragraph', text: 'Line 6' }
+      ]
+    })
   })
 
   test('should handle empty content array', () => {
@@ -101,7 +94,16 @@ describe('createAvailableAreaDetails', () => {
 
     const result = createAvailableAreaDetails(explanations)
 
-    expect(result.items).toHaveLength(0)
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Available area calculation explanation',
+          classes: 'govuk-details__summary-text'
+        }
+      ],
+      items: [{ component: 'paragraph', text: 'Empty Section' }]
+    })
   })
 })
 
@@ -317,6 +319,10 @@ describe('createActionDetails', () => {
             }
           ],
           items: [
+            {
+              component: 'paragraph',
+              text: 'Total valid land cover'
+            },
             {
               component: 'paragraph',
               text: 'Applied for: 10.50 ha'
@@ -688,6 +694,10 @@ describe('applicationValidationRunToCaseManagement', () => {
             items: [
               {
                 component: 'paragraph',
+                text: 'Application Information'
+              },
+              {
+                component: 'paragraph',
                 text: 'Action code - CMOR1'
               },
               {
@@ -696,7 +706,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Land Covers For Parcel'
+              },
+              {
+                component: 'paragraph',
                 text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Existing actions'
+              },
+              {
+                component: 'paragraph',
+                text: 'Valid land covers for action: CMOR1'
               },
               {
                 component: 'paragraph',
@@ -800,11 +822,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Total valid land covers'
+              },
+              {
+                component: 'paragraph',
                 text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
                 text: '= 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Common land covers'
               },
               {
                 component: 'paragraph',
@@ -816,7 +846,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Find area of existing action that must be on the same land cover as CMOR1'
+              },
+              {
+                component: 'paragraph',
+                text: 'Stacks'
+              },
+              {
+                component: 'paragraph',
                 text: 'No existing actions so no stacks are needed'
+              },
+              {
+                component: 'paragraph',
+                text: 'Result'
               },
               {
                 component: 'paragraph',
@@ -898,6 +940,10 @@ describe('applicationValidationRunToCaseManagement', () => {
             items: [
               {
                 component: 'paragraph',
+                text: 'Application Information'
+              },
+              {
+                component: 'paragraph',
                 text: 'Action code - UPL1'
               },
               {
@@ -906,7 +952,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Land Covers For Parcel'
+              },
+              {
+                component: 'paragraph',
                 text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Existing actions'
+              },
+              {
+                component: 'paragraph',
+                text: 'Valid land covers for action: UPL1'
               },
               {
                 component: 'paragraph',
@@ -1010,11 +1068,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Total valid land covers'
+              },
+              {
+                component: 'paragraph',
                 text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
                 text: '= 4.53411078 ha'
+              },
+              {
+                component: 'paragraph',
+                text: 'Common land covers'
               },
               {
                 component: 'paragraph',
@@ -1026,7 +1092,19 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
+                text: 'Find area of existing action that must be on the same land cover as UPL1'
+              },
+              {
+                component: 'paragraph',
+                text: 'Stacks'
+              },
+              {
+                component: 'paragraph',
                 text: 'No existing actions so no stacks are needed'
+              },
+              {
+                component: 'paragraph',
+                text: 'Result'
               },
               {
                 component: 'paragraph',
