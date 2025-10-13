@@ -363,6 +363,10 @@ describe('Case Management Application Validation Run Controller', () => {
                 items: [
                   {
                     component: 'paragraph',
+                    text: 'Application Information'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Action code - CMOR1'
                   },
                   {
@@ -371,7 +375,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Land Covers For Parcel'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Existing actions'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Valid land covers for action: CMOR1'
                   },
                   {
                     component: 'paragraph',
@@ -475,11 +491,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Total valid land covers'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
                   },
                   {
                     component: 'paragraph',
                     text: '= 4.53411078 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Common land covers'
                   },
                   {
                     component: 'paragraph',
@@ -491,7 +515,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Find area of existing action that must be on the same land cover as CMOR1'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Stacks'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'No existing actions so no stacks are needed'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Result'
                   },
                   {
                     component: 'paragraph',
@@ -577,6 +613,10 @@ describe('Case Management Application Validation Run Controller', () => {
                 items: [
                   {
                     component: 'paragraph',
+                    text: 'Application Information'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Action code - UPL1'
                   },
                   {
@@ -585,7 +625,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Land Covers For Parcel'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Existing actions'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Valid land covers for action: UPL1'
                   },
                   {
                     component: 'paragraph',
@@ -689,11 +741,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Total valid land covers'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
                   },
                   {
                     component: 'paragraph',
                     text: '= 4.53411078 ha'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Common land covers'
                   },
                   {
                     component: 'paragraph',
@@ -705,7 +765,19 @@ describe('Case Management Application Validation Run Controller', () => {
                   },
                   {
                     component: 'paragraph',
+                    text: 'Find area of existing action that must be on the same land cover as UPL1'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Stacks'
+                  },
+                  {
+                    component: 'paragraph',
                     text: 'No existing actions so no stacks are needed'
+                  },
+                  {
+                    component: 'paragraph',
+                    text: 'Result'
                   },
                   {
                     component: 'paragraph',
