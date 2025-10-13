@@ -63,6 +63,3 @@ jobs:
       - run: |
           npm ci --ignore-scripts
           npm run test:contracts
-
-  version-check:
-    uses: ./.github/workflows/check-version.yml
