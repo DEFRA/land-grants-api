@@ -21,7 +21,7 @@ describe('Get land cover codes', () => {
     await connection.end()
   })
 
-  test('should return empty array for missing action code', async () => {
+  test('should return empty object for missing action code', async () => {
     const landCovers = await getLandCoversForAction(
       'MISSING',
       connection,
@@ -43,25 +43,25 @@ describe('Get land cover codes', () => {
     expect(true).toBe(true)
   })
 
-  test('should return empty array for empty action codes array', async () => {
+  test('should return empty object for empty action codes array', async () => {
     const landCovers = await getLandCoversForActions([], connection, logger)
-    expect(landCovers).toEqual([])
+    expect(landCovers).toEqual({})
     expect(logger.warn).toHaveBeenCalledWith('No action codes provided')
   })
 
-  test('should return empty array for non-array input', async () => {
+  test('should return empty object for non-array input', async () => {
     const landCovers = await getLandCoversForActions(null, connection, logger)
-    expect(landCovers).toEqual([])
+    expect(landCovers).toEqual({})
     expect(logger.warn).toHaveBeenCalledWith('No action codes provided')
   })
 
-  test('should return empty array when we have missing action codes', async () => {
+  test('should return empty object when we have missing action codes', async () => {
     const landCovers = await getLandCoversForActions(
       ['MISSING1', 'MISSING2'],
       connection,
       logger
     )
-    expect(landCovers).toEqual([])
+    expect(landCovers).toEqual({})
   })
 
   test('should return land cover codes for single action code in array', async () => {
