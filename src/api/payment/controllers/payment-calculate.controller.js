@@ -12,6 +12,8 @@ import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
+import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
+import { validateRequest } from '~/src/api/application/validation/application.validation.js'
 
 /**
  * PaymentsCalculateController
@@ -24,7 +26,8 @@ const PaymentsCalculateController = {
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
     validate: {
-      payload: paymentCalculateSchema
+      payload: paymentCalculateSchema,
+      failAction: quantityValidationFailAction
     },
     response: {
       status: {
@@ -63,6 +66,19 @@ const PaymentsCalculateController = {
         postgresDb,
         request.logger
       )
+
+      // Validate the entire request
+      const validationErrors = await validateRequest(
+        landActions,
+        enabledActions,
+        request
+      )
+
+      // If there are validation errors, return a bad request response
+      if (validationErrors && validationErrors.length > 0) {
+        request.logger.error('Validation errors', validationErrors)
+        return Boom.badRequest(validationErrors.join(', '))
+      }
 
       // for day 1, we assume duration years is 3 because all actions are 3 years long
       // but this will change and our payment algorithm will have to support having actions with different lengths!

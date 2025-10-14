@@ -14,7 +14,7 @@ const applicationValidationSchema = Joi.object({
           .items(
             Joi.object({
               code: Joi.string().required(),
-              quantity: Joi.number().required()
+              quantity: Joi.number().positive().required()
             })
           )
           .required()

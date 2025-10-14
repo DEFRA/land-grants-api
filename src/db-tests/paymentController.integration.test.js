@@ -4,6 +4,9 @@ import { PaymentsCalculateController } from '~/src/api/payment/controllers/payme
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
+import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+
+jest.mock('~/src/api/application/validation/application.validation.js')
 
 const logger = {
   info: console.info,
@@ -13,6 +16,7 @@ const logger = {
 }
 
 let connection
+const mockValidateRequest = validateRequest
 
 describe('payment calculate controller integration', () => {
   const fixtures = getPaymentCalculationFixtures()
@@ -20,6 +24,10 @@ describe('payment calculate controller integration', () => {
 
   beforeAll(() => {
     connection = connectToTestDatbase()
+  })
+
+  beforeEach(() => {
+    mockValidateRequest.mockResolvedValue([])
   })
 
   afterAll(async () => {
