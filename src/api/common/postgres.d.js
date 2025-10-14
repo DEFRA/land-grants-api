@@ -1,11 +1,16 @@
 /**
+ * @typedef {object} QueryResult
+ * @property {any[]} rows
+ */
+
+/**
  * @typedef {object} DbClient
- * @property {function(): void} release - Log info messages
- * @property {function(query: string, values: any[]): void} query - Release the client
+ * @property {() => void} release - Log info messages
+ * @property {(query: string, values?: any[] | null) => Promise<QueryResult>} query - Release the client
  */
 
 /**
  * @typedef {object} Pool
- * @property {function(): void} connect - Connect to the database
- * @property {function(): void} end - Release the client
+ * @property {() => Promise<DbClient>} connect - Connect to the database
+ * @property {() => Promise<void>} end - Release the client
  */

@@ -1,13 +1,9 @@
-/**
- * @import {Action} from '../action.d.js'
- */
-
 import { actionConfigTransformer } from '../transformers/actionConfig.transformer.js'
 
 /**
  * Get enabled action configs
- * @param {object} logger - The logger
- * @param {object} db - The postgres instance
+ * @param {Logger} logger - The logger
+ * @param {Pool} db - The postgres instance
  * @returns {Promise<Action[]>} The action configs
  */
 async function getEnabledActions(logger, db) {
@@ -45,3 +41,9 @@ async function getEnabledActions(logger, db) {
 }
 
 export { getEnabledActions }
+
+/**
+ * @import {Action} from '../action.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ */
