@@ -17,6 +17,8 @@ import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.tra
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
+import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 
 /**
  * ParcelsController
@@ -56,11 +58,34 @@ const ParcelsController = {
       const responseParcels = []
       const showActionResults = fields.includes('actions.results')
 
+      const enabledActions = await getEnabledActions(
+        request.logger,
+        // @ts-expect-error - postgresDb
+        request.server.postgresDb
+      )
+
+      if (!enabledActions || enabledActions?.length === 0) {
+        const errorMessage = 'Actions not found'
+        throw Error(errorMessage)
+      }
+
+      request.logger.info(
+        `Found ${enabledActions.length} action configs from DB`
+      )
+
+      const compatibilityCheckFn = await createCompatibilityMatrix(
+        request.logger,
+        // @ts-expect-error - postgresDb
+        request.server.postgresDb
+      )
+
       for (const parcel of parcelIds) {
         const { parcelResponse, error } = await getActionsForParcel(
           parcel,
           request.payload,
           showActionResults,
+          enabledActions,
+          compatibilityCheckFn,
           request
         )
         if (error) {
@@ -101,6 +126,8 @@ async function getActionsForParcel(
   parcel,
   payload,
   showActionResults,
+  enabledActions,
+  compatibilityCheckFn,
   request
 ) {
   const { fields, plannedActions } = payload
@@ -150,6 +177,8 @@ async function getActionsForParcel(
       parcelId,
       mergedActions,
       showActionResults,
+      enabledActions,
+      compatibilityCheckFn,
       request.server.postgresDb,
       request.logger
     )

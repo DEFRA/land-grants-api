@@ -8,17 +8,16 @@ import {
 } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/db-tests/testLogger.js'
-import { getEnabledActions } from '../../actions/queries/index.js'
+import { getEnabledActions } from '../../actions/queries/getActions.query.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 jest.mock('../../parcel/queries/getLandData.query.js')
-jest.mock('../../actions/queries/index.js')
+jest.mock('../../actions/queries/getActions.query.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('../../land-cover-codes/queries/getLandCoversForActions.query.js')
 jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
 
 const mockGetLandData = getLandData
 const mockGetEnabledActions = getEnabledActions
@@ -180,7 +179,16 @@ describe('Parcels controller', () => {
         expect.any(Object),
         expect.any(Object)
       )
-      expect(mockGetEnabledActions).not.toHaveBeenCalled()
+      // Controller now always fetches enabled actions and compatibility matrix upfront
+      expect(mockGetEnabledActions).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
+      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object)
+      )
+      // But doesn't calculate available area if actions field not requested
       expect(mockGetAvailableAreaForAction).not.toHaveBeenCalled()
     })
 
