@@ -66,9 +66,13 @@ const pactVerifierOptions = {
   providerVersion: process.env.GIT_COMMIT ?? '1.0.0',
 
   stateHandlers: {
-    'has a parcel with ID': ({ sheetId, parcelId }) => {
-      const parcel = createParcel(sheetId, parcelId)
-      mockGetLandData.mockResolvedValue([parcel])
+    'has parcels': ({ parcels }) => {
+      const allParcels = []
+      parcels.forEach(({ sheetId, parcelId }) => {
+        const parcel = createParcel(sheetId, parcelId)
+        allParcels.push(parcel)
+      })
+      mockGetLandData.mockResolvedValue(allParcels)
     }
   },
 
