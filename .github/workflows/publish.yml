@@ -34,7 +34,7 @@ jobs:
           git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
 
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          BRANCH_NAME="${{ github.event.ref }}"
           git fetch origin "$BRANCH_NAME"
           git checkout "$BRANCH_NAME"
 
