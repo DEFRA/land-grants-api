@@ -18,13 +18,13 @@ The purpose of this is to make sure the API is able to serve data in a form the 
 The tests will automatically fetch the latest Pact contracts from the broker:
 
 ```bash
-npm test -- pact.test.js
+npm run test:contracts
 ```
 
 This requires:
 
 - Azure VPN connection
-- Valid Pact Broker credentials in your `.env` file
+- Valid Pact Broker credentials in your `.env` file (see `.env.example`)
 
 ### Using local Pact files
 
@@ -34,7 +34,7 @@ To run tests against a local Pact contract file instead of the broker:
 
 ```bash
    cd ../grants-ui
-   npm test:contracts
+   npm run test:contracts
 ```
 
 This will generate Pact files in the consumer's `pacts/` directory.
@@ -56,7 +56,7 @@ const pactVerifierOptions = {
 
   // Reference the consumer's generated pact file directly:
   pactUrls: [
-    '/path/to/your/grants-ui-project/pacts/grants-ui-land-grants-api.json'
+    '/path/to/your/project/grants-ui/pacts/grants-ui-land-grants-api.json'
   ],
 
   // Optional: disable publishing when testing locally
