@@ -6,8 +6,14 @@ import {
   actionTransformer,
   plannedActionsTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
-import { getEnabledActions } from '~/src/api/actions/queries/index.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+
+/**
+ * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'
+ * @import {AgreementAction} from '~/src/api/agreements/agreements.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ * @import {Action} from '~/src/api/actions/action.d.js'
+ */
 
 /**
  * Split id into sheet id and parcel id
@@ -36,35 +42,24 @@ export function splitParcelId(id, logger) {
 
 /**
  * Get parcel actions with available area
- * @param {string} sheetId - The sheet id
- * @param {string} parcelId - The parcel id
- * @param {object} actions - The actions to get
+ * @param {LandParcelDb} parcel - The parcel
+ * @param {AgreementAction[]} actions - The actions to get
  * @param {boolean} showActionResults - Whether to show action results
- * @param {object} postgresDb - The postgres database
- * @param {object} logger - The logger
+ * @param {Action[]} enabledActions - The enabled actions
+ * @param {Function} compatibilityCheckFn - The compatibility check function
+ * @param {Pool} postgresDb - The postgres database
+ * @param {Logger} logger - The logger
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 export async function getParcelActionsWithAvailableArea(
-  sheetId,
-  parcelId,
+  parcel,
   actions,
   showActionResults,
+  enabledActions,
+  compatibilityCheckFn,
   postgresDb,
   logger
 ) {
-  const enabledActions = await getEnabledActions(logger, postgresDb)
-  if (!enabledActions || enabledActions?.length === 0) {
-    const errorMessage = 'Actions not found'
-    throw Error(errorMessage)
-  }
-
-  logger.info(`Found ${enabledActions.length} action configs from DB`)
-
-  const compatibilityCheckFn = await createCompatibilityMatrix(
-    logger,
-    postgresDb
-  )
-
   const actionsWithAvailableArea = []
 
   for (const action of enabledActions.filter((a) => a.display)) {
@@ -72,8 +67,8 @@ export async function getParcelActionsWithAvailableArea(
 
     const aacDataRequirements = await getAvailableAreaDataRequirements(
       action.code,
-      sheetId,
-      parcelId,
+      parcel.sheet_id,
+      parcel.parcel_id,
       transformedActions,
       postgresDb,
       logger
@@ -81,8 +76,8 @@ export async function getParcelActionsWithAvailableArea(
 
     const availableArea = getAvailableAreaForAction(
       action.code,
-      sheetId,
-      parcelId,
+      parcel.sheet_id,
+      parcel.parcel_id,
       compatibilityCheckFn,
       transformedActions,
       aacDataRequirements,
