@@ -82,7 +82,7 @@ const initialExplanationSections = [
  * @param {string} parcelId - The parcel ID
  * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @param {Action[]} existingActions - The list of existing actions
- * @param {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @param {CodeToString} landCoverToString
  * @returns {ExplanationSection[]} - The initial explanations
  */

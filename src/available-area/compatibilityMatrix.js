@@ -2,10 +2,10 @@ import { getCompatibilityMatrix } from '../api/compatibility-matrix/queries/getC
 
 /**
  * Creates a compatibility checking function based on the database and the codes passed
- * @param {object} logger
- * @param {object} db
+ * @param {Logger} logger
+ * @param {Pool} db
  * @param {string[] | null} codes
- * @returns
+ * @returns {Promise<(action1: string, action2: string) => boolean>}
  */
 export const createCompatibilityMatrix = async (logger, db, codes = null) => {
   const compatibilityMatrices = await getCompatibilityMatrix(logger, db, codes)
@@ -20,4 +20,6 @@ export const createCompatibilityMatrix = async (logger, db, codes = null) => {
 
 /**
  * @import { Action, CompatibilityCheckFn } from "./available-area.d.js"
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ * @import { Pool } from '~/src/api/common/postgres.d.js'
  */

@@ -1,11 +1,7 @@
 /**
- * @import {ApplicationResult} from '../application.d.js'
- */
-
-/**
  * Get latest application validation runs
- * @param {object} logger - The logger
- * @param {object} db - The postgres instance
+ * @param {Logger} logger - The logger
+ * @param {Pool} db - The postgres instance
  * @param {string} applicationId - The application id of the application validation runs
  * @returns {Promise<ApplicationResult[] | null>} The application validation runs
  */
@@ -36,3 +32,9 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
 }
 
 export { getApplicationValidationRuns }
+
+/**
+ * @import {ApplicationResult} from '../application.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ */
