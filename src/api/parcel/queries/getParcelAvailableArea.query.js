@@ -4,9 +4,9 @@ import { roundSqm } from '../../common/helpers/measurement.js'
  * Get available area of a land parcel excluding specified land cover classes.
  * @param {string} sheetId - Sheet ID of the parcel.
  * @param {string} parcelId - Parcel ID.
- * @param {object} landCoverClassCodes - Array of land cover class codes to exclude.
- * @param {object} db - DB connection object
- * @param {object} logger - logger object
+ * @param {string[]} landCoverClassCodes - Array of land cover class codes to exclude.
+ * @param {Pool} db - DB connection object
+ * @param {Logger} logger - logger object
  * @returns {Promise<number>} Available area in square meters.
  */
 async function getParcelAvailableArea(
@@ -75,3 +75,8 @@ async function getParcelAvailableArea(
 }
 
 export { getParcelAvailableArea }
+
+/**
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ */

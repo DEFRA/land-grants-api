@@ -5,7 +5,7 @@ import { roundSqm } from '../../common/helpers/measurement.js'
  * @param {string} sheetId - Sheet ID of the parcel.
  * @param {string} parcelId - Parcel ID.
  * @param {object} db - DB connection object
- * @param {object} logger - logger object
+ * @param {Logger} logger - logger object
  * @returns {Promise<LandCover[]>} Available area in square meters.
  * @throws {Error} Throws error if something goes wrong
  */
@@ -50,4 +50,5 @@ export { getLandCoversForParcel }
 
 /**
  * @import { LandCover } from '../parcel.d.js'
+ * @import { Logger } from '../../common/logger.d.js'
  */

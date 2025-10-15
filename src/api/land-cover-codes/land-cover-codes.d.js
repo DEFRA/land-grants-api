@@ -19,4 +19,8 @@
  * @property {string} action_code - The code of the action
  * @property {string} land_cover_code - The code of the land cover
  * @property {string} land_cover_class_code - The code of the land cover class
+ * @property {string} land_cover_type_code - The code of the land cover type
+ * @property {string} land_cover_type_description - The description of the land cover type
+ * @property {string} land_cover_class_description - The description of the land cover class
+ * @property {string} land_cover_description - The description of the land cover
  */
