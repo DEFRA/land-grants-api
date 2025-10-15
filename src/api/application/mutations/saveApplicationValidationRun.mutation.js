@@ -1,12 +1,8 @@
 /**
- * @import {ApplicationResult} from '../application.d.js'
- */
-
-/**
  * Save application validation run
- * @param {object} logger - The logger
- * @param {object} db - The postgres instance
- * @param {object} applicationValidationRun - The application
+ * @param {Logger} logger - The logger
+ * @param {Pool} db - The postgres instance
+ * @param {ApplicationResult} applicationValidationRun - The application
  * @returns {Promise<ApplicationResult | null>} The application validation run result
  */
 async function saveApplicationValidationRun(
@@ -46,3 +42,9 @@ async function saveApplicationValidationRun(
 }
 
 export { saveApplicationValidationRun }
+
+/**
+ * @import {ApplicationResult} from '../application.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ */

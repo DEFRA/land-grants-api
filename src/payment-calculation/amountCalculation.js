@@ -131,7 +131,7 @@ const roundAnnualPaymentAmountForItems = (items) =>
 /**
  * Round pence amounts for payment lineItems
  * @param {Array<ScheduledPayment>} payments
- * @returns
+ * @returns {Array<ScheduledPayment>}
  */
 export const roundPaymentAmountForPaymentLineItems = (payments) =>
   structuredClone(payments).map((payment) => ({

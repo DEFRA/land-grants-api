@@ -2,12 +2,6 @@ import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land
 import { aacExplain, createExplanationSection } from './explanations.js'
 
 /**
- * @import { Action, CodeToString, ActionWithArea, AvailableAreaDataRequirements } from './available-area.d.js'
- * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCover } from '../api/parcel/parcel.d.js'
- */
-
-/**
  * Explanation message generators for total calculation operations
  */
 const explain = {
@@ -73,7 +67,8 @@ const calculateNotCommonLandCoversTotalArea = (
  * @param {string} actionCodeAppliedFor
  * @param {Action[]} actions
  * @param {AvailableAreaDataRequirements} availableAreaDataRequirements
- * @param {object} logger
+ * @param {string[]} mergedLandCoverCodesForAppliedForAction
+ * @param {Logger} logger
  * @returns {{result: ActionWithArea[], explanations: ExplanationSection}}}
  */
 export const subtractIncompatibleLandCoverAreaFromActions = (
@@ -82,6 +77,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
   actionCodeAppliedFor,
   actions,
   availableAreaDataRequirements,
+  mergedLandCoverCodesForAppliedForAction,
   logger
 ) => {
   const revisedActions = []
@@ -90,7 +86,6 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
   const {
     landCoversForParcel,
     landCoversForExistingActions,
-    landCoverCodesForAppliedForAction,
     landCoverToString
   } = availableAreaDataRequirements
 
@@ -107,7 +102,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
     } = calculateNotCommonLandCoversTotalArea(
       landCoversForParcel,
       landCoverCodesForExistingAction,
-      landCoverCodesForAppliedForAction,
+      mergedLandCoverCodesForAppliedForAction,
       landCoverToString
     )
 
@@ -125,7 +120,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
     }
 
     logger.info(
-      `totalAreaNotInCommon = ${totalAreaNotInCommon} - landCoversForParcel: ${JSON.stringify(landCoversForParcel)} - landCoverCodesForExistingAction ${JSON.stringify(landCoversForExistingActions[action.actionCode])}: landCoverCodesForAppliedForAction: ${JSON.stringify(landCoverCodesForAppliedForAction)}}`
+      `totalAreaNotInCommon = ${totalAreaNotInCommon} - landCoversForParcel: ${JSON.stringify(landCoversForParcel)} - landCoverCodesForExistingAction ${JSON.stringify(landCoversForExistingActions[action.actionCode])}: landCoverCodesForAppliedForAction: ${JSON.stringify(mergedLandCoverCodesForAppliedForAction)}}`
     )
 
     const revisedArea = action.areaSqm - totalAreaNotInCommon
@@ -143,3 +138,10 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
     )
   }
 }
+
+/**
+ * @import { Action, CodeToString, ActionWithArea, AvailableAreaDataRequirements } from './available-area.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ */
