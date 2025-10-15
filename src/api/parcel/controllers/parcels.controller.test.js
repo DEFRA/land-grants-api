@@ -63,7 +63,7 @@ describe('Parcels controller', () => {
     jest.clearAllMocks()
 
     mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetEnabledActions.mockResolvedValue(mockActionConfig)
+    mockGetEnabledActions.mockResolvedValue([mockActionConfig[0]])
     mockGetAvailableAreaDataRequirements.mockResolvedValue({
       landCoverCodesForAppliedForAction: [],
       landCoversForParcel: [],

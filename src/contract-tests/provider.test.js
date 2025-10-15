@@ -2,11 +2,12 @@ import { env } from 'node:process'
 import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
-
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import Hapi from '@hapi/hapi'
 import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
 import { parcel } from '~/src/api/parcel/index.js'
+import { payments } from '~/src/api/payment/index.js'
+import { application } from '~/src/api/application/index.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
@@ -14,9 +15,11 @@ import {
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/db-tests/testLogger.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/api/actions/queries/index.js')
+jest.mock('~/src/api/application/mutations/saveApplication.mutation.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
 jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
@@ -28,6 +31,7 @@ const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockGetAvailableAreaForAction = getAvailableAreaForAction
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
+const mockSaveApplication = saveApplication
 
 const mockCompatibilityCheckFn = jest.fn()
 
@@ -62,9 +66,13 @@ const pactVerifierOptions = {
   providerVersion: process.env.GIT_COMMIT ?? '1.0.0',
 
   stateHandlers: {
-    'has a parcel with ID': ({ sheetId, parcelId }) => {
-      const parcel = createParcel(sheetId, parcelId)
-      mockGetLandData.mockResolvedValue([parcel])
+    'has parcels': ({ parcels }) => {
+      const allParcels = []
+      parcels.forEach(({ sheetId, parcelId }) => {
+        const parcel = createParcel(sheetId, parcelId)
+        allParcels.push(parcel)
+      })
+      mockGetLandData.mockResolvedValue(allParcels)
     }
   },
 
@@ -79,6 +87,7 @@ const pactVerifierOptions = {
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
     mockGetAgreementsForParcel.mockResolvedValue([])
+    mockSaveApplication.mockResolvedValue(251)
   },
 
   afterEach: () => {
@@ -95,7 +104,7 @@ describe('Pact Verification', () => {
       connect: jest.fn(),
       query: jest.fn()
     })
-    await server.register([parcel])
+    await server.register([parcel, payments, application])
     await server.initialize()
     await server.start()
   })
@@ -107,5 +116,5 @@ describe('Pact Verification', () => {
   it('validates the expectations of Matching Service', async () => {
     const results = await new Verifier(pactVerifierOptions).verifyProvider()
     expect(results).toBeTruthy()
-  })
+  }, 30000)
 })

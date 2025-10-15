@@ -1,5 +1,6 @@
 /**
  * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
  * @import {LandParcel} from '~/src/api/parcel/parcel.d.js'
  */
 
@@ -9,7 +10,7 @@ import { roundSqm } from '../../common/helpers/measurement.js'
  * Get a land data
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
- * @param {any} db - Database connection
+ * @param {Pool} db - Database connection
  * @param {Logger} logger - Logger object
  * @returns {Promise<LandParcel | null>} The land data
  */
