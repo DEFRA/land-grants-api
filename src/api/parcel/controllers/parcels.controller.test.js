@@ -29,14 +29,12 @@ const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 describe('Parcels controller', () => {
   const server = Hapi.server()
 
-  const mockLandParcelData = [
-    {
-      parcel_id: '9238',
-      sheet_id: 'SX0679',
-      area_sqm: 440,
-      geom: 'POLYGON((...))'
-    }
-  ]
+  const mockLandParcelData = {
+    parcelId: '9238',
+    sheetId: 'SX0679',
+    areaSqm: 440,
+    geom: 'POLYGON((...))'
+  }
 
   const mockCompatibilityCheckFn = jest.fn()
   const mockAvailableAreaResult = {
@@ -269,7 +267,7 @@ describe('Parcels controller', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 404 if the parcel does not exist', async () => {
+    test('should return 400 if the parcel does not exist', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
@@ -292,11 +290,11 @@ describe('Parcels controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(404)
-      expect(message).toBe('Land parcel not found: SX0679-9238')
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Land parcels not found: SX0679-9238')
     })
 
-    test('should return 404 if the actions does not exist', async () => {
+    test('should return 400 if the actions does not exist', async () => {
       const sheetId = 'SX0679'
       const parcelId = '9238'
 
@@ -319,7 +317,7 @@ describe('Parcels controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(404)
+      expect(statusCode).toBe(400)
       expect(message).toBe('Actions not found')
     })
 

@@ -35,7 +35,7 @@ export const validateLandParcelsRequest = async (landActions, request) => {
           request.logger
         )
 
-        return !parcelResult || parcelResult.length === 0
+        return !parcelResult
           ? `${landAction.sheetId}-${landAction.parcelId}`
           : null
       })

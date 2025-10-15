@@ -114,12 +114,16 @@ describe('Application Validation', () => {
       ]
 
       getLandData
-        .mockResolvedValueOnce([
-          { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-        ])
-        .mockResolvedValueOnce([
-          { id: 2, sheet_id: 'sheet2', parcel_id: 'parcel2' }
-        ])
+        .mockResolvedValueOnce({
+          id: 1,
+          sheet_id: 'sheet1',
+          parcel_id: 'parcel1'
+        })
+        .mockResolvedValueOnce({
+          id: 2,
+          sheet_id: 'sheet2',
+          parcel_id: 'parcel2'
+        })
 
       const result = await validateLandParcelsRequest(landActions, mockRequest)
       expect(result).toBeNull()
@@ -144,7 +148,7 @@ describe('Application Validation', () => {
         { sheetId: 'sheet2', parcelId: 'parcel2' }
       ]
 
-      getLandData.mockResolvedValueOnce([]).mockResolvedValueOnce(null)
+      getLandData.mockResolvedValueOnce(null).mockResolvedValueOnce(null)
 
       const result = await validateLandParcelsRequest(landActions, mockRequest)
       expect(result).toBe(
@@ -160,13 +164,17 @@ describe('Application Validation', () => {
       ]
 
       getLandData
-        .mockResolvedValueOnce([
-          { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-        ])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([
-          { id: 3, sheet_id: 'sheet3', parcel_id: 'parcel3' }
-        ])
+        .mockResolvedValueOnce({
+          id: 1,
+          sheet_id: 'sheet1',
+          parcel_id: 'parcel1'
+        })
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: 3,
+          sheet_id: 'sheet3',
+          parcel_id: 'parcel3'
+        })
 
       const result = await validateLandParcelsRequest(landActions, mockRequest)
       expect(result).toBe('Land parcels not found: sheet2-parcel2')
@@ -202,9 +210,11 @@ describe('Application Validation', () => {
       ]
       const actions = [{ code: 'UPL1' }]
 
-      getLandData.mockResolvedValue([
-        { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-      ])
+      getLandData.mockResolvedValue({
+        id: 1,
+        sheet_id: 'sheet1',
+        parcel_id: 'parcel1'
+      })
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([])
@@ -220,7 +230,7 @@ describe('Application Validation', () => {
       ]
       const actions = [{ code: 'UPL1' }]
 
-      getLandData.mockResolvedValue([])
+      getLandData.mockResolvedValue(null)
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual(['Land parcels not found: sheet1-parcel1'])
@@ -236,9 +246,11 @@ describe('Application Validation', () => {
       ]
       const actions = [{ code: 'UPL1' }]
 
-      getLandData.mockResolvedValue([
-        { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-      ])
+      getLandData.mockResolvedValue({
+        id: 1,
+        sheet_id: 'sheet1',
+        parcel_id: 'parcel1'
+      })
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual(['Actions not found: INVALID_ACTION'])
@@ -254,7 +266,7 @@ describe('Application Validation', () => {
       ]
       const actions = [{ code: 'UPL1' }]
 
-      getLandData.mockResolvedValue([])
+      getLandData.mockResolvedValue(null)
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([
@@ -279,10 +291,12 @@ describe('Application Validation', () => {
       const actions = [{ code: 'UPL1' }]
 
       getLandData
-        .mockResolvedValueOnce([
-          { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-        ])
-        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce({
+          id: 1,
+          sheet_id: 'sheet1',
+          parcel_id: 'parcel1'
+        })
+        .mockResolvedValueOnce(null)
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([
@@ -309,9 +323,11 @@ describe('Application Validation', () => {
       ]
       const actions = []
 
-      getLandData.mockResolvedValue([
-        { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-      ])
+      getLandData.mockResolvedValue({
+        id: 1,
+        sheet_id: 'sheet1',
+        parcel_id: 'parcel1'
+      })
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual(['Actions not found: UPL1'])
@@ -336,9 +352,11 @@ describe('Application Validation', () => {
       ]
       const actions = null
 
-      getLandData.mockResolvedValue([
-        { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-      ])
+      getLandData.mockResolvedValue({
+        id: 1,
+        sheet_id: 'sheet1',
+        parcel_id: 'parcel1'
+      })
 
       await expect(
         validateRequest(landActions, actions, mockRequest)

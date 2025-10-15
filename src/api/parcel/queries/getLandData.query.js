@@ -1,6 +1,6 @@
 /**
  * @import {Logger} from '~/src/api/common/logger.d.js'
- * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'
+ * @import {LandParcel} from '~/src/api/parcel/parcel.d.js'
  */
 
 import { roundSqm } from '../../common/helpers/measurement.js'
@@ -11,7 +11,7 @@ import { roundSqm } from '../../common/helpers/measurement.js'
  * @param {string} parcelId - The parcelId
  * @param {any} db - Database connection
  * @param {Logger} logger - Logger object
- * @returns {Promise<LandParcelDb[] | null>} The land data
+ * @returns {Promise<LandParcel | null>} The land data
  */
 async function getLandData(sheetId, parcelId, db, logger) {
   let client
@@ -32,10 +32,17 @@ async function getLandData(sheetId, parcelId, db, logger) {
       `Retrieved land parcels for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
     )
 
-    return result.rows.map((row) => ({
-      ...row,
-      area: roundSqm(row.area)
-    }))
+    if (result?.rows?.length === 0) {
+      return null
+    }
+
+    return {
+      id: result.rows[0].id,
+      areaSqm: roundSqm(result.rows[0].area_sqm),
+      sheetId: result.rows[0].sheet_id,
+      parcelId: result.rows[0].parcel_id,
+      geom: result.rows[0].geom
+    }
   } catch (error) {
     logger.error(`Error executing get Land parcels query: ${error}`)
     return null

@@ -5,11 +5,10 @@
  */
 
 /**
- * @typedef {object} LandParcelDb
+ * @typedef {object} LandParcel
  * @property {number} id
- * @property {string} sheet_id
- * @property {string} parcel_id
- * @property {number} area_sqm
+ * @property {string} sheetId
+ * @property {string} parcelId
+ * @property {number} areaSqm
  * @property {string} geom
- * @property {Date} last_updated
  */

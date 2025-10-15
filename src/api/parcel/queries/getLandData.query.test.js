@@ -25,24 +25,15 @@ describe('getLandData', () => {
 
   describe('successful data retrieval', () => {
     it('should return land data when found', async () => {
-      const mockLandData = [
-        {
-          id: 1,
-          sheet_id: testSheetId,
-          parcel_id: testParcelId,
-          area: 101,
-          land_use: 'agricultural'
-        },
-        {
-          id: 2,
-          sheet_id: testSheetId,
-          parcel_id: testParcelId,
-          area: 50,
-          land_use: 'forestry'
-        }
-      ]
+      const mockLandData = {
+        id: 1,
+        sheet_id: testSheetId,
+        parcel_id: testParcelId,
+        area_sqm: 101.5,
+        geom: 'POLYGON((...))'
+      }
 
-      mockClient.query.mockResolvedValue({ rows: mockLandData })
+      mockClient.query.mockResolvedValue({ rows: [mockLandData] })
 
       const result = await getLandData(
         testSheetId,
@@ -57,10 +48,16 @@ describe('getLandData', () => {
         [testSheetId, testParcelId]
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(mockLandData)
+      expect(result).toEqual({
+        id: 1,
+        sheetId: testSheetId,
+        parcelId: testParcelId,
+        areaSqm: 102, // rounded
+        geom: 'POLYGON((...))'
+      })
     })
 
-    it('should return empty array when no data found', async () => {
+    it('should return null when no data found', async () => {
       mockClient.query.mockResolvedValue({ rows: [] })
 
       const result = await getLandData(
@@ -76,7 +73,7 @@ describe('getLandData', () => {
         [testSheetId, testParcelId]
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
-      expect(result).toEqual([])
+      expect(result).toBeNull()
     })
   })
 
@@ -146,11 +143,15 @@ describe('getLandData', () => {
     it('should handle different parameter types correctly', async () => {
       const numericSheetId = 123
       const numericParcelId = 456
-      const mockLandData = [
-        { id: 1, sheet_id: numericSheetId, parcel_id: numericParcelId, area: 0 }
-      ]
+      const mockLandData = {
+        id: 1,
+        sheet_id: numericSheetId,
+        parcel_id: numericParcelId,
+        area_sqm: 0,
+        geom: 'POLYGON((...))'
+      }
 
-      mockClient.query.mockResolvedValue({ rows: mockLandData })
+      mockClient.query.mockResolvedValue({ rows: [mockLandData] })
 
       const result = await getLandData(
         numericSheetId,
@@ -163,12 +164,17 @@ describe('getLandData', () => {
         'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
         [numericSheetId, numericParcelId]
       )
-      expect(result).toEqual(mockLandData)
+      expect(result).toEqual({
+        id: 1,
+        sheetId: numericSheetId,
+        parcelId: numericParcelId,
+        areaSqm: 0,
+        geom: 'POLYGON((...))'
+      })
     })
 
     it('should handle null/undefined parameters', async () => {
-      const mockLandData = []
-      mockClient.query.mockResolvedValue({ rows: mockLandData })
+      mockClient.query.mockResolvedValue({ rows: [] })
 
       const result = await getLandData(null, undefined, mockDb, mockLogger)
 
@@ -176,7 +182,7 @@ describe('getLandData', () => {
         'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
         [null, undefined]
       )
-      expect(result).toEqual(mockLandData)
+      expect(result).toBeNull()
     })
   })
 })
