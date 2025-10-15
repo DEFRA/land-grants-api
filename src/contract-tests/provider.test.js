@@ -1,4 +1,6 @@
 import { env } from 'node:process'
+
+import { config } from '~/src/config/index.js'
 import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
@@ -63,7 +65,7 @@ const pactVerifierOptions = {
   pactBrokerUsername: env.PACT_BROKER_USERNAME,
   pactBrokerPassword: env.PACT_BROKER_PASSWORD,
   publishVerificationResult: true,
-  providerVersion: process.env.GIT_COMMIT ?? '1.0.0',
+  providerVersion: config.get('serviceVersion') ?? '0.0.0',
 
   stateHandlers: {
     'has parcels': ({ parcels }) => {
