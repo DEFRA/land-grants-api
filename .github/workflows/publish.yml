@@ -41,7 +41,7 @@ jobs:
 
           npm version "$LATEST_TAG" --no-git-tag-version
           git add package.json
-          git commit -m "update version [skip ci]" --no-verify
+          git commit -S -m "update version [skip ci]" --no-verify
           git push origin HEAD:${{ github.ref_name }}
           echo "$LATEST_TAG"
 
