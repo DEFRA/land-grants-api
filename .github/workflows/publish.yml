@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
 
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
@@ -31,12 +34,7 @@ jobs:
       - name: Update package version
         run: |
           git fetch --tags
-          git fetch --prune --unshallow || true
           LATEST_TAG=$(git describe --tags --abbrev=0)
-
-          BRANCH_NAME="${{ github.event.ref }}"
-          git fetch origin "$BRANCH_NAME"
-          git checkout "$BRANCH_NAME"
 
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
@@ -44,7 +42,7 @@ jobs:
           npm version "$LATEST_TAG" --no-git-tag-version
           git add package.json
           git commit -m "update version [skip ci]" --no-verify
-          git push origin "$BRANCH_NAME"
+          git push origin HEAD:${{ github.ref_name }}
           echo "$LATEST_TAG"
 
       - name: Make extract seed file script executable
