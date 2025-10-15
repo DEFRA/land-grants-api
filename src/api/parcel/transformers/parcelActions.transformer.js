@@ -4,14 +4,9 @@ import {
 } from '~/src/api/common/helpers/measurement.js'
 
 /**
- * @import { AgreementAction } from "../../agreements/agreements.d.js"
- * @import { Action, ActionRequest } from "../../actions/action.d.js"
- */
-
-/**
  * Transform size to application unit of measurement
  * @param {number} area - The area to transform
- * @returns {object} The transformed size
+ * @returns {{unit: string, value: number}} The transformed size
  */
 function sizeTransformer(area) {
   return {
@@ -22,19 +17,17 @@ function sizeTransformer(area) {
 
 /**
  * Transform parcel and actions to land parcel and actions
- * @returns {object} The land action data with available area
  * @param {Action} action - The actions to merge
- * @param {object} availableArea - Total Available Area
+ * @param {AvailableAreaForAction | null} availableArea - Total Available Area
+ * @returns {object} The land action data with available area
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
     code: action.code,
     description: action.description,
-    availableArea:
-      availableArea?.availableAreaHectares ||
-      availableArea?.availableAreaHectares === 0
-        ? sizeTransformer(availableArea?.availableAreaHectares)
-        : undefined,
+    availableArea: Number.isFinite(availableArea?.availableAreaHectares)
+      ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
+      : undefined,
     ...action.payment
   }
 
@@ -113,3 +106,9 @@ export {
   plannedActionsTransformer,
   sizeTransformer
 }
+
+/**
+ * @import { AgreementAction } from "../../agreements/agreements.d.js"
+ * @import { Action, ActionRequest } from "../../actions/action.d.js"
+ * @import { AvailableAreaForAction } from "~/src/available-area/available-area.d.js"
+ */

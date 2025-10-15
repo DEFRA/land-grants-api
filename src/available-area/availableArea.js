@@ -15,18 +15,14 @@ import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
 
 /**
- * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements, ActionWithArea, StackResult, CodeToString } from './available-area.d.js'
- */
-
-/**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
  * and the land covers for existing actions.
  * @param {string} actionCodeAppliedFor - The action code being applied for
  * @param {string} sheetId - The sheet ID of the parcel
  * @param {string} parcelId - The parcel ID
  * @param {Action[]} existingActions - The list of existing actions
- * @param {object} postgresDb - The Postgres database connection
- * @param {object} logger - The logger object
+ * @param {Pool} postgresDb - The Postgres database connection
+ * @param {Logger} logger - The logger object
  * @returns {Promise<AvailableAreaDataRequirements>} - An object containing land cover codes for the action, land covers for the parcel, and land covers for existing actions
  */
 export async function getAvailableAreaDataRequirements(
@@ -83,7 +79,6 @@ export async function getAvailableAreaDataRequirements(
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
   return {
-    // @ts-expect-error - lines
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
@@ -94,14 +89,14 @@ export async function getAvailableAreaDataRequirements(
 /**
  * Processes land cover data and calculates total valid area
  * @param {object} params - Parameters object
- * @param {object} params.landCoversForParcel - Land covers for the parcel
- * @param {object[]} params.landCoverCodesForAppliedForAction - Land cover codes for the applied action
+ * @param {LandCover[]} params.landCoversForParcel - Land covers for the parcel
+ * @param {LandCoverCodes[]} params.landCoverCodesForAppliedForAction - Land cover codes for the applied action
  * @param {CodeToString} params.landCoverToString - Function to convert land cover codes to strings
  * @param {string} params.actionCodeAppliedFor - The action code being applied for
  * @param {string} params.sheetId - The sheet ID
  * @param {string} params.parcelId - The parcel ID
- * @param {object} params.logger - Logger instance
- * @returns {object} Total valid land cover area and explanations
+ * @param {Logger} params.logger - Logger instance
+ * @returns {ProcessedLandCoverData} Total valid land cover area and explanations
  */
 function processLandCoverData({
   landCoversForParcel,
@@ -139,10 +134,10 @@ function processLandCoverData({
 /**
  * Filters and processes existing actions based on land cover compatibility
  * @param {Action[]} existingActions - Existing actions
- * @param {object} landCoversForExistingActions - Land covers for existing actions
+ * @param {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions - Land covers for existing actions
  * @param {object[]} mergedLandCoverCodesForAppliedForAction - Merged land cover codes
  * @param {CodeToString} landCoverToString - Function to convert land cover codes to strings
- * @param {object} logger - Logger instance
+ * @param {Logger} logger - Logger instance
  * @returns {object} Filtered actions and explanations
  */
 function processExistingActions(
@@ -180,9 +175,9 @@ function processExistingActions(
  * @param {string} params.actionCodeAppliedFor - The action code being applied for
  * @param {Action[]} params.existingActionsWithLandCoverInCommonWithAppliedForAction - Filtered existing actions
  * @param {AvailableAreaDataRequirements} params.availableAreaDataRequirements - Available area data requirements
- * @param {object[]} params.mergedLandCoverCodesForAppliedForAction - Merged land cover codes
- * @param {object} params.logger - Logger instance
- * @returns {object} Revised actions and explanations
+ * @param {string[]} params.mergedLandCoverCodesForAppliedForAction - Merged land cover codes
+ * @param {Logger} params.logger - Logger instance
+ * @returns {{revisedActions: ActionWithArea[], incompatibleLandCoverExplanations: ExplanationSection}} Revised actions and explanations
  */
 function processIncompatibleAreas({
   parcelId,
@@ -201,10 +196,8 @@ function processIncompatibleAreas({
     sheetId,
     actionCodeAppliedFor,
     existingActionsWithLandCoverInCommonWithAppliedForAction,
-    {
-      ...availableAreaDataRequirements,
-      landCoverCodesForAppliedForAction: mergedLandCoverCodesForAppliedForAction
-    },
+    availableAreaDataRequirements,
+    mergedLandCoverCodesForAppliedForAction,
     logger
   )
 
@@ -250,8 +243,8 @@ function buildExplanations(
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {Action[]} existingActions - The list of existing actions
  * @param {AvailableAreaDataRequirements} availableAreaDataRequirements - Data requirements
- * @param {object} logger - The logger object
- * @returns {object} Available area calculation results
+ * @param {Logger} logger - The logger object
+ * @returns {AvailableAreaForAction} Available area calculation results
  */
 export function getAvailableAreaForAction(
   actionCodeAppliedFor,
@@ -392,3 +385,12 @@ export function stackAndSubtractIncompatibleStacks(
     availableAreaHectares
   }
 }
+
+/**
+ * @import { Action, CompatibilityCheckFn, AvailableAreaDataRequirements, ActionWithArea, StackResult, CodeToString, ProcessedLandCoverData, AvailableAreaForAction } from './available-area.d.js'
+ * @import { Pool } from '~/src/api/common/postgres.d.js'
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ * @import { LandCover } from '../api/parcel/parcel.d.js'
+ * @import { LandCoverCodes } from '../api/land-cover-codes/land-cover-codes.d.js'
+ * @import { ExplanationSection } from './explanations.d.js'
+ */

@@ -1,7 +1,7 @@
 /**
  * Executes the rules for the given application and action rules.
- * @param {object} rules - The rules we can execute.
- * @param {object} application - The application to execute the rules on.
+ * @param {{ [key: string]: RuleExecutor }} rules - The rules we can execute.
+ * @param {RuleEngineApplication} application - The application to execute the rules on.
  * @param {ActionRule[]} actionRules - The action rules to execute.
  * @returns {RulesResult} - The results of the rules.
  */
@@ -24,5 +24,5 @@ export const executeRules = (rules, application, actionRules = []) => {
 
 /**
  * @import {ActionRule} from '../api/actions/action.d.js'
- * @import {RulesResult} from '../rules-engine/rules.d.js'
+ * @import {RulesResult, RuleExecutor, RuleEngineApplication} from '../rules-engine/rules.d.js'
  */

@@ -1,8 +1,8 @@
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} landCoverCodes - The land cover codes to get
- * @param {object} db - The database connection
- * @param {object} logger - The logger
+ * @param {Pool} db - The database connection
+ * @param {Logger} logger - The logger
  * @returns {Promise<LandCoverDefinition[]>}>} The land cover codes object
  */
 export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
@@ -58,7 +58,7 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
 
 /**
  * Transforms the rows from the database into an array of land cover definitions
- * @param {object[]} rows - The rows from the database
+ * @param {LandCoverDefinitionDB[]} rows - The rows from the database
  * @returns {LandCoverDefinition[]} The land cover definitions
  */
 function transformLandCoverDefinitions(rows) {
@@ -81,5 +81,7 @@ function transformLandCoverDefinitions(rows) {
 }
 
 /**
- * @import { LandCoverDefinition } from '../land-cover-codes.d.js'
+ * @import { LandCoverDefinition, LandCoverDefinitionDB } from '../land-cover-codes.d.js'
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ * @import { Pool } from '~/src/api/common/postgres.d.js'
  */

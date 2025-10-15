@@ -1,9 +1,9 @@
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} actionCodes - The action code(s) to get land cover codes for
- * @param {object} db - The database connection
- * @param {object} logger - The logger
- * @returns {Promise<{[key:string]: LandCoverCodes[]} | Array<never>>}> The land cover codes object
+ * @param {Pool} db - The database connection
+ * @param {Logger} logger - The logger
+ * @returns {Promise<{[key:string]: LandCoverCodes[]}>} The land cover codes object
  */
 async function getLandCoversForActions(actionCodes, db, logger) {
   let client
@@ -11,7 +11,7 @@ async function getLandCoversForActions(actionCodes, db, logger) {
   try {
     if (!Array.isArray(actionCodes) || actionCodes.length === 0) {
       logger.warn('No action codes provided')
-      return []
+      return {}
     }
 
     logger.info(
@@ -30,7 +30,7 @@ async function getLandCoversForActions(actionCodes, db, logger) {
       logger.warn(
         `No land cover codes found for action codes: ${actionCodes.join(', ')}`
       )
-      return []
+      return {}
     }
 
     logger.info(
@@ -51,8 +51,8 @@ async function getLandCoversForActions(actionCodes, db, logger) {
 /**
  * Get all land cover codes for one or more action codes
  * @param {string} actionCode - The action code to get land cover codes for
- * @param {object} db - The database connection
- * @param {object} logger - The logger
+ * @param {Pool} db - The database connection
+ * @param {Logger} logger - The logger
  * @returns {Promise<LandCoverCodes[]>} The land cover codes array
  */
 async function getLandCoversForAction(actionCode, db, logger) {
@@ -85,4 +85,6 @@ export { getLandCoversForAction, getLandCoversForActions }
 
 /**
  * @import { LandCoverCodes, LandCoverDefinitionDB } from '../land-cover-codes.d.js'
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ * @import { Pool } from '~/src/api/common/postgres.d.js'
  */

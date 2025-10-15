@@ -32,3 +32,8 @@
  * @property {string} actionCodeAppliedFor
  * @property {LandParcel} landParcel
  */
+
+/**
+ * @typedef {object} RuleExecutor
+ * @property {Function} execute
+ */

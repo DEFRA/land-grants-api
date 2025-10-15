@@ -1,8 +1,8 @@
 import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
 
 /**
- * @param {object} logger
- * @param {object} db
+ * @param {Logger} logger
+ * @param {Pool} db
  * @param {string[] | null} codes
  * @returns {Promise<CompatibilityMatrix[]>}
  */
@@ -32,4 +32,6 @@ export { getCompatibilityMatrix }
 
 /**
  * @import { CompatibilityMatrix } from '../compatibility-matrix.d.js'
+ * @import { Logger } from '~/src/api/common/logger.d.js'
+ * @import { Pool } from '~/src/api/common/postgres.d.js'
  */

@@ -1,11 +1,13 @@
 /**
  * @import {ApplicationResult} from '../application.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
  */
 
 /**
  * Get latest application validation run
- * @param {object} logger - The logger
- * @param {object} db - The postgres instance
+ * @param {Logger} logger - The logger
+ * @param {Pool} db - The postgres instance
  * @param {string} id - The id of the application validation run
  * @returns {Promise<ApplicationResult | null>} The application validation run
  */

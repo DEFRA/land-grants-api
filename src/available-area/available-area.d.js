@@ -36,9 +36,9 @@
 
 /**
  * @typedef {object} AvailableAreaDataRequirements
- * @property {string[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @property {{[key: string]: LandCoverCodes[]} | never[]} landCoversForExistingActions
+ * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
  * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
  */
 
@@ -52,7 +52,23 @@
  * @typedef {object} StackResult
  * @property {number} availableAreaSqm - The available area
  * @property {number} availableAreaHectares - The available area
- * @property {ExplanationSection} stackExplanations - The explanation section
- * @property {ExplanationSection} resultExplanation - The explanation section
+ * @property {ExplanationSection} stackExplanations - The stack explanation section
+ * @property {ExplanationSection} resultExplanation - The resultexplanation section
  * @property {Stack[]} stacks - The stacks
+ */
+
+/**
+ * @typedef {object} ProcessedLandCoverData
+ * @property {string[]} mergedLandCoverCodesForAppliedForAction - land cover codes
+ * @property {number} totalValidLandCoverSqm - The available area
+ * @property {ExplanationSection} totalValidLandCoverExplanations - Explanation section
+ */
+
+/**
+ * @typedef {object} AvailableAreaForAction
+ * @property {Stack[]} stacks - Stacks
+ * @property {object} explanations - Explanations
+ * @property {number} availableAreaSqm - The available area
+ * @property {number} totalValidLandCoverSqm - The total valid land cover area
+ * @property {number} availableAreaHectares - The available area in hectares
  */
