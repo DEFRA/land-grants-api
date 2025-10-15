@@ -9,6 +9,10 @@ import {
 
 /**
  * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'
+ * @import {AgreementAction} from '~/src/api/agreements/agreements.d.js'
+ * @import {Logger} from '~/src/api/common/logger.d.js'
+ * @import {Pool} from '~/src/api/common/postgres.d.js'
+ * @import {Action} from '~/src/api/actions/action.d.js'
  */
 
 /**
@@ -39,12 +43,12 @@ export function splitParcelId(id, logger) {
 /**
  * Get parcel actions with available area
  * @param {LandParcelDb} parcel - The parcel
- * @param {object} actions - The actions to get
+ * @param {AgreementAction[]} actions - The actions to get
  * @param {boolean} showActionResults - Whether to show action results
- * @param {object[]} enabledActions - The enabled actions
+ * @param {Action[]} enabledActions - The enabled actions
  * @param {Function} compatibilityCheckFn - The compatibility check function
- * @param {object} postgresDb - The postgres database
- * @param {object} logger - The logger
+ * @param {Pool} postgresDb - The postgres database
+ * @param {Logger} logger - The logger
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 export async function getParcelActionsWithAvailableArea(
