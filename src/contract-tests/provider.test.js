@@ -14,11 +14,11 @@ import {
 } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/db-tests/testLogger.js'
-import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
-jest.mock('~/src/api/actions/queries/index.js')
+jest.mock('~/src/api/actions/queries/getActions.query.js')
 jest.mock('~/src/api/application/mutations/saveApplication.mutation.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')

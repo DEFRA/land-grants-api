@@ -1,59 +1,92 @@
 import Hapi from '@hapi/hapi'
-import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
-import { haToSqm } from '~/src/api/common/helpers/measurement.js'
 import { parcel } from '~/src/api/parcel/index.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/available-area/availableArea.js'
+import { getParcelActionsWithAvailableArea } from '~/src/api/parcel/service/parcel.service.js'
+import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { logger } from '~/src/db-tests/testLogger.js'
-import { getEnabledActions } from '../../actions/queries/index.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getDataAndValidateRequest } from '~/src/api/parcel/validation/parcel.validation.js'
 
-jest.mock('../../parcel/queries/getLandData.query.js')
-jest.mock('../../actions/queries/index.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
-jest.mock('~/src/available-area/availableArea.js')
-jest.mock('../../land-cover-codes/queries/getLandCoversForActions.query.js')
-jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
+jest.mock('~/src/api/parcel/validation/parcel.validation.js')
+jest.mock('~/src/api/parcel/service/parcel.service.js')
+jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 
-const mockGetLandData = getLandData
-const mockGetEnabledActions = getEnabledActions
-const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockGetAvailableAreaForAction = getAvailableAreaForAction
+const mockGetDataAndValidateRequest = getDataAndValidateRequest
+const mockGetParcelActionsWithAvailableArea = getParcelActionsWithAvailableArea
 const mockGetAgreementsForParcel = getAgreementsForParcel
-const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
+const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 
-describe('Parcels controller', () => {
+const mockParcelData = {
+  sheet_id: 'SX0679',
+  parcel_id: '9238',
+  area_sqm: 100000
+}
+
+const mockEnabledActions = [
+  {
+    code: 'BND1',
+    description: 'Hedgerow management',
+    display: true,
+    payment: {
+      ratePerUnitGbp: 10.6,
+      ratePerAgreementPerYearGbp: 272
+    }
+  },
+  {
+    code: 'BND2',
+    description: 'Hedge laying',
+    display: true,
+    payment: {
+      ratePerUnitGbp: 20.5,
+      ratePerAgreementPerYearGbp: 0
+    }
+  }
+]
+
+const mockAgreements = [
+  {
+    actionCode: 'BND1',
+    quantity: 5,
+    unit: 'ha'
+  }
+]
+
+const mockActionsWithAvailableArea = [
+  {
+    code: 'BND1',
+    description: 'Hedgerow management',
+    availableArea: {
+      unit: 'ha',
+      value: 10
+    },
+    ratePerUnitGbp: 10.6,
+    ratePerAgreementPerYearGbp: 272
+  },
+  {
+    code: 'BND2',
+    description: 'Hedge laying',
+    availableArea: {
+      unit: 'ha',
+      value: 8
+    },
+    ratePerUnitGbp: 20.5,
+    ratePerAgreementPerYearGbp: 0
+  }
+]
+
+describe('Parcels Controller', () => {
   const server = Hapi.server()
 
-  const mockLandParcelData = [
-    {
-      parcel_id: '9238',
-      sheet_id: 'SX0679',
-      area_sqm: 440,
-      geom: 'POLYGON((...))'
-    }
-  ]
-
-  const mockCompatibilityCheckFn = jest.fn()
-  const mockAvailableAreaResult = {
-    stacks: [],
-    explanations: [],
-    totalValidLandCoverSqm: 300,
-    availableAreaSqm: 300,
-    availableAreaHectares: 0.03
-  }
-
   beforeAll(async () => {
-    server.decorate('request', 'logger', logger)
+    server.decorate('request', 'logger', {
+      info: jest.fn(),
+      debug: jest.fn(),
+      error: jest.fn()
+    })
     server.decorate('server', 'postgresDb', {
       connect: jest.fn(),
       query: jest.fn()
     })
+
     await server.register([parcel])
     await server.initialize()
   })
@@ -65,189 +98,265 @@ describe('Parcels controller', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mockGetLandData.mockResolvedValue(mockLandParcelData)
-    mockGetEnabledActions.mockResolvedValue([mockActionConfig[0]])
-    mockGetAvailableAreaDataRequirements.mockResolvedValue({
-      landCoverCodesForAppliedForAction: [],
-      landCoversForParcel: [],
-      landCoversForExistingActions: []
+    mockGetDataAndValidateRequest.mockResolvedValue({
+      errors: null,
+      parcels: [mockParcelData],
+      enabledActions: mockEnabledActions
     })
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
-    mockGetAgreementsForParcel.mockResolvedValue([])
+
+    mockGetAgreementsForParcel.mockResolvedValue(mockAgreements)
+    mockGetParcelActionsWithAvailableArea.mockResolvedValue(
+      mockActionsWithAvailableArea
+    )
+    mockCreateCompatibilityMatrix.mockResolvedValue(jest.fn())
   })
 
   describe('POST /parcels route', () => {
-    test('should return 200 if all fields are requested', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      const request = {
-        method: 'POST',
-        url: `/parcels`,
-        payload: {
-          fields: ['size', 'actions'],
-          parcelIds: ['SX0679-9238'],
-          plannedActions: []
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message, parcels }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcels).toBeDefined()
-      expect(parcels).toEqual([
-        {
-          parcelId: '9238',
-          sheetId: 'SX0679',
-          actions: [
-            {
-              code: 'CMOR1',
-              description: 'Assess moorland and produce a written record',
-              availableArea: {
-                unit: 'ha',
-                value: 0.03
-              },
-              ratePerUnitGbp: 10.6,
-              ratePerAgreementPerYearGbp: 272
-            }
-          ],
-          size: {
-            unit: 'ha',
-            value: 0.044
-          }
-        }
-      ])
-
-      expect(mockGetLandData).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(mockGetAvailableAreaForAction).toHaveBeenCalled()
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalled()
-    })
-
-    test('should return 200 if fields: `size` passed in the request', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      const request = {
-        method: 'POST',
-        url: `/parcels`,
-        payload: {
-          fields: ['size'],
-          parcelIds: ['SX0679-9238'],
-          plannedActions: []
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message, parcels }
-      } = await server.inject(request)
-
-      const expectedOutputWithSizeOnly = [
-        {
-          parcelId: '9238',
-          sheetId: 'SX0679',
-          size: {
-            unit: 'ha',
-            value: 0.044
-          }
-        }
-      ]
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcels).toBeDefined()
-      expect(parcels).toEqual(expectedOutputWithSizeOnly)
-
-      expect(mockGetLandData).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(mockGetEnabledActions).not.toHaveBeenCalled()
-      expect(mockGetAvailableAreaForAction).not.toHaveBeenCalled()
-    })
-
-    test('should return 200 if fields: `actions` passed in the request', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      const request = {
-        method: 'POST',
-        url: `/parcels`,
-        payload: {
-          fields: ['actions'],
-          parcelIds: ['SX0679-9238'],
-          plannedActions: []
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message, parcels }
-      } = await server.inject(request)
-
-      const expectedOutputWithActionsOnly = [
-        {
-          parcelId: '9238',
-          sheetId: 'SX0679',
-          actions: [
-            {
-              code: 'CMOR1',
-              description: 'Assess moorland and produce a written record',
-              availableArea: {
-                unit: 'ha',
-                value: 0.03
-              },
-              ratePerUnitGbp: 10.6,
-              ratePerAgreementPerYearGbp: 272
-            }
-          ]
-        }
-      ]
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcels).toBeDefined()
-      expect(parcels).toEqual(expectedOutputWithActionsOnly)
-
-      expect(mockGetLandData).toHaveBeenCalledWith(
-        sheetId,
-        parcelId,
-        expect.any(Object),
-        expect.any(Object)
-      )
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(Object)
-      )
-    })
-
-    test('should return 400 if the request has an invalid parcel in payload', async () => {
+    test('should return 200 with parcel data when requesting only size field', async () => {
       const request = {
         method: 'POST',
         url: '/parcels',
         payload: {
-          fields: [],
-          parcelIds: ['1'],
-          plannedActions: []
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0]).toEqual({
+        parcelId: '9238',
+        sheetId: 'SX0679',
+        size: {
+          unit: 'ha',
+          value: 10
+        }
+      })
+      expect(mockGetDataAndValidateRequest).toHaveBeenCalledWith(
+        ['SX0679-9238'],
+        expect.anything()
+      )
+    })
+
+    test('should return 200 with parcel data when requesting actions field', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0]).toHaveProperty('actions')
+      expect(parcels[0].actions).toHaveLength(2)
+      expect(parcels[0].actions[0].code).toBe('BND1')
+      expect(mockGetParcelActionsWithAvailableArea).toHaveBeenCalled()
+    })
+
+    test('should return 200 with parcel data when requesting actions.results field', async () => {
+      const mockActionsWithResults = [
+        {
+          ...mockActionsWithAvailableArea[0],
+          results: {
+            totalValidLandCoverSqm: 50000,
+            stacks: [],
+            explanations: []
+          }
+        }
+      ]
+
+      mockGetParcelActionsWithAvailableArea.mockResolvedValue(
+        mockActionsWithResults
+      )
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions.results']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0]).toHaveProperty('actions')
+      expect(mockGetParcelActionsWithAvailableArea).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.anything(),
+        true, // showActionResults should be true
+        mockEnabledActions,
+        expect.any(Function),
+        expect.anything(),
+        expect.anything()
+      )
+    })
+
+    test('should return 200 with plannedActions included', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions'],
+          plannedActions: [
+            {
+              actionCode: 'BND2',
+              quantity: 5.5,
+              unit: 'ha'
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
+        'SX0679',
+        '9238',
+        expect.anything(),
+        expect.anything()
+      )
+    })
+
+    test('should return 200 and sort actions by code', async () => {
+      const unsortedActions = [
+        {
+          code: 'UPL3',
+          description: 'Action 3',
+          availableArea: { unit: 'ha', value: 5 },
+          ratePerUnitGbp: 10,
+          ratePerAgreementPerYearGbp: 0
+        },
+        {
+          code: 'BND1',
+          description: 'Action 1',
+          availableArea: { unit: 'ha', value: 10 },
+          ratePerUnitGbp: 10.6,
+          ratePerAgreementPerYearGbp: 272
+        },
+        {
+          code: 'CSAM1',
+          description: 'Action 2',
+          availableArea: { unit: 'ha', value: 8 },
+          ratePerUnitGbp: 15,
+          ratePerAgreementPerYearGbp: 0
+        }
+      ]
+
+      mockGetParcelActionsWithAvailableArea.mockResolvedValue(unsortedActions)
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(parcels[0].actions[0].code).toBe('BND1')
+      expect(parcels[0].actions[1].code).toBe('CSAM1')
+      expect(parcels[0].actions[2].code).toBe('UPL3')
+    })
+
+    test('should return 404 when parcel is not found', async () => {
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: ['Land parcels not found: SX0679-9999'],
+        parcels: [],
+        enabledActions: []
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9999'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Land parcels not found: SX0679-9999')
+    })
+
+    test('should return 404 when multiple parcels are not found', async () => {
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: ['Land parcels not found: SX0679-9999', 'Actions not found'],
+        parcels: [],
+        enabledActions: []
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9999'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(message).toBe(
+        'Land parcels not found: SX0679-9999, Actions not found'
+      )
+    })
+
+    test('should return 400 with invalid payload - missing parcelIds', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          fields: ['size']
         }
       }
 
@@ -261,20 +370,12 @@ describe('Parcels controller', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 404 if the parcel does not exist', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      // Mock getLandData to return null (parcel not found)
-      mockGetLandData.mockResolvedValue(null)
-
+    test('should return 400 with invalid payload - missing fields', async () => {
       const request = {
         method: 'POST',
-        url: `/parcels`,
+        url: '/parcels',
         payload: {
-          fields: [],
-          parcelIds: [`${sheetId}-${parcelId}`],
-          plannedActions: []
+          parcelIds: ['SX0679-9238']
         }
       }
 
@@ -284,24 +385,17 @@ describe('Parcels controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(404)
-      expect(message).toBe('Land parcel not found: SX0679-9238')
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 404 if the actions does not exist', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      // Mock getEnabledActions to return null/empty
-      mockGetEnabledActions.mockResolvedValue(null)
-
+    test('should return 400 with invalid parcelId format', async () => {
       const request = {
         method: 'POST',
-        url: `/parcels`,
+        url: '/parcels',
         payload: {
-          fields: ['actions'],
-          parcelIds: [`${sheetId}-${parcelId}`],
-          plannedActions: []
+          parcelIds: ['invalid-parcel-id'],
+          fields: ['size']
         }
       }
 
@@ -311,23 +405,94 @@ describe('Parcels controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(404)
-      expect(message).toBe('Actions not found')
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 500 if the controller throws an error', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
+    test('should return 400 with invalid field value', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['invalid-field']
+        }
+      }
 
-      mockGetEnabledActions.mockRejectedValue(new Error('Database error'))
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 with invalid plannedActions - missing actionCode', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions'],
+          plannedActions: [
+            {
+              quantity: 5.5,
+              unit: 'ha'
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 with invalid plannedActions - invalid unit', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions'],
+          plannedActions: [
+            {
+              actionCode: 'BND2',
+              quantity: 5.5,
+              unit: 'invalid-unit'
+            }
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 500 when createCompatibilityMatrix throws error', async () => {
+      mockCreateCompatibilityMatrix.mockRejectedValue(
+        new Error('Database connection error')
+      )
 
       const request = {
         method: 'POST',
-        url: `/parcels`,
+        url: '/parcels',
         payload: {
-          fields: ['actions'],
-          parcelIds: [`${sheetId}-${parcelId}`],
-          plannedActions: []
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
         }
       }
 
@@ -341,21 +506,17 @@ describe('Parcels controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 if available area calculation fails', async () => {
-      const sheetId = 'SX0679'
-      const parcelId = '9238'
-
-      mockGetAvailableAreaDataRequirements.mockRejectedValue(
-        new Error('Area calculation failed')
+    test('should return 500 when getParcelActionsWithAvailableArea throws error', async () => {
+      mockGetParcelActionsWithAvailableArea.mockRejectedValue(
+        new Error('Failed to get actions')
       )
 
       const request = {
         method: 'POST',
-        url: `/parcels`,
+        url: '/parcels',
         payload: {
-          fields: ['actions'],
-          parcelIds: [`${sheetId}-${parcelId}`],
-          plannedActions: []
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
         }
       }
 
@@ -369,54 +530,17 @@ describe('Parcels controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should include results when actions.results field is requested', async () => {
-      const mockAvailableAreaWithResults = {
-        ...mockAvailableAreaResult,
-        stacks: [{ code: 'CMOR1', quantity: 0.00001 }],
-        explanations: ['Test explanation']
-      }
-      mockGetAvailableAreaForAction.mockReturnValue(
-        mockAvailableAreaWithResults
+    test('should return 500 when getAgreementsForParcel throws error', async () => {
+      mockGetAgreementsForParcel.mockRejectedValue(
+        new Error('Database query failed')
       )
 
       const request = {
         method: 'POST',
-        url: `/parcels`,
+        url: '/parcels',
         payload: {
-          fields: ['actions', 'actions.results'],
           parcelIds: ['SX0679-9238'],
-          plannedActions: []
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message, parcels }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcels[0].actions[0]).toHaveProperty('results')
-      expect(parcels[0].actions[0].results).toEqual({
-        totalValidLandCoverSqm: 300,
-        stacks: [{ code: 'CMOR1', quantity: 0.00001 }],
-        explanations: ['Test explanation']
-      })
-    })
-
-    test('should handle existing actions in available area calculation', async () => {
-      const plannedActions = [
-        { actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }
-      ]
-
-      const request = {
-        method: 'POST',
-        url: `/parcels`,
-        payload: {
-          fields: ['actions'],
-          parcelIds: ['SX0679-9238'],
-          plannedActions
+          fields: ['actions']
         }
       }
 
@@ -426,20 +550,173 @@ describe('Parcels controller', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(mockGetAvailableAreaForAction).toHaveBeenCalledWith(
-        'CMOR1',
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 when getDataAndValidateRequest throws error', async () => {
+      mockGetDataAndValidateRequest.mockRejectedValue(
+        new Error('Validation service error')
+      )
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should call compatibility matrix creation with correct parameters', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything()
+      )
+    })
+
+    test('should call getAgreementsForParcel with correct parcel identifiers', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        mockCompatibilityCheckFn,
-        plannedActions.map((a) => ({
-          actionCode: a.actionCode,
-          areaSqm: haToSqm(a.quantity)
-        })),
-        expect.any(Object),
-        expect.any(Object)
+        expect.anything(),
+        expect.anything()
       )
+    })
+
+    test('should handle empty plannedActions array', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions'],
+          plannedActions: []
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+    })
+
+    test('should not include size when not requested in fields', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(parcels[0]).not.toHaveProperty('size')
+      expect(parcels[0]).toHaveProperty('actions')
+    })
+
+    test('should not include actions when not requested in fields', async () => {
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(parcels[0]).toHaveProperty('size')
+      expect(parcels[0]).not.toHaveProperty('actions')
+    })
+
+    test('should handle validation errors', async () => {
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: ['Land parcels not found: SX0679-9999'],
+        parcels: [],
+        enabledActions: []
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9999'],
+          fields: ['size']
+        }
+      }
+
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+    })
+
+    test('should handle handler exceptions', async () => {
+      mockGetDataAndValidateRequest.mockRejectedValue(
+        new Error('Unexpected error')
+      )
+
+      const request = {
+        method: 'POST',
+        url: '/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
     })
   })
 })
