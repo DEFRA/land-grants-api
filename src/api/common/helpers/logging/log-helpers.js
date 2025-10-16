@@ -1,25 +1,31 @@
-// ~/src/api/common/helpers/logging/log-helpers.js
+import { LogCodes } from './log-codes.js'
 
 /**
  * Log an informational event
  * @param {Logger} logger
  * @param {object} options
  * @param {string} options.operation - What operation occurred
- * @param {string} options.category - Event category
+ * @param {string} options.category - Event category (e.g., 'application', 'payment', 'user')
  * @param {string} [options.reference] - Optional reference context
+ * @param {string} [options.message] - Optional custom message (defaults to operation)
  */
-export const logInfo = (logger, { operation, category, reference }) => {
-  const context = {
-    'event.category': category,
-    'event.action': operation,
-    'event.outcome': 'success'
+export const logInfo = (
+  logger,
+  { operation, category, reference, message }
+) => {
+  const logData = {
+    event: {
+      category,
+      action: operation,
+      outcome: 'success'
+    }
   }
 
   if (reference) {
-    context['event.reference'] = reference
+    logData.event.reference = reference
   }
 
-  logger.info(context, operation)
+  logger.info(logData, message ?? operation)
 }
 
 /**
@@ -31,20 +37,24 @@ export const logInfo = (logger, { operation, category, reference }) => {
  * @param {string} [options.reference] - Optional reference context
  */
 export const logDatabaseError = (logger, { operation, error, reference }) => {
-  const context = {
-    'error.message': error.message,
-    'error.stack_trace': error.stack,
-    'error.type': error.constructor.name,
-    'event.category': 'database',
-    'event.action': operation,
-    'event.outcome': 'failure'
+  const logData = {
+    error: {
+      message: error.message,
+      stack_trace: error.stack,
+      type: error.constructor.name
+    },
+    event: {
+      category: 'database',
+      action: operation,
+      outcome: 'failure'
+    }
   }
 
   if (reference) {
-    context['event.reference'] = reference
+    logData.event.reference = reference
   }
 
-  logger.error(context, `Database operation failed: ${operation}`)
+  logger.error(logData, LogCodes.DATABASE.OPERATION_FAILED(operation))
 }
 
 /**
@@ -56,20 +66,20 @@ export const logDatabaseError = (logger, { operation, error, reference }) => {
  * @param {string} [options.reference] - Optional reference context
  */
 export const logValidationWarn = (logger, { operation, errors, reference }) => {
-  const errorText = Array.isArray(errors) ? errors.join(', ') : String(errors)
-
-  const context = {
-    'event.category': 'validation',
-    'event.action': operation,
-    'event.outcome': 'failure',
-    'event.reason': errorText
+  const logData = {
+    event: {
+      category: 'validation',
+      action: operation,
+      outcome: 'failure',
+      reason: Array.isArray(errors) ? errors.join(', ') : String(errors)
+    }
   }
 
   if (reference) {
-    context['event.reference'] = reference
+    logData.event.reference = reference
   }
 
-  logger.warn(context, `Validation failed: ${operation}`)
+  logger.warn(logData, LogCodes.VALIDATION.FAILED(operation))
 }
 
 /**
@@ -82,12 +92,14 @@ export const logValidationWarn = (logger, { operation, errors, reference }) => {
 export const logResourceNotFound = (logger, { resourceType, reference }) => {
   logger.warn(
     {
-      'event.category': 'resource',
-      'event.action': 'lookup',
-      'event.outcome': 'failure',
-      'event.reference': reference
+      event: {
+        category: 'resource',
+        action: 'lookup',
+        outcome: 'failure',
+        reference
+      }
     },
-    `${resourceType} not found`
+    LogCodes.RESOURCE.NOT_FOUND(resourceType)
   )
 }
 
@@ -100,42 +112,24 @@ export const logResourceNotFound = (logger, { resourceType, reference }) => {
  * @param {string} [options.reference] - Optional reference context
  */
 export const logBusinessError = (logger, { operation, error, reference }) => {
-  const context = {
-    'error.message': error.message,
-    'error.stack_trace': error.stack,
-    'error.type': error.constructor.name,
-    'event.category': 'business_logic',
-    'event.action': operation,
-    'event.outcome': 'failure'
+  const logData = {
+    error: {
+      message: error.message,
+      stack_trace: error.stack,
+      type: error.constructor.name
+    },
+    event: {
+      category: 'business_logic',
+      action: operation,
+      outcome: 'failure'
+    }
   }
 
   if (reference) {
-    context['event.reference'] = reference
+    logData.event.reference = reference
   }
 
-  logger.error(context, `Business operation failed: ${operation}`)
-}
-
-/**
- * Log an external API error
- * @param {Logger} logger
- * @param {object} options
- * @param {string} options.apiName - Name of the API
- * @param {Error} options.error - The error object
- */
-export const logExternalApiError = (logger, { apiName, error }) => {
-  logger.error(
-    {
-      'error.message': error.message,
-      'error.stack_trace': error.stack,
-      'error.type': error.constructor.name,
-      'event.category': 'external_api',
-      'event.action': 'call',
-      'event.outcome': 'failure',
-      'event.reference': apiName
-    },
-    `External API call failed: ${apiName}`
-  )
+  logger.error(logData, LogCodes.BUSINESS.OPERATION_FAILED(operation))
 }
 
 /**

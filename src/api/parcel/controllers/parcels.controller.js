@@ -65,11 +65,16 @@ const ParcelsController = {
         'TEST 3: Nested object'
       )
 
-      // Test 4: Your log helper
-      logDatabaseError(request.logger, {
-        operation: 'test',
-        error: new Error('test error')
-      })
+      const context = {
+        'error.message': 'my message',
+        'error.stack_trace': 'my stack trace',
+        'error.type': 'error type',
+        'event.category': 'database',
+        'event.action': 'action',
+        'event.outcome': 'failure'
+      }
+
+      request.logger.error(context, `Database operation failed: TEST4`)
 
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
