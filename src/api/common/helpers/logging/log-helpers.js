@@ -1,3 +1,5 @@
+import { LogCodes } from './log-codes.js'
+
 /**
  * Log an informational event
  * @param {Logger} logger
@@ -52,7 +54,7 @@ export const logDatabaseError = (logger, { operation, error, reference }) => {
     logData.event.reference = reference
   }
 
-  logger.error(logData, `Database operation failed: ${operation}`)
+  logger.error(logData, LogCodes.DATABASE.OPERATION_FAILED(operation))
 }
 
 /**
@@ -77,7 +79,7 @@ export const logValidationWarn = (logger, { operation, errors, reference }) => {
     logData.event.reference = reference
   }
 
-  logger.warn(logData, `Validation failed: ${operation}`)
+  logger.warn(logData, LogCodes.VALIDATION.FAILED(operation))
 }
 
 /**
@@ -97,7 +99,7 @@ export const logResourceNotFound = (logger, { resourceType, reference }) => {
         reference
       }
     },
-    `${resourceType} not found`
+    LogCodes.RESOURCE.NOT_FOUND(resourceType)
   )
 }
 
@@ -127,33 +129,7 @@ export const logBusinessError = (logger, { operation, error, reference }) => {
     logData.event.reference = reference
   }
 
-  logger.error(logData, `Business operation failed: ${operation}`)
-}
-
-/**
- * Log an external API error
- * @param {Logger} logger
- * @param {object} options
- * @param {string} options.apiName - Name of the API
- * @param {Error} options.error - The error object
- */
-export const logExternalApiError = (logger, { apiName, error }) => {
-  logger.error(
-    {
-      error: {
-        message: error.message,
-        stack_trace: error.stack,
-        type: error.constructor.name
-      },
-      event: {
-        category: 'external_api',
-        action: 'call',
-        outcome: 'failure',
-        reference: apiName
-      }
-    },
-    `External API call failed: ${apiName}`
-  )
+  logger.error(logData, LogCodes.BUSINESS.OPERATION_FAILED(operation))
 }
 
 /**
