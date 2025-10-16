@@ -37,13 +37,13 @@ export const ApplicationValidationRunsController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    // @ts-expect-error - postgresDb
-    const postgresDb = request.server.postgresDb
-    const { applicationId } = request.params
-    // @ts-expect-error - payload
-    const { fields } = request.payload
-
     try {
+      // @ts-expect-error - postgresDb
+      const postgresDb = request.server.postgresDb
+      const { applicationId } = request.params
+      // @ts-expect-error - payload
+      const { fields } = request.payload
+
       const applicationValidationRuns = await getApplicationValidationRuns(
         request.logger,
         postgresDb,
@@ -61,10 +61,12 @@ export const ApplicationValidationRunsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
+      // @ts-expect-error - payload
+      const { fields } = request.payload
       logBusinessError(request.logger, {
         operation: 'retrieve application validation runs',
         error,
-        reference: `applicationId:${request.params?.applicationid}, fields:${fields.join(',')}`
+        reference: `applicationId:${request.params?.applicationId}, fields:${fields.join(',')}`
       })
       return Boom.internal('Error getting application validation runs')
     }
