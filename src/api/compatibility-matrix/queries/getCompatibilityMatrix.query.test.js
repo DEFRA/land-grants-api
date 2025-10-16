@@ -39,7 +39,14 @@ describe('getCompatibilityMatrix', () => {
       null
     )
     expect(mockLogger.info).toHaveBeenCalledWith(
-      'Connecting to DB to fetch compatibility matrix'
+      {
+        event: {
+          action: 'Fetch compatibility matrix',
+          category: 'parcel',
+          outcome: 'success'
+        }
+      },
+      'Fetch compatibility matrix'
     )
   })
 
@@ -69,7 +76,14 @@ describe('getCompatibilityMatrix', () => {
 
     expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
-      `Error executing get compatibility matrix query: ${error.message}`
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'connection failed'
+        })
+      }),
+      expect.stringContaining(
+        'Database operation failed: getCompatibilityMatrix'
+      )
     )
   })
 })

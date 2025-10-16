@@ -18,6 +18,10 @@ import {
 import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
+import {
+  logValidationWarn,
+  logBusinessError
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 const ApplicationValidationController = {
   options: {
@@ -64,7 +68,11 @@ const ApplicationValidationController = {
 
       // If there are validation errors, return a bad request response
       if (validationErrors && validationErrors.length > 0) {
-        request.logger.error('Validation errors', validationErrors)
+        logValidationWarn(request.logger, {
+          operation: 'Application validation',
+          errors: validationErrors,
+          reference: `applicationId:${applicationId}, sbi=${sbi}`
+        })
         return Boom.badRequest(validationErrors.join(', '))
       }
 
@@ -114,12 +122,14 @@ const ApplicationValidationController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = `Error validating application: ${error.message}`
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      // @ts-expect-error - payload
+      const { landActions, applicationId, sbi } = request.payload
+      logBusinessError(request.logger, {
+        operation: 'Validate application',
+        error,
+        reference: `sbi:${sbi},applicationId:${applicationId}, landActionsCount:${landActions?.length}`
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal(`Error validating application: ${error.message}`)
     }
   }
 }

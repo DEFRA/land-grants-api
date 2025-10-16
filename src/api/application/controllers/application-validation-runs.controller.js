@@ -11,6 +11,7 @@ import {
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { getApplicationValidationRuns } from '../queries/getApplicationValidationRuns.query.js'
 import { applicationValidationRunTransformer } from '../transformers/application.transformer.js'
+import { logBusinessError } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 export const ApplicationValidationRunsController = {
   options: {
@@ -36,13 +37,13 @@ export const ApplicationValidationRunsController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    try {
-      // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb
-      const { applicationId } = request.params
-      // @ts-expect-error - payload
-      const { fields } = request.payload
+    // @ts-expect-error - postgresDb
+    const postgresDb = request.server.postgresDb
+    const { applicationId } = request.params
+    // @ts-expect-error - payload
+    const { fields } = request.payload
 
+    try {
       const applicationValidationRuns = await getApplicationValidationRuns(
         request.logger,
         postgresDb,
@@ -60,12 +61,12 @@ export const ApplicationValidationRunsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = 'Error getting application validation runs'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      logBusinessError(request.logger, {
+        operation: 'retrieve application validation runs',
+        error,
+        reference: `applicationId:${request.params?.applicationid}, fields:${fields.join(',')}`
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal('Error getting application validation runs')
     }
   }
 }

@@ -1,3 +1,4 @@
+import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 import { actionConfigTransformer } from '../transformers/actionConfig.transformer.js'
 
 /**
@@ -9,7 +10,6 @@ import { actionConfigTransformer } from '../transformers/actionConfig.transforme
 async function getEnabledActions(logger, db) {
   let client
   try {
-    logger.info(`Connecting to DB to fetch actions`)
     client = await db.connect()
 
     const query = `
@@ -31,7 +31,10 @@ async function getEnabledActions(logger, db) {
 
     return result.rows.map(actionConfigTransformer)
   } catch (error) {
-    logger.error(`Error executing get action query: ${error.message}`)
+    logDatabaseError(logger, {
+      operation: 'getEnabledActions',
+      error
+    })
     return []
   } finally {
     if (client) {

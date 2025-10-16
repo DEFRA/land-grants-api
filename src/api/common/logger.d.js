@@ -1,7 +1,7 @@
 /**
  * @typedef {object} Logger
- * @property {function(string, any=): void} info - Log info messages
- * @property {function(string, any=): void} error - Log error messages
- * @property {function(string, any=): void} warn - Log warning messages
- * @property {function(string, any=): void} debug - Log debug messages
+ * @property {function(string | object, string=): void} info - Log info messages
+ * @property {function(string | object, string=): void} error - Log error messages
+ * @property {function(string | object, string=): void} warn - Log warning messages
+ * @property {function(string | object, string=): void} debug - Log debug messages
  */

@@ -122,8 +122,19 @@ describe('getMoorlandInterceptPercentage', () => {
 
     expect(result).toBe(0)
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Error executing get moorland intercept percentage query',
-      error
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'Database error'
+        }),
+        event: expect.objectContaining({
+          category: 'database',
+          outcome: 'failure',
+          reference: 'sheetId:SH123,parcelId:PA456'
+        })
+      }),
+      expect.stringContaining(
+        'Database operation failed: getMoorlandInterceptPercentage'
+      )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })

@@ -23,7 +23,7 @@
     "lint:types": "tsc --build tsconfig.json",
     "postversion": "git add package.json package-lock.json && git commit -m $npm_package_version",
     "test": "npm run test:unit && npm run test:db && npm run merge:coverage",
-    "test:unit": "jest --config=jest.unit.config.js --coverage --verbose --runInBand",
+    "test:unit": "jest --watch --config=jest.unit.config.js --coverage --verbose --runInBand",
     "test:quick": "jest --config=jest.unit.config.js ",
     "test:watch": "jest --watch",
     "test:db": "npm run extractsql && npx jest --config=jest.db.config.js --runInBand --coverage",

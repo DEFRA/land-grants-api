@@ -1,4 +1,8 @@
-import { roundSqm } from '../../common/helpers/measurement.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * Get available area of a land parcel excluding specified land cover classes.
@@ -44,10 +48,6 @@ async function getParcelAvailableArea(
     FROM unioned_geom
     `
 
-    logger.info(
-      `Executing Available Area Calculation for parcelId: ${sheetId}-${parcelId}`
-    )
-
     const result = await client.query(avaialbleAreaCalculationQuery, [
       sheetId,
       parcelId,
@@ -55,18 +55,23 @@ async function getParcelAvailableArea(
     ])
 
     const totalLandCoverArea = result?.rows[0]?.total_land_cover_area || 0
-    logger.info(
-      `Calculated area for parcelId: ${sheetId}-${parcelId}, result: ${totalLandCoverArea}`
-    )
+
+    logInfo(logger, {
+      category: 'parcel',
+      operation: 'Fetch parcel available area',
+      reference: `parcelId:${parcelId}, sheetId:${sheetId}, totalLandCoverArea:${totalLandCoverArea}`
+    })
 
     const roundedTotalLandCoverArea = roundSqm(totalLandCoverArea)
 
     return roundedTotalLandCoverArea
-  } catch (err) {
-    logger.error(
-      `Error calculating area for parcelId: ${sheetId}-${parcelId} ${err.message}, ${err.stack}`
-    )
-    throw err
+  } catch (error) {
+    logDatabaseError(logger, {
+      operation: 'getParcelAvailableArea',
+      error,
+      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+    })
+    throw error
   } finally {
     if (client) {
       client.release()
