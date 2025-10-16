@@ -70,10 +70,15 @@ const ParcelsController = {
           category: 'database',
           action: 'my new action'
           // outcome: 'failure'
+        },
+        error: {
+          message: 'error.message',
+          stack_trace: 'error.stack',
+          type: 'error.constructor.name'
         }
       }
 
-      request.logger.error(context, `Database operation failed: TEST4`)
+      request.logger.error(context, `_Database operation failed: TEST4`)
 
       logDatabaseError(request.logger, {
         operation: 'database',
