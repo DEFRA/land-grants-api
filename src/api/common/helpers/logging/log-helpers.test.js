@@ -76,7 +76,7 @@ describe('Log Helpers', () => {
       error.code = 'ETIMEDOUT'
 
       logDatabaseError(mockLogger, {
-        operation: 'getEnabledActions',
+        operation: 'Get enabled actions',
         error,
         reference: 'sheet:123,parcel:456'
       })
@@ -90,12 +90,12 @@ describe('Log Helpers', () => {
           },
           event: {
             category: 'database',
-            action: 'getEnabledActions',
+            action: 'Get enabled actions',
             outcome: 'failure',
             reference: 'sheet:123,parcel:456'
           }
         },
-        'Database operation failed: getEnabledActions'
+        'Database operation failed: Get enabled actions'
       )
     })
 

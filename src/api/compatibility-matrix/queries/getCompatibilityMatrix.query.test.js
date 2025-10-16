@@ -41,12 +41,12 @@ describe('getCompatibilityMatrix', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         event: {
-          action: 'Fetch compatibility matrix',
-          category: 'parcel',
+          action: 'Get compatibility matrix',
+          category: 'database',
           outcome: 'success'
         }
       },
-      'Fetch compatibility matrix'
+      'Get compatibility matrix'
     )
   })
 
@@ -82,7 +82,7 @@ describe('getCompatibilityMatrix', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: getCompatibilityMatrix'
+        'Database operation failed: Get compatibility matrix'
       )
     )
   })

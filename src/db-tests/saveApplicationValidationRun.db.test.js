@@ -72,7 +72,7 @@ describe('Save application validation run result', () => {
       expect.objectContaining({
         error: expect.objectContaining({ message: 'Database error' })
       }),
-      'Database operation failed: saveApplicationValidationRun'
+      'Database operation failed: Save application validation run'
     )
   })
 })

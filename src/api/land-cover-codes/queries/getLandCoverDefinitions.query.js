@@ -47,15 +47,15 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
     }
 
     logInfo(logger, {
-      category: 'parcel',
-      operation: 'Fetch land covers for land cover definitions',
+      category: 'database',
+      operation: 'Get land cover definitions',
       reference: `landCoverCodes:${landCoverCodes.join(',')}, items:${dbResponse?.rows?.length}`
     })
 
     return transformLandCoverDefinitions(dbResponse.rows)
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getLandCoverDefinitions',
+      operation: 'Get land cover definitions',
       error
     })
     throw error

@@ -14,8 +14,8 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
   let client
   try {
     logInfo(logger, {
-      category: 'application',
-      operation: 'Fetch application validation runs',
+      category: 'database',
+      operation: 'Get application validation runs',
       reference: `applicationId:${applicationId}`
     })
     client = await db.connect()
@@ -28,7 +28,7 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
     return result.rows
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getApplicationValidationRuns',
+      operation: 'Get application validation runs',
       error
     })
     return null

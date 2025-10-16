@@ -146,7 +146,7 @@ describe('getAgreementsForParcel', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: getAgreementsForParcel'
+        'Database operation failed: Get agreements for parcel'
       )
     )
 
@@ -175,7 +175,7 @@ describe('getAgreementsForParcel', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: getAgreementsForParcel'
+        'Database operation failed: Get agreements for parcel'
       )
     )
 

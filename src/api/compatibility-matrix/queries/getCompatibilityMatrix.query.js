@@ -19,14 +19,14 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
     const result = await client.query(query, codes ? [codes] : null)
 
     logInfo(logger, {
-      category: 'parcel',
-      operation: 'Fetch compatibility matrix'
+      category: 'database',
+      operation: 'Get compatibility matrix'
     })
 
     return result?.rows.map(compatibilityMatrixTransformer)
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getCompatibilityMatrix',
+      operation: 'Get compatibility matrix',
       error
     })
     return []

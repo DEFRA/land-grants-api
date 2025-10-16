@@ -57,8 +57,8 @@ async function getParcelAvailableArea(
     const totalLandCoverArea = result?.rows[0]?.total_land_cover_area || 0
 
     logInfo(logger, {
-      category: 'parcel',
-      operation: 'Fetch parcel available area',
+      category: 'database',
+      operation: 'Get parcel available area',
       reference: `parcelId:${parcelId}, sheetId:${sheetId}, totalLandCoverArea:${totalLandCoverArea}`
     })
 
@@ -67,7 +67,7 @@ async function getParcelAvailableArea(
     return roundedTotalLandCoverArea
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getParcelAvailableArea',
+      operation: 'Get parcel available area',
       error,
       reference: `sheetId:${sheetId},parcelId:${parcelId}`
     })

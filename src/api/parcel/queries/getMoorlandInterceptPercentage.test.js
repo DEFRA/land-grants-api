@@ -133,7 +133,7 @@ describe('getMoorlandInterceptPercentage', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: getMoorlandInterceptPercentage'
+        'Database operation failed: Get moorland intercept percentage'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)

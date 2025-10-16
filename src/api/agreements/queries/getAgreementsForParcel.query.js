@@ -1,4 +1,7 @@
-import { logDatabaseError } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
 
 /**
@@ -24,11 +27,15 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2'
     const values = [sheetId, parcelId]
     const result = await client.query(query, values)
-
+    logInfo(logger, {
+      category: 'database',
+      operation: 'Get agreements for parcel',
+      reference: `sheetId:${sheetId}, parcelId:${parcelId}`
+    })
     return agreementActionsTransformer(result.rows)
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getAgreementsForParcel',
+      operation: 'Get agreements for parcel',
       error
     })
     return []
