@@ -9,18 +9,15 @@ import {
   parcelsSchema,
   parcelsSuccessResponseSchema
 } from '~/src/api/parcel/schema/parcel.schema.js'
-import {
-  splitParcelId,
-  getParcelActionsWithAvailableArea
-} from '~/src/api/parcel/service/parcel.service.js'
+import { getParcelActionsWithAvailableArea } from '~/src/api/parcel/service/parcel.service.js'
 import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
-import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
+import { getDataAndValidateRequest } from '../validation/parcel.validation.js'
+import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
-  logInfo,
-  logResourceNotFound
+  logInfo
 } from '../../common/helpers/logging/log-helpers.js'
 
 /**
@@ -55,6 +52,8 @@ const ParcelsController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
+      const postgresDb = request.server.postgresDb
+      // @ts-expect-error - payload
       const { parcelIds, fields } = request.payload
       logInfo(request.logger, {
         category: 'parcel',
@@ -62,21 +61,37 @@ const ParcelsController = {
         reference: `parcelIds:${parcelIds.join(',')}`
       })
 
-      const responseParcels = []
       const showActionResults = fields.includes('actions.results')
 
-      for (const parcel of parcelIds) {
-        const { parcelResponse, error } = await getActionsForParcel(
-          parcel,
-          request.payload,
-          showActionResults,
-          request
-        )
-        if (error) {
-          return Boom.notFound(error)
-        }
-        responseParcels.push(parcelResponse)
+      const validationResponse = await getDataAndValidateRequest(
+        parcelIds,
+        request
+      )
+
+      if (validationResponse.errors && validationResponse.errors.length > 0) {
+        request.logger.error('Validation errors', validationResponse.errors)
+        return Boom.notFound(validationResponse.errors.join(', '))
       }
+
+      const compatibilityCheckFn = await createCompatibilityMatrix(
+        request.logger,
+        postgresDb
+      )
+
+      const responseParcels = await Promise.all(
+        validationResponse.parcels.map(async (parcel) => {
+          return await getActionsForParcel(
+            parcel,
+            request.payload,
+            showActionResults,
+            validationResponse.enabledActions,
+            compatibilityCheckFn,
+            request
+          )
+        })
+      )
+
+      request.logger.info('PARCELS RESPONSE', responseParcels)
 
       return h
         .response({
@@ -85,16 +100,13 @@ const ParcelsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Actions not found') {
-        return Boom.notFound(error.message)
-      }
-      // @ts-expect-error - postgresDb
-      const { parcelIds } = request.payload
       const errorMessage = 'Error fetching parcels'
+      // @ts-expect-error - payload
+      const { parcelIds, fields } = request.payload
       logBusinessError(request.logger, {
         operation: 'Fetch parcels',
         error,
-        reference: `parcelIds:${parcelIds.join(',')}`
+        reference: `parcelIds:${parcelIds.join(',')}, fields:${fields.join(',')}`
       })
       return Boom.internal(errorMessage)
     }
@@ -110,52 +122,41 @@ async function getActionsForParcel(
   parcel,
   payload,
   showActionResults,
+  enabledActions,
+  compatibilityCheckFn,
   request
 ) {
   const { fields, plannedActions } = payload
-  const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
-
-  const landParcel = await getLandData(
-    sheetId,
-    parcelId,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  if (!landParcel || landParcel.length === 0) {
-    logResourceNotFound(request.logger, {
-      resourceType: 'Land parcel',
-      reference: `sheetId:${sheetId},parcelId:${parcelId}`
-    })
-    return { parcelResponse: null, error: `Land parcel not found: ${parcel}` }
-  }
-
   const agreements = await getAgreementsForParcel(
-    sheetId,
-    parcelId,
+    parcel.sheet_id,
+    parcel.parcel_id,
     request.server.postgresDb,
     request.logger
   )
 
   const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
+  request.logger.info(
+    `Merged actions for parcel ${parcel.sheetId}-${parcel.parcelId}:`,
+    mergedActions
+  )
+
   const parcelResponse = {
-    parcelId: landParcel['0'].parcel_id,
-    sheetId: landParcel['0'].sheet_id
+    parcelId: parcel.parcel_id,
+    sheetId: parcel.sheet_id
   }
 
   if (fields.includes('size')) {
-    parcelResponse.size = sizeTransformer(
-      sqmToHaRounded(landParcel['0'].area_sqm)
-    )
+    parcelResponse.size = sizeTransformer(sqmToHaRounded(parcel.area_sqm))
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {
     const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
-      sheetId,
-      parcelId,
+      parcel,
       mergedActions,
       showActionResults,
+      enabledActions,
+      compatibilityCheckFn,
       request.server.postgresDb,
       request.logger
     )
@@ -166,5 +167,5 @@ async function getActionsForParcel(
 
     parcelResponse.actions = sortedParcelActions
   }
-  return { parcelResponse, error: null }
+  return parcelResponse
 }
