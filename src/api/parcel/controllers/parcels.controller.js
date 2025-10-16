@@ -52,7 +52,7 @@ const ParcelsController = {
    */
   handler: async (request, h) => {
     try {
-      request.logger.info('TEST 1: Simple string')
+      request.logger.info('- TEST 1: Simple string')
 
       request.logger.info({ testField: 'hello' }, 'TEST 2: String with object')
 
