@@ -66,15 +66,12 @@ const ParcelsController = {
       )
 
       const context = {
-        'error.message': 'my message',
-        'error.stack_trace': 'my stack trace',
-        'error.type': 'error type',
-        'event.category': 'database',
-        'event.action': 'action',
-        'event.outcome': 'failure'
+        event: {
+          action: 'my action'
+        }
       }
 
-      request.logger.error(context, `Database operation failed: TEST4`)
+      request.logger.error(context, `- Database operation failed: TEST4`)
 
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
