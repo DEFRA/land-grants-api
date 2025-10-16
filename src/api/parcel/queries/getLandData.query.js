@@ -23,8 +23,8 @@ async function getLandData(sheetId, parcelId, db, logger) {
 
     const result = await client.query(query, values)
     logInfo(logger, {
-      category: 'parcel',
-      operation: 'Fetch land data for parcel',
+      category: 'database',
+      operation: 'Get land data for parcel',
       reference: `parcelId:${parcelId}, sheetId:${sheetId}, items:${result?.rows?.length}`
     })
 
@@ -34,7 +34,7 @@ async function getLandData(sheetId, parcelId, db, logger) {
     }))
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getLandData',
+      operation: 'Get land data for parcel',
       error
     })
     return null

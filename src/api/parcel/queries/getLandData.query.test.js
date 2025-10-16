@@ -98,7 +98,7 @@ describe('getLandData', () => {
             message: 'Database connection failed'
           })
         }),
-        expect.stringContaining('Database operation failed: getLandData')
+        expect.stringContaining('Database operation failed: Get land data')
       )
 
       expect(mockClient.release).not.toHaveBeenCalled()
@@ -123,7 +123,7 @@ describe('getLandData', () => {
             message: 'Query execution failed'
           })
         }),
-        expect.stringContaining('Database operation failed: getLandData')
+        expect.stringContaining('Database operation failed: Get land data')
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
       expect(result).toBeNull()

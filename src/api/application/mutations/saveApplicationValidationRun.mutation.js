@@ -33,14 +33,14 @@ async function saveApplicationValidationRun(
     ])
 
     logInfo(logger, {
-      category: 'application',
+      category: 'database',
       operation: 'Save application validation run'
     })
 
     return result.rows[0]
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'saveApplicationValidationRun',
+      operation: 'Save application validation run',
       error
     })
     return null

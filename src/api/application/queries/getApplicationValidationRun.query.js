@@ -29,7 +29,7 @@ async function getApplicationValidationRun(logger, db, id) {
     return result.rows[0]
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getApplicationValidationRun',
+      operation: 'Get application validation run',
       error
     })
     return null

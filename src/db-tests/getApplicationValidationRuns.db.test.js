@@ -77,7 +77,7 @@ describe('Get application validation runs', () => {
       expect.objectContaining({
         error: expect.objectContaining({ message: 'Database error' })
       }),
-      'Database operation failed: getApplicationValidationRuns'
+      'Database operation failed: Get application validation runs'
     )
   })
 })

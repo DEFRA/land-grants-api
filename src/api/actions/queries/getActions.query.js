@@ -32,7 +32,7 @@ async function getEnabledActions(logger, db) {
     return result.rows.map(actionConfigTransformer)
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getEnabledActions',
+      operation: 'Get enabled actions',
       error
     })
     return []

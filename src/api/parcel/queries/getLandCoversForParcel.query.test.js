@@ -108,7 +108,7 @@ describe('getLandCoversForParcel', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: getLandCoversForParcel'
+        'Database operation failed: Get land covers for parcel'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)

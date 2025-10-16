@@ -28,8 +28,8 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     `
 
     logInfo(logger, {
-      category: 'parcel',
-      operation: 'Fetch land covers',
+      category: 'database',
+      operation: 'Get land covers for parcel',
       reference: `parcelId:${parcelId},sheetId:${sheetId}`
     })
 
@@ -43,7 +43,7 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     return landCovers
   } catch (error) {
     logDatabaseError(logger, {
-      operation: 'getLandCoversForParcel',
+      operation: 'Get land covers for parcel',
       error,
       reference: `sheetId:${sheetId},parcelId:${parcelId}`
     })
