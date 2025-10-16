@@ -119,7 +119,6 @@ describe('Pact Verification', () => {
 
   it('validates the expectations of Matching Service', async () => {
     const options = await pactVerifierOptions()
-    console.log('Options', options)
     const results = await new Verifier(options).verifyProvider()
     expect(results).toBeTruthy()
   }, 30000)
