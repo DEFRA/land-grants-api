@@ -1,7 +1,6 @@
 import { type } from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
-// import { execSync } from 'child_process'
 import { GenericContainer, Network, Wait } from 'testcontainers'
 import { config } from '../../config/index.js'
 

@@ -69,7 +69,10 @@ describe('Save application validation run result', () => {
     expect(client.release).toHaveBeenCalled()
     expect(result).toBeNull()
     expect(logger.error).toHaveBeenCalledWith(
-      'Error executing save application validation run mutation: Database error'
+      expect.objectContaining({
+        error: expect.objectContaining({ message: 'Database error' })
+      }),
+      'Database operation failed: saveApplicationValidationRun'
     )
   })
 })

@@ -22,6 +22,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
 
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
@@ -29,23 +32,20 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update package version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DESTINATION_BRANCH: main
+          FILE_TO_COMMIT: package.json
         run: |
-          git fetch --tags
-          git fetch --prune --unshallow || true
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          git fetch origin "$BRANCH_NAME"
-          git checkout "$BRANCH_NAME"
-
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-          npm version "$LATEST_TAG" --no-git-tag-version
-          git add package.json
-          git commit -m "update version [skip ci]" --no-verify
-          git push origin "$BRANCH_NAME"
-          echo "$LATEST_TAG"
+          export MESSAGE="update version [skip ci]"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/:owner/:repo/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="${{ env.DESTINATION_BRANCH }}" \
+            --field sha="$SHA"
 
       - name: Make extract seed file script executable
         run: chmod +x ./scripts/extract-gz-to-sql

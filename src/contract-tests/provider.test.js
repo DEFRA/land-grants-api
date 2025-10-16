@@ -1,4 +1,6 @@
 import { env } from 'node:process'
+
+import { config } from '~/src/config/index.js'
 import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
@@ -14,11 +16,11 @@ import {
 } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/db-tests/testLogger.js'
-import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
-jest.mock('~/src/api/actions/queries/index.js')
+jest.mock('~/src/api/actions/queries/getActions.query.js')
 jest.mock('~/src/api/application/mutations/saveApplication.mutation.js')
 jest.mock('~/src/available-area/compatibilityMatrix.js')
 jest.mock('~/src/available-area/availableArea.js')
@@ -63,7 +65,7 @@ const pactVerifierOptions = {
   pactBrokerUsername: env.PACT_BROKER_USERNAME,
   pactBrokerPassword: env.PACT_BROKER_PASSWORD,
   publishVerificationResult: true,
-  providerVersion: process.env.GIT_COMMIT ?? '1.0.0',
+  providerVersion: config.get('serviceVersion') ?? '0.0.0',
 
   stateHandlers: {
     'has parcels': ({ parcels }) => {
