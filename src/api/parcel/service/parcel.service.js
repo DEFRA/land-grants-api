@@ -8,6 +8,7 @@ import {
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Split id into sheet id and parcel id
@@ -58,7 +59,11 @@ export async function getParcelActionsWithAvailableArea(
     throw Error(errorMessage)
   }
 
-  logger.info(`Found ${enabledActions.length} action configs from DB`)
+  logInfo(logger, {
+    category: 'parcel',
+    operation: 'Fetch parcel actions with available area',
+    reference: `parcelId:${parcelId}, sheetId:${sheetId}, enabledActions:${enabledActions.length}`
+  })
 
   const compatibilityCheckFn = await createCompatibilityMatrix(
     logger,

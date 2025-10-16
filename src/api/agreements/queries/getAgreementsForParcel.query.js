@@ -1,3 +1,4 @@
+import { logDatabaseError } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
 
 /**
@@ -17,24 +18,19 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
   let client
 
   try {
-    logger.info(
-      `Connecting to DB to fetch agreements for parcelId: ${sheetId}-${parcelId}`
-    )
     client = await db.connect()
-    logger.info(`Retrieving agreements for parcelId: ${sheetId}-${parcelId}`)
 
     const query =
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2'
     const values = [sheetId, parcelId]
-
     const result = await client.query(query, values)
-    logger.info(
-      `Retrieved agreements for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
-    )
 
     return agreementActionsTransformer(result.rows)
   } catch (error) {
-    logger.error(`Error executing get agreements query: ${error}`)
+    logDatabaseError(logger, {
+      operation: 'getAgreementsForParcel',
+      error
+    })
     return []
   } finally {
     if (client) {

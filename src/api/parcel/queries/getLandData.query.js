@@ -1,4 +1,8 @@
-import { roundSqm } from '../../common/helpers/measurement.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * Get a land data
@@ -12,27 +16,27 @@ async function getLandData(sheetId, parcelId, db, logger) {
   let client
 
   try {
-    logger.info(
-      `Connecting to DB to fetch info parcelId: ${sheetId}-${parcelId}`
-    )
     client = await db.connect()
-    logger.info(`Retrieving land parcels for parcelId: ${sheetId}-${parcelId}`)
-
     const query =
       'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2'
     const values = [sheetId, parcelId]
 
     const result = await client.query(query, values)
-    logger.info(
-      `Retrieved land parcels for parcelId:  ${sheetId}-${parcelId}, items: ${result?.rows?.length}`
-    )
+    logInfo(logger, {
+      category: 'parcel',
+      operation: 'Fetch land data for parcel',
+      reference: `parcelId:${parcelId}, sheetId:${sheetId}, items:${result?.rows?.length}`
+    })
 
     return result.rows.map((row) => ({
       ...row,
       area: roundSqm(row.area)
     }))
   } catch (error) {
-    logger.error(`Error executing get Land parcels query: ${error}`)
+    logDatabaseError(logger, {
+      operation: 'getLandData',
+      error
+    })
     return null
   } finally {
     if (client) {

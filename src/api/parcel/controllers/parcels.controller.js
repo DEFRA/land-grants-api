@@ -17,6 +17,11 @@ import { sizeTransformer } from '~/src/api/parcel/transformers/parcelActions.tra
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
+import {
+  logBusinessError,
+  logInfo,
+  logResourceNotFound
+} from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * ParcelsController
@@ -51,7 +56,11 @@ const ParcelsController = {
     try {
       // @ts-expect-error - postgresDb
       const { parcelIds, fields } = request.payload
-      request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
+      logInfo(request.logger, {
+        category: 'parcel',
+        operation: 'Fetch parcels',
+        reference: `parcelIds:${parcelIds.join(',')}`
+      })
 
       const responseParcels = []
       const showActionResults = fields.includes('actions.results')
@@ -69,8 +78,6 @@ const ParcelsController = {
         responseParcels.push(parcelResponse)
       }
 
-      request.logger.info('PARCELS RESPONSE', responseParcels)
-
       return h
         .response({
           message: 'success',
@@ -81,11 +88,13 @@ const ParcelsController = {
       if (error instanceof Error && error.message === 'Actions not found') {
         return Boom.notFound(error.message)
       }
-
+      // @ts-expect-error - postgresDb
+      const { parcelIds } = request.payload
       const errorMessage = 'Error fetching parcels'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      logBusinessError(request.logger, {
+        operation: 'Fetch parcels',
+        error,
+        reference: `parcelIds:${parcelIds.join(',')}`
       })
       return Boom.internal(errorMessage)
     }
@@ -114,9 +123,11 @@ async function getActionsForParcel(
   )
 
   if (!landParcel || landParcel.length === 0) {
-    const errorMessage = `Land parcel not found: ${parcel}`
-    request.logger.error(errorMessage)
-    return { parcelResponse: null, error: errorMessage }
+    logResourceNotFound(request.logger, {
+      resourceType: 'Land parcel',
+      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+    })
+    return { parcelResponse: null, error: `Land parcel not found: ${parcel}` }
   }
 
   const agreements = await getAgreementsForParcel(
@@ -127,11 +138,6 @@ async function getActionsForParcel(
   )
 
   const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
-
-  request.logger.info(
-    `Merged actions for parcel ${sheetId}-${parcelId}:`,
-    mergedActions
-  )
 
   const parcelResponse = {
     parcelId: landParcel['0'].parcel_id,

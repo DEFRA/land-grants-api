@@ -1,3 +1,9 @@
+import {
+  logDatabaseError,
+  logInfo,
+  logValidationWarn
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} actionCodes - The action code(s) to get land cover codes for
@@ -10,13 +16,12 @@ async function getLandCoversForActions(actionCodes, db, logger) {
 
   try {
     if (!Array.isArray(actionCodes) || actionCodes.length === 0) {
-      logger.warn('No action codes provided')
+      logValidationWarn(logger, {
+        operation: 'Fetch land covers for actions',
+        errors: 'No action codes provided'
+      })
       return {}
     }
-
-    logger.info(
-      `Connecting to DB to fetch land cover codes for action codes: ${actionCodes.join(', ')}`
-    )
 
     client = await db.connect()
     const query = `
@@ -27,19 +32,25 @@ async function getLandCoversForActions(actionCodes, db, logger) {
     const actionLandCovers = await client.query(query, [actionCodes])
 
     if (!actionLandCovers || actionLandCovers?.rows?.length === 0) {
-      logger.warn(
-        `No land cover codes found for action codes: ${actionCodes.join(', ')}`
-      )
+      logValidationWarn(logger, {
+        operation: 'Fetch land covers for actions',
+        errors: `No land cover codes found for action codes: ${actionCodes.join(', ')}`
+      })
       return {}
     }
 
-    logger.info(
-      `Retrieved land cover codes for action codes: ${actionCodes.join(', ')}, items: ${actionLandCovers?.rows?.length}`
-    )
+    logInfo(logger, {
+      category: 'parcel',
+      operation: 'Fetch land cover codes for action codes',
+      reference: `actionCodes:${actionCodes.join(',')},items: ${actionLandCovers?.rows?.length}`
+    })
 
     return transformLandCoversForActions(actionLandCovers, actionCodes)
   } catch (error) {
-    logger.error(`Unable to get land cover codes`, error)
+    logDatabaseError(logger, {
+      operation: 'getLandCoversForActions',
+      error
+    })
     throw error
   } finally {
     if (client) {

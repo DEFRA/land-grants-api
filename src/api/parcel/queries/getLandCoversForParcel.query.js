@@ -1,4 +1,8 @@
-import { roundSqm } from '../../common/helpers/measurement.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 /**
  * Get available area of a land parcel excluding specified land cover classes.
@@ -23,7 +27,11 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
         ORDER BY lc.land_cover_class_code, lc.area_sqm
     `
 
-    logger.info(`Retrieving land covers for parcelId: ${sheetId}-${parcelId}`)
+    logInfo(logger, {
+      category: 'parcel',
+      operation: 'Fetch land covers',
+      reference: `parcelId:${parcelId},sheetId:${sheetId}`
+    })
 
     const result = await client.query(landCoversQuery, [sheetId, parcelId])
 
@@ -33,12 +41,13 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     }))
 
     return landCovers
-  } catch (err) {
-    logger.error(
-      `Error retrieving land covers for parcelId: ${sheetId}-${parcelId} ${err.message}`,
-      err
-    )
-    throw err
+  } catch (error) {
+    logDatabaseError(logger, {
+      operation: 'getLandCoversForParcel',
+      error,
+      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+    })
+    throw error
   } finally {
     if (client) {
       client.release()

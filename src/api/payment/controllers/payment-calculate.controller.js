@@ -14,6 +14,11 @@ import {
 } from '~/src/payment-calculation/paymentCalculation.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+import {
+  logValidationWarn,
+  logBusinessError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
  * PaymentsCalculateController
@@ -51,15 +56,19 @@ const PaymentsCalculateController = {
       // @ts-expect-error - payload
       const { landActions, startDate } = request.payload
 
-      request.logger.info(
-        `Controller calculating land actions payment ${landActions}`
-      )
+      logInfo(request.logger, {
+        category: 'payment',
+        operation: 'Controller calculating land actions payment'
+      })
 
       if (landActions.length === 0) {
-        const errorMessage =
+        logValidationWarn(request.logger, {
+          operation: 'Payment calculation request',
+          errors: 'No land or actions data provided'
+        })
+        return Boom.badRequest(
           'Error calculating payment land actions, no land or actions data provided'
-        request.logger.error(errorMessage)
-        return Boom.badRequest(errorMessage)
+        )
       }
 
       const { enabledActions } = await getPaymentCalculationDataRequirements(
@@ -76,7 +85,10 @@ const PaymentsCalculateController = {
 
       // If there are validation errors, return a bad request response
       if (validationErrors && validationErrors.length > 0) {
-        request.logger.error('Validation errors', validationErrors)
+        logValidationWarn(request.logger, {
+          operation: 'Payment calculation request',
+          errors: 'No land or actions data provided'
+        })
         return Boom.badRequest(validationErrors.join(', '))
       }
 
@@ -96,9 +108,12 @@ const PaymentsCalculateController = {
       })
 
       if (totalDurationYears === 0) {
-        const errorMessage = 'Error getting actions information'
-        request.logger.error(errorMessage)
-        return Boom.badRequest(errorMessage)
+        logBusinessError(request.logger, {
+          operation: 'Payment calculation: determine action duration',
+          error: new Error('No valid duration found for requested actions'),
+          reference: `actionCodes:${landActionCodes.join(',')}`
+        })
+        return Boom.badRequest('Error getting actions information')
       }
 
       const calculateResponse = getPaymentCalculationForParcels(
@@ -109,21 +124,26 @@ const PaymentsCalculateController = {
       )
 
       if (!calculateResponse) {
-        const errorMessage = 'Unable to calculate payment'
-        request.logger.error(errorMessage)
-        return Boom.badRequest(errorMessage)
+        logBusinessError(request.logger, {
+          operation: 'Payment calculation: calculate payment',
+          error: new Error('Payment calculation returned null/undefined'),
+          reference: `landActionsCount:${landActions.length}, totalDurationYears:${totalDurationYears}, startDate:${startDate}`
+        })
+        return Boom.badRequest('Unable to calculate payment')
       }
 
       return h
         .response({ message: 'success', payment: calculateResponse })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = `Error calculating land actions payment: ${error.message}`
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      // @ts-expect-error - payload
+      const { landActions, startDate } = request.payload
+      logBusinessError(request.logger, {
+        operation: 'Payment calculation: calculate land actions payment',
+        error,
+        reference: `landActionsCount:${landActions.length}, startDate:${startDate}`
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal('Error calculating land actions payment')
     }
   }
 }

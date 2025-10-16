@@ -140,8 +140,16 @@ describe('getAgreementsForParcel', () => {
 
     expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
-      `Error executing get agreements query: Error: ${error.message}`
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'Database error'
+        })
+      }),
+      expect.stringContaining(
+        'Database operation failed: getAgreementsForParcel'
+      )
     )
+
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
 
@@ -159,9 +167,18 @@ describe('getAgreementsForParcel', () => {
     )
 
     expect(result).toEqual([])
+
     expect(mockLogger.error).toHaveBeenCalledWith(
-      `Error executing get agreements query: Error: ${connectionError.message}`
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'Connection failed'
+        })
+      }),
+      expect.stringContaining(
+        'Database operation failed: getAgreementsForParcel'
+      )
     )
+
     expect(mockClient.release).not.toHaveBeenCalled()
   })
 

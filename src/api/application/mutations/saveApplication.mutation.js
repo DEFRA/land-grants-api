@@ -1,3 +1,5 @@
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
+
 /**
  * Save application
  * @param {object} logger - The logger
@@ -8,7 +10,11 @@
 async function saveApplication(logger, db, application) {
   let client
   try {
-    logger.info(`Connecting to DB to save application`)
+    logInfo(logger, {
+      category: 'application',
+      operation: 'Saving appllication',
+      reference: `applicationId:${application.application_id}, sbi:${application.sbi}, crn:${application.crn}`
+    })
     client = await db.connect()
 
     const query = `
