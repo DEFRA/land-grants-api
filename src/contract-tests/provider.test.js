@@ -1,6 +1,5 @@
 import { env } from 'node:process'
 
-import { config } from '~/src/config/index.js'
 import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
@@ -18,6 +17,7 @@ import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMat
 import { logger } from '~/src/db-tests/testLogger.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
+import { getLatestVersion } from './git.js'
 
 jest.mock('~/src/api/parcel/queries/getLandData.query.js')
 jest.mock('~/src/api/actions/queries/getActions.query.js')
@@ -34,7 +34,6 @@ const mockGetAvailableAreaForAction = getAvailableAreaForAction
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
-
 const mockCompatibilityCheckFn = jest.fn()
 
 const mockAvailableAreaResult = {
@@ -56,44 +55,47 @@ function createParcel(sheetId, parcelId) {
   }
 }
 
-const pactVerifierOptions = {
-  provider: 'land-grants-api',
-  providerBaseUrl: 'http://localhost:3001',
-  pactBrokerUrl:
-    env.PACT_BROKER_URL ?? 'https://ffc-pact-broker.azure.defra.cloud',
-  consumerVersionSelectors: [{ latest: true }],
-  pactBrokerUsername: env.PACT_BROKER_USERNAME,
-  pactBrokerPassword: env.PACT_BROKER_PASSWORD,
-  publishVerificationResult: true,
-  providerVersion: config.get('serviceVersion') ?? '0.0.0',
+const pactVerifierOptions = async () => {
+  const latestVersion = await getLatestVersion()
+  return {
+    provider: 'land-grants-api',
+    providerBaseUrl: 'http://localhost:3001',
+    pactBrokerUrl:
+      env.PACT_BROKER_URL ?? 'https://ffc-pact-broker.azure.defra.cloud',
+    consumerVersionSelectors: [{ latest: true }],
+    pactBrokerUsername: env.PACT_BROKER_USERNAME,
+    pactBrokerPassword: env.PACT_BROKER_PASSWORD,
+    publishVerificationResult: true,
+    providerVersion: latestVersion ?? '0.0.0',
 
-  stateHandlers: {
-    'has parcels': ({ parcels }) => {
-      const allParcels = []
-      parcels.forEach(({ sheetId, parcelId }) => {
-        const parcel = createParcel(sheetId, parcelId)
-        allParcels.push(parcel)
+    stateHandlers: {
+      'has parcels': ({ parcels }) => {
+        const allParcels = []
+        parcels.forEach(({ sheetId, parcelId }) => {
+          const parcel = createParcel(sheetId, parcelId)
+          allParcels.push(parcel)
+        })
+        mockGetLandData.mockResolvedValue(allParcels)
+      }
+    },
+
+    beforeEach: () => {
+      mockGetEnabledActions.mockResolvedValue(mockActionConfig)
+
+      mockGetAvailableAreaDataRequirements.mockResolvedValue({
+        landCoverCodesForAppliedForAction: [],
+        landCoversForParcel: [],
+        landCoversForExistingActions: []
       })
-      mockGetLandData.mockResolvedValue(allParcels)
+      mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+      mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
+      mockGetAgreementsForParcel.mockResolvedValue([])
+      mockSaveApplication.mockResolvedValue(251)
+    },
+
+    afterEach: () => {
+      jest.clearAllMocks()
     }
-  },
-
-  beforeEach: () => {
-    mockGetEnabledActions.mockResolvedValue(mockActionConfig)
-
-    mockGetAvailableAreaDataRequirements.mockResolvedValue({
-      landCoverCodesForAppliedForAction: [],
-      landCoversForParcel: [],
-      landCoversForExistingActions: []
-    })
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
-    mockGetAgreementsForParcel.mockResolvedValue([])
-    mockSaveApplication.mockResolvedValue(251)
-  },
-
-  afterEach: () => {
-    jest.clearAllMocks()
   }
 }
 
@@ -116,7 +118,8 @@ describe('Pact Verification', () => {
   })
 
   it('validates the expectations of Matching Service', async () => {
-    const results = await new Verifier(pactVerifierOptions).verifyProvider()
+    const options = await pactVerifierOptions()
+    const results = await new Verifier(options).verifyProvider()
     expect(results).toBeTruthy()
   }, 30000)
 })
