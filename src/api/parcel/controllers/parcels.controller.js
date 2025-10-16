@@ -68,8 +68,8 @@ const ParcelsController = {
       const context = {
         event: {
           category: 'database',
-          action: 'my new action',
-          outcome: 'failure'
+          action: 'my new action'
+          // outcome: 'failure'
         }
       }
 
