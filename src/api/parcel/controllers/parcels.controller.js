@@ -17,6 +17,7 @@ import { getDataAndValidateRequest } from '../validation/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
+  logDatabaseError,
   logInfo
 } from '../../common/helpers/logging/log-helpers.js'
 
@@ -51,6 +52,25 @@ const ParcelsController = {
    */
   handler: async (request, h) => {
     try {
+      request.logger.info('TEST 1: Simple string')
+
+      request.logger.info({ testField: 'hello' }, 'TEST 2: String with object')
+
+      request.logger.info(
+        {
+          nested: {
+            field: 'world'
+          }
+        },
+        'TEST 3: Nested object'
+      )
+
+      // Test 4: Your log helper
+      logDatabaseError(request.logger, {
+        operation: 'test',
+        error: new Error('test error')
+      })
+
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
