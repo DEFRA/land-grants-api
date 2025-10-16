@@ -46,7 +46,7 @@ export const logDatabaseError = (logger, { operation, error, reference }) => {
     event: {
       category: 'database',
       action: operation,
-      type: 'failure'
+      outcome: 'failure'
     }
   }
 
