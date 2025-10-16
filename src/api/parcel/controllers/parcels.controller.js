@@ -69,7 +69,7 @@ const ParcelsController = {
         event: {
           category: 'database',
           action: 'my new action',
-          outcome: 'failure'
+          type: 'failure'
         },
         error: {
           message: 'error.message',
