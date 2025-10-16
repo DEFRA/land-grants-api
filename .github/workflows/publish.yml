@@ -31,22 +31,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update package version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DESTINATION_BRANCH: main
-          FILE_TO_COMMIT: package.json
-        run: |
-          export MESSAGE="update version [skip ci]"
-          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
-          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
-          gh api --method PUT /repos/:owner/:repo/contents/$FILE_TO_COMMIT \
-            --field message="$MESSAGE" \
-            --field content="$CONTENT" \
-            --field encoding="base64" \
-            --field branch="${{ env.DESTINATION_BRANCH }}" \
-            --field sha="$SHA"
-
       - name: Make extract seed file script executable
         run: chmod +x ./scripts/extract-gz-to-sql
 
