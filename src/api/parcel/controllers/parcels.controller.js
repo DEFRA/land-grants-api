@@ -72,7 +72,7 @@ const ParcelsController = {
 
       const responseParcels = await Promise.all(
         validationResponse.parcels.map(async (parcel) => {
-          return await getActionsForParcel(
+          return getActionsForParcel(
             parcel,
             request.payload,
             showActionResults,
