@@ -52,50 +52,16 @@ const ParcelsController = {
    */
   handler: async (request, h) => {
     try {
-      request.logger.info('- TEST 1: Simple string')
-
-      request.logger.info({ testField: 'hello' }, 'TEST 2: String with object')
-
-      request.logger.info(
-        {
-          nested: {
-            field: 'world'
-          }
-        },
-        'TEST 3: Nested object'
-      )
-
-      const context = {
-        event: {
-          category: 'database',
-          action: 'my new action',
-          type: 'failure',
-          parcelId: 'parcel-id',
-          sheetId: 'sheet-id',
-          customField: 'custom'
-        },
-        error: {
-          message: 'error.message',
-          stack_trace: 'error.stack',
-          type: 'error.constructor.name'
-        }
-      }
-
-      request.logger.error(context, `Ddatabase operation failed: TEST4`)
-
-      logDatabaseError(request.logger, {
-        operation: 'database',
-        error: new Error('my error'),
-        reference: 'myref'
-      })
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
       const { parcelIds, fields } = request.payload
       logInfo(request.logger, {
         category: 'parcel',
-        operation: 'Fetch parcels',
-        reference: `parcelIds:${parcelIds.join(',')}`
+        message: 'Fetch parcels',
+        context: {
+          parcelIds: parcelIds.join(',')
+        }
       })
 
       const showActionResults = fields.includes('actions.results')
@@ -143,7 +109,10 @@ const ParcelsController = {
       logBusinessError(request.logger, {
         operation: 'Fetch parcels',
         error,
-        reference: `parcelIds:${parcelIds.join(',')}, fields:${fields.join(',')}`
+        context: {
+          parcelIds: parcelIds.join(','),
+          fields: fields.join(',')
+        }
       })
       return Boom.internal(errorMessage)
     }
@@ -174,9 +143,13 @@ async function getActionsForParcel(
   const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
   logInfo(request.logger, {
-    operation: 'Merge actions for parcel',
+    message: 'Merge actions for parcel',
     category: 'parcel',
-    reference: `sheetId: ${parcel.sheet_id}, parcelId: ${parcel.parcel_id}, mergedActions: ${mergedActions.map((a) => a.actionCode).join(',')}`
+    context: {
+      sheetId: parcel.sheet_id,
+      parcelId: parcel.parcel_id,
+      mergedActions: mergedActions.map((a) => a.actionCode).join(',')
+    }
   })
 
   const parcelResponse = {

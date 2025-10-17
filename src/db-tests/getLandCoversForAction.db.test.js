@@ -52,7 +52,7 @@ describe('Get land cover codes', () => {
         event: {
           action: 'Fetch land covers for actions',
           category: 'validation',
-          outcome: 'failure',
+          type: 'warn',
           reason: 'No action codes provided'
         }
       },
@@ -68,7 +68,7 @@ describe('Get land cover codes', () => {
         event: {
           action: 'Fetch land covers for actions',
           category: 'validation',
-          outcome: 'failure',
+          type: 'warn',
           reason: 'No action codes provided'
         }
       },

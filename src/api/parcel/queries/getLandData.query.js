@@ -24,8 +24,12 @@ async function getLandData(sheetId, parcelId, db, logger) {
     const result = await client.query(query, values)
     logInfo(logger, {
       category: 'database',
-      operation: 'Get land data for parcel',
-      reference: `parcelId:${parcelId}, sheetId:${sheetId}, items:${result?.rows?.length}`
+      message: 'Get land data for parcel',
+      context: {
+        parcelId,
+        sheetId,
+        items: result?.rows?.length
+      }
     })
 
     return result.rows.map((row) => ({

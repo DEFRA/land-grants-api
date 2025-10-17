@@ -20,11 +20,9 @@ describe('Log Helpers', () => {
   })
 
   describe('logInfo', () => {
-    it('should log info with all fields', () => {
+    it('should log info with all fields using nested objects', () => {
       logInfo(mockLogger, {
-        operation: 'calculate payment',
         category: 'payment',
-        reference: 'app-123',
         message: 'Payment calculated successfully'
       })
 
@@ -32,74 +30,86 @@ describe('Log Helpers', () => {
         {
           event: {
             category: 'payment',
-            action: 'calculate payment',
-            outcome: 'success',
-            reference: 'app-123'
+            action: 'Payment calculated successfully',
+            type: 'info'
           }
         },
         'Payment calculated successfully'
       )
     })
 
-    it('should use operation as message when message is not provided', () => {
+    it('should log info with context in message', () => {
       logInfo(mockLogger, {
-        operation: 'validate application',
-        category: 'application'
+        category: 'application',
+        message: 'Application validated',
+        context: { applicationId: 'APP-123' }
       })
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         {
           event: {
             category: 'application',
-            action: 'validate application',
-            outcome: 'success'
+            action: 'Application validated',
+            type: 'info'
           }
         },
-        'validate application'
+        'Application validated [applicationId=APP-123]'
       )
     })
 
-    it('should not include reference if not provided', () => {
+    it('should log info without context', () => {
       logInfo(mockLogger, {
         operation: 'fetch parcels',
-        category: 'parcel'
+        category: 'parcel',
+        message: 'Parcels fetched'
       })
 
-      const callArgs = mockLogger.info.mock.calls[0][0]
-      expect(callArgs.event.reference).toBeUndefined()
+      const message = mockLogger.info.mock.calls[0][1]
+      expect(message).toBe('Parcels fetched')
+      expect(message).not.toContain('[')
     })
   })
 
   describe('logDatabaseError', () => {
-    it('should log database error with all fields', () => {
+    it('should log database error with nested ECS structure', () => {
       const error = new Error('Connection timeout')
-      error.code = 'ETIMEDOUT'
 
       logDatabaseError(mockLogger, {
-        operation: 'Get enabled actions',
-        error,
-        reference: 'sheet:123,parcel:456'
+        operation: 'getEnabledActions',
+        error
       })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          error: {
-            message: 'Connection timeout',
-            stack_trace: error.stack,
-            type: 'Error'
-          },
-          event: {
-            category: 'database',
-            action: 'Get enabled actions',
-            outcome: 'failure',
-            reference: 'sheet:123,parcel:456'
-          }
-        },
-        'Database operation failed: Get enabled actions'
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData).toHaveProperty('error')
+      expect(logData.error).toEqual({
+        message: 'Connection timeout',
+        stack_trace: error.stack,
+        type: 'Error'
+      })
+      expect(logData).toHaveProperty('event')
+      expect(logData.event).toEqual({
+        category: 'database',
+        action: 'getEnabledActions',
+        type: 'error'
+      })
+    })
+
+    it('should include context in message', () => {
+      const error = new Error('Query failed')
+
+      logDatabaseError(mockLogger, {
+        operation: 'getLandData',
+        error,
+        context: { sheetId: '123', parcelId: '456' }
+      })
+
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toBe(
+        'Database operation failed: getLandData [sheetId=123 | parcelId=456]'
       )
     })
 
-    it('should log database error without reference', () => {
+    it('should work without context', () => {
       const error = new Error('Query failed')
 
       logDatabaseError(mockLogger, {
@@ -107,9 +117,8 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.event.reference).toBeUndefined()
-      expect(callArgs.error.message).toBe('Query failed')
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toBe('Database operation failed: saveApplication')
     })
 
     it('should handle error with custom type', () => {
@@ -127,8 +136,24 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.error.type).toBe('DatabaseError')
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData.error.type).toBe('DatabaseError')
+      expect(logData.error.message).toBe('Connection pool exhausted')
+    })
+
+    it('should use nested objects not flattened keys', () => {
+      const error = new Error('Test')
+
+      logDatabaseError(mockLogger, {
+        operation: 'test',
+        error
+      })
+
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(typeof logData.error).toBe('object')
+      expect(typeof logData.event).toBe('object')
+      expect(logData['error.message']).toBeUndefined()
+      expect(logData['event.category']).toBeUndefined()
     })
   })
 
@@ -136,8 +161,7 @@ describe('Log Helpers', () => {
     it('should log validation error with single error string', () => {
       logValidationWarn(mockLogger, {
         operation: 'payment calculation',
-        errors: 'No land actions provided',
-        reference: 'app-123'
+        errors: 'No land actions provided'
       })
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -145,9 +169,8 @@ describe('Log Helpers', () => {
           event: {
             category: 'validation',
             action: 'payment calculation',
-            outcome: 'failure',
-            reason: 'No land actions provided',
-            reference: 'app-123'
+            type: 'warn',
+            reason: 'No land actions provided'
           }
         },
         'Validation failed: payment calculation'
@@ -160,45 +183,61 @@ describe('Log Helpers', () => {
         errors: ['Invalid parcel ID', 'Action code not found', 'Missing SBI']
       })
 
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          event: {
-            category: 'validation',
-            action: 'application validation',
-            outcome: 'failure',
-            reason: 'Invalid parcel ID, Action code not found, Missing SBI'
-          }
-        },
-        'Validation failed: application validation'
+      const logData = mockLogger.warn.mock.calls[0][0]
+      expect(logData.event.reason).toBe(
+        'Invalid parcel ID, Action code not found, Missing SBI'
       )
+    })
+
+    it('should include context in message', () => {
+      logValidationWarn(mockLogger, {
+        operation: 'application validation',
+        errors: ['Invalid parcel'],
+        context: { applicationId: 'APP-123', sbi: '987654321' }
+      })
+
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toBe(
+        'Validation failed: application validation [applicationId=APP-123 | sbi=987654321]'
+      )
+    })
+
+    it('should work without context', () => {
+      logValidationWarn(mockLogger, {
+        operation: 'form validation',
+        errors: 'Invalid format'
+      })
+
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toBe('Validation failed: form validation')
     })
 
     it('should handle empty error array', () => {
       logValidationWarn(mockLogger, {
-        operation: 'form validation',
+        operation: 'test',
         errors: []
       })
 
-      const callArgs = mockLogger.warn.mock.calls[0][0]
-      expect(callArgs.event.reason).toBe('')
+      const logData = mockLogger.warn.mock.calls[0][0]
+      expect(logData.event.reason).toBe('')
     })
 
-    it('should not include reference if not provided', () => {
+    it('should convert non-array errors to string', () => {
       logValidationWarn(mockLogger, {
-        operation: 'input validation',
-        errors: 'Invalid format'
+        operation: 'test',
+        errors: 123
       })
 
-      const callArgs = mockLogger.warn.mock.calls[0][0]
-      expect(callArgs.event.reference).toBeUndefined()
+      const logData = mockLogger.warn.mock.calls[0][0]
+      expect(logData.event.reason).toBe('123')
     })
   })
 
   describe('logResourceNotFound', () => {
-    it('should log resource not found', () => {
+    it('should log resource not found with nested structure', () => {
       logResourceNotFound(mockLogger, {
         resourceType: 'Application validation run',
-        reference: '12345'
+        context: { id: '12345' }
       })
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -206,73 +245,83 @@ describe('Log Helpers', () => {
           event: {
             category: 'resource',
             action: 'lookup',
-            outcome: 'failure',
-            reference: '12345'
+            type: 'error'
           }
         },
-        'Application validation run not found'
+        'Application validation run not found [id=12345]'
       )
     })
 
-    it('should log resource not found with compound reference', () => {
+    it('should include multiple identifiers in message', () => {
       logResourceNotFound(mockLogger, {
         resourceType: 'Land parcel',
-        reference: 'sheet:123,parcel:456'
+        context: { sheetId: '123', parcelId: '456' }
       })
 
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          event: {
-            category: 'resource',
-            action: 'lookup',
-            outcome: 'failure',
-            reference: 'sheet:123,parcel:456'
-          }
-        },
-        'Land parcel not found'
-      )
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toBe('Land parcel not found [sheetId=123 | parcelId=456]')
+    })
+
+    it('should work with single identifier', () => {
+      logResourceNotFound(mockLogger, {
+        resourceType: 'Agreement',
+        context: { agreementId: 'AGR-789' }
+      })
+
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toBe('Agreement not found [agreementId=AGR-789]')
     })
   })
 
   describe('logBusinessError', () => {
-    it('should log business error with all fields', () => {
+    it('should log business error with nested ECS structure', () => {
       const error = new Error('Invalid state transition')
 
       logBusinessError(mockLogger, {
         operation: 'calculate payment',
-        error,
-        reference: 'landActions:5'
+        error
       })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        {
-          error: {
-            message: 'Invalid state transition',
-            stack_trace: error.stack,
-            type: 'Error'
-          },
-          event: {
-            category: 'business_logic',
-            action: 'calculate payment',
-            outcome: 'failure',
-            reference: 'landActions:5'
-          }
-        },
-        'Business operation failed: calculate payment'
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData).toHaveProperty('error')
+      expect(logData.error).toEqual({
+        message: 'Invalid state transition',
+        stack_trace: error.stack,
+        type: 'Error'
+      })
+      expect(logData).toHaveProperty('event')
+      expect(logData.event).toEqual({
+        category: 'business_logic',
+        action: 'calculate payment',
+        type: 'error'
+      })
+    })
+
+    it('should include context in message', () => {
+      const error = new Error('Calculation failed')
+
+      logBusinessError(mockLogger, {
+        operation: 'calculate payment',
+        error,
+        context: { applicationId: 'APP-789', landActionsCount: 5 }
+      })
+
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toBe(
+        'Business operation failed: calculate payment [applicationId=APP-789 | landActionsCount=5]'
       )
     })
 
-    it('should log business error without reference', () => {
-      const error = new Error('Calculation failed')
+    it('should work without context', () => {
+      const error = new Error('Test error')
 
       logBusinessError(mockLogger, {
         operation: 'validate application',
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.event.reference).toBeUndefined()
-      expect(callArgs.error.message).toBe('Calculation failed')
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toBe('Business operation failed: validate application')
     })
 
     it('should handle TypeError', () => {
@@ -283,9 +332,9 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.error.type).toBe('TypeError')
-      expect(callArgs.error.message).toBe(
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData.error.type).toBe('TypeError')
+      expect(logData.error.message).toBe(
         "Cannot read property 'map' of undefined"
       )
     })
@@ -298,9 +347,9 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.error.stack_trace).toBeDefined()
-      expect(callArgs.error.stack_trace).toContain('Error: Test error')
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData.error.stack_trace).toBeDefined()
+      expect(logData.error.stack_trace).toContain('Error: Test error')
     })
   })
 
@@ -314,8 +363,8 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.error.stack_trace).toBeUndefined()
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData.error.stack_trace).toBeUndefined()
     })
 
     it('should handle error without message', () => {
@@ -326,75 +375,126 @@ describe('Log Helpers', () => {
         error
       })
 
-      const callArgs = mockLogger.error.mock.calls[0][0]
-      expect(callArgs.error.message).toBe('')
+      const logData = mockLogger.error.mock.calls[0][0]
+      expect(logData.error.message).toBe('')
     })
 
-    it('should convert non-array errors to string', () => {
-      logValidationWarn(mockLogger, {
+    it('should handle context with numeric values', () => {
+      logDatabaseError(mockLogger, {
         operation: 'test',
-        errors: 123
+        error: new Error('test'),
+        context: { count: 5, id: 123 }
       })
 
-      const callArgs = mockLogger.warn.mock.calls[0][0]
-      expect(callArgs.event.reason).toBe('123')
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toContain('[count=5 | id=123]')
+    })
+
+    it('should handle context with boolean values', () => {
+      logDatabaseError(mockLogger, {
+        operation: 'test',
+        error: new Error('test'),
+        context: { isActive: true, hasErrors: false }
+      })
+
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toContain('[isActive=true | hasErrors=false]')
+    })
+
+    it('should handle context with special characters in values', () => {
+      logDatabaseError(mockLogger, {
+        operation: 'test',
+        error: new Error('test'),
+        context: { path: '/api/v1/test', query: 'name=John&age=30' }
+      })
+
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toContain('[path=/api/v1/test | query=name=John&age=30]')
     })
   })
 
-  describe('Logger method calls', () => {
-    it('should call logger.info for logInfo', () => {
-      logInfo(mockLogger, {
-        operation: 'test',
-        category: 'test'
-      })
+  describe('Nested object structure validation', () => {
+    it('should use nested event objects not flattened keys', () => {
+      const error = new Error('test')
 
-      expect(mockLogger.info).toHaveBeenCalledTimes(1)
-      expect(mockLogger.warn).not.toHaveBeenCalled()
-      expect(mockLogger.error).not.toHaveBeenCalled()
+      logDatabaseError(mockLogger, { operation: 'test', error })
+      logBusinessError(mockLogger, { operation: 'test', error })
+
+      mockLogger.error.mock.calls.forEach((call) => {
+        const logObject = call[0]
+        expect(typeof logObject.event).toBe('object')
+        expect(logObject.event).toHaveProperty('category')
+        expect(logObject.event).toHaveProperty('action')
+        expect(logObject.event).toHaveProperty('type')
+      })
     })
 
-    it('should call logger.warn for validation warnings', () => {
-      logValidationWarn(mockLogger, {
-        operation: 'test',
-        errors: 'test'
+    it('should use nested error objects not flattened keys', () => {
+      const error = new Error('test')
+
+      logDatabaseError(mockLogger, { operation: 'test', error })
+      logBusinessError(mockLogger, { operation: 'test', error })
+
+      mockLogger.error.mock.calls.forEach((call) => {
+        const logObject = call[0]
+        expect(typeof logObject.error).toBe('object')
+        expect(logObject.error).toHaveProperty('message')
+        expect(logObject.error).toHaveProperty('stack_trace')
+        expect(logObject.error).toHaveProperty('type')
       })
-
-      expect(mockLogger.warn).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).not.toHaveBeenCalled()
-      expect(mockLogger.error).not.toHaveBeenCalled()
     })
+  })
 
-    it('should call logger.warn for resource not found', () => {
-      logResourceNotFound(mockLogger, {
-        resourceType: 'Test',
-        reference: '123'
-      })
-
-      expect(mockLogger.warn).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).not.toHaveBeenCalled()
-      expect(mockLogger.error).not.toHaveBeenCalled()
-    })
-
-    it('should call logger.error for database errors', () => {
+  describe('Context formatting in messages', () => {
+    it('should format context correctly for database errors', () => {
       logDatabaseError(mockLogger, {
-        operation: 'test',
-        error: new Error('test')
+        operation: 'getLandData',
+        error: new Error('test'),
+        context: { sheetId: '123', parcelId: '456', sbi: '789' }
       })
 
-      expect(mockLogger.error).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).not.toHaveBeenCalled()
-      expect(mockLogger.warn).not.toHaveBeenCalled()
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toMatch(
+        /Database operation failed: getLandData \[sheetId=123 \| parcelId=456 \| sbi=789\]/
+      )
     })
 
-    it('should call logger.error for business errors', () => {
-      logBusinessError(mockLogger, {
-        operation: 'test',
-        error: new Error('test')
+    it('should format context correctly for validation errors', () => {
+      logValidationWarn(mockLogger, {
+        operation: 'form validation',
+        errors: 'invalid',
+        context: { formId: 'FORM-1', fieldName: 'email' }
       })
 
-      expect(mockLogger.error).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).not.toHaveBeenCalled()
-      expect(mockLogger.warn).not.toHaveBeenCalled()
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toMatch(
+        /Validation failed: form validation \[formId=FORM-1 \| fieldName=email\]/
+      )
+    })
+
+    it('should format context correctly for resource not found', () => {
+      logResourceNotFound(mockLogger, {
+        resourceType: 'User',
+        context: { userId: 'USER-123', email: 'test@example.com' }
+      })
+
+      const message = mockLogger.warn.mock.calls[0][1]
+      expect(message).toMatch(
+        /User not found \[userId=USER-123 \| email=test@example.com\]/
+      )
+    })
+
+    it('should format context correctly for business errors', () => {
+      logBusinessError(mockLogger, {
+        operation: 'process transaction',
+        error: new Error('test'),
+        context: { transactionId: 'TXN-999', amount: 100.5 }
+      })
+
+      const message = mockLogger.error.mock.calls[0][1]
+      expect(message).toMatch(
+        /Business operation failed: process transaction \[transactionId=TXN-999 \| amount=100.5\]/
+      )
     })
   })
 })

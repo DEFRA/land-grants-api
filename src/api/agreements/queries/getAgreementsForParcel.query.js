@@ -29,8 +29,7 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
     const result = await client.query(query, values)
     logInfo(logger, {
       category: 'database',
-      operation: 'Get agreements for parcel',
-      reference: `sheetId:${sheetId}, parcelId:${parcelId}`
+      message: 'Get agreements for parcel'
     })
     return agreementActionsTransformer(result.rows)
   } catch (error) {

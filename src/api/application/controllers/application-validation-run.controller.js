@@ -50,7 +50,9 @@ export const ApplicationValidationRunController = {
       if (!applicationValidationRun) {
         logResourceNotFound(request.logger, {
           resourceType: 'Application validation run',
-          reference: `validationRunId:${id}`
+          context: {
+            validationRunId: id
+          }
         })
         return Boom.notFound('Application validation run not found')
       }
@@ -66,7 +68,9 @@ export const ApplicationValidationRunController = {
       logBusinessError(request.logger, {
         operation: 'retrieve application validation run',
         error,
-        reference: `validationRunId:${id}`
+        context: {
+          validationRunId: id
+        }
       })
       return Boom.internal('Error getting application validation run')
     }

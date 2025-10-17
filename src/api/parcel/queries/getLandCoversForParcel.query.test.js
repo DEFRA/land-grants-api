@@ -102,9 +102,9 @@ describe('getLandCoversForParcel', () => {
           message: 'Connection error'
         }),
         event: expect.objectContaining({
+          action: 'Get land covers for parcel',
           category: 'database',
-          outcome: 'failure',
-          reference: 'sheetId:SH123,parcelId:PA456'
+          type: 'error'
         })
       }),
       expect.stringContaining(

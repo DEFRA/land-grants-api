@@ -71,7 +71,10 @@ const ApplicationValidationController = {
         logValidationWarn(request.logger, {
           operation: 'Application validation',
           errors: validationErrors,
-          reference: `applicationId:${applicationId}, sbi=${sbi}`
+          context: {
+            sbi,
+            applicationId
+          }
         })
         return Boom.badRequest(validationErrors.join(', '))
       }
@@ -127,7 +130,11 @@ const ApplicationValidationController = {
       logBusinessError(request.logger, {
         operation: 'Validate application',
         error,
-        reference: `sbi:${sbi},applicationId:${applicationId}, landActionsCount:${landActions?.length}`
+        context: {
+          sbi,
+          applicationId,
+          landActionsCount: landActions?.length
+        }
       })
       return Boom.internal(`Error validating application: ${error.message}`)
     }

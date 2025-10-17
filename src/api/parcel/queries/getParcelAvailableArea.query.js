@@ -58,8 +58,12 @@ async function getParcelAvailableArea(
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Get parcel available area',
-      reference: `parcelId:${parcelId}, sheetId:${sheetId}, totalLandCoverArea:${totalLandCoverArea}`
+      message: 'Get parcel available area',
+      context: {
+        parcelId,
+        sheetId,
+        totalLandCoverArea
+      }
     })
 
     const roundedTotalLandCoverArea = roundSqm(totalLandCoverArea)
@@ -69,7 +73,10 @@ async function getParcelAvailableArea(
     logDatabaseError(logger, {
       operation: 'Get parcel available area',
       error,
-      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+      context: {
+        parcelId,
+        sheetId
+      }
     })
     throw error
   } finally {

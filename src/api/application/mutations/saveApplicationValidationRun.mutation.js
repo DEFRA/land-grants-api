@@ -34,7 +34,7 @@ async function saveApplicationValidationRun(
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Save application validation run'
+      message: 'Save application validation run'
     })
 
     return result.rows[0]

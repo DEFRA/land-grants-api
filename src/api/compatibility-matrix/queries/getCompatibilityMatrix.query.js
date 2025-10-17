@@ -20,7 +20,7 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Get compatibility matrix'
+      message: 'Get compatibility matrix'
     })
 
     return result?.rows.map(compatibilityMatrixTransformer)

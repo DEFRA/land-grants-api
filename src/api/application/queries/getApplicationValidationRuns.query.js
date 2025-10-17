@@ -15,8 +15,10 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
   try {
     logInfo(logger, {
       category: 'database',
-      operation: 'Get application validation runs',
-      reference: `applicationId:${applicationId}`
+      message: 'Get application validation runs',
+      context: {
+        applicationId
+      }
     })
     client = await db.connect()
 

@@ -248,13 +248,11 @@ describe('Case Management Application Validation Controller', () => {
           event: {
             action: 'Case management application validation',
             category: 'validation',
-            outcome: 'failure',
             reason: 'Invalid action code, Parcel not found',
-            reference:
-              'applicationId:APP-123456, sbi=123456789, crn=1234567890, validationRunId=1, requesterUsername=test.user@example.com'
+            type: 'warn'
           }
         },
-        'Validation failed: Case management application validation'
+        'Validation failed: Case management application validation [sbi=123456789 | crn=1234567890 | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
     })
 
@@ -288,7 +286,7 @@ describe('Case Management Application Validation Controller', () => {
             message: 'Validation service failed'
           })
         }),
-        'Business operation failed: Case Management validation run'
+        'Business operation failed: Case Management validation run [validationRunId=1 | requesterUsername=test.user@example.com]'
       )
     })
   })

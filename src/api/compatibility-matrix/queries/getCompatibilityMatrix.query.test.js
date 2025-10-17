@@ -43,7 +43,7 @@ describe('getCompatibilityMatrix', () => {
         event: {
           action: 'Get compatibility matrix',
           category: 'database',
-          outcome: 'success'
+          type: 'info'
         }
       },
       'Get compatibility matrix'

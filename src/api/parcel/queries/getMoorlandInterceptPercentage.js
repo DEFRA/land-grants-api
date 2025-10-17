@@ -34,15 +34,22 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Get moorland intercept percentage',
-      reference: `parcelId:${parcelId}, sheetId:${sheetId}, roundedMoorlandOverlapPercent:${roundedMoorlandOverlapPercent}`
+      message: 'Get moorland intercept percentage',
+      context: {
+        parcelId,
+        sheetId,
+        roundedMoorlandOverlapPercent
+      }
     })
     return roundedMoorlandOverlapPercent
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get moorland intercept percentage',
       error,
-      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+      context: {
+        parcelId,
+        sheetId
+      }
     })
     return 0
   } finally {
