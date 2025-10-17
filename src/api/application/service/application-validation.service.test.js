@@ -24,6 +24,7 @@ describe('Application Validation Service', () => {
   const mockLogger = {
     info: jest.fn(),
     debug: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn()
   }
 
@@ -225,13 +226,7 @@ describe('Application Validation Service', () => {
     })
 
     test('should return validation errors when request validation fails', async () => {
-      const mockValidationErrors = [
-        {
-          field: 'landAction',
-          message: 'Invalid land action data',
-          code: 'VALIDATION_ERROR'
-        }
-      ]
+      const mockValidationErrors = ['Invalid land action data']
 
       mockValidateRequest.mockResolvedValue(mockValidationErrors)
 
@@ -250,9 +245,16 @@ describe('Application Validation Service', () => {
         applicationValidationRunId: null
       })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Validation errors',
-        mockValidationErrors
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          event: {
+            action: 'Application validation',
+            category: 'validation',
+            type: 'warn',
+            reason: 'Invalid land action data'
+          }
+        },
+        'Validation failed: Application validation [sbi=123456789 | crn=1234567890 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
 
       expect(mockGetEnabledActions).toHaveBeenCalledWith(
@@ -275,21 +277,9 @@ describe('Application Validation Service', () => {
 
     test('should handle multiple validation errors', async () => {
       const mockMultipleErrors = [
-        {
-          field: 'landAction[0].actions[0].code',
-          message: 'Invalid action code',
-          code: 'INVALID_ACTION_CODE'
-        },
-        {
-          field: 'landAction[0].parcelId',
-          message: 'Parcel not found',
-          code: 'PARCEL_NOT_FOUND'
-        },
-        {
-          field: 'landAction[1].actions[0].quantity',
-          message: 'Invalid quantity',
-          code: 'INVALID_QUANTITY'
-        }
+        'Invalid action code',
+        'Parcel not found',
+        'Invalid quantity'
       ]
 
       mockValidateRequest.mockResolvedValue(mockMultipleErrors)
@@ -309,9 +299,16 @@ describe('Application Validation Service', () => {
         applicationValidationRunId: null
       })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Validation errors',
-        mockMultipleErrors
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          event: {
+            action: 'Application validation',
+            category: 'validation',
+            reason: 'Invalid action code, Parcel not found, Invalid quantity',
+            type: 'warn'
+          }
+        },
+        'Validation failed: Application validation [sbi=123456789 | crn=1234567890 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
     })
 

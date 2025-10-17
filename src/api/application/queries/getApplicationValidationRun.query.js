@@ -4,6 +4,8 @@
  * @import {Pool} from '~/src/api/common/postgres.d.js'
  */
 
+import { logDatabaseError } from '~/src/api/common/helpers/logging/log-helpers.js'
+
 /**
  * Get latest application validation run
  * @param {Logger} logger - The logger
@@ -26,9 +28,10 @@ async function getApplicationValidationRun(logger, db, id) {
 
     return result.rows[0]
   } catch (error) {
-    logger.error(
-      `Error executing get application validation run by id query: ${error.message}`
-    )
+    logDatabaseError(logger, {
+      operation: 'Get application validation run',
+      error
+    })
     return null
   } finally {
     if (client) {

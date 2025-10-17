@@ -9,6 +9,10 @@ import {
   applicationValidationRunResponseSchema
 } from '../schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import {
+  logResourceNotFound,
+  logBusinessError
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 export const ApplicationValidationRunController = {
   options: {
@@ -44,6 +48,12 @@ export const ApplicationValidationRunController = {
       )
 
       if (!applicationValidationRun) {
+        logResourceNotFound(request.logger, {
+          resourceType: 'Application validation run',
+          context: {
+            validationRunId: id
+          }
+        })
         return Boom.notFound('Application validation run not found')
       }
 
@@ -54,12 +64,15 @@ export const ApplicationValidationRunController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = 'Error getting application validation run'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      const { id } = request.params
+      logBusinessError(request.logger, {
+        operation: 'retrieve application validation run',
+        error,
+        context: {
+          validationRunId: id
+        }
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal('Error getting application validation run')
     }
   }
 }

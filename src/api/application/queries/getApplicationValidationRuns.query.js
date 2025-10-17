@@ -1,3 +1,8 @@
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+
 /**
  * Get latest application validation runs
  * @param {Logger} logger - The logger
@@ -8,9 +13,13 @@
 async function getApplicationValidationRuns(logger, db, applicationId) {
   let client
   try {
-    logger.info(
-      `Connecting to DB to fetch latest application validation runs by application id`
-    )
+    logInfo(logger, {
+      category: 'database',
+      message: 'Get application validation runs',
+      context: {
+        applicationId
+      }
+    })
     client = await db.connect()
 
     const query = `
@@ -20,9 +29,10 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
 
     return result.rows
   } catch (error) {
-    logger.error(
-      `Error executing get application validation runs by application id query: ${error.message}`
-    )
+    logDatabaseError(logger, {
+      operation: 'Get application validation runs',
+      error
+    })
     return null
   } finally {
     if (client) {

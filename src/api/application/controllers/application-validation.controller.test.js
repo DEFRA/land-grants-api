@@ -418,12 +418,16 @@ describe('ApplicationValidationController', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
+
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Error validating application: Database connection failed',
-        {
-          error: 'Database connection failed',
-          stack: expect.any(String)
-        }
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: 'Database connection failed'
+          })
+        }),
+        expect.stringContaining(
+          'Business operation failed: Validate application'
+        )
       )
     })
 
@@ -704,9 +708,16 @@ describe('ApplicationValidationController', () => {
 
       await server.inject(request)
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Validation errors',
-        validationErrors
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          event: {
+            action: 'Application validation',
+            category: 'validation',
+            reason: 'Test validation error',
+            type: 'warn'
+          }
+        },
+        expect.stringContaining('Validation failed: Application validation')
       )
     })
   })
