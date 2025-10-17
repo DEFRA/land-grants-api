@@ -138,7 +138,7 @@ describe('LogCodes', () => {
   describe('Message consistency', () => {
     it('should produce consistent messages for same input', () => {
       const operation = 'test operation'
-      const message1 = LogCodes.DATABASE.OPERATION_FAILE.messageFn(operation)
+      const message1 = LogCodes.DATABASE.OPERATION_FAILED.messageFn(operation)
       const message2 = LogCodes.DATABASE.OPERATION_FAILED.messageFn(operation)
       expect(message1).toBe(message2)
     })
