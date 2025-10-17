@@ -1,6 +1,5 @@
 import {
   logDatabaseError,
-  logInfo,
   logValidationWarn
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
