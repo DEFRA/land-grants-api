@@ -27,18 +27,16 @@ import {
 /**
  * Validate request against enabled actions
  * @param {import('@hapi/hapi').Request} request
- * @param {Array} landActions
- * @param {Array} actions
- * @param {string} applicationId
- * @param {string} sbi
+ * @param {object} data
+ * @param {Array} data.landActions
+ * @param {Array} data.actions
+ * @param {string} data.applicationId
+ * @param {string} data.sbi
  * @returns {Promise<import('@hapi/boom').Boom | null>}
  */
 const validateRequestData = async (
   request,
-  landActions,
-  actions,
-  applicationId,
-  sbi
+  { landActions, actions, applicationId, sbi }
 ) => {
   const validationErrors = await validateRequest(landActions, actions, request)
 
@@ -61,15 +59,15 @@ const validateRequestData = async (
  * Validate all land parcel actions
  * @param {import('@hapi/hapi').Request} request
  * @param {object} postgresDb
- * @param {Array} landActions
- * @param {Array} actions
+ * @param {object} data
+ * @param {Array} data.landActions
+ * @param {Array} data.actions
  * @returns {Promise<Array>}
  */
 const validateAllLandParcels = async (
   request,
   postgresDb,
-  landActions,
-  actions
+  { landActions, actions }
 ) => {
   const compatibilityCheckFn = await createCompatibilityMatrix(
     request.logger,
@@ -94,23 +92,19 @@ const validateAllLandParcels = async (
  * Save application validation results
  * @param {import('@hapi/hapi').Request} request
  * @param {object} postgresDb
- * @param {string} applicationId
- * @param {string} applicantCrn
- * @param {string} sbi
- * @param {string} requester
- * @param {Array} landActions
- * @param {Array} parcelResults
+ * @param {object} data
+ * @param {string} data.applicationId
+ * @param {string} data.applicantCrn
+ * @param {string} data.sbi
+ * @param {string} data.requester
+ * @param {Array} data.landActions
+ * @param {Array} data.parcelResults
  * @returns {Promise<string | null>}
  */
 const saveValidationResults = async (
   request,
   postgresDb,
-  applicationId,
-  applicantCrn,
-  sbi,
-  requester,
-  landActions,
-  parcelResults
+  { applicationId, applicantCrn, sbi, requester, landActions, parcelResults }
 ) => {
   const applicationData = applicationDataTransformer(
     applicationId,
@@ -215,36 +209,31 @@ const ApplicationValidationController = {
       const actions = await getEnabledActions(request.logger, postgresDb)
 
       // Validate request data
-      const requestValidation = await validateRequestData(
-        request,
+      const validationError = await validateRequestData(request, {
         landActions,
         actions,
         applicationId,
         sbi
-      )
-      if (requestValidation) {
-        return requestValidation
+      })
+      if (validationError) {
+        return validationError
       }
 
       // Validate all land parcels
-      const parcelResults = await validateAllLandParcels(
-        request,
-        postgresDb,
+      const parcelResults = await validateAllLandParcels(request, postgresDb, {
         landActions,
         actions
-      )
+      })
 
       // Save validation results
-      const id = await saveValidationResults(
-        request,
-        postgresDb,
+      const id = await saveValidationResults(request, postgresDb, {
         applicationId,
         applicantCrn,
         sbi,
         requester,
         landActions,
         parcelResults
-      )
+      })
 
       // Build response
       const responseData = buildValidationResponse(
