@@ -1,12 +1,14 @@
-import { LogCodes } from './log-codes.js'
-
 /**
  * Format context object into readable string
- * @param {object} context
+ * @param {object} [context]
  * @returns {string}
  */
 const formatContext = (context) => {
-  if (!context || Object.keys(context).length === 0) {
+  if (
+    !context ||
+    typeof context !== 'object' ||
+    Object.keys(context).length === 0
+  ) {
     return ''
   }
 
@@ -21,15 +23,16 @@ const formatContext = (context) => {
  * Log an informational event
  * @param {Logger} logger
  * @param {object} options
- * @param {string} options.category - Event category (e.g., 'application', 'payment', 'user')
- * @param {string} options.message - Message
+ * @param {string} options.category - Event category
+ * @param {string} [options.operation] - What operation occurred
+ * @param {string} options.message - Custom message
  * @param {object} [options.context]
  */
-export const logInfo = (logger, { category, message, context }) => {
+export const logInfo = (logger, { category, operation, message, context }) => {
   const logData = {
     event: {
       category,
-      action: message,
+      action: operation,
       type: 'info'
     }
   }
@@ -45,11 +48,7 @@ export const logInfo = (logger, { category, message, context }) => {
  * @param {Error} options.error - The error object
  * @param {object} [options.context] - Additional context (sheetId, parcelId, etc.)
  */
-export const logDatabaseError = (
-  logger,
-  { operation, error, context = {} }
-) => {
-  const { method, messageFn } = LogCodes.DATABASE.OPERATION_FAILED
+export const logDatabaseError = (logger, { operation, error, context }) => {
   const logData = {
     error: {
       message: error.message,
@@ -59,10 +58,14 @@ export const logDatabaseError = (
     event: {
       category: 'database',
       action: operation,
-      type: method
+      type: 'error'
     }
   }
-  logger[method](logData, messageFn(`${operation}${formatContext(context)}`))
+
+  logger.error(
+    logData,
+    `Database operation failed: ${operation}${formatContext(context)}`
+  )
 }
 
 /**
@@ -73,23 +76,22 @@ export const logDatabaseError = (
  * @param {string|Array} options.errors - Validation error(s)
  * @param {object} [options.context]
  */
-export const logValidationWarn = (
-  logger,
-  { operation, errors, context = {} }
-) => {
+export const logValidationWarn = (logger, { operation, errors, context }) => {
   const errorText = Array.isArray(errors) ? errors.join(', ') : String(errors)
-  const { method, messageFn } = LogCodes.VALIDATION.FAILED
 
   const logData = {
     event: {
       category: 'validation',
       action: operation,
-      type: method,
+      type: 'warn',
       reason: errorText
     }
   }
 
-  logger[method](logData, messageFn(`${operation}${formatContext(context)}`))
+  logger.warn(
+    logData,
+    `Validation failed: ${operation}${formatContext(context)}`
+  )
 }
 
 /**
@@ -100,16 +102,15 @@ export const logValidationWarn = (
  * @param {object} options.context - The context (sheetId, parcelId, id, etc.)
  */
 export const logResourceNotFound = (logger, { resourceType, context }) => {
-  const { method, messageFn } = LogCodes.RESOURCE.NOT_FOUND
-  logger[method](
+  logger.warn(
     {
       event: {
         category: 'resource',
         action: 'lookup',
-        type: method
+        type: 'warn'
       }
     },
-    messageFn(resourceType) + `${formatContext(context)}`
+    `${resourceType} not found${formatContext(context)}`
   )
 }
 
@@ -121,11 +122,7 @@ export const logResourceNotFound = (logger, { resourceType, context }) => {
  * @param {Error} options.error - The error object
  * @param {object} [options.context]
  */
-export const logBusinessError = (
-  logger,
-  { operation, error, context = {} }
-) => {
-  const { method, messageFn } = LogCodes.BUSINESS.OPERATION_FAILED
+export const logBusinessError = (logger, { operation, error, context }) => {
   const logData = {
     error: {
       message: error.message,
@@ -135,10 +132,14 @@ export const logBusinessError = (
     event: {
       category: 'business_logic',
       action: operation,
-      type: method
+      type: 'error'
     }
   }
-  logger[method](logData, messageFn(`${operation}${formatContext(context)}`))
+
+  logger.error(
+    logData,
+    `Business operation failed: ${operation}${formatContext(context)}`
+  )
 }
 
 /**
