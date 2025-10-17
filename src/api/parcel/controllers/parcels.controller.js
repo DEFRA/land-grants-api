@@ -17,7 +17,8 @@ import { getDataAndValidateRequest } from '../validation/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
-  logInfo
+  logInfo,
+  logValidationWarn
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
@@ -59,7 +60,8 @@ const ParcelsController = {
         category: 'parcel',
         message: 'Fetch parcels',
         context: {
-          parcelIds: parcelIds.join(',')
+          parcelIds: parcelIds.join(','),
+          fields: fields.join(',')
         }
       })
 
@@ -71,7 +73,14 @@ const ParcelsController = {
       )
 
       if (validationResponse.errors && validationResponse.errors.length > 0) {
-        request.logger.error('Validation errors', validationResponse.errors)
+        logValidationWarn(request.logger, {
+          operation: 'Parcel validation',
+          errors: validationResponse.errors,
+          context: {
+            parcelIds: parcelIds.join(','),
+            fields: fields.join(',')
+          }
+        })
         return Boom.notFound(validationResponse.errors.join(', '))
       }
 
