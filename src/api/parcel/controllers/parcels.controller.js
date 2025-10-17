@@ -142,16 +142,6 @@ async function getActionsForParcel(
 
   const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
-  logInfo(request.logger, {
-    message: 'Merge actions for parcel',
-    category: 'parcel',
-    context: {
-      sheetId: parcel.sheet_id,
-      parcelId: parcel.parcel_id,
-      mergedActions: mergedActions.map((a) => a.actionCode).join(',')
-    }
-  })
-
   const parcelResponse = {
     parcelId: parcel.parcel_id,
     sheetId: parcel.sheet_id

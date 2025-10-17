@@ -20,7 +20,8 @@ import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
   logValidationWarn,
-  logBusinessError
+  logBusinessError,
+  logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 const ApplicationValidationController = {
@@ -55,6 +56,16 @@ const ApplicationValidationController = {
       // @ts-expect-error - payload
       const { landActions, applicationId, sbi, applicantCrn, requester } =
         request.payload
+
+      logInfo(request.logger, {
+        category: 'application',
+        message: 'Started application validation',
+        context: {
+          applicationId,
+          sbi,
+          crn: applicantCrn
+        }
+      })
 
       // Get all the enabled actions
       const actions = await getEnabledActions(request.logger, postgresDb)
@@ -113,6 +124,18 @@ const ApplicationValidationController = {
         sbi,
         crn: applicantCrn,
         data: applicationData
+      })
+
+      logInfo(request.logger, {
+        category: 'application',
+        message: 'Application validation result',
+        context: {
+          applicationId,
+          sbi,
+          crn: applicantCrn,
+          valid: applicationData.hasPassed,
+          errorMessages: JSON.stringify(errorMessagesTransformer(parcelResults))
+        }
       })
 
       // Return the application validation result
