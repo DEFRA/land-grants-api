@@ -22,7 +22,7 @@ const formatContext = (context) => {
  * @param {Logger} logger
  * @param {object} options
  * @param {string} options.category - Event category (e.g., 'application', 'payment', 'user')
- * @param {string} [options.message] - Message
+ * @param {string} options.message - Message
  * @param {object} [options.context]
  */
 export const logInfo = (logger, { category, message, context }) => {
