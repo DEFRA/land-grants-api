@@ -21,6 +21,24 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
+ * Returns the maximum of the total duration years for the given actions
+ * @param {string[]} landActionCodes
+ * @param {Action[]} enabledActions
+ * @returns {number}
+ */
+const getMaxDurationYearsForActionCodes = (landActionCodes, enabledActions) => {
+  let maxDurationYears = 0
+  enabledActions.forEach((enabledAction) => {
+    if (
+      landActionCodes.includes(enabledAction.code) &&
+      enabledAction.durationYears > maxDurationYears
+    ) {
+      maxDurationYears = enabledAction.durationYears
+    }
+  })
+  return maxDurationYears
+}
+/**
  * PaymentsCalculateController
  * @satisfies {Partial<ServerRoute>}
  */
@@ -97,19 +115,13 @@ const PaymentsCalculateController = {
 
       // for day 1, we assume duration years is 3 because all actions are 3 years long
       // but this will change and our payment algorithm will have to support having actions with different lengths!
-      let totalDurationYears = 0
       const landActionCodes = landActions.flatMap((landAction) =>
         landAction.actions.map((a) => a.code)
       )
-      enabledActions.forEach((enabledAction) => {
-        if (
-          landActionCodes.includes(enabledAction.code) &&
-          enabledAction.durationYears > totalDurationYears
-        ) {
-          totalDurationYears = enabledAction.durationYears
-        }
-      })
-
+      const totalDurationYears = getMaxDurationYearsForActionCodes(
+        landActionCodes,
+        enabledActions
+      )
       if (totalDurationYears === 0) {
         logBusinessError(request.logger, {
           operation: 'Payment calculation: determine action duration',
@@ -173,4 +185,5 @@ export { PaymentsCalculateController }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'
+ * @import { Action } from '../../actions/action.d.js'
  */

@@ -1,14 +1,26 @@
 export const LogCodes = {
   DATABASE: {
-    OPERATION_FAILED: (operation) => `Database operation failed: ${operation}`
+    OPERATION_FAILED: {
+      method: 'error',
+      messageFn: (operation) => `Database operation failed: ${operation}`
+    }
   },
   VALIDATION: {
-    FAILED: (operation) => `Validation failed: ${operation}`
+    FAILED: {
+      method: 'warn',
+      messageFn: (operation) => `Validation failed: ${operation}`
+    }
   },
   RESOURCE: {
-    NOT_FOUND: (resourceType) => `${resourceType} not found`
+    NOT_FOUND: {
+      method: 'warn',
+      messageFn: (resourceType) => `${resourceType} not found`
+    }
   },
   BUSINESS: {
-    OPERATION_FAILED: (operation) => `Business operation failed: ${operation}`
+    OPERATION_FAILED: {
+      method: 'error',
+      messageFn: (operation) => `Business operation failed: ${operation}`
+    }
   }
 }
