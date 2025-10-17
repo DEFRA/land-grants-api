@@ -245,7 +245,7 @@ describe('Log Helpers', () => {
           event: {
             category: 'resource',
             action: 'lookup',
-            type: 'error'
+            type: 'warn'
           }
         },
         'Application validation run not found [id=12345]'
