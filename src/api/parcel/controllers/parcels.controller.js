@@ -69,7 +69,10 @@ const ParcelsController = {
         event: {
           category: 'database',
           action: 'my new action',
-          type: 'failure'
+          type: 'failure',
+          parcelId: 'parcel-id',
+          sheetId: 'sheet-id',
+          customField: 'custom'
         },
         error: {
           message: 'error.message',
@@ -78,10 +81,7 @@ const ParcelsController = {
         }
       }
 
-      request.logger.error(
-        context,
-        `test log outcome? Database operation failed: TEST4`
-      )
+      request.logger.error(context, `Ddatabase operation failed: TEST4`)
 
       logDatabaseError(request.logger, {
         operation: 'database',
