@@ -122,8 +122,17 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
 
     logInfo(logger, {
       category: 'aac',
-      operation: 'Subtract incompatible land cover area from actions',
-      reference: `totalAreaNotInCommon = ${totalAreaNotInCommon} - landCoversForParcel: ${JSON.stringify(landCoversForParcel)} - landCoverCodesForExistingAction ${JSON.stringify(landCoversForExistingActions[action.actionCode])}: landCoverCodesForAppliedForAction: ${JSON.stringify(mergedLandCoverCodesForAppliedForAction)}}`
+      message: 'Subtract incompatible land cover area from actions',
+      context: {
+        totalAreaNotInCommon,
+        landCoversForParcel: JSON.stringify(landCoversForParcel),
+        landCoverCodesForExistingAction: JSON.stringify(
+          landCoversForExistingActions[action.actionCode]
+        ),
+        landCoverCodesForAppliedForAction: JSON.stringify(
+          mergedLandCoverCodesForAppliedForAction
+        )
+      }
     })
 
     const revisedArea = action.areaSqm - totalAreaNotInCommon

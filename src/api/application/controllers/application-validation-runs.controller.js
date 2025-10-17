@@ -66,7 +66,10 @@ export const ApplicationValidationRunsController = {
       logBusinessError(request.logger, {
         operation: 'retrieve application validation runs',
         error,
-        reference: `applicationId:${request.params?.applicationId}, fields:${fields.join(',')}`
+        context: {
+          applicationId: request.params?.applicationId,
+          fields: fields.join(',')
+        }
       })
       return Boom.internal('Error getting application validation runs')
     }

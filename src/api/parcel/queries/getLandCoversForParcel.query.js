@@ -29,8 +29,11 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Get land covers for parcel',
-      reference: `parcelId:${parcelId},sheetId:${sheetId}`
+      message: 'Get land covers for parcel',
+      context: {
+        parcelId,
+        sheetId
+      }
     })
 
     const result = await client.query(landCoversQuery, [sheetId, parcelId])
@@ -45,7 +48,10 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     logDatabaseError(logger, {
       operation: 'Get land covers for parcel',
       error,
-      reference: `sheetId:${sheetId},parcelId:${parcelId}`
+      context: {
+        parcelId,
+        sheetId
+      }
     })
     throw error
   } finally {

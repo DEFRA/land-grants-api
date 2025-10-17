@@ -127,9 +127,7 @@ describe('getMoorlandInterceptPercentage', () => {
           message: 'Database error'
         }),
         event: expect.objectContaining({
-          category: 'database',
-          outcome: 'failure',
-          reference: 'sheetId:SH123,parcelId:PA456'
+          category: 'database'
         })
       }),
       expect.stringContaining(

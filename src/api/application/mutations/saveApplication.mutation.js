@@ -12,8 +12,12 @@ async function saveApplication(logger, db, application) {
   try {
     logInfo(logger, {
       category: 'application',
-      operation: 'Saving appllication',
-      reference: `applicationId:${application.application_id}, sbi:${application.sbi}, crn:${application.crn}`
+      message: 'Saving application',
+      context: {
+        applicationId: application.application_id,
+        sbi: application.sbi,
+        crn: application.crn
+      }
     })
     client = await db.connect()
 

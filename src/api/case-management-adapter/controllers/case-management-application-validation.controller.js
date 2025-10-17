@@ -53,7 +53,9 @@ const CaseManagementApplicationValidationController = {
       if (!applicationValidationRun) {
         logResourceNotFound(request.logger, {
           resourceType: 'Application validation run',
-          reference: `validationRunId:${id}`
+          context: {
+            validationRunId: id
+          }
         })
         return Boom.notFound('Application validation run not found')
       }
@@ -79,7 +81,13 @@ const CaseManagementApplicationValidationController = {
         logValidationWarn(request.logger, {
           operation: 'Case management application validation',
           errors: validationErrors.map((err) => err.message),
-          reference: `applicationId:${applicationId}, sbi=${sbi}, crn=${crn}, validationRunId=${id}, requesterUsername=${requesterUsername}`
+          context: {
+            sbi,
+            crn,
+            validationRunId: id,
+            requesterUsername,
+            applicationId
+          }
         })
         return Boom.badRequest(
           validationErrors.map((err) => err.message).join(', ')
@@ -101,7 +109,10 @@ const CaseManagementApplicationValidationController = {
       logBusinessError(request.logger, {
         operation: 'Case Management validation run',
         error,
-        reference: `validationRunId:${id}, requesterUsername:${requesterUsername}`
+        context: {
+          validationRunId: id,
+          requesterUsername
+        }
       })
       return Boom.internal('Error validating application')
     }

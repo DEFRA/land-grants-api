@@ -713,9 +713,8 @@ describe('ApplicationValidationController', () => {
           event: {
             action: 'Application validation',
             category: 'validation',
-            outcome: 'failure',
             reason: 'Test validation error',
-            reference: 'applicationId:APP-123, sbi=123456789'
+            type: 'warn'
           }
         },
         expect.stringContaining('Validation failed: Application validation')

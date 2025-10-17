@@ -58,7 +58,10 @@ const PaymentsCalculateController = {
 
       logInfo(request.logger, {
         category: 'payment',
-        operation: 'Controller calculating land actions payment'
+        message: 'Controller calculating land actions payment',
+        context: {
+          landActions: JSON.stringify(landActions)
+        }
       })
 
       if (landActions.length === 0) {
@@ -111,7 +114,9 @@ const PaymentsCalculateController = {
         logBusinessError(request.logger, {
           operation: 'Payment calculation: determine action duration',
           error: new Error('No valid duration found for requested actions'),
-          reference: `actionCodes:${landActionCodes.join(',')}`
+          context: {
+            landActionCodes: landActionCodes.join(',')
+          }
         })
         return Boom.badRequest('Error getting actions information')
       }
@@ -127,7 +132,11 @@ const PaymentsCalculateController = {
         logBusinessError(request.logger, {
           operation: 'Payment calculation: calculate payment',
           error: new Error('Payment calculation returned null/undefined'),
-          reference: `landActionsCount:${landActions.length}, totalDurationYears:${totalDurationYears}, startDate:${startDate}`
+          context: {
+            landActionsCount: landActions.length,
+            totalDurationYears,
+            startDate
+          }
         })
         return Boom.badRequest('Unable to calculate payment')
       }
@@ -141,7 +150,10 @@ const PaymentsCalculateController = {
       logBusinessError(request.logger, {
         operation: 'Payment calculation: calculate land actions payment',
         error,
-        reference: `landActionsCount:${landActions.length}, startDate:${startDate}`
+        context: {
+          landActionsCount: landActions.length,
+          startDate
+        }
       })
       return Boom.internal('Error calculating land actions payment')
     }

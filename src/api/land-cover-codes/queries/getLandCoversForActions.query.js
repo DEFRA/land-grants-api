@@ -41,8 +41,11 @@ async function getLandCoversForActions(actionCodes, db, logger) {
 
     logInfo(logger, {
       category: 'database',
-      operation: 'Get land cover codes for action codes',
-      reference: `actionCodes:${actionCodes.join(',')},items: ${actionLandCovers?.rows?.length}`
+      message: 'Get land cover codes for action codes',
+      context: {
+        actionCodes: actionCodes.join(','),
+        items: actionLandCovers?.rows?.length
+      }
     })
 
     return transformLandCoversForActions(actionLandCovers, actionCodes)

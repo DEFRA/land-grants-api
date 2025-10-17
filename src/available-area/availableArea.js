@@ -115,8 +115,13 @@ function processLandCoverData({
 
   logInfo(logger, {
     category: 'aac',
-    operation: 'Process land cover data',
-    reference: `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
+    message: 'Process land cover data',
+    context: {
+      totalValidLandCoverSqm,
+      actionCodeAppliedFor,
+      sheetId,
+      parcelId
+    }
   })
 
   return {
@@ -154,8 +159,12 @@ function processExistingActions(
 
   logInfo(logger, {
     category: 'aac',
-    operation: 'Process existing actions',
-    reference: `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
+    message: 'Process existing actions',
+    context: {
+      existingActionsWithLandCoverInCommonWithAppliedForAction: JSON.stringify(
+        existingActionsWithLandCoverInCommonWithAppliedForAction
+      )
+    }
   })
 
   return {
@@ -254,8 +263,12 @@ export function getAvailableAreaForAction(
 ) {
   logInfo(logger, {
     category: 'aac',
-    operation: 'Getting available area for action',
-    reference: `actionCodeAppliedFor:${actionCodeAppliedFor}, parcelId:${parcelId}, sheetId:${sheetId}`
+    message: 'Getting available area for action',
+    context: {
+      actionCodeAppliedFor,
+      parcelId,
+      sheetId
+    }
   })
 
   const {
@@ -326,8 +339,13 @@ export function getAvailableAreaForAction(
 
   logInfo(logger, {
     category: 'aac',
-    operation: 'Available area result for action',
-    reference: `availableAreaHectares:${availableAreaHectares}, actionCodeAppliedFor:${actionCodeAppliedFor}, parcelId:${parcelId}, sheetId:${sheetId}`
+    message: 'Available area result for action',
+    context: {
+      availableAreaHectares,
+      actionCodeAppliedFor,
+      parcelId,
+      sheetId
+    }
   })
 
   const explanations = buildExplanations(

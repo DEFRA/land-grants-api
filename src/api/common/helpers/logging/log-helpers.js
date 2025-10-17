@@ -1,31 +1,40 @@
 import { LogCodes } from './log-codes.js'
 
 /**
+ * Format context object into readable string
+ * @param {object} context
+ * @returns {string}
+ */
+const formatContext = (context) => {
+  if (!context || Object.keys(context).length === 0) {
+    return ''
+  }
+
+  const parts = Object.entries(context)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(' | ')
+
+  return ` [${parts}]`
+}
+
+/**
  * Log an informational event
  * @param {Logger} logger
  * @param {object} options
- * @param {string} options.operation - What operation occurred
  * @param {string} options.category - Event category (e.g., 'application', 'payment', 'user')
- * @param {string} [options.reference] - Optional reference context
- * @param {string} [options.message] - Optional custom message (defaults to operation)
+ * @param {string} [options.message] - Message
+ * @param {object} [options.context]
  */
-export const logInfo = (
-  logger,
-  { operation, category, reference, message }
-) => {
+export const logInfo = (logger, { category, message, context }) => {
   const logData = {
     event: {
       category,
-      action: operation,
-      outcome: 'success'
+      action: message,
+      type: 'info'
     }
   }
 
-  if (reference) {
-    logData.event.reference = reference
-  }
-
-  logger.info(logData, message ?? operation)
+  logger.info(logData, `${message}${formatContext(context)}`)
 }
 
 /**
@@ -34,9 +43,12 @@ export const logInfo = (
  * @param {object} options
  * @param {string} options.operation - What operation failed
  * @param {Error} options.error - The error object
- * @param {string} [options.reference] - Optional reference context
+ * @param {object} [options.context] - Additional context (sheetId, parcelId, etc.)
  */
-export const logDatabaseError = (logger, { operation, error, reference }) => {
+export const logDatabaseError = (
+  logger,
+  { operation, error, context = {} }
+) => {
   const logData = {
     error: {
       message: error.message,
@@ -46,15 +58,14 @@ export const logDatabaseError = (logger, { operation, error, reference }) => {
     event: {
       category: 'database',
       action: operation,
-      outcome: 'failure'
+      type: 'error'
     }
   }
 
-  if (reference) {
-    logData.event.reference = reference
-  }
-
-  logger.error(logData, LogCodes.DATABASE.OPERATION_FAILED(operation))
+  logger.error(
+    logData,
+    LogCodes.DATABASE.OPERATION_FAILED(`${operation}${formatContext(context)}`)
+  )
 }
 
 /**
@@ -63,23 +74,27 @@ export const logDatabaseError = (logger, { operation, error, reference }) => {
  * @param {object} options
  * @param {string} options.operation - What was being validated
  * @param {string|Array} options.errors - Validation error(s)
- * @param {string} [options.reference] - Optional reference context
+ * @param {object} [options.context]
  */
-export const logValidationWarn = (logger, { operation, errors, reference }) => {
+export const logValidationWarn = (
+  logger,
+  { operation, errors, context = {} }
+) => {
+  const errorText = Array.isArray(errors) ? errors.join(', ') : String(errors)
+
   const logData = {
     event: {
       category: 'validation',
       action: operation,
-      outcome: 'failure',
-      reason: Array.isArray(errors) ? errors.join(', ') : String(errors)
+      type: 'warn',
+      reason: errorText
     }
   }
 
-  if (reference) {
-    logData.event.reference = reference
-  }
-
-  logger.warn(logData, LogCodes.VALIDATION.FAILED(operation))
+  logger.warn(
+    logData,
+    LogCodes.VALIDATION.FAILED(`${operation}${formatContext(context)}`)
+  )
 }
 
 /**
@@ -87,19 +102,18 @@ export const logValidationWarn = (logger, { operation, errors, reference }) => {
  * @param {Logger} logger
  * @param {object} options
  * @param {string} options.resourceType - Type of resource
- * @param {string} options.reference - Resource identifier(s)
+ * @param {object} options.context - The context (sheetId, parcelId, id, etc.)
  */
-export const logResourceNotFound = (logger, { resourceType, reference }) => {
+export const logResourceNotFound = (logger, { resourceType, context }) => {
   logger.warn(
     {
       event: {
         category: 'resource',
         action: 'lookup',
-        outcome: 'failure',
-        reference
+        type: 'error'
       }
     },
-    LogCodes.RESOURCE.NOT_FOUND(resourceType)
+    LogCodes.RESOURCE.NOT_FOUND(resourceType) + `${formatContext(context)}`
   )
 }
 
@@ -109,9 +123,12 @@ export const logResourceNotFound = (logger, { resourceType, reference }) => {
  * @param {object} options
  * @param {string} options.operation - What operation failed
  * @param {Error} options.error - The error object
- * @param {string} [options.reference] - Optional reference context
+ * @param {object} [options.context]
  */
-export const logBusinessError = (logger, { operation, error, reference }) => {
+export const logBusinessError = (
+  logger,
+  { operation, error, context = {} }
+) => {
   const logData = {
     error: {
       message: error.message,
@@ -121,15 +138,14 @@ export const logBusinessError = (logger, { operation, error, reference }) => {
     event: {
       category: 'business_logic',
       action: operation,
-      outcome: 'failure'
+      type: 'error'
     }
   }
 
-  if (reference) {
-    logData.event.reference = reference
-  }
-
-  logger.error(logData, LogCodes.BUSINESS.OPERATION_FAILED(operation))
+  logger.error(
+    logData,
+    LogCodes.BUSINESS.OPERATION_FAILED(`${operation}${formatContext(context)}`)
+  )
 }
 
 /**
