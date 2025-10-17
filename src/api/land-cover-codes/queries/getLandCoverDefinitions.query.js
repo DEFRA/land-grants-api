@@ -1,5 +1,6 @@
 import {
   logDatabaseError,
+  logInfo,
   logValidationWarn
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
@@ -39,9 +40,12 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
     const dbResponse = await client.query(query, [landCoverCodes])
 
     if (!dbResponse || dbResponse?.rows?.length === 0) {
-      logger.warn(
-        `No land cover codes found for land cover codes: ${landCoverCodes.join(', ')}`
-      )
+      logInfo(logger, {
+        category: 'database',
+        operation: 'Get land cover definitions',
+        message: 'No land cover codes found',
+        context: { landCoverCodes: landCoverCodes.join(',') }
+      })
       return []
     }
 

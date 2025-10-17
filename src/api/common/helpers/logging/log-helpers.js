@@ -72,7 +72,7 @@ export const logDatabaseError = (logger, { operation, error, context }) => {
  * Log a validation error
  * @param {Logger} logger
  * @param {object} options
- * @param {string} options.operation - What was being validated
+ * @param {string} [options.operation] - What was being validated
  * @param {string|Array} options.errors - Validation error(s)
  * @param {object} [options.context]
  */
