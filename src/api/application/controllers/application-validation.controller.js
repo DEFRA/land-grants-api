@@ -24,6 +24,150 @@ import {
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
+/**
+ * Validate request against enabled actions
+ * @param {import('@hapi/hapi').Request} request
+ * @param {Array} landActions
+ * @param {Array} actions
+ * @param {string} applicationId
+ * @param {string} sbi
+ * @returns {Promise<import('@hapi/boom').Boom | null>}
+ */
+const validateRequestData = async (
+  request,
+  landActions,
+  actions,
+  applicationId,
+  sbi
+) => {
+  const validationErrors = await validateRequest(landActions, actions, request)
+
+  if (validationErrors && validationErrors.length > 0) {
+    logValidationWarn(request.logger, {
+      operation: 'Application validation',
+      errors: validationErrors,
+      context: {
+        sbi,
+        applicationId
+      }
+    })
+    return Boom.badRequest(validationErrors.join(', '))
+  }
+
+  return null
+}
+
+/**
+ * Validate all land parcel actions
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} postgresDb
+ * @param {Array} landActions
+ * @param {Array} actions
+ * @returns {Promise<Array>}
+ */
+const validateAllLandParcels = async (
+  request,
+  postgresDb,
+  landActions,
+  actions
+) => {
+  const compatibilityCheckFn = await createCompatibilityMatrix(
+    request.logger,
+    postgresDb
+  )
+
+  const parcelResults = await Promise.all(
+    landActions.map(async (landAction) => {
+      return await validateLandParcelActions(
+        landAction,
+        actions,
+        compatibilityCheckFn,
+        request
+      )
+    })
+  )
+
+  return parcelResults
+}
+
+/**
+ * Save application validation results
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} postgresDb
+ * @param {string} applicationId
+ * @param {string} applicantCrn
+ * @param {string} sbi
+ * @param {string} requester
+ * @param {Array} landActions
+ * @param {Array} parcelResults
+ * @returns {Promise<string | null>}
+ */
+const saveValidationResults = async (
+  request,
+  postgresDb,
+  applicationId,
+  applicantCrn,
+  sbi,
+  requester,
+  landActions,
+  parcelResults
+) => {
+  const applicationData = applicationDataTransformer(
+    applicationId,
+    applicantCrn,
+    sbi,
+    requester,
+    landActions,
+    parcelResults
+  )
+
+  const id = await saveApplication(request.logger, postgresDb, {
+    application_id: applicationId,
+    sbi,
+    crn: applicantCrn,
+    data: applicationData
+  })
+
+  return id
+}
+
+/**
+ * Build validation response
+ * @param {string} applicationId
+ * @param {string} applicantCrn
+ * @param {string} sbi
+ * @param {string} requester
+ * @param {Array} landActions
+ * @param {Array} parcelResults
+ * @param {string | null} id
+ * @returns {object}
+ */
+const buildValidationResponse = (
+  applicationId,
+  applicantCrn,
+  sbi,
+  requester,
+  landActions,
+  parcelResults,
+  id
+) => {
+  const applicationData = applicationDataTransformer(
+    applicationId,
+    applicantCrn,
+    sbi,
+    requester,
+    landActions,
+    parcelResults
+  )
+
+  return {
+    message: 'Application validated successfully',
+    valid: applicationData.hasPassed,
+    errorMessages: errorMessagesTransformer(parcelResults),
+    id
+  }
+}
+
 const ApplicationValidationController = {
   options: {
     tags: ['api'],
@@ -67,49 +211,33 @@ const ApplicationValidationController = {
         }
       })
 
-      // Get all the enabled actions
+      // Get enabled actions
       const actions = await getEnabledActions(request.logger, postgresDb)
 
-      // Validate the entire request
-      const validationErrors = await validateRequest(
+      // Validate request data
+      const requestValidation = await validateRequestData(
+        request,
         landActions,
         actions,
-        request
+        applicationId,
+        sbi
       )
-
-      // If there are validation errors, return a bad request response
-      if (validationErrors && validationErrors.length > 0) {
-        logValidationWarn(request.logger, {
-          operation: 'Application validation',
-          errors: validationErrors,
-          context: {
-            sbi,
-            applicationId
-          }
-        })
-        return Boom.badRequest(validationErrors.join(', '))
+      if (requestValidation) {
+        return requestValidation
       }
 
-      // Create a compatibility check function
-      const compatibilityCheckFn = await createCompatibilityMatrix(
-        request.logger,
-        postgresDb
+      // Validate all land parcels
+      const parcelResults = await validateAllLandParcels(
+        request,
+        postgresDb,
+        landActions,
+        actions
       )
 
-      // Validate each land action
-      const parcelResults = await Promise.all(
-        landActions.map(async (landAction) => {
-          return await validateLandParcelActions(
-            landAction,
-            actions,
-            compatibilityCheckFn,
-            request
-          )
-        })
-      )
-
-      // Transform the application data
-      const applicationData = applicationDataTransformer(
+      // Save validation results
+      const id = await saveValidationResults(
+        request,
+        postgresDb,
         applicationId,
         applicantCrn,
         sbi,
@@ -118,13 +246,16 @@ const ApplicationValidationController = {
         parcelResults
       )
 
-      // Save the application
-      const id = await saveApplication(request.logger, postgresDb, {
-        application_id: applicationId,
+      // Build response
+      const responseData = buildValidationResponse(
+        applicationId,
+        applicantCrn,
         sbi,
-        crn: applicantCrn,
-        data: applicationData
-      })
+        requester,
+        landActions,
+        parcelResults,
+        id
+      )
 
       logInfo(request.logger, {
         category: 'application',
@@ -133,20 +264,12 @@ const ApplicationValidationController = {
           applicationId,
           sbi,
           crn: applicantCrn,
-          valid: applicationData.hasPassed,
-          errorMessages: JSON.stringify(errorMessagesTransformer(parcelResults))
+          valid: responseData.valid,
+          errorCount: responseData.errorMessages.length
         }
       })
 
-      // Return the application validation result
-      return h
-        .response({
-          message: 'Application validated successfully',
-          valid: applicationData.hasPassed,
-          errorMessages: errorMessagesTransformer(parcelResults),
-          id
-        })
-        .code(statusCodes.ok)
+      return h.response(responseData).code(statusCodes.ok)
     } catch (error) {
       // @ts-expect-error - payload
       const { landActions, applicationId, sbi } = request.payload
@@ -156,7 +279,7 @@ const ApplicationValidationController = {
         context: {
           sbi,
           applicationId,
-          landActionsCount: landActions?.length
+          landActionsCount: landActions?.length ?? 0
         }
       })
       return Boom.internal(`Error validating application: ${error.message}`)
