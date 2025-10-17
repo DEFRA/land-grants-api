@@ -58,7 +58,7 @@ const PaymentsCalculateController = {
 
       logInfo(request.logger, {
         category: 'payment',
-        message: 'Controller calculating land actions payment',
+        message: 'Calculating payment',
         context: {
           landActions: JSON.stringify(landActions)
         }
@@ -89,7 +89,7 @@ const PaymentsCalculateController = {
       // If there are validation errors, return a bad request response
       if (validationErrors && validationErrors.length > 0) {
         logValidationWarn(request.logger, {
-          operation: 'Payment calculation request',
+          operation: 'Payment calculation error',
           errors: 'No land or actions data provided'
         })
         return Boom.badRequest(validationErrors.join(', '))
@@ -140,6 +140,15 @@ const PaymentsCalculateController = {
         })
         return Boom.badRequest('Unable to calculate payment')
       }
+
+      logInfo(request.logger, {
+        category: 'payment',
+        message: 'Payment calculation success',
+        context: {
+          annualTotalPence: calculateResponse.annualTotalPence,
+          agreementTotalPence: calculateResponse.agreementTotalPence
+        }
+      })
 
       return h
         .response({ message: 'success', payment: calculateResponse })
