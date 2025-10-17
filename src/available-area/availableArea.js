@@ -342,6 +342,7 @@ export function getAvailableAreaForAction(
     message: 'Available area result for action',
     context: {
       availableAreaHectares,
+      availableAreaSqm,
       actionCodeAppliedFor,
       parcelId,
       sheetId

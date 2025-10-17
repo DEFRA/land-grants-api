@@ -17,9 +17,8 @@ import { getDataAndValidateRequest } from '../validation/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
-  logDatabaseError,
   logInfo
-} from '../../common/helpers/logging/log-helpers.js'
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
  * ParcelsController
@@ -94,7 +93,13 @@ const ParcelsController = {
         })
       )
 
-      request.logger.info('PARCELS RESPONSE', responseParcels)
+      logInfo(request.logger, {
+        category: 'parcels',
+        message: 'Get parcels information',
+        context: {
+          parcels: JSON.stringify(responseParcels)
+        }
+      })
 
       return h
         .response({
