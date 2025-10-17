@@ -46,15 +46,6 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
       return []
     }
 
-    logInfo(logger, {
-      category: 'database',
-      message: 'Get land cover definitions',
-      context: {
-        landCoverCodes: landCoverCodes.join(','),
-        items: dbResponse?.rows?.length
-      }
-    })
-
     return transformLandCoverDefinitions(dbResponse.rows)
   } catch (error) {
     logDatabaseError(logger, {

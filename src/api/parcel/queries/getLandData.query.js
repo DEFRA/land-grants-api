@@ -1,7 +1,4 @@
-import {
-  logDatabaseError,
-  logInfo
-} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { logDatabaseError } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 /**
@@ -22,15 +19,6 @@ async function getLandData(sheetId, parcelId, db, logger) {
     const values = [sheetId, parcelId]
 
     const result = await client.query(query, values)
-    logInfo(logger, {
-      category: 'database',
-      message: 'Get land data for parcel',
-      context: {
-        parcelId,
-        sheetId,
-        items: result?.rows?.length
-      }
-    })
 
     return result.rows.map((row) => ({
       ...row,
