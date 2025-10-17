@@ -21,23 +21,124 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
- * Returns the maximum of the total duration years for the given actions
- * @param {string[]} landActionCodes
- * @param {Action[]} enabledActions
- * @returns {number}
+ * Validate land actions are provided
+ * @param {import('@hapi/hapi').Request} request
+ * @param {Array} landActions
+ * @returns {import('@hapi/boom').Boom | null}
  */
-const getMaxDurationYearsForActionCodes = (landActionCodes, enabledActions) => {
-  let maxDurationYears = 0
+const validateLandActionsPresent = (request, landActions) => {
+  if (landActions.length === 0) {
+    logValidationWarn(request.logger, {
+      operation: 'Payment calculation request',
+      errors: 'No land or actions data provided'
+    })
+    return Boom.badRequest(
+      'Error calculating payment land actions, no land or actions data provided'
+    )
+  }
+  return null
+}
+
+/**
+ * Validate request data against enabled actions
+ * @param {import('@hapi/hapi').Request} request
+ * @param {Array} landActions
+ * @param {Action[]} enabledActions
+ * @returns {Promise<import('@hapi/boom').Boom | null>}
+ */
+const validateRequestData = async (request, landActions, enabledActions) => {
+  const validationErrors = await validateRequest(
+    landActions,
+    enabledActions,
+    request
+  )
+
+  if (validationErrors && validationErrors.length > 0) {
+    logValidationWarn(request.logger, {
+      operation: 'Payment calculation error',
+      errors: validationErrors
+    })
+    return Boom.badRequest(validationErrors.join(', '))
+  }
+
+  return null
+}
+
+/**
+ * Determine action duration from enabled actions
+ * @param {import('@hapi/hapi').Request} request
+ * @param {Array} landActions
+ * @param {Action[]} enabledActions
+ * @returns {number | import('@hapi/boom').Boom}
+ */
+const getTotalDurationInYears = (request, landActions, enabledActions) => {
+  const landActionCodes = landActions.flatMap((landAction) =>
+    landAction.actions.map((a) => a.code)
+  )
+
+  let totalDurationYears = 0
   enabledActions.forEach((enabledAction) => {
     if (
       landActionCodes.includes(enabledAction.code) &&
-      enabledAction.durationYears > maxDurationYears
+      enabledAction.durationYears > totalDurationYears
     ) {
-      maxDurationYears = enabledAction.durationYears
+      totalDurationYears = enabledAction.durationYears
     }
   })
-  return maxDurationYears
+
+  if (totalDurationYears === 0) {
+    logBusinessError(request.logger, {
+      operation: 'Payment calculation: determine action duration',
+      error: new Error('No valid duration found for requested actions'),
+      context: {
+        landActionCodes: landActionCodes.join(',')
+      }
+    })
+    return Boom.badRequest('Error getting actions information')
+  }
+
+  return totalDurationYears
 }
+
+/**
+ * Calculate payment for land parcels
+ * @param {import('@hapi/hapi').Request} request
+ * @param {Array} landActions
+ * @param {Action[]} enabledActions
+ * @param {number} totalDurationYears
+ * @param {Date} startDate
+ * @returns {object | import('@hapi/boom').Boom}
+ */
+const calculatePayment = (
+  request,
+  landActions,
+  enabledActions,
+  totalDurationYears,
+  startDate
+) => {
+  const calculateResponse = getPaymentCalculationForParcels(
+    landActions,
+    enabledActions,
+    totalDurationYears,
+    startDate
+  )
+
+  if (!calculateResponse) {
+    logBusinessError(request.logger, {
+      operation: 'Payment calculation: calculate payment',
+      error: new Error('Payment calculation returned null/undefined'),
+      context: {
+        landActionsCount: landActions.length,
+        totalDurationYears,
+        startDate
+      }
+    })
+    return Boom.badRequest('Unable to calculate payment')
+  }
+
+  return calculateResponse
+}
+
 /**
  * PaymentsCalculateController
  * @satisfies {Partial<ServerRoute>}
@@ -62,10 +163,10 @@ const PaymentsCalculateController = {
   },
 
   /**
-   * Handler function for application validation
+   * Handler function for payment calculation
    * @param {import('@hapi/hapi').Request} request - Hapi request object
    * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
-   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
+   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
   handler: async (request, h) => {
     try {
@@ -78,79 +179,54 @@ const PaymentsCalculateController = {
         category: 'payment',
         message: 'Calculating payment',
         context: {
-          landActions: JSON.stringify(landActions)
+          landActionsCount: landActions.length
         }
       })
 
-      if (landActions.length === 0) {
-        logValidationWarn(request.logger, {
-          operation: 'Payment calculation request',
-          errors: 'No land or actions data provided'
-        })
-        return Boom.badRequest(
-          'Error calculating payment land actions, no land or actions data provided'
-        )
+      // Validate land actions are present
+      const landActionsValidation = validateLandActionsPresent(
+        request,
+        landActions
+      )
+      if (landActionsValidation) {
+        return landActionsValidation
       }
 
+      // Get enabled actions from database
       const { enabledActions } = await getPaymentCalculationDataRequirements(
         postgresDb,
         request.logger
       )
 
-      // Validate the entire request
-      const validationErrors = await validateRequest(
+      // Validate request data
+      const requestValidation = await validateRequestData(
+        request,
         landActions,
-        enabledActions,
-        request
-      )
-
-      // If there are validation errors, return a bad request response
-      if (validationErrors && validationErrors.length > 0) {
-        logValidationWarn(request.logger, {
-          operation: 'Payment calculation error',
-          errors: 'No land or actions data provided'
-        })
-        return Boom.badRequest(validationErrors.join(', '))
-      }
-
-      // for day 1, we assume duration years is 3 because all actions are 3 years long
-      // but this will change and our payment algorithm will have to support having actions with different lengths!
-      const landActionCodes = landActions.flatMap((landAction) =>
-        landAction.actions.map((a) => a.code)
-      )
-      const totalDurationYears = getMaxDurationYearsForActionCodes(
-        landActionCodes,
         enabledActions
       )
-      if (totalDurationYears === 0) {
-        logBusinessError(request.logger, {
-          operation: 'Payment calculation: determine action duration',
-          error: new Error('No valid duration found for requested actions'),
-          context: {
-            landActionCodes: landActionCodes.join(',')
-          }
-        })
-        return Boom.badRequest('Error getting actions information')
+      if (requestValidation) {
+        return requestValidation
       }
 
-      const calculateResponse = getPaymentCalculationForParcels(
+      const totalDurationYears = getTotalDurationInYears(
+        request,
+        landActions,
+        enabledActions
+      )
+      if (Boom.isBoom(totalDurationYears)) {
+        return totalDurationYears
+      }
+
+      // Calculate payment
+      const calculateResponse = calculatePayment(
+        request,
         landActions,
         enabledActions,
         totalDurationYears,
         startDate
       )
-
-      if (!calculateResponse) {
-        logBusinessError(request.logger, {
-          operation: 'Payment calculation: calculate payment',
-          error: new Error('Payment calculation returned null/undefined'),
-          context: {
-            landActionsCount: landActions.length,
-            totalDurationYears,
-            startDate
-          }
-        })
-        return Boom.badRequest('Unable to calculate payment')
+      if (Boom.isBoom(calculateResponse)) {
+        return calculateResponse
       }
 
       logInfo(request.logger, {
@@ -172,7 +248,7 @@ const PaymentsCalculateController = {
         operation: 'Payment calculation: calculate land actions payment',
         error,
         context: {
-          landActionsCount: landActions.length,
+          landActionsCount: landActions?.length ?? 0,
           startDate
         }
       })
