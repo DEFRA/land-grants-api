@@ -41,7 +41,6 @@ describe('getCompatibilityMatrix', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         event: {
-          action: 'Get compatibility matrix',
           category: 'database',
           type: 'info'
         }

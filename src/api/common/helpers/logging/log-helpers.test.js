@@ -30,7 +30,6 @@ describe('Log Helpers', () => {
         {
           event: {
             category: 'payment',
-            action: 'Payment calculated successfully',
             type: 'info'
           }
         },
@@ -49,7 +48,6 @@ describe('Log Helpers', () => {
         {
           event: {
             category: 'application',
-            action: 'Application validated',
             type: 'info'
           }
         },
