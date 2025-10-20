@@ -256,5 +256,83 @@ describe('Payment calculate controller', () => {
         'Error calculating payment land actions, no land or actions data provided'
       )
     })
+
+    test('should return 400 if totalDurationYears is 0 (no enabled actions match)', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      // Mock enabledActions with no matching action codes
+      await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
+        enabledActions: [
+          {
+            version: 1,
+            startDate: '2025-01-01',
+            code: 'DIFFERENT_CODE',
+            durationYears: 3,
+            description: 'Different action',
+            applicationUnitOfMeasurement: 'ha',
+            enabled: true,
+            display: true,
+            payment: {
+              ratePerUnitGbp: 10.6,
+              ratePerAgreementPerYearGbp: 272
+            }
+          }
+        ]
+      })
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Error getting actions information')
+    })
+
+    test('should return 400 if getPaymentCalculationForParcels returns null', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      mockGetPaymentCalculationForParcels.mockReturnValue(null)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Unable to calculate payment')
+    })
+
+    test('should return 500 if an unexpected error occurs', async () => {
+      const request = {
+        method: 'POST',
+        url: '/payments/calculate',
+        payload: mockLandActions
+      }
+
+      const errorMessage = 'Database connection failed'
+      mockGetPaymentCalculationDataRequirements.mockRejectedValue(
+        new Error(errorMessage)
+      )
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
   })
 })

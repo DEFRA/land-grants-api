@@ -122,10 +122,7 @@ export const createActionDetails = (action) => {
     const availableAreaDetails = createAvailableAreaDetails(
       action.availableArea.explanations
     )
-
-    if (availableAreaDetails) {
-      actionItems.push(availableAreaDetails)
-    }
+    actionItems.push(availableAreaDetails)
   }
 
   for (const rule of action.rules) {
