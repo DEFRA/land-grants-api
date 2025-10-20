@@ -13,6 +13,7 @@ import { stackActions } from './stackActions.js'
 import { subtractIncompatibleLandCoverAreaFromActions } from './subtractIncompatibleLandCoverAreaFromActions.js'
 import { subtractIncompatibleStacks } from './subtractIncompatibleStacks.js'
 import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
+import { logInfo } from '../api/common/helpers/logging/log-helpers.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -39,12 +40,6 @@ export async function getAvailableAreaDataRequirements(
     logger
   )
 
-  logger.info(
-    `Found ${landCoverCodesForAppliedForAction.length} landCoverCodesForAppliedForAction for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}: ${JSON.stringify(
-      landCoverCodesForAppliedForAction
-    )}`
-  )
-
   const landCoversForParcel = await getLandCoversForParcel(
     sheetId,
     parcelId,
@@ -67,8 +62,6 @@ export async function getAvailableAreaDataRequirements(
     ...landCoversForParcel.map((c) => c.landCoverClassCode),
     ...landCoverCodesForExistingActions
   ])
-
-  logger.info('All land cover codes:', allLandCoverCodes)
 
   const landCoverDefinitions = await getLandCoverDefinitions(
     Array.from(allLandCoverCodes),
@@ -120,9 +113,16 @@ function processLandCoverData({
     landCoverToString
   )
 
-  logger.info(
-    `totalValidLandCoverSqm ${totalValidLandCoverSqm} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
+  logInfo(logger, {
+    category: 'aac',
+    message: 'Process land cover data',
+    context: {
+      totalValidLandCoverSqm,
+      actionCodeAppliedFor,
+      sheetId,
+      parcelId
+    }
+  })
 
   return {
     mergedLandCoverCodesForAppliedForAction,
@@ -157,9 +157,15 @@ function processExistingActions(
     landCoverToString
   )
 
-  logger.info(
-    `existingActionsWithLandCoverInCommonWithAppliedForAction ${JSON.stringify(existingActionsWithLandCoverInCommonWithAppliedForAction)}`
-  )
+  logInfo(logger, {
+    category: 'aac',
+    message: 'Process existing actions',
+    context: {
+      existingActionsWithLandCoverInCommonWithAppliedForAction: JSON.stringify(
+        existingActionsWithLandCoverInCommonWithAppliedForAction
+      )
+    }
+  })
 
   return {
     existingActionsWithLandCoverInCommonWithAppliedForAction,
@@ -255,9 +261,15 @@ export function getAvailableAreaForAction(
   availableAreaDataRequirements,
   logger
 ) {
-  logger.info(
-    `Getting available area for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
+  logInfo(logger, {
+    category: 'aac',
+    message: 'Getting available area for action',
+    context: {
+      actionCodeAppliedFor,
+      parcelId,
+      sheetId
+    }
+  })
 
   const {
     landCoverCodesForAppliedForAction,
@@ -325,9 +337,17 @@ export function getAvailableAreaForAction(
     totalValidLandCoverSqm
   )
 
-  logger.info(
-    `availableArea ${availableAreaHectares} for action: ${actionCodeAppliedFor} for parcel: ${sheetId}-${parcelId}`
-  )
+  logInfo(logger, {
+    category: 'aac',
+    message: 'Available area result for action',
+    context: {
+      availableAreaHectares,
+      availableAreaSqm,
+      actionCodeAppliedFor,
+      parcelId,
+      sheetId
+    }
+  })
 
   const explanations = buildExplanations(
     initialExplanations,

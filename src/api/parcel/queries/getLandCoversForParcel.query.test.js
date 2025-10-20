@@ -97,10 +97,19 @@ describe('getLandCoversForParcel', () => {
     ).rejects.toThrow('Connection error')
 
     expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'Connection error'
+        }),
+        event: expect.objectContaining({
+          action: 'Get land covers for parcel',
+          category: 'database',
+          type: 'error'
+        })
+      }),
       expect.stringContaining(
-        'Error retrieving land covers for parcelId: SH123-PA456'
-      ),
-      error
+        'Database operation failed: Get land covers for parcel'
+      )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })

@@ -15,6 +15,11 @@ import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreemen
 import { mergeAgreementsTransformer } from '~/src/api/agreements/transformers/agreements.transformer.js'
 import { getDataAndValidateRequest } from '../validation/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+import {
+  logBusinessError,
+  logInfo,
+  logValidationWarn
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 /**
  * ParcelsController
@@ -51,7 +56,14 @@ const ParcelsController = {
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
       const { parcelIds, fields } = request.payload
-      request.logger.info(`Fetching parcels: ${parcelIds.join(', ')}`)
+      logInfo(request.logger, {
+        category: 'parcel',
+        message: 'Fetch parcels',
+        context: {
+          parcelIds: parcelIds.join(','),
+          fields: fields.join(',')
+        }
+      })
 
       const showActionResults = fields.includes('actions.results')
 
@@ -61,7 +73,14 @@ const ParcelsController = {
       )
 
       if (validationResponse.errors && validationResponse.errors.length > 0) {
-        request.logger.error('Validation errors', validationResponse.errors)
+        logValidationWarn(request.logger, {
+          operation: 'Parcel validation',
+          errors: validationResponse.errors,
+          context: {
+            parcelIds: parcelIds.join(','),
+            fields: fields.join(',')
+          }
+        })
         return Boom.notFound(validationResponse.errors.join(', '))
       }
 
@@ -72,7 +91,7 @@ const ParcelsController = {
 
       const responseParcels = await Promise.all(
         validationResponse.parcels.map(async (parcel) => {
-          return await getActionsForParcel(
+          return getActionsForParcel(
             parcel,
             request.payload,
             showActionResults,
@@ -83,7 +102,13 @@ const ParcelsController = {
         })
       )
 
-      request.logger.info('PARCELS RESPONSE', responseParcels)
+      logInfo(request.logger, {
+        category: 'parcels',
+        message: 'Get parcels information',
+        context: {
+          parcels: JSON.stringify(responseParcels)
+        }
+      })
 
       return h
         .response({
@@ -93,9 +118,15 @@ const ParcelsController = {
         .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = 'Error fetching parcels'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      // @ts-expect-error - payload
+      const { parcelIds, fields } = request.payload
+      logBusinessError(request.logger, {
+        operation: 'Fetch parcels',
+        error,
+        context: {
+          parcelIds: parcelIds.join(','),
+          fields: fields.join(',')
+        }
       })
       return Boom.internal(errorMessage)
     }
@@ -124,11 +155,6 @@ async function getActionsForParcel(
   )
 
   const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
-
-  request.logger.info(
-    `Merged actions for parcel ${parcel.sheetId}-${parcel.parcelId}:`,
-    mergedActions
-  )
 
   const parcelResponse = {
     parcelId: parcel.parcel_id,

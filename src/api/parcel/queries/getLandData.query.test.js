@@ -93,8 +93,14 @@ describe('getLandData', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        `Error executing get Land parcels query: ${connectionError.toString()}`
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: 'Database connection failed'
+          })
+        }),
+        expect.stringContaining('Database operation failed: Get land data')
       )
+
       expect(mockClient.release).not.toHaveBeenCalled()
       expect(result).toBeNull()
     })
@@ -112,7 +118,12 @@ describe('getLandData', () => {
 
       expect(mockDb.connect).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledWith(
-        `Error executing get Land parcels query: ${queryError.toString()}`
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: 'Query execution failed'
+          })
+        }),
+        expect.stringContaining('Database operation failed: Get land data')
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
       expect(result).toBeNull()

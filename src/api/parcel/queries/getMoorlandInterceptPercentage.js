@@ -1,14 +1,14 @@
-import { roundSqm } from '../../common/helpers/measurement.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
   let client
 
   try {
     client = await db.connect()
-    logger.info(
-      `Retrieving moorland intercept percentage for ${sheetId}-${parcelId}`
-    )
-
     const query = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -28,20 +28,29 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
     const values = [sheetId, parcelId]
     const result = await client.query(query, values)
 
-    logger.info(
-      `Retrieved moorland intercept percentage for ${sheetId}-${parcelId} , ${result.rows}`
-    )
-
     const roundedMoorlandOverlapPercent = roundSqm(
       result?.rows?.[0]?.moorland_overlap_percent || 0
     )
 
+    logInfo(logger, {
+      category: 'database',
+      message: 'Get moorland intercept percentage',
+      context: {
+        parcelId,
+        sheetId,
+        roundedMoorlandOverlapPercent
+      }
+    })
     return roundedMoorlandOverlapPercent
   } catch (error) {
-    logger.error(
-      'Error executing get moorland intercept percentage query',
-      error
-    )
+    logDatabaseError(logger, {
+      operation: 'Get moorland intercept percentage',
+      error,
+      context: {
+        parcelId,
+        sheetId
+      }
+    })
     return 0
   } finally {
     if (client) {

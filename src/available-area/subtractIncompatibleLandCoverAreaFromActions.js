@@ -1,3 +1,4 @@
+import { logInfo } from '../api/common/helpers/logging/log-helpers.js'
 import { mergeLandCoverCodes } from '../api/land-cover-codes/services/merge-land-cover-codes.js'
 import { aacExplain, createExplanationSection } from './explanations.js'
 
@@ -119,9 +120,20 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
       )
     }
 
-    logger.info(
-      `totalAreaNotInCommon = ${totalAreaNotInCommon} - landCoversForParcel: ${JSON.stringify(landCoversForParcel)} - landCoverCodesForExistingAction ${JSON.stringify(landCoversForExistingActions[action.actionCode])}: landCoverCodesForAppliedForAction: ${JSON.stringify(mergedLandCoverCodesForAppliedForAction)}}`
-    )
+    logInfo(logger, {
+      category: 'aac',
+      message: 'Subtract incompatible land cover area from actions',
+      context: {
+        totalAreaNotInCommon,
+        landCoversForParcel: JSON.stringify(landCoversForParcel),
+        landCoverCodesForExistingAction: JSON.stringify(
+          landCoversForExistingActions[action.actionCode]
+        ),
+        landCoverCodesForAppliedForAction: JSON.stringify(
+          mergedLandCoverCodesForAppliedForAction
+        )
+      }
+    })
 
     const revisedArea = action.areaSqm - totalAreaNotInCommon
     revisedActions.push({

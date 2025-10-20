@@ -72,8 +72,12 @@ describe('Get application validation runs', () => {
     const client = await mockDb.connect()
     expect(client.release).toHaveBeenCalled()
     expect(result).toBeNull()
+
     expect(logger.error).toHaveBeenCalledWith(
-      'Error executing get application validation runs by application id query: Database error'
+      expect.objectContaining({
+        error: expect.objectContaining({ message: 'Database error' })
+      }),
+      'Database operation failed: Get application validation runs'
     )
   })
 })

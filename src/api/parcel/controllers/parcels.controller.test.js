@@ -79,6 +79,7 @@ describe('Parcels Controller', () => {
   beforeAll(async () => {
     server.decorate('request', 'logger', {
       info: jest.fn(),
+      warn: jest.fn(),
       debug: jest.fn(),
       error: jest.fn()
     })
