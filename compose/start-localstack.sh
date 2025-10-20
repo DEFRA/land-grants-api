@@ -8,13 +8,12 @@ declare S3_BUCKET="s3://land-data"
 
 # SQS Queues we listen to
 declare -A QUEUES=(
-  [grant_application_approved]="create_agreement" # Grants UI has approved an application, we need to create the agreement in response
-  [gas__sns__application_status_updated]="gas_application_status_updated" # Grants Application Service update (e.g. withdrawn)
+  [land_data_ingested]="ingest_land_data" # We've ingested the land data
 )
 
 # SNS Topics we publish to
 declare -A TOPICS=(
-  [agreement_status_updated]="agreement_status_updated" # We've updated the agreement status e.g. created/accepted
+  [land_data_updated]="land_data_updated" # We've updated the land data
 )
 
 # Associative arrays for ARNs and URLs

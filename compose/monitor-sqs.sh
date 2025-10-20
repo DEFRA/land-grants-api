@@ -3,7 +3,7 @@
 set -euo pipefail
 
 MONITOR_SQS="${MONITOR_SQS:-true}"
-QUEUE_NAMES="${QUEUE_NAMES:-agreement_status_updated}"   # comma-separated
+QUEUE_NAMES="${QUEUE_NAMES:-land_data_updated}"   # comma-separated
 INTERVAL="${INTERVAL:-10}"                                     # seconds
 ACCOUNT_ID="${ACCOUNT_ID:-000000000000}"
 
