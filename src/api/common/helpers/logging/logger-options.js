@@ -29,6 +29,8 @@ export const loggerOptions = {
     paths: logConfig.redact,
     remove: true
   },
+  convertReqRes: true,
+  convertErr: true,
   level: logConfig.level,
   ...formatters[logConfig.format],
   nesting: true,

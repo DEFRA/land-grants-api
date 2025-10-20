@@ -1,3 +1,7 @@
+import {
+  logDatabaseError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
 
 /**
@@ -9,17 +13,22 @@ import { compatibilityMatrixTransformer } from '../transformers/compatibility-ma
 async function getCompatibilityMatrix(logger, db, codes = null) {
   let client
   try {
-    logger.info(`Connecting to DB to fetch compatibility matrix`)
     client = await db.connect()
 
     const query = `SELECT * FROM compatibility_matrix ${codes ? 'WHERE option_code = ANY ($1)' : ''}`
     const result = await client.query(query, codes ? [codes] : null)
 
+    logInfo(logger, {
+      category: 'database',
+      message: 'Get compatibility matrix'
+    })
+
     return result?.rows.map(compatibilityMatrixTransformer)
   } catch (error) {
-    logger.error(
-      `Error executing get compatibility matrix query: ${error.message}`
-    )
+    logDatabaseError(logger, {
+      operation: 'Get compatibility matrix',
+      error
+    })
     return []
   } finally {
     if (client) {
