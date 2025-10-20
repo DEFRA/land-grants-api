@@ -10,6 +10,7 @@ import {
 } from '~/src/api/case-management-adapter/schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { applicationValidationRunToCaseManagement } from '../transformers/application-validation.transformer.js'
+import { logBusinessError } from '../../common/helpers/logging/log-helpers.js'
 
 /** @typedef {import('~/src/api/application/application.d.js').ApplicationValidationRun} ApplicationValidationRun */
 
@@ -64,9 +65,12 @@ export const CaseManagementApplicationValidationRunController = {
         .code(statusCodes.ok)
     } catch (error) {
       const errorMessage = 'Error getting application validation run'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      const { id } = request.params
+
+      logBusinessError(request.logger, {
+        operation: 'Application validation run',
+        error,
+        context: { id }
       })
       return Boom.internal(errorMessage)
     }

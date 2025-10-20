@@ -1,3 +1,8 @@
+import {
+  logDatabaseError,
+  logInfo
+} from '../../common/helpers/logging/log-helpers.js'
+
 /**
  * Save application validation run
  * @param {Logger} logger - The logger
@@ -12,7 +17,6 @@ async function saveApplicationValidationRun(
 ) {
   let client
   try {
-    logger.info(`Connecting to DB to save application validation run`)
     client = await db.connect()
 
     const query = `
@@ -28,11 +32,17 @@ async function saveApplicationValidationRun(
       applicationValidationRun.data
     ])
 
+    logInfo(logger, {
+      category: 'database',
+      message: 'Save application validation run'
+    })
+
     return result.rows[0]
   } catch (error) {
-    logger.error(
-      `Error executing save application validation run mutation: ${error.message}`
-    )
+    logDatabaseError(logger, {
+      operation: 'Save application validation run',
+      error
+    })
     return null
   } finally {
     if (client) {

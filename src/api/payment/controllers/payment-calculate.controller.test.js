@@ -87,7 +87,8 @@ describe('Payment calculate controller', () => {
     server.decorate('request', 'logger', {
       info: jest.fn(),
       debug: jest.fn(),
-      error: jest.fn()
+      error: jest.fn(),
+      warn: jest.fn()
     })
     server.decorate('server', 'postgresDb', {
       connect: jest.fn(),

@@ -7,6 +7,11 @@ import {
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 import { caseManagementApplicationValidationRerunRequestSchema } from '../schema/application-validation.schema.js'
 import { validateApplication } from '../../application/service/application-validation.service.js'
+import {
+  logResourceNotFound,
+  logValidationWarn,
+  logBusinessError
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 const CaseManagementApplicationValidationController = {
   options: {
@@ -46,16 +51,26 @@ const CaseManagementApplicationValidationController = {
       )
 
       if (!applicationValidationRun) {
+        logResourceNotFound(request.logger, {
+          resourceType: 'Application validation run',
+          context: {
+            validationRunId: id
+          }
+        })
         return Boom.notFound('Application validation run not found')
       }
 
-      // eslint-disable-next-line camelcase
-      const { sbi, crn, application_id, data } = applicationValidationRun
+      const {
+        sbi,
+        crn,
+        application_id: applicationId,
+        data
+      } = applicationValidationRun
 
       const { validationErrors, applicationData, applicationValidationRunId } =
         await validateApplication(
           data.application.parcels,
-          application_id,
+          applicationId,
           crn,
           sbi,
           requesterUsername,
@@ -63,7 +78,17 @@ const CaseManagementApplicationValidationController = {
         )
 
       if (validationErrors && validationErrors.length > 0) {
-        request.logger.error('Validation errors', validationErrors)
+        logValidationWarn(request.logger, {
+          operation: 'Case management application validation',
+          errors: validationErrors.map((err) => err.message),
+          context: {
+            sbi,
+            crn,
+            validationRunId: id,
+            requesterUsername,
+            applicationId
+          }
+        })
         return Boom.badRequest(
           validationErrors.map((err) => err.message).join(', ')
         )
@@ -79,12 +104,17 @@ const CaseManagementApplicationValidationController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = `Error validating application: ${error.message}`
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      // @ts-expect-error - postgresDb
+      const { requesterUsername, id } = request.payload
+      logBusinessError(request.logger, {
+        operation: 'Case Management validation run',
+        error,
+        context: {
+          validationRunId: id,
+          requesterUsername
+        }
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal('Error validating application')
     }
   }
 }

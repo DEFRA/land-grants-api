@@ -4,6 +4,7 @@ import { applicationDataTransformer } from '../transformers/application.transfor
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Validate application
@@ -34,7 +35,17 @@ export const validateApplication = async (
 
   // If there are validation errors, return a bad request response
   if (validationErrors && validationErrors.length > 0) {
-    request.logger.error('Validation errors', validationErrors)
+    logValidationWarn(request.logger, {
+      operation: 'Application validation',
+      errors: validationErrors,
+      context: {
+        sbi,
+        crn,
+        requesterUsername,
+        applicationId
+      }
+    })
+
     return {
       validationErrors,
       applicationData: null,

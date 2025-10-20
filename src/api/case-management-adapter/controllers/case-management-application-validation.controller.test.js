@@ -12,6 +12,7 @@ describe('Case Management Application Validation Controller', () => {
   const mockLogger = {
     info: jest.fn(),
     debug: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn()
   }
 
@@ -242,9 +243,16 @@ describe('Case Management Application Validation Controller', () => {
         statusCode: 400
       })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Validation errors',
-        validationErrors
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        {
+          event: {
+            action: 'Case management application validation',
+            category: 'validation',
+            reason: 'Invalid action code, Parcel not found',
+            type: 'warn'
+          }
+        },
+        'Validation failed: Case management application validation [sbi=123456789 | crn=1234567890 | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
     })
 
@@ -273,11 +281,12 @@ describe('Case Management Application Validation Controller', () => {
       expect(result.message).toBe('An internal server error occurred')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Error validating application: Validation service failed',
-        {
-          error: 'Validation service failed',
-          stack: expect.any(String)
-        }
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: 'Validation service failed'
+          })
+        }),
+        'Business operation failed: Case Management validation run [validationRunId=1 | requesterUsername=test.user@example.com]'
       )
     })
   })

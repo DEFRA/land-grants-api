@@ -1,3 +1,9 @@
+import {
+  logDatabaseError,
+  logInfo,
+  logValidationWarn
+} from '~/src/api/common/helpers/logging/log-helpers.js'
+
 /**
  * Get all land cover codes for one or more action codes
  * @param {string[]} landCoverCodes - The land cover codes to get
@@ -10,13 +16,12 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
 
   try {
     if (!Array.isArray(landCoverCodes) || landCoverCodes.length === 0) {
-      logger.warn('No land cover codes provided')
+      logValidationWarn(logger, {
+        operation: 'Fetch land cover definitions',
+        errors: 'No land cover codes provided'
+      })
       return []
     }
-
-    logger.info(
-      `Connecting to DB to fetch land cover definitions for land cover codes: ${landCoverCodes.join(', ')}`
-    )
 
     client = await db.connect()
     const query = `
@@ -35,19 +40,21 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
     const dbResponse = await client.query(query, [landCoverCodes])
 
     if (!dbResponse || dbResponse?.rows?.length === 0) {
-      logger.warn(
-        `No land cover codes found for land cover codes: ${landCoverCodes.join(', ')}`
-      )
+      logInfo(logger, {
+        category: 'database',
+        operation: 'Get land cover definitions',
+        message: 'No land cover codes found',
+        context: { landCoverCodes: landCoverCodes.join(',') }
+      })
       return []
     }
 
-    logger.info(
-      `Retrieved land covers for land cover definitions: ${landCoverCodes.join(', ')}, items: ${dbResponse?.rows?.length}`
-    )
-
     return transformLandCoverDefinitions(dbResponse.rows)
   } catch (error) {
-    logger.error(`Unable to get land cover definitions`, error)
+    logDatabaseError(logger, {
+      operation: 'Get land cover definitions',
+      error
+    })
     throw error
   } finally {
     if (client) {

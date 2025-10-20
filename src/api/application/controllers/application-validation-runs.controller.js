@@ -11,6 +11,7 @@ import {
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import { getApplicationValidationRuns } from '../queries/getApplicationValidationRuns.query.js'
 import { applicationValidationRunTransformer } from '../transformers/application.transformer.js'
+import { logBusinessError } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 export const ApplicationValidationRunsController = {
   options: {
@@ -60,12 +61,17 @@ export const ApplicationValidationRunsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = 'Error getting application validation runs'
-      request.logger.error(errorMessage, {
-        error: error.message,
-        stack: error.stack
+      // @ts-expect-error - payload
+      const { fields } = request.payload
+      logBusinessError(request.logger, {
+        operation: 'retrieve application validation runs',
+        error,
+        context: {
+          applicationId: request.params?.applicationId,
+          fields: fields.join(',')
+        }
       })
-      return Boom.internal(errorMessage)
+      return Boom.internal('Error getting application validation runs')
     }
   }
 }
