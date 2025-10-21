@@ -1,4 +1,7 @@
-import { logInfo } from '../../common/helpers/logging/log-helpers.js'
+import {
+  logDatabaseError,
+  logInfo
+} from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Save application
@@ -36,7 +39,10 @@ async function saveApplication(logger, db, application) {
 
     return result.rows[0].id
   } catch (error) {
-    logger.error(`Error executing get action query: ${error.message}`)
+    logDatabaseError(logger, {
+      operation: 'Save application validation run',
+      error
+    })
     return null
   } finally {
     if (client) {
