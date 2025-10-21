@@ -41,6 +41,12 @@ describe('createParagraphComponent', () => {
       text: 'This is a paragraph.'
     })
   })
+
+  test('should return null when text is empty string', () => {
+    const result = createParagraphComponent('')
+
+    expect(result).toBeNull()
+  })
 })
 
 describe('createAvailableAreaDetails', () => {
@@ -103,6 +109,48 @@ describe('createAvailableAreaDetails', () => {
         }
       ],
       items: [{ component: 'paragraph', text: 'Empty Section' }]
+    })
+  })
+
+  test('should handle empty explanations array', () => {
+    const explanations = []
+
+    const result = createAvailableAreaDetails(explanations)
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Available area calculation explanation',
+          classes: 'govuk-details__summary-text'
+        }
+      ],
+      items: []
+    })
+  })
+
+  test('should filter out null items from empty content strings', () => {
+    const explanations = [
+      {
+        title: 'Section',
+        content: ['', 'Valid content', '']
+      }
+    ]
+
+    const result = createAvailableAreaDetails(explanations)
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Available area calculation explanation',
+          classes: 'govuk-details__summary-text'
+        }
+      ],
+      items: [
+        { component: 'paragraph', text: 'Section' },
+        { component: 'paragraph', text: 'Valid content' }
+      ]
     })
   })
 })
@@ -235,6 +283,55 @@ describe('createRuleDetails', () => {
       text: 'Passed',
       colour: 'green'
     })
+  })
+
+  test('should handle multiple explanations with multiple lines', () => {
+    const rule = {
+      name: 'test-rule',
+      description: 'Test rule description',
+      passed: true,
+      explanations: [
+        {
+          title: 'First explanation',
+          lines: ['Line 1', 'Line 2']
+        },
+        {
+          title: 'Second explanation',
+          lines: ['Line 3', 'Line 4', 'Line 5']
+        }
+      ]
+    }
+
+    const result = createRuleDetails(rule)
+
+    expect(result.items).toEqual([
+      { component: 'paragraph', text: 'Line 1' },
+      { component: 'paragraph', text: 'Line 2' },
+      { component: 'paragraph', text: 'Line 3' },
+      { component: 'paragraph', text: 'Line 4' },
+      { component: 'paragraph', text: 'Line 5' }
+    ])
+  })
+
+  test('should filter out empty line explanations', () => {
+    const rule = {
+      name: 'test-rule',
+      description: 'Test rule',
+      passed: false,
+      explanations: [
+        {
+          title: 'Explanation',
+          lines: ['Valid line', '', 'Another valid line']
+        }
+      ]
+    }
+
+    const result = createRuleDetails(rule)
+
+    expect(result.items).toEqual([
+      { component: 'paragraph', text: 'Valid line' },
+      { component: 'paragraph', text: 'Another valid line' }
+    ])
   })
 })
 
@@ -384,11 +481,329 @@ describe('createActionDetails', () => {
       items: []
     })
   })
+
+  test('should handle action without availableArea', () => {
+    const action = {
+      code: 'TEST1',
+      hasPassed: true,
+      rules: [
+        {
+          name: 'test-rule',
+          description: 'Test rule',
+          passed: true,
+          explanations: [
+            {
+              title: 'Test',
+              lines: ['Test line']
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = createActionDetails(action)
+
+    expect(result).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'TEST1',
+          classes: 'govuk-details__summary-text'
+        },
+        {
+          classes: 'govuk-!-margin-left-8',
+          component: 'status',
+          text: 'Passed',
+          colour: 'green'
+        }
+      ],
+      items: [
+        {
+          component: 'details',
+          summaryItems: [
+            {
+              text: 'Test rule',
+              classes: 'govuk-details__summary-text'
+            },
+            {
+              classes: 'govuk-!-margin-left-8',
+              component: 'status',
+              text: 'Passed',
+              colour: 'green'
+            }
+          ],
+          items: [
+            {
+              component: 'paragraph',
+              text: 'Test line'
+            }
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should handle action with failed status', () => {
+    const action = {
+      code: 'FAILED1',
+      hasPassed: false,
+      availableArea: {
+        areaInHa: 5.0,
+        explanations: [
+          {
+            title: 'Area Information',
+            content: ['Total area: 5.0 ha']
+          }
+        ]
+      },
+      rules: [
+        {
+          name: 'failed-rule',
+          description: 'This rule failed',
+          passed: false,
+          explanations: [
+            {
+              title: 'Failure reason',
+              lines: ['Insufficient area']
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = createActionDetails(action)
+
+    expect(result.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Failed',
+      colour: 'red'
+    })
+    expect(result.items).toHaveLength(2) // available area details + 1 rule
+  })
+
+  test('should handle action with multiple rules', () => {
+    const action = {
+      code: 'MULTI1',
+      hasPassed: true,
+      rules: [
+        {
+          name: 'rule-1',
+          description: 'First rule',
+          passed: true,
+          explanations: [
+            {
+              title: 'Rule 1',
+              lines: ['Rule 1 passed']
+            }
+          ]
+        },
+        {
+          name: 'rule-2',
+          description: 'Second rule',
+          passed: true,
+          explanations: [
+            {
+              title: 'Rule 2',
+              lines: ['Rule 2 passed']
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = createActionDetails(action)
+
+    expect(result.items).toHaveLength(2)
+    expect(result.items[0].summaryItems[0].text).toBe('First rule')
+    expect(result.items[1].summaryItems[0].text).toBe('Second rule')
+  })
+
+  test('should handle action with availableArea but empty explanations', () => {
+    const action = {
+      code: 'EMPTY_EXPLAIN',
+      hasPassed: true,
+      availableArea: {
+        areaInHa: 10.0,
+        explanations: []
+      },
+      rules: []
+    }
+
+    const result = createActionDetails(action)
+
+    // Should have the availableArea details component even with empty explanations
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].component).toBe('details')
+    expect(result.items[0].summaryItems[0].text).toBe(
+      'Available area calculation explanation'
+    )
+    expect(result.items[0].items).toEqual([])
+  })
 })
 
 describe('applicationValidationRunToCaseManagement', () => {
   test('should return null when input is null', () => {
     expect(applicationValidationRunToCaseManagement(null)).toBeNull()
+  })
+
+  test('should return null when input is undefined', () => {
+    expect(applicationValidationRunToCaseManagement(undefined)).toBeNull()
+  })
+
+  test('should handle empty parcelLevelResults', () => {
+    const input = {
+      sbi: 106284736,
+      date: '2025-09-30T08:29:21.263Z',
+      hasPassed: true,
+      parcelLevelResults: [],
+      applicationLevelResults: {}
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result).toEqual([
+      {
+        component: 'heading',
+        text: 'Land parcel rules checks',
+        level: 2,
+        id: 'title'
+      }
+    ])
+  })
+
+  test('should handle multiple parcels', () => {
+    const input = {
+      sbi: 106284736,
+      date: '2025-09-30T08:29:21.263Z',
+      hasPassed: true,
+      parcelLevelResults: [
+        {
+          sheetId: 'SD6743',
+          parcelId: '8083',
+          actions: [
+            {
+              code: 'ACTION1',
+              hasPassed: true,
+              rules: []
+            }
+          ]
+        },
+        {
+          sheetId: 'SD6744',
+          parcelId: '8084',
+          actions: [
+            {
+              code: 'ACTION2',
+              hasPassed: true,
+              rules: []
+            }
+          ]
+        }
+      ],
+      applicationLevelResults: {}
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result).toHaveLength(5) // 1 title + 2 parcel headings + 2 actions
+    expect(result[0]).toEqual({
+      component: 'heading',
+      text: 'Land parcel rules checks',
+      level: 2,
+      id: 'title'
+    })
+    expect(result[1]).toEqual({
+      component: 'heading',
+      text: 'Parcel ID: SD6743 8083 checks',
+      level: 3,
+      id: undefined
+    })
+    expect(result[2].summaryItems[0].text).toBe('ACTION1')
+    expect(result[3]).toEqual({
+      component: 'heading',
+      text: 'Parcel ID: SD6744 8084 checks',
+      level: 3,
+      id: undefined
+    })
+    expect(result[4].summaryItems[0].text).toBe('ACTION2')
+  })
+
+  test('should handle parcel with no actions', () => {
+    const input = {
+      sbi: 106284736,
+      date: '2025-09-30T08:29:21.263Z',
+      hasPassed: true,
+      parcelLevelResults: [
+        {
+          sheetId: 'SD6743',
+          parcelId: '8083',
+          actions: []
+        }
+      ],
+      applicationLevelResults: {}
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result).toHaveLength(2) // 1 title + 1 parcel heading
+    expect(result[0]).toEqual({
+      component: 'heading',
+      text: 'Land parcel rules checks',
+      level: 2,
+      id: 'title'
+    })
+    expect(result[1]).toEqual({
+      component: 'heading',
+      text: 'Parcel ID: SD6743 8083 checks',
+      level: 3,
+      id: undefined
+    })
+  })
+
+  test('should handle failed validation scenario', () => {
+    const input = {
+      sbi: 106284736,
+      date: '2025-09-30T08:29:21.263Z',
+      hasPassed: false,
+      parcelLevelResults: [
+        {
+          sheetId: 'SD6743',
+          parcelId: '8083',
+          actions: [
+            {
+              code: 'FAILED_ACTION',
+              hasPassed: false,
+              rules: [
+                {
+                  name: 'failed-rule',
+                  description: 'This rule failed',
+                  passed: false,
+                  explanations: [
+                    {
+                      title: 'Failure',
+                      lines: ['Rule failed']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      applicationLevelResults: {}
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result).toHaveLength(3) // title + parcel heading + failed action
+    const failedAction = result[2]
+    expect(failedAction.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Failed',
+      colour: 'red'
+    })
   })
 
   test('should return response when input is valid', () => {

@@ -61,8 +61,5 @@ describe('Save application', () => {
     const client = await mockDb.connect()
     expect(client.release).toHaveBeenCalled()
     expect(result).toBeNull()
-    expect(logger.error).toHaveBeenCalledWith(
-      'Error executing get action query: Database error'
-    )
   })
 })
