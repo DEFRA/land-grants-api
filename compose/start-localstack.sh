@@ -1,11 +1,12 @@
 #!/bin/bash
-export AWS_REGION=eu-west-2
-export AWS_DEFAULT_REGION=eu-west-2
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
+set -e
 
-# S3 buckets
-# aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket
+S3_BUCKET="s3://land-data"
 
-# SQS queues
-# aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name my-queue
+echo "Creating S3 bucket"
+
+# Create S3 bucket
+awslocal --endpoint-url=$AWS_ENDPOINT s3 mb ${S3_BUCKET}
+echo "Created S3 bucket: ${S3_BUCKET}"
+
+echo "S3 bucket created"
