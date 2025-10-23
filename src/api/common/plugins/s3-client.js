@@ -21,13 +21,13 @@ const s3Client = {
     name: 's3Client',
     version: '0.1.0',
     register(server) {
-      const s3Client = createS3Client()
-      server.decorate('request', 's3', s3Client)
-      server.decorate('server', 's3', s3Client)
+      const client = createS3Client()
+      server.decorate('request', 's3', client)
+      server.decorate('server', 's3', client)
 
       server.events.on('stop', () => {
         server.logger.info(`Closing S3 client`)
-        s3Client.destroy()
+        client.destroy()
       })
     }
   },
