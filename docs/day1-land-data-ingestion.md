@@ -1,8 +1,28 @@
-# Copy land data files
+# Day 1 land data ingestion
+
+- [Back home](../README.md)
+
+This service requires land data in its DB. This data will come from an - [ETL process](etl-land-data-ingestion.md).
+
+For day 1 we need to do this manually. The Geospatial Data team in the RPA
+(Paul.Dutton@rpa.gov.uk, Brian.O'Toole@rpa.gov.uk) can provide us with GeoPackage files with a cut
+of the production data from the spatial data mart. We need to get this data on to our test and
+prod DBs.
+
+The process works like this:
+
+- Request gpkg files for parcels, land covers and moorland/LFA
+- Unzip gpkg files
+- Use [ogr2ogr](https://gdal.org/en/stable/programs/ogr2ogr.html) to produce csv
+- Use [Miller](https://miller.readthedocs.io/en/latest/installing-miller/) to split into sub 1 GB files
+- Upload to the CDP web console for the right environment
+- Use `psql` cli tool to copy to db
+
+## Copy land data files
 
 The land data are GeoPackage files that have been processed and put into sharepoint.
 
-## Data files
+### Data files
 
 They have been converted to csv files < 1gb in size for importing using the following:
 
