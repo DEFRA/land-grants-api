@@ -1,4 +1,4 @@
-import { ingestLandDataController } from '~/src/api/ingest-schedule/controllers/ingest-schedule.controller.js'
+import { IngestScheduleController } from '~/src/api/ingest-schedule/controllers/ingest-schedule.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -10,7 +10,7 @@ const ingestSchedule = {
       server.route({
         method: 'GET',
         path: '/ingest-land-data-schedule',
-        ...ingestLandDataController
+        ...IngestScheduleController
       })
     }
   }

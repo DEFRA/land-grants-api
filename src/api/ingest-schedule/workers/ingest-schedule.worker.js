@@ -1,5 +1,5 @@
 import { parentPort, workerData } from 'worker_threads'
-import { getFile } from '../../common/s3/getFile.js'
+import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 
@@ -22,18 +22,18 @@ const postMessage = (taskId, success, result, error) => {
 
 /**
  * Import land data from S3 bucket
- * @param {string[]} files - The files to import
+ * @param {string} file - The file to import
  * @returns {Promise<string>} The string representation of the file
  */
-async function importLandData(files) {
+async function importLandData(file) {
   const s3Client = createS3Client()
-  const data = await getFile(s3Client, config.get('s3.bucket'), files[0])
+  const data = await getFile(s3Client, config.get('s3.bucket'), file)
   return data
 }
 
 async function ingestLandData(workerData) {
   try {
-    const result = await importLandData(workerData.files)
+    const result = await importLandData(workerData.data)
     postMessage(workerData.taskId, true, result, null)
   } catch (error) {
     postMessage(workerData.taskId, false, null, error.message)
