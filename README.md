@@ -2,13 +2,12 @@
 
 To read more about the farming grants platform, see this docs repo:
 
-https://github.com/DEFRA/farming-grants-docs
+- [Farming grants docs github](https://github.com/DEFRA/farming-grants-docs)
 
 To read more about Land Grants API see
-https://github.com/DEFRA/farming-grants-docs/docs/projects/land-grants-api
 
-or the same on confluence:
-https://eaflood.atlassian.net/wiki/spaces/LGS/pages/5866356750/Land+Grants+Service+Home
+- [Land grants api docs github](https://github.com/DEFRA/farming-grants-docs/docs/projects/land-grants-api) or
+- [Land grants api docs confluence](https://eaflood.atlassian.net/wiki/spaces/LGS/pages/5866356750/Land+Grants+Service+Home)
 
 The capabilities of the `land-grants-api` include:
 
@@ -16,7 +15,12 @@ The capabilities of the `land-grants-api` include:
 - [Land based grant application eligibility checks](docs/eligibility-checks.md)
 - [Grant payment calculations](docs/payment-calculation.md)
 
-## Contents
+The data ingestion process:
+
+- [Day 1 land data ingestion](docs/day1-land-data-ingestion.md)
+- [ETL Land data ingestion](docs/etl-land-data-ingestion.md)
+
+Working with Qgis
 
 - [Working wiith qgis](docs/working-wiith-qgis.md)
 
@@ -96,19 +100,13 @@ When updating seed data we cannot update the existing files, we will need to cre
 
 In order to run the `db tests` please make sure you have `docker` running
 
-In order to run all the tests
+In order to run the test(s)
 
 ```bash
 npm run test
-```
 
-We can also run these individually for `unit` and `db`
-
-```bash
 npm run test:unit
-```
 
-```bash
 npm run test:db
 ```
 
