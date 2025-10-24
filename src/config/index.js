@@ -82,6 +82,26 @@ const config = convict({
       env: 'POSTGRES_PASSWORD'
     }
   },
+  s3: {
+    region: {
+      doc: 'S3 Land Data DB region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    },
+    endpoint: {
+      doc: 'S3 Land Data DB endpoint',
+      format: String,
+      default: 'http://localhost:4566',
+      env: 'S3_ENDPOINT'
+    },
+    bucket: {
+      doc: 'S3 Land Data DB bucket',
+      format: String,
+      default: 'land-data',
+      env: 'S3_BUCKET'
+    }
+  },
 
   root: {
     doc: 'Project root',
