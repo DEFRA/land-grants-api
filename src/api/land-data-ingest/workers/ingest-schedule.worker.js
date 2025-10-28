@@ -34,7 +34,7 @@ async function importLandData(file) {
     await importLandParcels(dataStream)
   }
 
-  return data
+  return 'Land data imported successfully'
 }
 
 /**

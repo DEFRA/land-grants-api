@@ -26,6 +26,56 @@ async function getToken(options) {
 }
 
 /**
+ * @returns {object} Database options
+ * @property {string} user - Database username
+ * @property {string} database - Database name
+ * @property {string} host - Database host
+ * @property {string} passwordForLocalDev - Database password for local development
+ * @property {boolean} isLocal - Whether the database is local
+ * @property {string} region - Database region
+ * @property {boolean} loadPostgresData - Whether to load Postgres data
+ */
+export function getDBOptions() {
+  return {
+    user: config.get('postgres.user'),
+    database: config.get('postgres.database'),
+    host: config.get('postgres.host'),
+    passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
+    isLocal: config.get('isLocal'),
+    region: config.get('postgres.region'),
+    loadPostgresData: config.get('loadPostgresData')
+  }
+}
+
+/**
+ *
+ * @param {*} options - database configuration options
+ * @param {*} server - server instance
+ * @returns {Pool} Database pool
+ */
+export function createDBPool(options, server = {}) {
+  return new Pool({
+    port: DEFAULT_PORT,
+    user: options.user,
+    password: async () => {
+      server?.logger?.info('Getting Postgres authentication token')
+      return await getToken(options)
+    },
+    host: options.host,
+    database: options.database,
+    maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
+    ...(!options.isLocal &&
+      // @ts-expect-error - secureContext
+      server?.secureContext && {
+        ssl: {
+          // @ts-expect-error - secureContext
+          secureContext: server.secureContext
+        }
+      })
+  })
+}
+
+/**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
  */
 export const postgresDb = {
@@ -41,25 +91,7 @@ export const postgresDb = {
     register: async function (server, options) {
       server.logger.info('Setting up postgres')
 
-      const pool = new Pool({
-        port: DEFAULT_PORT,
-        user: options.user,
-        password: async () => {
-          server.logger.info('Getting Postgres authentication token')
-          return await getToken(options)
-        },
-        host: options.host,
-        database: options.database,
-        maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
-        ...(!options.isLocal &&
-          // @ts-expect-error - secureContext
-          server.secureContext && {
-            ssl: {
-              // @ts-expect-error - secureContext
-              secureContext: server.secureContext
-            }
-          })
-      })
+      const pool = createDBPool(options, server)
 
       try {
         const client = await pool.connect()
@@ -78,13 +110,5 @@ export const postgresDb = {
       })
     }
   },
-  options: {
-    user: config.get('postgres.user'),
-    database: config.get('postgres.database'),
-    host: config.get('postgres.host'),
-    passwordForLocalDev: config.get('postgres.passwordForLocalDev'),
-    isLocal: config.get('isLocal'),
-    region: config.get('postgres.region'),
-    loadPostgresData: config.get('loadPostgresData')
-  }
+  options: getDBOptions()
 }
