@@ -2,6 +2,7 @@ import { parentPort, workerData } from 'worker_threads'
 import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import { importLandParcels } from '../service/import-land-data.service.js'
 
 /**
  * Post a message to the parent thread
@@ -27,7 +28,12 @@ const postMessage = (taskId, success, result, error) => {
  */
 async function importLandData(file) {
   const s3Client = createS3Client()
-  const data = await getFile(s3Client, config.get('s3.bucket'), file)
+  const dataStream = await getFile(s3Client, config.get('s3.bucket'), file)
+
+  if (file.startsWith('parcels_')) {
+    await importLandParcels(dataStream)
+  }
+
   return data
 }
 

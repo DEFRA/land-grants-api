@@ -49,7 +49,7 @@ async function streamToString(readableStream) {
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name
  * @param {string} key - S3 object key (file path)
- * @returns {Promise<string>} The string representation of the file
+ * @returns {Promise<ReadableStream>} The readable stream representation of the file
  */
 export async function getFile(s3Client, bucket, key) {
   try {
@@ -60,7 +60,7 @@ export async function getFile(s3Client, bucket, key) {
 
     const response = await s3Client.send(command)
 
-    return await streamToString(response.Body)
+    return response.Body.transformToWebStream()
   } catch (error) {
     throw new Error(
       `Failed to get file "${key}" from S3 bucket "${bucket}": ${error.message}`
