@@ -1,3 +1,4 @@
+import { IngestScheduleController } from './controller/ingest-schedule.controller.js'
 import { LandDataIngestController } from './controller/land-data-ingest.controller.js'
 
 /**
@@ -12,6 +13,11 @@ const landDataIngest = {
           method: 'POST',
           path: '/cdp-uploader-callback',
           ...LandDataIngestController
+        },
+        {
+          method: 'GET',
+          path: '/ingest-land-data-schedule',
+          ...IngestScheduleController
         }
       ])
     }

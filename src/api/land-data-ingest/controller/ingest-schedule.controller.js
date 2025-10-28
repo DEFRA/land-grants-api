@@ -8,7 +8,7 @@ import {
   fileProcessor,
   createTaskInfo
 } from '../service/ingest-schedule.service.js'
-import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
+import { internalServerErrorResponseSchema } from '~/src/api/common/schema/index.js'
 import { ingestScheduleSuccessResponseSchema } from '../schema/ingest-schedule.schema.js'
 
 export const IngestScheduleController = {
