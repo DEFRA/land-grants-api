@@ -1,15 +1,15 @@
 import Hapi from '@hapi/hapi'
-import { ingestSchedule } from '~/src/api/ingest-schedule/index.js'
+import { landDataIngest } from '../index.js'
 import {
   fileProcessor,
   createTaskInfo
-} from '~/src/api/ingest-schedule/service/ingest-schedule.service.js'
+} from '../service/ingest-schedule.service.js'
 import {
   logInfo,
   logBusinessError
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 
-jest.mock('~/src/api/ingest-schedule/service/ingest-schedule.service.js')
+jest.mock('../service/ingest-schedule.service.js')
 jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
 
 const mockFileProcessor = fileProcessor
@@ -34,7 +34,7 @@ describe('Ingest Schedule Controller', () => {
     server.decorate('request', 'logger', mockLogger)
     server.decorate('server', 's3', mockS3)
 
-    await server.register([ingestSchedule])
+    await server.register([landDataIngest])
     await server.initialize()
   })
 
