@@ -29,22 +29,6 @@ export async function getFiles(s3Client, bucket) {
 }
 
 /**
- * Convert a readable stream to a string
- * @param {object} readableStream - The readable stream to convert
- * @returns {Promise<string>} The string representation of the readable stream
- */
-async function streamToString(readableStream) {
-  const chunks = []
-  return new Promise((resolve, reject) => {
-    readableStream.on('data', (chunk) => chunks.push(chunk))
-    readableStream.on('end', () =>
-      resolve(Buffer.concat(chunks).toString('utf-8'))
-    )
-    readableStream.on('error', reject)
-  })
-}
-
-/**
  * Get a file from S3 bucket
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name

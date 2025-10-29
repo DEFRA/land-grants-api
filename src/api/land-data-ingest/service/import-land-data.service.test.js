@@ -14,8 +14,13 @@ jest.mock('./read-file.js')
 describe('Import Land Data Service', () => {
   let mockClient
   let mockConnection
+  let mockLogger
 
   beforeEach(() => {
+    mockLogger = {
+      info: jest.fn(),
+      error: jest.fn()
+    }
     mockClient = {
       query: jest.fn().mockResolvedValue({ rowCount: 1 }),
       end: jest.fn()
@@ -43,7 +48,7 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      const result = await importLandParcels(landParcelsStream)
+      const result = await importLandParcels(landParcelsStream, mockLogger)
 
       expect(result).toBe(true)
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
@@ -59,6 +64,7 @@ describe('Import Land Data Service', () => {
         "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -72,9 +78,10 @@ describe('Import Land Data Service', () => {
     })
     readFile.mockRejectedValue('Failed to import land parcels')
 
-    const result = await importLandParcels(landParcelsStream)
+    const result = await importLandParcels(landParcelsStream, mockLogger)
 
     expect(result).toBe(false)
     expect(mockClient.end).toHaveBeenCalledTimes(1)
+    expect(mockLogger.error).toHaveBeenCalledTimes(1)
   })
 })

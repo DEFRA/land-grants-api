@@ -6,8 +6,11 @@ import { readFile } from './read-file.js'
 /**
  *
  * @param {ReadableStream} landParcelsStream
+ * @param {Logger} logger
  */
-export async function importLandParcels(landParcelsStream) {
+export async function importLandParcels(landParcelsStream, logger) {
+  logger.info('Importing land parcels')
+
   const connection = createDBPool(getDBOptions())
   const client = await connection.connect()
 
@@ -32,14 +35,18 @@ export async function importLandParcels(landParcelsStream) {
       )
     )
 
-    console.log('Land parcels imported successfully', result.rowCount)
+    logger.info('Land parcels imported successfully', result.rowCount)
 
     return true
   } catch (error) {
-    console.error(`Failed to import land parcels: ${error.message}`)
+    logger.error(`Failed to import land parcels: ${error.message}`)
     return false
   } finally {
     await client?.query('drop table land_parcels_tmp')
     await client?.end()
   }
 }
+
+/**
+ * @import { Logger } from '../../common/logger.d.js'
+ */
