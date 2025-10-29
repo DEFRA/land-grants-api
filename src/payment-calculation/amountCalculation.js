@@ -32,12 +32,12 @@ export const calculateAnnualAndAgreementTotals = (
   durationYears
 ) => {
   let annualTotalPence = 0
-  Object.entries(parcelItems).forEach(([, parcelItem]) => {
+  for (const [, parcelItem] of Object.entries(parcelItems)) {
     annualTotalPence += parcelItem.annualPaymentPence ?? 0
-  })
-  Object.entries(agreementItems).forEach(([, agreementItem]) => {
+  }
+  for (const [, agreementItem] of Object.entries(agreementItems)) {
     annualTotalPence += agreementItem.annualPaymentPence ?? 0
-  })
+  }
 
   return {
     annualTotalPence: Math.floor(annualTotalPence),
@@ -169,27 +169,27 @@ export const calculateScheduledPayments = (
   schedule
 ) => {
   const paymentsPerYear = calculatePaymentsPerYear(schedule)
-  const scheduledPayments = schedule.map((paymentDate) => {
+  return schedule.map((paymentDate) => {
     const lineItems = []
     let totalPaymentPence = 0
 
-    Object.entries(parcelItems).forEach(([id, parcelItem]) => {
+    for (const [id, parcelItem] of Object.entries(parcelItems)) {
       const paymentPence = parcelItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         parcelItemId: Number(id),
         paymentPence
       })
       totalPaymentPence += paymentPence
-    })
+    }
 
-    Object.entries(agreementLevelItems).forEach(([id, agreementItem]) => {
+    for (const [id, agreementItem] of Object.entries(agreementLevelItems)) {
       const paymentPence = agreementItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         agreementLevelItemId: Number(id),
         paymentPence
       })
       totalPaymentPence += paymentPence
-    })
+    }
 
     return {
       totalPaymentPence,
@@ -197,8 +197,6 @@ export const calculateScheduledPayments = (
       lineItems
     }
   })
-
-  return scheduledPayments
 }
 
 /**
@@ -254,7 +252,7 @@ export const createPaymentItems = (parcels, actions) => {
   let parcelItemKey = 1
   let agreementItemKey = 1
 
-  parcels.forEach((parcel) => {
+  for (const parcel of parcels) {
     let explanations = []
 
     for (const action of parcel.actions) {
@@ -284,7 +282,12 @@ export const createPaymentItems = (parcels, actions) => {
           paymentItems.agreementItems
         ).find((item) => item.code === action.code)
 
-        if (!hasAgreementItemBeenAdded) {
+        if (hasAgreementItemBeenAdded) {
+          explanations.push(
+            `- Ignoring rate per agreement/year, already applied.`,
+            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+          )
+        } else {
           paymentItems.agreementItems[agreementItemKey] =
             createAgreementPaymentItem(actionData)
           agreementItemKey++
@@ -293,11 +296,6 @@ export const createPaymentItems = (parcels, actions) => {
             `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
             `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) +
             ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + (ratePerAgreementPerYearGbp ?? 0)} pence/year`
-          )
-        } else {
-          explanations.push(
-            `- Ignoring rate per agreement/year, already applied.`,
-            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
           )
         }
       } else {
@@ -315,7 +313,7 @@ export const createPaymentItems = (parcels, actions) => {
         explanations
       )
     )
-  })
+  }
 
   return paymentItems
 }

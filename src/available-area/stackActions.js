@@ -89,19 +89,21 @@ function splitStacks(
     }))
   ]
 
-  newExplanations.push(explain.shrinkStack(currentStack, action))
-  newExplanations.push(newStackExplanation)
+  newExplanations.push(
+    explain.shrinkStack(currentStack, action),
+    newStackExplanation
+  )
 
   // if stacks have shifted positions, explain it
   if (createdStackNumber !== shiftedStackNumber) {
     newExplanations.push(
       explain.shiftStackPosition(createdStackNumber, shiftedStackNumber)
     )
-    stacksAfterNewStack.forEach((item) => {
+    for (const item of stacksAfterNewStack) {
       newExplanations.push(
         explain.shiftStackPosition(item.stackNumber, item.stackNumber + 1)
       )
-    })
+    }
   }
   return { newExplanations, newStacks }
 }
@@ -285,7 +287,7 @@ export function stackActions(actions, compatibilityCheckFn = () => false) {
   const createStack = makeCreateStack()
 
   if (!Array.isArray(actions)) {
-    throw new Error('Actions must be an array')
+    throw new TypeError('Actions must be an array')
   }
 
   if (actions.length === 0) {

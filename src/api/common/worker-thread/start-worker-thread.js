@@ -1,4 +1,4 @@
-import { Worker } from 'worker_threads'
+import { Worker } from 'node:worker_threads'
 import { logInfo, logBusinessError } from '../helpers/logging/log-helpers.js'
 
 /**
@@ -44,17 +44,17 @@ export const startWorker = (
   })
 
   worker.on('exit', (code) => {
-    if (code !== 0) {
-      logBusinessError(request.logger, {
-        operation: `${category}_exit`,
-        error: new Error(`${title} stopped with exit code ${code}`),
-        context: { taskId, code, file: data }
-      })
-    } else {
+    if (code === 0) {
       logInfo(request.logger, {
         category,
         operation: `${category}_exit`,
         message: `${title} exited successfully`,
+        context: { taskId, code, file: data }
+      })
+    } else {
+      logBusinessError(request.logger, {
+        operation: `${category}_exit`,
+        error: new Error(`${title} stopped with exit code ${code}`),
         context: { taskId, code, file: data }
       })
     }
