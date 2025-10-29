@@ -5,3 +5,10 @@
  * @property {number} taskId
  * @property {string} bucket
  */
+
+/**
+ * @typedef {object} InitiateUploaderResponse
+ * @property {string} uploadId
+ * @property {string} uploadUrl
+ * @property {string} statusUrl
+ */
