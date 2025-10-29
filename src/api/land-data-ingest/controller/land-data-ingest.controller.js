@@ -3,7 +3,10 @@ import {
   cdpUploaderCallbackResponseSchema,
   cdpUploaderCallbackSchema
 } from '../schema/land-data-ingest.schema.js'
-import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  logBusinessError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
@@ -28,21 +31,30 @@ export const LandDataIngestController = {
    * @returns {import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom} Validation response
    */
   handler: (request, h) => {
+    const category = 'land-data-ingest'
+    const { logger } = request
+
+    /** @type { CDPUploaderRequest } */
+    // @ts-expect-error - payload is validated by the schema
+    const payload = request.payload
+
     try {
-      const { logger } = request
-
-      /** @type { CDPUploaderRequest } */
-      // @ts-expect-error - payload is validated by the schema
-      const payload = request.payload
-
       logInfo(logger, {
-        category: 'land-data-ingest',
+        category,
         message: 'Processing land data',
         context: payload?.form ?? {}
       })
 
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
+      logBusinessError(request.logger, {
+        operation: `${category}_error`,
+        error,
+        context: {
+          payload
+        }
+      })
+
       return Boom.internal('Error processing land data')
     }
   }
