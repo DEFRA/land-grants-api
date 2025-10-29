@@ -35,8 +35,7 @@ export default {
     'src/db-tests/testLogger.js',
     'src/db-tests/setup/',
     'src/db-tests/fixtures/',
-    'scripts/',
-    'src/api/land-data-ingest/service/read-file.js'
+    'scripts/'
   ],
   coverageDirectory: '<rootDir>/coverage/unit',
   transform: {
