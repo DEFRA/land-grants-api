@@ -5,7 +5,7 @@ import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
 /**
- * @import { Task } from '../ingest-schedule.d.js'
+ * @import { InitiateUploaderResponse, Task } from '../ingest-schedule.d.js'
  */
 
 /**
@@ -58,4 +58,32 @@ export const createTaskInfo = (taskId, category) => {
     taskId,
     bucket
   }
+}
+
+/**
+ * Initiate land data upload
+ * @param {string} endpoint - The endpoint URL
+ * @param {string} callback - The callback URL
+ * @param {string} s3Bucket - The S3 bucket name
+ * @param {object} metadata - The metadata
+ * @returns {Promise<InitiateUploaderResponse>} The response from the CDP uploader
+ */
+export const initiateLandDataUpload = async (
+  endpoint,
+  callback,
+  s3Bucket,
+  metadata
+) => {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      redirect: '/health',
+      callback,
+      s3Bucket,
+      metadata
+    })
+  })
+
+  return response.json()
 }
