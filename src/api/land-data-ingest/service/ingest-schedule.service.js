@@ -49,7 +49,7 @@ export const fileProcessor = async (
 export const createTaskInfo = (taskId, category) => {
   const title =
     category.charAt(0).toUpperCase() +
-    category.slice(1).replaceAll(/_/g, ' ').trim()
+    category.slice(1).replaceAll('_', ' ').trim()
   const bucket = config.get('s3.bucket')
 
   return {

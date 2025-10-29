@@ -278,26 +278,15 @@ export const createPaymentItems = (parcels, actions) => {
         actionData?.payment.ratePerAgreementPerYearGbp
 
       if (actionData?.payment.ratePerAgreementPerYearGbp) {
-        const hasAgreementItemBeenAdded = Object.values(
-          paymentItems.agreementItems
-        ).find((item) => item.code === action.code)
-
-        if (hasAgreementItemBeenAdded) {
-          explanations.push(
-            `- Ignoring rate per agreement/year, already applied.`,
-            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
-          )
-        } else {
-          paymentItems.agreementItems[agreementItemKey] =
-            createAgreementPaymentItem(actionData)
-          agreementItemKey++
-
-          explanations.push(
-            `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
-            `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) +
-            ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + (ratePerAgreementPerYearGbp ?? 0)} pence/year`
-          )
-        }
+        agreementItemKey = addAgreementItem(
+          paymentItems,
+          action,
+          explanations,
+          actionData,
+          total,
+          agreementItemKey,
+          ratePerAgreementPerYearGbp
+        )
       } else {
         explanations.push(
           `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
@@ -316,6 +305,49 @@ export const createPaymentItems = (parcels, actions) => {
   }
 
   return paymentItems
+}
+
+/**
+ * Adds an agreement item to the payment items
+ * @param {object} paymentItems
+ * @param {PaymentParcelAction} action
+ * @param {Array<string>} explanations
+ * @param {Action} actionData
+ * @param {number} total
+ * @param {number} agreementItemKey
+ * @param {number} ratePerAgreementPerYearGbp
+ * @returns {number}
+ */
+export const addAgreementItem = (
+  paymentItems,
+  action,
+  explanations,
+  actionData,
+  total,
+  agreementItemKey,
+  ratePerAgreementPerYearGbp
+) => {
+  const hasAgreementItemBeenAdded = Object.values(
+    paymentItems.agreementItems
+  ).find((item) => item.code === action.code)
+
+  if (hasAgreementItemBeenAdded) {
+    explanations.push(
+      `- Ignoring rate per agreement/year, already applied.`,
+      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+    )
+  } else {
+    paymentItems.agreementItems[agreementItemKey] =
+      createAgreementPaymentItem(actionData)
+    agreementItemKey++
+
+    explanations.push(
+      `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
+      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) +
+            ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + (ratePerAgreementPerYearGbp ?? 0)} pence/year`
+    )
+  }
+  return agreementItemKey
 }
 
 /**
