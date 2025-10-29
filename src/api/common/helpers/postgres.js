@@ -65,10 +65,8 @@ export function createDBPool(options, server = {}) {
     database: options.database,
     maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
     ...(!options.isLocal &&
-      // @ts-expect-error - secureContext
       server?.secureContext && {
         ssl: {
-          // @ts-expect-error - secureContext
           secureContext: server.secureContext
         }
       })
