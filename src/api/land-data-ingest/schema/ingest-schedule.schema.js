@@ -5,4 +5,18 @@ const ingestScheduleSuccessResponseSchema = Joi.object({
   taskId: Joi.number().integer().required()
 })
 
-export { ingestScheduleSuccessResponseSchema }
+const initiateLandDataUploadSuccessResponseSchema = Joi.object({
+  message: Joi.string().required(),
+  uploadUrl: Joi.string().required()
+})
+
+const initiateLandDataUploadRequestSchema = Joi.object({
+  filename: Joi.string().required(),
+  type: Joi.string().valid('parcels', 'covers', 'moorland').required()
+})
+
+export {
+  ingestScheduleSuccessResponseSchema,
+  initiateLandDataUploadSuccessResponseSchema,
+  initiateLandDataUploadRequestSchema
+}

@@ -96,10 +96,31 @@ const config = convict({
       env: 'S3_ENDPOINT'
     },
     bucket: {
-      doc: 'S3 Land Data DB bucket',
+      doc: 'S3 Land Grants Ingest bucket',
       format: String,
       default: 'land-data',
-      env: 'S3_BUCKET'
+      env: 'INGEST_BUCKET'
+    }
+  },
+  ingest: {
+    endpoint: {
+      doc: 'Ingest endpoint',
+      format: String,
+      default: 'https://cdp-uploader.dev.cdp-int.defra.cloud/initiate',
+      env: 'INGEST_ENDPOINT'
+    },
+    callback: {
+      doc: 'Ingest callback',
+      format: String,
+      default:
+        'https://land-grants-api.dev.cdp-int.defra.cloud/cdp-uploader-callback',
+      env: 'INGEST_CALLBACK'
+    },
+    grantsUiHost: {
+      doc: 'Frontend URL',
+      format: String,
+      default: 'https://grants-ui.dev.cdp-int.defra.cloud',
+      env: 'GRANTS_UI_HOST'
     }
   },
 
