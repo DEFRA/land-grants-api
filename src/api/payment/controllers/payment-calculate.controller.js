@@ -77,14 +77,14 @@ const getTotalDurationInYears = (request, landActions, enabledActions) => {
   )
 
   let totalDurationYears = 0
-  enabledActions.forEach((enabledAction) => {
+  for (const enabledAction of enabledActions) {
     if (
       landActionCodes.includes(enabledAction.code) &&
       enabledAction.durationYears > totalDurationYears
     ) {
       totalDurationYears = enabledAction.durationYears
     }
-  })
+  }
 
   if (totalDurationYears === 0) {
     logBusinessError(request.logger, {

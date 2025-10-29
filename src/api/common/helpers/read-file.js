@@ -8,8 +8,6 @@ import { fileURLToPath } from 'node:url'
  * @returns {Promise<string>} File content
  */
 export const readFile = async (path) => {
-  const __filename = fileURLToPath(import.meta.url)
-  const __dirname = dirname(__filename)
-
+  const __dirname = dirname(fileURLToPath(import.meta.url))
   return await fs.readFile(join(__dirname, path), 'utf8')
 }

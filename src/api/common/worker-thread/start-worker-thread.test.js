@@ -1,9 +1,9 @@
 import { jest } from '@jest/globals'
-import { Worker } from 'worker_threads'
+import { Worker } from 'node:worker_threads'
 import { startWorker } from './start-worker-thread.js'
 import * as logHelpers from '../helpers/logging/log-helpers.js'
 
-jest.mock('worker_threads')
+jest.mock('node:worker_threads')
 
 describe('Start Worker Thread', () => {
   let mockRequest

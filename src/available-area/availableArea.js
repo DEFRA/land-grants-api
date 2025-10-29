@@ -242,6 +242,99 @@ function buildExplanations(
 }
 
 /**
+ * Processes stacking of actions and calculates final available area
+ * @param {ActionWithArea[]} revisedActions - Revised actions after incompatible area processing
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ * @param {string} actionCodeAppliedFor - The action code being applied for
+ * @param {number} totalValidLandCoverSqm - Total valid land cover area in square meters
+ * @param {Logger} logger - Logger instance
+ * @returns {object} Stacking results with explanations and available area
+ */
+function processStackingAndCalculateArea(
+  revisedActions,
+  compatibilityCheckFn,
+  actionCodeAppliedFor,
+  totalValidLandCoverSqm,
+  logger
+) {
+  const {
+    stacks,
+    stackExplanations,
+    resultExplanation,
+    availableAreaSqm,
+    availableAreaHectares
+  } = stackAndSubtractIncompatibleStacks(
+    revisedActions,
+    compatibilityCheckFn,
+    actionCodeAppliedFor,
+    totalValidLandCoverSqm
+  )
+
+  logInfo(logger, {
+    category: 'aac',
+    message: 'Available area result for action',
+    context: {
+      availableAreaHectares,
+      availableAreaSqm,
+      actionCodeAppliedFor
+    }
+  })
+
+  return {
+    stacks,
+    stackExplanations,
+    resultExplanation,
+    availableAreaSqm,
+    availableAreaHectares
+  }
+}
+
+/**
+ * Builds and returns the final result object for available area calculation
+ * @param {object} params - Parameters object
+ * @param {object[]} params.initialExplanations - Initial explanations
+ * @param {object} params.totalValidLandCoverExplanations - Total valid land cover explanations
+ * @param {object} params.filterExplanations - Filter explanations
+ * @param {object} params.incompatibleLandCoverExplanations - Incompatible land cover explanations
+ * @param {object} params.stackExplanations - Stack explanations
+ * @param {object} params.resultExplanation - Result explanation
+ * @param {object[]} params.stacks - Action stacks
+ * @param {number} params.availableAreaSqm - Available area in square meters
+ * @param {number} params.totalValidLandCoverSqm - Total valid land cover area
+ * @param {number} params.availableAreaHectares - Available area in hectares
+ * @returns {AvailableAreaForAction} Complete available area result
+ */
+function buildFinalResult({
+  initialExplanations,
+  totalValidLandCoverExplanations,
+  filterExplanations,
+  incompatibleLandCoverExplanations,
+  stackExplanations,
+  resultExplanation,
+  stacks,
+  availableAreaSqm,
+  totalValidLandCoverSqm,
+  availableAreaHectares
+}) {
+  const explanations = buildExplanations(
+    initialExplanations,
+    totalValidLandCoverExplanations,
+    filterExplanations,
+    incompatibleLandCoverExplanations,
+    stackExplanations,
+    resultExplanation
+  )
+
+  return {
+    stacks,
+    explanations,
+    availableAreaSqm,
+    totalValidLandCoverSqm,
+    availableAreaHectares
+  }
+}
+
+/**
  * Main function to get available area for an action
  * @param {string} actionCodeAppliedFor - The action code being applied for
  * @param {string} sheetId - The sheet ID
@@ -330,41 +423,26 @@ export function getAvailableAreaForAction(
     resultExplanation,
     availableAreaSqm,
     availableAreaHectares
-  } = stackAndSubtractIncompatibleStacks(
+  } = processStackingAndCalculateArea(
     revisedActions,
     compatibilityCheckFn,
     actionCodeAppliedFor,
-    totalValidLandCoverSqm
+    totalValidLandCoverSqm,
+    logger
   )
 
-  logInfo(logger, {
-    category: 'aac',
-    message: 'Available area result for action',
-    context: {
-      availableAreaHectares,
-      availableAreaSqm,
-      actionCodeAppliedFor,
-      parcelId,
-      sheetId
-    }
-  })
-
-  const explanations = buildExplanations(
+  return buildFinalResult({
     initialExplanations,
     totalValidLandCoverExplanations,
     filterExplanations,
     incompatibleLandCoverExplanations,
     stackExplanations,
-    resultExplanation
-  )
-
-  return {
+    resultExplanation,
     stacks,
-    explanations,
     availableAreaSqm,
     totalValidLandCoverSqm,
     availableAreaHectares
-  }
+  })
 }
 
 /**

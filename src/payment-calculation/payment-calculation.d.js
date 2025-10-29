@@ -45,8 +45,9 @@
 
 /**
  * @typedef {object} LineItem
- * @property {number} parcelItemId - ID of the linked PaymentParcelItem
- * @property {number} paymentPence - The payment for the parcel item
+ * @property {number} paymentPence - The payment for the parcel item (optional)
+ * @property {number=} parcelItemId - ID of the linked PaymentParcelItem
+ * @property {number=} agreementLevelItemId - ID of the linked PaymentAgreementItem (optional)
  */
 
 /**

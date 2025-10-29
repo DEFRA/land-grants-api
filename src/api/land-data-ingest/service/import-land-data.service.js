@@ -1,7 +1,7 @@
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
-import { readFile } from './read-file.js'
+import { readFile } from '../../common/helpers/read-file.js'
 
 /**
  *

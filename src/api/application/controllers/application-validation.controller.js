@@ -76,7 +76,7 @@ const validateAllLandParcels = async (
 
   const parcelResults = await Promise.all(
     landActions.map(async (landAction) => {
-      return await validateLandParcelActions(
+      return validateLandParcelActions(
         landAction,
         actions,
         compatibilityCheckFn,
