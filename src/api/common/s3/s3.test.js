@@ -15,7 +15,7 @@ describe('S3 Buckets', () => {
       jest.clearAllMocks()
     })
 
-    describe('Get file from s3 bucket', () => {
+    describe('Get files from s3 bucket', () => {
       test('should return array of file keys when bucket has files', async () => {
         const mockResponse = {
           Contents: [
@@ -181,16 +181,24 @@ describe('S3 Buckets', () => {
       return stream
     }
 
+    const createMockResponse = (content) => {
+      return {
+        Body: {
+          transformToWebStream: jest
+            .fn()
+            .mockResolvedValue(createMockStream(content))
+        }
+      }
+    }
+
     describe('Get file from s3 bucket', () => {
-      test('should return file content as string', async () => {
-        const mockContent = 'Hello, World!'
-        const mockStream = createMockStream(mockContent)
-        const mockResponse = { Body: mockStream }
+      test('should return file content as readable stream', async () => {
+        const content = 'test'
+        const mockResponse = createMockResponse(content)
         mockS3Client.send.mockResolvedValue(mockResponse)
 
         const result = await getFile(mockS3Client, 'test-bucket', 'file.txt')
 
-        expect(result).toBe(mockContent)
         expect(mockS3Client.send).toHaveBeenCalledTimes(1)
         expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
           input: {
@@ -198,119 +206,7 @@ describe('S3 Buckets', () => {
             Key: 'file.txt'
           }
         })
-      })
-
-      test('should return empty string for empty file', async () => {
-        const mockStream = createMockStream('')
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'empty.txt')
-
-        expect(result).toBe('')
-      })
-
-      test('should handle JSON file content', async () => {
-        const jsonContent = JSON.stringify({ name: 'test', value: 123 })
-        const mockStream = createMockStream(jsonContent)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'data.json')
-
-        expect(result).toBe(jsonContent)
-        expect(JSON.parse(result)).toEqual({ name: 'test', value: 123 })
-      })
-
-      test('should handle CSV file content', async () => {
-        const csvContent = 'name,age\nJohn,30\nJane,25'
-        const mockStream = createMockStream(csvContent)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'data.csv')
-
-        expect(result).toBe(csvContent)
-      })
-
-      test('should handle file with special characters', async () => {
-        const specialContent = 'Special: !@#$%^&*()_+-=[]{}|;:,.<>?'
-        const mockStream = createMockStream(specialContent)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'special.txt')
-
-        expect(result).toBe(specialContent)
-      })
-
-      test('should handle multi-line content', async () => {
-        const multilineContent = 'Line 1\nLine 2\nLine 3\nLine 4'
-        const mockStream = createMockStream(multilineContent)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'multi.txt')
-
-        expect(result).toBe(multilineContent)
-      })
-
-      test('should handle UTF-8 encoded content', async () => {
-        const utf8Content = 'Hello 世界 🌍'
-        const mockStream = createMockStream(utf8Content)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'utf8.txt')
-
-        expect(result).toBe(utf8Content)
-      })
-
-      test('should handle large file content', async () => {
-        const largeContent = 'x'.repeat(10000)
-        const mockStream = createMockStream(largeContent)
-        const mockResponse = { Body: mockStream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'large.txt')
-
-        expect(result).toHaveLength(10000)
-        expect(result).toBe(largeContent)
-      })
-    })
-
-    describe('Stream handling', () => {
-      test('should handle stream with multiple chunks', async () => {
-        const stream = new Readable({
-          read() {
-            this.push('chunk1')
-            this.push('chunk2')
-            this.push('chunk3')
-            this.push(null)
-          }
-        })
-        const mockResponse = { Body: stream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'file.txt')
-
-        expect(result).toBe('chunk1chunk2chunk3')
-      })
-
-      test('should handle stream with buffers', async () => {
-        const stream = new Readable({
-          read() {
-            this.push(Buffer.from('Hello '))
-            this.push(Buffer.from('World'))
-            this.push(null)
-          }
-        })
-        const mockResponse = { Body: stream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        const result = await getFile(mockS3Client, 'test-bucket', 'file.txt')
-
-        expect(result).toBe('Hello World')
+        expect(result).toBeInstanceOf(Readable)
       })
     })
 
@@ -345,22 +241,6 @@ describe('S3 Buckets', () => {
           getFile(mockS3Client, 'non-existent-bucket', 'file.txt')
         ).rejects.toThrow(
           'Failed to get file "file.txt" from S3 bucket "non-existent-bucket": NoSuchBucket'
-        )
-      })
-
-      test('should throw error when stream errors', async () => {
-        const stream = new Readable({
-          read() {
-            this.destroy(new Error('Stream read error'))
-          }
-        })
-        const mockResponse = { Body: stream }
-        mockS3Client.send.mockResolvedValue(mockResponse)
-
-        await expect(
-          getFile(mockS3Client, 'test-bucket', 'file.txt')
-        ).rejects.toThrow(
-          'Failed to get file "file.txt" from S3 bucket "test-bucket": Stream read error'
         )
       })
 
