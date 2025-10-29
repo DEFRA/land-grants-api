@@ -85,5 +85,5 @@ export const initiateLandDataUpload = async (
     })
   })
 
-  return await response.json()
+  return response.json()
 }

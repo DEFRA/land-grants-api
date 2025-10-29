@@ -1,6 +1,9 @@
 import Boom from '@hapi/boom'
 import { config } from '~/src/config/index.js'
-import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  logBusinessError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { initiateLandDataUpload } from '../service/ingest-schedule.service.js'
@@ -30,11 +33,12 @@ export const InitiateLandDataUploadController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    try {
-      const { logger, payload } = request
+    const category = 'initiate-land-data-upload'
+    const { logger, payload } = request
 
+    try {
       logInfo(logger, {
-        category: 'initiate-land-data-upload',
+        category,
         message: 'Initiating land data upload',
         context: {
           payload: JSON.stringify(payload ?? {}),
@@ -54,7 +58,7 @@ export const InitiateLandDataUploadController = {
       )
 
       logInfo(logger, {
-        category: 'initiate-land-data-upload',
+        category,
         message: 'CDP uploader response',
         context: data ?? {}
       })
@@ -62,7 +66,7 @@ export const InitiateLandDataUploadController = {
       const uploadUrl = `${config.get('ingest.grantsUiHost') || process.env.FRONTEND_URL}${data.uploadUrl}`
 
       logInfo(logger, {
-        category: 'initiate-land-data-upload',
+        category,
         message: 'Upload URL',
         context: { uploadUrl }
       })
@@ -74,6 +78,13 @@ export const InitiateLandDataUploadController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
+      logBusinessError(request.logger, {
+        operation: `${category}_error`,
+        error,
+        context: {
+          payload
+        }
+      })
       return Boom.internal('Error initiating land data upload')
     }
   }
