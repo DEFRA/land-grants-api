@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 import { importLandParcels } from './import-land-data.service.js'
 import { createDBPool } from '../../common/helpers/postgres.js'
-import { readFile } from './read-file.js'
+import { readFile } from '../../common/helpers/read-file.js'
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
 
@@ -9,7 +9,7 @@ jest.mock('../../common/helpers/postgres.js')
 jest.mock('pg-copy-streams')
 jest.mock('node:stream/promises')
 jest.mock('fs/promises')
-jest.mock('./read-file.js')
+jest.mock('../../common/helpers/read-file.js')
 
 describe('Import Land Data Service', () => {
   let mockClient

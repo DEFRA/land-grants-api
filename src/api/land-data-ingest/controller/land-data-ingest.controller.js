@@ -3,7 +3,10 @@ import {
   cdpUploaderCallbackResponseSchema,
   cdpUploaderCallbackSchema
 } from '../schema/land-data-ingest.schema.js'
-import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  logBusinessError,
+  logInfo
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
@@ -43,6 +46,11 @@ export const LandDataIngestController = {
 
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
+      logBusinessError(request.logger, {
+        operation: 'land-data-ingest',
+        error,
+        context: { payload: request.payload }
+      })
       return Boom.internal('Error processing land data')
     }
   }

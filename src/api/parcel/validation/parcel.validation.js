@@ -33,7 +33,7 @@ export const getAndValidateParcels = async (sheetParcelIds, request) => {
 
   const errors = parcels
     .map((p) => {
-      return !p.parcel ? `${p.sheetId}-${p.parcelId}` : null
+      return p.parcel ? null : `${p.sheetId}-${p.parcelId}`
     })
     .filter((error) => error !== null)
 

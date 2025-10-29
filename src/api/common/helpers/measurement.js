@@ -7,7 +7,7 @@ export const sqmToHaRounded = (sqm) => {
     sqm = Number(sqm)
   }
 
-  if (typeof sqm !== 'number' || isNaN(sqm)) {
+  if (typeof sqm !== 'number' || Number.isNaN(sqm)) {
     return 0
   }
 
@@ -20,7 +20,7 @@ export const sqmToHaRounded = (sqm) => {
 }
 
 export const haToSqm = (ha) => {
-  if (typeof ha !== 'number' || isNaN(ha)) {
+  if (typeof ha !== 'number' || Number.isNaN(ha)) {
     return 0
   }
 

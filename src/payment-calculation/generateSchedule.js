@@ -74,7 +74,7 @@ export function generatePaymentSchedule(
   frequency = 'quarterly'
 ) {
   const schedule = []
-  if (!lengthYears || isNaN(lengthYears)) {
+  if (!lengthYears || Number.isNaN(Number(lengthYears))) {
     return {
       schedule,
       agreementEndDate: '',

@@ -68,15 +68,15 @@ function validateInputParams(
   }
 
   if (typeof totalValidLandCoverSqm !== 'number') {
-    throw new Error('Total valid land cover must be a number')
+    throw new TypeError('Total valid land cover must be a number')
   }
 
   if (!Array.isArray(stacks)) {
-    throw new Error('Stacks must be an array')
+    throw new TypeError('Stacks must be an array')
   }
 
   if (typeof compatibilityCheckFn !== 'function') {
-    throw new Error('Compatibility check function must be a function')
+    throw new TypeError('Compatibility check function must be a function')
   }
 }
 
@@ -123,7 +123,7 @@ export function subtractIncompatibleStacks(
     explain.totalAvailableAreaForAction(result, actionCodeAppliedFor)
   )
   return {
-    result: result < 0 ? 0 : result,
+    result: Math.max(0, result),
     explanationSection: createExplanationSection('Result', explanations)
   }
 }

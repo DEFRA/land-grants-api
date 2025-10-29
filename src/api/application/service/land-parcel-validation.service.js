@@ -27,7 +27,7 @@ export const validateLandParcelActions = async (
 
   const actionResults = await Promise.all(
     landAction.actions.map(async (action) => {
-      return await validateLandAction(
+      return validateLandAction(
         action,
         actions,
         agreements,

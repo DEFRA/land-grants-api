@@ -21,7 +21,7 @@ async function getToken(options) {
       credentials: fromNodeProviderChain(),
       region: options.region
     })
-    return await signer.getAuthToken()
+    return signer.getAuthToken()
   }
 }
 
@@ -59,7 +59,7 @@ export function createDBPool(options, server = {}) {
     user: options.user,
     password: async () => {
       server?.logger?.info('Getting Postgres authentication token')
-      return await getToken(options)
+      return getToken(options)
     },
     host: options.host,
     database: options.database,

@@ -138,7 +138,7 @@ export const subtractIncompatibleLandCoverAreaFromActions = (
     const revisedArea = action.areaSqm - totalAreaNotInCommon
     revisedActions.push({
       ...action,
-      areaSqm: revisedArea < 0 ? 0 : revisedArea
+      areaSqm: Math.max(0, revisedArea)
     })
   }
 

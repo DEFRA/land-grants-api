@@ -1,4 +1,4 @@
-import { parentPort, workerData } from 'worker_threads'
+import { parentPort, workerData } from 'node:worker_threads'
 import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'

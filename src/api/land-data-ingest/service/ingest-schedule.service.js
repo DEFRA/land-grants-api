@@ -1,5 +1,5 @@
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { getFiles } from '../../common/s3/s3.js'
 import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
@@ -49,7 +49,7 @@ export const fileProcessor = async (
 export const createTaskInfo = (taskId, category) => {
   const title =
     category.charAt(0).toUpperCase() +
-    category.slice(1).replace(/_/g, ' ').trim()
+    category.slice(1).replaceAll('_', ' ').trim()
   const bucket = config.get('s3.bucket')
 
   return {
