@@ -1,7 +1,7 @@
 import { readFile } from './read-file.js'
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 
-jest.mock('fs/promises')
+jest.mock('node:fs/promises')
 
 describe('Read File', () => {
   beforeEach(() => {
