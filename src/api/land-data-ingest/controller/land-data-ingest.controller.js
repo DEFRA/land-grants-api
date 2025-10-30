@@ -31,15 +31,16 @@ export const LandDataIngestController = {
    * @returns {import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom} Validation response
    */
   handler: (request, h) => {
+    const category = 'land-data-ingest'
+    const { logger } = request
+
+    /** @type { CDPUploaderRequest } */
+    // @ts-expect-error - payload is validated by the schema
+    const payload = request.payload
+
     try {
-      const { logger } = request
-
-      /** @type { CDPUploaderRequest } */
-      // @ts-expect-error - payload is validated by the schema
-      const payload = request.payload
-
       logInfo(logger, {
-        category: 'land-data-ingest',
+        category,
         message: 'Processing land data',
         context: payload?.form ?? {}
       })
@@ -47,10 +48,13 @@ export const LandDataIngestController = {
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
       logBusinessError(request.logger, {
-        operation: 'land-data-ingest',
+        operation: `${category}_error`,
         error,
-        context: { payload: request.payload }
+        context: {
+          payload
+        }
       })
+
       return Boom.internal('Error processing land data')
     }
   }

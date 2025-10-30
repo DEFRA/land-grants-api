@@ -1,11 +1,15 @@
 import Hapi from '@hapi/hapi'
 import { LandDataIngestController } from './land-data-ingest.controller.js'
-import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  logInfo,
+  logBusinessError
+} from '~/src/api/common/helpers/logging/log-helpers.js'
 
 // Mock dependencies
 jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
 
 const mockLogInfo = logInfo
+const mockLogBusinessError = logBusinessError
 
 describe('LandDataIngestController', () => {
   const server = Hapi.server()
@@ -111,6 +115,36 @@ describe('LandDataIngestController', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 500 and log error when logInfo throws an error', async () => {
+      mockLogInfo.mockImplementationOnce(() => {
+        throw new Error('Logging failed')
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload: validPayload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(result.message).toBe('An internal server error occurred')
+
+      // Verify logBusinessError was called
+      expect(mockLogBusinessError).toHaveBeenCalledWith(
+        mockLogger,
+        expect.objectContaining({
+          operation: 'land-data-ingest_error',
+          error: expect.any(Error),
+          context: {
+            payload: validPayload
+          }
+        })
+      )
     })
   })
 })
