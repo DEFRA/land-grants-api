@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -9,5 +9,5 @@ import { fileURLToPath } from 'node:url'
  */
 export const readFile = async (path) => {
   const __dirname = dirname(fileURLToPath(import.meta.url))
-  return await fs.readFile(join(__dirname, path), 'utf8')
+  return fs.readFile(join(__dirname, path), 'utf8')
 }
