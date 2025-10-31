@@ -96,6 +96,56 @@ They are uncompressed when you run `npm run dev:setup` or the db tests, and are 
 
 When updating seed data we cannot update the existing files, we will need to create a new migration updating the seed data.
 
+### Database migrations with Docker Compose
+
+This project uses Liquibase to manage database schema changes. There are two ways to run migrations locally, depending on whether you want to run them inside the main `compose.yml` stack or against an existing database from a separate, `grants-ui` compose file.
+
+#### Option A — Run the full stack from compose.yml
+
+The main `compose.yml` includes two ephemeral services behind a Docker Compose profile named `migrations`:
+
+- `database-up` — applies pending Liquibase changes (`update`).
+- `database-down` — rolls the schema back to the base tag `v0.0.0`.
+
+To run the stack (API + Postgres):
+
+```bash
+npm run docker:up
+```
+
+Once the database is healthy, you may run the migration containers within the same stack if required:
+
+```bash
+docker compose --profile migrations run --rm database-up
+# or to roll back
+docker compose --profile migrations run --rm database-down
+```
+
+Bring the stack down when you’re done:
+
+```bash
+npm run docker:down
+```
+
+#### Option B — Use the lightweight compose.migrations.yml
+
+`compose.migrations.yml` provides the same `database-up` and `database-down` services without starting the API or database services. Use this when you already have a Postgres instance running (for example, from the `grants-ui` stack) and just want to apply or roll back migrations.
+
+Key points:
+
+- The file expects a Postgres instance to be reachable at `POSTGRES_HOST` and on the Docker network `grants-ui-net` (external). You can override `POSTGRES_HOST` and other env vars when running.
+- It mounts the local `changelog/` and `scripts/` folders into the Liquibase container so it runs your project’s migrations.
+
+Convenient npm scripts have been added for this workflow:
+
+```bash
+# Apply migrations to the grants-ui database
+npm run docker:db:migrate:up
+
+# Roll back all migrations to the base tag v0.0.0
+npm run docker:db:migrate:down
+```
+
 ### Testing
 
 In order to run the `db tests` please make sure you have `docker` running
