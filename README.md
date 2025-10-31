@@ -26,7 +26,11 @@ Visualising parcel data with qgis
 
 Managing the service:
 
-- [Working and managing the service](docs/managing-the-service.md)
+- [Managing the service on dev environment](docs/managing-the-service.md)
+
+Pact testing
+
+- [Contract testing with Pact](docs/pact-testing.md)
 
 ## Requirements
 
@@ -74,7 +78,7 @@ npm run dev:setup
 
 #### Start the api
 
-To run the application in `development` mode run the following commands, this script will start the api:
+To run the application in `development` mode run the following command:
 
 ```bash
 npm run dev
