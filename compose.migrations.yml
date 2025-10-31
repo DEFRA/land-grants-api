@@ -1,0 +1,47 @@
+x-common-migration: &common-migration
+  POSTGRES_HOST: ${POSTGRES_HOST:-land-grants-backend-postgres}
+  SCHEMA_ROLE: ${POSTGRES_SCHEMA_ROLE:-land_grants_api}
+  SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
+
+x-common-postgres: &common-postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-land_grants_api}
+  POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
+
+services:
+
+  database-up:
+    image: liquibase/liquibase:4.31-alpine
+    restart: "no"
+    environment:
+      <<: [*common-postgres, *common-migration]
+    entrypoint: >
+      sh -c "/scripts/migration/database-up"
+    volumes:
+      - ./changelog:/liquibase/changelog
+      - ./scripts:/scripts
+    networks:
+      - grants-ui-net
+
+  database-down:
+    image: liquibase/liquibase:4.31-alpine
+    restart: "no"
+    environment:
+      <<: [*common-postgres, *common-migration]
+    entrypoint: >
+      sh -c "/scripts/migration/database-down"
+    volumes:
+      - ./changelog:/liquibase/changelog
+      - ./scripts:/scripts
+    networks:
+      - grants-ui-net
+
+volumes:
+  postgres_data:
+
+networks:
+  grants-ui-net:
+    name: grants-ui-net
+    external: true
+

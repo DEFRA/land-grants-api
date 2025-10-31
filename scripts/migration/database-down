@@ -1,8 +1,9 @@
 #!/bin/bash
-echo "db update on $POSTGRES_HOST $SCHEMA_NAME as $SCHEMA_USERNAME"
+echo "db update on $POSTGRES_HOST:$POSTGRES_PORT $SCHEMA_NAME as $POSTGRES_USER"
+
 /liquibase/liquibase \
 --driver=org.postgresql.Driver \
 --changeLogFile=/changelog/db.changelog.xml \
 --url=jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB \
---username="$SCHEMA_USERNAME" --password="$SCHEMA_PASSWORD" --defaultSchemaName="$SCHEMA_NAME" \
+--username="$POSTGRES_USER" --password="$POSTGRES_PASSWORD" --defaultSchemaName="$SCHEMA_NAME" \
 rollback v0.0.0
