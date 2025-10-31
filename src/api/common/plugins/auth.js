@@ -5,6 +5,7 @@ import { logBusinessError } from '../helpers/logging/log-helpers.js'
 import { createLogger } from '../helpers/logging/logger.js'
 
 const TOKEN_PARTS_COUNT = 3
+const OPERATION_NAME = 'Validate auth token'
 const logger = createLogger()
 
 /**
@@ -64,7 +65,7 @@ function validateAuthToken(authHeader) {
   const expectedToken = config.get('auth.token')
   if (!expectedToken) {
     logBusinessError(logger, {
-      operation: 'Validate auth token',
+      operation: OPERATION_NAME,
       error: new Error('Server auth token not configured')
     })
     return {
@@ -76,7 +77,7 @@ function validateAuthToken(authHeader) {
   const encryptionKey = config.get('auth.encryptionKey')
   if (!encryptionKey) {
     logBusinessError(logger, {
-      operation: 'Validate auth token',
+      operation: OPERATION_NAME,
       error: new Error('Server encryption not configured')
     })
     return { isValid: false, error: 'Server encryption not configured' }
@@ -99,7 +100,7 @@ function validateAuthToken(authHeader) {
     }
   } catch (error) {
     logBusinessError(logger, {
-      operation: 'Validate auth token',
+      operation: OPERATION_NAME,
       error
     })
     return { isValid: false, error: 'Invalid encrypted token' }
