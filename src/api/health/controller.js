@@ -5,6 +5,9 @@ import { statusCodes } from '~/src/api/common/constants/status-codes.js'
  * @satisfies {Partial<ServerRoute>}
  */
 const healthController = {
+  options: {
+    auth: false
+  },
   handler: (_request, h) =>
     h.response({ message: 'success' }).code(statusCodes.ok)
 }
