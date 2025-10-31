@@ -20,7 +20,7 @@ jest.mock('~/src/api/common/helpers/logging/logger.js', () => ({
 }))
 
 const VALID_TOKEN = 'my-service-token'
-const ENCRYPTION_KEY = 'encryption-key-123456789012345678901234' // length not critical here
+const ENCRYPTION_KEY = 'encryption-key-123456789012345678901234'
 
 function encryptToken(token, encryptionKey) {
   const iv = crypto.randomBytes(12)
@@ -147,7 +147,7 @@ describe('auth plugin', () => {
             expect(result).toBe('ok')
           },
           strategy: jest.fn(),
-          default: jest.fn() // Add this
+          default: jest.fn()
         }
       }
 
@@ -170,7 +170,7 @@ describe('auth plugin', () => {
             expect(() => authenticate(request, h)).toThrow(Boom.Boom)
           },
           strategy: jest.fn(),
-          default: jest.fn() // Add this
+          default: jest.fn()
         }
       }
 
