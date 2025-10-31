@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import { auth, decryptToken, validateAuthToken } from './auth.js'
 
 import { config } from '~/src/config/index.js'

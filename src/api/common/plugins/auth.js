@@ -1,9 +1,10 @@
 import Boom from '@hapi/boom'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import { config } from '~/src/config/index.js'
 import { logBusinessError } from '../helpers/logging/log-helpers.js'
 import { createLogger } from '../helpers/logging/logger.js'
 
+const TOKEN_PARTS_COUNT = 3
 const logger = createLogger()
 
 /**
@@ -24,8 +25,9 @@ function decryptToken(encryptedToken) {
 
   try {
     const parts = encryptedToken.split(':')
-    if (parts.length !== 3) throw new Error('Malformed encrypted token')
-
+    if (parts.length !== TOKEN_PARTS_COUNT) {
+      throw new Error('Malformed encrypted token')
+    }
     const [ivB64, authTagB64, encryptedData] = encryptedToken.split(':')
     if (!ivB64 || !authTagB64 || !encryptedData) {
       throw new Error('Invalid encrypted token format')
@@ -96,6 +98,10 @@ function validateAuthToken(authHeader) {
       return { isValid: false, error: 'Invalid bearer token' }
     }
   } catch (error) {
+    logBusinessError(logger, {
+      operation: 'Validate auth token',
+      error
+    })
     return { isValid: false, error: 'Invalid encrypted token' }
   }
 
