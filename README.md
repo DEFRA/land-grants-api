@@ -6,23 +6,31 @@ To read more about the farming grants platform, see this docs repo:
 
 To read more about Land Grants API see
 
-- [Land grants api docs github](https://github.com/DEFRA/farming-grants-docs/docs/projects/land-grants-api) or
+- [Land grants api docs github](https://github.com/DEFRA/farming-grants-docs/blob/main/docs/projects/land-grants-api/1-introduction-and-goals.md) or
 - [Land grants api docs confluence](https://eaflood.atlassian.net/wiki/spaces/LGS/pages/5866356750/Land+Grants+Service+Home)
 
 The capabilities of the `land-grants-api` include:
 
 - [Available area calculation](docs/available-area-calculation.md)
-- [Land based grant application eligibility checks](docs/eligibility-checks.md)
 - [Grant payment calculations](docs/payment-calculation.md)
+- [Case management integration](docs/case-management.md)
 
 The data ingestion process:
 
 - [Day 1 land data ingestion](docs/day1-land-data-ingestion.md)
 - [ETL Land data ingestion](docs/etl-land-data-ingestion.md)
 
-Working with Qgis
+Visualising parcel data with qgis
 
-- [Working wiith qgis](docs/working-wiith-qgis.md)
+- [Working with qgis](docs/working-wiith-qgis.md)
+
+Managing the service:
+
+- [Managing the service on dev environment](docs/managing-the-service.md)
+
+Pact testing
+
+- [Contract testing with Pact](docs/pact-testing.md)
 
 ## Requirements
 
@@ -90,7 +98,9 @@ server.route({
 
 ### Configuration
 
-An `.env` is NOT required for running the API locally, all the config values are defaulted to a local setup, unless developer/user wants to override these for testing; if so see `env.example`.
+An `.env` is NOT required for running the API locally, all the config values are defaulted to a local setup, unless you want to override these for testing; if so see `env.example`.
+
+The `.env` file is used for running the data ingestion process, which is not required to run the api. See `The data ingestion process` above for more details.
 
 ### Setup
 
@@ -100,23 +110,9 @@ Install application dependencies:
 npm install
 ```
 
-### Download the land data
-
-1. Download the `sql` files from [sharepoint]('https://defra.sharepoint.com/teams/Team1645/Restricted_FCP%20RPS%20Future/Forms/AllItems.aspx?id=%2Fteams%2FTeam1645%2FRestricted%5FFCP%20RPS%20Future%2Fland%2Dgrant%2Dapi%2Ddata&viewid=f5678bbd%2Dae3a%2D4cd4%2D9f4c%2Dab8e79452a94&ovuser=770a2450%2D0227%2D4c62%2D90c7%2D4e38537f1102%2CJilly%2EGledhill%40defra%2Egov%2Euk&OR=Teams%2DHL&CT=1733739622621&clickparams=eyJBcHBOYW1lIjoiVGVhbXMtRGVza3RvcCIsIkFwcFZlcnNpb24iOiI0OS8yNDEwMjAwMTMxOCIsIkhhc0ZlZGVyYXRlZFVzZXIiOmZhbHNlfQ%3D%3D'), talk to a collegue if you do not have access.
-
-2. Copy these files to to the `src/api/common/migration` folder
-
-The api uses [Liquibase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema
-
 ### Development
 
-In order to run the api, you will need `docker` installed, so please make sure this is running when either running the setup or starting the api.
-
-To run the application in `development` mode run the following commands:
-
-#### Create database
-
-You are only required to run this once, unless the schema changes.
+#### Create and seed a local database
 
 This script:
 
@@ -130,19 +126,11 @@ npm run dev:setup
 
 #### Start the api
 
-This script will start the api
+To run the application in `development` mode run the following command:
 
 ```bash
 npm run dev
 ```
-
-#### Seed data
-
-The seed data is in `src/api/common/migration` and are compressed sql files.
-
-They are uncompressed when you run `npm run dev:setup` or the db tests, and are instered as part of the migrations.
-
-When updating seed data we cannot update the existing files, we will need to create a new migration updating the seed data.
 
 ### Testing
 
@@ -157,6 +145,12 @@ npm run test:unit
 
 npm run test:db
 ```
+
+## Database Migrations
+
+The api uses [Liquibase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema.
+
+When making changes to the existing schema, or updating seed data; we cannot update the existing seed data files, or alter existing files in the `changelog`, you will need to create a new migration, which are named `db.changelog-(n+1).xml`.
 
 ## API endpoints
 

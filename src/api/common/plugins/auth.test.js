@@ -127,7 +127,7 @@ describe('auth plugin', () => {
   })
 
   describe('Hapi auth plugin integration', () => {
-    it('authenticates successfully with valid token', async () => {
+    it('authenticates successfully with valid token', () => {
       const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
       const encodedHeader = Buffer.from(encrypted).toString('base64')
 
@@ -158,7 +158,7 @@ describe('auth plugin', () => {
       })
     })
 
-    it('throws Boom.unauthorized for invalid token', async () => {
+    it('throws Boom.unauthorized for invalid token', () => {
       const request = { headers: { authorization: 'Bearer badtoken' } }
       config.get.mockReturnValue(ENCRYPTION_KEY)
       const h = createHMock()
