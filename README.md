@@ -46,25 +46,27 @@ cd land-grants-api
 nvm use
 ```
 
-## Authentication
-
-The API uses encrypted bearer token authentication for all endpoints except `/health`.
+## Local development
 
 ### Configuration
+
+Copy the `env.example` file to `.env`, ask a colleague for the missing information.
+
+#### Authentication
 
 Two environment variables are required for authentication:
 
 - `LAND_GRANTS_AUTH_TOKEN` - The token clients will encrypt and send
 - `LAND_GRANTS_ENCRYPTION_KEY` - The key used for AES-256-GCM encryption (minimum 24 characters recommended)
 
-Add these to your `.env` file or environment:
+Your `.env` file will have these, request values from a colleague.
 
 ```bash
-AUTH_TOKEN=your-secret-token
-AUTH_ENCRYPTION_KEY=your-encryption-key-min-24-chars
+LAND_GRANTS_AUTH_TOKEN=ASK-A-COLLEAGUE
+LAND_GRANTS_ENCRYPTION_KEY=ASK-A-COLLEAGUE
 ```
 
-### Client Authentication
+#### Client Authentication
 
 Clients must:
 
@@ -73,7 +75,7 @@ Clients must:
 3. Base64 encode the entire formatted string
 4. Send as a Bearer token: `Authorization: Bearer {base64EncodedEncryptedToken}`
 
-### Excluded Endpoints
+#### Excluded Endpoints
 
 The following endpoints do not require authentication:
 
@@ -93,14 +95,6 @@ server.route({
   }
 })
 ```
-
-## Local development
-
-### Configuration
-
-An `.env` is NOT required for running the API locally, all the config values are defaulted to a local setup, unless you want to override these for testing; if so see `env.example`.
-
-The `.env` file is used for running the data ingestion process, which is not required to run the api. See `The data ingestion process` above for more details.
 
 ### Setup
 
