@@ -123,7 +123,22 @@ const config = convict({
       env: 'GRANTS_UI_HOST'
     }
   },
-
+  auth: {
+    token: {
+      doc: 'Bearer token for Service to Service authentication support',
+      format: String,
+      default: '',
+      env: 'LAND_GRANTS_AUTH_TOKEN',
+      sensitive: true
+    },
+    encryptionKey: {
+      doc: 'Encryption key for securing bearer token transmission',
+      format: String,
+      default: '',
+      env: 'LAND_GRANTS_ENCRYPTION_KEY',
+      sensitive: true
+    }
+  },
   root: {
     doc: 'Project root',
     format: String,
