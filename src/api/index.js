@@ -11,6 +11,7 @@ import { router } from '~/src/api/router.js'
 import { config } from '~/src/config/index.js'
 import { postgresDb } from './common/helpers/postgres.js'
 import { cron } from './common/plugins/cron.js'
+import { auth } from './common/plugins/auth.js'
 import { s3Client } from './common/plugins/s3-client.js'
 
 async function createServer() {
@@ -47,6 +48,7 @@ async function createServer() {
   // requestTracing - trace header logging and propagation
   // secureContext  - loads CA certificates from environment config
   // pulse          - provides shutdown handlers
+  // auth           - provides service-to-service authentication
   // router         - routes used in the app
   // swagger        - swagger documentation
   await server.register([
@@ -55,6 +57,7 @@ async function createServer() {
     secureContext,
     pulse,
     postgresDb,
+    auth,
     router,
     cron,
     s3Client
