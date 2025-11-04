@@ -56,6 +56,9 @@ export function getDBOptions() {
 export function createDBPool(options, server = {}) {
   return new Pool({
     port: DEFAULT_PORT,
+    min: 1,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 0,
     user: options.user,
     password: async () => {
       server?.logger?.info('Getting Postgres authentication token')
