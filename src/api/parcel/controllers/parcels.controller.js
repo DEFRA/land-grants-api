@@ -102,14 +102,6 @@ const ParcelsController = {
         })
       )
 
-      logInfo(request.logger, {
-        category: 'parcels',
-        message: 'Get parcels information',
-        context: {
-          parcels: JSON.stringify(responseParcels)
-        }
-      })
-
       return h
         .response({
           message: 'success',
