@@ -65,23 +65,50 @@ services:
     build:
       context: .
       target: development
+    command: ["npm", "run", "dev"]
     environment:
-      NODE_ENV: local
+      <<: *common-postgres
+      PORT: 3001
       DISABLE_POSTGRES: false
-      POSTGRES_HOST: ${POSTGRES_HOST:-land-grants-backend-postgres}
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-land_grants_api}
-      POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
+      POSTGRES_HOST: land-grants-backend-postgres
+    volumes:
+      - ./src:/home/node/src
+      - node_deps:/home/node/node_modules
     ports:
-      - 3009:3009
+      - 3001:3001
     depends_on:
       land-grants-backend-postgres:
         condition: service_healthy
     networks:
       - land-grants-net
 
+  localstack:
+    image: localstack/localstack:3.0.2
+    profiles: [localstack]
+    container_name: localstack
+    ports:
+      - '4566:4566' # LocalStack Gateway
+      - '4510-4559:4510-4559' # external services port range
+    env_file:
+      - 'compose/aws.env'
+    environment:
+      DEBUG: ${DEBUG:-1}
+      LS_LOG: WARN # Localstack DEBUG Level
+      SERVICES: s3
+      LOCALSTACK_HOST: 127.0.0.1
+    volumes:
+      - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
+      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+    healthcheck:
+      test: [ 'CMD', 'curl', 'localhost:4566' ]
+      interval: 5s
+      start_period: 5s
+      retries: 3
+    networks:
+      - land-grants-net
+
 volumes:
+  node_deps:
   postgres_data:
 
 networks:

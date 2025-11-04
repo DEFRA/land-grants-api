@@ -37,9 +37,6 @@ services:
     networks:
       - grants-ui-net
 
-volumes:
-  postgres_data:
-
 networks:
   grants-ui-net:
     name: grants-ui-net
