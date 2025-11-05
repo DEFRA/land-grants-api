@@ -39,6 +39,7 @@ const PaymentCalculateResponseSchema = Joi.object({
         Joi.object({
           code: Joi.string(),
           description: Joi.string(),
+          durationYears: Joi.number().integer(),
           version: Joi.number(),
           annualPaymentPence: Joi.number().integer()
         })
