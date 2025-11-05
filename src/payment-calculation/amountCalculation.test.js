@@ -63,6 +63,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
+        durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
         annualPaymentPence: 360.4,
@@ -73,6 +74,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
     const agreementItems = {
       1: {
         code: 'CMOR1',
+        durationYears: 3,
         description: 'CMOR1: Assess moorland and produce a written record',
         annualPaymentPence: 27200
       }
@@ -95,6 +97,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         parcelId: '5484',
+        durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
         annualPaymentPence: 360.4,
@@ -105,6 +108,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         code: 'UPL1',
         description: 'Moderate livestock grazing on moorland',
         parcelId: '5485',
+        durationYears: 3,
         quantity: 2.5,
         rateInPence: 2000,
         annualPaymentPence: 5000,
@@ -116,6 +120,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
+        durationYears: 3,
         annualPaymentPence: 27200
       }
     }
@@ -153,6 +158,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
         parcelId: '5484',
+        durationYears: 3,
         quantity: undefined,
         rateInPence: undefined,
         annualPaymentPence: undefined,
@@ -163,6 +169,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         code: 'UPL1',
         description: 'Moderate livestock grazing on moorland',
         version: 1,
+        durationYears: 3,
         parcelId: '5485',
         quantity: undefined,
         rateInPence: undefined,
@@ -176,6 +183,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
+        durationYears: 3,
         annualPaymentPence: undefined
       }
     }
@@ -224,6 +232,7 @@ describe('createPaymentItems', () => {
         description: 'Test action',
         version: 1,
         parcelId: '5484',
+        durationYears: 3,
         quantity: 0.34,
         rateInPence: 0,
         annualPaymentPence: 0,
@@ -283,6 +292,7 @@ describe('createPaymentItems', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
+        durationYears: 3,
         unit: 'ha',
         quantity: 0.34,
         rateInPence: 1060,
@@ -313,6 +323,7 @@ describe('createPaymentItems', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
+        durationYears: 3,
         version: 1,
         annualPaymentPence: 27200
       }
@@ -351,6 +362,7 @@ describe('createPaymentItems', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
         unit: 'ha',
+        durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
         annualPaymentPence: 360.40000000000003,
@@ -362,6 +374,7 @@ describe('createPaymentItems', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
         unit: 'ha',
+        durationYears: 3,
         quantity: 0.99,
         rateInPence: 1060,
         annualPaymentPence: 1049.4,
@@ -422,12 +435,14 @@ describe('createPaymentItems', () => {
         code: 'CMOR1',
         version: 1,
         description: 'CMOR1: Assess moorland and produce a written record',
+        durationYears: 3,
         annualPaymentPence: 27200
       },
       2: {
         code: 'CSAM1',
         description:
           'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
+        durationYears: 3,
         version: 1,
         annualPaymentPence: 970000
       }
@@ -459,6 +474,7 @@ describe('createPaymentItems', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         version: 1,
         parcelId: '5484',
+        durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
         annualPaymentPence: 360.40000000000003,
@@ -470,6 +486,7 @@ describe('createPaymentItems', () => {
         version: 1,
         description: 'UPL1: Moderate livestock grazing on moorland',
         parcelId: '5485',
+        durationYears: 3,
         quantity: 2.5,
         rateInPence: 2000,
         annualPaymentPence: 5000,
@@ -482,6 +499,7 @@ describe('createPaymentItems', () => {
       1: {
         annualPaymentPence: 27200,
         code: 'CMOR1',
+        durationYears: 3,
         version: 1,
         description: 'CMOR1: Assess moorland and produce a written record'
       }
@@ -508,6 +526,7 @@ describe('createPaymentItems', () => {
         description: 'UPL1: Moderate livestock grazing on moorland',
         version: 1,
         parcelId: '5485',
+        durationYears: 3,
         quantity: 2.5,
         rateInPence: 2000,
         annualPaymentPence: 5000,

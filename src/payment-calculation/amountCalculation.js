@@ -202,13 +202,14 @@ export const calculateScheduledPayments = (
 /**
  * Creates a parcel payment item to be included on the response payload
  * @param {PaymentParcelAction} action
- * @param {Action | undefined} actionData
+ * @param {Action} actionData
  * @param {PaymentParcel} parcel
  * @returns {PaymentParcelItem}
  */
 const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData?.code ?? '',
   description: actionData?.description ?? '',
+  durationYears: actionData?.durationYears,
   version: Number(actionData?.version),
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
@@ -227,6 +228,7 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
 const createAgreementPaymentItem = (actionData) => ({
   code: actionData?.code,
   description: actionData?.description,
+  durationYears: actionData?.durationYears,
   version: Number(actionData?.version),
   annualPaymentPence: gbpToPence(actionData?.payment.ratePerAgreementPerYearGbp)
 })

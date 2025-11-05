@@ -27,6 +27,7 @@ const PaymentCalculateResponseSchema = Joi.object({
           quantity: Joi.number(),
           rateInPence: Joi.number().integer(),
           annualPaymentPence: Joi.number().integer(),
+          durationYears: Joi.number().integer(),
           sheetId: Joi.string(),
           parcelId: Joi.string()
         })
