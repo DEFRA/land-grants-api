@@ -31,6 +31,7 @@
  * @property {string} sheetId
  * @property {string} parcelId
  * @property {number} quantity - The quantity applied for the action
+ * @property {number} durationYears - The duration in years for the action
  * @property {number} rateInPence - The rate paid for the action
  * @property {number} annualPaymentPence - The annual payment paid for the action
  */
@@ -39,6 +40,7 @@
  * @typedef {object} PaymentAgreementItem
  * @property {string} code - The code of the action
  * @property {string} description - The description of the action
+ * @property {number} durationYears - The duration in years for the action
  * @property {number} version - The action version
  * @property {number} annualPaymentPence - The annual payment paid for the action
  */
