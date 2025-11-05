@@ -97,6 +97,7 @@ describe('getPaymentCalculationForParcels', () => {
           version: 1,
           unit: 'ha',
           quantity: 0.34,
+          durationYears: 3,
           rateInPence: 1060,
           annualPaymentPence: 360,
           sheetId: 'SD5253',
@@ -107,6 +108,7 @@ describe('getPaymentCalculationForParcels', () => {
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
           version: 1,
+          durationYears: 3,
           unit: 'ha',
           quantity: 1.45,
           rateInPence: 600,
@@ -119,6 +121,7 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
+          durationYears: 3,
           version: 1,
           annualPaymentPence: 27200
         },
@@ -126,6 +129,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
+          durationYears: 3,
           version: 1,
           annualPaymentPence: 9700
         }
@@ -220,6 +224,7 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
+          durationYears: 3,
           version: 1,
           unit: 'ha',
           quantity: 0.34,
@@ -232,6 +237,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
+          durationYears: 3,
           version: 1,
           unit: 'ha',
           quantity: 1.45,
@@ -245,6 +251,7 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
+          durationYears: 3,
           version: 1,
           annualPaymentPence: 27200
         },
@@ -252,6 +259,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
+          durationYears: 3,
           version: 1,
           annualPaymentPence: 9700
         }
