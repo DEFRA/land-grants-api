@@ -10,7 +10,6 @@ import { swagger } from '~/src/api/common/plugins/swagger.js'
 import { router } from '~/src/api/router.js'
 import { config } from '~/src/config/index.js'
 import { postgresDb } from './common/helpers/postgres.js'
-import { cron } from './common/plugins/cron.js'
 import { auth } from './common/plugins/auth.js'
 import { s3Client } from './common/plugins/s3-client.js'
 
@@ -59,7 +58,6 @@ async function createServer() {
     postgresDb,
     auth,
     router,
-    cron,
     s3Client
   ])
 

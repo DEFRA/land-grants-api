@@ -11,8 +11,7 @@ const cron = {
         request: {
           method: 'GET',
           url: '/ingest-land-data-schedule'
-        },
-        enable: false
+        }
       }
     ]
   }
