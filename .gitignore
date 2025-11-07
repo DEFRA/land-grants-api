@@ -18,3 +18,5 @@ tsconfig.tsbuildinfo
 
 # ignore extracted sql files
 changelog/*.sql
+
+ingestion-data
