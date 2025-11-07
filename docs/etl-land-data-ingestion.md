@@ -20,9 +20,8 @@ POST /initiate-upload HTTP/1.1
 Host: land-grants-api.{env}.cdp-int.defra.cloud
 
 {
-  "filename": "parcels-01.csv",
-  "customerId": "ETL"
-  'type': 'parcels' | 'covers' | 'moorland'
+  "reference": "1234",
+  "customerId": "customer"
 }
 ```
 
@@ -133,8 +132,7 @@ Here are a series of aws cli commands to work with files and buckets
 #### Upload a file to the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 cp parcels.csv s3://land-data/
-aws --endpoint-url=http://localhost:4566 s3 cp covers.csv s3://land-data/
+aws --endpoint-url=http://localhost:4566 s3 cp data-ingestion/parcels.csv s3://dev-fcp-farming-sfi-reform-land-grants-data-c63f2
 ```
 
 #### List all buckets
@@ -146,17 +144,17 @@ aws --endpoint-url=http://localhost:4566 s3 ls
 #### List all files in the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data
+aws --endpoint-url=http://localhost:4566 s3 ls s3://dev-fcp-farming-sfi-reform-land-grants-data-c63f2
 ```
 
 #### Delete a file from the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 rm s3://land-data/parcels.csv
+aws --endpoint-url=http://localhost:4566 s3 rm s3://dev-fcp-farming-sfi-reform-land-grants-data-c63f2parcels.csv
 ```
 
 #### Delete a folder from the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 rm s3://land-data/land-data --recursive
+aws --endpoint-url=http://localhost:4566 s3 rm s3://dev-fcp-farming-sfi-reform-land-grants-data-c63f2land-data --recursive
 ```

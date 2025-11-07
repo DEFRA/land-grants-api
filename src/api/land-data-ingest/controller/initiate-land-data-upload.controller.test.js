@@ -24,8 +24,8 @@ describe('InitiateLandDataUploadController', () => {
   }
 
   const validPayload = {
-    filename: 'land-parcels.csv',
-    type: 'parcels'
+    reference: 'REF-123456',
+    customerId: 'CUST-789'
   }
 
   const mockEndpoint = 'https://cdp-uploader.example.com/initiate'
@@ -148,9 +148,9 @@ describe('InitiateLandDataUploadController', () => {
       expect(uploadUrl).toBe(`https://frontend.example.com${mockUploadUrl}`)
     })
 
-    test('should return 400 when filename is missing', async () => {
+    test('should return 400 when reference is missing', async () => {
       const invalidPayload = {
-        type: 'parcels'
+        customerId: 'CUST-789'
       }
 
       const request = {
@@ -169,9 +169,9 @@ describe('InitiateLandDataUploadController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 400 when type is missing', async () => {
+    test('should return 400 when customerId is missing', async () => {
       const invalidPayload = {
-        filename: 'land-parcels.csv'
+        reference: 'REF-123456'
       }
 
       const request = {
@@ -190,10 +190,10 @@ describe('InitiateLandDataUploadController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 400 when type is invalid', async () => {
+    test('should return 400 when reference is invalid type', async () => {
       const invalidPayload = {
-        filename: 'land-parcels.csv',
-        type: 'invalid-type'
+        reference: 123,
+        customerId: 'CUST-789'
       }
 
       const request = {
@@ -212,40 +212,26 @@ describe('InitiateLandDataUploadController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should accept "covers" as a valid type', async () => {
-      const validCoversPayload = {
-        filename: 'land-covers.csv',
-        type: 'covers'
+    test('should return 400 when customerId is invalid type', async () => {
+      const invalidPayload = {
+        reference: 'REF-123456',
+        customerId: 123
       }
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/initiate',
-        payload: validCoversPayload
+        payload: invalidPayload
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject(request)
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200)
-    })
-
-    test('should accept "moorland" as a valid type', async () => {
-      const validMoorlandPayload = {
-        filename: 'moorland-data.csv',
-        type: 'moorland'
-      }
-
-      const request = {
-        method: 'POST',
-        url: '/land-data-ingest/initiate',
-        payload: validMoorlandPayload
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject(request)
-
-      expect(statusCode).toBe(200)
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
     })
 
     test('should return 500 when service throws an error', async () => {
