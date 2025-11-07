@@ -23,7 +23,10 @@ const landDataIngest = {
         {
           method: 'GET',
           path: '/ingest-land-data-schedule',
-          ...IngestScheduleController
+          ...IngestScheduleController,
+          options: {
+            auth: false
+          }
         }
       ])
     }
