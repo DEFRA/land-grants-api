@@ -107,78 +107,50 @@ describe('initiateLandDataUploadSuccessResponseSchema', () => {
 
 describe('initiateLandDataUploadRequestSchema', () => {
   const validData = {
-    filename: 'land-data.csv',
-    type: 'parcels'
+    reference: 'REF-123456',
+    customerId: 'CUST-789'
   }
 
-  it('should validate valid data with type "parcels"', () => {
+  it('should validate valid data', () => {
     const { error } = initiateLandDataUploadRequestSchema.validate(validData)
     expect(error).toBeUndefined()
   })
 
-  it('should validate valid data with type "covers"', () => {
+  it('should reject missing reference', () => {
     const data = {
-      filename: 'land-covers.csv',
-      type: 'covers'
-    }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
-
-  it('should validate valid data with type "moorland"', () => {
-    const data = {
-      filename: 'moorland-data.csv',
-      type: 'moorland'
-    }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
-
-  it('should reject missing filename', () => {
-    const data = {
-      type: 'parcels'
+      customerId: 'CUST-789'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('filename')
+    expect(error.details[0].message).toContain('reference')
   })
 
-  it('should reject missing type', () => {
+  it('should reject missing customerId', () => {
     const data = {
-      filename: 'land-data.csv'
+      reference: 'REF-123456'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('type')
+    expect(error.details[0].message).toContain('customerId')
   })
 
-  it('should reject invalid type value', () => {
+  it('should reject invalid reference type', () => {
     const data = {
-      filename: 'land-data.csv',
-      type: 'invalid-type'
-    }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('must be one of')
-  })
-
-  it('should reject invalid filename type', () => {
-    const data = {
-      filename: 123,
-      type: 'parcels'
+      reference: 123,
+      customerId: 'CUST-789'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('string')
   })
 
-  it('should reject invalid type type', () => {
+  it('should reject invalid customerId type', () => {
     const data = {
-      filename: 'land-data.csv',
-      type: 123
+      reference: 'REF-123456',
+      customerId: 123
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('must be one of')
+    expect(error.details[0].message).toContain('string')
   })
 })
