@@ -53,4 +53,4 @@ async function ingestLandData(landData) {
   }
 }
 
-await ingestLandData(workerData)
+ingestLandData(workerData)

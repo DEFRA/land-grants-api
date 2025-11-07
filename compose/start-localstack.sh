@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-INGEST_BUCKET="s3://dev-fcp-farming-sfi-reform-land-grants-data-c63f2"
+INGEST_BUCKET="s3://land-data"
 
 echo "Creating S3 bucket"
 

@@ -13,6 +13,15 @@ export const DB_CONFIG = {
   password: config.get('postgres.passwordForLocalDev')
 }
 
+export const S3_CONFIG = {
+  region: 'eu-west-2',
+  credentials: {
+    accessKeyId: 'test',
+    secretAccessKey: 'test'
+  },
+  bucket: config.get('s3.bucket')
+}
+
 const log = (stream, name) => {
   /* eslint-disable no-console */
   stream.on('data', console.log)
@@ -21,17 +30,27 @@ const log = (stream, name) => {
 }
 
 export default async () => {
-  // unpack gz to sql
-  // execSync('scripts/extrac', (err, stdout, stderr) => {
-
   const network = await new Network().start()
+
+  // Start Postgres
   const postgresContainer = initializePostgres(network)
   const postgresStarted = await postgresContainer.start()
   const liquibaseContainer = initializeLiquibase(network)
   await liquibaseContainer.start()
 
+  // Start LocalStack for S3
+  const localStackContainer = initializeLocalStack(network)
+  const localStackStarted = await localStackContainer.start()
+
+  // Set environment variables
   process.env.POSTGRES_PORT = postgresStarted.getMappedPort(5432).toString()
-  containers.push(postgresStarted)
+  process.env.S3_ENDPOINT = `http://${localStackStarted.getHost()}:${localStackStarted.getMappedPort(4566)}`
+  process.env.INGEST_BUCKET = S3_CONFIG.bucket
+  process.env.AWS_REGION = S3_CONFIG.region
+  process.env.AWS_ACCESS_KEY_ID = S3_CONFIG.credentials.accessKeyId
+  process.env.AWS_SECRET_ACCESS_KEY = S3_CONFIG.credentials.secretAccessKey
+
+  containers.push(postgresStarted, localStackStarted)
 }
 
 function initializeLiquibase(network) {
@@ -75,4 +94,22 @@ function initializePostgres(network) {
       POSTGRES_DB: DB_CONFIG.database,
       POSTGRES_PORT: '5432'
     })
+}
+
+function initializeLocalStack(network) {
+  return new GenericContainer('localstack/localstack:3.0.2')
+    .withName('localstack-test')
+    .withNetwork(network)
+    .withExposedPorts(4566)
+    .withLogConsumer((stream) => log(stream, 'LocalStack'))
+    .withEnvironment({
+      SERVICES: 's3',
+      DEBUG: '0',
+      LS_LOG: 'WARN',
+      AWS_ACCESS_KEY_ID: S3_CONFIG.credentials.accessKeyId,
+      AWS_SECRET_ACCESS_KEY: S3_CONFIG.credentials.secretAccessKey,
+      AWS_DEFAULT_REGION: S3_CONFIG.region
+    })
+    .withWaitStrategy(Wait.forLogMessage(/Ready\./))
+    .withStartupTimeout(60_000)
 }

@@ -26,7 +26,8 @@ describe('Import Land Data Service', () => {
       end: jest.fn()
     }
     mockConnection = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: jest.fn().mockResolvedValue(mockClient),
+      end: jest.fn()
     }
     createDBPool.mockReturnValue(mockConnection)
     readFile.mockResolvedValue('SELECT * FROM test')
@@ -54,6 +55,7 @@ describe('Import Land Data Service', () => {
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
         '../../../../scripts/import-land-data/land_parcels/create_land_parcels_temp_table.sql'
       )
@@ -82,6 +84,7 @@ describe('Import Land Data Service', () => {
 
     expect(result).toBe(false)
     expect(mockClient.end).toHaveBeenCalledTimes(1)
+    expect(mockConnection.end).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
   })
 })

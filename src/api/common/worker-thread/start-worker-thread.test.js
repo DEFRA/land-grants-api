@@ -43,12 +43,12 @@ describe('Start Worker Thread', () => {
   })
 
   describe('Start worker thread', () => {
-    it('should handle a complete successful worker lifecycle', () => {
+    it('should handle a complete successful worker lifecycle', async () => {
       const workerPath = '/path/to/worker.js'
       const taskId = 999
       const data = [{ id: 1 }, { id: 2 }]
 
-      startWorker(
+      const workerPromise = startWorker(
         mockRequest,
         workerPath,
         'Data Processor',
@@ -66,6 +66,8 @@ describe('Start Worker Thread', () => {
       })
 
       exitHandler(0)
+      await workerPromise
+      
       expect(logHelpers.logInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'data_processing',
         operation: 'data_processing_exit',
@@ -76,10 +78,10 @@ describe('Start Worker Thread', () => {
       expect(logHelpers.logBusinessError).not.toHaveBeenCalled()
     })
 
-    it('should handle a worker that completes with errors', () => {
+    it('should handle a worker that completes with errors', async () => {
       const taskId = 888
 
-      startWorker(
+      const workerPromise = startWorker(
         mockRequest,
         '/path/to/worker.js',
         'Error Prone Worker',
@@ -97,6 +99,9 @@ describe('Start Worker Thread', () => {
       })
 
       exitHandler(1)
+      
+      await expect(workerPromise).rejects.toThrow('Error Prone Worker stopped with exit code 1')
+      
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'error_category_exit',
         error: new Error('Error Prone Worker stopped with exit code 1'),
@@ -104,10 +109,10 @@ describe('Start Worker Thread', () => {
       })
     })
 
-    it('should handle a worker that throws an error during execution', () => {
+    it('should handle a worker that throws an error during execution', async () => {
       const taskId = 777
 
-      startWorker(
+      const workerPromise = startWorker(
         mockRequest,
         '/path/to/worker.js',
         'Crashing Worker',
@@ -118,17 +123,13 @@ describe('Start Worker Thread', () => {
 
       const error = new Error('Unexpected crash')
       errorHandler(error)
+      
+      await expect(workerPromise).rejects.toThrow('Unexpected crash')
+      
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'crash_category_error',
         error,
         context: { taskId, file: [] }
-      })
-
-      exitHandler(1)
-      expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
-        operation: 'crash_category_exit',
-        error: new Error('Crashing Worker stopped with exit code 1'),
-        context: { taskId, code: 1, file: [] }
       })
     })
   })

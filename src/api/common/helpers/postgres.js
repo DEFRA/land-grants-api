@@ -36,6 +36,15 @@ async function getToken(options) {
  * @property {boolean} loadPostgresData - Whether to load Postgres data
  */
 export function getDBOptions() {
+  if (config.get('isTest')) {
+    return {
+      host: config.get('postgres.host'),
+      user: config.get('postgres.user'),
+      database: config.get('postgres.database'),
+      password: config.get('postgres.passwordForLocalDev'),
+      port: Number(process.env.POSTGRES_PORT)
+    }
+  }
   return {
     user: config.get('postgres.user'),
     database: config.get('postgres.database'),
@@ -54,8 +63,17 @@ export function getDBOptions() {
  * @returns {Pool} Database pool
  */
 export function createDBPool(options, server = {}) {
+  if (config.get('isTest')) {
+    return new Pool({
+      port: options.port || DEFAULT_PORT,
+      user: options.user,
+      password: options.password,
+      host: options.host,
+      database: options.database
+    })
+  }
   return new Pool({
-    port: DEFAULT_PORT,
+    port: options.port || DEFAULT_PORT,
     user: options.user,
     password: async () => {
       server?.logger?.info('Getting Postgres authentication token')

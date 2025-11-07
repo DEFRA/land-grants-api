@@ -15,7 +15,7 @@ import { config } from '../../../config/index.js'
  * @param {string} title - The title of the worker
  * @param {number} taskId - The task ID
  * @param {string} bucket - The S3 bucket name
- * @returns {Promise<boolean>} Whether files were found
+ * @returns {Promise<boolean>} Whether files were found and processed
  */
 export const fileProcessor = async (
   request,
@@ -30,9 +30,11 @@ export const fileProcessor = async (
     const __dirname = dirname(fileURLToPath(import.meta.url))
     const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
 
-    for (const file of files) {
+    const workerPromises = files.map((file) =>
       startWorker(request, workerPath, title, category, taskId, file)
-    }
+    )
+
+    await Promise.all(workerPromises)
 
     return true
   }

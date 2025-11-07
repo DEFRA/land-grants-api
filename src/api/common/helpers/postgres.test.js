@@ -11,7 +11,7 @@ jest.mock('../../../config/index.js')
 
 describe('Postgres Helper', () => {
   beforeEach(() => {
-    config.get = jest.fn().mockReturnValue('test-value')
+    config.get = jest.fn((value) => (value === 'isTest' ? false : 'test-value'))
   })
 
   afterEach(() => {
