@@ -67,7 +67,7 @@ describe('Start Worker Thread', () => {
 
       exitHandler(0)
       await workerPromise
-      
+
       expect(logHelpers.logInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'data_processing',
         operation: 'data_processing_exit',
@@ -99,9 +99,11 @@ describe('Start Worker Thread', () => {
       })
 
       exitHandler(1)
-      
-      await expect(workerPromise).rejects.toThrow('Error Prone Worker stopped with exit code 1')
-      
+
+      await expect(workerPromise).rejects.toThrow(
+        'Error Prone Worker stopped with exit code 1'
+      )
+
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'error_category_exit',
         error: new Error('Error Prone Worker stopped with exit code 1'),
@@ -123,9 +125,9 @@ describe('Start Worker Thread', () => {
 
       const error = new Error('Unexpected crash')
       errorHandler(error)
-      
+
       await expect(workerPromise).rejects.toThrow('Unexpected crash')
-      
+
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'crash_category_error',
         error,
