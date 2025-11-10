@@ -42,7 +42,7 @@ export function getDBOptions() {
       user: config.get('postgres.user'),
       database: config.get('postgres.database'),
       password: config.get('postgres.passwordForLocalDev'),
-      port: Number(process.env.POSTGRES_PORT)
+      port: Number(process.env.POSTGRES_PORT ?? DEFAULT_PORT)
     }
   }
   return {

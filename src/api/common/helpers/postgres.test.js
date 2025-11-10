@@ -40,6 +40,25 @@ describe('Postgres Helper', () => {
       expect(config.get).toHaveBeenCalledWith('loadPostgresData')
     })
 
+    test('should return database options from config for test environment', () => {
+      config.get = jest.fn((value) =>
+        value === 'isTest' ? true : 'test-value'
+      )
+      const result = getDBOptions()
+
+      expect(result).toEqual({
+        user: 'test-value',
+        database: 'test-value',
+        host: 'test-value',
+        password: 'test-value',
+        port: 5432
+      })
+      expect(config.get).toHaveBeenCalledWith('postgres.user')
+      expect(config.get).toHaveBeenCalledWith('postgres.database')
+      expect(config.get).toHaveBeenCalledWith('postgres.host')
+      expect(config.get).toHaveBeenCalledWith('postgres.passwordForLocalDev')
+    })
+
     test('should handle undefined config values', () => {
       config.get = jest.fn(() => undefined)
 
