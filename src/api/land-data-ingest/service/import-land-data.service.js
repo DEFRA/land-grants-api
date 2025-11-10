@@ -44,6 +44,7 @@ export async function importLandParcels(landParcelsStream, logger) {
   } finally {
     await client?.query('drop table land_parcels_tmp')
     await client?.end()
+    await connection?.end()
   }
 }
 

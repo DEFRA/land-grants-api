@@ -5,7 +5,8 @@ const options = {
   region: config.get('s3.region'),
   endpoint: config.get('s3.endpoint'),
   bucket: config.get('s3.bucket'),
-  forcePathStyle: config.get('isLocal') || config.get('isDevelopment')
+  forcePathStyle:
+    config.get('isLocal') || config.get('isDevelopment') || config.get('isTest')
 }
 
 function createS3Client() {

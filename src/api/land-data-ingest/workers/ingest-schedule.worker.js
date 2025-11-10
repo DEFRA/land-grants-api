@@ -53,4 +53,5 @@ async function ingestLandData(landData) {
   }
 }
 
-await ingestLandData(workerData)
+// eslint-disable-next-line
+ingestLandData(workerData)
