@@ -53,4 +53,6 @@ async function ingestLandData(landData) {
   }
 }
 
-ingestLandData(workerData)
+ingestLandData(workerData).catch((error) => {
+  postMessage(workerData.taskId, false, null, error.message)
+})
