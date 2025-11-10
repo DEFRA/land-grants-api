@@ -35,6 +35,9 @@ describe('Ingest Schedule Service', () => {
       logger: mockLogger
     }
 
+    // Mock startWorker to return a resolved promise
+    workerThread.startWorker.mockResolvedValue()
+
     jest.clearAllMocks()
   })
 
