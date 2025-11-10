@@ -23,7 +23,7 @@ import {
 /**
  * Validate land actions are provided
  * @param {import('@hapi/hapi').Request} request
- * @param {Array} landActions
+ * @param {LandAction[]} landActions
  * @returns {import('@hapi/boom').Boom | null}
  */
 const validateLandActionsPresent = (request, landActions) => {
@@ -42,7 +42,7 @@ const validateLandActionsPresent = (request, landActions) => {
 /**
  * Validate request data against enabled actions
  * @param {import('@hapi/hapi').Request} request
- * @param {Array} landActions
+ * @param {LandAction[]} landActions
  * @param {Action[]} enabledActions
  * @returns {Promise<import('@hapi/boom').Boom | null>}
  */
@@ -67,7 +67,7 @@ const validateRequestData = async (request, landActions, enabledActions) => {
 /**
  * Determine action duration from enabled actions
  * @param {import('@hapi/hapi').Request} request
- * @param {Array} landActions
+ * @param {LandAction[]} landActions
  * @param {Action[]} enabledActions
  * @returns {number | import('@hapi/boom').Boom}
  */
@@ -103,10 +103,10 @@ const getTotalDurationInYears = (request, landActions, enabledActions) => {
 /**
  * Calculate payment for land parcels
  * @param {import('@hapi/hapi').Request} request
- * @param {Array} landActions
+ * @param {LandAction[]} landActions
  * @param {Action[]} enabledActions
  * @param {number} totalDurationYears
- * @param {Date} startDate
+ * @param {Date | undefined} startDate
  * @returns {object | import('@hapi/boom').Boom}
  */
 const calculatePayment = (
@@ -172,6 +172,8 @@ const PaymentsCalculateController = {
     try {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
+
+      /** @type {PaymentCalculateRequestPayload} */
       // @ts-expect-error - payload
       const { landActions, startDate } = request.payload
 
@@ -217,7 +219,6 @@ const PaymentsCalculateController = {
         return totalDurationYears
       }
 
-      // Calculate payment
       const calculateResponse = calculatePayment(
         request,
         landActions,
@@ -242,6 +243,7 @@ const PaymentsCalculateController = {
         .response({ message: 'success', payment: calculateResponse })
         .code(statusCodes.ok)
     } catch (error) {
+      /** @type {PaymentCalculateRequestPayload} */
       // @ts-expect-error - payload
       const { landActions, startDate } = request.payload
       logBusinessError(request.logger, {
@@ -262,4 +264,5 @@ export { PaymentsCalculateController }
 /**
  * @import { ServerRoute } from '@hapi/hapi'
  * @import { Action } from '../../actions/action.d.js'
+ * @import { LandAction, PaymentCalculateRequestPayload } from '../payment.d.js'
  */
