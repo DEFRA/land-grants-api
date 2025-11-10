@@ -39,9 +39,18 @@ async function importLandData(file) {
   return 'Land data imported successfully'
 }
 
-;(async () => {
-  const result = await importLandData(workerData.data)
-  postMessage(workerData.taskId, true, result, null)
-})().catch((error) => {
-  postMessage(workerData.taskId, false, null, error.message)
-})
+/**
+ * @param {object} landData - The data to ingest
+ * @returns {Promise<void>}
+ */
+async function ingestLandData(landData) {
+  try {
+    const result = await importLandData(landData.data)
+    postMessage(landData.taskId, true, result, null)
+  } catch (error) {
+    postMessage(landData.taskId, false, null, error.message)
+    throw error
+  }
+}
+
+ingestLandData(workerData)
