@@ -27,7 +27,7 @@ export const getPaymentCalculationDataRequirements = async (
  * @param {Array<PaymentParcel>} parcels
  * @param {Array<Action>} actions
  * @param {number} durationYears
- * @param {Date} startDate
+ * @param {Date | undefined} startDate
  * @returns {PaymentCalculationResponse}
  */
 export const getPaymentCalculationForParcels = (
