@@ -13,12 +13,18 @@ const landDataIngest = {
         {
           method: 'POST',
           path: '/initiate-upload',
-          ...InitiateLandDataUploadController
+          ...InitiateLandDataUploadController,
+          options: {
+            auth: false
+          }
         },
         {
           method: 'POST',
           path: '/cdp-uploader-callback',
-          ...LandDataIngestController
+          ...LandDataIngestController,
+          options: {
+            auth: false
+          }
         },
         {
           method: 'GET',
