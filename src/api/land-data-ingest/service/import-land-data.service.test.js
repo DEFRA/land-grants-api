@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals'
-import { importLandParcels } from './import-land-data.service.js'
+import {
+  importLandParcels,
+  importLandCovers,
+  importMoorlandDesignations
+} from './import-land-data.service.js'
 import { createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
 import { from } from 'pg-copy-streams'
@@ -40,7 +44,6 @@ describe('Import Land Data Service', () => {
   })
 
   describe('importLandParcels', () => {
-    // Tests go here
     it('should import land parcels', async () => {
       const landParcelsStream = new ReadableStream({
         read: () =>
@@ -68,23 +71,125 @@ describe('Import Land Data Service', () => {
       expect(pipeline).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledTimes(2)
     })
+
+    it('should handle error when importing land parcels', async () => {
+      const landParcelsStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      readFile.mockRejectedValue('Failed to import land parcels')
+
+      const result = await importLandParcels(landParcelsStream, mockLogger)
+
+      expect(result).toBe(false)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it('should handle error when importing land parcels', async () => {
-    const landParcelsStream = new ReadableStream({
-      read: () =>
-        Promise.resolve({
-          value: 'test',
-          done: true
-        })
+  describe('importLandCovers', () => {
+    it('should import land parcels', async () => {
+      const landCoversStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      const result = await importLandCovers(landCoversStream, mockLogger)
+
+      expect(result).toBe(true)
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.query).toHaveBeenCalledTimes(4)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
+      expect(readFile.mock.calls[0][0]).toBe(
+        '../../../../scripts/import-land-data/land_covers/create_land_covers_temp_table.sql'
+      )
+      expect(readFile.mock.calls[1][0]).toBe(
+        '../../../../scripts/import-land-data/land_covers/insert_land_covers.sql'
+      )
+      expect(from).toHaveBeenCalledWith(
+        "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
+      )
+      expect(pipeline).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(2)
     })
-    readFile.mockRejectedValue('Failed to import land parcels')
 
-    const result = await importLandParcels(landParcelsStream, mockLogger)
+    it('should handle error when importing land covers', async () => {
+      const landCoversStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      readFile.mockRejectedValue('Failed to import land parcels')
 
-    expect(result).toBe(false)
-    expect(mockClient.end).toHaveBeenCalledTimes(1)
-    expect(mockConnection.end).toHaveBeenCalledTimes(1)
-    expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      const result = await importLandCovers(landCoversStream, mockLogger)
+
+      expect(result).toBe(false)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('importMoorlandDesignations', () => {
+    it('should import moorland designations', async () => {
+      const moorlandDesignationsStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      const result = await importMoorlandDesignations(
+        moorlandDesignationsStream,
+        mockLogger
+      )
+
+      expect(result).toBe(true)
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.query).toHaveBeenCalledTimes(4)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
+      expect(readFile.mock.calls[0][0]).toBe(
+        '../../../../scripts/import-land-data/moorland_designations/create_moorland_designations_temp_table.sql'
+      )
+      expect(readFile.mock.calls[1][0]).toBe(
+        '../../../../scripts/import-land-data/moorland_designations/insert_moorland_designations.sql'
+      )
+      expect(from).toHaveBeenCalledWith(
+        "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
+      )
+      expect(pipeline).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+    })
+
+    it('should handle error when importing moorland designations', async () => {
+      const moorlandDesignationsStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      readFile.mockRejectedValue('Failed to import moorland designations')
+
+      const result = await importMoorlandDesignations(
+        moorlandDesignationsStream,
+        mockLogger
+      )
+
+      expect(result).toBe(false)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockConnection.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    })
   })
 })
