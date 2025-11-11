@@ -6,11 +6,6 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
-// import crypto from 'node:crypto'
-
-// const createId = () => {
-//   return crypto.randomBytes(6).toString('base64url')
-// }
 
 async function importData(stream, tableName, logger) {
   logger.info(`Importing ${tableName}`)
