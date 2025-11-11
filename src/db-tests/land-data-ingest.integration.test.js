@@ -2,7 +2,8 @@ import { connectToTestDatbase } from './setup/postgres.js'
 import {
   uploadFixtureFile,
   createTestS3Client,
-  ensureBucketExists
+  ensureBucketExists,
+  clearTestBucket
 } from './setup/s3-test-helpers.js'
 import { fileProcessor } from '../api/land-data-ingest/service/ingest-schedule.service.js'
 import { config } from '../config/index.js'
@@ -32,12 +33,14 @@ describe('Land data ingest integration test', () => {
 
   afterAll(async () => {
     await connection.end()
-  }, 20000)
+    await clearTestBucket(s3Client)
+  })
 
   test('should ingest land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
     await ensureBucketExists(s3Client)
     await uploadFixtureFile(s3Client, 'parcels_head.csv')
+    await uploadFixtureFile(s3Client, 'parcels_1head.csv')
     const request = {
       server: {
         s3: s3Client
@@ -54,7 +57,7 @@ describe('Land data ingest integration test', () => {
     )
 
     const parcelsCount = await getTableCount(connection, 'land_parcels')
-    expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 1)
+    expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 2)
     expect(result).toBe(true)
   }, 30000)
 

@@ -2,10 +2,13 @@ import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
+import {
+  logInfo,
+  logBusinessError
+} from '../../common/helpers/logging/log-helpers.js'
 
 async function importData(stream, tableName, logger) {
   logger.info(`Importing ${tableName}`)
-
   const connection = createDBPool(getDBOptions())
   const client = await connection.connect()
 
@@ -30,14 +33,23 @@ async function importData(stream, tableName, logger) {
       )
     )
 
-    logger.info(`${tableName} imported successfully`, result.rowCount)
+    logInfo(logger, {
+      category: 'land-data-ingest',
+      operation: `${tableName}_imported`,
+      message: `${tableName} imported successfully`,
+      context: { rowCount: result.rowCount }
+    })
 
     return true
   } catch (error) {
-    logger.error(`Failed to import ${tableName}: ${error.message}`)
+    logBusinessError(logger, {
+      operation: `${tableName}_import_failed`,
+      error,
+      context: { tableName }
+    })
     return false
   } finally {
-    await client?.query(`drop table ${tableName}_tmp`)
+    await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
     await client?.end()
     await connection?.end()
   }
