@@ -2,12 +2,16 @@
 
 - [Back home](../README.md)
 
+### Summary
+
 The process will work using the CDP Uploader (API Upload) process:
 
 - land data csv files are uploaded to an s3 bucket via [cdp uploader](https://portal.cdp-int.defra.cloud/documentation/how-to/file-upload.md?q=cdp-uploader%20will%20scan%20the%20files%20uploaded%20#api-upload)
 - the cdp uploader will notify this service of a new file
 - as a backup we also run a cron job which polls the bucket for new files
 - the file is imported to postgres
+
+Further documentation via github for the [cpp uploader](https://github.com/DEFRA/cdp-uploader/blob/main/README.md)
 
 ### Detailed outline of process
 
@@ -21,13 +25,14 @@ Host: land-grants-api.{env}.cdp-int.defra.cloud
 
 {
   "reference": "1234",
-  "customerId": "customer"
+  "customerId": "customer",
+  "resource" "parcels|covers|moorland"
 }
 ```
 
 #### Response:
 
-A public url (`note ..grants-ui..`) will be returned to the ETL service. This url will be used to upload the file to the CDP Uploader.
+A public url (`note ..grants-ui..`) will be returned to the ETL service. This url will be used to upload the file to the CDP Uploader. Basically the `upload-and-scan` cdp endpoint is made available via our frontend `grants-ui`, this is automatically configured on account of us requesting the cdp uploader service.
 
 ```
 {
@@ -35,7 +40,7 @@ A public url (`note ..grants-ui..`) will be returned to the ETL service. This ur
 }
 ```
 
-The `land-grants-api` service will call the internal `cdp-uploader` service to initiate an upload `/initiate`.
+The `land-grants-api` `initiate-upload` endpoint will call the internal `cdp-uploader` service to initiate an upload `/initiate`.
 
 #### Request:
 
