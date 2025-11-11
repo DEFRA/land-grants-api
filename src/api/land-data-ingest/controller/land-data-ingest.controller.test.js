@@ -91,7 +91,9 @@ describe('LandDataIngestController', () => {
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'land-data-ingest',
         message: 'Processing land data',
-        context: validPayload.form
+        context: {
+          payload: JSON.stringify(validPayload)
+        }
       })
     })
 
@@ -141,7 +143,7 @@ describe('LandDataIngestController', () => {
           operation: 'land-data-ingest_error',
           error: expect.any(Error),
           context: {
-            payload: validPayload
+            payload: JSON.stringify(validPayload)
           }
         })
       )
