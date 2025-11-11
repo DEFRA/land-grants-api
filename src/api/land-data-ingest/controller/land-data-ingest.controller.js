@@ -42,7 +42,9 @@ export const LandDataIngestController = {
       logInfo(logger, {
         category,
         message: 'Processing land data',
-        context: payload?.form ?? {}
+        context: {
+          payload: JSON.stringify(payload ?? {})
+        }
       })
 
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
@@ -51,7 +53,7 @@ export const LandDataIngestController = {
         operation: `${category}_error`,
         error,
         context: {
-          payload
+          payload: JSON.stringify(payload ?? {})
         }
       })
 

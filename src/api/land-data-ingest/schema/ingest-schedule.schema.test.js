@@ -108,7 +108,8 @@ describe('initiateLandDataUploadSuccessResponseSchema', () => {
 describe('initiateLandDataUploadRequestSchema', () => {
   const validData = {
     reference: 'REF-123456',
-    customerId: 'CUST-789'
+    customerId: 'CUST-789',
+    resource: 'parcels'
   }
 
   it('should validate valid data', () => {
@@ -118,7 +119,8 @@ describe('initiateLandDataUploadRequestSchema', () => {
 
   it('should reject missing reference', () => {
     const data = {
-      customerId: 'CUST-789'
+      customerId: 'CUST-789',
+      resource: 'parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
@@ -127,17 +129,29 @@ describe('initiateLandDataUploadRequestSchema', () => {
 
   it('should reject missing customerId', () => {
     const data = {
-      reference: 'REF-123456'
+      reference: 'REF-123456',
+      resource: 'parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('customerId')
   })
 
+  it('should reject missing resource', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789'
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('resource')
+  })
+
   it('should reject invalid reference type', () => {
     const data = {
       reference: 123,
-      customerId: 'CUST-789'
+      customerId: 'CUST-789',
+      resource: 'parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
@@ -147,10 +161,63 @@ describe('initiateLandDataUploadRequestSchema', () => {
   it('should reject invalid customerId type', () => {
     const data = {
       reference: 'REF-123456',
-      customerId: 123
+      customerId: 123,
+      resource: 'parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('string')
+  })
+
+  it('should reject invalid resource type', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 123
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toMatch(/must be one of|must be a string/)
+  })
+
+  it('should reject invalid resource value', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 'invalid-resource'
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('parcels')
+  })
+
+  it('should accept valid resource value - parcels', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 'parcels'
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeUndefined()
+  })
+
+  it('should accept valid resource value - covers', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 'covers'
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeUndefined()
+  })
+
+  it('should accept valid resource value - moorland', () => {
+    const data = {
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 'moorland'
+    }
+    const { error } = initiateLandDataUploadRequestSchema.validate(data)
+    expect(error).toBeUndefined()
   })
 })

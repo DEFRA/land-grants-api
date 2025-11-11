@@ -35,6 +35,8 @@ export const InitiateLandDataUploadController = {
   handler: async (request, h) => {
     const category = 'initiate-land-data-upload'
     const { logger, payload } = request
+    // @ts-expect-error - payload is validated by the schema
+    const { resource } = payload
 
     try {
       logInfo(logger, {
@@ -54,6 +56,7 @@ export const InitiateLandDataUploadController = {
         config.get('ingest.endpoint'),
         config.get('ingest.callback'),
         config.get('s3.bucket'),
+        resource,
         payload
       )
 

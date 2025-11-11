@@ -35,6 +35,9 @@ describe('Ingest Schedule Service', () => {
       logger: mockLogger
     }
 
+    // Mock startWorker to return a resolved promise
+    workerThread.startWorker.mockResolvedValue()
+
     jest.clearAllMocks()
   })
 
@@ -296,9 +299,11 @@ describe('Ingest Schedule Service', () => {
     const mockEndpoint = 'https://cdp-uploader.example.com/initiate'
     const mockCallback = 'https://api.example.com/callback'
     const mockS3Bucket = 'land-grants-bucket'
+    const mockS3Path = 'parcels'
     const mockMetadata = {
-      filename: 'parcels.csv',
-      type: 'parcels'
+      reference: 'REF-123456',
+      customerId: 'CUST-789',
+      resource: 'parcels'
     }
 
     beforeEach(() => {
@@ -320,6 +325,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -330,6 +336,7 @@ describe('Ingest Schedule Service', () => {
             redirect: '/health',
             callback: mockCallback,
             s3Bucket: mockS3Bucket,
+            s3Path: mockS3Path,
             metadata: mockMetadata
           })
         })
@@ -349,6 +356,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -371,6 +379,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -388,6 +397,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -401,9 +411,9 @@ describe('Ingest Schedule Service', () => {
     describe('request parameters', () => {
       it('should handle different metadata types', async () => {
         const metadata = {
-          filename: 'covers.csv',
-          type: 'covers',
-          uploadedBy: 'user@example.com'
+          reference: 'REF-654321',
+          customerId: 'CUST-999',
+          resource: 'covers'
         }
 
         global.fetch.mockResolvedValue({
@@ -414,6 +424,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          'covers',
           metadata
         )
 
@@ -421,6 +432,7 @@ describe('Ingest Schedule Service', () => {
         const requestBody = JSON.parse(callArgs.body)
 
         expect(requestBody.metadata).toEqual(metadata)
+        expect(requestBody.s3Path).toBe('covers')
       })
 
       it('should handle different S3 bucket names', async () => {
@@ -434,6 +446,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           differentBucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -454,6 +467,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           differentCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -472,11 +486,64 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
         const callArgs = global.fetch.mock.calls[0][1]
         expect(callArgs.headers['Content-Type']).toBe('application/json')
+      })
+
+      it('should handle resource type - covers', async () => {
+        const metadata = {
+          reference: 'REF-111111',
+          customerId: 'CUST-111',
+          resource: 'covers'
+        }
+
+        global.fetch.mockResolvedValue({
+          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+        })
+
+        await initiateLandDataUpload(
+          mockEndpoint,
+          mockCallback,
+          mockS3Bucket,
+          'covers',
+          metadata
+        )
+
+        const callArgs = global.fetch.mock.calls[0][1]
+        const requestBody = JSON.parse(callArgs.body)
+
+        expect(requestBody.s3Path).toBe('covers')
+        expect(requestBody.metadata.resource).toBe('covers')
+      })
+
+      it('should handle resource type - moorland', async () => {
+        const metadata = {
+          reference: 'REF-222222',
+          customerId: 'CUST-222',
+          resource: 'moorland'
+        }
+
+        global.fetch.mockResolvedValue({
+          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+        })
+
+        await initiateLandDataUpload(
+          mockEndpoint,
+          mockCallback,
+          mockS3Bucket,
+          'moorland',
+          metadata
+        )
+
+        const callArgs = global.fetch.mock.calls[0][1]
+        const requestBody = JSON.parse(callArgs.body)
+
+        expect(requestBody.s3Path).toBe('moorland')
+        expect(requestBody.metadata.resource).toBe('moorland')
       })
     })
 
@@ -490,6 +557,7 @@ describe('Ingest Schedule Service', () => {
             mockEndpoint,
             mockCallback,
             mockS3Bucket,
+            mockS3Path,
             mockMetadata
           )
         ).rejects.toThrow('Network error')
@@ -506,6 +574,7 @@ describe('Ingest Schedule Service', () => {
             mockEndpoint,
             mockCallback,
             mockS3Bucket,
+            mockS3Path,
             mockMetadata
           )
         ).rejects.toThrow('Invalid JSON')
@@ -520,6 +589,7 @@ describe('Ingest Schedule Service', () => {
             mockEndpoint,
             mockCallback,
             mockS3Bucket,
+            mockS3Path,
             mockMetadata
           )
         ).rejects.toThrow('Request timeout')
@@ -534,6 +604,7 @@ describe('Ingest Schedule Service', () => {
             mockEndpoint,
             mockCallback,
             mockS3Bucket,
+            mockS3Path,
             mockMetadata
           )
         ).rejects.toThrow('Connection refused')
@@ -550,6 +621,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -570,6 +642,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 
@@ -594,6 +667,7 @@ describe('Ingest Schedule Service', () => {
           mockEndpoint,
           mockCallback,
           mockS3Bucket,
+          mockS3Path,
           mockMetadata
         )
 

@@ -30,10 +30,11 @@ export const fileProcessor = async (
     const __dirname = dirname(fileURLToPath(import.meta.url))
     const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
 
-    for (const file of files) {
+    const workerPromises = files.map((file) =>
       startWorker(request, workerPath, title, category, taskId, file)
-    }
+    )
 
+    await Promise.all(workerPromises)
     return true
   }
 
@@ -65,6 +66,7 @@ export const createTaskInfo = (taskId, category) => {
  * @param {string} endpoint - The endpoint URL
  * @param {string} callback - The callback URL
  * @param {string} s3Bucket - The S3 bucket name
+ * @param {string} s3Path - The S3 path
  * @param {object} metadata - The metadata
  * @returns {Promise<InitiateUploaderResponse>} The response from the CDP uploader
  */
@@ -72,6 +74,7 @@ export const initiateLandDataUpload = async (
   endpoint,
   callback,
   s3Bucket,
+  s3Path,
   metadata
 ) => {
   const response = await fetch(endpoint, {
@@ -81,6 +84,7 @@ export const initiateLandDataUpload = async (
       redirect: '/health',
       callback,
       s3Bucket,
+      s3Path,
       metadata
     })
   })

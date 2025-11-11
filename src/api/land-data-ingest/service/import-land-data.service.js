@@ -2,6 +2,58 @@ import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
+import {
+  logInfo,
+  logBusinessError
+} from '../../common/helpers/logging/log-helpers.js'
+
+async function importData(stream, tableName, logger) {
+  logger.info(`Importing ${tableName}`)
+  const connection = createDBPool(getDBOptions())
+  const client = await connection.connect()
+
+  try {
+    await client.query(
+      await readFile(
+        `../../../../scripts/import-land-data/${tableName}/create_${tableName}_temp_table.sql`
+      )
+    )
+
+    const pgStream = client.query(
+      from(
+        `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
+      )
+    )
+
+    await pipeline(stream, pgStream)
+
+    const result = await client.query(
+      await readFile(
+        `../../../../scripts/import-land-data/${tableName}/insert_${tableName}.sql`
+      )
+    )
+
+    logInfo(logger, {
+      category: 'land-data-ingest',
+      operation: `${tableName}_imported`,
+      message: `${tableName} imported successfully`,
+      context: { rowCount: result.rowCount }
+    })
+
+    return true
+  } catch (error) {
+    logBusinessError(logger, {
+      operation: `${tableName}_import_failed`,
+      error,
+      context: { tableName }
+    })
+    return false
+  } finally {
+    await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
+    await client?.end()
+    await connection?.end()
+  }
+}
 
 /**
  *
@@ -9,44 +61,19 @@ import { readFile } from '../../common/helpers/read-file.js'
  * @param {Logger} logger
  */
 export async function importLandParcels(landParcelsStream, logger) {
-  logger.info('Importing land parcels')
-
-  const connection = createDBPool(getDBOptions())
-  const client = await connection.connect()
-
-  try {
-    await client.query(
-      await readFile(
-        '../../../../scripts/import-land-data/land_parcels/create_land_parcels_temp_table.sql'
-      )
-    )
-
-    const pgStream = client.query(
-      from(
-        `COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
-      )
-    )
-
-    await pipeline(landParcelsStream, pgStream)
-
-    const result = await client.query(
-      await readFile(
-        '../../../../scripts/import-land-data/land_parcels/insert_land_parcels.sql'
-      )
-    )
-
-    logger.info('Land parcels imported successfully', result.rowCount)
-
-    return true
-  } catch (error) {
-    logger.error(`Failed to import land parcels: ${error.message}`)
-    return false
-  } finally {
-    await client?.query('drop table land_parcels_tmp')
-    await client?.end()
-  }
+  return importData(landParcelsStream, 'land_parcels', logger)
 }
 
+export async function importLandCovers(landCoversStream, logger) {
+  return importData(landCoversStream, 'land_covers', logger)
+}
+
+export async function importMoorlandDesignations(
+  moorlandDesignationsStream,
+  logger
+) {
+  return importData(moorlandDesignationsStream, 'moorland_designations', logger)
+}
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */
