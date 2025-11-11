@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS moorland_designations_tmp (
+DROP TABLE IF EXISTS moorland_designations_tmp CASCADE;
+
+CREATE TEMPORARY TABLE moorland_designations_tmp (
     geom TEXT,
     OBJECTID INTEGER,
     OBJECTID_12 INTEGER,

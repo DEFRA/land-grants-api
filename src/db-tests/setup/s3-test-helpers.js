@@ -145,19 +145,3 @@ export async function clearTestBucket(s3Client, bucket = S3_CONFIG.bucket) {
 
   await s3Client.send(command)
 }
-
-/**
- * Create CSV content from array of objects
- * @param {Array<object>} data - Array of data objects
- * @returns {string} CSV formatted string
- */
-export function createCSVContent(data) {
-  if (data.length === 0) return ''
-
-  const headers = Object.keys(data[0])
-  const rows = data.map((row) =>
-    headers.map((header) => row[header] || '').join(',')
-  )
-
-  return [headers.join(','), ...rows].join('\n')
-}
