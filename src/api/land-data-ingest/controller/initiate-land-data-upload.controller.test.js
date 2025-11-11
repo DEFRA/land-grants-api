@@ -25,7 +25,8 @@ describe('InitiateLandDataUploadController', () => {
 
   const validPayload = {
     reference: 'REF-123456',
-    customerId: 'CUST-789'
+    customerId: 'CUST-789',
+    resource: 'parcels'
   }
 
   const mockEndpoint = 'https://cdp-uploader.example.com/initiate'
@@ -101,6 +102,7 @@ describe('InitiateLandDataUploadController', () => {
         mockEndpoint,
         mockCallback,
         mockBucket,
+        'parcels',
         validPayload
       )
 
@@ -150,7 +152,8 @@ describe('InitiateLandDataUploadController', () => {
 
     test('should return 400 when reference is missing', async () => {
       const invalidPayload = {
-        customerId: 'CUST-789'
+        customerId: 'CUST-789',
+        resource: 'parcels'
       }
 
       const request = {
@@ -171,7 +174,30 @@ describe('InitiateLandDataUploadController', () => {
 
     test('should return 400 when customerId is missing', async () => {
       const invalidPayload = {
-        reference: 'REF-123456'
+        reference: 'REF-123456',
+        resource: 'parcels'
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload: invalidPayload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 when resource is missing', async () => {
+      const invalidPayload = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789'
       }
 
       const request = {
@@ -193,7 +219,8 @@ describe('InitiateLandDataUploadController', () => {
     test('should return 400 when reference is invalid type', async () => {
       const invalidPayload = {
         reference: 123,
-        customerId: 'CUST-789'
+        customerId: 'CUST-789',
+        resource: 'parcels'
       }
 
       const request = {
@@ -215,7 +242,54 @@ describe('InitiateLandDataUploadController', () => {
     test('should return 400 when customerId is invalid type', async () => {
       const invalidPayload = {
         reference: 'REF-123456',
-        customerId: 123
+        customerId: 123,
+        resource: 'parcels'
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload: invalidPayload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 when resource is invalid type', async () => {
+      const invalidPayload = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789',
+        resource: 123
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload: invalidPayload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
+
+    test('should return 400 when resource value is invalid', async () => {
+      const invalidPayload = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789',
+        resource: 'invalid-resource'
       }
 
       const request = {
@@ -292,6 +366,58 @@ describe('InitiateLandDataUploadController', () => {
         message: 'Upload URL',
         context: { uploadUrl: `${mockGrantsUiHost}${mockUploadUrl}` }
       })
+    })
+
+    test('should accept valid resource - covers', async () => {
+      const payload = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789',
+        resource: 'covers'
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
+        mockEndpoint,
+        mockCallback,
+        mockBucket,
+        'covers',
+        payload
+      )
+    })
+
+    test('should accept valid resource - moorland', async () => {
+      const payload = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789',
+        resource: 'moorland'
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
+        mockEndpoint,
+        mockCallback,
+        mockBucket,
+        'moorland',
+        payload
+      )
     })
   })
 })
