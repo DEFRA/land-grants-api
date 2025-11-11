@@ -2,7 +2,11 @@ import { parentPort, workerData } from 'node:worker_threads'
 import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
-import { importLandParcels } from '../service/import-land-data.service.js'
+import {
+  importLandCovers,
+  importLandParcels,
+  importMoorlandDesignations
+} from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 
 /**
@@ -35,6 +39,12 @@ async function importLandData(file) {
   if (file.startsWith('parcels_')) {
     await importLandParcels(dataStream, logger)
   }
+  if (file.startsWith('covers_')) {
+    await importLandCovers(dataStream, logger)
+  }
+  if (file.startsWith('moorland_')) {
+    await importMoorlandDesignations(dataStream, logger)
+  }
 
   return 'Land data imported successfully'
 }
@@ -53,4 +63,5 @@ async function ingestLandData(landData) {
   }
 }
 
-await ingestLandData(workerData)
+// eslint-disable-next-line
+ingestLandData(workerData)
