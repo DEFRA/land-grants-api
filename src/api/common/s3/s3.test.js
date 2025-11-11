@@ -1,5 +1,12 @@
 import { Readable } from 'stream'
-import { getFiles, getFile, moveFile } from './s3.js'
+import {
+  getFiles,
+  getFile,
+  moveFile,
+  failedBucketPath,
+  processingBucketPath,
+  completedBucketPath
+} from './s3.js'
 
 describe('S3 Buckets', () => {
   describe('Get all files from s3 bucket', () => {
@@ -530,6 +537,32 @@ describe('S3 Buckets', () => {
           )
         ).rejects.toThrow(
           'Failed to move file from my-bucket/source-file.txt to my-bucket/dest-file.txt: '
+        )
+      })
+    })
+  })
+
+  describe('Bucket path helper functions', () => {
+    describe('failedBucketPath', () => {
+      test('should prepend failed/ to simple filename', () => {
+        expect(failedBucketPath('parcels/file.txt')).toBe(
+          'failed/parcels/file.txt'
+        )
+      })
+    })
+
+    describe('processingBucketPath', () => {
+      test('should prepend processing/ to simple filename', () => {
+        expect(processingBucketPath('parcels/file.txt')).toBe(
+          'processing/parcels/file.txt'
+        )
+      })
+    })
+
+    describe('completedBucketPath', () => {
+      test('should prepend completed/ to simple filename', () => {
+        expect(completedBucketPath('parcels/file.txt')).toBe(
+          'completed/parcels/file.txt'
         )
       })
     })
