@@ -137,7 +137,11 @@ Here are a series of aws cli commands to work with files and buckets
 #### Upload a file to the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data/parcels/
+```
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 #### List all buckets
@@ -155,11 +159,11 @@ aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data
 #### Delete a file from the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 rm s3://land-dataparcels.csv
+aws --endpoint-url=http://localhost:4566 s3 rm s3://land-data/parcels.csv
 ```
 
 #### Delete a folder from the land-data bucket
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 rm s3://land-dataland-data --recursive
+aws --endpoint-url=http://localhost:4566 s3 rm s3://land-data --recursive
 ```
