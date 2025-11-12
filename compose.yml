@@ -13,63 +13,105 @@ services:
 
   database-up:
     image: liquibase/liquibase:4.31-alpine
+    profiles: [migrations]
+    restart: "no"
     environment:
-      << : [*common-postgres, *common-migration]
+      <<: [*common-postgres, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-up"
     depends_on:
-      - land-grants-backend-postgres
+      land-grants-backend-postgres:
+        condition: service_healthy
     volumes:
       - ./changelog:/liquibase/changelog
       - ./scripts:/scripts
+    networks:
+      - land-grants-net
 
   database-down:
     image: liquibase/liquibase:4.31-alpine
+    profiles: [migrations]
+    restart: "no"
     environment:
-      << : [*common-postgres, *common-migration]
+      <<: [*common-postgres, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-down"
     depends_on:
-      - land-grants-backend-postgres
+      land-grants-backend-postgres:
+        condition: service_healthy
     volumes:
       - ./changelog:/liquibase/changelog
       - ./scripts:/scripts
+    networks:
+      - land-grants-net
 
   land-grants-backend-postgres:
     image: postgis/postgis:16-3.4
-    environment: *common-postgres
+    environment:
+      <<: *common-postgres
     ports:
       - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - land-grants-net
+
+  land-grants-backend:
+    build:
+      context: .
+      target: development
+    command: ["npm", "run", "dev"]
+    environment:
+      <<: *common-postgres
+      PORT: 3001
+      DISABLE_POSTGRES: false
+      POSTGRES_HOST: land-grants-backend-postgres
+    volumes:
+      - ./src:/home/node/src
+      - node_deps:/home/node/node_modules
+    ports:
+      - 3001:3001
+    depends_on:
+      land-grants-backend-postgres:
+        condition: service_healthy
+    networks:
+      - land-grants-net
 
   localstack:
-      image: localstack/localstack:3.0.2
-      container_name: localstack
-      ports:
-        - '4566:4566' # LocalStack Gateway
-        - '4510-4559:4510-4559' # external services port range
-      env_file:
-        - 'compose/aws.env'
-      environment:
-        DEBUG: ${DEBUG:-1}
-        LS_LOG: WARN # Localstack DEBUG Level
-        SERVICES: s3
-        LOCALSTACK_HOST: 127.0.0.1
-      volumes:
-        - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-        - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
-      healthcheck:
-        test: ['CMD', 'curl', 'localhost:4566']
-        interval: 5s
-        start_period: 5s
-        retries: 3
-      networks:
-        - cdp-tenant
+    image: localstack/localstack:3.0.2
+    profiles: [localstack]
+    container_name: localstack
+    ports:
+      - '4566:4566' # LocalStack Gateway
+      - '4510-4559:4510-4559' # external services port range
+    env_file:
+      - 'compose/aws.env'
+    environment:
+      DEBUG: ${DEBUG:-1}
+      LS_LOG: WARN # Localstack DEBUG Level
+      SERVICES: s3
+      LOCALSTACK_HOST: 127.0.0.1
+    volumes:
+      - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
+      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+    healthcheck:
+      test: [ 'CMD', 'curl', 'localhost:4566' ]
+      interval: 5s
+      start_period: 5s
+      retries: 3
+    networks:
+      - land-grants-net
 
 volumes:
+  node_deps:
   postgres_data:
 
 networks:
-  cdp-tenant:
-
+  land-grants-net:
+    name: land-grants-net
+    driver: bridge

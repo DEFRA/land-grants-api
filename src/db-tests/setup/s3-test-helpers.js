@@ -11,6 +11,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'url'
 import { S3_CONFIG } from './jestSetup.js'
+import { config } from '~/src/config/index.js'
 
 /**
  * Create S3 client for testing
@@ -19,8 +20,9 @@ import { S3_CONFIG } from './jestSetup.js'
 export function createTestS3Client() {
   return new S3Client({
     region: S3_CONFIG.region,
-    endpoint: process.env.S3_ENDPOINT,
-    forcePathStyle: true
+    endpoint: config.get('s3.endpoint'),
+    forcePathStyle: true,
+    credentials: S3_CONFIG.credentials
   })
 }
 

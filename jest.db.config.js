@@ -8,8 +8,6 @@ export default {
   displayName: 'database',
   testMatch: [`<rootDir>${currentPath}/**/?(*.)+(spec|test).[jt]s?(x)`],
   testEnvironment: 'node',
-  globalSetup: `<rootDir>${currentPath}/setup/jestSetup.js`,
-  globalTeardown: `<rootDir>${currentPath}/setup/jestTeardown.js`,
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/**/*.test.js',
