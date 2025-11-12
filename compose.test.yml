@@ -1,0 +1,12 @@
+services:
+  land-grants-backend-postgres:
+    volumes: !reset []
+    tmpfs:
+     - /var/lib/postgresql/data
+
+  localstack:
+    environment:
+      DEBUG: 0
+
+volumes:
+  postgres_data: null
