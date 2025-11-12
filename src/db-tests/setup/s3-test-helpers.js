@@ -21,7 +21,8 @@ export function createTestS3Client() {
   return new S3Client({
     region: S3_CONFIG.region,
     endpoint: config.get('s3.endpoint'),
-    forcePathStyle: true
+    forcePathStyle: true,
+    credentials: S3_CONFIG.credentials
   })
 }
 
