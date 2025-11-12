@@ -1,5 +1,6 @@
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
+import { performance } from 'node:perf_hooks'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
 import {
@@ -8,7 +9,13 @@ import {
 } from '../../common/helpers/logging/log-helpers.js'
 
 async function importData(stream, tableName, logger) {
-  logger.info(`Importing ${tableName}`)
+  const startTime = performance.now()
+  logInfo(logger, {
+    category: 'land-data-ingest',
+    operation: `${tableName}_import_started`,
+    message: `${tableName} import started`
+  })
+
   const connection = createDBPool(getDBOptions())
   const client = await connection.connect()
 
@@ -33,11 +40,13 @@ async function importData(stream, tableName, logger) {
       )
     )
 
+    const endTime = performance.now()
+    const duration = endTime - startTime
     logInfo(logger, {
       category: 'land-data-ingest',
-      operation: `${tableName}_imported`,
-      message: `${tableName} imported successfully`,
-      context: { rowCount: result.rowCount }
+      operation: `${tableName}_import_completed`,
+      message: `${tableName} imported successfully in ${duration}ms`,
+      context: { rowCount: result.rowCount, duration }
     })
 
     return true

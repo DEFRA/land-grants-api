@@ -42,12 +42,12 @@ describe('Land data ingest integration test', () => {
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
-      'parcels/parcels_head.csv'
+      'processing/parcels/parcels_head.csv'
     )
     await uploadFixtureFile(
       s3Client,
       'parcels_1head.csv',
-      'parcels/parcels_1head.csv'
+      'processing/parcels/parcels_1head.csv'
     )
     const request = {
       server: {
@@ -75,7 +75,7 @@ describe('Land data ingest integration test', () => {
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
-      'covers/covers_head.csv'
+      'processing/covers/covers_head.csv'
     )
     const request = {
       server: {
@@ -106,7 +106,7 @@ describe('Land data ingest integration test', () => {
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
-      'moorland/moorland_head.csv'
+      'processing/moorland/moorland_head.csv'
     )
     const request = {
       server: {
