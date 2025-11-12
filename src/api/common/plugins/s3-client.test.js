@@ -67,7 +67,11 @@ describe('#s3Client', () => {
     expect(S3Client).toHaveBeenCalledWith({
       region: 'eu-west-2',
       endpoint: 'http://localhost:4566',
-      forcePathStyle: true
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId: 'test',
+        secretAccessKey: 'test'
+      }
     })
 
     expect(mockDecorate).toHaveBeenCalledTimes(2)
@@ -110,7 +114,11 @@ describe('#s3Client', () => {
       expect(S3Client).toHaveBeenCalledWith({
         region: 'eu-west-2',
         endpoint: 'http://localhost:4566',
-        forcePathStyle: true
+        forcePathStyle: true,
+        credentials: {
+          accessKeyId: 'test',
+          secretAccessKey: 'test'
+        }
       })
 
       expect(client).toHaveProperty('destroy')
