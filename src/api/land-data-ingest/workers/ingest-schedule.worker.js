@@ -41,6 +41,7 @@ async function importLandData(file) {
   const s3Client = createS3Client()
   const dataStream = await getFile(s3Client, config.get('s3.bucket'), file)
   const [resourceType, filename] = file.split('/').splice(1) // processing/{resourceType}/{file}
+  const s3Path = `${resourceType}/${filename}`
 
   try {
     switch (resourceType) {
@@ -61,7 +62,7 @@ async function importLandData(file) {
       s3Client,
       config.get('s3.bucket'),
       file,
-      completedBucketPath(filename)
+      completedBucketPath(s3Path)
     )
 
     return 'Land data imported successfully'
@@ -70,7 +71,7 @@ async function importLandData(file) {
       s3Client,
       config.get('s3.bucket'),
       file,
-      failedBucketPath(filename)
+      failedBucketPath(s3Path)
     )
     throw error
   }
