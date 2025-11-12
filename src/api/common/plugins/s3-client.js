@@ -10,11 +10,21 @@ const options = {
 }
 
 function createS3Client() {
-  return new S3Client({
+  const clientConfig = {
     region: options.region,
     endpoint: options.endpoint,
     forcePathStyle: options.forcePathStyle
-  })
+  }
+
+  // Add credentials for local/test environments (LocalStack doesn't validate them)
+  if (config.get('isTest') || config.get('isLocal')) {
+    clientConfig.credentials = {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? 'test',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? 'test'
+    }
+  }
+
+  return new S3Client(clientConfig)
 }
 
 const s3Client = {

@@ -1,4 +1,7 @@
 services:
+  land-grants-backend:
+    scale: 0
+
   land-grants-backend-postgres:
     volumes: !reset []
     tmpfs:
