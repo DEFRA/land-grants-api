@@ -4,12 +4,27 @@ import {
   logInfo,
   logBusinessError
 } from '~/src/api/common/helpers/logging/log-helpers.js'
+import {
+  moveFile,
+  processingBucketPath,
+  failedBucketPath
+} from '../../common/s3/s3.js'
+import { config } from '~/src/config/index.js'
+import { createS3Client } from '../../common/plugins/s3-client.js'
 
 // Mock dependencies
 jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
+jest.mock('../../common/s3/s3.js')
+jest.mock('~/src/config/index.js')
+jest.mock('../../common/plugins/s3-client.js')
 
 const mockLogInfo = logInfo
 const mockLogBusinessError = logBusinessError
+const mockMoveFile = moveFile
+const mockProcessingBucketPath = processingBucketPath
+const mockFailedBucketPath = failedBucketPath
+const mockConfig = config
+const mockCreateS3Client = createS3Client
 
 describe('LandDataIngestController', () => {
   const server = Hapi.server()
@@ -20,6 +35,12 @@ describe('LandDataIngestController', () => {
     error: jest.fn(),
     warn: jest.fn()
   }
+
+  const mockS3Client = {
+    send: jest.fn()
+  }
+
+  const mockBucket = 'land-grants-bucket'
 
   const validPayload = {
     uploadStatus: 'ready',
@@ -68,6 +89,21 @@ describe('LandDataIngestController', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    // Setup mock implementations
+    mockCreateS3Client.mockReturnValue(mockS3Client)
+    mockConfig.get.mockImplementation((key) => {
+      const configMap = {
+        's3.bucket': mockBucket
+      }
+      return configMap[key]
+    })
+    mockMoveFile.mockResolvedValue({
+      success: true,
+      message: 'File moved successfully'
+    })
+    mockProcessingBucketPath.mockImplementation((key) => `processing/${key}`)
+    mockFailedBucketPath.mockImplementation((key) => `failed/${key}`)
   })
 
   describe('POST /land-data-ingest/callback route', () => {
@@ -87,12 +123,31 @@ describe('LandDataIngestController', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('Message received')
 
+      // Verify moveFile was called to move file to processing
+      expect(mockMoveFile).toHaveBeenCalledWith(
+        mockS3Client,
+        mockBucket,
+        validPayload.form.file.s3Key,
+        `processing/${validPayload.form.file.s3Key}`
+      )
+
       // Verify logging was called with correct parameters
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'land-data-ingest',
         message: 'Processing land data',
         context: {
           payload: JSON.stringify(validPayload)
+        }
+      })
+
+      expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
+        category: 'land-data-ingest',
+        message: 'Land data moved to processing',
+        context: {
+          payload: JSON.stringify(validPayload),
+          sourceKey: validPayload.form.file.s3Key,
+          destinationKey: `processing/${validPayload.form.file.s3Key}`,
+          s3Bucket: mockBucket
         }
       })
     })
@@ -119,9 +174,14 @@ describe('LandDataIngestController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 500 and log error when logInfo throws an error', async () => {
-      mockLogInfo.mockImplementationOnce(() => {
-        throw new Error('Logging failed')
+    test('should return 500 and move file to failed bucket when error occurs', async () => {
+      // First call fails, second call succeeds
+      mockMoveFile.mockRejectedValueOnce(
+        new Error('Failed to move to processing')
+      )
+      mockMoveFile.mockResolvedValueOnce({
+        success: true,
+        message: 'File moved successfully'
       })
 
       const request = {
@@ -136,6 +196,27 @@ describe('LandDataIngestController', () => {
       expect(statusCode).toBe(500)
       expect(result.message).toBe('An internal server error occurred')
 
+      // Verify moveFile was called twice - once for processing (failed), once for failed bucket
+      expect(mockMoveFile).toHaveBeenCalledTimes(2)
+
+      // First call: attempt to move to processing
+      expect(mockMoveFile).toHaveBeenNthCalledWith(
+        1,
+        mockS3Client,
+        mockBucket,
+        validPayload.form.file.s3Key,
+        `processing/${validPayload.form.file.s3Key}`
+      )
+
+      // Second call: move to failed bucket
+      expect(mockMoveFile).toHaveBeenNthCalledWith(
+        2,
+        mockS3Client,
+        mockBucket,
+        validPayload.form.file.s3Key,
+        `failed/${validPayload.form.file.s3Key}`
+      )
+
       // Verify logBusinessError was called
       expect(mockLogBusinessError).toHaveBeenCalledWith(
         mockLogger,
@@ -143,7 +224,10 @@ describe('LandDataIngestController', () => {
           operation: 'land-data-ingest_error',
           error: expect.any(Error),
           context: {
-            payload: JSON.stringify(validPayload)
+            payload: JSON.stringify(validPayload),
+            sourceKey: validPayload.form.file.s3Key,
+            destinationKey: `failed/${validPayload.form.file.s3Key}`,
+            s3Bucket: mockBucket
           }
         })
       )
