@@ -1,4 +1,5 @@
 import { parentPort, workerData } from 'node:worker_threads'
+import path from 'node:path'
 import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
@@ -35,15 +36,20 @@ async function importLandData(file) {
   const logger = createLogger()
   const s3Client = createS3Client()
   const dataStream = await getFile(s3Client, config.get('s3.bucket'), file)
+  const resourceType = path.dirname(file)
 
-  if (file.startsWith('parcels_')) {
-    await importLandParcels(dataStream, logger)
-  }
-  if (file.startsWith('covers_')) {
-    await importLandCovers(dataStream, logger)
-  }
-  if (file.startsWith('moorland_')) {
-    await importMoorlandDesignations(dataStream, logger)
+  switch (resourceType) {
+    case 'parcels':
+      await importLandParcels(dataStream, logger)
+      break
+    case 'covers':
+      await importLandCovers(dataStream, logger)
+      break
+    case 'moorland':
+      await importMoorlandDesignations(dataStream, logger)
+      break
+    default:
+      throw new Error(`Invalid resource type: ${resourceType}`)
   }
 
   return 'Land data imported successfully'

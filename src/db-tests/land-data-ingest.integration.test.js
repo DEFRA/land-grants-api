@@ -39,8 +39,16 @@ describe('Land data ingest integration test', () => {
   test('should ingest land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
     await ensureBucketExists(s3Client)
-    await uploadFixtureFile(s3Client, 'parcels_head.csv')
-    await uploadFixtureFile(s3Client, 'parcels_1head.csv')
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head.csv',
+      'parcels/parcels_head.csv'
+    )
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_1head.csv',
+      'parcels/parcels_1head.csv'
+    )
     const request = {
       server: {
         s3: s3Client
@@ -64,7 +72,11 @@ describe('Land data ingest integration test', () => {
   test('should ingest land cover data', async () => {
     const initialCoversCount = await getTableCount(connection, 'land_covers')
     await ensureBucketExists(s3Client)
-    await uploadFixtureFile(s3Client, 'covers_head.csv')
+    await uploadFixtureFile(
+      s3Client,
+      'covers_head.csv',
+      'covers/covers_head.csv'
+    )
     const request = {
       server: {
         s3: s3Client
@@ -91,7 +103,11 @@ describe('Land data ingest integration test', () => {
       'moorland_designations'
     )
     await ensureBucketExists(s3Client)
-    await uploadFixtureFile(s3Client, 'moorland_head.csv')
+    await uploadFixtureFile(
+      s3Client,
+      'moorland_head.csv',
+      'moorland/moorland_head.csv'
+    )
     const request = {
       server: {
         s3: s3Client
