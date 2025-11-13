@@ -9,6 +9,26 @@ import { config } from '../../../config/index.js'
  */
 
 /**
+ * Process a file
+ * @param {string} filepath - The path to the file
+ * @param {object} request - The request object
+ * @param {string} category - The category of the worker
+ * @param {string} title - The title of the worker
+ * @param {number} taskId - The task ID
+ * @returns {Promise<void>} Promise that resolves when the file is processed
+ */
+export const processFile = async (
+  filepath,
+  request,
+  category,
+  title,
+  taskId
+) => {
+  const __dirname = dirname(fileURLToPath(import.meta.url))
+  const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
+  await startWorker(request, workerPath, title, category, taskId, filepath)
+}
+/**
  * Process files from S3 bucket
  * @param {object} request - The request object
  * @param {string} category - The category of the worker

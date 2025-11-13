@@ -11,13 +11,19 @@ import {
 } from '../../common/s3/s3.js'
 import { config } from '~/src/config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import { processFile } from '../service/ingest-schedule.service.js'
 
 // Mock dependencies
 jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
 jest.mock('../../common/s3/s3.js')
 jest.mock('~/src/config/index.js')
 jest.mock('../../common/plugins/s3-client.js')
+jest.mock('../service/ingest-schedule.service.js', () => ({
+  ...jest.requireActual('../service/ingest-schedule.service.js'),
+  processFile: jest.fn()
+}))
 
+const mockProcessFile = processFile
 const mockLogInfo = logInfo
 const mockLogBusinessError = logBusinessError
 const mockMoveFile = moveFile
@@ -57,7 +63,7 @@ describe('LandDataIngestController', () => {
         fileStatus: 'complete',
         contentLength: 1024,
         checksumSha256: 'abc123def456',
-        s3Key: 'uploads/land-data.csv',
+        s3Key: 'parcels/land-data.csv',
         s3Bucket: 'land-grants-bucket'
       }
     }
@@ -104,6 +110,7 @@ describe('LandDataIngestController', () => {
     })
     mockProcessingBucketPath.mockImplementation((key) => `processing/${key}`)
     mockFailedBucketPath.mockImplementation((key) => `failed/${key}`)
+    mockProcessFile.mockResolvedValue(undefined)
   })
 
   describe('POST /land-data-ingest/callback route', () => {
@@ -150,6 +157,14 @@ describe('LandDataIngestController', () => {
           s3Bucket: mockBucket
         }
       })
+
+      expect(mockProcessFile).toHaveBeenCalledWith(
+        `processing/${validPayload.form.file.s3Key}`,
+        expect.any(Object),
+        'land-data-ingest',
+        'Land-data-ingest',
+        expect.any(Number)
+      )
     })
 
     test('should return 400 when uploadStatus is invalid', async () => {
