@@ -25,7 +25,7 @@ const logger = {
 let connection
 let s3Client
 
-describe('Land data ingest integration test', () => {
+describe('Land data ingest file processor integration test', () => {
   beforeAll(() => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
@@ -33,21 +33,24 @@ describe('Land data ingest integration test', () => {
 
   afterAll(async () => {
     await connection.end()
+  })
+
+  afterEach(async () => {
     await clearTestBucket(s3Client)
   })
 
-  test('should ingest land parcel data', async () => {
+  test('should ingest multiple land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
     await ensureBucketExists(s3Client)
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
-      'parcels/parcels_head.csv'
+      'processing/parcels/parcels_head.csv'
     )
     await uploadFixtureFile(
       s3Client,
       'parcels_1head.csv',
-      'parcels/parcels_1head.csv'
+      'processing/parcels/parcels_1head.csv'
     )
     const request = {
       server: {
@@ -75,7 +78,7 @@ describe('Land data ingest integration test', () => {
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
-      'covers/covers_head.csv'
+      'processing/covers/covers_head.csv'
     )
     const request = {
       server: {
@@ -106,7 +109,7 @@ describe('Land data ingest integration test', () => {
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
-      'moorland/moorland_head.csv'
+      'processing/moorland/moorland_head.csv'
     )
     const request = {
       server: {

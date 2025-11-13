@@ -1,6 +1,10 @@
 import { parentPort, workerData } from 'node:worker_threads'
-import path from 'node:path'
-import { getFile } from '../../common/s3/s3.js'
+import {
+  getFile,
+  moveFile,
+  completedBucketPath,
+  failedBucketPath
+} from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
@@ -36,23 +40,41 @@ async function importLandData(file) {
   const logger = createLogger()
   const s3Client = createS3Client()
   const dataStream = await getFile(s3Client, config.get('s3.bucket'), file)
-  const resourceType = path.dirname(file)
+  const [resourceType, filename] = file.split('/').splice(1) // processing/{resourceType}/{file}
+  const s3Path = `${resourceType}/${filename}`
 
-  switch (resourceType) {
-    case 'parcels':
-      await importLandParcels(dataStream, logger)
-      break
-    case 'covers':
-      await importLandCovers(dataStream, logger)
-      break
-    case 'moorland':
-      await importMoorlandDesignations(dataStream, logger)
-      break
-    default:
-      throw new Error(`Invalid resource type: ${resourceType}`)
+  try {
+    switch (resourceType) {
+      case 'parcels':
+        await importLandParcels(dataStream, logger)
+        break
+      case 'covers':
+        await importLandCovers(dataStream, logger)
+        break
+      case 'moorland':
+        await importMoorlandDesignations(dataStream, logger)
+        break
+      default:
+        throw new Error(`Invalid resource type: ${resourceType}`)
+    }
+
+    await moveFile(
+      s3Client,
+      config.get('s3.bucket'),
+      file,
+      completedBucketPath(s3Path)
+    )
+
+    return 'Land data imported successfully'
+  } catch (error) {
+    await moveFile(
+      s3Client,
+      config.get('s3.bucket'),
+      file,
+      failedBucketPath(s3Path)
+    )
+    throw error
   }
-
-  return 'Land data imported successfully'
 }
 
 /**
@@ -61,7 +83,8 @@ async function importLandData(file) {
  */
 async function ingestLandData(landData) {
   try {
-    const result = await importLandData(landData.data)
+    const file = landData.data
+    const result = await importLandData(file)
     postMessage(landData.taskId, true, result, null)
   } catch (error) {
     postMessage(landData.taskId, false, null, error.message)

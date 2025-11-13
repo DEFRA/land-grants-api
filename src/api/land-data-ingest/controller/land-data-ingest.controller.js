@@ -16,6 +16,10 @@ import {
 } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import {
+  createTaskInfo,
+  processFile
+} from '../service/ingest-schedule.service.js'
 
 export const LandDataIngestController = {
   options: {
@@ -55,12 +59,17 @@ export const LandDataIngestController = {
         }
       })
 
+      const filepath = processingBucketPath(payload.form.file.s3Key)
       await moveFile(
         s3Client,
         config.get('s3.bucket'),
         payload.form.file.s3Key,
-        processingBucketPath(payload.form.file.s3Key)
+        filepath
       )
+
+      const { title, taskId } = createTaskInfo(Date.now(), category)
+
+      await processFile(filepath, request, category, title, taskId)
 
       logInfo(logger, {
         category,
