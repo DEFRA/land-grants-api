@@ -5,11 +5,13 @@ import {
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import {
-  fileProcessor,
-  createTaskInfo
+  createTaskInfo,
+  processFile
 } from '../service/ingest-schedule.service.js'
 import { internalServerErrorResponseSchema } from '~/src/api/common/schema/index.js'
 import { ingestScheduleSuccessResponseSchema } from '../schema/ingest-schedule.schema.js'
+import { filterFilesByDate, getFiles } from '../../common/s3/s3.js'
+import { createS3Client } from '../../common/plugins/s3-client.js'
 
 export const IngestScheduleController = {
   options: {
@@ -32,6 +34,7 @@ export const IngestScheduleController = {
   handler: async (request, h) => {
     const category = 'land_data_ingest'
     const minutesToIgnore = 5
+    const s3Client = createS3Client()
     const { title, taskId, bucket } = createTaskInfo(Date.now(), category)
 
     try {
@@ -42,16 +45,14 @@ export const IngestScheduleController = {
         context: { taskId }
       })
 
-      const result = await fileProcessor(
-        request,
-        category,
-        title,
-        taskId,
-        bucket,
-        minutesToIgnore
-      )
+      const files = await getFiles(s3Client, bucket)
+      const filtered = filterFilesByDate(files, minutesToIgnore)
 
-      if (result) {
+      for (const file of filtered) {
+        await processFile(file.Key, request, category, title, taskId)
+      }
+
+      if (filtered.length > 0) {
         logInfo(request.logger, {
           category,
           operation: `${category}_new_files`,

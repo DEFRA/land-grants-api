@@ -1,14 +1,12 @@
 import { jest } from '@jest/globals'
 import {
-  fileProcessor,
+  processFile,
   createTaskInfo,
   initiateLandDataUpload
 } from './ingest-schedule.service.js'
-import * as s3 from '../../common/s3/s3.js'
 import * as workerThread from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
-jest.mock('../../common/s3/s3.js')
 jest.mock('../../common/worker-thread/start-worker-thread.js')
 jest.mock('../../../config/index.js')
 
@@ -41,318 +39,213 @@ describe('Ingest Schedule Service', () => {
     jest.clearAllMocks()
   })
 
-  describe('File Processor', () => {
-    describe('when files exist in bucket', () => {
-      it('should process single file and return true', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
+  describe('processFile', () => {
+    const mockFilepath = '/tmp/test-file.csv'
+    const mockCategory = 'land_parcels'
+    const mockTitle = 'Land Parcels Upload'
+    const mockTaskId = 12345
 
-        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
+    it('should call startWorker with correct parameters', async () => {
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
 
-        const result = await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          123,
-          'test-bucket'
-        )
+      expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
 
-        expect(s3.getFiles).toHaveBeenCalledWith(
-          mockRequest.server.s3,
-          'test-bucket'
-        )
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
-        expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
-        expect(workerThread.startWorker).toHaveBeenCalledWith(
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Ingestion',
-          'data_ingestion',
-          123,
-          'file1.txt'
-        )
-        expect(result).toBe(true)
-      })
+      const [request, workerPath, title, category, taskId, filepath] =
+        workerThread.startWorker.mock.calls[0]
 
-      it('should process multiple files and return true', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [
-          { Key: 'file1.txt', LastModified: oldDate },
-          { Key: 'file2.txt', LastModified: oldDate },
-          { Key: 'file3.csv', LastModified: oldDate }
-        ]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        const result = await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          456,
-          'test-bucket'
-        )
-
-        expect(s3.getFiles).toHaveBeenCalledWith(
-          mockRequest.server.s3,
-          'test-bucket'
-        )
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
-        expect(workerThread.startWorker).toHaveBeenCalledTimes(3)
-        expect(workerThread.startWorker).toHaveBeenNthCalledWith(
-          1,
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Ingestion',
-          'data_ingestion',
-          456,
-          'file1.txt'
-        )
-        expect(workerThread.startWorker).toHaveBeenNthCalledWith(
-          2,
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Ingestion',
-          'data_ingestion',
-          456,
-          'file2.txt'
-        )
-        expect(workerThread.startWorker).toHaveBeenNthCalledWith(
-          3,
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Ingestion',
-          'data_ingestion',
-          456,
-          'file3.csv'
-        )
-        expect(result).toBe(true)
-      })
-
-      it('should handle files with nested paths', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [
-          { Key: 'folder/file1.txt', LastModified: oldDate },
-          { Key: 'folder/subfolder/file2.json', LastModified: oldDate }
-        ]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        const result = await fileProcessor(
-          mockRequest,
-          'data_processing',
-          'Data Processing',
-          789,
-          'nested-bucket'
-        )
-
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
-        expect(workerThread.startWorker).toHaveBeenCalledTimes(2)
-        expect(workerThread.startWorker).toHaveBeenNthCalledWith(
-          1,
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Processing',
-          'data_processing',
-          789,
-          'folder/file1.txt'
-        )
-        expect(workerThread.startWorker).toHaveBeenNthCalledWith(
-          2,
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Data Processing',
-          'data_processing',
-          789,
-          'folder/subfolder/file2.json'
-        )
-        expect(result).toBe(true)
-      })
-
-      it('should handle files with special characters', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [
-          { Key: 'file with spaces.txt', LastModified: oldDate },
-          { Key: 'file-with-dashes.txt', LastModified: oldDate }
-        ]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        const result = await fileProcessor(
-          mockRequest,
-          'special_processing',
-          'Special Processing',
-          999,
-          'special-bucket'
-        )
-
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
-        expect(workerThread.startWorker).toHaveBeenCalledTimes(2)
-        expect(workerThread.startWorker).toHaveBeenCalledWith(
-          mockRequest,
-          expect.stringContaining('ingest-schedule.worker.js'),
-          'Special Processing',
-          'special_processing',
-          999,
-          'file with spaces.txt'
-        )
-        expect(result).toBe(true)
-      })
-
-      it('should use correct worker path', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        await fileProcessor(
-          mockRequest,
-          'test_category',
-          'Test Category',
-          111,
-          'test-bucket'
-        )
-
-        const workerPath = workerThread.startWorker.mock.calls[0][1]
-        expect(workerPath).toContain('workers')
-        expect(workerPath).toContain('ingest-schedule.worker.js')
-        expect(workerPath).toMatch(/workers\/ingest-schedule\.worker\.js$/)
-      })
-
-      it('should pass custom minutes value to filterFilesByDate', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          123,
-          'test-bucket',
-          15
-        )
-
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 15)
-      })
-
-      it('should use default minutes value when not provided', async () => {
-        const oldDate = new Date()
-        oldDate.setMinutes(oldDate.getMinutes() - 10)
-
-        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
-        s3.getFiles.mockResolvedValue(files)
-        s3.filterFilesByDate.mockReturnValue(files)
-
-        await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          123,
-          'test-bucket'
-        )
-
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
-      })
+      expect(request).toBe(mockRequest)
+      expect(workerPath).toContain('ingest-schedule.worker.js')
+      expect(title).toBe(mockTitle)
+      expect(category).toBe(mockCategory)
+      expect(taskId).toBe(mockTaskId)
+      expect(filepath).toBe(mockFilepath)
     })
 
-    describe('when no files exist in bucket', () => {
-      it('should return false when bucket is empty', async () => {
-        s3.getFiles.mockResolvedValue([])
-        s3.filterFilesByDate.mockReturnValue([])
+    it('should construct worker path relative to service file location', async () => {
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
 
-        const result = await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          123,
-          'empty-bucket'
-        )
-
-        expect(s3.getFiles).toHaveBeenCalledWith(
-          mockRequest.server.s3,
-          'empty-bucket'
-        )
-        expect(s3.filterFilesByDate).toHaveBeenCalledWith([], 0)
-        expect(workerThread.startWorker).not.toHaveBeenCalled()
-        expect(result).toBe(false)
-      })
-
-      it('should not start any workers when no files', async () => {
-        s3.getFiles.mockResolvedValue([])
-        s3.filterFilesByDate.mockReturnValue([])
-
-        await fileProcessor(
-          mockRequest,
-          'data_ingestion',
-          'Data Ingestion',
-          123,
-          'empty-bucket'
-        )
-
-        expect(workerThread.startWorker).not.toHaveBeenCalled()
-      })
+      const workerPath = workerThread.startWorker.mock.calls[0][1]
+      expect(workerPath).toContain('workers/ingest-schedule.worker.js')
+      expect(workerPath).toMatch(/ingest-schedule\.worker\.js$/)
     })
 
-    describe('error handling', () => {
-      it('should throw error when getFiles fails', async () => {
-        const s3Error = new Error('Access Denied')
-        s3.getFiles.mockRejectedValue(s3Error)
+    it('should return promise that resolves when worker completes', async () => {
+      workerThread.startWorker.mockResolvedValue({ success: true })
 
-        await expect(
-          fileProcessor(
-            mockRequest,
-            'data_ingestion',
-            'Data Ingestion',
-            123,
-            'test-bucket'
-          )
-        ).rejects.toThrow('Access Denied')
+      const result = await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
 
-        expect(workerThread.startWorker).not.toHaveBeenCalled()
+      expect(result).toEqual({ success: true })
+    })
+
+    it('should propagate worker errors', async () => {
+      const workerError = new Error('Worker processing failed')
+      workerThread.startWorker.mockRejectedValue(workerError)
+
+      await expect(
+        processFile(
+          mockFilepath,
+          mockRequest,
+          mockCategory,
+          mockTitle,
+          mockTaskId
+        )
+      ).rejects.toThrow('Worker processing failed')
+    })
+
+    it('should handle different file paths', async () => {
+      const differentPath = '/var/data/uploads/file.csv'
+
+      await processFile(
+        differentPath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
+
+      const filepath = workerThread.startWorker.mock.calls[0][5]
+      expect(filepath).toBe(differentPath)
+    })
+
+    it('should handle different categories', async () => {
+      const differentCategory = 'land_covers'
+
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        differentCategory,
+        mockTitle,
+        mockTaskId
+      )
+
+      const category = workerThread.startWorker.mock.calls[0][3]
+      expect(category).toBe(differentCategory)
+    })
+
+    it('should handle different task IDs', async () => {
+      const differentTaskId = 99999
+
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        differentTaskId
+      )
+
+      const taskId = workerThread.startWorker.mock.calls[0][4]
+      expect(taskId).toBe(differentTaskId)
+    })
+
+    it('should handle different titles', async () => {
+      const differentTitle = 'Land Covers Processing'
+
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        differentTitle,
+        mockTaskId
+      )
+
+      const title = workerThread.startWorker.mock.calls[0][2]
+      expect(title).toBe(differentTitle)
+    })
+
+    it('should handle different request objects', async () => {
+      const differentRequest = {
+        server: { s3: { send: jest.fn() } },
+        logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+      }
+
+      await processFile(
+        mockFilepath,
+        differentRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
+
+      const request = workerThread.startWorker.mock.calls[0][0]
+      expect(request).toBe(differentRequest)
+    })
+
+    it('should handle worker timeout errors', async () => {
+      const timeoutError = new Error('Worker timeout')
+      workerThread.startWorker.mockRejectedValue(timeoutError)
+
+      await expect(
+        processFile(
+          mockFilepath,
+          mockRequest,
+          mockCategory,
+          mockTitle,
+          mockTaskId
+        )
+      ).rejects.toThrow('Worker timeout')
+    })
+
+    it('should handle worker validation errors', async () => {
+      const validationError = new Error('Invalid file format')
+      workerThread.startWorker.mockRejectedValue(validationError)
+
+      await expect(
+        processFile(
+          mockFilepath,
+          mockRequest,
+          mockCategory,
+          mockTitle,
+          mockTaskId
+        )
+      ).rejects.toThrow('Invalid file format')
+    })
+
+    it('should call startWorker only once per invocation', async () => {
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
+
+      expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
+    })
+
+    it('should await startWorker completion', async () => {
+      let workerCompleted = false
+      workerThread.startWorker.mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+        workerCompleted = true
       })
 
-      it('should throw error when bucket does not exist', async () => {
-        const bucketError = new Error('NoSuchBucket')
-        s3.getFiles.mockRejectedValue(bucketError)
+      await processFile(
+        mockFilepath,
+        mockRequest,
+        mockCategory,
+        mockTitle,
+        mockTaskId
+      )
 
-        await expect(
-          fileProcessor(
-            mockRequest,
-            'data_ingestion',
-            'Data Ingestion',
-            123,
-            'non-existent-bucket'
-          )
-        ).rejects.toThrow('NoSuchBucket')
-      })
-
-      it('should throw error when S3 connection fails', async () => {
-        const connectionError = new Error('Connection timeout')
-        s3.getFiles.mockRejectedValue(connectionError)
-
-        await expect(
-          fileProcessor(
-            mockRequest,
-            'data_ingestion',
-            'Data Ingestion',
-            123,
-            'test-bucket'
-          )
-        ).rejects.toThrow('Connection timeout')
-      })
+      expect(workerCompleted).toBe(true)
     })
   })
 
