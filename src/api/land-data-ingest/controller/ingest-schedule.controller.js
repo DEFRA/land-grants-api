@@ -31,6 +31,7 @@ export const IngestScheduleController = {
    */
   handler: async (request, h) => {
     const category = 'land_data_ingest'
+    const minutesToIgnore = 5
     const { title, taskId, bucket } = createTaskInfo(Date.now(), category)
 
     try {
@@ -47,7 +48,7 @@ export const IngestScheduleController = {
         title,
         taskId,
         bucket,
-        5
+        minutesToIgnore
       )
 
       if (result) {
