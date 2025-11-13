@@ -46,7 +46,8 @@ export const IngestScheduleController = {
         category,
         title,
         taskId,
-        bucket
+        bucket,
+        5
       )
 
       if (result) {

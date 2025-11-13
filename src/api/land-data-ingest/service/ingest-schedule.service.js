@@ -1,6 +1,6 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getFiles } from '../../common/s3/s3.js'
+import { filterFilesByDate, getFiles } from '../../common/s3/s3.js'
 import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
@@ -15,6 +15,7 @@ import { config } from '../../../config/index.js'
  * @param {string} title - The title of the worker
  * @param {number} taskId - The task ID
  * @param {string} bucket - The S3 bucket name
+ * @param {number} minutes - The number of minutes to filter files by
  * @returns {Promise<boolean>} Whether files were found
  */
 export const fileProcessor = async (
@@ -22,15 +23,17 @@ export const fileProcessor = async (
   category,
   title,
   taskId,
-  bucket
+  bucket,
+  minutes = 0
 ) => {
   const files = await getFiles(request.server.s3, bucket)
+  const filtered = filterFilesByDate(files, minutes)
 
-  if (files.length > 0) {
+  if (filtered.length > 0) {
     const __dirname = dirname(fileURLToPath(import.meta.url))
     const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
 
-    const workerPromises = files.map((file) =>
+    const workerPromises = filtered.map((file) =>
       startWorker(request, workerPath, title, category, taskId, file)
     )
 

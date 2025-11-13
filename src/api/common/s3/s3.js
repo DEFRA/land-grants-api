@@ -121,3 +121,24 @@ export const processingBucketPath = (key) => {
 export const completedBucketPath = (key) => {
   return `completed/${key}`
 }
+
+/**
+ * Filter files by date
+ * @param {object[]} items - The items to filter
+ * @param {number} minutes - The number of minutes to filter files by
+ * @returns {object[]} The filtered items
+ */
+export const filterFilesByDate = (items, minutes = 0) => {
+  if (minutes === 0) {
+    return items
+  }
+
+  const cutoffTime = new Date()
+  cutoffTime.setMinutes(cutoffTime.getMinutes() - minutes)
+
+  return (
+    items?.filter((obj) => {
+      return obj.LastModified && obj.LastModified <= cutoffTime
+    }) || []
+  )
+}

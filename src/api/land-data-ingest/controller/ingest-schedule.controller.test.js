@@ -97,7 +97,8 @@ describe('Ingest Schedule Controller', () => {
         'land_data_ingest',
         'Land data ingest',
         mockTaskInfo.taskId,
-        'test-bucket'
+        'test-bucket',
+        5
       )
 
       // Verify logging was called correctly
@@ -156,7 +157,8 @@ describe('Ingest Schedule Controller', () => {
         'land_data_ingest',
         'Land data ingest',
         mockTaskInfo.taskId,
-        'test-bucket'
+        'test-bucket',
+        5
       )
 
       // Verify logging was called correctly

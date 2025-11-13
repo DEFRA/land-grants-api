@@ -44,8 +44,12 @@ describe('Ingest Schedule Service', () => {
   describe('File Processor', () => {
     describe('when files exist in bucket', () => {
       it('should process single file and return true', async () => {
-        const files = ['file1.txt']
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
         s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
 
         const result = await fileProcessor(
           mockRequest,
@@ -59,6 +63,7 @@ describe('Ingest Schedule Service', () => {
           mockRequest.server.s3,
           'test-bucket'
         )
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
         expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
         expect(workerThread.startWorker).toHaveBeenCalledWith(
           mockRequest,
@@ -66,14 +71,22 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           123,
-          'file1.txt'
+          { Key: 'file1.txt', LastModified: oldDate }
         )
         expect(result).toBe(true)
       })
 
       it('should process multiple files and return true', async () => {
-        const files = ['file1.txt', 'file2.txt', 'file3.csv']
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [
+          { Key: 'file1.txt', LastModified: oldDate },
+          { Key: 'file2.txt', LastModified: oldDate },
+          { Key: 'file3.csv', LastModified: oldDate }
+        ]
         s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
 
         const result = await fileProcessor(
           mockRequest,
@@ -87,6 +100,7 @@ describe('Ingest Schedule Service', () => {
           mockRequest.server.s3,
           'test-bucket'
         )
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
         expect(workerThread.startWorker).toHaveBeenCalledTimes(3)
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           1,
@@ -95,7 +109,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          'file1.txt'
+          { Key: 'file1.txt', LastModified: oldDate }
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           2,
@@ -104,7 +118,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          'file2.txt'
+          { Key: 'file2.txt', LastModified: oldDate }
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           3,
@@ -113,14 +127,21 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          'file3.csv'
+          { Key: 'file3.csv', LastModified: oldDate }
         )
         expect(result).toBe(true)
       })
 
       it('should handle files with nested paths', async () => {
-        const files = ['folder/file1.txt', 'folder/subfolder/file2.json']
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [
+          { Key: 'folder/file1.txt', LastModified: oldDate },
+          { Key: 'folder/subfolder/file2.json', LastModified: oldDate }
+        ]
         s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
 
         const result = await fileProcessor(
           mockRequest,
@@ -130,6 +151,7 @@ describe('Ingest Schedule Service', () => {
           'nested-bucket'
         )
 
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
         expect(workerThread.startWorker).toHaveBeenCalledTimes(2)
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           1,
@@ -138,7 +160,7 @@ describe('Ingest Schedule Service', () => {
           'Data Processing',
           'data_processing',
           789,
-          'folder/file1.txt'
+          { Key: 'folder/file1.txt', LastModified: oldDate }
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           2,
@@ -147,14 +169,21 @@ describe('Ingest Schedule Service', () => {
           'Data Processing',
           'data_processing',
           789,
-          'folder/subfolder/file2.json'
+          { Key: 'folder/subfolder/file2.json', LastModified: oldDate }
         )
         expect(result).toBe(true)
       })
 
       it('should handle files with special characters', async () => {
-        const files = ['file with spaces.txt', 'file-with-dashes.txt']
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [
+          { Key: 'file with spaces.txt', LastModified: oldDate },
+          { Key: 'file-with-dashes.txt', LastModified: oldDate }
+        ]
         s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
 
         const result = await fileProcessor(
           mockRequest,
@@ -164,6 +193,7 @@ describe('Ingest Schedule Service', () => {
           'special-bucket'
         )
 
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
         expect(workerThread.startWorker).toHaveBeenCalledTimes(2)
         expect(workerThread.startWorker).toHaveBeenCalledWith(
           mockRequest,
@@ -171,14 +201,18 @@ describe('Ingest Schedule Service', () => {
           'Special Processing',
           'special_processing',
           999,
-          'file with spaces.txt'
+          { Key: 'file with spaces.txt', LastModified: oldDate }
         )
         expect(result).toBe(true)
       })
 
       it('should use correct worker path', async () => {
-        const files = ['file1.txt']
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
         s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
 
         await fileProcessor(
           mockRequest,
@@ -193,11 +227,51 @@ describe('Ingest Schedule Service', () => {
         expect(workerPath).toContain('ingest-schedule.worker.js')
         expect(workerPath).toMatch(/workers\/ingest-schedule\.worker\.js$/)
       })
+
+      it('should pass custom minutes value to filterFilesByDate', async () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
+        s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
+
+        await fileProcessor(
+          mockRequest,
+          'data_ingestion',
+          'Data Ingestion',
+          123,
+          'test-bucket',
+          15
+        )
+
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 15)
+      })
+
+      it('should use default minutes value when not provided', async () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const files = [{ Key: 'file1.txt', LastModified: oldDate }]
+        s3.getFiles.mockResolvedValue(files)
+        s3.filterFilesByDate.mockReturnValue(files)
+
+        await fileProcessor(
+          mockRequest,
+          'data_ingestion',
+          'Data Ingestion',
+          123,
+          'test-bucket'
+        )
+
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith(files, 0)
+      })
     })
 
     describe('when no files exist in bucket', () => {
       it('should return false when bucket is empty', async () => {
         s3.getFiles.mockResolvedValue([])
+        s3.filterFilesByDate.mockReturnValue([])
 
         const result = await fileProcessor(
           mockRequest,
@@ -211,12 +285,14 @@ describe('Ingest Schedule Service', () => {
           mockRequest.server.s3,
           'empty-bucket'
         )
+        expect(s3.filterFilesByDate).toHaveBeenCalledWith([], 0)
         expect(workerThread.startWorker).not.toHaveBeenCalled()
         expect(result).toBe(false)
       })
 
       it('should not start any workers when no files', async () => {
         s3.getFiles.mockResolvedValue([])
+        s3.filterFilesByDate.mockReturnValue([])
 
         await fileProcessor(
           mockRequest,
