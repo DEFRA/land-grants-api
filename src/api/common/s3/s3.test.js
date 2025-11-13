@@ -24,7 +24,7 @@ describe('S3 Buckets', () => {
     })
 
     describe('Get files from s3 bucket', () => {
-      test('should return array of file keys when bucket has files', async () => {
+      test('should return array of file objects when bucket has files', async () => {
         const mockResponse = {
           Contents: [
             { Key: 'file1.txt' },
@@ -36,7 +36,11 @@ describe('S3 Buckets', () => {
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['file1.txt', 'file2.txt', 'folder/file3.txt'])
+        expect(result).toEqual([
+          { Key: 'file1.txt' },
+          { Key: 'file2.txt' },
+          { Key: 'folder/file3.txt' }
+        ])
         expect(mockS3Client.send).toHaveBeenCalledTimes(1)
         expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
           input: {
@@ -45,7 +49,7 @@ describe('S3 Buckets', () => {
         })
       })
 
-      test('should return single file key when bucket has one file', async () => {
+      test('should return single file object when bucket has one file', async () => {
         const mockResponse = {
           Contents: [{ Key: 'single-file.txt' }]
         }
@@ -53,10 +57,10 @@ describe('S3 Buckets', () => {
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['single-file.txt'])
+        expect(result).toEqual([{ Key: 'single-file.txt' }])
       })
 
-      test('should filter out undefined keys', async () => {
+      test('should filter out objects with undefined keys', async () => {
         const mockResponse = {
           Contents: [
             { Key: 'file1.txt' },
@@ -69,7 +73,7 @@ describe('S3 Buckets', () => {
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['file1.txt', 'file2.txt'])
+        expect(result).toEqual([{ Key: 'file1.txt' }, { Key: 'file2.txt' }])
       })
 
       test('should handle files with special characters in keys', async () => {
@@ -86,10 +90,10 @@ describe('S3 Buckets', () => {
         const result = await getFiles(mockS3Client, 'test-bucket')
 
         expect(result).toEqual([
-          'file with spaces.txt',
-          'file-with-dashes.txt',
-          'file_with_underscores.txt',
-          'folder/subfolder/file.txt'
+          { Key: 'file with spaces.txt' },
+          { Key: 'file-with-dashes.txt' },
+          { Key: 'file_with_underscores.txt' },
+          { Key: 'folder/subfolder/file.txt' }
         ])
       })
     })

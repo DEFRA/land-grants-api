@@ -9,7 +9,7 @@ import {
  * Get files from S3 bucket
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name
- * @returns {Promise<string[]>} Array of file keys
+ * @returns {Promise<object[]>} Array of file objects
  */
 export async function getFiles(s3Client, bucket) {
   try {
@@ -23,9 +23,7 @@ export async function getFiles(s3Client, bucket) {
       return []
     }
 
-    return response.Contents.map((item) => item.Key).filter(
-      (key) => key !== undefined
-    )
+    return response.Contents.filter((item) => item.Key !== undefined)
   } catch (error) {
     throw new Error(
       `Failed to list files from S3 bucket "${bucket}": ${error.message}`

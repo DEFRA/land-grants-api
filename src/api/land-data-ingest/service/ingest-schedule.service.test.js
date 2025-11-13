@@ -71,7 +71,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           123,
-          { Key: 'file1.txt', LastModified: oldDate }
+          'file1.txt'
         )
         expect(result).toBe(true)
       })
@@ -109,7 +109,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          { Key: 'file1.txt', LastModified: oldDate }
+          'file1.txt'
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           2,
@@ -118,7 +118,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          { Key: 'file2.txt', LastModified: oldDate }
+          'file2.txt'
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           3,
@@ -127,7 +127,7 @@ describe('Ingest Schedule Service', () => {
           'Data Ingestion',
           'data_ingestion',
           456,
-          { Key: 'file3.csv', LastModified: oldDate }
+          'file3.csv'
         )
         expect(result).toBe(true)
       })
@@ -160,7 +160,7 @@ describe('Ingest Schedule Service', () => {
           'Data Processing',
           'data_processing',
           789,
-          { Key: 'folder/file1.txt', LastModified: oldDate }
+          'folder/file1.txt'
         )
         expect(workerThread.startWorker).toHaveBeenNthCalledWith(
           2,
@@ -169,7 +169,7 @@ describe('Ingest Schedule Service', () => {
           'Data Processing',
           'data_processing',
           789,
-          { Key: 'folder/subfolder/file2.json', LastModified: oldDate }
+          'folder/subfolder/file2.json'
         )
         expect(result).toBe(true)
       })
@@ -201,7 +201,7 @@ describe('Ingest Schedule Service', () => {
           'Special Processing',
           'special_processing',
           999,
-          { Key: 'file with spaces.txt', LastModified: oldDate }
+          'file with spaces.txt'
         )
         expect(result).toBe(true)
       })

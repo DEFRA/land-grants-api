@@ -34,7 +34,7 @@ export const fileProcessor = async (
     const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
 
     const workerPromises = filtered.map((file) =>
-      startWorker(request, workerPath, title, category, taskId, file)
+      startWorker(request, workerPath, title, category, taskId, file.Key)
     )
 
     await Promise.all(workerPromises)
