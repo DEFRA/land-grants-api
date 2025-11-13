@@ -25,7 +25,7 @@ const logger = {
 let connection
 let s3Client
 
-describe('Land data ingest integration test', () => {
+describe('Land data ingest file processor integration test', () => {
   beforeAll(() => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
@@ -33,10 +33,13 @@ describe('Land data ingest integration test', () => {
 
   afterAll(async () => {
     await connection.end()
+  })
+
+  afterEach(async () => {
     await clearTestBucket(s3Client)
   })
 
-  test('should ingest land parcel data', async () => {
+  test('should ingest multiple land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
     await ensureBucketExists(s3Client)
     await uploadFixtureFile(

@@ -60,7 +60,6 @@ async function importData(stream, tableName, logger) {
   } finally {
     await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
     await client?.end()
-    await connection?.end()
   }
 }
 
