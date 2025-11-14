@@ -25,14 +25,7 @@ export const processFile = async (
 ) => {
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
-  return await startWorker(
-    request,
-    workerPath,
-    title,
-    category,
-    taskId,
-    filepath
-  )
+  return startWorker(request, workerPath, title, category, taskId, filepath)
 }
 
 /**
