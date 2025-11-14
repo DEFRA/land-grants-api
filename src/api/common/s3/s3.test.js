@@ -102,10 +102,7 @@ describe('S3 Buckets', () => {
             { Key: 'root-file.txt' },
             { Key: 'another-root-file.txt' }
           ],
-          CommonPrefixes: [
-            { Prefix: 'folder/' },
-            { Prefix: 'subfolder/' }
-          ]
+          CommonPrefixes: [{ Prefix: 'folder/' }, { Prefix: 'subfolder/' }]
         }
         mockS3Client.send.mockResolvedValue(mockResponse)
 
