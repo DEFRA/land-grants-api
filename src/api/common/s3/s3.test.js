@@ -24,12 +24,12 @@ describe('S3 Buckets', () => {
     })
 
     describe('Get files from s3 bucket', () => {
-      test('should return array of file objects when bucket has files', async () => {
+      test('should return array of file objects when bucket has files in root', async () => {
         const mockResponse = {
           Contents: [
             { Key: 'file1.txt' },
             { Key: 'file2.txt' },
-            { Key: 'folder/file3.txt' }
+            { Key: 'file3.txt' }
           ]
         }
         mockS3Client.send.mockResolvedValue(mockResponse)
@@ -39,12 +39,13 @@ describe('S3 Buckets', () => {
         expect(result).toEqual([
           { Key: 'file1.txt' },
           { Key: 'file2.txt' },
-          { Key: 'folder/file3.txt' }
+          { Key: 'file3.txt' }
         ])
         expect(mockS3Client.send).toHaveBeenCalledTimes(1)
         expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
           input: {
-            Bucket: 'test-bucket'
+            Bucket: 'test-bucket',
+            Delimiter: '/'
           }
         })
       })
@@ -81,8 +82,7 @@ describe('S3 Buckets', () => {
           Contents: [
             { Key: 'file with spaces.txt' },
             { Key: 'file-with-dashes.txt' },
-            { Key: 'file_with_underscores.txt' },
-            { Key: 'folder/subfolder/file.txt' }
+            { Key: 'file_with_underscores.txt' }
           ]
         }
         mockS3Client.send.mockResolvedValue(mockResponse)
@@ -92,8 +92,28 @@ describe('S3 Buckets', () => {
         expect(result).toEqual([
           { Key: 'file with spaces.txt' },
           { Key: 'file-with-dashes.txt' },
-          { Key: 'file_with_underscores.txt' },
-          { Key: 'folder/subfolder/file.txt' }
+          { Key: 'file_with_underscores.txt' }
+        ])
+      })
+
+      test('should only return root-level files, not files in subfolders', async () => {
+        const mockResponse = {
+          Contents: [
+            { Key: 'root-file.txt' },
+            { Key: 'another-root-file.txt' }
+          ],
+          CommonPrefixes: [
+            { Prefix: 'folder/' },
+            { Prefix: 'subfolder/' }
+          ]
+        }
+        mockS3Client.send.mockResolvedValue(mockResponse)
+
+        const result = await getFiles(mockS3Client, 'test-bucket')
+
+        expect(result).toEqual([
+          { Key: 'root-file.txt' },
+          { Key: 'another-root-file.txt' }
         ])
       })
     })

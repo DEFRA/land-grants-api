@@ -6,15 +6,16 @@ import {
 } from '@aws-sdk/client-s3'
 
 /**
- * Get files from S3 bucket
+ * Get files from S3 bucket root directory only (excludes subfolders)
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name
- * @returns {Promise<object[]>} Array of file objects
+ * @returns {Promise<object[]>} Array of file objects in root directory
  */
 export async function getFiles(s3Client, bucket) {
   try {
     const command = new ListObjectsV2Command({
-      Bucket: bucket
+      Bucket: bucket,
+      Delimiter: '/'
     })
 
     const response = await s3Client.send(command)
