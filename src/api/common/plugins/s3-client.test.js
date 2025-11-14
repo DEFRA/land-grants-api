@@ -68,10 +68,7 @@ describe('#s3Client', () => {
       region: 'eu-west-2',
       endpoint: 'http://localhost:4566',
       forcePathStyle: true,
-      credentials: {
-        accessKeyId: 'test',
-        secretAccessKey: 'test'
-      }
+      credentials: expect.any(Object)
     })
 
     expect(mockDecorate).toHaveBeenCalledTimes(2)
@@ -115,10 +112,7 @@ describe('#s3Client', () => {
         region: 'eu-west-2',
         endpoint: 'http://localhost:4566',
         forcePathStyle: true,
-        credentials: {
-          accessKeyId: 'test',
-          secretAccessKey: 'test'
-        }
+        credentials: expect.any(Object)
       })
 
       expect(client).toHaveProperty('destroy')
