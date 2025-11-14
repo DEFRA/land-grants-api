@@ -14,6 +14,10 @@ import {
   importMoorlandDesignations
 } from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import {
+  logInfo,
+  logBusinessError
+} from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Post a message to the parent thread
@@ -38,11 +42,25 @@ const postMessage = (taskId, success, result, error) => {
  * @returns {Promise<string>} The string representation of the file
  */
 async function importLandData(file) {
+  const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
   const [resourceType, filename] = file.split('/')
   const s3Path = `${resourceType}/${filename}`
   let currentLocation = s3Path
+
+  logInfo(logger, {
+    category,
+    operation: `${resourceType}_import_started`,
+    message: `${resourceType} import started`,
+    context: {
+      file,
+      resourceType,
+      filename,
+      s3Path,
+      currentLocation
+    }
+  })
 
   try {
     await moveFile(
@@ -54,11 +72,27 @@ async function importLandData(file) {
 
     currentLocation = processingBucketPath(s3Path)
 
+    logInfo(logger, {
+      category,
+      operation: `${resourceType}_file_moved_to_processing`,
+      message: `${resourceType} file moved to processing`,
+      context: {
+        s3Path,
+        currentLocation
+      }
+    })
+
     const dataStream = await getFile(
       s3Client,
       config.get('s3.bucket'),
       currentLocation
     )
+
+    logInfo(logger, {
+      category,
+      operation: `${resourceType}_file_get`,
+      message: `${resourceType} file get successfully`
+    })
 
     switch (resourceType) {
       case 'parcels':
@@ -81,9 +115,29 @@ async function importLandData(file) {
       completedBucketPath(s3Path)
     )
 
+    logInfo(logger, {
+      category,
+      operation: `${resourceType}_file_moved_to_completed`,
+      message: `${resourceType} file moved to completed`,
+      context: {
+        s3Path,
+        currentLocation
+      }
+    })
+
     currentLocation = completedBucketPath(s3Path)
     return 'Land data imported successfully'
   } catch (error) {
+    logBusinessError(logger, {
+      operation: 'retrieve application validation run',
+      error,
+      context: {
+        category,
+        resourceType,
+        s3Path,
+        currentLocation
+      }
+    })
     await moveFile(
       s3Client,
       config.get('s3.bucket'),
