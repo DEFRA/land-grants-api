@@ -1,21 +1,28 @@
 import Hapi from '@hapi/hapi'
 import { landDataIngest } from '../index.js'
 import {
-  fileProcessor,
+  processFile,
   createTaskInfo
 } from '../service/ingest-schedule.service.js'
 import {
   logInfo,
   logBusinessError
 } from '~/src/api/common/helpers/logging/log-helpers.js'
+import { getFiles, filterFilesByDate } from '../../common/s3/s3.js'
+import { createS3Client } from '../../common/plugins/s3-client.js'
 
 jest.mock('../service/ingest-schedule.service.js')
 jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
+jest.mock('../../common/s3/s3.js')
+jest.mock('../../common/plugins/s3-client.js')
 
-const mockFileProcessor = fileProcessor
+const mockProcessFile = processFile
 const mockCreateTaskInfo = createTaskInfo
 const mockLogInfo = logInfo
 const mockLogBusinessError = logBusinessError
+const mockGetFiles = getFiles
+const mockFilterFilesByDate = filterFilesByDate
+const mockCreateS3Client = createS3Client
 
 describe('Ingest Schedule Controller', () => {
   const server = Hapi.server()
@@ -51,9 +58,12 @@ describe('Ingest Schedule Controller', () => {
       taskId: 1729692000000,
       bucket: 'test-bucket'
     })
-    mockFileProcessor.mockResolvedValue(true)
+    mockProcessFile.mockResolvedValue(undefined)
     mockLogInfo.mockImplementation(jest.fn())
     mockLogBusinessError.mockImplementation(jest.fn())
+    mockCreateS3Client.mockReturnValue(mockS3)
+    mockGetFiles.mockResolvedValue([])
+    mockFilterFilesByDate.mockReturnValue([])
   })
 
   describe('GET /ingest-land-data-schedule route', () => {
@@ -65,8 +75,15 @@ describe('Ingest Schedule Controller', () => {
         bucket: 'test-bucket'
       }
 
+      const mockFiles = [
+        { Key: 'parcels/file1.csv' },
+        { Key: 'parcels/file2.csv' }
+      ]
+
       mockCreateTaskInfo.mockReturnValue(mockTaskInfo)
-      mockFileProcessor.mockResolvedValue(true)
+      mockGetFiles.mockResolvedValue(mockFiles)
+      mockFilterFilesByDate.mockReturnValue(mockFiles)
+      mockProcessFile.mockResolvedValue(undefined)
 
       const request = {
         method: 'GET',
@@ -89,15 +106,27 @@ describe('Ingest Schedule Controller', () => {
         'land_data_ingest'
       )
 
-      // Verify fileProcessor was called with correct parameters
-      expect(mockFileProcessor).toHaveBeenCalledWith(
-        expect.objectContaining({
-          logger: mockLogger
-        }),
+      // Verify S3 functions were called
+      expect(mockGetFiles).toHaveBeenCalledWith(mockS3, 'test-bucket')
+      expect(mockFilterFilesByDate).toHaveBeenCalledWith(mockFiles, 5)
+
+      // Verify processFile was called for each file
+      expect(mockProcessFile).toHaveBeenCalledTimes(2)
+      expect(mockProcessFile).toHaveBeenNthCalledWith(
+        1,
+        'parcels/file1.csv',
+        expect.objectContaining({ logger: mockLogger }),
         'land_data_ingest',
         'Land data ingest',
-        mockTaskInfo.taskId,
-        'test-bucket'
+        mockTaskInfo.taskId
+      )
+      expect(mockProcessFile).toHaveBeenNthCalledWith(
+        2,
+        'parcels/file2.csv',
+        expect.objectContaining({ logger: mockLogger }),
+        'land_data_ingest',
+        'Land data ingest',
+        mockTaskInfo.taskId
       )
 
       // Verify logging was called correctly
@@ -125,7 +154,8 @@ describe('Ingest Schedule Controller', () => {
       }
 
       mockCreateTaskInfo.mockReturnValue(mockTaskInfo)
-      mockFileProcessor.mockResolvedValue(false)
+      mockGetFiles.mockResolvedValue([])
+      mockFilterFilesByDate.mockReturnValue([])
 
       const request = {
         method: 'GET',
@@ -148,16 +178,12 @@ describe('Ingest Schedule Controller', () => {
         'land_data_ingest'
       )
 
-      // Verify fileProcessor was called
-      expect(mockFileProcessor).toHaveBeenCalledWith(
-        expect.objectContaining({
-          logger: mockLogger
-        }),
-        'land_data_ingest',
-        'Land data ingest',
-        mockTaskInfo.taskId,
-        'test-bucket'
-      )
+      // Verify S3 functions were called
+      expect(mockGetFiles).toHaveBeenCalledWith(mockS3, 'test-bucket')
+      expect(mockFilterFilesByDate).toHaveBeenCalledWith([], 5)
+
+      // Verify processFile was not called since no files
+      expect(mockProcessFile).not.toHaveBeenCalled()
 
       // Verify logging was called correctly
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
@@ -175,7 +201,7 @@ describe('Ingest Schedule Controller', () => {
       })
     })
 
-    it('should return 500 when fileProcessor fails', async () => {
+    it('should return 500 when getFiles fails', async () => {
       const mockTaskInfo = {
         category: 'land_data_ingest',
         title: 'Land data ingest',
@@ -185,7 +211,7 @@ describe('Ingest Schedule Controller', () => {
 
       const mockError = new Error('S3 connection failed')
       mockCreateTaskInfo.mockReturnValue(mockTaskInfo)
-      mockFileProcessor.mockRejectedValue(mockError)
+      mockGetFiles.mockRejectedValue(mockError)
 
       const request = {
         method: 'GET',
@@ -202,7 +228,7 @@ describe('Ingest Schedule Controller', () => {
       expect(message).toBe('An internal server error occurred')
 
       expect(mockCreateTaskInfo).toHaveBeenCalled()
-      expect(mockFileProcessor).toHaveBeenCalled()
+      expect(mockGetFiles).toHaveBeenCalled()
 
       // Verify that logBusinessError was called in the catch block
       expect(mockLogBusinessError).toHaveBeenCalledWith(mockLogger, {

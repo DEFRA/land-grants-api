@@ -1,6 +1,5 @@
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { getFiles } from '../../common/s3/s3.js'
 import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
@@ -26,39 +25,7 @@ export const processFile = async (
 ) => {
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
-  await startWorker(request, workerPath, title, category, taskId, filepath)
-}
-/**
- * Process files from S3 bucket
- * @param {object} request - The request object
- * @param {string} category - The category of the worker
- * @param {string} title - The title of the worker
- * @param {number} taskId - The task ID
- * @param {string} bucket - The S3 bucket name
- * @returns {Promise<boolean>} Whether files were found
- */
-export const fileProcessor = async (
-  request,
-  category,
-  title,
-  taskId,
-  bucket
-) => {
-  const files = await getFiles(request.server.s3, bucket)
-
-  if (files.length > 0) {
-    const __dirname = dirname(fileURLToPath(import.meta.url))
-    const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
-
-    const workerPromises = files.map((file) =>
-      startWorker(request, workerPath, title, category, taskId, file)
-    )
-
-    await Promise.all(workerPromises)
-    return true
-  }
-
-  return false
+  return startWorker(request, workerPath, title, category, taskId, filepath)
 }
 
 /**

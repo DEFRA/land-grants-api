@@ -3,7 +3,8 @@ import {
   getFile,
   moveFile,
   completedBucketPath,
-  failedBucketPath
+  failedBucketPath,
+  processingBucketPath
 } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
@@ -39,11 +40,26 @@ const postMessage = (taskId, success, result, error) => {
 async function importLandData(file) {
   const logger = createLogger()
   const s3Client = createS3Client()
-  const dataStream = await getFile(s3Client, config.get('s3.bucket'), file)
-  const [resourceType, filename] = file.split('/').splice(1) // processing/{resourceType}/{file}
+  const [resourceType, filename] = file.split('/')
   const s3Path = `${resourceType}/${filename}`
+  let currentLocation = s3Path
 
   try {
+    await moveFile(
+      s3Client,
+      config.get('s3.bucket'),
+      currentLocation,
+      processingBucketPath(s3Path)
+    )
+
+    currentLocation = processingBucketPath(s3Path)
+
+    const dataStream = await getFile(
+      s3Client,
+      config.get('s3.bucket'),
+      currentLocation
+    )
+
     switch (resourceType) {
       case 'parcels':
         await importLandParcels(dataStream, logger)
@@ -61,16 +77,17 @@ async function importLandData(file) {
     await moveFile(
       s3Client,
       config.get('s3.bucket'),
-      file,
+      currentLocation,
       completedBucketPath(s3Path)
     )
 
+    currentLocation = completedBucketPath(s3Path)
     return 'Land data imported successfully'
   } catch (error) {
     await moveFile(
       s3Client,
       config.get('s3.bucket'),
-      file,
+      currentLocation,
       failedBucketPath(s3Path)
     )
     throw error
@@ -83,8 +100,7 @@ async function importLandData(file) {
  */
 async function ingestLandData(landData) {
   try {
-    const file = landData.data
-    const result = await importLandData(file)
+    const result = await importLandData(landData.data)
     postMessage(landData.taskId, true, result, null)
   } catch (error) {
     postMessage(landData.taskId, false, null, error.message)

@@ -5,7 +5,8 @@ import {
   moveFile,
   failedBucketPath,
   processingBucketPath,
-  completedBucketPath
+  completedBucketPath,
+  filterFilesByDate
 } from './s3.js'
 
 describe('S3 Buckets', () => {
@@ -23,28 +24,33 @@ describe('S3 Buckets', () => {
     })
 
     describe('Get files from s3 bucket', () => {
-      test('should return array of file keys when bucket has files', async () => {
+      test('should return array of file objects when bucket has files in root', async () => {
         const mockResponse = {
           Contents: [
             { Key: 'file1.txt' },
             { Key: 'file2.txt' },
-            { Key: 'folder/file3.txt' }
+            { Key: 'file3.txt' }
           ]
         }
         mockS3Client.send.mockResolvedValue(mockResponse)
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['file1.txt', 'file2.txt', 'folder/file3.txt'])
+        expect(result).toEqual([
+          { Key: 'file1.txt' },
+          { Key: 'file2.txt' },
+          { Key: 'file3.txt' }
+        ])
         expect(mockS3Client.send).toHaveBeenCalledTimes(1)
         expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
           input: {
-            Bucket: 'test-bucket'
+            Bucket: 'test-bucket',
+            Delimiter: '/'
           }
         })
       })
 
-      test('should return single file key when bucket has one file', async () => {
+      test('should return single file object when bucket has one file', async () => {
         const mockResponse = {
           Contents: [{ Key: 'single-file.txt' }]
         }
@@ -52,10 +58,10 @@ describe('S3 Buckets', () => {
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['single-file.txt'])
+        expect(result).toEqual([{ Key: 'single-file.txt' }])
       })
 
-      test('should filter out undefined keys', async () => {
+      test('should filter out objects with undefined keys', async () => {
         const mockResponse = {
           Contents: [
             { Key: 'file1.txt' },
@@ -68,7 +74,7 @@ describe('S3 Buckets', () => {
 
         const result = await getFiles(mockS3Client, 'test-bucket')
 
-        expect(result).toEqual(['file1.txt', 'file2.txt'])
+        expect(result).toEqual([{ Key: 'file1.txt' }, { Key: 'file2.txt' }])
       })
 
       test('should handle files with special characters in keys', async () => {
@@ -76,8 +82,7 @@ describe('S3 Buckets', () => {
           Contents: [
             { Key: 'file with spaces.txt' },
             { Key: 'file-with-dashes.txt' },
-            { Key: 'file_with_underscores.txt' },
-            { Key: 'folder/subfolder/file.txt' }
+            { Key: 'file_with_underscores.txt' }
           ]
         }
         mockS3Client.send.mockResolvedValue(mockResponse)
@@ -85,10 +90,27 @@ describe('S3 Buckets', () => {
         const result = await getFiles(mockS3Client, 'test-bucket')
 
         expect(result).toEqual([
-          'file with spaces.txt',
-          'file-with-dashes.txt',
-          'file_with_underscores.txt',
-          'folder/subfolder/file.txt'
+          { Key: 'file with spaces.txt' },
+          { Key: 'file-with-dashes.txt' },
+          { Key: 'file_with_underscores.txt' }
+        ])
+      })
+
+      test('should only return root-level files, not files in subfolders', async () => {
+        const mockResponse = {
+          Contents: [
+            { Key: 'root-file.txt' },
+            { Key: 'another-root-file.txt' }
+          ],
+          CommonPrefixes: [{ Prefix: 'folder/' }, { Prefix: 'subfolder/' }]
+        }
+        mockS3Client.send.mockResolvedValue(mockResponse)
+
+        const result = await getFiles(mockS3Client, 'test-bucket')
+
+        expect(result).toEqual([
+          { Key: 'root-file.txt' },
+          { Key: 'another-root-file.txt' }
         ])
       })
     })
@@ -564,6 +586,291 @@ describe('S3 Buckets', () => {
         expect(completedBucketPath('parcels/file.txt')).toBe(
           'completed/parcels/file.txt'
         )
+      })
+    })
+  })
+
+  describe('Filter files by date', () => {
+    describe('Date filtering with various cutoff times', () => {
+      test('should return files older than cutoff time', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          { Key: 'old-file.txt', LastModified: oldDate },
+          { Key: 'another-old-file.txt', LastModified: oldDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(2)
+        expect(result).toEqual([
+          { Key: 'old-file.txt', LastModified: oldDate },
+          { Key: 'another-old-file.txt', LastModified: oldDate }
+        ])
+      })
+
+      test('should filter out files newer than cutoff time', () => {
+        const recentDate = new Date()
+        recentDate.setMinutes(recentDate.getMinutes() - 2)
+
+        const items = [{ Key: 'recent-file.txt', LastModified: recentDate }]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toEqual([])
+      })
+
+      test('should filter mixed old and new files correctly', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const recentDate = new Date()
+        recentDate.setMinutes(recentDate.getMinutes() - 2)
+
+        const items = [
+          { Key: 'old-file-1.txt', LastModified: oldDate },
+          { Key: 'recent-file.txt', LastModified: recentDate },
+          { Key: 'old-file-2.txt', LastModified: oldDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(2)
+        expect(result[0].Key).toBe('old-file-1.txt')
+        expect(result[1].Key).toBe('old-file-2.txt')
+      })
+
+      test('should include files exactly at cutoff time', () => {
+        const exactCutoffDate = new Date()
+        exactCutoffDate.setMinutes(exactCutoffDate.getMinutes() - 5)
+
+        const items = [
+          { Key: 'exact-cutoff-file.txt', LastModified: exactCutoffDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].Key).toBe('exact-cutoff-file.txt')
+      })
+
+      test('should handle different minute values', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 60)
+
+        const items = [{ Key: 'very-old-file.txt', LastModified: oldDate }]
+
+        const result = filterFilesByDate(items, 30)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].Key).toBe('very-old-file.txt')
+      })
+
+      test('should return empty array when all files are too recent', () => {
+        const recentDate = new Date()
+        recentDate.setSeconds(recentDate.getSeconds() - 30)
+
+        const items = [
+          { Key: 'recent-file-1.txt', LastModified: recentDate },
+          { Key: 'recent-file-2.txt', LastModified: recentDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toEqual([])
+      })
+
+      test('should return all items when minutes is 0', () => {
+        const pastDate = new Date()
+        pastDate.setMinutes(pastDate.getMinutes() - 1)
+
+        const futureDate = new Date()
+        futureDate.setMinutes(futureDate.getMinutes() + 10)
+
+        const items = [
+          { Key: 'past-file.txt', LastModified: pastDate },
+          { Key: 'future-file.txt', LastModified: futureDate }
+        ]
+
+        const result = filterFilesByDate(items, 0)
+
+        expect(result).toHaveLength(2)
+        expect(result).toEqual(items)
+      })
+
+      test('should return all items when minutes is not provided', () => {
+        const pastDate = new Date()
+        pastDate.setMinutes(pastDate.getMinutes() - 1)
+
+        const futureDate = new Date()
+        futureDate.setMinutes(futureDate.getMinutes() + 10)
+
+        const items = [
+          { Key: 'past-file.txt', LastModified: pastDate },
+          { Key: 'future-file.txt', LastModified: futureDate }
+        ]
+
+        const result = filterFilesByDate(items)
+
+        expect(result).toHaveLength(2)
+        expect(result).toEqual(items)
+      })
+    })
+
+    describe('Edge cases and error handling', () => {
+      test('should return empty array when items is undefined', () => {
+        const result = filterFilesByDate(undefined, 5)
+
+        expect(result).toEqual([])
+      })
+
+      test('should return empty array when items is null', () => {
+        const result = filterFilesByDate(null, 5)
+
+        expect(result).toEqual([])
+      })
+
+      test('should return empty array when items is empty array', () => {
+        const result = filterFilesByDate([], 5)
+
+        expect(result).toEqual([])
+      })
+
+      test('should filter out items without LastModified property', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          { Key: 'file-with-date.txt', LastModified: oldDate },
+          { Key: 'file-without-date.txt' },
+          { Key: 'another-file-with-date.txt', LastModified: oldDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(2)
+        expect(result[0].Key).toBe('file-with-date.txt')
+        expect(result[1].Key).toBe('another-file-with-date.txt')
+      })
+
+      test('should filter out items with null LastModified', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          { Key: 'file-with-date.txt', LastModified: oldDate },
+          { Key: 'file-with-null-date.txt', LastModified: null }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].Key).toBe('file-with-date.txt')
+      })
+
+      test('should filter out items with undefined LastModified', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          { Key: 'file-with-date.txt', LastModified: oldDate },
+          { Key: 'file-with-undefined-date.txt', LastModified: undefined }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(1)
+        expect(result[0].Key).toBe('file-with-date.txt')
+      })
+    })
+
+    describe('Real-world scenarios', () => {
+      test('should handle files with different timestamps', () => {
+        const now = new Date()
+
+        const veryOldDate = new Date(now)
+        veryOldDate.setHours(veryOldDate.getHours() - 2)
+
+        const oldDate = new Date(now)
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const recentDate = new Date(now)
+        recentDate.setMinutes(recentDate.getMinutes() - 2)
+
+        const items = [
+          { Key: 'very-old-file.txt', LastModified: veryOldDate },
+          { Key: 'old-file.txt', LastModified: oldDate },
+          { Key: 'recent-file.txt', LastModified: recentDate }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(2)
+        expect(result[0].Key).toBe('very-old-file.txt')
+        expect(result[1].Key).toBe('old-file.txt')
+      })
+
+      test('should preserve all file properties in returned objects', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          {
+            Key: 'file.txt',
+            LastModified: oldDate,
+            Size: 1024,
+            ETag: '"abc123"',
+            StorageClass: 'STANDARD'
+          }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(1)
+        expect(result[0]).toEqual({
+          Key: 'file.txt',
+          LastModified: oldDate,
+          Size: 1024,
+          ETag: '"abc123"',
+          StorageClass: 'STANDARD'
+        })
+      })
+
+      test('should handle large arrays of files', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = Array.from({ length: 100 }, (_, i) => ({
+          Key: `file-${i}.txt`,
+          LastModified: oldDate
+        }))
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(100)
+      })
+
+      test('should handle files with nested folder paths', () => {
+        const oldDate = new Date()
+        oldDate.setMinutes(oldDate.getMinutes() - 10)
+
+        const items = [
+          {
+            Key: 'folder/subfolder/deep/file.txt',
+            LastModified: oldDate
+          },
+          {
+            Key: 'archived/2025/01/file.txt',
+            LastModified: oldDate
+          }
+        ]
+
+        const result = filterFilesByDate(items, 5)
+
+        expect(result).toHaveLength(2)
+        expect(result[0].Key).toBe('folder/subfolder/deep/file.txt')
+        expect(result[1].Key).toBe('archived/2025/01/file.txt')
       })
     })
   })
