@@ -45,7 +45,8 @@ async function importLandData(file) {
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
-  const [resourceType, filename] = file.split('/')
+  const [resourceType, ...rest] = file.split('/')
+  const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
   let currentLocation = s3Path
 
