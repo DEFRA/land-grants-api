@@ -9,13 +9,7 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
-import {
-  failedBucketPath,
-  processingBucketPath,
-  moveFile
-} from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
-import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
   createTaskInfo,
   processFile
@@ -44,7 +38,6 @@ export const LandDataIngestController = {
   handler: async (request, h) => {
     const category = 'land-data-ingest'
     const { logger } = request
-    const s3Client = createS3Client()
 
     /** @type { CDPUploaderRequest } */
     // @ts-expect-error - payload is validated by the schema
@@ -59,45 +52,34 @@ export const LandDataIngestController = {
         }
       })
 
-      const filepath = processingBucketPath(payload.form.file.s3Key)
-      await moveFile(
-        s3Client,
-        config.get('s3.bucket'),
-        payload.form.file.s3Key,
-        filepath
-      )
-
       const { title, taskId } = createTaskInfo(Date.now(), category)
 
-      await processFile(filepath, request, category, title, taskId)
+      await processFile(
+        payload.form.file.s3Key,
+        request,
+        category,
+        title,
+        taskId
+      )
 
       logInfo(logger, {
         category,
         message: 'Land data moved to processing',
         context: {
           payload: JSON.stringify(payload ?? {}),
-          sourceKey: payload.form.file.s3Key,
-          destinationKey: processingBucketPath(payload.form.file.s3Key),
+          s3Key: payload.form.file.s3Key,
           s3Bucket: config.get('s3.bucket')
         }
       })
 
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
-      await moveFile(
-        s3Client,
-        config.get('s3.bucket'),
-        payload.form.file.s3Key,
-        failedBucketPath(payload.form.file.s3Key)
-      )
-
       logBusinessError(request.logger, {
         operation: `${category}_error`,
         error,
         context: {
           payload: JSON.stringify(payload ?? {}),
-          sourceKey: payload.form.file.s3Key,
-          destinationKey: failedBucketPath(payload.form.file.s3Key),
+          s3Key: payload.form.file.s3Key,
           s3Bucket: config.get('s3.bucket')
         }
       })

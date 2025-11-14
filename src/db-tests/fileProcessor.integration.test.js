@@ -5,8 +5,7 @@ import {
   ensureBucketExists,
   clearTestBucket
 } from './setup/s3-test-helpers.js'
-import { fileProcessor } from '../api/land-data-ingest/service/ingest-schedule.service.js'
-import { config } from '../config/index.js'
+import { processFile } from '../api/land-data-ingest/service/ingest-schedule.service.js'
 
 const getTableCount = async (connection, tableName) => {
   const client = await connection.connect()
@@ -26,9 +25,10 @@ let connection
 let s3Client
 
 describe('Land data ingest file processor integration test', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
+    await ensureBucketExists(s3Client)
   })
 
   afterAll(async () => {
@@ -39,65 +39,65 @@ describe('Land data ingest file processor integration test', () => {
     await clearTestBucket(s3Client)
   })
 
+  const request = {
+    server: {
+      s3: s3Client
+    },
+    logger
+  }
+
   test('should ingest multiple land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
-    await ensureBucketExists(s3Client)
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
-      'processing/parcels/parcels_head.csv'
+      'parcels/parcels_head.csv'
     )
+
     await uploadFixtureFile(
       s3Client,
       'parcels_1head.csv',
-      'processing/parcels/parcels_1head.csv'
+      'parcels/parcels_1head.csv'
     )
-    const request = {
-      server: {
-        s3: s3Client
-      },
-      logger
-    }
 
-    const result = await fileProcessor(
+    await processFile(
+      'parcels/parcels_head.csv',
       request,
       'land_data_ingest',
       'Parcels ingest',
-      123,
-      config.get('s3.bucket')
+      123
+    )
+
+    await processFile(
+      'parcels/parcels_1head.csv',
+      request,
+      'land_data_ingest',
+      'Parcels ingest',
+      1234
     )
 
     const parcelsCount = await getTableCount(connection, 'land_parcels')
     expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 2)
-    expect(result).toBe(true)
   }, 30000)
 
   test('should ingest land cover data', async () => {
     const initialCoversCount = await getTableCount(connection, 'land_covers')
-    await ensureBucketExists(s3Client)
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
-      'processing/covers/covers_head.csv'
+      'covers/covers_head.csv'
     )
-    const request = {
-      server: {
-        s3: s3Client
-      },
-      logger
-    }
 
-    const result = await fileProcessor(
+    await processFile(
+      'covers/covers_head.csv',
       request,
       'land_data_ingest',
       'Land covers ingest',
-      123,
-      config.get('s3.bucket')
+      123
     )
 
     const coversCount = await getTableCount(connection, 'land_covers')
     expect(Number(coversCount)).toBe(Number(initialCoversCount) + 1)
-    expect(result).toBe(true)
   }, 30000)
 
   test('should ingest moorland designations data', async () => {
@@ -105,25 +105,19 @@ describe('Land data ingest file processor integration test', () => {
       connection,
       'moorland_designations'
     )
-    await ensureBucketExists(s3Client)
+
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
-      'processing/moorland/moorland_head.csv'
+      'moorland/moorland_head.csv'
     )
-    const request = {
-      server: {
-        s3: s3Client
-      },
-      logger
-    }
 
-    const result = await fileProcessor(
+    await processFile(
+      'moorland/moorland_head.csv',
       request,
       'land_data_ingest',
       'Moorland designations ingest',
-      123,
-      config.get('s3.bucket')
+      123
     )
 
     const moorlandDesignationsCount = await getTableCount(
@@ -131,6 +125,5 @@ describe('Land data ingest file processor integration test', () => {
       'moorland_designations'
     )
     expect(moorlandDesignationsCount).toBe(initialMoorlandDesignationsCount + 1)
-    expect(result).toBe(true)
   }, 30000)
 })

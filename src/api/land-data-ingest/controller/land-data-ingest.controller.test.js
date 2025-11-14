@@ -130,12 +130,13 @@ describe('LandDataIngestController', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('Message received')
 
-      // Verify moveFile was called to move file to processing
-      expect(mockMoveFile).toHaveBeenCalledWith(
-        mockS3Client,
-        mockBucket,
+      // Verify processFile was called with the correct parameters
+      expect(mockProcessFile).toHaveBeenCalledWith(
         validPayload.form.file.s3Key,
-        `processing/${validPayload.form.file.s3Key}`
+        expect.any(Object),
+        'land-data-ingest',
+        expect.any(String), // title
+        expect.any(Number) // taskId
       )
 
       // Verify logging was called with correct parameters
@@ -152,19 +153,10 @@ describe('LandDataIngestController', () => {
         message: 'Land data moved to processing',
         context: {
           payload: JSON.stringify(validPayload),
-          sourceKey: validPayload.form.file.s3Key,
-          destinationKey: `processing/${validPayload.form.file.s3Key}`,
+          s3Key: validPayload.form.file.s3Key,
           s3Bucket: mockBucket
         }
       })
-
-      expect(mockProcessFile).toHaveBeenCalledWith(
-        `processing/${validPayload.form.file.s3Key}`,
-        expect.any(Object),
-        'land-data-ingest',
-        'Land-data-ingest',
-        expect.any(Number)
-      )
     })
 
     test('should return 400 when uploadStatus is invalid', async () => {
@@ -189,15 +181,9 @@ describe('LandDataIngestController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 500 and move file to failed bucket when error occurs', async () => {
-      // First call fails, second call succeeds
-      mockMoveFile.mockRejectedValueOnce(
-        new Error('Failed to move to processing')
-      )
-      mockMoveFile.mockResolvedValueOnce({
-        success: true,
-        message: 'File moved successfully'
-      })
+    test('should return 500 when error occurs', async () => {
+      // Mock processFile to throw an error
+      mockProcessFile.mockRejectedValueOnce(new Error('Failed to process file'))
 
       const request = {
         method: 'POST',
@@ -211,27 +197,6 @@ describe('LandDataIngestController', () => {
       expect(statusCode).toBe(500)
       expect(result.message).toBe('An internal server error occurred')
 
-      // Verify moveFile was called twice - once for processing (failed), once for failed bucket
-      expect(mockMoveFile).toHaveBeenCalledTimes(2)
-
-      // First call: attempt to move to processing
-      expect(mockMoveFile).toHaveBeenNthCalledWith(
-        1,
-        mockS3Client,
-        mockBucket,
-        validPayload.form.file.s3Key,
-        `processing/${validPayload.form.file.s3Key}`
-      )
-
-      // Second call: move to failed bucket
-      expect(mockMoveFile).toHaveBeenNthCalledWith(
-        2,
-        mockS3Client,
-        mockBucket,
-        validPayload.form.file.s3Key,
-        `failed/${validPayload.form.file.s3Key}`
-      )
-
       // Verify logBusinessError was called
       expect(mockLogBusinessError).toHaveBeenCalledWith(
         mockLogger,
@@ -240,8 +205,7 @@ describe('LandDataIngestController', () => {
           error: expect.any(Error),
           context: {
             payload: JSON.stringify(validPayload),
-            sourceKey: validPayload.form.file.s3Key,
-            destinationKey: `failed/${validPayload.form.file.s3Key}`,
+            s3Key: validPayload.form.file.s3Key,
             s3Bucket: mockBucket
           }
         })

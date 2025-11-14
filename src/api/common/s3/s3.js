@@ -6,15 +6,16 @@ import {
 } from '@aws-sdk/client-s3'
 
 /**
- * Get files from S3 bucket
+ * Get files from S3 bucket root directory only (excludes subfolders)
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name
- * @returns {Promise<string[]>} Array of file keys
+ * @returns {Promise<object[]>} Array of file objects in root directory
  */
 export async function getFiles(s3Client, bucket) {
   try {
     const command = new ListObjectsV2Command({
-      Bucket: bucket
+      Bucket: bucket,
+      Delimiter: '/'
     })
 
     const response = await s3Client.send(command)
@@ -23,9 +24,7 @@ export async function getFiles(s3Client, bucket) {
       return []
     }
 
-    return response.Contents.map((item) => item.Key).filter(
-      (key) => key !== undefined
-    )
+    return response.Contents.filter((item) => item.Key !== undefined)
   } catch (error) {
     throw new Error(
       `Failed to list files from S3 bucket "${bucket}": ${error.message}`
@@ -120,4 +119,25 @@ export const processingBucketPath = (key) => {
  */
 export const completedBucketPath = (key) => {
   return `completed/${key}`
+}
+
+/**
+ * Filter files by date
+ * @param {object[]} items - The items to filter
+ * @param {number} minutes - The number of minutes to filter files by
+ * @returns {object[]} The filtered items
+ */
+export const filterFilesByDate = (items, minutes = 0) => {
+  if (minutes === 0) {
+    return items
+  }
+
+  const cutoffTime = new Date()
+  cutoffTime.setMinutes(cutoffTime.getMinutes() - minutes)
+
+  return (
+    items?.filter((obj) => {
+      return obj.LastModified && obj.LastModified <= cutoffTime
+    }) || []
+  )
 }

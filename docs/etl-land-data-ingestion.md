@@ -141,7 +141,7 @@ aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://l
 ```
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels_head.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 #### List all buckets
