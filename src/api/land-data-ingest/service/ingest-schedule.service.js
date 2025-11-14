@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * @import { InitiateUploaderResponse, Task } from '../ingest-schedule.d.js'
@@ -23,6 +24,12 @@ export const processFile = async (
   title,
   taskId
 ) => {
+  logInfo(request.logger, {
+    category,
+    operation: `${category}_process_file_started`,
+    message: `${category} process file started`,
+    context: { filepath }
+  })
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
   return startWorker(request, workerPath, title, category, taskId, filepath)
@@ -76,5 +83,11 @@ export const initiateLandDataUpload = async (
     })
   })
 
-  return response.json()
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(`Failed to initiate land data upload: ${data.message}`)
+  }
+
+  return data
 }
