@@ -287,6 +287,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue(mockResponse)
         })
 
@@ -318,6 +319,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue(mockResponse)
         })
 
@@ -341,6 +343,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue(mockResponse)
         })
 
@@ -359,6 +362,7 @@ describe('Ingest Schedule Service', () => {
 
       it('should include correct redirect path in request', async () => {
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -386,6 +390,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -408,6 +413,7 @@ describe('Ingest Schedule Service', () => {
         const differentBucket = 'different-bucket-name'
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -429,6 +435,7 @@ describe('Ingest Schedule Service', () => {
         const differentCallback = 'https://different-callback.com/webhook'
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -448,6 +455,7 @@ describe('Ingest Schedule Service', () => {
 
       it('should set correct Content-Type header', async () => {
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -471,6 +479,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -497,6 +506,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
@@ -583,6 +593,7 @@ describe('Ingest Schedule Service', () => {
     describe('response handling', () => {
       it('should handle empty response object', async () => {
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue({})
         })
 
@@ -604,6 +615,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue(mockResponse)
         })
 
@@ -629,6 +641,7 @@ describe('Ingest Schedule Service', () => {
         }
 
         global.fetch.mockResolvedValue({
+          ok: true,
           json: jest.fn().mockResolvedValue(mockResponse)
         })
 

@@ -98,12 +98,13 @@ describe('InitiateLandDataUploadController', () => {
       expect(uploadUrl).toBe(`${mockGrantsUiHost}${mockUploadUrl}`)
 
       // Verify service was called with correct parameters
+      // Parameters: endpoint, callback, s3Bucket, s3Path (resource), metadata (payload)
       expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'parcels',
-        validPayload
+        'parcels', // s3Path (the resource type)
+        validPayload // metadata
       )
 
       // Verify logging was called
@@ -385,12 +386,13 @@ describe('InitiateLandDataUploadController', () => {
       const { statusCode } = await server.inject(request)
 
       expect(statusCode).toBe(200)
+      // Verify service called with s3Path (resource) and metadata (payload)
       expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'covers',
-        payload
+        'covers', // s3Path
+        payload // metadata
       )
     })
 
@@ -411,12 +413,13 @@ describe('InitiateLandDataUploadController', () => {
       const { statusCode } = await server.inject(request)
 
       expect(statusCode).toBe(200)
+      // Verify service called with s3Path (resource) and metadata (payload)
       expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'moorland',
-        payload
+        'moorland', // s3Path
+        payload // metadata
       )
     })
   })
