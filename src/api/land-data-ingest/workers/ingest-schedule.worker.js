@@ -130,7 +130,7 @@ async function importLandData(file) {
     return 'Land data imported successfully'
   } catch (error) {
     logBusinessError(logger, {
-      operation: 'retrieve application validation run',
+      operation: 'error importing land data',
       error,
       context: {
         category,
