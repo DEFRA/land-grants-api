@@ -12,7 +12,7 @@ const mockValidateRequest = validateRequest
 
 const mockLandActions = {
   sbi: '123456789',
-  landActions: [
+  parcel: [
     {
       sheetId: 'SX0679',
       parcelId: '9238',
