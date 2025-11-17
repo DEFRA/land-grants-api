@@ -67,7 +67,7 @@ const PaymentCalculateResponseSchema = Joi.object({
 const paymentCalculateSchema = Joi.object({
   startDate: Joi.date().optional(),
   sbi: Joi.string().optional(),
-  landActions: Joi.array()
+  parcel: Joi.array()
     .items(
       Joi.object({
         sheetId: Joi.string().required(),

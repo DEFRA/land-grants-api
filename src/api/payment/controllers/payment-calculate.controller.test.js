@@ -12,7 +12,7 @@ const mockValidateRequest = validateRequest
 
 const mockLandActions = {
   sbi: '123456789',
-  landActions: [
+  parcel: [
     {
       sheetId: 'SX0679',
       parcelId: '9238',
@@ -151,7 +151,7 @@ describe('Payment calculate controller', () => {
         method: 'POST',
         url: '/payments/calculate',
         payload: {
-          landActions: null
+          parcel: null
         }
       }
 
@@ -171,7 +171,7 @@ describe('Payment calculate controller', () => {
         url: '/payments/calculate',
         payload: {
           sbi: '123456789',
-          landActions: [
+          parcel: [
             {
               sheetId: 'SX0679',
               parcelId: '9238',
@@ -201,7 +201,7 @@ describe('Payment calculate controller', () => {
         method: 'POST',
         url: '/payments/calculate',
         payload: {
-          landActions: {
+          parcel: {
             actions: []
           }
         }
@@ -240,7 +240,7 @@ describe('Payment calculate controller', () => {
         method: 'POST',
         url: '/payments/calculate',
         payload: {
-          landActions: []
+          parcel: []
         }
       }
 

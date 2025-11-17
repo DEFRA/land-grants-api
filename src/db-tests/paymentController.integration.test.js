@@ -57,7 +57,7 @@ describe('payment calculate controller integration', () => {
 
       await PaymentsCalculateController.handler(
         {
-          payload: { landActions: JSON.parse(parcelsStr) },
+          payload: { parcel: JSON.parse(parcelsStr) },
           logger,
           server: {
             postgresDb: connection
