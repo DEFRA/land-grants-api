@@ -41,9 +41,7 @@ async function importData(stream, tableName, logger) {
 
   try {
     await client.query(
-      await readFile(
-        `../../../../scripts/import-land-data/${tableName}/create_${tableName}_temp_table.sql`
-      )
+      await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
     )
 
     const pgStream = client.query(
@@ -55,9 +53,7 @@ async function importData(stream, tableName, logger) {
     await pipeline(stream, pgStream)
 
     const result = await client.query(
-      await readFile(
-        `../../../../scripts/import-land-data/${tableName}/insert_${tableName}.sql`
-      )
+      await readFile(`/${tableName}/insert_${tableName}.sql`)
     )
 
     const endTime = performance.now()

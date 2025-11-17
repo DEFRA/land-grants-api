@@ -65,10 +65,10 @@ describe('Import Land Data Service', () => {
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
-        '../../../../scripts/import-land-data/land_parcels/create_land_parcels_temp_table.sql'
+        '/land_parcels/create_land_parcels_temp_table.sql'
       )
       expect(readFile.mock.calls[1][0]).toBe(
-        '../../../../scripts/import-land-data/land_parcels/insert_land_parcels.sql'
+        '/land_parcels/insert_land_parcels.sql'
       )
       expect(from).toHaveBeenCalledWith(
         "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
@@ -111,10 +111,10 @@ describe('Import Land Data Service', () => {
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
-        '../../../../scripts/import-land-data/land_covers/create_land_covers_temp_table.sql'
+        '/land_covers/create_land_covers_temp_table.sql'
       )
       expect(readFile.mock.calls[1][0]).toBe(
-        '../../../../scripts/import-land-data/land_covers/insert_land_covers.sql'
+        '/land_covers/insert_land_covers.sql'
       )
       expect(from).toHaveBeenCalledWith(
         "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
@@ -160,10 +160,10 @@ describe('Import Land Data Service', () => {
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
-        '../../../../scripts/import-land-data/moorland_designations/create_moorland_designations_temp_table.sql'
+        '/moorland_designations/create_moorland_designations_temp_table.sql'
       )
       expect(readFile.mock.calls[1][0]).toBe(
-        '../../../../scripts/import-land-data/moorland_designations/insert_moorland_designations.sql'
+        '/moorland_designations/insert_moorland_designations.sql'
       )
       expect(from).toHaveBeenCalledWith(
         "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"

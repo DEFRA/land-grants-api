@@ -9,5 +9,8 @@ import { fileURLToPath } from 'node:url'
  */
 export const readFile = async (path) => {
   const __dirname = dirname(fileURLToPath(import.meta.url))
-  return fs.readFile(join(__dirname, path), 'utf8')
+  return fs.readFile(
+    join(__dirname, '../../land-data-ingest/sql', path),
+    'utf8'
+  )
 }
