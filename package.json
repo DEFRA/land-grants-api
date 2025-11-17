@@ -19,7 +19,7 @@
     "docker:migrate:ext:up": "npm run extractsql && docker compose -f compose.migrations.yml run --rm database-up",
     "docker:migrate:ext:down": "docker compose -f compose.migrations.yml run --rm database-down",
     "docker:postgres:up": "docker compose up land-grants-backend-postgres -d",
-    "docker:up": "docker compose up -d",
+    "docker:up": "docker compose up -d land-grants-backend-postgres localstack",
     "docker:down": "docker compose down --remove-orphans",
     "docker:localstack:up": "docker compose --profile localstack up -d",
     "docker:localstack:down": "docker compose --profile localstack down --remove-orphans",
