@@ -17,7 +17,11 @@ async function importData(stream, tableName, logger) {
   logInfo(logger, {
     category: 'land-data-ingest',
     operation: `${tableName}_import_started`,
-    message: `${tableName} import started`
+    message: `${tableName} import started`,
+    context: {
+      options: getDBOptions(),
+      environment: JSON.stringify(process.env)
+    }
   })
 
   const dbOptions = getDBOptions()
