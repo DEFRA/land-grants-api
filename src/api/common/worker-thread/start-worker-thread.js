@@ -1,4 +1,4 @@
-import { Worker, SHARE_ENV } from 'node:worker_threads'
+import { Worker } from 'node:worker_threads'
 import { logInfo, logBusinessError } from '../helpers/logging/log-helpers.js'
 
 /**
@@ -21,7 +21,7 @@ export const startWorker = (
 ) => {
   return new Promise((resolve, reject) => {
     const worker = new Worker(workerPath, {
-      env: SHARE_ENV,
+      env: { ...process.env },
       workerData: {
         taskId,
         data
