@@ -8,7 +8,13 @@ import {
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
 
-function hasDBOptions(options) {
+function hasDBOptions(options, logger) {
+  logInfo(logger, {
+    category: 'land-data-ingest',
+    operation: 'hasDBOptions',
+    message: 'Checking database options',
+    context: { options }
+  })
   return options.user && options.database && options.host && options.port
 }
 
@@ -25,7 +31,7 @@ async function importData(stream, tableName, logger) {
   })
 
   const dbOptions = getDBOptions()
-  if (!hasDBOptions(dbOptions)) {
+  if (!hasDBOptions(dbOptions, logger)) {
     throw new Error('Database options are not set')
   }
   const connection = createDBPool(dbOptions)
