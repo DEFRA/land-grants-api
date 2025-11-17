@@ -7,6 +7,7 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
+import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
 
 function hasDBOptions(options, logger) {
   logInfo(logger, {
@@ -33,7 +34,9 @@ async function importData(stream, tableName, logger) {
   if (!hasDBOptions(dbOptions, logger)) {
     throw new Error('Database options are not set')
   }
-  const connection = createDBPool(dbOptions)
+  const connection = createDBPool(dbOptions, {
+    secureContext: createSecureContext()
+  })
   const client = await connection.connect()
 
   try {
