@@ -4,7 +4,7 @@ import {
   importLandCovers,
   importMoorlandDesignations
 } from './import-land-data.service.js'
-import { createDBPool } from '../../common/helpers/postgres.js'
+import { createDBPool, getDBOptions } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
@@ -34,6 +34,12 @@ describe('Import Land Data Service', () => {
       end: jest.fn()
     }
     createDBPool.mockReturnValue(mockConnection)
+    getDBOptions.mockReturnValue({
+      user: 'test-user',
+      database: 'test-db',
+      host: 'test-host',
+      port: 5432
+    })
     readFile.mockResolvedValue('SELECT * FROM test')
     from.mockReturnValue('')
     pipeline.mockResolvedValue()
@@ -68,7 +74,7 @@ describe('Import Land Data Service', () => {
         "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing land parcels', async () => {
@@ -114,7 +120,7 @@ describe('Import Land Data Service', () => {
         "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing land covers', async () => {
@@ -163,7 +169,7 @@ describe('Import Land Data Service', () => {
         "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing moorland designations', async () => {
