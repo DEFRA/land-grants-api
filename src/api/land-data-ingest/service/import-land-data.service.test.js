@@ -74,7 +74,7 @@ describe('Import Land Data Service', () => {
         "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing land parcels', async () => {
@@ -120,7 +120,7 @@ describe('Import Land Data Service', () => {
         "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing land covers', async () => {
@@ -169,7 +169,7 @@ describe('Import Land Data Service', () => {
         "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(2)
+      expect(mockLogger.info).toHaveBeenCalledTimes(3)
     })
 
     it('should handle error when importing moorland designations', async () => {
