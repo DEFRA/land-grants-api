@@ -15,7 +15,7 @@ function hasDBOptions(options, logger) {
     message: 'Checking database options',
     context: { options: JSON.stringify(options) }
   })
-  return options.user && options.database && options.host && options.port
+  return options.user && options.database && options.host
 }
 
 async function importData(stream, tableName, logger) {
