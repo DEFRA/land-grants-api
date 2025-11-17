@@ -8,6 +8,10 @@ import {
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
 
+function hasDBOptions(options) {
+  return options.user && options.database && options.host && options.port
+}
+
 async function importData(stream, tableName, logger) {
   const startTime = performance.now()
   logInfo(logger, {
@@ -16,7 +20,11 @@ async function importData(stream, tableName, logger) {
     message: `${tableName} import started`
   })
 
-  const connection = createDBPool(getDBOptions())
+  const dbOptions = getDBOptions()
+  if (!hasDBOptions(dbOptions)) {
+    throw new Error('Database options are not set')
+  }
+  const connection = createDBPool(dbOptions)
   const client = await connection.connect()
 
   try {
