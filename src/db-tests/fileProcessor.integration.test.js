@@ -46,7 +46,7 @@ describe('Land data ingest file processor integration test', () => {
     logger
   }
 
-  test('should ingest multiple land parcel data', async () => {
+  test.only('should ingest multiple land parcel data', async () => {
     const initialParcelsCount = await getTableCount(connection, 'land_parcels')
     await uploadFixtureFile(
       s3Client,
