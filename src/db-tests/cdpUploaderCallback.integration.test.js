@@ -55,6 +55,6 @@ describe('CDP uploader callback integration test', () => {
     const files = await listTestFiles(s3Client)
     expect(statusCode).toBe(200)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe('completed/parcels/parcels_head.csv')
+    expect(files[0]).toBe('parcels/parcels_head.csv')
   }, 10000)
 })
