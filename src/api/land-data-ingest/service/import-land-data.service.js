@@ -13,7 +13,7 @@ function hasDBOptions(options, logger) {
     category: 'land-data-ingest',
     operation: 'hasDBOptions',
     message: 'Checking database options',
-    context: { options }
+    context: { options: JSON.stringify(options) }
   })
   return options.user && options.database && options.host && options.port
 }
@@ -23,7 +23,10 @@ async function importData(stream, tableName, logger) {
   logInfo(logger, {
     category: 'land-data-ingest',
     operation: `${tableName}_import_started`,
-    message: `${tableName} import started`
+    message: `${tableName} import started`,
+    context: {
+      environment: JSON.stringify(process.env)
+    }
   })
 
   const dbOptions = getDBOptions()
