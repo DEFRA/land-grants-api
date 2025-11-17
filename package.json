@@ -36,7 +36,7 @@
     "test:unit": "jest --config=jest.unit.config.js --coverage --verbose --runInBand",
     "test:quick": "jest --config=jest.unit.config.js ",
     "test:watch": "jest --watch",
-    "test:db": "npm run docker:up && npx jest --config=jest.db.config.js --runInBand --coverage",
+    "test:db": "npm run extractsql && docker compose -p land-grants-test --profile localstack -f compose.yml -f compose.test.yml up -d && docker compose -p land-grants-test -f compose.yml -f compose.test.yml --profile migrations run --rm database-up && npx jest --config=jest.db.config.js --runInBand --coverage; code=$?; docker compose -p land-grants-test down --volumes --remove-orphans; exit $code",
     "test:contracts": "npx jest --config=jest.contract.config.js",
     "merge:coverage": "./scripts/move-coverage && nyc merge coverage/tmp coverage/merged/coverage.json && nyc report --temp-dir coverage/merged --reporter=html --reporter=lcov --report-dir coverage/merged",
     "coverage:open": "open coverage/merged/index.html",
