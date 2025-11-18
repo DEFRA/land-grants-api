@@ -64,15 +64,13 @@ async function importData(stream, tableName, logger) {
       message: `${tableName} imported successfully in ${duration}ms`,
       context: { rowCount: result.rowCount, duration }
     })
-
-    return true
   } catch (error) {
     logBusinessError(logger, {
       operation: `${tableName}_import_failed`,
       error,
       context: { tableName }
     })
-    return false
+    throw error
   } finally {
     await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
     await client?.end()
@@ -85,18 +83,18 @@ async function importData(stream, tableName, logger) {
  * @param {Logger} logger
  */
 export async function importLandParcels(landParcelsStream, logger) {
-  return importData(landParcelsStream, 'land_parcels', logger)
+  await importData(landParcelsStream, 'land_parcels', logger)
 }
 
 export async function importLandCovers(landCoversStream, logger) {
-  return importData(landCoversStream, 'land_covers', logger)
+  await importData(landCoversStream, 'land_covers', logger)
 }
 
 export async function importMoorlandDesignations(
   moorlandDesignationsStream,
   logger
 ) {
-  return importData(moorlandDesignationsStream, 'moorland_designations', logger)
+  await importData(moorlandDesignationsStream, 'moorland_designations', logger)
 }
 /**
  * @import { Logger } from '../../common/logger.d.js'
