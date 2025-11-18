@@ -41,6 +41,9 @@ async function importData(stream, tableName, logger) {
   const client = await connection.connect()
 
   try {
+    const count = await client.query(`select count(*) from ${tableName}`)
+    logger.info(`${tableName} count: ${count.rows[0].count}`)
+
     await client.query(
       await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
     )
