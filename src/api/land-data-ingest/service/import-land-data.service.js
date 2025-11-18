@@ -41,8 +41,9 @@ async function importData(stream, tableName, logger) {
   const client = await connection.connect()
 
   try {
-    const count = await client.query(`select count(*) from ${tableName}`)
-    logger.info(`${tableName} count: ${count.rows[0].count}`)
+    await client.query(`INSERT INTO land_parcels (parcel_id, sheet_id, area_sqm, geom, last_updated)
+  VALUES ('TEST001', 'SH123', 1500.50, ST_GeomFromText('POINT(0 0)', 4326), CURRENT_DATE);`)
+    logger.info(`successfull inserted test record`)
 
     await client.query(
       await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
