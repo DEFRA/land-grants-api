@@ -41,7 +41,6 @@ async function importData(stream, tableName, logger) {
   const client = await connection.connect()
 
   try {
-
     await client.query(`INSERT INTO land_parcels (parcel_id, sheet_id, area_sqm, geom, last_updated)
   VALUES ('TEST001', 'SH123', 1500.50, ST_GeomFromText('POINT(0 0)', 4326), CURRENT_DATE);`)
     logger.info(`successfull inserted test record`)
