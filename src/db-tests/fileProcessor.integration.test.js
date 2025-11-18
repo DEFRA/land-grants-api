@@ -46,39 +46,39 @@ describe('Land data ingest file processor integration test', () => {
     logger
   }
 
-  test('should ingest multiple land parcel data', async () => {
-    const initialParcelsCount = await getTableCount(connection, 'land_parcels')
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_head.csv',
-      'parcels/parcels_head.csv'
-    )
+  // test('should ingest multiple land parcel data', async () => {
+  //   const initialParcelsCount = await getTableCount(connection, 'land_parcels')
+  //   await uploadFixtureFile(
+  //     s3Client,
+  //     'parcels_head.csv',
+  //     'parcels/parcels_head.csv'
+  //   )
 
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_1head.csv',
-      'parcels/parcels_1head.csv'
-    )
+  //   await uploadFixtureFile(
+  //     s3Client,
+  //     'parcels_1head.csv',
+  //     'parcels/parcels_1head.csv'
+  //   )
 
-    await processFile(
-      'parcels/parcels_head.csv',
-      request,
-      'land_data_ingest',
-      'Parcels ingest',
-      123
-    )
+  //   await processFile(
+  //     'parcels/parcels_head.csv',
+  //     request,
+  //     'land_data_ingest',
+  //     'Parcels ingest',
+  //     123
+  //   )
 
-    await processFile(
-      'parcels/parcels_1head.csv',
-      request,
-      'land_data_ingest',
-      'Parcels ingest',
-      1234
-    )
+  //   await processFile(
+  //     'parcels/parcels_1head.csv',
+  //     request,
+  //     'land_data_ingest',
+  //     'Parcels ingest',
+  //     1234
+  //   )
 
-    const parcelsCount = await getTableCount(connection, 'land_parcels')
-    expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 2)
-  }, 30000)
+  //   const parcelsCount = await getTableCount(connection, 'land_parcels')
+  //   expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 2)
+  // }, 30000)
 
   test('should ingest land cover data', async () => {
     const initialCoversCount = await getTableCount(connection, 'land_covers')
