@@ -58,9 +58,8 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      const result = await importLandParcels(landParcelsStream, mockLogger)
+      await importLandParcels(landParcelsStream, mockLogger)
 
-      expect(result).toBe(true)
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
@@ -85,11 +84,12 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue('Failed to import land parcels')
+      readFile.mockRejectedValue(new Error('Failed to import land parcels'))
 
-      const result = await importLandParcels(landParcelsStream, mockLogger)
+      await expect(
+        importLandParcels(landParcelsStream, mockLogger)
+      ).rejects.toThrow('Failed to import land parcels')
 
-      expect(result).toBe(false)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
     })
@@ -104,9 +104,8 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      const result = await importLandCovers(landCoversStream, mockLogger)
+      await importLandCovers(landCoversStream, mockLogger)
 
-      expect(result).toBe(true)
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
@@ -131,11 +130,12 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue('Failed to import land parcels')
+      readFile.mockRejectedValue(new Error('Failed to import land covers'))
 
-      const result = await importLandCovers(landCoversStream, mockLogger)
+      await expect(
+        importLandCovers(landCoversStream, mockLogger)
+      ).rejects.toThrow('Failed to import land covers')
 
-      expect(result).toBe(false)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
     })
@@ -150,12 +150,8 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      const result = await importMoorlandDesignations(
-        moorlandDesignationsStream,
-        mockLogger
-      )
+      await importMoorlandDesignations(moorlandDesignationsStream, mockLogger)
 
-      expect(result).toBe(true)
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledTimes(4)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
@@ -180,14 +176,14 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue('Failed to import moorland designations')
-
-      const result = await importMoorlandDesignations(
-        moorlandDesignationsStream,
-        mockLogger
+      readFile.mockRejectedValue(
+        new Error('Failed to import moorland designations')
       )
 
-      expect(result).toBe(false)
+      await expect(
+        importMoorlandDesignations(moorlandDesignationsStream, mockLogger)
+      ).rejects.toThrow('Failed to import moorland designations')
+
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
     })
