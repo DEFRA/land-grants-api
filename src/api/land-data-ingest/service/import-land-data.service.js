@@ -35,7 +35,7 @@ async function importData(stream, tableName, logger) {
     throw new Error('Database options are not set')
   }
   const connection = createDBPool(dbOptions, {
-    secureContext: createSecureContext(),
+    secureContext: createSecureContext(logger),
     logger
   })
   const client = await connection.connect()

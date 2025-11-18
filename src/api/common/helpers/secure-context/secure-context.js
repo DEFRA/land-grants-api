@@ -3,11 +3,16 @@ import { config } from '../../../../config/index.js'
 
 import { getTrustStoreCerts } from './get-trust-store-certs.js'
 
-export const createSecureContext = () => {
+export const createSecureContext = (logger) => {
   const originalTlsCreateSecureContext = tls.createSecureContext
 
   tls.createSecureContext = function (options = {}) {
     const trustStoreCerts = getTrustStoreCerts(process.env)
+
+    if (!trustStoreCerts.length) {
+      logger.info('Could not find any TRUSTSTORE_ certificates')
+    }
+
     const tlsSecureContext = originalTlsCreateSecureContext(options)
 
     trustStoreCerts.forEach((cert) => {
