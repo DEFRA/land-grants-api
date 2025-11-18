@@ -77,7 +77,20 @@ export function createDBPool(options, server = {}) {
     user: options.user,
     password: async () => {
       server?.logger?.info('Getting Postgres authentication token')
-      return getToken(options)
+      try {
+        const token = await getToken(options)
+        server?.logger?.info(
+          'Successfully retrieved Postgres authentication token'
+        )
+        return token
+      } catch (error) {
+        server?.logger?.error('Failed to get Postgres authentication token', {
+          error: error.message,
+          user: options.user,
+          host: options.host
+        })
+        throw error
+      }
     },
     host: options.host,
     database: options.database,
