@@ -26,7 +26,10 @@ describe('Import Land Data Service', () => {
       error: jest.fn()
     }
     mockClient = {
-      query: jest.fn().mockResolvedValue({ rowCount: 1 }),
+      query: jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [{ count: 1 }] })
+        .mockResolvedValue({ rowCount: 1 }),
       end: jest.fn()
     }
     mockConnection = {
@@ -61,7 +64,7 @@ describe('Import Land Data Service', () => {
       await importLandParcels(landParcelsStream, mockLogger)
 
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-      expect(mockClient.query).toHaveBeenCalledTimes(4)
+      expect(mockClient.query).toHaveBeenCalledTimes(5)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
         '/land_parcels/create_land_parcels_temp_table.sql'
@@ -73,7 +76,7 @@ describe('Import Land Data Service', () => {
         "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+      expect(mockLogger.info).toHaveBeenCalledTimes(5)
     })
 
     it('should handle error when importing land parcels', async () => {
@@ -107,7 +110,7 @@ describe('Import Land Data Service', () => {
       await importLandCovers(landCoversStream, mockLogger)
 
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-      expect(mockClient.query).toHaveBeenCalledTimes(4)
+      expect(mockClient.query).toHaveBeenCalledTimes(5)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
         '/land_covers/create_land_covers_temp_table.sql'
@@ -119,7 +122,7 @@ describe('Import Land Data Service', () => {
         "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+      expect(mockLogger.info).toHaveBeenCalledTimes(5)
     })
 
     it('should handle error when importing land covers', async () => {
@@ -153,7 +156,7 @@ describe('Import Land Data Service', () => {
       await importMoorlandDesignations(moorlandDesignationsStream, mockLogger)
 
       expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-      expect(mockClient.query).toHaveBeenCalledTimes(4)
+      expect(mockClient.query).toHaveBeenCalledTimes(5)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(readFile.mock.calls[0][0]).toBe(
         '/moorland_designations/create_moorland_designations_temp_table.sql'
@@ -165,7 +168,7 @@ describe('Import Land Data Service', () => {
         "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
       )
       expect(pipeline).toHaveBeenCalledTimes(1)
-      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+      expect(mockLogger.info).toHaveBeenCalledTimes(5)
     })
 
     it('should handle error when importing moorland designations', async () => {
