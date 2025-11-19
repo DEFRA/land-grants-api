@@ -76,7 +76,7 @@ async function importLandData(file) {
       }
     })
 
-    const dataStream = await response.Body.transformToWebStream()
+    const dataStream = await response.Body
 
     switch (resourceType) {
       case 'parcels':
