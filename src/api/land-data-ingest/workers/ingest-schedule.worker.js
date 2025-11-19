@@ -12,6 +12,7 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
+import { Readable } from 'node:stream'
 
 /**
  * Post a message to the parent thread
@@ -76,7 +77,8 @@ async function importLandData(file) {
       }
     })
 
-    const dataStream = await response.Body
+    const bodyContents = await response.Body.transformToString()
+    const dataStream = Readable.from(bodyContents)
 
     switch (resourceType) {
       case 'parcels':
