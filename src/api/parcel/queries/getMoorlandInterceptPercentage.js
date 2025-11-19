@@ -20,16 +20,23 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
           ON ST_Intersects(p.geom, m.geom)
       WHERE
           p.sheet_id = $1 AND
-          p.parcel_id = $2
+          p.parcel_id = $2 AND
+          m.ref_code LIKE 'M%'
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom;
+          p.sheet_id, p.parcel_id, p.geom, m.ref_code;
     `
 
     const values = [sheetId, parcelId]
     const result = await client.query(query, values)
 
-    const roundedMoorlandOverlapPercent = roundSqm(
-      result?.rows?.[0]?.moorland_overlap_percent || 0
+    if (result?.rows?.length === 0) {
+      return 0
+    }
+
+    const roundedMoorlandOverlapPercent = Math.max(
+      ...(result.rows.map((row) =>
+        roundSqm(row.moorland_overlap_percent || 0)
+      ) || 0)
     )
 
     logInfo(logger, {

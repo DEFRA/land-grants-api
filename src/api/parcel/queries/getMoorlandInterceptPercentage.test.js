@@ -57,9 +57,10 @@ describe('getMoorlandInterceptPercentage', () => {
           ON ST_Intersects(p.geom, m.geom)
       WHERE
           p.sheet_id = $1 AND
-          p.parcel_id = $2
+          p.parcel_id = $2 AND
+          m.ref_code LIKE 'M%'
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom;
+          p.sheet_id, p.parcel_id, p.geom, m.ref_code;
     `
 
     const expectedValues = [sheetId, parcelId]
