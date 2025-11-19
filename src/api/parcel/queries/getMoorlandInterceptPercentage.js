@@ -34,7 +34,9 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
     }
 
     const roundedMoorlandOverlapPercent = Math.max(
-      ...result?.rows?.map((row) => roundSqm(row.moorland_overlap_percent || 0))
+      ...(result.rows.map((row) =>
+        roundSqm(row.moorland_overlap_percent || 0)
+      ) || 0)
     )
 
     logInfo(logger, {
