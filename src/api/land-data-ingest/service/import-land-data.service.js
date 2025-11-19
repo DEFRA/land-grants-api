@@ -1,6 +1,5 @@
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
-import { Readable } from 'node:stream'
 import { performance } from 'node:perf_hooks'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
@@ -48,12 +47,7 @@ async function importData(stream, tableName, logger) {
       )
     )
 
-    // Convert Web Stream to Node.js Readable stream if needed
-    const nodeStream = stream[Symbol.asyncIterator]
-      ? Readable.fromWeb(stream)
-      : stream
-
-    await pipeline(nodeStream, pgStream)
+    await pipeline(stream, pgStream)
 
     const tempTableCount = await client.query(
       `select count(*) from ${tableName}_tmp`
@@ -96,7 +90,7 @@ async function importData(stream, tableName, logger) {
 
 /**
  *
- * @param {ReadableStream} landParcelsStream
+ * @param {any} landParcelsStream
  * @param {Logger} logger
  */
 export async function importLandParcels(landParcelsStream, logger) {
