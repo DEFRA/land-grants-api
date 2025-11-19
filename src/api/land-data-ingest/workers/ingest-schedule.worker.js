@@ -12,7 +12,7 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
-import { Readable } from 'node:stream'
+import { parse } from 'csv-parse/sync'
 
 /**
  * Post a message to the parent thread
@@ -78,17 +78,20 @@ async function importLandData(file) {
     })
 
     const bodyContents = await response.Body.transformToString()
-    const dataStream = Readable.from(bodyContents)
+    const csvData = parse(bodyContents, {
+      delimiter: ',',
+      columns: true
+    })
 
     switch (resourceType) {
       case 'parcels':
-        await importLandParcels(dataStream, logger)
+        await importLandParcels(csvData, logger)
         break
       case 'covers':
-        await importLandCovers(dataStream, logger)
+        await importLandCovers(csvData, logger)
         break
       case 'moorland':
-        await importMoorlandDesignations(dataStream, logger)
+        await importMoorlandDesignations(csvData, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)
