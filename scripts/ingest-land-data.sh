@@ -1,17 +1,98 @@
 
 #!/bin/bash
+# Usage: scripts/ingest-land-data.sh <environment> <client_id> <client_secret>
+# Example: scripts/ingest-land-data.sh dev <client_id> <client_secret>
+# Example: scripts/ingest-land-data.sh test <client_id> <client_secret>
+# Example: scripts/ingest-land-data.sh perf-test <client_id> <client_secret>
+# Example: scripts/ingest-land-data.sh prod <client_id> <client_secret>
 
 set -e
 
-root_dir="/Users/airasoul/projects/defra/land-grants-api/ingestion-data"
-API_BASE_URL="https://ephemeral-protected.api.dev.cdp-int.defra.cloud/land-grants-api"
-INITIATE_ENDPOINT="${API_BASE_URL}/initiate-upload"
-REFERENCE=$(date +%Y-%m-%d:%H:%M:%S)
-CUSTOMER_ID="ETL"
-RESOURCE="parcels"
-TEMP_DIR="${root_dir}/data"
-TOKEN="Bearer dnJPWFp4VG9SNnR6UGxBTzo0L0xvcWo2OTBHbGZhNXRpT25wL1RnPT06Mnp0SE90NzdDb0dpSWorTk1YZ2luWWZ4V1hhbFJYL0NreWtFWldnOFpOYm1ZSVZXRC83N2ZzTm1XakR1cndHa01sVjVlalpEZm1jY21jN0NzRFJpMGc9PQ=="
-API_KEY="XH0VRDAxpN7cRnkMrwh5xY93Y2ug5sTI"
+# Function to get API base URL
+# Usage: get_api_base_url <environment>
+# Sets global variables: API_BASE_URL
+get_api_base_url() {
+    local env="$1"
+    case $env in
+        dev)
+            echo "https://land-grants-api.api.dev.cdp-int.defra.cloud"
+            ;;
+        test)
+            echo "https://land-grants-api.api.test.cdp-int.defra.cloud"
+            ;;
+        perf-test)
+            echo "https://land-grants-api.api.perf-test.cdp-int.defra.cloud"
+            ;;
+        prod)
+            echo "https://land-grants-api.api.prod.cdp-int.defra.cloud"
+            ;;
+        *)
+            echo "Invalid environment"
+            return 1
+    esac
+    return 0
+}
+
+
+# Function to get token URL
+# Usage: get_token_url <environment>
+# Sets global variables: TOKEN_URL
+get_token_url() {
+    local env="$1"
+    case $env in
+        dev)
+            echo "https://land-grants-api-c63f2.auth.eu-west-2.amazoncognito.com/oauth2/token"
+            ;;
+        test)
+            echo "https://land-grants-api-6bf3a.auth.eu-west-2.amazoncognito.com/oauth2/token"
+            ;;
+        perf-test)
+            echo "https://land-grants-api-05244.auth.eu-west-2.amazoncognito.com/oauth2/token"
+            ;;
+        prod)
+            echo "https://land-grants-api-75ee2.auth.eu-west-2.amazoncognito.com/oauth2/token"
+            ;;
+        *)
+            echo "Invalid environment"
+            return 1
+    esac
+    return 0
+}
+
+# Function to get Cognito token
+# Usage: get_cognito_token <client_id> <client_secret> <token_url>
+# Sets global variables: ACCESS_TOKEN
+get_cognito_token() {
+  local client_id="$1"
+  local client_secret="$2"
+  local token_url="$3"
+
+  # Create base64 encoded credentials
+  local client_credentials="${client_id}:${client_secret}"
+  local encoded_credentials=$(echo -n "$client_credentials" | base64)
+
+  # Make the POST request
+  local response=$(curl -s -w "\n%{http_code}" -X POST "$token_url" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -u "${client_id}:${client_secret}" \
+    -d "grant_type=client_credentials")
+
+  # Extract HTTP status code and body
+  local http_code=$(echo "$response" | tail -n1)
+  local body=$(echo "$response" | sed '$d')
+
+  # Check if request was successful
+  if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+    # Extract access_token from JSON response
+    local access_token=$(echo "$body" | grep -o '"access_token":"[^"]*"' | sed 's/"access_token":"\([^"]*\)"/\1/')
+    echo "$access_token"
+    return 0
+  else
+    echo "Error: HTTP $http_code" >&2
+    echo "$body" >&2
+    return 1
+  fi
+}
 
 # Function to make POST requests to API with authentication
 # Usage: postToApi <endpoint_url> <json_data>
@@ -22,7 +103,7 @@ postToApi() {
 
     local response=$(curl -s -w "\n%{http_code}" -X POST "$endpoint" \
         -H "Content-Type: application/json" \
-        -H "Authorization: $TOKEN" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "x-api-key: $API_KEY" \
         -d "$json_data")
 
@@ -45,7 +126,7 @@ uploadFile() {
     local file_path="$2"
 
     local response=$(curl -s -w "\n%{http_code}" "$upload_url" \
-        -H "Authorization: $TOKEN" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "x-api-key: $API_KEY" \
         -F "file=@${file_path}")
 
@@ -60,20 +141,40 @@ uploadFile() {
     echo "----------------------------------------"
 }
 
+CLIENT_ID=$2
+CLIENT_SECRET=$3
+
+root_dir="${PWD}/ingestion-data"
+REFERENCE=$(date +%Y-%m-%d:%H:%M:%S)
+CUSTOMER_ID="ETL"
+RESOURCE="parcels"
+DATA_DIR="${root_dir}/data"
+API_KEY="XH0VRDAxpN7cRnkMrwh5xY93Y2ug5sTI"
+
+TOKEN_URL=$(get_token_url "$1")
+ACCESS_TOKEN=$(get_cognito_token "$CLIENT_ID" "$CLIENT_SECRET" "$TOKEN_URL")
+
+API_BASE_URL=$(get_api_base_url "$1")
+INITIATE_ENDPOINT="${API_BASE_URL}/initiate-upload"
+
 echo ""
 echo "----------------------------------------"
+echo "Starting ingestion"
+echo "----------------------------------------"
 echo "Root directory: $root_dir"
+echo "Data directory: $DATA_DIR"
 echo "API base URL: $API_BASE_URL"
 echo "Initiate endpoint: $INITIATE_ENDPOINT"
 echo "Reference: $REFERENCE"
 echo "Customer ID: $CUSTOMER_ID"
 echo "Resource: $RESOURCE"
-echo "Temp directory: $TEMP_DIR"
 echo "----------------------------------------"
 echo "Ingesting land data"
-echo "Reading files from: $TEMP_DIR"
+echo "Reading files from: $DATA_DIR"
+echo "Token URL: $TOKEN_URL"
+echo "Access Token: $ACCESS_TOKEN"
 
-for land_data_file in "${TEMP_DIR}"/land_data_*; do
+for land_data_file in "${DATA_DIR}"/land_data_*; do
     LAND_DATA_NAME=$(basename "$land_data_file")
     echo "----------------------------------------"
     echo "Uploading ${LAND_DATA_NAME}..."
