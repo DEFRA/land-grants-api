@@ -3,6 +3,7 @@
 To read more about the farming grants platform, see this docs repo:
 
 - [Farming grants docs github](https://github.com/DEFRA/farming-grants-docs)
+- [Farming grants docs interactive architecture diagrams](https://bookish-adventure-1e9zvrl.pages.github.io/)
 
 To read more about Land Grants API see
 

@@ -175,7 +175,7 @@ const PaymentsCalculateController = {
 
       /** @type {PaymentCalculateRequestPayload} */
       // @ts-expect-error - payload
-      const { landActions, startDate } = request.payload
+      const { parcel: landActions, startDate } = request.payload
 
       logInfo(request.logger, {
         category: 'payment',
@@ -245,12 +245,12 @@ const PaymentsCalculateController = {
     } catch (error) {
       /** @type {PaymentCalculateRequestPayload} */
       // @ts-expect-error - payload
-      const { landActions, startDate } = request.payload
+      const { parcel, startDate } = request.payload
       logBusinessError(request.logger, {
         operation: 'Payment calculation: calculate land actions payment',
         error,
         context: {
-          landActionsCount: landActions?.length ?? 0,
+          landActionsCount: parcel?.length ?? 0,
           startDate
         }
       })

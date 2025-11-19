@@ -21,6 +21,7 @@ export const startWorker = (
 ) => {
   return new Promise((resolve, reject) => {
     const worker = new Worker(workerPath, {
+      env: { ...process.env },
       workerData: {
         taskId,
         data

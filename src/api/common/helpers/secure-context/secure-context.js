@@ -1,7 +1,29 @@
 import tls from 'node:tls'
-import { config } from '~/src/config/index.js'
+import { config } from '../../../../config/index.js'
 
-import { getTrustStoreCerts } from '~/src/api/common/helpers/secure-context/get-trust-store-certs.js'
+import { getTrustStoreCerts } from './get-trust-store-certs.js'
+
+export const createSecureContext = (logger) => {
+  const originalTlsCreateSecureContext = tls.createSecureContext
+
+  tls.createSecureContext = function (options = {}) {
+    const trustStoreCerts = getTrustStoreCerts(process.env)
+
+    if (!trustStoreCerts.length) {
+      logger.info('Could not find any TRUSTSTORE_ certificates')
+    }
+
+    const tlsSecureContext = originalTlsCreateSecureContext(options)
+
+    trustStoreCerts.forEach((cert) => {
+      tlsSecureContext.context.addCACert(cert)
+    })
+
+    return tlsSecureContext
+  }
+
+  return tls.createSecureContext()
+}
 
 /**
  * Creates a new secure context loaded from Base64 encoded certs

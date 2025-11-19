@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="grant-select-for-land-covers" author="system">
+    <sql>GRANT insert, update on land_parcels to land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-select-for-land-parcels" author="system">
+    <sql>GRANT insert, update on land_covers to land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-select-for-moorland-designations" author="system">
+    <sql>GRANT insert, update on moorland_designations to land_grants_api;</sql>
+  </changeSet>
+
+</databaseChangeLog>
