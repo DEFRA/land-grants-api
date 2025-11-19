@@ -15,8 +15,7 @@ const logger = {
   debug: jest.fn()
 }
 
-// eslint-disable-next-line jest/no-disabled-tests
-describe.skip('CDP uploader callback integration test', () => {
+describe('CDP uploader callback integration test', () => {
   const { h, getResponse } = createResponseCapture()
   let s3Client
 

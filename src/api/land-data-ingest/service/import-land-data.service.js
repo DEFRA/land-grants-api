@@ -18,7 +18,7 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(stream, tableName, logger) {
+async function importData(csvData, tableName, logger) {
   const startTime = performance.now()
   logInfo(logger, {
     category: 'land-data-ingest',
@@ -41,20 +41,27 @@ async function importData(stream, tableName, logger) {
       await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
     )
 
-    const pgStream = client.query(
-      from(
-        `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
+    // Get column names from first row
+    const columns = Object.keys(csvData[0])
+    // Build parameter placeholders
+    const valuePlaceholders = csvData
+      .map(
+        (_, rowIdx) =>
+          `(${columns.map((_, colIdx) => `$${rowIdx * columns.length + colIdx + 1}`).join(',')})`
       )
+      .join(',')
+    // Flatten all row values in input order
+    const values = csvData.flatMap((row) =>
+      columns.map((col) => (row[col] === '' ? null : row[col]))
     )
-
-    await pipeline(stream, pgStream)
+    await client.query(
+      `INSERT INTO ${tableName}_tmp VALUES ${valuePlaceholders}`,
+      values
+    )
 
     const tempTableCount = await client.query(
-      `select count(*) from ${tableName}_tmp`
+      `SELECT COUNT(*) as count FROM ${tableName}_tmp`
     )
-    if (Number(tempTableCount.rows[0].count) === 0) {
-      throw new Error(`No data found in ${tableName}_tmp`)
-    }
 
     logInfo(logger, {
       category: 'land-data-ingest',
