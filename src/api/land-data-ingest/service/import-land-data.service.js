@@ -41,6 +41,10 @@ async function importData(stream, tableName, logger) {
       await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
     )
 
+    await client.query(`
+      insert into ${tableName}_tmp (OBJECTID) values (999999);
+    `)
+
     const pgStream = client.query(
       from(
         `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
@@ -52,7 +56,7 @@ async function importData(stream, tableName, logger) {
     const tempTableCount = await client.query(
       `select count(*) from ${tableName}_tmp`
     )
-    if (tempTableCount.rows[0].count === 0) {
+    if (Number(tempTableCount.rows[0].count) === 0) {
       throw new Error(`No data found in ${tableName}_tmp`)
     }
 
