@@ -13,8 +13,7 @@ function hasDBOptions(options, logger) {
   logInfo(logger, {
     category: 'land-data-ingest',
     operation: 'hasDBOptions',
-    message: 'Checking database options',
-    context: { options: JSON.stringify(options) }
+    message: 'Checking database options'
   })
   return options.user && options.database && options.host
 }
@@ -24,10 +23,7 @@ async function importData(stream, tableName, logger) {
   logInfo(logger, {
     category: 'land-data-ingest',
     operation: `${tableName}_import_started`,
-    message: `${tableName} import started`,
-    context: {
-      environment: JSON.stringify(process.env)
-    }
+    message: `${tableName} import started`
   })
 
   const dbOptions = getDBOptions()
@@ -52,6 +48,20 @@ async function importData(stream, tableName, logger) {
     )
 
     await pipeline(stream, pgStream)
+
+    const tempTableCount = await client.query(
+      `select count(*) from ${tableName}_tmp`
+    )
+    if (tempTableCount.rows[0].count === 0) {
+      throw new Error(`No data found in ${tableName}_tmp`)
+    }
+
+    logInfo(logger, {
+      category: 'land-data-ingest',
+      operation: `${tableName}_import_temp_table`,
+      message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
+      context: { tableName, tempTableCount: tempTableCount.rows[0].count }
+    })
 
     const result = await client.query(
       await readFile(`/${tableName}/insert_${tableName}.sql`)
