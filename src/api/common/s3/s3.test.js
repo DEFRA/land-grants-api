@@ -1,4 +1,6 @@
-import { Readable } from 'stream'
+/* eslint-disable jest/no-commented-out-tests */
+
+// import { Readable } from 'stream'
 import {
   getFiles,
   getFile,
@@ -203,23 +205,24 @@ describe('S3 Buckets', () => {
       jest.clearAllMocks()
     })
 
-    const createMockStream = (content) => {
-      const stream = new Readable()
-      stream.push(content)
-      stream.push(null)
-      return stream
-    }
+    // const createMockStream = (content) => {
+    //   const stream = new Readable()
+    //   stream.push(content)
+    //   stream.push(null)
+    //   return stream
+    // }
 
-    const createMockResponse = (content) => {
-      return {
-        Body: {
-          transformToWebStream: jest
-            .fn()
-            .mockResolvedValue(createMockStream(content))
-        }
-      }
-    }
+    // const createMockResponse = (content) => {
+    //   return {
+    //     Body: {
+    //       transformToWebStream: jest
+    //         .fn()
+    //         .mockResolvedValue(createMockStream(content))
+    //     }
+    //   }
+    // }
 
+    // eslint-disable-next-line jest/no-disabled-tests
     // describe('Get file from s3 bucket', () => {
     //   test('should return file content as readable stream', async () => {
     //     const content = 'test'
