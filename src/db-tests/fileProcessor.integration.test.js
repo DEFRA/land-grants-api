@@ -24,8 +24,7 @@ const logger = {
 let connection
 let s3Client
 
-// eslint-disable-next-line jest/no-disabled-tests
-describe.skip('Land data ingest file processor integration test', () => {
+describe('Land data ingest file processor integration test', () => {
   beforeAll(async () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
