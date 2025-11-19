@@ -1,5 +1,3 @@
-import { from } from 'pg-copy-streams'
-import { pipeline } from 'node:stream/promises'
 import { performance } from 'node:perf_hooks'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
