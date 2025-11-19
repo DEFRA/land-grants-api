@@ -65,13 +65,18 @@ async function importLandData(file) {
       }
     })
 
-    const dataStream = await getFile(s3Client, config.get('s3.bucket'), s3Path)
+    const response = await getFile(s3Client, config.get('s3.bucket'), s3Path)
 
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_get`,
-      message: `${resourceType} file get successfully`
+      message: `${resourceType} file get successfully`,
+      context: {
+        data: `size: ${response.ContentLength} bytes, type: ${response.ContentType}`
+      }
     })
+
+    const dataStream = await response.Body.transformToWebStream()
 
     switch (resourceType) {
       case 'parcels':
