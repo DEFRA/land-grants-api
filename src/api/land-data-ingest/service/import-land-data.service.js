@@ -9,9 +9,11 @@ import {
 } from '../../common/helpers/logging/log-helpers.js'
 import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
 
+const logCategory = 'land-data-ingest'
+
 function hasDBOptions(options, logger) {
   logInfo(logger, {
-    category: 'land-data-ingest',
+    category: logCategory,
     operation: 'hasDBOptions',
     message: 'Checking database options'
   })
@@ -21,7 +23,7 @@ function hasDBOptions(options, logger) {
 async function importData(dataStream, tableName, logger) {
   const startTime = performance.now()
   logInfo(logger, {
-    category: 'land-data-ingest',
+    category: logCategory,
     operation: `${tableName}_import_started`,
     message: `${tableName} import started`
   })
@@ -54,7 +56,7 @@ async function importData(dataStream, tableName, logger) {
     )
 
     logInfo(logger, {
-      category: 'land-data-ingest',
+      category: logCategory,
       operation: `${tableName}_import_temp_table`,
       message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
       context: { tableName, tempTableCount: tempTableCount.rows[0].count }
@@ -67,7 +69,7 @@ async function importData(dataStream, tableName, logger) {
     const endTime = performance.now()
     const duration = endTime - startTime
     logInfo(logger, {
-      category: 'land-data-ingest',
+      category: logCategory,
       operation: `${tableName}_import_completed`,
       message: `${tableName} imported successfully in ${duration}ms`,
       context: { rowCount: result.rowCount, duration }
