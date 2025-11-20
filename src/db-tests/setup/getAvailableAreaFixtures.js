@@ -13,5 +13,7 @@ export function getAvailableAreaFixtures() {
     delimiter: ',',
     columns: true
   })
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore - fixture type from csv-parse
   return fixtures.map((fixture) => [fixture.scenarioName, fixture])
 }
