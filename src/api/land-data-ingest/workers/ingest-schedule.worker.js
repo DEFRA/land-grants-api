@@ -12,6 +12,7 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
+import { parse } from 'csv-parse/sync'
 
 /**
  * Post a message to the parent thread
@@ -66,27 +67,31 @@ async function importLandData(file) {
     })
 
     const response = await getFile(s3Client, config.get('s3.bucket'), s3Path)
+    const bodyContents = await response.Body.transformToString()
+    const csvData = parse(bodyContents, {
+      delimiter: ',',
+      columns: true
+    })
 
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_get`,
       message: `${resourceType} file get successfully`,
       context: {
-        data: `size: ${response.ContentLength} bytes, type: ${response.ContentType}`
+        data: `size: ${response.ContentLength} bytes, rows: ${csvData.length}`,
+        bodyContents: bodyContents.slice(0, 100)
       }
     })
 
-    const dataStream = await response.Body
-
     switch (resourceType) {
       case 'parcels':
-        await importLandParcels(dataStream, logger)
+        await importLandParcels(csvData, logger)
         break
       case 'covers':
-        await importLandCovers(dataStream, logger)
+        await importLandCovers(csvData, logger)
         break
       case 'moorland':
-        await importMoorlandDesignations(dataStream, logger)
+        await importMoorlandDesignations(csvData, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)
