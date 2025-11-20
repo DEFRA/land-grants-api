@@ -52,9 +52,9 @@ export const LandDataIngestController = {
         }
       })
 
-      // if (payload.form.file.fileStatus !== 'complete') {
-      //   return Boom.badRequest('File is not ready')
-      // }
+      if (payload.form.file.fileStatus !== 'complete') {
+        return Boom.badRequest('File is not ready')
+      }
 
       const { title, taskId } = createTaskInfo(Date.now(), category)
 

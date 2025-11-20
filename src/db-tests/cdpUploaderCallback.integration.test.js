@@ -39,7 +39,8 @@ describe('CDP uploader callback integration test', () => {
       payload: {
         form: {
           file: {
-            s3Key: 'parcels/parcels_head.csv'
+            s3Key: 'parcels/parcels_head.csv',
+            fileStatus: 'complete'
           }
         }
       },
