@@ -1,4 +1,6 @@
 import { performance } from 'node:perf_hooks'
+import { from } from 'pg-copy-streams'
+import { pipeline } from 'node:stream/promises'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
 import {
@@ -16,7 +18,7 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(csvData, tableName, logger) {
+async function importData(dataStream, tableName, logger) {
   const startTime = performance.now()
   logInfo(logger, {
     category: 'land-data-ingest',
@@ -39,23 +41,13 @@ async function importData(csvData, tableName, logger) {
       await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
     )
 
-    // Get column names from first row
-    const columns = Object.keys(csvData[0])
-    // Build parameter placeholders
-    const valuePlaceholders = csvData
-      .map(
-        (_, rowIdx) =>
-          `(${columns.map((_, colIdx) => `$${rowIdx * columns.length + colIdx + 1}`).join(',')})`
+    const pgStream = client.query(
+      from(
+        `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
       )
-      .join(',')
-    // Flatten all row values in input order
-    const values = csvData.flatMap((row) =>
-      columns.map((col) => (row[col] === '' ? null : row[col]))
     )
-    await client.query(
-      `INSERT INTO ${tableName}_tmp VALUES ${valuePlaceholders}`,
-      values
-    )
+
+    await pipeline(dataStream, pgStream)
 
     const tempTableCount = await client.query(
       `SELECT COUNT(*) as count FROM ${tableName}_tmp`
@@ -95,7 +87,7 @@ async function importData(csvData, tableName, logger) {
 
 /**
  *
- * @param {any} landParcelsStream
+ * @param {ReadableStream} landParcelsStream
  * @param {Logger} logger
  */
 export async function importLandParcels(landParcelsStream, logger) {
