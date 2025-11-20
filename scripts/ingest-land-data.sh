@@ -104,7 +104,6 @@ postToApi() {
     local response=$(curl -s -w "\n%{http_code}" -X POST "$endpoint" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
-        -H "x-api-key: $API_KEY" \
         -d "$json_data")
 
     # Extract HTTP status code (last line)
@@ -127,7 +126,6 @@ uploadFile() {
 
     local response=$(curl -s -w "\n%{http_code}" "$upload_url" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
-        -H "x-api-key: $API_KEY" \
         -F "file=@${file_path}")
 
     # Extract HTTP status code (last line)
@@ -149,7 +147,6 @@ REFERENCE=$(date +%Y-%m-%d:%H:%M:%S)
 CUSTOMER_ID="ETL"
 RESOURCE="parcels"
 DATA_DIR="${root_dir}/data"
-API_KEY="XH0VRDAxpN7cRnkMrwh5xY93Y2ug5sTI"
 
 TOKEN_URL=$(get_token_url "$1")
 ACCESS_TOKEN=$(get_cognito_token "$CLIENT_ID" "$CLIENT_SECRET" "$TOKEN_URL")

@@ -1,10 +1,12 @@
-
+# Usage: scripts/split-land-data.sh <csv_file>
+# Example: scripts/split-land-data.sh parcels_1.csv
 #!/bin/bash
 
 set -e
 
-root_dir="/Users/airasoul/projects/defra/land-grants-api/ingestion-data"
-CSV_FILE="${root_dir}/parcels_1.csv"
+csv_file=$1
+root_dir="${PWD}/ingestion-data"
+CSV_FILE="${root_dir}/${csv_file}"
 CHUNK_SIZE="90m"
 TEMP_DIR="${root_dir}/data"
 
