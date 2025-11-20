@@ -126,6 +126,8 @@ uploadFile() {
 
     local response=$(curl -s -w "\n%{http_code}" "$upload_url" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "content-type: text/csv" \
+        -H "x-filename: ${file_path}" \
         -F "file=@${file_path}")
 
     # Extract HTTP status code (last line)
