@@ -67,20 +67,20 @@ async function importLandData(file) {
     })
 
     const response = await getFile(s3Client, config.get('s3.bucket'), s3Path)
+    const bodyContents = await response.Body.transformToString()
+    const csvData = parse(bodyContents, {
+      delimiter: ',',
+      columns: true
+    })
 
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_get`,
       message: `${resourceType} file get successfully`,
       context: {
-        data: `size: ${response.ContentLength} bytes, type: ${response.ContentType}`
+        data: `size: ${response.ContentLength} bytes, rows: ${csvData.length}`,
+        bodyContents: bodyContents.slice(0, 100)
       }
-    })
-
-    const bodyContents = await response.Body.transformToString()
-    const csvData = parse(bodyContents, {
-      delimiter: ',',
-      columns: true
     })
 
     switch (resourceType) {
