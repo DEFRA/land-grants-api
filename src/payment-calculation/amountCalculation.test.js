@@ -87,7 +87,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         durationYears
       )
 
-    expect(agreementTotalPence).toBe(82681)
+    expect(agreementTotalPence).toBe(82680)
     expect(annualTotalPence).toBe(27560)
   })
 
@@ -132,7 +132,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         durationYears
       )
 
-    expect(agreementTotalPence).toBe(97681)
+    expect(agreementTotalPence).toBe(97680)
     expect(annualTotalPence).toBe(32560) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
   })
 

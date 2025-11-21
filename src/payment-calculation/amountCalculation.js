@@ -33,10 +33,10 @@ export const calculateAnnualAndAgreementTotals = (
 ) => {
   let annualTotalPence = 0
   for (const [, parcelItem] of Object.entries(parcelItems)) {
-    annualTotalPence += parcelItem.annualPaymentPence ?? 0
+    annualTotalPence += Math.floor(parcelItem.annualPaymentPence ?? 0)
   }
   for (const [, agreementItem] of Object.entries(agreementItems)) {
-    annualTotalPence += agreementItem.annualPaymentPence ?? 0
+    annualTotalPence += Math.floor(agreementItem.annualPaymentPence ?? 0)
   }
 
   return {
