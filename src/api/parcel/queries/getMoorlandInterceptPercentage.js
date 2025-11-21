@@ -9,6 +9,20 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
 
   try {
     client = await db.connect()
+
+    const exceptionQuery = `SELECT * FROM moorland_exceptions WHERE parcel_id = $1 AND sheet_id = $2`
+    const exceptionResult = await client.query(exceptionQuery, [
+      parcelId,
+      sheetId
+    ])
+
+    if (exceptionResult?.rows?.length > 0) {
+      // if the parcelId/sheetId is in the moorland_exceptions table and ref_code starts with M, return 100, whole parcel is moorland
+      // otherwise return 0, whole parcel is not moorland
+      return exceptionResult?.rows[0].ref_code.startsWith('M') ? 100 : 0
+    }
+
+    // if the parcelId/sheetId is not in the moorland_exceptions table, run the percentage query
     const query = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -26,8 +40,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
           p.sheet_id, p.parcel_id, p.geom, m.ref_code;
     `
 
-    const values = [sheetId, parcelId]
-    const result = await client.query(query, values)
+    const result = await client.query(query, [sheetId, parcelId])
 
     if (result?.rows?.length === 0) {
       return 0
