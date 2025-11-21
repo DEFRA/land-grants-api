@@ -65,7 +65,7 @@ const pactVerifierOptions = async () => {
     consumerVersionSelectors: [{ latest: true }],
     pactBrokerUsername: env.PACT_BROKER_USERNAME,
     pactBrokerPassword: env.PACT_BROKER_PASSWORD,
-    publishVerificationResult: true,
+    publishVerificationResult: env.PACT_PUBLISH_VERIFICATION === 'true',
     providerVersion: latestVersion,
 
     stateHandlers: {
