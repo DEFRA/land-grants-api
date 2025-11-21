@@ -47,19 +47,29 @@ jobs:
 
   contract-tests:
     name: Run Pact Contract Tests
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: self-hosted
-    env:
-      PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
-      PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
-      PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
     steps:
+      - name: Mask secrets
+        run: |
+          echo "::add-mask::$PACT_USER"
+          echo "::add-mask::$PACT_PASS"
+
       - name: Checkout code
         uses: actions/checkout@v5
-      - name: Run Contract Tests
+
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: npm
-      - run: |
+
+      - name: Run Contract Tests
+        env:
+          PACT_BROKER_BASE_URL: https://ffc-pact-broker.azure.defra.cloud
+          PACT_PUBLISH_VERIFICATION: false
+        run: |
+          export PACT_BROKER_USERNAME="$PACT_USER"
+          export PACT_BROKER_PASSWORD="$PACT_PASS"
           npm ci --ignore-scripts
           npm run test:contracts
