@@ -36,6 +36,9 @@ export const parcelHasIntersectionWithDataLayer = {
       }
     }
 
+    console.log('minimumIntersectionPercent', minimumIntersectionPercent)
+    console.log('intersection', intersection)
+
     const isGreaterThanOrEqualToMin =
       intersection.intersectingAreaPercentage >=
       minimumIntersectionPercent - tolerancePercent

@@ -225,6 +225,8 @@ const ApplicationValidationController = {
         actions
       })
 
+      console.log('parcelResults', parcelResults)
+
       // Save validation results
       const id = await saveValidationResults(request, postgresDb, {
         applicationId,

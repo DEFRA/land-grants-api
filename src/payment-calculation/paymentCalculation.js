@@ -53,6 +53,8 @@ export const getPaymentCalculationForParcels = (
       durationYears
     )
 
+  console.log('annualTotalPence', annualTotalPence)
+
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
     generatePaymentSchedule(startDate ?? new Date(), durationYears, frequency)
