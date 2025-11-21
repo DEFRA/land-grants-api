@@ -6,13 +6,11 @@ import {
   clearTestBucket
 } from './setup/s3-test-helpers.js'
 import { processFile } from '../api/land-data-ingest/service/ingest-schedule.service.js'
-
-const getTableCount = async (connection, tableName) => {
-  const client = await connection.connect()
-  const result = await client.query(`SELECT COUNT(*) FROM ${tableName}`)
-  await client.release()
-  return Number(result.rows[0].count)
-}
+import {
+  getRecord,
+  clearTestData,
+  getMoorlandRecord
+} from './setup/db-helper.js'
 
 const logger = {
   info: jest.fn(),
@@ -21,6 +19,9 @@ const logger = {
   debug: jest.fn()
 }
 
+const category = 'land_data_ingest'
+const title = 'Land data ingest'
+const taskId = 123
 let connection
 let s3Client
 
@@ -37,6 +38,7 @@ describe('Land data ingest file processor integration test', () => {
 
   afterEach(async () => {
     await clearTestBucket(s3Client)
+    await clearTestData(connection)
   })
 
   const request = {
@@ -45,19 +47,16 @@ describe('Land data ingest file processor integration test', () => {
     },
     logger
   }
+  // covers_head: TV5699,1419
+  // parcels_head: TV5797,2801
+  // parcels_1head: TV5797,2801
+  // moorland lfa_moor_id: 735
 
-  test('should ingest multiple land parcel data', async () => {
-    const initialParcelsCount = await getTableCount(connection, 'land_parcels')
+  test('should ingest land parcel data', async () => {
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
       'parcels/parcels_head.csv'
-    )
-
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_1head.csv',
-      'parcels/parcels_1head.csv'
     )
 
     await processFile(
@@ -68,20 +67,48 @@ describe('Land data ingest file processor integration test', () => {
       123
     )
 
-    await processFile(
-      'parcels/parcels_1head.csv',
-      request,
-      'land_data_ingest',
-      'Parcels ingest',
-      1234
+    const parcel = await getRecord(connection, 'land_parcels', 'TV5797', '2801')
+    expect(parcel.sheet_id).toBe('TV5797')
+    expect(parcel.parcel_id).toBe('2801')
+    expect(parcel.area_sqm).toBe('192772.7700')
+  }, 30000)
+
+  test('should ingest multiple land parcel data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head.csv',
+      'parcels/parcels_head.csv'
     )
 
-    const parcelsCount = await getTableCount(connection, 'land_parcels')
-    expect(Number(parcelsCount)).toBe(Number(initialParcelsCount) + 2)
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head_upsert.csv',
+      'parcels/parcels_head_upsert.csv'
+    )
+
+    await processFile(
+      'parcels/parcels_head.csv',
+      request,
+      category,
+      title,
+      taskId
+    )
+
+    await processFile(
+      'parcels/parcels_head_upsert.csv',
+      request,
+      category,
+      title,
+      taskId
+    )
+
+    const parcel = await getRecord(connection, 'land_parcels', 'TV5797', '2801')
+    expect(parcel.sheet_id).toBe('TV5797')
+    expect(parcel.parcel_id).toBe('2801')
+    expect(parcel.area_sqm).toBe('182772.7700')
   }, 30000)
 
   test('should ingest land cover data', async () => {
-    const initialCoversCount = await getTableCount(connection, 'land_covers')
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
@@ -91,21 +118,53 @@ describe('Land data ingest file processor integration test', () => {
     await processFile(
       'covers/covers_head.csv',
       request,
-      'land_data_ingest',
-      'Land covers ingest',
-      123
+      category,
+      title,
+      taskId
     )
 
-    const coversCount = await getTableCount(connection, 'land_covers')
-    expect(Number(coversCount)).toBe(Number(initialCoversCount) + 1)
+    const cover = await getRecord(connection, 'land_covers', 'TV5699', '1419')
+    expect(cover.sheet_id).toBe('TV5699')
+    expect(cover.parcel_id).toBe('1419')
+    expect(cover.land_cover_class_code).toBe('131')
+  }, 30000)
+
+  test('should ingest multiple land cover data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'covers_head.csv',
+      'covers/covers_head.csv'
+    )
+
+    await uploadFixtureFile(
+      s3Client,
+      'covers_head_upsert.csv',
+      'covers/covers_head_upsert.csv'
+    )
+
+    await processFile(
+      'covers/covers_head.csv',
+      request,
+      category,
+      title,
+      taskId
+    )
+
+    await processFile(
+      'covers/covers_head_upsert.csv',
+      request,
+      category,
+      title,
+      taskId
+    )
+
+    const cover = await getRecord(connection, 'land_covers', 'TV5699', '1419')
+    expect(cover.sheet_id).toBe('TV5699')
+    expect(cover.parcel_id).toBe('1419')
+    expect(cover.land_cover_class_code).toBe('132')
   }, 30000)
 
   test('should ingest moorland designations data', async () => {
-    const initialMoorlandDesignationsCount = await getTableCount(
-      connection,
-      'moorland_designations'
-    )
-
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
@@ -115,15 +174,13 @@ describe('Land data ingest file processor integration test', () => {
     await processFile(
       'moorland/moorland_head.csv',
       request,
-      'land_data_ingest',
-      'Moorland designations ingest',
-      123
+      category,
+      title,
+      taskId
     )
 
-    const moorlandDesignationsCount = await getTableCount(
-      connection,
-      'moorland_designations'
-    )
-    expect(moorlandDesignationsCount).toBe(initialMoorlandDesignationsCount + 1)
+    const moorland = await getMoorlandRecord(connection, 735)
+    expect(moorland.lfa_moor_id).toBe('735')
+    expect(moorland.ref_code).toBe('MS')
   }, 30000)
 })
