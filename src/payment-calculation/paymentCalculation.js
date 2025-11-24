@@ -45,14 +45,6 @@ export const getPaymentCalculationForParcels = (
     explanations: paymentItemsExplanations
   } = createPaymentItems(parcels, actions)
 
-  // calculate total amounts
-  const { annualTotalPence, agreementTotalPence } =
-    calculateAnnualAndAgreementTotals(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
-
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
     generatePaymentSchedule(startDate ?? new Date(), durationYears, frequency)
@@ -71,6 +63,10 @@ export const getPaymentCalculationForParcels = (
     payments: revisedPayments,
     explanations: reconciliationExplanations
   } = reconcilePaymentAmounts(parcelItems, agreementItems, payments)
+
+  // calculate total amounts
+  const { annualTotalPence, agreementTotalPence } =
+    calculateAnnualAndAgreementTotals(revisedPayments, durationYears)
 
   const explanations = [
     createExplanationSection('Schedule Information', [

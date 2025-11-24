@@ -58,142 +58,41 @@ describe('calculateAnnualAndAgreementTotals', () => {
   const durationYears = 3
 
   it('should return total payment amounts for parcel and agreement items', () => {
-    const parcelItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        parcelId: '5484',
-        durationYears: 3,
-        quantity: 0.34,
-        rateInPence: 1060,
-        annualPaymentPence: 360.4,
-        sheetId: 'SD5253',
-        unit: 'ha'
-      }
-    }
-    const agreementItems = {
-      1: {
-        code: 'CMOR1',
-        durationYears: 3,
-        description: 'CMOR1: Assess moorland and produce a written record',
-        annualPaymentPence: 27200
-      }
-    }
-
-    const { agreementTotalPence, annualTotalPence } =
-      calculateAnnualAndAgreementTotals(
-        parcelItems,
-        agreementItems,
-        durationYears
-      )
-
-    expect(agreementTotalPence).toBe(82680)
-    expect(annualTotalPence).toBe(27560)
-  })
-
-  it('should handle multiple parcels items and agreement items with different actions', () => {
-    const parcelItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        parcelId: '5484',
-        durationYears: 3,
-        quantity: 0.34,
-        rateInPence: 1060,
-        annualPaymentPence: 360.4,
-        sheetId: 'SD5253',
-        unit: 'ha'
+    const payments = [
+      {
+        lineItems: [],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 1916
       },
-      2: {
-        code: 'UPL1',
-        description: 'Moderate livestock grazing on moorland',
-        parcelId: '5485',
-        durationYears: 3,
-        quantity: 2.5,
-        rateInPence: 2000,
-        annualPaymentPence: 5000,
-        sheetId: 'SD5254',
-        unit: 'ha'
-      }
-    }
-    const agreementItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        durationYears: 3,
-        annualPaymentPence: 27200
-      }
-    }
-
-    const { agreementTotalPence, annualTotalPence } =
-      calculateAnnualAndAgreementTotals(
-        parcelItems,
-        agreementItems,
-        durationYears
-      )
-
-    expect(agreementTotalPence).toBe(97680)
-    expect(annualTotalPence).toBe(32560) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
-  })
-
-  it('should handle no parcel items and agreement items', () => {
-    const parcelItems = {}
-    const agreementItems = {}
-
-    const { agreementTotalPence, annualTotalPence } =
-      calculateAnnualAndAgreementTotals(
-        parcelItems,
-        agreementItems,
-        durationYears
-      )
-
-    expect(agreementTotalPence).toBe(0)
-    expect(annualTotalPence).toBe(0)
-  })
-
-  it('should handle missing payment rates gracefully', () => {
-    const parcelItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
-        parcelId: '5484',
-        durationYears: 3,
-        quantity: undefined,
-        rateInPence: undefined,
-        annualPaymentPence: undefined,
-        sheetId: 'SD5253',
-        unit: 'ha'
+      {
+        lineItems: [],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 1916
       },
-      2: {
-        code: 'UPL1',
-        description: 'Moderate livestock grazing on moorland',
-        version: 1,
-        durationYears: 3,
-        parcelId: '5485',
-        quantity: undefined,
-        rateInPence: undefined,
-        annualPaymentPence: undefined,
-        sheetId: 'SD5254',
-        unit: 'ha'
+      {
+        lineItems: [],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 1916
+      },
+      {
+        lineItems: [],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 1916
       }
-    }
-    const agreementItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
-        durationYears: 3,
-        annualPaymentPence: undefined
-      }
-    }
+    ]
 
     const { agreementTotalPence, annualTotalPence } =
-      calculateAnnualAndAgreementTotals(
-        parcelItems,
-        agreementItems,
-        durationYears
-      )
+      calculateAnnualAndAgreementTotals(payments, durationYears)
+
+    expect(agreementTotalPence).toBe(7664)
+    expect(annualTotalPence).toBe(2554)
+  })
+
+  it('should handle no payments', () => {
+    const payments = {}
+
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(payments, durationYears)
 
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
@@ -789,11 +688,12 @@ describe('calculateScheduledPayments', () => {
     const cmor1AgreementPayment = 27200 / 4
     const upl1ParcelPayment = (2.5 * 2000) / 4
     const upl2ParcelPayment = (0.94 * 5300) / 4
-    const totalPaymentPence =
+    const totalPaymentPence = Math.floor(
       cmor1ParcelPayment +
-      cmor1AgreementPayment +
-      upl1ParcelPayment +
-      upl2ParcelPayment
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+    )
 
     const lineItems = [
       {
@@ -866,11 +766,12 @@ describe('calculateScheduledPayments', () => {
     const cmor1AgreementPayment = 27200
     const upl1ParcelPayment = 2.5 * 2000
     const upl2ParcelPayment = 0.94 * 5300
-    const totalPaymentPence =
+    const totalPaymentPence = Math.floor(
       cmor1ParcelPayment +
-      cmor1AgreementPayment +
-      upl1ParcelPayment +
-      upl2ParcelPayment
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+    )
 
     const lineItems = [
       {

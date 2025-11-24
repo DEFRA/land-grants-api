@@ -87,8 +87,8 @@ describe('getPaymentCalculationForParcels', () => {
       agreementStartDate: '2025-08-01',
       agreementEndDate: '2026-08-01',
       frequency: 'Quarterly',
-      agreementTotalPence: 38130,
-      annualTotalPence: 38130, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
+      agreementTotalPence: 38128,
+      annualTotalPence: 38128, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
 
       parcelItems: {
         1: {
@@ -138,7 +138,7 @@ describe('getPaymentCalculationForParcels', () => {
         {
           lineItems: expectedLineItem,
           paymentDate: '2025-11-05',
-          totalPaymentPence: 9534
+          totalPaymentPence: 9532
         },
         {
           lineItems: expectedLineItem,
@@ -217,8 +217,8 @@ describe('getPaymentCalculationForParcels', () => {
       agreementStartDate: '2026-02-01',
       agreementEndDate: '2027-02-01',
       frequency: 'Quarterly',
-      agreementTotalPence: 38130,
-      annualTotalPence: 38130, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
+      agreementTotalPence: 38128,
+      annualTotalPence: 38128, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
 
       parcelItems: {
         1: {
@@ -268,7 +268,7 @@ describe('getPaymentCalculationForParcels', () => {
         {
           lineItems: expectedLineItem,
           paymentDate: '2026-05-05',
-          totalPaymentPence: 9534
+          totalPaymentPence: 9532
         },
         {
           lineItems: expectedLineItem,
