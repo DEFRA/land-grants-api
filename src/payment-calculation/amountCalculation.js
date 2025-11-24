@@ -14,7 +14,7 @@ const gbpToPence = (gbp = 0) => gbp * 100
  * @param {Array<Action>} actions
  * @returns {Action | undefined}
  */
-const findActionByCode = (code, actions = []) => {
+export const findActionByCode = (code, actions = []) => {
   const action = actions.find((a) => a.code === code)
   return action
 }

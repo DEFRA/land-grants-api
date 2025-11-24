@@ -1,4 +1,10 @@
-import { getPaymentCalculationForParcels } from './paymentCalculation.js'
+import {
+  getPaymentCalculationDataRequirements,
+  getPaymentCalculationForParcels
+} from './paymentCalculation.js'
+import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+
+jest.mock('~/src/api/actions/queries/index.js')
 
 const mockEnabledActions = [
   {
@@ -36,6 +42,60 @@ const mockEnabledActions = [
     }
   }
 ]
+
+describe('getPaymentCalculationDataRequirements', () => {
+  const mockPostgresDb = {
+    connect: jest.fn(),
+    query: jest.fn()
+  }
+
+  const mockLogger = {
+    info: jest.fn(),
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return enabled actions from the database', async () => {
+    getEnabledActions.mockResolvedValue(mockEnabledActions)
+
+    const result = await getPaymentCalculationDataRequirements(
+      mockPostgresDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({ enabledActions: mockEnabledActions })
+    expect(getEnabledActions).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
+    expect(getEnabledActions).toHaveBeenCalledTimes(1)
+  })
+
+  it('should return an empty array when no actions are enabled', async () => {
+    getEnabledActions.mockResolvedValue([])
+
+    const result = await getPaymentCalculationDataRequirements(
+      mockPostgresDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({ enabledActions: [] })
+    expect(getEnabledActions).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
+  })
+
+  it('should handle errors from getEnabledActions', async () => {
+    const error = new Error('Database connection failed')
+    getEnabledActions.mockRejectedValue(error)
+
+    await expect(
+      getPaymentCalculationDataRequirements(mockPostgresDb, mockLogger)
+    ).rejects.toThrow('Database connection failed')
+
+    expect(getEnabledActions).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
+  })
+})
 
 describe('getPaymentCalculationForParcels', () => {
   it('should return a valid payload for valid parcel data', () => {

@@ -2,6 +2,7 @@ import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
+  findActionByCode,
   reconcilePaymentAmounts,
   roundPaymentAmountForPaymentLineItems
 } from './amountCalculation.js'
@@ -89,7 +90,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
   })
 
   it('should handle no payments', () => {
-    const payments = {}
+    const payments = []
 
     const { agreementTotalPence, annualTotalPence } =
       calculateAnnualAndAgreementTotals(payments, durationYears)
@@ -799,5 +800,60 @@ describe('calculateScheduledPayments', () => {
         lineItems
       }))
     )
+  })
+})
+
+describe('findActionByCode', () => {
+  it('should return the action when it exists in the actions array', () => {
+    const result = findActionByCode('CMOR1', mockEnabledActions)
+
+    expect(result).toEqual({
+      code: 'CMOR1',
+      description: 'CMOR1: Assess moorland and produce a written record',
+      version: 1,
+      applicationUnitOfMeasurement: 'ha',
+      durationYears: 3,
+      payment: {
+        ratePerUnitGbp: 10.6,
+        ratePerAgreementPerYearGbp: 272
+      }
+    })
+  })
+
+  it('should return undefined when action code does not exist', () => {
+    const result = findActionByCode('NONEXISTENT', mockEnabledActions)
+
+    expect(result).toBeUndefined()
+  })
+
+  it('should return undefined when actions array is empty', () => {
+    const result = findActionByCode('CMOR1', [])
+
+    expect(result).toBeUndefined()
+  })
+
+  it('should handle undefined actions array with default parameter', () => {
+    const result = findActionByCode('CMOR1')
+
+    expect(result).toBeUndefined()
+  })
+
+  it('should return the first matching action if duplicates exist', () => {
+    const actionsWithDuplicates = [
+      { code: 'TEST1', value: 'first' },
+      { code: 'TEST1', value: 'second' }
+    ]
+
+    const result = findActionByCode('TEST1', actionsWithDuplicates)
+
+    expect(result).toEqual({ code: 'TEST1', value: 'first' })
+  })
+
+  it('should handle null or undefined code parameter', () => {
+    const resultNull = findActionByCode(null, mockEnabledActions)
+    const resultUndefined = findActionByCode(undefined, mockEnabledActions)
+
+    expect(resultNull).toBeUndefined()
+    expect(resultUndefined).toBeUndefined()
   })
 })
