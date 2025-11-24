@@ -789,11 +789,12 @@ describe('calculateScheduledPayments', () => {
     const cmor1AgreementPayment = 27200 / 4
     const upl1ParcelPayment = (2.5 * 2000) / 4
     const upl2ParcelPayment = (0.94 * 5300) / 4
-    const totalPaymentPence =
+    const totalPaymentPence = Math.floor(
       cmor1ParcelPayment +
-      cmor1AgreementPayment +
-      upl1ParcelPayment +
-      upl2ParcelPayment
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+    )
 
     const lineItems = [
       {
@@ -866,11 +867,12 @@ describe('calculateScheduledPayments', () => {
     const cmor1AgreementPayment = 27200
     const upl1ParcelPayment = 2.5 * 2000
     const upl2ParcelPayment = 0.94 * 5300
-    const totalPaymentPence =
+    const totalPaymentPence = Math.floor(
       cmor1ParcelPayment +
-      cmor1AgreementPayment +
-      upl1ParcelPayment +
-      upl2ParcelPayment
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+    )
 
     const lineItems = [
       {

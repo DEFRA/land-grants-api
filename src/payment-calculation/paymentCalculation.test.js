@@ -138,7 +138,7 @@ describe('getPaymentCalculationForParcels', () => {
         {
           lineItems: expectedLineItem,
           paymentDate: '2025-11-05',
-          totalPaymentPence: 9534
+          totalPaymentPence: 9532
         },
         {
           lineItems: expectedLineItem,
@@ -268,7 +268,7 @@ describe('getPaymentCalculationForParcels', () => {
         {
           lineItems: expectedLineItem,
           paymentDate: '2026-05-05',
-          totalPaymentPence: 9534
+          totalPaymentPence: 9532
         },
         {
           lineItems: expectedLineItem,

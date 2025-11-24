@@ -179,7 +179,7 @@ export const calculateScheduledPayments = (
         parcelItemId: Number(id),
         paymentPence
       })
-      totalPaymentPence += paymentPence
+      totalPaymentPence += Math.floor(paymentPence)
     }
 
     for (const [id, agreementItem] of Object.entries(agreementLevelItems)) {
@@ -188,7 +188,7 @@ export const calculateScheduledPayments = (
         agreementLevelItemId: Number(id),
         paymentPence
       })
-      totalPaymentPence += paymentPence
+      totalPaymentPence += Math.floor(paymentPence)
     }
 
     return {
