@@ -47,7 +47,7 @@ jobs:
 
   contract-tests:
     name: Run Pact Contract Tests
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
     runs-on: self-hosted
     steps:
       - name: Mask secrets
