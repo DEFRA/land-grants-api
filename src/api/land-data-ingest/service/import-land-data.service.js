@@ -59,7 +59,8 @@ async function importData(dataStream, tableName, logger) {
       category: logCategory,
       operation: `${tableName}_import_temp_table`,
       message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
-      context: { tableName, tempTableCount: tempTableCount.rows[0].count }
+      context: { tableName, tempTableCount: tempTableCount.rows[0].count },
+      outcome: tempTableCount.rows[0].count
     })
 
     const result = await client.query(
@@ -72,7 +73,8 @@ async function importData(dataStream, tableName, logger) {
       category: logCategory,
       operation: `${tableName}_import_completed`,
       message: `${tableName} imported successfully in ${duration}ms`,
-      context: { rowCount: result.rowCount, duration }
+      context: { rowCount: result.rowCount, duration },
+      outcome: duration
     })
   } catch (error) {
     logBusinessError(logger, {
