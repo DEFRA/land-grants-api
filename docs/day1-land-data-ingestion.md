@@ -43,12 +43,12 @@ The [import-land-data](./import-land-data) batch file can be run on the CDP term
 List of files to upload:
 
 - [import-land-data](../scripts/import-land-data/import-land-data)
-- [create_land_covers_temp_table.sql](../scripts/import-land-data/land_covers/create_land_covers_temp_table.sql)
-- [insert_land_covers.sql](../scripts/import-land-data/land_covers/insert_land_covers.sql)
-- [create_land_parcels_temp_table.sql](../scripts/import-land-data/land_parcels/create_land_parcels_temp_table.sql)
-- [insert_land_parcels.sql](../scripts/import-land-data/land_parcels/insert_land_parcels.sql)
-- [create_moorland_designations_temp_table.sql](../scripts/import-land-data/moorland_designations/create_moorland_designations_temp_table.sql)
-- [insert_moorland_designations.sql](../scripts/import-land-data/moorland_designations/insert_moorland_designations.sql)
+- [create_land_covers_temp_table.sql](../src/api/land-data-ingest/sql/land_covers/create_land_covers_temp_table.sql)
+- [insert_land_covers.sql](../src/api/land-data-ingest/sql/land_covers/insert_land_covers.sql)
+- [create_land_parcels_temp_table.sql](../src/api/land-data-ingest/sql/land_parcels/create_land_parcels_temp_table.sql)
+- [insert_land_parcels.sql](../src/api/land-data-ingest/sql/land_parcels/insert_land_parcels.sql)
+- [create_moorland_designations_temp_table.sql](../src/api/land-data-ingest/sql/moorland_designations/create_moorland_designations_temp_table.sql)
+- [insert_moorland_designations.sql](../src/api/land-data-ingest/sql/moorland_designations/insert_moorland_designations.sql)
 - all the land data csv files
 
 give the batch file permissions
