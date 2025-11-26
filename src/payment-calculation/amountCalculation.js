@@ -33,10 +33,10 @@ export const calculateAnnualAndAgreementTotals = (
 ) => {
   let annualTotalPence = 0
   for (const [, parcelItem] of Object.entries(parcelItems)) {
-    annualTotalPence += Math.floor(parcelItem.annualPaymentPence ?? 0)
+    annualTotalPence += parcelItem.annualPaymentPence ?? 0
   }
   for (const [, agreementItem] of Object.entries(agreementItems)) {
-    annualTotalPence += Math.floor(agreementItem.annualPaymentPence ?? 0)
+    annualTotalPence += agreementItem.annualPaymentPence ?? 0
   }
 
   return {
@@ -58,7 +58,7 @@ export const reconcilePaymentAmounts = (
   payments
 ) => {
   const { adjustedPayments, explanations } =
-    shiftTotalPenniesToFirstScheduledPayment(payments)
+    shiftTotalPenniesToFirstScheduledPayment(payments, parcelItems)
 
   return {
     parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
@@ -73,38 +73,29 @@ export const reconcilePaymentAmounts = (
  * @param {Array<ScheduledPayment>} payments
  * @returns {{adjustedPayments: Array<ScheduledPayment>, explanations: Array<string>}}
  */
-const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
+const shiftTotalPenniesToFirstScheduledPayment = (payments, parcelItems) => {
   if (!payments.length) {
     return { adjustedPayments: [], explanations: [] }
   }
 
   const explanations = []
-
-  let adjustedPayments = structuredClone(payments)
-  const firstPayment = adjustedPayments[0]
-  const hasDecimals = firstPayment.totalPaymentPence % 1
+  const adjustedPayments = structuredClone(payments)
   let decimalsForAllPayments = 0
 
-  if (hasDecimals) {
-    decimalsForAllPayments = adjustedPayments.reduce((acc, payment) => {
-      const decimals = payment.totalPaymentPence % 1
-      return acc + decimals
-    }, 0)
-
-    adjustedPayments = adjustedPayments.map((adjustedPayment) => ({
-      ...adjustedPayment,
-      totalPaymentPence: Math.floor(adjustedPayment.totalPaymentPence)
-    }))
-
-    adjustedPayments[0].totalPaymentPence += decimalsForAllPayments
-    adjustedPayments[0].totalPaymentPence = Math.floor(
-      adjustedPayments[0].totalPaymentPence
-    )
-
+  for (const [, parcelItem] of Object.entries(parcelItems)) {
+    const penniesToShift =
+      (parcelItem.annualPaymentPence * parcelItem.durationYears) %
+      payments.length
     explanations.push(
-      `- Shifting pennies to first payment: ${hasDecimals} x 4 quarters x 3 years => ${decimalsForAllPayments} pence`
+      `- Shifting pennies to first payment: ${parcelItem.annualPaymentPence} * ${parcelItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
     )
+
+    decimalsForAllPayments += penniesToShift
   }
+
+  adjustedPayments[0].totalPaymentPence = Math.round(
+    adjustedPayments[0].totalPaymentPence + decimalsForAllPayments
+  )
 
   explanations.push(
     `- TOTAL: ${adjustedPayments[0].totalPaymentPence} pence/year`,
@@ -169,6 +160,7 @@ export const calculateScheduledPayments = (
   schedule
 ) => {
   const paymentsPerYear = calculatePaymentsPerYear(schedule)
+
   return schedule.map((paymentDate) => {
     const lineItems = []
     let totalPaymentPence = 0
@@ -179,7 +171,7 @@ export const calculateScheduledPayments = (
         parcelItemId: Number(id),
         paymentPence
       })
-      totalPaymentPence += paymentPence
+      totalPaymentPence += Math.floor(paymentPence)
     }
 
     for (const [id, agreementItem] of Object.entries(agreementLevelItems)) {
@@ -188,7 +180,7 @@ export const calculateScheduledPayments = (
         agreementLevelItemId: Number(id),
         paymentPence
       })
-      totalPaymentPence += paymentPence
+      totalPaymentPence += Math.floor(paymentPence)
     }
 
     return {
@@ -214,8 +206,11 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
-  annualPaymentPence:
-    gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity,
+  annualPaymentPence: Math.round(
+    gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity
+  ),
+  // annualPaymentPence:
+  //   gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity,
   sheetId: parcel.sheetId,
   parcelId: parcel.parcelId
 })
