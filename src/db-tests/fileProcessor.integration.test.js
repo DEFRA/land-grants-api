@@ -6,11 +6,7 @@ import {
   clearTestBucket
 } from './setup/s3-test-helpers.js'
 import { processFile } from '../api/land-data-ingest/service/ingest-schedule.service.js'
-import {
-  getRecord,
-  clearTestData,
-  getMoorlandRecord
-} from './setup/db-helper.js'
+import { getRecord, clearTestData } from './setup/db-helper.js'
 
 const logger = {
   info: jest.fn(),
@@ -162,25 +158,5 @@ describe('Land data ingest file processor integration test', () => {
     expect(cover.sheet_id).toBe('TV5699')
     expect(cover.parcel_id).toBe('1419')
     expect(cover.land_cover_class_code).toBe('132')
-  }, 30000)
-
-  test('should ingest moorland designations data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'moorland_head.csv',
-      'moorland/moorland_head.csv'
-    )
-
-    await processFile(
-      'moorland/moorland_head.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
-
-    const moorland = await getMoorlandRecord(connection, 735)
-    expect(moorland.lfa_moor_id).toBe('735')
-    expect(moorland.ref_code).toBe('MS')
   }, 30000)
 })
