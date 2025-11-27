@@ -27,13 +27,20 @@ const formatContext = (context) => {
  * @param {string} [options.operation] - What operation occurred
  * @param {string} options.message - Custom message
  * @param {object} [options.context]
+ * @param {string} [options.kind] - The kind of event
+ * @param {any} [options.outcome] - The outcome of the event
  */
-export const logInfo = (logger, { category, operation, message, context }) => {
+export const logInfo = (
+  logger,
+  { category, operation, message, context, kind, outcome }
+) => {
   const logData = {
     event: {
       category,
       action: operation,
-      type: 'info'
+      type: 'info',
+      kind,
+      outcome
     }
   }
 
