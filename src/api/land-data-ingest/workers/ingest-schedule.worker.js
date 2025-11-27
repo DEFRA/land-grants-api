@@ -40,6 +40,7 @@ async function importLandData(file) {
   const logger = createLogger()
   const s3Client = createS3Client()
   const [resourceType, ...rest] = file.split('/')
+  const ingestId = rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
 
@@ -83,13 +84,13 @@ async function importLandData(file) {
 
     switch (resourceType) {
       case 'parcels':
-        await importLandParcels(bodyContents, logger)
+        await importLandParcels(bodyContents, ingestId, logger)
         break
       case 'covers':
-        await importLandCovers(bodyContents, logger)
+        await importLandCovers(bodyContents, ingestId, logger)
         break
       case 'moorland':
-        await importMoorlandDesignations(bodyContents, logger)
+        await importMoorlandDesignations(bodyContents, ingestId, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)
