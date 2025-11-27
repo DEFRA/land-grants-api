@@ -55,3 +55,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  contract-tests:
+    name: Run Pact Contract Tests
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Mask secrets
+        run: |
+          echo "::add-mask::$PACT_USER"
+          echo "::add-mask::$PACT_PASS"
+
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Fetch latest tags
+        run: git fetch --tags --force
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Run Contract Tests
+        env:
+          PACT_BROKER_BASE_URL: https://ffc-pact-broker.azure.defra.cloud
+          PACT_PUBLISH_VERIFICATION: true
+        run: |
+          export PACT_BROKER_USERNAME="$PACT_USER"
+          export PACT_BROKER_PASSWORD="$PACT_PASS"
+          npm ci --ignore-scripts
+          npm run test:contracts
