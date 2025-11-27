@@ -90,11 +90,12 @@ const shiftTotalPenniesToFirstScheduledPayment = (
 
   const explanations = []
   const adjustedPayments = structuredClone(payments)
+  const firstAdjustedPayment = adjustedPayments[0]
   let decimalsForAllPayments = 0
 
   // Note: this calculates the total number of pennies to shift to the first payment
   // Note: use the parcelItems annualPaymentPence, as this contains the correct annualPaymentPence
-  for (const [, parcelItem] of Object.entries(parcelItems)) {
+  for (const [parcelItemId, parcelItem] of Object.entries(parcelItems)) {
     const penniesToShift =
       (parcelItem.annualPaymentPence * parcelItem.durationYears) %
       payments.length
@@ -102,11 +103,21 @@ const shiftTotalPenniesToFirstScheduledPayment = (
       `- Shifting ${penniesToShift} pennies to first payment for parcel ${parcelItem.code}: ${parcelItem.annualPaymentPence} * ${parcelItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
     )
 
+    // add pennies for each individual line item of the first payment
+    const lineItemIndex = firstAdjustedPayment.lineItems.findIndex(
+      (item) => item.parcelItemId === Number(parcelItemId)
+    )
+    if (lineItemIndex > -1) {
+      firstAdjustedPayment.lineItems[lineItemIndex].paymentPence +=
+        penniesToShift
+    }
     decimalsForAllPayments += penniesToShift
   }
 
   // Note: shift any pennies on the agreement items to the first payment
-  for (const [, agreementItem] of Object.entries(agreementItems)) {
+  for (const [agreementItemId, agreementItem] of Object.entries(
+    agreementItems
+  )) {
     const penniesToShift =
       (agreementItem.annualPaymentPence * agreementItem.durationYears) %
       payments.length
@@ -114,17 +125,25 @@ const shiftTotalPenniesToFirstScheduledPayment = (
       `- Shifting ${penniesToShift} pennies to first payment for agreement ${agreementItem.code}: ${agreementItem.annualPaymentPence} * ${agreementItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
     )
 
+    // add pennies for each individual line item of the first payment
+    const agreementItemIndex = firstAdjustedPayment.lineItems.findIndex(
+      (item) => item.agreementLevelItemId === Number(agreementItemId)
+    )
+    if (agreementItemIndex > -1) {
+      firstAdjustedPayment.lineItems[agreementItemIndex].paymentPence +=
+        penniesToShift
+    }
     decimalsForAllPayments += penniesToShift
   }
 
   // add the total number of pennies to shift to the first payment
-  adjustedPayments[0].totalPaymentPence = Math.round(
-    adjustedPayments[0].totalPaymentPence + decimalsForAllPayments
+  firstAdjustedPayment.totalPaymentPence = Math.round(
+    firstAdjustedPayment.totalPaymentPence + decimalsForAllPayments
   )
 
   explanations.push(
-    `- TOTAL: ${adjustedPayments[0].totalPaymentPence} pence/year`,
-    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1].totalPaymentPence} + ${decimalsForAllPayments} = ${adjustedPayments[0].totalPaymentPence}} pence`,
+    `- TOTAL: ${firstAdjustedPayment.totalPaymentPence} pence/year`,
+    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1].totalPaymentPence} + ${decimalsForAllPayments} = ${firstAdjustedPayment.totalPaymentPence}} pence`,
     `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1].totalPaymentPence} pence`
   )
 
