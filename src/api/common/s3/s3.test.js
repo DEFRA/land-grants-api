@@ -205,43 +205,6 @@ describe('S3 Buckets', () => {
       jest.clearAllMocks()
     })
 
-    // const createMockStream = (content) => {
-    //   const stream = new Readable()
-    //   stream.push(content)
-    //   stream.push(null)
-    //   return stream
-    // }
-
-    // const createMockResponse = (content) => {
-    //   return {
-    //     Body: {
-    //       transformToWebStream: jest
-    //         .fn()
-    //         .mockResolvedValue(createMockStream(content))
-    //     }
-    //   }
-    // }
-
-    // eslint-disable-next-line jest/no-disabled-tests
-    // describe('Get file from s3 bucket', () => {
-    //   test('should return file content as readable stream', async () => {
-    //     const content = 'test'
-    //     const mockResponse = createMockResponse(content)
-    //     mockS3Client.send.mockResolvedValue(mockResponse)
-
-    //     const result = await getFile(mockS3Client, 'test-bucket', 'file.txt')
-
-    //     expect(mockS3Client.send).toHaveBeenCalledTimes(1)
-    //     expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
-    //       input: {
-    //         Bucket: 'test-bucket',
-    //         Key: 'file.txt'
-    //       }
-    //     })
-    //     expect(result).toBeInstanceOf(Readable)
-    //   })
-    // })
-
     describe('error handling', () => {
       test('should throw error with bucket and key when S3 call fails', async () => {
         const s3Error = new Error('Access Denied')
@@ -331,6 +294,21 @@ describe('S3 Buckets', () => {
     }
 
     describe('Move file within bucket', () => {
+      test('should throw error when source file does not exist', async () => {
+        mockS3Client.send.mockResolvedValueOnce({})
+
+        await expect(
+          moveFile(
+            mockS3Client,
+            'my-bucket',
+            'source-file.txt',
+            'dest-file.txt'
+          )
+        ).rejects.toThrow(
+          'Failed to move file from my-bucket/source-file.txt to my-bucket/dest-file.txt: Source file "my-bucket/source-file.txt" does not exist'
+        )
+      })
+
       test('should successfully move file within same bucket', async () => {
         const mockCopyResult = createMockCopyResult()
         const mockDeleteResult = createMockDeleteResult()
