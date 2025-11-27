@@ -271,66 +271,7 @@ describe('createPaymentItems', () => {
     expect(agreementItems).toEqual({})
   })
 
-  it('should return a list of parcel items with payment info', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [
-          {
-            code: 'CMOR1',
-            quantity: 0.34
-          }
-        ]
-      }
-    ]
-
-    const { parcelItems } = createPaymentItems(parcels, mockEnabledActions)
-
-    expect(parcelItems).toEqual({
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
-        durationYears: 3,
-        unit: 'ha',
-        quantity: 0.34,
-        rateInPence: 1060,
-        annualPaymentPence: 360,
-        sheetId: 'SD5253',
-        parcelId: '5484'
-      }
-    })
-  })
-
-  it('should return a list of agreement items with payment info', () => {
-    const parcels = [
-      {
-        sheetId: 'SD5253',
-        parcelId: '5484',
-        actions: [
-          {
-            code: 'CMOR1',
-            quantity: 0.34
-          }
-        ]
-      }
-    ]
-
-    const { agreementItems } = createPaymentItems(parcels, mockEnabledActions)
-
-    expect(agreementItems).toEqual({
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        durationYears: 3,
-        version: 1,
-        annualPaymentPence: 27200
-      }
-    })
-  })
-
-  it('should return a list of parcel items with payment info for different parcel ids', () => {
+  it('should return parcel and agreement items with payment info for multiple parcels', () => {
     const parcels = [
       {
         sheetId: 'SD5253',
@@ -354,7 +295,10 @@ describe('createPaymentItems', () => {
       }
     ]
 
-    const { parcelItems } = createPaymentItems(parcels, mockEnabledActions)
+    const { parcelItems, agreementItems } = createPaymentItems(
+      parcels,
+      mockEnabledActions
+    )
 
     expect(parcelItems).toEqual({
       1: {
@@ -380,6 +324,16 @@ describe('createPaymentItems', () => {
         annualPaymentPence: 1049,
         sheetId: 'SD5444',
         parcelId: '1234'
+      }
+    })
+
+    expect(agreementItems).toEqual({
+      1: {
+        code: 'CMOR1',
+        description: 'CMOR1: Assess moorland and produce a written record',
+        durationYears: 3,
+        version: 1,
+        annualPaymentPence: 27200
       }
     })
   })
@@ -537,59 +491,49 @@ describe('createPaymentItems', () => {
 
     expect(agreementItems).toEqual({})
   })
-})
 
-describe('reconcilePaymentAmounts', () => {
-  it('should shift extra pennies to the first scheduled payment', () => {
-    const payments = [
+  it('should skip actions that are not in the enabled actions list', () => {
+    const parcels = [
       {
-        lineItems: [],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 1916.783
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-02-05',
-        totalPaymentPence: 1916.783
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-05-05',
-        totalPaymentPence: 1916.783
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-08-05',
-        totalPaymentPence: 1916.783
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [
+          { code: 'CMOR1', quantity: 0.34 },
+          { code: 'UNKNOWN_ACTION', quantity: 1.5 }
+        ]
       }
     ]
 
-    const response = reconcilePaymentAmounts([], [], payments)
+    const { parcelItems } = createPaymentItems(parcels, mockEnabledActions)
 
-    expect(response.payments).toEqual([
-      {
-        lineItems: [],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 1917
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-02-05',
-        totalPaymentPence: 1916.783
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-05-05',
-        totalPaymentPence: 1916.783
-      },
-      {
-        lineItems: [],
-        paymentDate: '2026-08-05',
-        totalPaymentPence: 1916.783
-      }
-    ])
+    expect(Object.keys(parcelItems)).toHaveLength(1)
+    expect(parcelItems[1].code).toBe('CMOR1')
   })
 
+  it('should handle multiple actions on same parcel with one having agreement payment', () => {
+    const parcels = [
+      {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [
+          { code: 'CMOR1', quantity: 0.34 },
+          { code: 'UPL1', quantity: 2.5 }
+        ]
+      }
+    ]
+
+    const { parcelItems, agreementItems } = createPaymentItems(
+      parcels,
+      mockEnabledActions
+    )
+
+    expect(Object.keys(parcelItems)).toHaveLength(2)
+    expect(Object.keys(agreementItems)).toHaveLength(1)
+    expect(agreementItems[1].code).toBe('CMOR1')
+  })
+})
+
+describe('reconcilePaymentAmounts', () => {
   it('should floor round line items payments from payments input', () => {
     const payments = [
       {
@@ -636,62 +580,6 @@ describe('reconcilePaymentAmounts', () => {
     ])
   })
 
-  it('should round parcel level items payment amount from input', () => {
-    const parcelItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        quantity: 0.34,
-        rateInPence: 1060,
-        annualPaymentPence: 360
-      },
-      2: {
-        code: 'UPL1',
-        quantity: 2.5,
-        rateInPence: 2000,
-        annualPaymentPence: 5000.23
-      }
-    }
-
-    const result = reconcilePaymentAmounts(parcelItems, [], [])
-
-    expect(result.parcelItems).toEqual({
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        quantity: 0.34,
-        rateInPence: 1060,
-        annualPaymentPence: 360
-      },
-      2: {
-        code: 'UPL1',
-        quantity: 2.5,
-        rateInPence: 2000,
-        annualPaymentPence: 5000.23
-      }
-    })
-  })
-
-  it('should round agreement level items payment amount from input', () => {
-    const agreementItems = {
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        annualPaymentPence: 272.123
-      }
-    }
-
-    const result = reconcilePaymentAmounts([], agreementItems, [])
-
-    expect(result.agreementLevelItems).toEqual({
-      1: {
-        code: 'CMOR1',
-        description: 'CMOR1: Assess moorland and produce a written record',
-        annualPaymentPence: 272.123
-      }
-    })
-  })
-
   it('should return empty arrays if no payments are passed', () => {
     const result = reconcilePaymentAmounts([], [], [])
 
@@ -700,6 +588,206 @@ describe('reconcilePaymentAmounts', () => {
       content: [],
       title: 'Payment calculation'
     })
+  })
+
+  it('should shift pennies to specific line items in first payment for parcel items', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        annualPaymentPence: 360,
+        durationYears: 3
+      },
+      2: {
+        code: 'CSAM1',
+        annualPaymentPence: 870,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 90 },
+          { parcelItemId: 2, paymentPence: 217.5 }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 307.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 90 },
+          { parcelItemId: 2, paymentPence: 217.5 }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 307.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 90 },
+          { parcelItemId: 2, paymentPence: 217.5 }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 307.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 90 },
+          { parcelItemId: 2, paymentPence: 217.5 }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 307.5
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(parcelItems, {}, payments)
+
+    // First payment should have pennies shifted to line items
+    // parcelItem 1: (360 * 3) % 4 = 0 pennies
+    // parcelItem 2: (870 * 3) % 4 = 2 pennies
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 90 },
+      { parcelItemId: 2, paymentPence: 219 } // 217 + 2
+    ])
+
+    // Other payments should have line items floored
+    expect(result.payments[1].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 90 },
+      { parcelItemId: 2, paymentPence: 217 } // floor(217.5)
+    ])
+  })
+
+  it('should shift pennies to specific line items in first payment for agreement items', () => {
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        annualPaymentPence: 27200,
+        durationYears: 3
+      },
+      2: {
+        code: 'CSAM1',
+        annualPaymentPence: 9700,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [
+          { agreementLevelItemId: 1, paymentPence: 6800 },
+          { agreementLevelItemId: 2, paymentPence: 2425 }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 9225
+      },
+      {
+        lineItems: [
+          { agreementLevelItemId: 1, paymentPence: 6800 },
+          { agreementLevelItemId: 2, paymentPence: 2425 }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 9225
+      },
+      {
+        lineItems: [
+          { agreementLevelItemId: 1, paymentPence: 6800 },
+          { agreementLevelItemId: 2, paymentPence: 2425 }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 9225
+      },
+      {
+        lineItems: [
+          { agreementLevelItemId: 1, paymentPence: 6800 },
+          { agreementLevelItemId: 2, paymentPence: 2425 }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 9225
+      }
+    ]
+
+    const result = reconcilePaymentAmounts({}, agreementItems, payments)
+
+    // agreementItem 1: (27200 * 3) % 4 = 0 pennies
+    // agreementItem 2: (9700 * 3) % 4 = 0 pennies
+    expect(result.payments[0].lineItems).toEqual([
+      { agreementLevelItemId: 1, paymentPence: 6800 },
+      { agreementLevelItemId: 2, paymentPence: 2425 }
+    ])
+  })
+
+  it('should shift pennies to both parcel and agreement line items in first payment', () => {
+    const parcelItems = {
+      1: {
+        code: 'TEST1',
+        annualPaymentPence: 333,
+        durationYears: 3
+      }
+    }
+
+    const agreementItems = {
+      1: {
+        code: 'TEST1',
+        annualPaymentPence: 555,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 83.25 },
+          { agreementLevelItemId: 1, paymentPence: 138.75 }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 222
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 83.25 },
+          { agreementLevelItemId: 1, paymentPence: 138.75 }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 222
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 83.25 },
+          { agreementLevelItemId: 1, paymentPence: 138.75 }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 222
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 83.25 },
+          { agreementLevelItemId: 1, paymentPence: 138.75 }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 222
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(
+      parcelItems,
+      agreementItems,
+      payments
+    )
+
+    // parcelItem 1: (333 * 3) % 4 = 999 % 4 = 3 pennies
+    // agreementItem 1: (555 * 3) % 4 = 1665 % 4 = 1 penny
+    // Total shifted: 4 pennies
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 86 }, // floor(83.25) + 3 = 83 + 3
+      { agreementLevelItemId: 1, paymentPence: 139 } // floor(138.75) + 1 = 138 + 1
+    ])
+
+    expect(result.payments[0].totalPaymentPence).toBe(226) // 222 + 4
+
+    // Other payments should just be floored
+    expect(result.payments[1].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 83 },
+      { agreementLevelItemId: 1, paymentPence: 138 }
+    ])
   })
 })
 
