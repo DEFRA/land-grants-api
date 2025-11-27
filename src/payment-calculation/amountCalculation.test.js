@@ -905,6 +905,50 @@ describe('reconcilePaymentAmounts', () => {
     expect(result.parcelItems).toBe(parcelItems)
     expect(result.agreementLevelItems).toBe(agreementItems)
   })
+
+  it('should handle when line item is not found in first payment', () => {
+    const parcelItems = {
+      1: {
+        code: 'CMOR1',
+        annualPaymentPence: 360,
+        durationYears: 3
+      },
+      999: {
+        code: 'MISSING',
+        annualPaymentPence: 111,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [{ parcelItemId: 1, paymentPence: 90 }],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 90
+      },
+      {
+        lineItems: [{ parcelItemId: 1, paymentPence: 90 }],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 90
+      },
+      {
+        lineItems: [{ parcelItemId: 1, paymentPence: 90 }],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 90
+      },
+      {
+        lineItems: [{ parcelItemId: 1, paymentPence: 90 }],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 90
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(parcelItems, {}, payments)
+
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 90 }
+    ])
+  })
 })
 
 describe('calculateScheduledPayments', () => {
