@@ -87,7 +87,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         durationYears
       )
 
-    expect(agreementTotalPence).toBe(82680)
+    expect(agreementTotalPence).toBe(82681)
     expect(annualTotalPence).toBe(27560)
   })
 
@@ -132,7 +132,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
         durationYears
       )
 
-    expect(agreementTotalPence).toBe(97680)
+    expect(agreementTotalPence).toBe(97681)
     expect(annualTotalPence).toBe(32560) // CMOR1 -> (0.34 * 1060 + 27200) + (2.5 * 2000)
   })
 
@@ -296,7 +296,7 @@ describe('createPaymentItems', () => {
         unit: 'ha',
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003,
+        annualPaymentPence: 360,
         sheetId: 'SD5253',
         parcelId: '5484'
       }
@@ -365,7 +365,7 @@ describe('createPaymentItems', () => {
         durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003,
+        annualPaymentPence: 360,
         sheetId: 'SD5253',
         parcelId: '5484'
       },
@@ -377,7 +377,7 @@ describe('createPaymentItems', () => {
         durationYears: 3,
         quantity: 0.99,
         rateInPence: 1060,
-        annualPaymentPence: 1049.4,
+        annualPaymentPence: 1049,
         sheetId: 'SD5444',
         parcelId: '1234'
       }
@@ -477,7 +477,7 @@ describe('createPaymentItems', () => {
         durationYears: 3,
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003,
+        annualPaymentPence: 360,
         sheetId: 'SD5253',
         unit: 'ha'
       },
@@ -570,22 +570,22 @@ describe('reconcilePaymentAmounts', () => {
       {
         lineItems: [],
         paymentDate: '2025-11-05',
-        totalPaymentPence: 1919
+        totalPaymentPence: 1917
       },
       {
         lineItems: [],
         paymentDate: '2026-02-05',
-        totalPaymentPence: 1916
+        totalPaymentPence: 1916.783
       },
       {
         lineItems: [],
         paymentDate: '2026-05-05',
-        totalPaymentPence: 1916
+        totalPaymentPence: 1916.783
       },
       {
         lineItems: [],
         paymentDate: '2026-08-05',
-        totalPaymentPence: 1916
+        totalPaymentPence: 1916.783
       }
     ])
   })
@@ -643,7 +643,7 @@ describe('reconcilePaymentAmounts', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003
+        annualPaymentPence: 360
       },
       2: {
         code: 'UPL1',
@@ -667,7 +667,7 @@ describe('reconcilePaymentAmounts', () => {
         code: 'UPL1',
         quantity: 2.5,
         rateInPence: 2000,
-        annualPaymentPence: 5000
+        annualPaymentPence: 5000.23
       }
     })
   })
@@ -687,7 +687,7 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        annualPaymentPence: 272
+        annualPaymentPence: 272.123
       }
     })
   })
@@ -744,7 +744,7 @@ describe('calculateScheduledPayments', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003
+        annualPaymentPence: 360
       },
       2: {
         code: 'UPL1',
@@ -785,15 +785,16 @@ describe('calculateScheduledPayments', () => {
     )
 
     // CMOR1 => (1060 * 0.34) / 4
-    const cmor1ParcelPayment = (1060 * 0.34) / 4
-    const cmor1AgreementPayment = 27200 / 4
+    const cmor1ParcelPayment = Math.floor((1060 * 0.34) / 4)
+    const cmor1AgreementPayment = Math.floor(27200 / 4)
     const upl1ParcelPayment = (2.5 * 2000) / 4
     const upl2ParcelPayment = (0.94 * 5300) / 4
-    const totalPaymentPence =
+    const totalPaymentPence = Math.floor(
       cmor1ParcelPayment +
-      cmor1AgreementPayment +
-      upl1ParcelPayment +
-      upl2ParcelPayment
+        cmor1AgreementPayment +
+        upl1ParcelPayment +
+        upl2ParcelPayment
+    )
 
     const lineItems = [
       {
@@ -830,7 +831,7 @@ describe('calculateScheduledPayments', () => {
         description: 'CMOR1: Assess moorland and produce a written record',
         quantity: 0.34,
         rateInPence: 1060,
-        annualPaymentPence: 360.40000000000003
+        annualPaymentPence: 360
       },
       2: {
         code: 'UPL1',
@@ -862,8 +863,8 @@ describe('calculateScheduledPayments', () => {
     )
 
     // CMOR1 => (1060 * 0.34) / 4
-    const cmor1ParcelPayment = 1060 * 0.34
-    const cmor1AgreementPayment = 27200
+    const cmor1ParcelPayment = Math.floor(1060 * 0.34)
+    const cmor1AgreementPayment = Math.floor(27200)
     const upl1ParcelPayment = 2.5 * 2000
     const upl2ParcelPayment = 0.94 * 5300
     const totalPaymentPence =
