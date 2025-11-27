@@ -2,8 +2,10 @@ import {
   ListObjectsV2Command,
   GetObjectCommand,
   CopyObjectCommand,
-  DeleteObjectCommand
+  DeleteObjectCommand,
+  HeadObjectCommand
 } from '@aws-sdk/client-s3'
+import { s3IngestFolders } from '../../land-data-ingest/s3-folders.js'
 
 /**
  * Get files from S3 bucket root directory only (excludes subfolders)
@@ -65,9 +67,19 @@ export async function getFile(s3Client, bucket, key) {
  * @returns {Promise<object>} Result object with success status and details
  */
 export async function moveFile(s3Client, bucket, sourceKey, destinationKey) {
+  const sourcePath = `${bucket}/${sourceKey}`
   try {
+    const headCommand = new HeadObjectCommand({
+      Bucket: bucket,
+      Key: sourceKey
+    })
+    const headResult = await s3Client.send(headCommand)
+    if (!headResult.LastModified) {
+      throw new Error(`Source file "${sourcePath}" does not exist`)
+    }
+
     const copyCommand = new CopyObjectCommand({
-      CopySource: `${bucket}/${sourceKey}`,
+      CopySource: sourcePath,
       Bucket: bucket,
       Key: destinationKey
     })
@@ -100,7 +112,7 @@ export async function moveFile(s3Client, bucket, sourceKey, destinationKey) {
  * @returns {string} The configured S3 key
  */
 export const failedBucketPath = (key) => {
-  return `failed/${key}`
+  return `${s3IngestFolders.FAILED}/${key}`
 }
 
 /**
@@ -109,7 +121,7 @@ export const failedBucketPath = (key) => {
  * @returns {string} The configured S3 key
  */
 export const processingBucketPath = (key) => {
-  return `processing/${key}`
+  return `${s3IngestFolders.PROCESSING}/${key}`
 }
 
 /**
@@ -118,7 +130,7 @@ export const processingBucketPath = (key) => {
  * @returns {string} The configured S3 key
  */
 export const completedBucketPath = (key) => {
-  return `completed/${key}`
+  return `${s3IngestFolders.COMPLETED}/${key}`
 }
 
 /**
