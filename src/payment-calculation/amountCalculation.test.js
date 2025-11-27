@@ -789,6 +789,122 @@ describe('reconcilePaymentAmounts', () => {
       { agreementLevelItemId: 1, paymentPence: 138 }
     ])
   })
+
+  it('should correctly shift pennies when there is only one payment', () => {
+    const parcelItems = {
+      1: {
+        code: 'TEST1',
+        annualPaymentPence: 870,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [{ parcelItemId: 1, paymentPence: 2610 }],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 2610
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(parcelItems, {}, payments)
+
+    // With only 1 payment: (870 * 3) % 1 = 0 pennies to shift
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 2610 }
+    ])
+    expect(result.payments[0].totalPaymentPence).toBe(2610)
+  })
+
+  it('should handle decimal pennies that need shifting across multiple items', () => {
+    const parcelItems = {
+      1: {
+        code: 'ITEM1',
+        annualPaymentPence: 111,
+        durationYears: 3
+      },
+      2: {
+        code: 'ITEM2',
+        annualPaymentPence: 222,
+        durationYears: 3
+      },
+      3: {
+        code: 'ITEM3',
+        annualPaymentPence: 333,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27.75 },
+          { parcelItemId: 2, paymentPence: 55.5 },
+          { parcelItemId: 3, paymentPence: 83.25 }
+        ],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 166.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27.75 },
+          { parcelItemId: 2, paymentPence: 55.5 },
+          { parcelItemId: 3, paymentPence: 83.25 }
+        ],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 166.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27.75 },
+          { parcelItemId: 2, paymentPence: 55.5 },
+          { parcelItemId: 3, paymentPence: 83.25 }
+        ],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 166.5
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27.75 },
+          { parcelItemId: 2, paymentPence: 55.5 },
+          { parcelItemId: 3, paymentPence: 83.25 }
+        ],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 166.5
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(parcelItems, {}, payments)
+
+    // Total: 6 pennies shifted to first payment
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 28 }, // floor(27.75) + 1 = 27 + 1
+      { parcelItemId: 2, paymentPence: 57 }, // floor(55.5) + 2 = 55 + 2
+      { parcelItemId: 3, paymentPence: 86 } // floor(83.25) + 3 = 83 + 3
+    ])
+    expect(result.payments[0].totalPaymentPence).toBe(173) // Math.round(166.5 + 6) = Math.round(172.5)
+
+    // Other payments should just be floored
+    expect(result.payments[1].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 27 },
+      { parcelItemId: 2, paymentPence: 55 },
+      { parcelItemId: 3, paymentPence: 83 }
+    ])
+  })
+
+  it('should return parcel and agreement items unchanged', () => {
+    const parcelItems = {
+      1: { code: 'CMOR1', annualPaymentPence: 360 }
+    }
+    const agreementItems = {
+      1: { code: 'CMOR1', annualPaymentPence: 27200 }
+    }
+
+    const result = reconcilePaymentAmounts(parcelItems, agreementItems, [])
+
+    expect(result.parcelItems).toBe(parcelItems)
+    expect(result.agreementLevelItems).toBe(agreementItems)
+  })
 })
 
 describe('calculateScheduledPayments', () => {
