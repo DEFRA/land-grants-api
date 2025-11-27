@@ -86,6 +86,15 @@ describe('Calculate payments', () => {
         Number(expectedPaymentOtherQuarters)
       )
 
+      // does the sum of individual payment line items match the totalPaymentPence for the instalment?
+      for (const payment of result.payments) {
+        const sumOfTotalLineItems = payment.lineItems.reduce(
+          (acc, item) => acc + item.paymentPence,
+          0
+        )
+        expect(sumOfTotalLineItems).toEqual(payment.totalPaymentPence)
+      }
+
       // does the sum of total payments match the agreement total during the agreement length?
       const sumOfTotalsForInstalments = result.payments.reduce(
         (acc, p) => acc + p.totalPaymentPence,
