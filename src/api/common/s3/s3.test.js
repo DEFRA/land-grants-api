@@ -326,12 +326,17 @@ describe('S3 Buckets', () => {
       VersionId: 'version123'
     })
 
+    const mockHeadResult = {
+      LastModified: new Date('2025-01-01T00:00:00.000Z')
+    }
+
     describe('Move file within bucket', () => {
       test('should successfully move file within same bucket', async () => {
         const mockCopyResult = createMockCopyResult()
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -348,7 +353,7 @@ describe('S3 Buckets', () => {
         )
         expect(result.copyResult).toEqual(mockCopyResult)
         expect(result.deleteResult).toEqual(mockDeleteResult)
-        expect(mockS3Client.send).toHaveBeenCalledTimes(2)
+        expect(mockS3Client.send).toHaveBeenCalledTimes(3)
       })
 
       test('should call copy command with correct parameters', async () => {
@@ -356,6 +361,7 @@ describe('S3 Buckets', () => {
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -366,7 +372,7 @@ describe('S3 Buckets', () => {
           'new/path/file.txt'
         )
 
-        expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
+        expect(mockS3Client.send.mock.calls[1][0]).toMatchObject({
           input: {
             CopySource: 'my-bucket/path/to/file.txt',
             Bucket: 'my-bucket',
@@ -380,6 +386,7 @@ describe('S3 Buckets', () => {
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -390,7 +397,7 @@ describe('S3 Buckets', () => {
           'new/path/file.txt'
         )
 
-        expect(mockS3Client.send.mock.calls[1][0]).toMatchObject({
+        expect(mockS3Client.send.mock.calls[2][0]).toMatchObject({
           input: {
             Bucket: 'my-bucket',
             Key: 'path/to/file.txt'
@@ -403,6 +410,7 @@ describe('S3 Buckets', () => {
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -424,6 +432,7 @@ describe('S3 Buckets', () => {
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -435,7 +444,7 @@ describe('S3 Buckets', () => {
         )
 
         expect(result.success).toBe(true)
-        expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
+        expect(mockS3Client.send.mock.calls[1][0]).toMatchObject({
           input: {
             CopySource: 'my-bucket/file with spaces.txt'
           }
@@ -447,6 +456,7 @@ describe('S3 Buckets', () => {
         const mockDeleteResult = createMockDeleteResult()
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockResolvedValueOnce(mockDeleteResult)
 
@@ -465,7 +475,7 @@ describe('S3 Buckets', () => {
     })
 
     describe('Error handling', () => {
-      test('should throw error when copy operation fails', async () => {
+      test('should throw error when checking file exists', async () => {
         const copyError = new Error('Access Denied')
         mockS3Client.send.mockRejectedValue(copyError)
 
@@ -488,6 +498,7 @@ describe('S3 Buckets', () => {
         const deleteError = new Error('Delete failed')
 
         mockS3Client.send
+          .mockResolvedValueOnce(mockHeadResult)
           .mockResolvedValueOnce(mockCopyResult)
           .mockRejectedValueOnce(deleteError)
 
@@ -502,7 +513,7 @@ describe('S3 Buckets', () => {
           'Failed to move file from my-bucket/source-file.txt to my-bucket/dest-file.txt: Delete failed'
         )
 
-        expect(mockS3Client.send).toHaveBeenCalledTimes(2)
+        expect(mockS3Client.send).toHaveBeenCalledTimes(3)
       })
 
       test('should throw error when source file does not exist', async () => {
