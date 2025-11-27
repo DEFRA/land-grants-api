@@ -64,12 +64,9 @@ export const reconcilePaymentAmounts = (
       agreementItems
     )
 
-  // Note: createParcelPaymentItem() rounds the values in annualPaymentPence
-  // Note: so we can skip the rounding below as the values in annualPaymentPence are integer values
-
   return {
-    parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
-    agreementLevelItems: roundAnnualPaymentAmountForItems(agreementItems),
+    parcelItems,
+    agreementLevelItems: agreementItems,
     payments: roundPaymentAmountForPaymentLineItems(adjustedPayments),
     explanations: createExplanationSection('Payment calculation', explanations)
   }
@@ -133,19 +130,6 @@ const shiftTotalPenniesToFirstScheduledPayment = (
 
   return { adjustedPayments, explanations }
 }
-
-/**
- * Round annual payment pence amount for parcelItems / agreementLevelItems
- * @param {Array<PaymentAgreementItem | PaymentParcelItem>} items
- * @returns {object}
- */
-const roundAnnualPaymentAmountForItems = (items) =>
-  Object.fromEntries(
-    Object.entries(items).map(([id, item]) => [
-      id,
-      { ...item, annualPaymentPence: Math.floor(item.annualPaymentPence) }
-    ])
-  )
 
 /**
  * Round pence amounts for payment lineItems
