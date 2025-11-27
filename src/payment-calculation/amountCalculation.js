@@ -58,7 +58,14 @@ export const reconcilePaymentAmounts = (
   payments
 ) => {
   const { adjustedPayments, explanations } =
-    shiftTotalPenniesToFirstScheduledPayment(payments, parcelItems)
+    shiftTotalPenniesToFirstScheduledPayment(
+      payments,
+      parcelItems,
+      agreementItems
+    )
+
+  // Note: createParcelPaymentItem() rounds the values in annualPaymentPence
+  // Note: so we can skip the rounding below as the values in annualPaymentPence are integer values
 
   return {
     parcelItems: roundAnnualPaymentAmountForItems(parcelItems),
@@ -71,9 +78,15 @@ export const reconcilePaymentAmounts = (
 /**
  * Shifts payment pennies from all payments to the first scheduled payment
  * @param {Array<ScheduledPayment>} payments
+ * @param {Array<PaymentParcelItem>} parcelItems
+ * @param {Array<PaymentAgreementItem>} agreementItems
  * @returns {{adjustedPayments: Array<ScheduledPayment>, explanations: Array<string>}}
  */
-const shiftTotalPenniesToFirstScheduledPayment = (payments, parcelItems) => {
+const shiftTotalPenniesToFirstScheduledPayment = (
+  payments,
+  parcelItems,
+  agreementItems
+) => {
   if (!payments.length) {
     return { adjustedPayments: [], explanations: [] }
   }
@@ -82,17 +95,32 @@ const shiftTotalPenniesToFirstScheduledPayment = (payments, parcelItems) => {
   const adjustedPayments = structuredClone(payments)
   let decimalsForAllPayments = 0
 
+  // Note: this calculates the total number of pennies to shift to the first payment
+  // Note: use the parcelItems annualPaymentPence, as this contains the correct annualPaymentPence
   for (const [, parcelItem] of Object.entries(parcelItems)) {
     const penniesToShift =
       (parcelItem.annualPaymentPence * parcelItem.durationYears) %
       payments.length
     explanations.push(
-      `- Shifting pennies to first payment: ${parcelItem.annualPaymentPence} * ${parcelItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
+      `- Shifting ${penniesToShift} pennies to first payment for parcel ${parcelItem.code}: ${parcelItem.annualPaymentPence} * ${parcelItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
     )
 
     decimalsForAllPayments += penniesToShift
   }
 
+  // Note: shift any pennies on the agreement items to the first payment
+  for (const [, agreementItem] of Object.entries(agreementItems)) {
+    const penniesToShift =
+      (agreementItem.annualPaymentPence * agreementItem.durationYears) %
+      payments.length
+    explanations.push(
+      `- Shifting ${penniesToShift} pennies to first payment for agreement ${agreementItem.code}: ${agreementItem.annualPaymentPence} * ${agreementItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
+    )
+
+    decimalsForAllPayments += penniesToShift
+  }
+
+  // add the total number of pennies to shift to the first payment
   adjustedPayments[0].totalPaymentPence = Math.round(
     adjustedPayments[0].totalPaymentPence + decimalsForAllPayments
   )
@@ -171,6 +199,7 @@ export const calculateScheduledPayments = (
         parcelItemId: Number(id),
         paymentPence
       })
+      // Note: floor this value and remove the fraction, this is the correct amount to be paid for this payment date
       totalPaymentPence += Math.floor(paymentPence)
     }
 
@@ -180,6 +209,7 @@ export const calculateScheduledPayments = (
         agreementLevelItemId: Number(id),
         paymentPence
       })
+      // Note: floor this value and remove the fraction, this is the correct amount to be paid for this payment date
       totalPaymentPence += Math.floor(paymentPence)
     }
 
@@ -209,8 +239,6 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
   annualPaymentPence: Math.round(
     gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity
   ),
-  // annualPaymentPence:
-  //   gbpToPence(actionData?.payment.ratePerUnitGbp) * action.quantity,
   sheetId: parcel.sheetId,
   parcelId: parcel.parcelId
 })
@@ -264,6 +292,7 @@ export const createPaymentItems = (parcels, actions) => {
         `- Rate per ${actionData?.applicationUnitOfMeasurement} per year: ${actionData?.payment?.ratePerUnitGbp} pence`
       ])
 
+      // Note: annualPaymentPence is rounded here so no fractions are carried forward, after this point.
       paymentItems.parcelItems[parcelItemKey] = createParcelPaymentItem(
         action,
         actionData,
