@@ -1335,9 +1335,19 @@ describe('helper methods', () => {
     expect(gbpToPence(20)).toBe(2000)
   })
 
+  it('gbpToPence should handle undefined with default parameter', () => {
+    expect(gbpToPence()).toBe(0)
+    expect(gbpToPence(undefined)).toBe(0)
+  })
+
   it('findActionByCode should return the found action', () => {
     const foundAction = { code: 'CMOR1' }
     const actions = [foundAction]
     expect(findActionByCode('CMOR1', actions)).toEqual(foundAction)
+  })
+
+  it('findActionByCode should handle undefined actions with default parameter', () => {
+    expect(findActionByCode('CMOR1')).toBeUndefined()
+    expect(findActionByCode('CMOR1', undefined)).toBeUndefined()
   })
 })
