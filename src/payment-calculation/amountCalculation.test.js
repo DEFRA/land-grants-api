@@ -910,7 +910,7 @@ describe('reconcilePaymentAmounts', () => {
     expect(result.agreementLevelItems).toBe(agreementItems)
   })
 
-  it('should handle when line item is not found in first payment', () => {
+  it('should handle when parcel line item is not found in first payment', () => {
     const parcelItems = {
       1: {
         code: 'CMOR1',
@@ -949,9 +949,61 @@ describe('reconcilePaymentAmounts', () => {
 
     const result = reconcilePaymentAmounts(parcelItems, {}, payments)
 
+    // Line item for parcelItemId 999 doesn't exist in payments
+    // (360 * 3) % 4 = 0 pennies for item 1
+    // (111 * 3) % 4 = 1 penny for item 999 (but line item not found, so added to total only)
     expect(result.payments[0].lineItems).toEqual([
       { parcelItemId: 1, paymentPence: 90 }
     ])
+    expect(result.payments[0].totalPaymentPence).toBe(91) // 90 + 1 penny from missing item
+  })
+
+  it('should handle when agreement line item is not found in first payment', () => {
+    const agreementItems = {
+      1: {
+        code: 'CMOR1',
+        annualPaymentPence: 27200,
+        durationYears: 3
+      },
+      999: {
+        code: 'MISSING_AGREEMENT',
+        annualPaymentPence: 555,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 6800 }],
+        paymentDate: '2025-11-05',
+        totalPaymentPence: 6800
+      },
+      {
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 6800 }],
+        paymentDate: '2026-02-05',
+        totalPaymentPence: 6800
+      },
+      {
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 6800 }],
+        paymentDate: '2026-05-05',
+        totalPaymentPence: 6800
+      },
+      {
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 6800 }],
+        paymentDate: '2026-08-05',
+        totalPaymentPence: 6800
+      }
+    ]
+
+    const result = reconcilePaymentAmounts({}, agreementItems, payments)
+
+    // Line item for agreementLevelItemId 999 doesn't exist in payments
+    // (27200 * 3) % 4 = 0 pennies for item 1
+    // (555 * 3) % 4 = 1 penny for item 999 (but line item not found, so added to total only)
+    expect(result.payments[0].lineItems).toEqual([
+      { agreementLevelItemId: 1, paymentPence: 6800 }
+    ])
+    expect(result.payments[0].totalPaymentPence).toBe(6801) // 6800 + 1 penny from missing item
   })
 })
 
