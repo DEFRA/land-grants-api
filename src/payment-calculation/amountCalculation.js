@@ -232,11 +232,11 @@ export const calculateScheduledPayments = (
  * @returns {PaymentParcelItem}
  */
 const createParcelPaymentItem = (action, actionData, parcel) => ({
-  code: actionData?.code ?? '',
-  description: actionData?.description ?? '',
+  code: actionData?.code,
+  description: actionData?.description,
   durationYears: actionData?.durationYears,
   version: Number(actionData?.version),
-  unit: actionData?.applicationUnitOfMeasurement ?? '',
+  unit: actionData?.applicationUnitOfMeasurement,
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
   annualPaymentPence: Math.round(
