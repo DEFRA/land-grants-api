@@ -108,6 +108,13 @@ export async function importMoorlandDesignations(
 ) {
   await importData(moorlandDesignationsStream, 'moorland_designations', logger)
 }
+
+export async function importMoorlandExceptions(
+  moorlandExceptionsStream,
+  logger
+) {
+  await importData(moorlandExceptionsStream, 'moorland_exceptions', logger)
+}
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */
