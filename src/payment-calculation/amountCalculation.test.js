@@ -155,6 +155,29 @@ describe('calculateAnnualAndAgreementTotals', () => {
     expect(annualTotalPence).toBe(0)
   })
 
+  it('should handle items with undefined annualPaymentPence', () => {
+    const parcelItems = {
+      1: {
+        annualPaymentPence: undefined
+      }
+    }
+    const agreementItems = {
+      1: {
+        annualPaymentPence: null
+      }
+    }
+
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(
+        parcelItems,
+        agreementItems,
+        durationYears
+      )
+
+    expect(agreementTotalPence).toBe(0)
+    expect(annualTotalPence).toBe(0)
+  })
+
   it('should handle missing payment rates gracefully', () => {
     const parcelItems = {
       1: {
