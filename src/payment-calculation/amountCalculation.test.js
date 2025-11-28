@@ -1,7 +1,10 @@
 import {
+  addAgreementItem,
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
+  findActionByCode,
+  gbpToPence,
   reconcilePaymentAmounts,
   roundPaymentAmountForPaymentLineItems
 } from './amountCalculation.js'
@@ -270,10 +273,71 @@ describe('createPaymentItems', () => {
     expect(agreementItems).toEqual({})
   })
 
+  it('should handle action data with null/undefined properties', () => {
+    const actionsWithNullProperties = [
+      {
+        code: null,
+        description: null,
+        version: 1,
+        applicationUnitOfMeasurement: null,
+        durationYears: 3,
+        payment: {
+          ratePerUnitGbp: 10
+        }
+      }
+    ]
+
+    const parcels = [
+      {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [{ code: null, quantity: 1 }]
+      }
+    ]
+
+    const { parcelItems } = createPaymentItems(
+      parcels,
+      actionsWithNullProperties
+    )
+
+    expect(parcelItems).toEqual({
+      1: {
+        code: '',
+        description: '',
+        version: 1,
+        parcelId: '5484',
+        durationYears: 3,
+        quantity: 1,
+        rateInPence: 1000,
+        annualPaymentPence: 1000,
+        sheetId: 'SD5253',
+        unit: ''
+      }
+    })
+  })
+
   it('should handle empty parcels array', () => {
     const { parcelItems, agreementItems } = createPaymentItems(
       [],
       mockEnabledActions
+    )
+
+    expect(parcelItems).toEqual({})
+    expect(agreementItems).toEqual({})
+  })
+
+  it('should handle undefined actions array gracefully', () => {
+    const parcels = [
+      {
+        sheetId: 'SD5253',
+        parcelId: '5484',
+        actions: [{ code: 'CMOR1', quantity: 0.34 }]
+      }
+    ]
+
+    const { parcelItems, agreementItems } = createPaymentItems(
+      parcels,
+      undefined
     )
 
     expect(parcelItems).toEqual({})
@@ -1226,5 +1290,54 @@ describe('calculateScheduledPayments', () => {
         lineItems
       }))
     )
+  })
+})
+
+describe('addAgreementItem', () => {
+  it('should handle null ratePerAgreementPerYearGbp in calculations', () => {
+    const paymentItems = {
+      agreementItems: {}
+    }
+    const action = { code: 'TEST1', quantity: 1.5 }
+    const explanations = []
+    const actionData = {
+      code: 'TEST1',
+      description: 'Test action',
+      durationYears: 3,
+      version: 1,
+      payment: {
+        ratePerUnitGbp: 10,
+        ratePerAgreementPerYearGbp: null
+      }
+    }
+    const total = 15
+    const agreementItemKey = 1
+    const ratePerAgreementPerYearGbp = null
+
+    addAgreementItem(
+      paymentItems,
+      action,
+      explanations,
+      actionData,
+      total,
+      agreementItemKey,
+      ratePerAgreementPerYearGbp
+    )
+
+    expect(explanations).toContain(
+      '- Payment: (1.5 * 10) +\n            null = 15 pence/year'
+    )
+  })
+})
+
+describe('helper methods', () => {
+  it('gbpToPence should convert pounds into pence', () => {
+    expect(gbpToPence(20)).toBe(2000)
+  })
+
+  it('findActionByCode should return the found action', () => {
+    const foundAction = { code: 'CMOR1' }
+    const actions = [foundAction]
+    expect(findActionByCode('CMOR1', actions)).toEqual(foundAction)
   })
 })
