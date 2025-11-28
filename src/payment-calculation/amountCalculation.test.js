@@ -51,6 +51,10 @@ const mockEnabledActions = [
       ratePerUnitGbp: 600,
       ratePerAgreementPerYearGbp: 9700
     }
+  },
+  {
+    code: 'MISSING_ACTION_DATA',
+    payment: {}
   }
 ]
 
