@@ -2,6 +2,16 @@ import { differenceInCalendarMonths } from 'date-fns'
 import { createExplanationSection } from '../available-area/explanations.js'
 
 /**
+ * currency formatter
+ * @returns {object & {format: (arg0: number) => string}}
+ */
+
+const currencyFormatter = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP'
+})
+
+/**
  * Gbp to pence
  * @param {number} gbp
  * @returns {number}
@@ -108,7 +118,7 @@ const shiftTotalPenniesToFirstScheduledPayment = (payments) => {
 
   explanations.push(
     `- TOTAL: ${adjustedPayments[0].totalPaymentPence} pence/year`,
-    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1].totalPaymentPence} + ${decimalsForAllPayments} = ${adjustedPayments[0].totalPaymentPence}} pence`,
+    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1].totalPaymentPence} + ${decimalsForAllPayments} = ${adjustedPayments[0].totalPaymentPence} pence`,
     `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1].totalPaymentPence} pence`
   )
 
@@ -266,7 +276,7 @@ export const createPaymentItems = (parcels, actions) => {
       explanations = explanations.concat([
         `Calculating payment for ${action?.code}`,
         `- Quantity applied for: ${action?.quantity} ${actionData?.applicationUnitOfMeasurement}`,
-        `- Rate per ${actionData?.applicationUnitOfMeasurement} per year: ${actionData?.payment?.ratePerUnitGbp} pence`
+        `- Rate per ${actionData?.applicationUnitOfMeasurement} per year:  ${currencyFormatter.format(actionData?.payment?.ratePerUnitGbp)}`
       ])
 
       paymentItems.parcelItems[parcelItemKey] = createParcelPaymentItem(
@@ -291,7 +301,7 @@ export const createPaymentItems = (parcels, actions) => {
         )
       } else {
         explanations.push(
-          `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+          `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${currencyFormatter.format(total)} per year`
         )
       }
 
@@ -336,17 +346,18 @@ export const addAgreementItem = (
   if (hasAgreementItemBeenAdded) {
     explanations.push(
       `- Ignoring rate per agreement/year, already applied.`,
-      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${total} pence/year`
+      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) = ${currencyFormatter.format(total)} per year`
     )
   } else {
     paymentItems.agreementItems[agreementItemKey] =
       createAgreementPaymentItem(actionData)
     agreementItemKey++
 
+    const paymentTotal = total + (ratePerAgreementPerYearGbp ?? 0)
+
     explanations.push(
-      `- Rate per agreement per year: ${actionData?.payment.ratePerAgreementPerYearGbp} pence`,
-      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) +
-            ${actionData?.payment.ratePerAgreementPerYearGbp} = ${total + (ratePerAgreementPerYearGbp ?? 0)} pence/year`
+      `- Rate per agreement per year: ${currencyFormatter.format(actionData?.payment.ratePerAgreementPerYearGbp)}`,
+      `- Payment: (${action.quantity} * ${actionData?.payment.ratePerUnitGbp}) + ${actionData?.payment.ratePerAgreementPerYearGbp} = ${currencyFormatter.format(paymentTotal)} per year`
     )
   }
   return agreementItemKey
