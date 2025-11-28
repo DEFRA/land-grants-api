@@ -4,10 +4,15 @@ describe('getMoorlandInterceptPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
-  let mockResult
+  let mockExceptionResult
+  let mockPercentageResult
 
   beforeEach(() => {
-    mockResult = {
+    mockExceptionResult = {
+      rows: []
+    }
+
+    mockPercentageResult = {
       rows: [
         {
           sheet_id: 'SH123',
@@ -20,7 +25,10 @@ describe('getMoorlandInterceptPercentage', () => {
     }
 
     mockClient = {
-      query: jest.fn().mockResolvedValue(mockResult),
+      query: jest
+        .fn()
+        .mockResolvedValueOnce(mockExceptionResult)
+        .mockResolvedValueOnce(mockPercentageResult),
       release: jest.fn()
     }
 
@@ -43,7 +51,22 @@ describe('getMoorlandInterceptPercentage', () => {
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query with the correct parameters', async () => {
+  test('should first query moorland_exceptions table', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    const expectedExceptionQuery = `SELECT * FROM moorland_exceptions WHERE parcel_id = $1 AND sheet_id = $2`
+    const expectedValues = [parcelId, sheetId]
+
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+
+    expect(mockClient.query).toHaveBeenNthCalledWith(
+      1,
+      expectedExceptionQuery,
+      expectedValues
+    )
+  })
+
+  test('should query percentage with the correct parameters when no exception found', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const expectedQuery = `
@@ -67,91 +90,210 @@ describe('getMoorlandInterceptPercentage', () => {
 
     await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
-  })
-
-  test('should return the moorland overlap percentage', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
+    expect(mockClient.query).toHaveBeenNthCalledWith(
+      2,
+      expectedQuery,
+      expectedValues
     )
-
-    expect(result).toBe(50)
   })
 
-  test('should return 0 when no moorland overlap', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockResult.rows[0].moorland_overlap_percent = null
+  describe('Exception scenarios', () => {
+    test('should return 100 when parcel is in moorland_exceptions with ref_code starting with M', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
 
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+      mockClient.query = jest.fn().mockResolvedValueOnce({
+        rows: [
+          {
+            parcel_id: 'PA456',
+            sheet_id: 'SH123',
+            ref_code: 'M001'
+          }
+        ]
+      })
 
-    expect(result).toBe(0)
-  })
-
-  test('should release the client when done', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
-
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
-
-  test('should handle errors and return undefined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const error = new Error('Database error')
-    mockClient.query = jest.fn().mockRejectedValue(error)
-
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
-
-    expect(result).toBe(0)
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      expect.objectContaining({
-        error: expect.objectContaining({
-          message: 'Database error'
-        }),
-        event: expect.objectContaining({
-          category: 'database'
-        })
-      }),
-      expect.stringContaining(
-        'Database operation failed: Get moorland intercept percentage'
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
       )
-    )
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
+
+      expect(result).toBe(100)
+      expect(mockClient.query).toHaveBeenCalledTimes(1) // Only exception query, no percentage query
+    })
+
+    test('should return 0 when parcel is in moorland_exceptions with ref_code not starting with M', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+
+      mockClient.query = jest.fn().mockResolvedValueOnce({
+        rows: [
+          {
+            parcel_id: 'PA456',
+            sheet_id: 'SH123',
+            ref_code: 'E001'
+          }
+        ]
+      })
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(0)
+      expect(mockClient.query).toHaveBeenCalledTimes(1) // Only exception query, no percentage query
+    })
   })
 
-  test('should handle client release if client is not defined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
+  describe('Normal percentage calculation', () => {
+    test('should return the moorland overlap percentage', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
 
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
 
-    expect(result).toBe(0)
-    expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
+      expect(result).toBe(50)
+    })
+
+    test('should return 0 when no moorland overlap', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+
+      mockClient.query = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({
+          rows: [{ moorland_overlap_percent: null }]
+        })
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(0)
+    })
+
+    test('should return 0 when query returns no rows', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+
+      mockClient.query = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] })
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(0)
+    })
+
+    test('should return the maximum percentage when multiple rows returned', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+
+      mockClient.query = jest
+        .fn()
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({
+          rows: [
+            { moorland_overlap_percent: 25.5 },
+            { moorland_overlap_percent: 75.8 },
+            { moorland_overlap_percent: 50.2 }
+          ]
+        })
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(76) // rounded from 75.8 by roundSqm
+    })
+  })
+
+  describe('Client management', () => {
+    test('should release the client when done', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+
+      await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(mockClient.release).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Error handling', () => {
+    test('should handle errors and return 0', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+      const error = new Error('Database error')
+      mockClient.query = jest.fn().mockRejectedValue(error)
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(0)
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: 'Database error'
+          }),
+          event: expect.objectContaining({
+            category: 'database'
+          })
+        }),
+        expect.stringContaining(
+          'Database operation failed: Get moorland intercept percentage'
+        )
+      )
+      expect(mockClient.release).toHaveBeenCalledTimes(1)
+    })
+
+    test('should handle client release if client is not defined', async () => {
+      const sheetId = 'SH123'
+      const parcelId = 'PA456'
+      mockDb.connect = jest
+        .fn()
+        .mockRejectedValue(new Error('Connection error'))
+
+      const result = await getMoorlandInterceptPercentage(
+        sheetId,
+        parcelId,
+        mockDb,
+        mockLogger
+      )
+
+      expect(result).toBe(0)
+      expect(mockLogger.error).toHaveBeenCalled()
+      expect(mockClient.release).not.toHaveBeenCalled()
+    })
   })
 })

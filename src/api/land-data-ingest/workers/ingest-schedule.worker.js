@@ -5,7 +5,8 @@ import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
   importLandCovers,
   importLandParcels,
-  importMoorlandDesignations
+  importMoorlandDesignations,
+  importMoorlandExceptions
 } from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import {
@@ -90,6 +91,9 @@ async function importLandData(file) {
         break
       case 'moorland':
         await importMoorlandDesignations(bodyContents, logger)
+        break
+      case 'moorland-exceptions':
+        await importMoorlandExceptions(bodyContents, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="add-moorland-exceptions-table" author="system">
+    <createTable tableName="moorland_exceptions" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="parcel_id" type="TEXT"/>
+      <column name="sheet_id" type="TEXT"/>
+      <column name="ref_code" type="TEXT"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="add-moorland-exceptions-index" author="system">
+      <createIndex indexName="idx_moorland_exceptions_parcel_sheet" tableName="moorland_exceptions" schemaName="public">
+        <column name="parcel_id"/>
+        <column name="sheet_id"/>
+      </createIndex>
+  </changeSet>
+</databaseChangeLog>

@@ -78,6 +78,7 @@ export const LandDataIngestController = {
 
       return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
+      console.log('error', error)
       logBusinessError(request.logger, {
         operation: `${category}_error`,
         error,
