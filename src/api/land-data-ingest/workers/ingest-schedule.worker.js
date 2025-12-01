@@ -1,5 +1,11 @@
 import { parentPort, workerData } from 'node:worker_threads'
-import { getFile } from '../../common/s3/s3.js'
+import {
+  failedBucketPath,
+  getFile,
+  moveFile,
+  processingBucketPath,
+  completedBucketPath
+} from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
@@ -39,10 +45,12 @@ async function importLandData(file) {
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
+  const bucket = config.get('s3.bucket')
   const [resourceType, ...rest] = file.split('/')
   const ingestId = rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
+  const processingPath = processingBucketPath(s3Path)
 
   logInfo(logger, {
     category,
@@ -57,6 +65,7 @@ async function importLandData(file) {
   })
 
   try {
+    await moveFile(s3Client, bucket, s3Path, processingPath)
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_moved_to_processing`,
@@ -66,7 +75,7 @@ async function importLandData(file) {
       }
     })
 
-    const response = await getFile(s3Client, config.get('s3.bucket'), s3Path)
+    const response = await getFile(s3Client, bucket, processingPath)
     if (response.ContentType !== 'text/csv') {
       throw new Error(`Invalid content type: ${response.ContentType}`)
     }
@@ -96,6 +105,13 @@ async function importLandData(file) {
         throw new Error(`Invalid resource type: ${resourceType}`)
     }
 
+    await moveFile(
+      s3Client,
+      bucket,
+      processingPath,
+      completedBucketPath(s3Path)
+    )
+
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_moved_to_completed`,
@@ -107,6 +123,8 @@ async function importLandData(file) {
 
     return 'Land data imported successfully'
   } catch (error) {
+    await moveFile(s3Client, bucket, processingPath, failedBucketPath(s3Path))
+
     logBusinessError(logger, {
       operation: 'error importing land data',
       error,
