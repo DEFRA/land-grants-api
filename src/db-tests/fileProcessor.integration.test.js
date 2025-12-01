@@ -49,14 +49,12 @@ describe('Land data ingest file processor integration test', () => {
   // moorland lfa_moor_id: 735
 
   test('should ingest land parcel data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_head.csv',
-      'parcels/parcels_head.csv'
-    )
+    const ingestId = crypto.randomUUID()
+    const s3Path = `parcels/${ingestId}/parcels_head.csv`
+    await uploadFixtureFile(s3Client, 'parcels_head.csv', s3Path)
 
     await processFile(
-      'parcels/parcels_head.csv',
+      s3Path,
       request,
       'land_data_ingest',
       'Parcels ingest',
@@ -67,92 +65,56 @@ describe('Land data ingest file processor integration test', () => {
     expect(parcel.sheet_id).toBe('TV5797')
     expect(parcel.parcel_id).toBe('2801')
     expect(parcel.area_sqm).toBe('192772.7700')
+    expect(parcel.ingest_id).toBe(ingestId)
   }, 30000)
 
   test('should ingest multiple land parcel data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_head.csv',
-      'parcels/parcels_head.csv'
-    )
+    const ingestId = crypto.randomUUID()
+    const s3Path = `parcels/${ingestId}/parcels_head.csv`
+    const ingestIdUpsert = crypto.randomUUID()
+    const s3PathUpsert = `parcels/${ingestIdUpsert}/parcels_head_upsert.csv`
 
-    await uploadFixtureFile(
-      s3Client,
-      'parcels_head_upsert.csv',
-      'parcels/parcels_head_upsert.csv'
-    )
+    await uploadFixtureFile(s3Client, 'parcels_head.csv', s3Path)
 
-    await processFile(
-      'parcels/parcels_head.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
+    await uploadFixtureFile(s3Client, 'parcels_head_upsert.csv', s3PathUpsert)
 
-    await processFile(
-      'parcels/parcels_head_upsert.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
+    await processFile(s3Path, request, category, title, taskId)
+
+    await processFile(s3PathUpsert, request, category, title, taskId)
 
     const parcel = await getRecord(connection, 'land_parcels', 'TV5797', '2801')
     expect(parcel.sheet_id).toBe('TV5797')
     expect(parcel.parcel_id).toBe('2801')
     expect(parcel.area_sqm).toBe('182772.7700')
+    expect(parcel.ingest_id).toBe(ingestIdUpsert)
   }, 30000)
 
   test('should ingest land cover data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'covers_head.csv',
-      'covers/covers_head.csv'
-    )
+    const ingestId = crypto.randomUUID()
+    const s3Path = `covers/${ingestId}/covers_head.csv`
+    await uploadFixtureFile(s3Client, 'covers_head.csv', s3Path)
 
-    await processFile(
-      'covers/covers_head.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
+    await processFile(s3Path, request, category, title, taskId)
 
     const cover = await getRecord(connection, 'land_covers', 'TV5699', '1419')
     expect(cover.sheet_id).toBe('TV5699')
     expect(cover.parcel_id).toBe('1419')
     expect(cover.land_cover_class_code).toBe('131')
+    expect(cover.ingest_id).toBe(ingestId)
   }, 30000)
 
   test('should ingest multiple land cover data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'covers_head.csv',
-      'covers/covers_head.csv'
-    )
+    const ingestId = crypto.randomUUID()
+    const s3Path = `covers/${ingestId}/covers_head.csv`
+    const ingestIdUpsert = crypto.randomUUID()
+    const s3PathUpsert = `covers/${ingestIdUpsert}/covers_head_upsert.csv`
+    await uploadFixtureFile(s3Client, 'covers_head.csv', s3Path)
 
-    await uploadFixtureFile(
-      s3Client,
-      'covers_head_upsert.csv',
-      'covers/covers_head_upsert.csv'
-    )
+    await uploadFixtureFile(s3Client, 'covers_head_upsert.csv', s3PathUpsert)
 
-    await processFile(
-      'covers/covers_head.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
+    await processFile(s3Path, request, category, title, taskId)
 
-    await processFile(
-      'covers/covers_head_upsert.csv',
-      request,
-      category,
-      title,
-      taskId
-    )
+    await processFile(s3PathUpsert, request, category, title, taskId)
 
     const cover = await getRecord(connection, 'land_covers', 'TV5699', '1419')
     expect(cover.sheet_id).toBe('TV5699')

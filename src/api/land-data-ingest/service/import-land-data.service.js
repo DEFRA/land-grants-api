@@ -20,12 +20,13 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(dataStream, tableName, logger) {
+async function importData(dataStream, tableName, ingestId, logger) {
   const startTime = performance.now()
   logInfo(logger, {
     category: logCategory,
     operation: `${tableName}_import_started`,
-    message: `${tableName} import started`
+    message: `${tableName} import started`,
+    context: { ingestId }
   })
 
   const dbOptions = getDBOptions()
@@ -64,7 +65,8 @@ async function importData(dataStream, tableName, logger) {
     })
 
     const result = await client.query(
-      await readFile(`/${tableName}/insert_${tableName}.sql`)
+      await readFile(`/${tableName}/insert_${tableName}.sql`),
+      [ingestId]
     )
 
     const endTime = performance.now()
@@ -92,21 +94,28 @@ async function importData(dataStream, tableName, logger) {
 /**
  *
  * @param {ReadableStream} landParcelsStream
+ * @param {string} ingestId
  * @param {Logger} logger
  */
-export async function importLandParcels(landParcelsStream, logger) {
-  await importData(landParcelsStream, 'land_parcels', logger)
+export async function importLandParcels(landParcelsStream, ingestId, logger) {
+  await importData(landParcelsStream, 'land_parcels', ingestId, logger)
 }
 
-export async function importLandCovers(landCoversStream, logger) {
-  await importData(landCoversStream, 'land_covers', logger)
+export async function importLandCovers(landCoversStream, ingestId, logger) {
+  await importData(landCoversStream, 'land_covers', ingestId, logger)
 }
 
 export async function importMoorlandDesignations(
   moorlandDesignationsStream,
+  ingestId,
   logger
 ) {
-  await importData(moorlandDesignationsStream, 'moorland_designations', logger)
+  await importData(
+    moorlandDesignationsStream,
+    'moorland_designations',
+    ingestId,
+    logger
+  )
 }
 /**
  * @import { Logger } from '../../common/logger.d.js'
