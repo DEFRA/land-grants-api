@@ -3,7 +3,8 @@ import { jest } from '@jest/globals'
 import {
   importLandParcels,
   importLandCovers,
-  importMoorlandDesignations
+  importMoorlandDesignations,
+  importCompatibilityMatrix
 } from './import-land-data.service.js'
 import { createDBPool, getDBOptions } from '../../common/helpers/postgres.js'
 import { readFile } from '../../common/helpers/read-file.js'
@@ -201,6 +202,63 @@ describe('Import Land Data Service', () => {
           mockLogger
         )
       ).rejects.toThrow('Failed to import moorland designations')
+
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('importCompatibilityMatrix', () => {
+    it('should import compatibility matrix', async () => {
+      const compatibilityMatrixStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      await importCompatibilityMatrix(
+        compatibilityMatrixStream,
+        ingestId,
+        mockLogger
+      )
+
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.query).toHaveBeenCalledTimes(5)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(readFile.mock.calls[0][0]).toBe(
+        '/compatibility_matrix/create_compatibility_matrix_temp_table.sql'
+      )
+      expect(readFile.mock.calls[1][0]).toBe(
+        '/compatibility_matrix/insert_compatibility_matrix.sql'
+      )
+      expect(from).toHaveBeenCalledWith(
+        "COPY compatibility_matrix_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
+      )
+      expect(pipeline).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(5)
+      expect(mockClient.query.mock.calls[3][1]).toEqual([ingestId])
+    })
+
+    it('should handle error when importing compatibility matrix', async () => {
+      const compatibilityMatrixStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      readFile.mockRejectedValue(
+        new Error('Failed to import compatibility matrix')
+      )
+
+      await expect(
+        importCompatibilityMatrix(
+          compatibilityMatrixStream,
+          ingestId,
+          mockLogger
+        )
+      ).rejects.toThrow('Failed to import compatibility matrix')
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)

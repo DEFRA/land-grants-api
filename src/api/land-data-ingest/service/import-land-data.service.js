@@ -117,6 +117,20 @@ export async function importMoorlandDesignations(
     logger
   )
 }
+
+export async function importCompatibilityMatrix(
+  compatibilityMatrixStream,
+  ingestId,
+  logger
+) {
+  await importData(
+    compatibilityMatrixStream,
+    'compatibility_matrix',
+    ingestId,
+    logger
+  )
+}
+
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */
