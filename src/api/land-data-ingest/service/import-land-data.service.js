@@ -20,12 +20,13 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(dataStream, tableName, logger) {
+async function importData(dataStream, tableName, ingestId, logger) {
   const startTime = performance.now()
   logInfo(logger, {
     category: logCategory,
     operation: `${tableName}_import_started`,
-    message: `${tableName} import started`
+    message: `${tableName} import started`,
+    context: { ingestId }
   })
 
   const dbOptions = getDBOptions()
@@ -51,24 +52,22 @@ async function importData(dataStream, tableName, logger) {
 
     await pipeline(dataStream, pgStream)
 
-    let result
-    if (tableName === 'agreements') {
-      try {
-        await client.query('BEGIN')
-        await client.query(`TRUNCATE TABLE ${tableName}`)
-        result = await client.query(
-          await readFile(`/${tableName}/insert_${tableName}.sql`)
-        )
-        await client.query('COMMIT')
-      } catch (error) {
-        await client.query('ROLLBACK')
-        throw error
-      }
-    } else {
-      result = await client.query(
-        await readFile(`/${tableName}/insert_${tableName}.sql`)
-      )
-    }
+    const tempTableCount = await client.query(
+      `SELECT COUNT(*) as count FROM ${tableName}_tmp`
+    )
+
+    logInfo(logger, {
+      category: logCategory,
+      operation: `${tableName}_import_temp_table`,
+      message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
+      context: { tableName, tempTableCount: tempTableCount.rows[0].count },
+      outcome: tempTableCount.rows[0].count
+    })
+
+    const result = await client.query(
+      await readFile(`/${tableName}/insert_${tableName}.sql`),
+      [ingestId]
+    )
 
     const endTime = performance.now()
     const duration = endTime - startTime
@@ -95,25 +94,41 @@ async function importData(dataStream, tableName, logger) {
 /**
  *
  * @param {ReadableStream} landParcelsStream
+ * @param {string} ingestId
  * @param {Logger} logger
  */
-export async function importLandParcels(landParcelsStream, logger) {
-  await importData(landParcelsStream, 'land_parcels', logger)
+export async function importLandParcels(landParcelsStream, ingestId, logger) {
+  await importData(landParcelsStream, 'land_parcels', ingestId, logger)
 }
 
-export async function importLandCovers(landCoversStream, logger) {
-  await importData(landCoversStream, 'land_covers', logger)
+export async function importLandCovers(landCoversStream, ingestId, logger) {
+  await importData(landCoversStream, 'land_covers', ingestId, logger)
 }
 
 export async function importMoorlandDesignations(
   moorlandDesignationsStream,
+  ingestId,
   logger
 ) {
-  await importData(moorlandDesignationsStream, 'moorland_designations', logger)
+  await importData(
+    moorlandDesignationsStream,
+    'moorland_designations',
+    ingestId,
+    logger
+  )
 }
 
-export async function importAgreements(agreementsStream, logger) {
-  await importData(agreementsStream, 'agreements', logger)
+export async function importCompatibilityMatrix(
+  compatibilityMatrixStream,
+  ingestId,
+  logger
+) {
+  await importData(
+    compatibilityMatrixStream,
+    'compatibility_matrix',
+    ingestId,
+    logger
+  )
 }
 
 /**

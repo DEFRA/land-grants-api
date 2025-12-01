@@ -136,12 +136,22 @@ Here are a series of aws cli commands to work with files and buckets
 
 #### Upload a file to the land-data bucket
 
-```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data/parcels/
-```
+Import parcels:
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels_head.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+```
+
+Import compatibility matrix
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/compatibility-matrix.csv s3://land-data/compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+```
+
+Import moorland
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/moorland.csv s3://land-data/moorland/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 #### List all buckets
@@ -154,6 +164,24 @@ aws --endpoint-url=http://localhost:4566 s3 ls
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data
+```
+
+List files in parcels
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/parcels/
+```
+
+List files in compatibility matrix
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/compatibility_matrix/
+```
+
+List files in moorland
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/moorland/
 ```
 
 #### Delete a file from the land-data bucket

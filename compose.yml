@@ -69,7 +69,6 @@ services:
     environment:
       <<: *common-postgres
       PORT: 3001
-      DISABLE_POSTGRES: false
       POSTGRES_HOST: land-grants-backend-postgres
     volumes:
       - ./src:/home/node/src
