@@ -159,4 +159,52 @@ describe('Land data ingest file processor integration test', () => {
     expect(cover.parcel_id).toBe('1419')
     expect(cover.land_cover_class_code).toBe('132')
   }, 30000)
+
+  test('should ingest agreement data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'agreements.csv',
+      'agreements/agreements.csv'
+    )
+
+    await processFile(
+      'agreements/agreements.csv',
+      request,
+      category,
+      title,
+      taskId
+    )
+
+    const cover = await getRecord(connection, 'agreements', 'NY7052', '78')
+    expect(cover.actions).toEqual([
+      {
+        actionCode: 'WD9',
+        unit: 'ha',
+        quantity: 3,
+        startDate: '1/1/23 0:00',
+        endDate: '12/31/27 0:00'
+      }
+    ])
+
+    const cover2 = await getRecord(connection, 'agreements', 'SD6919', '68')
+    expect(cover2.actions).toEqual([
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 0.8617,
+        startDate: '1/1/25 0:00',
+        endDate: '12/31/27 0:00'
+      },
+      {
+        actionCode: 'UPL8',
+        unit: 'ha',
+        quantity: 0.8617,
+        startDate: '1/1/25 0:00',
+        endDate: '12/31/27 0:00'
+      }
+    ])
+
+    const cover3 = await getRecord(connection, 'agreements', 'SD8645', '30')
+    expect(cover3).toBeNull()
+  }, 30000)
 })

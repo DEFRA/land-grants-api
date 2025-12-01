@@ -1,8 +1,20 @@
-INSERT INTO agreements (id, parcel_id, sheet_id, actions)
-SELECT id, parcel_id, sheet_id, actions -- what id?
-FROM agreements_tmp
-ON CONFLICT (id) 
-DO UPDATE SET
-  parcel_id = EXCLUDED.parcel_id,
-  sheet_id = EXCLUDED.sheet_id,
-  actions = EXCLUDED.actions;
+INSERT INTO agreements (sheet_id, parcel_id, actions)
+SELECT
+    ord_survey,
+    ng_number,
+    json_agg(
+        json_build_object(
+            'actionCode', option_code,
+            'quantity', option_quantity,
+            'unit', 'ha',
+            'startDate', option_start_date,
+            'endDate', option_end_date
+        )
+    ) as actions
+FROM
+    agreements_tmp
+WHERE
+    unit_of_measure = 'Hectares'
+GROUP BY
+    ord_survey,
+    ng_number;

@@ -3,6 +3,7 @@ import { getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
+  importAgreements,
   importLandCovers,
   importLandParcels,
   importMoorlandDesignations
@@ -90,6 +91,9 @@ async function importLandData(file) {
         break
       case 'moorland':
         await importMoorlandDesignations(bodyContents, logger)
+        break
+      case 'agreements':
+        await importAgreements(bodyContents, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)

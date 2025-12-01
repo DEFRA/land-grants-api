@@ -51,21 +51,24 @@ async function importData(dataStream, tableName, logger) {
 
     await pipeline(dataStream, pgStream)
 
-    const tempTableCount = await client.query(
-      `SELECT COUNT(*) as count FROM ${tableName}_tmp`
-    )
-
-    logInfo(logger, {
-      category: logCategory,
-      operation: `${tableName}_import_temp_table`,
-      message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
-      context: { tableName, tempTableCount: tempTableCount.rows[0].count },
-      outcome: tempTableCount.rows[0].count
-    })
-
-    const result = await client.query(
-      await readFile(`/${tableName}/insert_${tableName}.sql`)
-    )
+    let result
+    if (tableName === 'agreements') {
+      try {
+        await client.query('BEGIN')
+        await client.query(`TRUNCATE TABLE ${tableName}`)
+        result = await client.query(
+          await readFile(`/${tableName}/insert_${tableName}.sql`)
+        )
+        await client.query('COMMIT')
+      } catch (error) {
+        await client.query('ROLLBACK')
+        throw error
+      }
+    } else {
+      result = await client.query(
+        await readFile(`/${tableName}/insert_${tableName}.sql`)
+      )
+    }
 
     const endTime = performance.now()
     const duration = endTime - startTime
@@ -108,6 +111,11 @@ export async function importMoorlandDesignations(
 ) {
   await importData(moorlandDesignationsStream, 'moorland_designations', logger)
 }
+
+export async function importAgreements(agreementsStream, logger) {
+  await importData(agreementsStream, 'agreements', logger)
+}
+
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */
