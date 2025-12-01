@@ -65,7 +65,25 @@ describe('getPaymentCalculationForParcels', () => {
       }
     ]
 
-    const expectedLineItem = [
+    const firstPaymentLineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 90
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 219
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: 6800
+      },
+      {
+        agreementLevelItemId: 2,
+        paymentPence: 2425
+      }
+    ]
+    const otherPaymentLineItems = [
       {
         parcelItemId: 1,
         paymentPence: 90
@@ -88,8 +106,7 @@ describe('getPaymentCalculationForParcels', () => {
       agreementEndDate: '2026-08-01',
       frequency: 'Quarterly',
       agreementTotalPence: 38130,
-      annualTotalPence: 38130, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
-
+      annualTotalPence: 38130,
       parcelItems: {
         1: {
           code: 'CMOR1',
@@ -136,22 +153,22 @@ describe('getPaymentCalculationForParcels', () => {
       },
       payments: [
         {
-          lineItems: expectedLineItem,
+          lineItems: firstPaymentLineItems,
           paymentDate: '2025-11-05',
           totalPaymentPence: 9534
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2026-02-05',
           totalPaymentPence: 9532
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2026-05-05',
           totalPaymentPence: 9532
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2026-08-05',
           totalPaymentPence: 9532
         }
@@ -195,7 +212,25 @@ describe('getPaymentCalculationForParcels', () => {
       }
     ]
 
-    const expectedLineItem = [
+    const firstPaymentLineItems = [
+      {
+        parcelItemId: 1,
+        paymentPence: 90
+      },
+      {
+        parcelItemId: 2,
+        paymentPence: 219
+      },
+      {
+        agreementLevelItemId: 1,
+        paymentPence: 6800
+      },
+      {
+        agreementLevelItemId: 2,
+        paymentPence: 2425
+      }
+    ]
+    const otherPaymentLineItems = [
       {
         parcelItemId: 1,
         paymentPence: 90
@@ -218,8 +253,7 @@ describe('getPaymentCalculationForParcels', () => {
       agreementEndDate: '2027-02-01',
       frequency: 'Quarterly',
       agreementTotalPence: 38130,
-      annualTotalPence: 38130, // -- Is this right? If this isn't divisible by 3 (or X years) then one year will be different. Should this be an array?
-
+      annualTotalPence: 38130,
       parcelItems: {
         1: {
           code: 'CMOR1',
@@ -266,22 +300,22 @@ describe('getPaymentCalculationForParcels', () => {
       },
       payments: [
         {
-          lineItems: expectedLineItem,
+          lineItems: firstPaymentLineItems,
           paymentDate: '2026-05-05',
           totalPaymentPence: 9534
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2026-08-05',
           totalPaymentPence: 9532
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2026-11-05',
           totalPaymentPence: 9532
         },
         {
-          lineItems: expectedLineItem,
+          lineItems: otherPaymentLineItems,
           paymentDate: '2027-02-05',
           totalPaymentPence: 9532
         }
