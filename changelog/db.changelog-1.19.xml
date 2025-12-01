@@ -19,5 +19,4 @@
   <changeSet id="add-ingest-id-to-moorland-designations" author="system">
     <sql>ALTER TABLE moorland_designations ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
   </changeSet>
-
 </databaseChangeLog>
