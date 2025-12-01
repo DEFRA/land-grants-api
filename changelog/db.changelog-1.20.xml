@@ -8,16 +8,13 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="add-ingest-id-to-land-parcels" author="system">
-    <sql>ALTER TABLE land_parcels ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
+
+  <changeSet id="add-ingest-id-to-compatibility-matrix" author="system">
+    <sql>ALTER TABLE compatibility_matrix ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
   </changeSet>
 
-  <changeSet id="add-ingest-id-to-land-covers" author="system">
-    <sql>ALTER TABLE land_covers ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
-  </changeSet>
-
-  <changeSet id="add-ingest-id-to-moorland-designations" author="system">
-    <sql>ALTER TABLE moorland_designations ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
+  <changeSet id="grant-select-for-compatibility-matrix" author="system">
+    <sql>GRANT insert, update on compatibility_matrix to land_grants_api;</sql>
   </changeSet>
 
 </databaseChangeLog>
