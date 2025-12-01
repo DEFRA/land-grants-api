@@ -145,7 +145,7 @@ aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels_head.csv s
 Import compatibility matrix
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/compatibility-matrix.csv s3://land-data/compatibility-matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/compatibility-matrix.csv s3://land-data/compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 Import moorland
@@ -175,7 +175,7 @@ aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/parcels/
 List files in compatibility matrix
 
 ```
-aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/compatibility-matrix/
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/compatibility_matrix/
 ```
 
 List files in moorland
