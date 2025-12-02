@@ -153,7 +153,7 @@ const shiftTotalPenniesToFirstScheduledPayment = (
 
   explanations.push(
     `- TOTAL: ${firstAdjustedPayment.totalPaymentPence} pence/year`,
-    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1]?.totalPaymentPence} + ${decimalsForAllPayments} = ${firstAdjustedPayment.totalPaymentPence}} pence`,
+    `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1]?.totalPaymentPence} + ${decimalsForAllPayments} = ${firstAdjustedPayment.totalPaymentPence} pence`,
     `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1]?.totalPaymentPence} pence`
   )
 
