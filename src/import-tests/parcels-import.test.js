@@ -47,4 +47,31 @@ describe('Parcels import', () => {
     expect(files).toHaveLength(1)
     expect(files[0]).toBe('completed/parcels/parcels_head.csv')
   }, 10000)
+
+  test('should import parcels data and upsert data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head.csv',
+      'parcels/parcels_head.csv'
+    )
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head_upsert.csv',
+      'parcels/parcels_head_upsert.csv'
+    )
+
+    await importLandData('parcels/parcels_head.csv')
+    await importLandData('parcels/parcels_head_upsert.csv')
+
+    const parcels = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2',
+      ['TV5797', '2801']
+    )
+
+    expect(parcels).toHaveLength(1)
+    expect(parcels[0].sheet_id).toBe('TV5797')
+    expect(parcels[0].parcel_id).toBe('2801')
+    expect(parcels[0].area_sqm).toBe('182772.7700')
+  }, 10000)
 })

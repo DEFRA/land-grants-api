@@ -41,10 +41,37 @@ describe('Land covers import', () => {
     expect(covers).toHaveLength(1)
     expect(covers[0].sheet_id).toBe('TV5699')
     expect(covers[0].parcel_id).toBe('1419')
-    // expect(covers[0].area_sqm).toBe('192772.7700')
+    expect(covers[0].land_cover_class_code).toBe('131')
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
     expect(files[0]).toBe('completed/covers/covers_head.csv')
+  }, 10000)
+
+  test('should import land covers data and upsert data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'covers_head.csv',
+      'covers/covers_head.csv'
+    )
+    await uploadFixtureFile(
+      s3Client,
+      'covers_head_upsert.csv',
+      'covers/covers_head_upsert.csv'
+    )
+
+    await importLandData('covers/covers_head.csv')
+    await importLandData('covers/covers_head_upsert.csv')
+
+    const covers = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2',
+      ['TV5699', '1419']
+    )
+
+    expect(covers).toHaveLength(1)
+    expect(covers[0].sheet_id).toBe('TV5699')
+    expect(covers[0].parcel_id).toBe('1419')
+    expect(covers[0].land_cover_class_code).toBe('132')
   }, 10000)
 })
