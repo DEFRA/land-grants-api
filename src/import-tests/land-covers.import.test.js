@@ -42,6 +42,7 @@ describe('Land covers import', () => {
     expect(covers[0].sheet_id).toBe('TV5699')
     expect(covers[0].parcel_id).toBe('1419')
     expect(covers[0].land_cover_class_code).toBe('131')
+    expect(covers[0].is_linear_feature).toBe(false)
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
@@ -73,5 +74,6 @@ describe('Land covers import', () => {
     expect(covers[0].sheet_id).toBe('TV5699')
     expect(covers[0].parcel_id).toBe('1419')
     expect(covers[0].land_cover_class_code).toBe('132')
+    expect(covers[0].is_linear_feature).toBe(true)
   }, 10000)
 })
