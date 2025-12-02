@@ -64,7 +64,7 @@ describe('CDP uploader callback integration test', () => {
     expect(parcels).toHaveLength(1)
     expect(parcels[0].sheet_id).toBe('TV5797')
     expect(parcels[0].parcel_id).toBe('2801')
-    expect(parcels[0].area_sqm).toBe('192772.7700')
+    expect(parcels[0].area_sqm).toBe('192772.77')
 
     const files = await listTestFiles(s3Client)
     expect(statusCode).toBe(200)
