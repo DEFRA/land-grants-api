@@ -1,0 +1,2778 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Calculate payments "End of month and year acceptance" 1`] = `
+{
+  "agreementEndDate": "2029-01-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2026-01-01",
+  "agreementTotalPence": 83484,
+  "annualTotalPence": 27828,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2026-01-01",
+        "Agreement end date: 2029-01-01",
+        "First payment date: 2026-04-06",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.5927 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.5927 * 10.6) +
+            272 = 278.28262 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.06549999999970169 x 4 quarters x 3 years => 0.7859999999964202 pence",
+        "- TOTAL: 6957 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 6957 + 0.7859999999964202 = 6957} pence",
+        "- REST OF PAYMENTS (QUARTER): 6957 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 83484 pence/year",
+        "Total annual payment: 27828 pence/year",
+        "First quarter payment: 6957 pence",
+        "Rest quarters payment: 6957 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 628,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.5927",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-04-06",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-07-06",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-10-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-01-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-04-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-07-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-10-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-01-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-04-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-07-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-10-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2029-01-05",
+      "totalPaymentPence": 6957,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "Leap year payment" 1`] = `
+{
+  "agreementEndDate": "2031-02-01",
+  "agreementLevelItems": {},
+  "agreementStartDate": "2028-02-01",
+  "agreementTotalPence": 77400,
+  "annualTotalPence": 25800,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2028-02-01",
+        "Agreement end date: 2031-02-01",
+        "First payment date: 2028-05-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for UPL1",
+        "- Quantity applied for: 12.9 ha",
+        "- Rate per ha per year: 20 pence",
+        "- Payment: (12.9 * 20) = 258 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- TOTAL: 6450 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 6450 + 0 = 6450} pence",
+        "- REST OF PAYMENTS (QUARTER): 6450 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 77400 pence/year",
+        "Total annual payment: 25800 pence/year",
+        "First quarter payment: 6450 pence",
+        "Rest quarters payment: 6450 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 25800,
+      "code": "UPL1",
+      "description": "Moderate livestock grazing on moorland",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "12.9",
+      "rateInPence": 2000,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2028-05-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2028-08-07",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2028-11-06",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2029-02-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2029-05-07",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2029-08-06",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2029-11-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2030-02-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2030-05-06",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2030-08-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2030-11-05",
+      "totalPaymentPence": 6450,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 6450,
+        },
+      ],
+      "paymentDate": "2031-02-05",
+      "totalPaymentPence": 6450,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "Multiple parcels with multiple actions" 1`] = `
+{
+  "agreementEndDate": "2029-08-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 9700,
+      "code": "CSAM1",
+      "description": "Assess soil, produce a soil management plan and test soil organic matter",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2026-08-01",
+  "agreementTotalPence": 208785,
+  "annualTotalPence": 69595,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2026-08-01",
+        "Agreement end date: 2029-08-01",
+        "First payment date: 2026-11-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.60 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.60 * 10.6) +
+            272 = 278.36 pence/year",
+        "Calculating payment for UPL1",
+        "- Quantity applied for: 12.9 ha",
+        "- Rate per ha per year: 20 pence",
+        "- Payment: (12.9 * 20) = 258 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 1.55 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Ignoring rate per agreement/year, already applied.",
+        "- Payment: (1.55 * 10.6) = 16.43 pence/year",
+        "Calculating payment for CSAM1",
+        "- Quantity applied for: 7.694231 ha",
+        "- Rate per ha per year: 6 pence",
+        "- Rate per agreement per year: 97 pence",
+        "- Payment: (7.694231 * 6) +
+            97 = 143.165386 pence/year",
+      ],
+      "title": "Parcel SD5433-1234",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.8846499999999651 x 4 quarters x 3 years => 10.615799999999581 pence",
+        "- TOTAL: 17408 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 17398 + 10.615799999999581 = 17408} pence",
+        "- REST OF PAYMENTS (QUARTER): 17398 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 208785 pence/year",
+        "Total annual payment: 69595 pence/year",
+        "First quarter payment: 17408 pence",
+        "Rest quarters payment: 17398 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 636,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.60",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 25800,
+      "code": "UPL1",
+      "description": "Moderate livestock grazing on moorland",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "12.9",
+      "rateInPence": 2000,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "3": {
+      "annualPaymentPence": 1643,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "1234",
+      "quantity": "1.55",
+      "rateInPence": 1060,
+      "sheetId": "SD5433",
+      "unit": "ha",
+      "version": 1,
+    },
+    "4": {
+      "annualPaymentPence": 4616,
+      "code": "CSAM1",
+      "description": "Assess soil, produce a soil management plan and test soil organic matter",
+      "durationYears": 3,
+      "parcelId": "1234",
+      "quantity": "7.694231",
+      "rateInPence": 600,
+      "sheetId": "SD5433",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2026-11-05",
+      "totalPaymentPence": 17408,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-02-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-05-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-08-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-11-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-02-07",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-05-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-08-07",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-11-06",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-02-05",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-05-07",
+      "totalPaymentPence": 17398,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 410,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-08-06",
+      "totalPaymentPence": 17398,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "Multiple parcels with one action each" 1`] = `
+{
+  "agreementEndDate": "2029-08-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2026-08-01",
+  "agreementTotalPence": 88437,
+  "annualTotalPence": 29479,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2026-08-01",
+        "Agreement end date: 2029-08-01",
+        "First payment date: 2026-11-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.60 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.60 * 10.6) +
+            272 = 278.36 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 1.55 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Ignoring rate per agreement/year, already applied.",
+        "- Payment: (1.55 * 10.6) = 16.43 pence/year",
+      ],
+      "title": "Parcel SD5433-1234",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.75 x 4 quarters x 3 years => 9 pence",
+        "- TOTAL: 7378 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 7369 + 9 = 7378} pence",
+        "- REST OF PAYMENTS (QUARTER): 7369 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 88437 pence/year",
+        "Total annual payment: 29479 pence/year",
+        "First quarter payment: 7378 pence",
+        "Rest quarters payment: 7369 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 636,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.60",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 1643,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "1234",
+      "quantity": "1.55",
+      "rateInPence": 1060,
+      "sheetId": "SD5433",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-11-05",
+      "totalPaymentPence": 7378,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-02-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-05-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-08-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-11-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-02-07",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-05-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-08-07",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-11-06",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2029-02-05",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2029-05-07",
+      "totalPaymentPence": 7369,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 159,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 410,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2029-08-06",
+      "totalPaymentPence": 7369,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "Multiple parcels with very large quantities used on actions" 1`] = `
+{
+  "agreementEndDate": "2029-08-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 9700,
+      "code": "CSAM1",
+      "description": "Assess soil, produce a soil management plan and test soil organic matter",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2026-08-01",
+  "agreementTotalPence": 214134285,
+  "annualTotalPence": 71378095,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2026-08-01",
+        "Agreement end date: 2029-08-01",
+        "First payment date: 2026-11-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 35823.12 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (35823.12 * 10.6) +
+            272 = 379997.07200000004 pence/year",
+        "Calculating payment for UPL1",
+        "- Quantity applied for: 12.9 ha",
+        "- Rate per ha per year: 20 pence",
+        "- Payment: (12.9 * 20) = 258 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 31451.2 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Ignoring rate per agreement/year, already applied.",
+        "- Payment: (31451.2 * 10.6) = 333382.72 pence/year",
+        "Calculating payment for CSAM1",
+        "- Quantity applied for: 7.694231 ha",
+        "- Rate per ha per year: 6 pence",
+        "- Rate per agreement per year: 97 pence",
+        "- Payment: (7.694231 * 6) +
+            97 = 143.165386 pence/year",
+      ],
+      "title": "Parcel SD5433-1234",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.9346500001847744 x 4 quarters x 3 years => 11.215800002217293 pence",
+        "- TOTAL: 17844534 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 17844523 + 11.215800002217293 = 17844534} pence",
+        "- REST OF PAYMENTS (QUARTER): 17844523 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 214134285 pence/year",
+        "Total annual payment: 71378095 pence/year",
+        "First quarter payment: 17844534 pence",
+        "Rest quarters payment: 17844523 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 37972507,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "35823.12",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 25800,
+      "code": "UPL1",
+      "description": "Moderate livestock grazing on moorland",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "12.9",
+      "rateInPence": 2000,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "3": {
+      "annualPaymentPence": 33338272,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "1234",
+      "quantity": "31451.2",
+      "rateInPence": 1060,
+      "sheetId": "SD5433",
+      "unit": "ha",
+      "version": 1,
+    },
+    "4": {
+      "annualPaymentPence": 4616,
+      "code": "CSAM1",
+      "description": "Assess soil, produce a soil management plan and test soil organic matter",
+      "durationYears": 3,
+      "parcelId": "1234",
+      "quantity": "7.694231",
+      "rateInPence": 600,
+      "sheetId": "SD5433",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2026-11-05",
+      "totalPaymentPence": 17844534,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-02-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-05-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-08-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2027-11-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-02-07",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-05-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-08-07",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2028-11-06",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-02-05",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-05-07",
+      "totalPaymentPence": 17844523,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 9493126,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 6450,
+        },
+        {
+          "parcelItemId": 3,
+          "paymentPence": 8334568,
+        },
+        {
+          "parcelItemId": 4,
+          "paymentPence": 1154,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+        {
+          "agreementLevelItemId": 2,
+          "paymentPence": 2425,
+        },
+      ],
+      "paymentDate": "2029-08-06",
+      "totalPaymentPence": 17844523,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "One single parcel with multiple actions" 1`] = `
+{
+  "agreementEndDate": "2028-10-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2025-10-01",
+  "agreementTotalPence": 92304,
+  "annualTotalPence": 30768,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2025-10-01",
+        "Agreement end date: 2028-10-01",
+        "First payment date: 2026-01-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.5927 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.5927 * 10.6) +
+            272 = 278.28262 pence/year",
+        "Calculating payment for UPL1",
+        "- Quantity applied for: 1.47 ha",
+        "- Rate per ha per year: 20 pence",
+        "- Payment: (1.47 * 20) = 29.4 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.06549999999970169 x 4 quarters x 3 years => 0.7859999999964202 pence",
+        "- TOTAL: 7692 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 7692 + 0.7859999999964202 = 7692} pence",
+        "- REST OF PAYMENTS (QUARTER): 7692 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 92304 pence/year",
+        "Total annual payment: 30768 pence/year",
+        "First quarter payment: 7692 pence",
+        "Rest quarters payment: 7692 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 628,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.5927",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+    "2": {
+      "annualPaymentPence": 2940,
+      "code": "UPL1",
+      "description": "Moderate livestock grazing on moorland",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "1.47",
+      "rateInPence": 2000,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-01-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-04-06",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-07-06",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-10-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-01-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-04-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-07-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-10-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-01-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-04-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-07-05",
+      "totalPaymentPence": 7692,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "parcelItemId": 2,
+          "paymentPence": 735,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-10-05",
+      "totalPaymentPence": 7692,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "One single parcel with one action and unequal pennies" 1`] = `
+{
+  "agreementEndDate": "2028-09-01",
+  "agreementLevelItems": {},
+  "agreementStartDate": "2025-09-01",
+  "agreementTotalPence": 22833,
+  "annualTotalPence": 7611,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2025-09-01",
+        "Agreement end date: 2028-09-01",
+        "First payment date: 2025-12-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for UPL2",
+        "- Quantity applied for: 1.4361688 ha",
+        "- Rate per ha per year: 53 pence",
+        "- Payment: (1.4361688 * 53) = 76.11694639999999 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.9236599999999271 x 4 quarters x 3 years => 11.083919999999125 pence",
+        "- TOTAL: 1913 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 1902 + 11.083919999999125 = 1913} pence",
+        "- REST OF PAYMENTS (QUARTER): 1902 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 22833 pence/year",
+        "Total annual payment: 7611 pence/year",
+        "First quarter payment: 1913 pence",
+        "Rest quarters payment: 1902 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 7611,
+      "code": "UPL2",
+      "description": "Low livestock grazing on moorland",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "1.4361688",
+      "rateInPence": 5300,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2025-12-05",
+      "totalPaymentPence": 1913,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2026-03-05",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2026-06-05",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2026-09-07",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2026-12-07",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2027-03-05",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2027-06-07",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2027-09-06",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2027-12-06",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2028-03-06",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2028-06-05",
+      "totalPaymentPence": 1902,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 1902,
+        },
+      ],
+      "paymentDate": "2028-09-05",
+      "totalPaymentPence": 1902,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "One single parcel with one action" 1`] = `
+{
+  "agreementEndDate": "2028-08-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2025-08-01",
+  "agreementTotalPence": 83484,
+  "annualTotalPence": 27828,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2025-08-01",
+        "Agreement end date: 2028-08-01",
+        "First payment date: 2025-11-05",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.5927 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.5927 * 10.6) +
+            272 = 278.28262 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.06549999999970169 x 4 quarters x 3 years => 0.7859999999964202 pence",
+        "- TOTAL: 6957 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 6957 + 0.7859999999964202 = 6957} pence",
+        "- REST OF PAYMENTS (QUARTER): 6957 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 83484 pence/year",
+        "Total annual payment: 27828 pence/year",
+        "First quarter payment: 6957 pence",
+        "Rest quarters payment: 6957 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 628,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.5927",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2025-11-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-02-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-05-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-08-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-11-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-02-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-05-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-08-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-11-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-02-07",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-05-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-08-07",
+      "totalPaymentPence": 6957,
+    },
+  ],
+}
+`;
+
+exports[`Calculate payments "Weekend adjustment - payment on Sunday" 1`] = `
+{
+  "agreementEndDate": "2028-07-01",
+  "agreementLevelItems": {
+    "1": {
+      "annualPaymentPence": 27200,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "version": 1,
+    },
+  },
+  "agreementStartDate": "2025-07-01",
+  "agreementTotalPence": 83484,
+  "annualTotalPence": 27828,
+  "explanations": [
+    {
+      "content": [
+        "Agreement duration: 3 years",
+        "Payment frequency: Quarterly",
+        "Agreement start date: 2025-07-01",
+        "Agreement end date: 2028-07-01",
+        "First payment date: 2025-10-06",
+      ],
+      "title": "Schedule Information",
+    },
+    {
+      "content": [
+        "Starting payment items",
+      ],
+      "title": "Payment items",
+    },
+    {
+      "content": [
+        "Calculating payment for CMOR1",
+        "- Quantity applied for: 0.5927 ha",
+        "- Rate per ha per year: 10.6 pence",
+        "- Rate per agreement per year: 272 pence",
+        "- Payment: (0.5927 * 10.6) +
+            272 = 278.28262 pence/year",
+      ],
+      "title": "Parcel SD5253-5484",
+    },
+    {
+      "content": [
+        "- Shifting pennies to first payment: 0.06549999999970169 x 4 quarters x 3 years => 0.7859999999964202 pence",
+        "- TOTAL: 6957 pence/year",
+        "- FIRST PAYMENT (QUARTER) : 6957 + 0.7859999999964202 = 6957} pence",
+        "- REST OF PAYMENTS (QUARTER): 6957 pence",
+      ],
+      "title": "Payment calculation",
+    },
+    {
+      "content": [
+        "Total agreement payment: 83484 pence/year",
+        "Total annual payment: 27828 pence/year",
+        "First quarter payment: 6957 pence",
+        "Rest quarters payment: 6957 pence",
+      ],
+      "title": "Summary",
+    },
+  ],
+  "frequency": "Quarterly",
+  "parcelItems": {
+    "1": {
+      "annualPaymentPence": 628,
+      "code": "CMOR1",
+      "description": "Assess moorland and produce a written record",
+      "durationYears": 3,
+      "parcelId": "5484",
+      "quantity": "0.5927",
+      "rateInPence": 1060,
+      "sheetId": "SD5253",
+      "unit": "ha",
+      "version": 1,
+    },
+  },
+  "payments": [
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2025-10-06",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-01-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-04-06",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-07-06",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2026-10-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-01-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-04-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-07-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2027-10-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-01-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-04-05",
+      "totalPaymentPence": 6957,
+    },
+    {
+      "lineItems": [
+        {
+          "parcelItemId": 1,
+          "paymentPence": 157,
+        },
+        {
+          "agreementLevelItemId": 1,
+          "paymentPence": 6800,
+        },
+      ],
+      "paymentDate": "2028-07-05",
+      "totalPaymentPence": 6957,
+    },
+  ],
+}
+`;

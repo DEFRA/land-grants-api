@@ -73,6 +73,8 @@ describe('Calculate payments', () => {
       const firstPayment = result.payments[0]
       const secondPayment = result.payments[1]
 
+      expect(result).toMatchSnapshot()
+
       expect(result.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
       expect(firstPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentFirstQuarter)
