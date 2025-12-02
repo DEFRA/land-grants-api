@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS land_parcels_tmp CASCADE;
-
 CREATE TEMPORARY TABLE land_parcels_tmp (
     geometry_wkt TEXT,
     object_id INTEGER,

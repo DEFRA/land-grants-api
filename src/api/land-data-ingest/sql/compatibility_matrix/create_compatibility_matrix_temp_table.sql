@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS compatibility_matrix_tmp CASCADE;
-
 CREATE TEMPORARY TABLE compatibility_matrix_tmp (
   OPTIONCODE VARCHAR(20),
   OPTIONCODECOMPAT VARCHAR(20),

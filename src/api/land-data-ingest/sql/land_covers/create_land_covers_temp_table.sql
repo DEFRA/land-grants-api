@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS land_covers_tmp CASCADE;
-
 CREATE TEMPORARY TABLE land_covers_tmp (
     geom TEXT,
     OBJECTID INTEGER,
