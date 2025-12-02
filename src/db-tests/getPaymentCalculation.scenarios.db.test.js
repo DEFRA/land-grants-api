@@ -7,10 +7,10 @@ import {
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
 
 const logger = {
-  log: console.log,
-  warn: console.warn,
-  info: console.info,
-  error: console.error
+  log: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
 }
 
 let connection

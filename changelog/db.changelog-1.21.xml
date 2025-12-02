@@ -12,5 +12,8 @@
     <sql>CREATE UNIQUE INDEX IF NOT EXISTS idx_agreements_parcel_sheet ON agreements (parcel_id, sheet_id);</sql>
   </changeSet>
 
+   <changeSet id="add-ingest-id-to-agreements" author="system">
+    <sql>ALTER TABLE agreements ADD ingest_id TEXT NOT NULL DEFAULT '';</sql>
+  </changeSet>
 
 </databaseChangeLog>

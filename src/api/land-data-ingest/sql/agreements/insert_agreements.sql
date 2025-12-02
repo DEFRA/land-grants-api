@@ -1,4 +1,8 @@
-INSERT INTO agreements (sheet_id, parcel_id, actions)
+WITH truncated AS (
+  DELETE FROM agreements
+)
+
+INSERT INTO agreements (sheet_id, parcel_id, actions, ingest_id)
 SELECT
     ord_survey,
     ng_number,
@@ -10,7 +14,8 @@ SELECT
             'startDate', option_start_date,
             'endDate', option_end_date
         )
-    ) as actions
+    ) as actions,
+    $1
 FROM
     agreements_tmp
 WHERE

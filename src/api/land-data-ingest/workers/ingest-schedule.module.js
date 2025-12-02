@@ -1,12 +1,19 @@
 import { parentPort } from 'node:worker_threads'
-import { getFile } from '../../common/s3/s3.js'
+import {
+  completedBucketPath,
+  failedBucketPath,
+  getFile,
+  moveFile,
+  processingBucketPath
+} from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
   importLandCovers,
   importLandParcels,
   importMoorlandDesignations,
-  importCompatibilityMatrix
+  importCompatibilityMatrix,
+  importAgreements
 } from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import {
@@ -40,34 +47,43 @@ export async function importLandData(file) {
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
+  const bucket = config.get('s3.bucket')
   const [resourceType, ...rest] = file.split('/')
   const ingestId = rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
+  const processingPath = processingBucketPath(s3Path)
 
   logInfo(logger, {
     category,
     operation: `${resourceType}_import_started`,
     message: `${resourceType} import started`,
     context: {
+      ingestId,
       file,
       resourceType,
       filename,
-      s3Path
+      s3Path,
+      processingPath,
+      bucket
     }
   })
 
   try {
+    await moveFile(s3Client, bucket, s3Path, processingPath)
+
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_moved_to_processing`,
       message: `${resourceType} file moved to processing`,
       context: {
-        s3Path
+        s3Path,
+        processingPath
       }
     })
 
-    const response = await getFile(s3Client, config.get('s3.bucket'), s3Path)
+    const response = await getFile(s3Client, bucket, processingPath)
+
     if (response.ContentType !== 'text/csv') {
       throw new Error(`Invalid content type: ${response.ContentType}`)
     }
@@ -96,28 +112,45 @@ export async function importLandData(file) {
       case 'compatibility_matrix':
         await importCompatibilityMatrix(bodyContents, ingestId, logger)
         break
+      case 'agreements':
+        await importAgreements(bodyContents, ingestId, logger)
+        break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)
     }
+
+    await moveFile(
+      s3Client,
+      bucket,
+      processingPath,
+      completedBucketPath(s3Path)
+    )
 
     logInfo(logger, {
       category,
       operation: `${resourceType}_file_moved_to_completed`,
       message: `${resourceType} file moved to completed`,
       context: {
-        s3Path
+        s3Path,
+        processingPath,
+        completedBucketPath: completedBucketPath(s3Path)
       }
     })
 
     return 'Land data imported successfully'
   } catch (error) {
+    await moveFile(s3Client, bucket, processingPath, failedBucketPath(s3Path))
+
     logBusinessError(logger, {
       operation: 'error importing land data',
       error,
       context: {
         category,
         resourceType,
-        s3Path
+        s3Path,
+        processingPath,
+        failedBucketPath: failedBucketPath(s3Path),
+        bucket
       }
     })
     throw error

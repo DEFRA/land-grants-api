@@ -131,6 +131,10 @@ export async function importCompatibilityMatrix(
   )
 }
 
+export async function importAgreements(agreementsStream, ingestId, logger) {
+  await importData(agreementsStream, 'agreements', ingestId, logger)
+}
+
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */

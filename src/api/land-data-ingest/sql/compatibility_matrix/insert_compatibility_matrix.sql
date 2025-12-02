@@ -1,5 +1,5 @@
 WITH truncated AS (
-  DELETE FROM compatibility_matrix RETURNING *
+  DELETE FROM compatibility_matrix
 )
 
 -- TRUNCATE TABLE compatibility_matrix;
