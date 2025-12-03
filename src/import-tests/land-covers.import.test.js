@@ -10,15 +10,19 @@ import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.
 import { connectToTestDatbase } from '../db-tests/setup/postgres.js'
 import { getRecordsByQuery } from './setup/db-helper.js'
 
+import { getCsvFixtures } from './setup/csv.js'
+
 describe('Land covers import', () => {
   let s3Client
   let connection
+  let fixtures
 
   beforeAll(async () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
     await clearTestBucket(s3Client)
+    fixtures = getCsvFixtures('covers_head.csv')
   })
 
   test('should import land covers data and return 200 ok', async () => {
@@ -32,16 +36,24 @@ describe('Land covers import', () => {
 
     expect(result).toBe('Land data imported successfully')
 
-    const covers = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2',
-      ['TV5699', '1419']
-    )
+    for (const fixture of fixtures) {
+      const [coverResult] = await getRecordsByQuery(
+        connection,
+        'SELECT id, ST_AsText(c.geom) as geom, c.sheet_id, c.parcel_id, c.land_cover_class_code, c.is_linear_feature, c.last_updated FROM land_covers c where c.id = $1',
+        [fixture.ID]
+      )
 
-    expect(covers).toHaveLength(1)
-    expect(covers[0].sheet_id).toBe('TV5699')
-    expect(covers[0].parcel_id).toBe('1419')
-    // expect(covers[0].area_sqm).toBe('192772.7700')
+      expect(coverResult.sheet_id).toBe(fixture.SHEET_ID)
+      expect(coverResult.parcel_id).toBe(fixture.PARCEL_ID)
+      expect(coverResult.land_cover_class_code).toBe(
+        fixture.LAND_COVER_CLASS_CODE
+      )
+      expect(coverResult.is_linear_feature ? 'Y' : 'N').toBe(
+        fixture.LINEAR_FEATURE
+      )
+      expect(coverResult.last_updated).toBeDefined()
+      expect(coverResult.geom).toBe(fixture.geom)
+    }
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
