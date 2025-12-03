@@ -1,5 +1,5 @@
 INSERT INTO land_covers (id, parcel_id, sheet_id, land_cover_class_code, is_linear_feature, geom, last_updated, ingest_id)
-SELECT id, parcel_id, sheet_id, LAND_COVER_CLASS_CODE,  CASE
+SELECT ID, PARCEL_ID, SHEET_ID, LAND_COVER_CLASS_CODE,  CASE
         WHEN LINEAR_FEATURE = 'N' THEN FALSE
         ELSE TRUE
     END as linear_feature_bool, geom, LAST_REFRESH_DATE, $1
