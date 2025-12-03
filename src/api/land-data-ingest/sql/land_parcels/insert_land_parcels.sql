@@ -1,5 +1,5 @@
-INSERT INTO land_parcels (id, parcel_id, sheet_id, area_sqm, geom, last_updated, ingest_id)
-SELECT record_id, parcel_id, sheet_id, area_sqm, geometry_wkt, last_updated, $1
+INSERT INTO land_parcels (id, parcel_id, sheet_id, area_sqm, geom, last_updated)
+SELECT ID, PARCEL_ID, SHEET_ID, GEOM_AREA_SQM, geom, LAST_REFRESH_DATE
 FROM land_parcels_tmp
 ON CONFLICT (id) 
 DO UPDATE SET

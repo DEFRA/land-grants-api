@@ -37,20 +37,19 @@ describe('Moorland import', () => {
 
     const moorland = await getRecordsByQuery(
       connection,
-      'SELECT * FROM moorland_designations',
+      'SELECT ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m',
       []
     )
-
-    // console.log(moorland)
-    // console.log(fixtures)
 
     for (const fixture of fixtures) {
       const moorlandResult = moorland.find(
         (m) => m.lfa_moor_id === fixture.LFAMOORID
       )
+
       expect(moorlandResult.lfa_moor_id).toEqual(fixture.LFAMOORID)
-      expect(moorlandResult.name).toEqual(fixture.NAME)
       expect(moorlandResult.ref_code).toEqual(fixture.REF_CODE)
+      expect(moorlandResult.name).toEqual(fixture.NAME)
+      expect(moorlandResult.geom).toEqual(fixture.geom)
     }
 
     const files = await listTestFiles(s3Client)

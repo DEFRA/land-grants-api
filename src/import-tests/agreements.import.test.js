@@ -41,7 +41,6 @@ describe('Agreements import', () => {
     expect(agreements).toHaveLength(1)
     expect(agreements[0].sheet_id).toBe('SD6919')
     expect(agreements[0].parcel_id).toBe('68')
-    // expect(agreements[0].area_sqm).toBe('192772.7700')
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)

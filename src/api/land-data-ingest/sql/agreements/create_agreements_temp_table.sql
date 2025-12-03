@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS agreements_tmp CASCADE;
-
 CREATE TEMPORARY TABLE agreements_tmp (
     sbi NUMERIC,
     scheme TEXT,

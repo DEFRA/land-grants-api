@@ -1,13 +1,16 @@
 import { performance } from 'node:perf_hooks'
-import { from } from 'pg-copy-streams'
-import { pipeline } from 'node:stream/promises'
 import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
-import { readFile } from '../../common/helpers/read-file.js'
 import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
 import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
+import {
+  copyDataToTempTable,
+  createTempTable,
+  insertData,
+  truncateTableAndInsertData
+} from './data-helpers.js'
 
 const logCategory = 'land-data-ingest'
 
@@ -20,7 +23,13 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(dataStream, tableName, ingestId, logger) {
+async function importData(
+  dataStream,
+  tableName,
+  ingestId,
+  logger,
+  truncateTable = false
+) {
   const startTime = performance.now()
   logInfo(logger, {
     category: logCategory,
@@ -40,34 +49,15 @@ async function importData(dataStream, tableName, ingestId, logger) {
   const client = await connection.connect()
 
   try {
-    await client.query(
-      await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
-    )
+    await createTempTable(client, tableName)
+    await copyDataToTempTable(client, tableName, dataStream)
 
-    const pgStream = client.query(
-      from(
-        `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
-      )
-    )
-
-    await pipeline(dataStream, pgStream)
-
-    const tempTableCount = await client.query(
-      `SELECT COUNT(*) as count FROM ${tableName}_tmp`
-    )
-
-    logInfo(logger, {
-      category: logCategory,
-      operation: `${tableName}_import_temp_table`,
-      message: `${tempTableCount.rows[0].count} records to be inserted to  ${tableName} from temp table ${tableName}_tmp`,
-      context: { tableName, tempTableCount: tempTableCount.rows[0].count },
-      outcome: tempTableCount.rows[0].count
-    })
-
-    const result = await client.query(
-      await readFile(`/${tableName}/insert_${tableName}.sql`),
-      [ingestId]
-    )
+    let result
+    if (truncateTable) {
+      result = await truncateTableAndInsertData(client, tableName, ingestId)
+    } else {
+      result = await insertData(client, tableName, ingestId)
+    }
 
     const endTime = performance.now()
     const duration = endTime - startTime
@@ -75,7 +65,7 @@ async function importData(dataStream, tableName, ingestId, logger) {
       category: logCategory,
       operation: `${tableName}_import_completed`,
       message: `${tableName} imported successfully in ${duration}ms`,
-      context: { rowCount: result.rowCount, duration },
+      context: { rowCount: result?.rowCount, duration },
       outcome: duration
     })
   } catch (error) {
@@ -114,7 +104,8 @@ export async function importMoorlandDesignations(
     moorlandDesignationsStream,
     'moorland_designations',
     ingestId,
-    logger
+    logger,
+    true
   )
 }
 
@@ -127,12 +118,13 @@ export async function importCompatibilityMatrix(
     compatibilityMatrixStream,
     'compatibility_matrix',
     ingestId,
-    logger
+    logger,
+    true
   )
 }
 
 export async function importAgreements(agreementsStream, ingestId, logger) {
-  await importData(agreementsStream, 'agreements', ingestId, logger)
+  await importData(agreementsStream, 'agreements', ingestId, logger, true)
 }
 
 /**
