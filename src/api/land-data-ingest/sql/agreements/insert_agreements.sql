@@ -1,7 +1,3 @@
-WITH truncated AS (
-  DELETE FROM agreements
-)
-
 INSERT INTO agreements (sheet_id, parcel_id, actions, ingest_id)
 SELECT
     ord_survey,

@@ -1325,7 +1325,7 @@ describe('addAgreementItem', () => {
     )
 
     expect(explanations).toContain(
-      '- Payment: (1.5 * 10) +\n            null = 15 pence/year'
+      '- Payment: (1.5 * 10) + null = £15.00 per year'
     )
   })
 })
