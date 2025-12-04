@@ -9,6 +9,7 @@ import {
 } from '../import-tests/setup/s3-test-helpers.js'
 import { connectToTestDatbase } from './setup/postgres.js'
 import { getRecordsByQuery } from '../import-tests/setup/db-helper.js'
+import { clearTestData } from './setup/db-helper.js'
 
 const logger = {
   info: jest.fn(),
@@ -30,6 +31,7 @@ describe('CDP uploader callback integration test', () => {
   })
 
   afterAll(async () => {
+    await clearTestData(connection)
     await connection.end()
   })
 
