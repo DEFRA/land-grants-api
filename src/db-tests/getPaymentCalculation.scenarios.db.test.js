@@ -7,10 +7,10 @@ import {
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
 
 const logger = {
-  log: console.log,
-  warn: console.warn,
-  info: console.info,
-  error: console.error
+  log: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
 }
 
 let connection
@@ -38,6 +38,7 @@ describe('Calculate payments', () => {
         parcels: parcelsStr,
         dateToday,
         expectedPaymentAnnual,
+        expectedPaymentAgreement,
         expectedPaymentFirstQuarter,
         expectedPaymentOtherQuarters,
         expectedStartDate,
@@ -74,6 +75,10 @@ describe('Calculate payments', () => {
       const secondPayment = result.payments[1]
 
       expect(result.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
+      expect(result.agreementTotalPence).toEqual(
+        Number(expectedPaymentAgreement)
+      )
+
       expect(firstPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentFirstQuarter)
       )
@@ -81,6 +86,23 @@ describe('Calculate payments', () => {
         Number(expectedPaymentOtherQuarters)
       )
 
+      // does the sum of individual payment line items match the totalPaymentPence for the instalment?
+      for (const payment of result.payments) {
+        const sumOfTotalLineItems = payment.lineItems.reduce(
+          (acc, item) => acc + item.paymentPence,
+          0
+        )
+        expect(sumOfTotalLineItems).toEqual(payment.totalPaymentPence)
+      }
+
+      // does the sum of total payments match the agreement total during the agreement length?
+      const sumOfTotalsForInstalments = result.payments.reduce(
+        (acc, p) => acc + p.totalPaymentPence,
+        0
+      )
+      expect(sumOfTotalsForInstalments).toEqual(result.agreementTotalPence)
+
+      // dates
       expect(result.agreementStartDate).toEqual(expectedStartDate)
       expect(result.agreementEndDate).toEqual(expectedEndDate)
       expect(firstPayment.paymentDate).toEqual(expectedFirstPaymentDate)

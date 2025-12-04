@@ -20,6 +20,8 @@ export default {
   collectCoverageFrom: [
     'src/api/**/*.js',
     'src/rules-engine/**/*.js',
+    'src/available-area/**/*.js',
+    'src/payment-calculation/**/*.js',
     '!src/**/*.test.js',
     '!**/__tests__/**',
     '!**/__snapshots__/**'

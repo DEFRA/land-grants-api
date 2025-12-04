@@ -31,7 +31,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7271'],
+          parcelIds: ['SD6748-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
@@ -49,7 +49,7 @@ describe('Calculate available area', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7271',
-        sheetId: 'SD6743',
+        sheetId: 'SD6748',
         size: {
           unit: 'ha',
           value: 0.6564
@@ -123,7 +123,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7271'],
+          parcelIds: ['SD6748-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'CMOR1', quantity: 0.1, unit: 'ha' }]
         },
@@ -142,7 +142,7 @@ describe('Calculate available area', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7271',
-        sheetId: 'SD6743',
+        sheetId: 'SD6748',
         size: {
           unit: 'ha',
           value: 0.6564
@@ -240,7 +240,7 @@ describe('Calculate available area', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7271'],
+          parcelIds: ['SD6748-7271'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [
             { actionCode: 'UPL1', quantity: 0.1, unit: 'ha' },
@@ -261,7 +261,7 @@ describe('Calculate available area', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7271',
-        sheetId: 'SD6743',
+        sheetId: 'SD6748',
         size: {
           unit: 'ha',
           value: 0.6564

@@ -37,7 +37,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7269'],
+          parcelIds: ['SD6747-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
@@ -55,7 +55,7 @@ describe('Calculate available area with agreements', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7269',
-        sheetId: 'SD6743',
+        sheetId: 'SD6747',
         size: {
           unit: 'ha',
           value: 0.6564
@@ -163,7 +163,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7269'],
+          parcelIds: ['SD6747-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
         },
@@ -182,7 +182,7 @@ describe('Calculate available area with agreements', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7269',
-        sheetId: 'SD6743',
+        sheetId: 'SD6747',
         size: {
           unit: 'ha',
           value: 0.6564

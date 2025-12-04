@@ -120,14 +120,49 @@ The `cdp-uploader-callback` will trigger the import process for that file
 }
 ```
 
+### Running the ingestion process
+
+We have a script which carrys out all of the steps above,
+
+- `land-grants-api/scripts/ingest-land-data.js`
+
+Configure the varaibles on lines `183-187`
+
+```
+const resource = 'parcels|moorland|covers|agreements|compatibility-matrix'
+const environment = 'dev|test|perf-test|prod'
+const clientId = {COGNITO_CLIENT_ID}
+const clientSecret = {COGNITO_CLIENT_SECRET}
+const ingestionDataDirectory = {LOCATION_OF_FILES_TO_IMPORT}
+```
+
 ### Testing locally
 
 In order to test data ingestion locally, we have configured localstack to creates an s3 bucket `s3://land-data/`.
 
-The import process runs on a schedule but can also be started via:
+Call the callback endpoint:
 
 ```
-GET localhost:3001/ingest-land-data-schedule
+POST
+{
+    "uploadStatus": "ready",
+    "metadata": {
+        "reference": "12345"
+    },
+    "form": {
+        "file": {
+            "fileId": "85c49b7d-cceb-434c-aa5b-f532ad1b12f9",
+            "filename": "compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f91.csv",
+            "contentType": "text/csv",
+            "fileStatus": "complete",
+            "contentLength": 21602,
+            "checksumSha256": "Y44BR07gRSUXka1XAZm3ZOdtRxo9SmK6RQqZQMjmMyk=",
+            "s3Key": "compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv",
+            "s3Bucket": "land-data"
+        }
+    },
+    "numberOfRejectedFiles": 0
+}
 ```
 
 ### Working with S3 bucket
@@ -136,12 +171,22 @@ Here are a series of aws cli commands to work with files and buckets
 
 #### Upload a file to the land-data bucket
 
-```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels.csv s3://land-data/parcels/
-```
+Import parcels:
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels_head.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+```
+
+Import compatibility matrix
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/compatibility-matrix.csv s3://land-data/compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+```
+
+Import moorland
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/moorland.csv s3://land-data/moorland/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 #### List all buckets
@@ -154,6 +199,24 @@ aws --endpoint-url=http://localhost:4566 s3 ls
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data
+```
+
+List files in parcels
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/parcels/
+```
+
+List files in compatibility matrix
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/compatibility_matrix/
+```
+
+List files in moorland
+
+```
+aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/moorland/
 ```
 
 #### Delete a file from the land-data bucket
