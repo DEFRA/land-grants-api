@@ -29,6 +29,10 @@ describe('CDP uploader callback integration test', () => {
     await clearTestBucket(s3Client)
   })
 
+  afterAll(async () => {
+    await connection.end()
+  })
+
   test('should return 200 with success message when payload is valid', async () => {
     await uploadFixtureFile(
       s3Client,
