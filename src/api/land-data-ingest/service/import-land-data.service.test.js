@@ -3,23 +3,25 @@ import { jest } from '@jest/globals'
 import {
   importLandParcels,
   importLandCovers,
-  importMoorlandDesignations
+  importMoorlandDesignations,
+  importCompatibilityMatrix
 } from './import-land-data.service.js'
 import { createDBPool, getDBOptions } from '../../common/helpers/postgres.js'
-import { readFile } from '../../common/helpers/read-file.js'
-import { from } from 'pg-copy-streams'
-import { pipeline } from 'node:stream/promises'
+import {
+  createTempTable,
+  copyDataToTempTable,
+  insertData,
+  truncateTableAndInsertData
+} from './data-helpers.js'
 
 jest.mock('../../common/helpers/postgres.js')
-jest.mock('pg-copy-streams')
-jest.mock('node:stream/promises')
-jest.mock('fs/promises')
-jest.mock('../../common/helpers/read-file.js')
+jest.mock('./data-helpers.js')
 
 describe('Import Land Data Service', () => {
   let mockClient
   let mockConnection
   let mockLogger
+  const ingestId = '1234567890'
 
   beforeEach(() => {
     mockLogger = {
@@ -28,7 +30,7 @@ describe('Import Land Data Service', () => {
     }
     mockClient = {
       query: jest.fn().mockImplementation((query) => {
-        if (query.includes('select count(*)')) {
+        if (query.includes('SELECT COUNT(*)')) {
           return Promise.resolve({ rows: [{ count: 1 }] })
         }
         return Promise.resolve({ rowCount: 1 })
@@ -46,9 +48,10 @@ describe('Import Land Data Service', () => {
       host: 'test-host',
       port: 5432
     })
-    readFile.mockResolvedValue('SELECT * FROM test')
-    from.mockReturnValue('')
-    pipeline.mockResolvedValue()
+    createTempTable.mockResolvedValue()
+    copyDataToTempTable.mockResolvedValue()
+    insertData.mockResolvedValue()
+    truncateTableAndInsertData.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -56,31 +59,25 @@ describe('Import Land Data Service', () => {
   })
 
   describe('importLandParcels', () => {
-    // it('should import land parcels', async () => {
-    //   const landParcelsStream = new ReadableStream({
-    //     read: () =>
-    //       Promise.resolve({
-    //         value: 'test',
-    //         done: true
-    //       })
-    //   })
-    //   await importLandParcels(landParcelsStream, mockLogger)
+    it('should import land parcels', async () => {
+      const landParcelsStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      await importLandParcels(landParcelsStream, ingestId, mockLogger)
 
-    //   expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-    //   expect(mockClient.query).toHaveBeenCalledTimes(5)
-    //   expect(mockClient.end).toHaveBeenCalledTimes(1)
-    //   expect(readFile.mock.calls[0][0]).toBe(
-    //     '/land_parcels/create_land_parcels_temp_table.sql'
-    //   )
-    //   expect(readFile.mock.calls[1][0]).toBe(
-    //     '/land_parcels/insert_land_parcels.sql'
-    //   )
-    //   expect(from).toHaveBeenCalledWith(
-    //     "COPY land_parcels_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
-    //   )
-    //   expect(pipeline).toHaveBeenCalledTimes(1)
-    //   expect(mockLogger.info).toHaveBeenCalledTimes(5)
-    // })
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(createTempTable).toHaveBeenCalledTimes(1)
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
+      expect(insertData).toHaveBeenCalledTimes(1)
+      expect(insertData.mock.calls[0][2]).toEqual(ingestId)
+      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
+      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+    })
 
     it('should handle error when importing land parcels', async () => {
       const landParcelsStream = new ReadableStream({
@@ -90,10 +87,12 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue(new Error('Failed to import land parcels'))
+      createTempTable.mockRejectedValue(
+        new Error('Failed to import land parcels')
+      )
 
       await expect(
-        importLandParcels(landParcelsStream, mockLogger)
+        importLandParcels(landParcelsStream, ingestId, mockLogger)
       ).rejects.toThrow('Failed to import land parcels')
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
@@ -102,31 +101,25 @@ describe('Import Land Data Service', () => {
   })
 
   describe('importLandCovers', () => {
-    // it('should import land parcels', async () => {
-    //   const landCoversStream = new ReadableStream({
-    //     read: () =>
-    //       Promise.resolve({
-    //         value: 'test',
-    //         done: true
-    //       })
-    //   })
-    //   await importLandCovers(landCoversStream, mockLogger)
+    it('should import land parcels', async () => {
+      const landCoversStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      await importLandCovers(landCoversStream, ingestId, mockLogger)
 
-    //   expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-    //   expect(mockClient.query).toHaveBeenCalledTimes(5)
-    //   expect(mockClient.end).toHaveBeenCalledTimes(1)
-    //   expect(readFile.mock.calls[0][0]).toBe(
-    //     '/land_covers/create_land_covers_temp_table.sql'
-    //   )
-    //   expect(readFile.mock.calls[1][0]).toBe(
-    //     '/land_covers/insert_land_covers.sql'
-    //   )
-    //   expect(from).toHaveBeenCalledWith(
-    //     "COPY land_covers_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
-    //   )
-    //   expect(pipeline).toHaveBeenCalledTimes(1)
-    //   expect(mockLogger.info).toHaveBeenCalledTimes(5)
-    // })
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(createTempTable).toHaveBeenCalledTimes(1)
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
+      expect(insertData).toHaveBeenCalledTimes(1)
+      expect(insertData.mock.calls[0][2]).toEqual(ingestId)
+      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+    })
 
     it('should handle error when importing land covers', async () => {
       const landCoversStream = new ReadableStream({
@@ -136,10 +129,12 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue(new Error('Failed to import land covers'))
+      createTempTable.mockRejectedValue(
+        new Error('Failed to import land covers')
+      )
 
       await expect(
-        importLandCovers(landCoversStream, mockLogger)
+        importLandCovers(landCoversStream, ingestId, mockLogger)
       ).rejects.toThrow('Failed to import land covers')
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
@@ -148,31 +143,29 @@ describe('Import Land Data Service', () => {
   })
 
   describe('importMoorlandDesignations', () => {
-    // it('should import moorland designations', async () => {
-    //   const moorlandDesignationsStream = new ReadableStream({
-    //     read: () =>
-    //       Promise.resolve({
-    //         value: 'test',
-    //         done: true
-    //       })
-    //   })
-    //   await importMoorlandDesignations(moorlandDesignationsStream, mockLogger)
+    it('should import moorland designations', async () => {
+      const moorlandDesignationsStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      await importMoorlandDesignations(
+        moorlandDesignationsStream,
+        ingestId,
+        mockLogger
+      )
 
-    //   expect(mockConnection.connect).toHaveBeenCalledTimes(1)
-    //   expect(mockClient.query).toHaveBeenCalledTimes(5)
-    //   expect(mockClient.end).toHaveBeenCalledTimes(1)
-    //   expect(readFile.mock.calls[0][0]).toBe(
-    //     '/moorland_designations/create_moorland_designations_temp_table.sql'
-    //   )
-    //   expect(readFile.mock.calls[1][0]).toBe(
-    //     '/moorland_designations/insert_moorland_designations.sql'
-    //   )
-    //   expect(from).toHaveBeenCalledWith(
-    //     "COPY moorland_designations_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
-    //   )
-    //   expect(pipeline).toHaveBeenCalledTimes(1)
-    //   expect(mockLogger.info).toHaveBeenCalledTimes(5)
-    // })
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(createTempTable).toHaveBeenCalledTimes(1)
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
+      expect(insertData).toHaveBeenCalledTimes(0)
+      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(1)
+      expect(truncateTableAndInsertData.mock.calls[0][2]).toEqual(ingestId)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+    })
 
     it('should handle error when importing moorland designations', async () => {
       const moorlandDesignationsStream = new ReadableStream({
@@ -182,13 +175,67 @@ describe('Import Land Data Service', () => {
             done: true
           })
       })
-      readFile.mockRejectedValue(
+      createTempTable.mockRejectedValue(
         new Error('Failed to import moorland designations')
       )
 
       await expect(
-        importMoorlandDesignations(moorlandDesignationsStream, mockLogger)
+        importMoorlandDesignations(
+          moorlandDesignationsStream,
+          ingestId,
+          mockLogger
+        )
       ).rejects.toThrow('Failed to import moorland designations')
+
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('importCompatibilityMatrix', () => {
+    it('should import compatibility matrix', async () => {
+      const compatibilityMatrixStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      await importCompatibilityMatrix(
+        compatibilityMatrixStream,
+        ingestId,
+        mockLogger
+      )
+
+      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(createTempTable).toHaveBeenCalledTimes(1)
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
+      expect(insertData).toHaveBeenCalledTimes(0)
+      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(1)
+      expect(truncateTableAndInsertData.mock.calls[0][2]).toEqual(ingestId)
+      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockLogger.info).toHaveBeenCalledTimes(4)
+    })
+
+    it('should handle error when importing compatibility matrix', async () => {
+      const compatibilityMatrixStream = new ReadableStream({
+        read: () =>
+          Promise.resolve({
+            value: 'test',
+            done: true
+          })
+      })
+      createTempTable.mockRejectedValue(
+        new Error('Failed to import compatibility matrix')
+      )
+
+      await expect(
+        importCompatibilityMatrix(
+          compatibilityMatrixStream,
+          ingestId,
+          mockLogger
+        )
+      ).rejects.toThrow('Failed to import compatibility matrix')
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
