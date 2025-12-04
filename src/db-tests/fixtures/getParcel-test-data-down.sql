@@ -1,6 +1,6 @@
 DELETE FROM
 land_parcels
-WHERE parcel_id = '7271' and sheet_id = 'SD6748';
+WHERE id = 999999;
 
 DELETE FROM
 land_covers
