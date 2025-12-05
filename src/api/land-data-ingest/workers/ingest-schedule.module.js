@@ -1,9 +1,5 @@
 import { parentPort } from 'node:worker_threads'
-import {
-  completedBucketPath,
-  failedBucketPath,
-  getFile
-} from '../../common/s3/s3.js'
+import { failedBucketPath, getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
@@ -66,15 +62,6 @@ export async function importLandData(file) {
   })
 
   try {
-    logInfo(logger, {
-      category,
-      operation: `${resourceType}_file_moved_to_processing`,
-      message: `${resourceType} file moved to processing`,
-      context: {
-        s3Path
-      }
-    })
-
     const response = await getFile(s3Client, bucket, s3Path)
 
     if (response.ContentType !== 'text/csv') {
@@ -112,16 +99,6 @@ export async function importLandData(file) {
         throw new Error(`Invalid resource type: ${resourceType}`)
     }
 
-    logInfo(logger, {
-      category,
-      operation: `${resourceType}_file_moved_to_completed`,
-      message: `${resourceType} file moved to completed`,
-      context: {
-        s3Path,
-        completedBucketPath: completedBucketPath(s3Path)
-      }
-    })
-
     return 'Land data imported successfully'
   } catch (error) {
     logBusinessError(logger, {
@@ -135,6 +112,7 @@ export async function importLandData(file) {
         bucket
       }
     })
+
     throw error
   }
 }
