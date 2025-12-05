@@ -139,8 +139,6 @@ export async function importLandData(file) {
 
     return 'Land data imported successfully'
   } catch (error) {
-    await moveFile(s3Client, bucket, processingPath, failedBucketPath(s3Path))
-
     logBusinessError(logger, {
       operation: 'error importing land data',
       error,
@@ -153,6 +151,9 @@ export async function importLandData(file) {
         bucket
       }
     })
+
+    await moveFile(s3Client, bucket, processingPath, failedBucketPath(s3Path))
+
     throw error
   }
 }
