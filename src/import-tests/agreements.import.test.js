@@ -21,6 +21,10 @@ describe('Agreements import', () => {
     await clearTestBucket(s3Client)
   })
 
+  afterAll(async () => {
+    await connection.end()
+  })
+
   test('should import agreements data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,
