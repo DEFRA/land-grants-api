@@ -81,14 +81,13 @@ describe('Land covers import', () => {
 
     const covers = await getRecordsByQuery(
       connection,
-      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2',
-      ['TV5699', '1419']
+      'SELECT * FROM land_covers WHERE id = $1',
+      ['20']
     )
 
     expect(covers).toHaveLength(1)
     expect(covers[0].sheet_id).toBe('TV5699')
     expect(covers[0].parcel_id).toBe('1419')
-    // expect(covers[0].land_cover_class_code).toBe('132')
-    // expect(covers[0].is_linear_feature).toBe(true)
+    expect(covers[0].land_cover_class_code).toBe('132')
   }, 10000)
 })
