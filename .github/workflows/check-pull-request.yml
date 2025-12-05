@@ -31,6 +31,14 @@ jobs:
           npm run lint
           npm test
 
+      - name: Import tests
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+      - run: |
+          npm run test:import
+
       - name: Test Docker Image Build
         run: |
           set +e
