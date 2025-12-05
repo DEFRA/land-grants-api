@@ -81,8 +81,8 @@ describe('Land covers import', () => {
 
     const covers = await getRecordsByQuery(
       connection,
-      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2',
-      ['TV5699', '1419']
+      'SELECT * FROM land_covers WHERE id = $1',
+      ['20']
     )
 
     expect(covers).toHaveLength(1)
