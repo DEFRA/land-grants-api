@@ -54,6 +54,6 @@ describe('Moorland import', () => {
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe('completed/moorland/moorland_head.csv')
+    expect(files[0]).toBe('moorland/moorland_head.csv')
   }, 10000)
 })
