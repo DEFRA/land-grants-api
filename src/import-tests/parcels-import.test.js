@@ -56,7 +56,7 @@ describe('Parcels import', () => {
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe('completed/parcels/parcels_head.csv')
+    expect(files[0]).toBe('parcels/parcels_head.csv')
   }, 10000)
 
   test('should import parcels data and upsert data', async () => {

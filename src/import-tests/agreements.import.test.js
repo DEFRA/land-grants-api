@@ -44,6 +44,6 @@ describe('Agreements import', () => {
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe('completed/agreements/agreements_head.csv')
+    expect(files[0]).toBe('agreements/agreements_head.csv')
   }, 10000)
 })

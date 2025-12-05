@@ -1,11 +1,5 @@
 import { parentPort } from 'node:worker_threads'
-import {
-  completedBucketPath,
-  failedBucketPath,
-  getFile,
-  moveFile,
-  processingBucketPath
-} from '../../common/s3/s3.js'
+import { failedBucketPath, getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import {
@@ -52,7 +46,6 @@ export async function importLandData(file) {
   const ingestId = rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
-  const processingPath = processingBucketPath(s3Path)
 
   logInfo(logger, {
     category,
@@ -64,25 +57,12 @@ export async function importLandData(file) {
       resourceType,
       filename,
       s3Path,
-      processingPath,
       bucket
     }
   })
 
   try {
-    await moveFile(s3Client, bucket, s3Path, processingPath)
-
-    logInfo(logger, {
-      category,
-      operation: `${resourceType}_file_moved_to_processing`,
-      message: `${resourceType} file moved to processing`,
-      context: {
-        s3Path,
-        processingPath
-      }
-    })
-
-    const response = await getFile(s3Client, bucket, processingPath)
+    const response = await getFile(s3Client, bucket, s3Path)
 
     if (response.ContentType !== 'text/csv') {
       throw new Error(`Invalid content type: ${response.ContentType}`)
@@ -119,24 +99,6 @@ export async function importLandData(file) {
         throw new Error(`Invalid resource type: ${resourceType}`)
     }
 
-    await moveFile(
-      s3Client,
-      bucket,
-      processingPath,
-      completedBucketPath(s3Path)
-    )
-
-    logInfo(logger, {
-      category,
-      operation: `${resourceType}_file_moved_to_completed`,
-      message: `${resourceType} file moved to completed`,
-      context: {
-        s3Path,
-        processingPath,
-        completedBucketPath: completedBucketPath(s3Path)
-      }
-    })
-
     return 'Land data imported successfully'
   } catch (error) {
     logBusinessError(logger, {
@@ -146,13 +108,10 @@ export async function importLandData(file) {
         category,
         resourceType,
         s3Path,
-        processingPath,
         failedBucketPath: failedBucketPath(s3Path),
         bucket
       }
     })
-
-    await moveFile(s3Client, bucket, processingPath, failedBucketPath(s3Path))
 
     throw error
   }
