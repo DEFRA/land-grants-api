@@ -71,7 +71,7 @@ export async function importLandData(file) {
       operation: `${resourceType}_file_moved_to_processing`,
       message: `${resourceType} file moved to processing`,
       context: {
-        s3Path,
+        s3Path
       }
     })
 
