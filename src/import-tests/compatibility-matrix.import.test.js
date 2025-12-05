@@ -47,8 +47,6 @@ describe('Compatibility matrix import', () => {
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe(
-      'completed/compatibility_matrix/compatibility_matrix_head.csv'
-    )
+    expect(files[0]).toBe('compatibility_matrix/compatibility_matrix_head.csv')
   }, 10000)
 })

@@ -57,7 +57,7 @@ describe('Land covers import', () => {
 
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
-    expect(files[0]).toBe('completed/covers/covers_head.csv')
+    expect(files[0]).toBe('covers/covers_head.csv')
   }, 10000)
 
   test('should import land covers data and upsert data', async () => {
