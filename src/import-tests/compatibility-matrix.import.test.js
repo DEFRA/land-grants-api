@@ -21,6 +21,10 @@ describe('Compatibility matrix import', () => {
     await clearTestBucket(s3Client)
   })
 
+  afterAll(async () => {
+    await connection.end()
+  })
+
   test('should import compatibility matrix data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,

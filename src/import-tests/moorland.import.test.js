@@ -24,6 +24,10 @@ describe('Moorland import', () => {
     fixtures = getCsvFixtures('moorland_head.csv')
   })
 
+  afterAll(async () => {
+    await connection.end()
+  })
+
   test('should import moorland data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,

@@ -24,6 +24,10 @@ describe('Parcels import', () => {
     fixtures = getCsvFixtures('parcels_head.csv')
   })
 
+  afterAll(async () => {
+    await connection.end()
+  })
+
   test('should import parcels data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,
