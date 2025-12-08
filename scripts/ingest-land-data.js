@@ -153,11 +153,8 @@ async function checkUploadStatus(uploadId, accessToken, environment) {
 async function uploadFileToS3(uploadUrl, filePath, accessToken) {
   try {
     console.log(`✓ Uploading file to S3 ${uploadUrl}`)
-    const fileContent = fs.readFileSync(filePath)
+    const fileContent = fs.readFileSync(filePath, 'utf-8')
     const fileName = path.basename(filePath)
-
-    const formData = new FormData()
-    formData.append('file', new Blob([fileContent]), fileName)
 
     await fetch(uploadUrl, {
       method: 'POST',
@@ -166,7 +163,7 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
         'content-type': 'text/csv',
         'x-filename': fileName
       },
-      body: formData,
+      body: fileContent,
       redirect: 'manual'
     })
   } catch (error) {
@@ -219,6 +216,12 @@ async function main() {
   // iterate over the files and ingest them
   for (const landDataFile of files) {
     console.log(`✓ Start ingesting ${landDataFile}`)
+
+    //reject files that do not contain .csv extension
+    if (!landDataFile.endsWith('.csv')) {
+      console.log(`✗ Skipping ${landDataFile} as it does not end with .csv`)
+      continue
+    }
 
     const initiateUploadResponse = await initiateLandDataUpload(
       {
