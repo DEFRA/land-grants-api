@@ -58,13 +58,23 @@ export const LandDataIngestController = {
 
       const { title, taskId } = createTaskInfo(Date.now(), category)
 
-      await processFile(
+      processFile(
         payload.form.file.s3Key,
         request,
         category,
         title,
         taskId
-      )
+      ).catch((error) => {
+        logBusinessError(request.logger, {
+          operation: `${category}_process_file_error`,
+          error,
+          context: {
+            payload: JSON.stringify(payload ?? {}),
+            s3Key: payload.form.file.s3Key,
+            s3Bucket: config.get('s3.bucket')
+          }
+        })
+      })
 
       logInfo(logger, {
         category,
