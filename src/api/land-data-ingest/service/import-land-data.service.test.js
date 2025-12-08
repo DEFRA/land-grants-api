@@ -162,7 +162,7 @@ describe('Import Land Data Service', () => {
       expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
       expect(insertData).toHaveBeenCalledTimes(1)
       expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
-      expect(truncateTableAndInsertData.mock.calls[0][2]).toEqual(ingestId)
+      expect(insertData.mock.calls[0][2]).toEqual(ingestId)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledTimes(4)
     })
