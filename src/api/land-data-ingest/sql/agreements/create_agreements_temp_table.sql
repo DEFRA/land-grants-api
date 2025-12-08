@@ -2,7 +2,7 @@ CREATE TEMPORARY TABLE agreements_tmp (
     sbi NUMERIC,
     scheme TEXT,
     ord_survey TEXT,
-    ng_number integer,
+    ng_number TEXT,
     agreement_ref TEXT,
     option_code TEXT,
     option_start_date TEXT,
