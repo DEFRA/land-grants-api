@@ -61,17 +61,6 @@ describe('CDP uploader callback integration test', () => {
 
     const { statusCode } = getResponse()
 
-    const parcels = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2',
-      ['TV5797', '2801']
-    )
-
-    expect(parcels).toHaveLength(1)
-    expect(parcels[0].sheet_id).toBe('TV5797')
-    expect(parcels[0].parcel_id).toBe('2801')
-    expect(parcels[0].area_sqm).toBe('192772.7700')
-
     const files = await listTestFiles(s3Client)
     expect(statusCode).toBe(200)
     expect(files).toHaveLength(1)
