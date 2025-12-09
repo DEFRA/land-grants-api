@@ -1,9 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { LandDataIngestController } from './land-data-ingest.controller.js'
-import {
-  logInfo,
-  logBusinessError
-} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
 import {
   moveFile,
   processingBucketPath,
@@ -25,7 +22,6 @@ jest.mock('../service/ingest-schedule.service.js', () => ({
 
 const mockProcessFile = processFile
 const mockLogInfo = logInfo
-const mockLogBusinessError = logBusinessError
 const mockMoveFile = moveFile
 const mockProcessingBucketPath = processingBucketPath
 const mockFailedBucketPath = failedBucketPath

@@ -8,7 +8,6 @@ import {
   clearTestBucket
 } from '../import-tests/setup/s3-test-helpers.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-import { getRecordsByQuery } from '../import-tests/setup/db-helper.js'
 import { clearTestData } from './setup/db-helper.js'
 
 const logger = {
