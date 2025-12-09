@@ -104,8 +104,7 @@ export async function importMoorlandDesignations(
     moorlandDesignationsStream,
     'moorland_designations',
     ingestId,
-    logger,
-    true
+    logger
   )
 }
 
