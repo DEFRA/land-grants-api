@@ -77,17 +77,35 @@ describe('Land covers import', () => {
     )
 
     await importLandData('covers/covers_head.csv')
+
+    // Check that the original covers are imported
+    const originalCovers = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2 order by id',
+      ['TV5699', '1419']
+    )
+
+    expect(originalCovers).toHaveLength(2)
+    expect(originalCovers[0].id).toBe(20)
+    expect(originalCovers[0].land_cover_class_code).toBe('131')
+
+    expect(originalCovers[1].id).toBe(21)
+    expect(originalCovers[1].land_cover_class_code).toBe('371')
+
+    // Check that the upserted covers are imported
     await importLandData('covers/covers_head_upsert.csv')
 
     const covers = await getRecordsByQuery(
       connection,
-      'SELECT * FROM land_covers WHERE id = $1',
-      ['20']
+      'SELECT * FROM land_covers WHERE sheet_id = $1 AND parcel_id = $2 order by id',
+      ['TV5699', '1419']
     )
 
-    expect(covers).toHaveLength(1)
-    expect(covers[0].sheet_id).toBe('TV5699')
-    expect(covers[0].parcel_id).toBe('1419')
+    expect(covers).toHaveLength(2)
+    expect(covers[0].id).toBe(20)
     expect(covers[0].land_cover_class_code).toBe('132')
+
+    expect(covers[1].id).toBe(21)
+    expect(covers[1].land_cover_class_code).toBe('371')
   }, 10000)
 })

@@ -76,6 +76,19 @@ describe('Parcels import', () => {
     )
 
     await importLandData('parcels/parcels_head.csv')
+
+    const originalParcels = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2',
+      ['TV5797', '2801']
+    )
+
+    expect(originalParcels).toHaveLength(1)
+    expect(originalParcels[0].sheet_id).toBe('TV5797')
+    expect(originalParcels[0].parcel_id).toBe('2801')
+    expect(originalParcels[0].area_sqm).toBe('192772.7700')
+
+    // Check that the upserted parcels are imported
     await importLandData('parcels/parcels_head_upsert.csv')
 
     const parcels = await getRecordsByQuery(
