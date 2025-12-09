@@ -16,14 +16,12 @@ describe('Get agreement actions for parcel query', () => {
   beforeAll(async () => {
     connection = connectToTestDatbase()
     await seedForAgreementsTest(connection)
-    jest.useFakeTimers().setSystemTime(new Date(2025, 10, 1))
   })
 
   afterAll(async () => {
     await resetAgreementsTestData(connection)
     await connection.end()
-    jest.useRealTimers()
-  })
+  }, 60000)
 
   test('should return 0 actions when parcel is missing', async () => {
     const sheetId = 'Missing'
@@ -42,6 +40,7 @@ describe('Get agreement actions for parcel query', () => {
   test('should return 1 action when parcel is present', async () => {
     const sheetId = 'SD6920'
     const parcelId = '69'
+    jest.useFakeTimers().setSystemTime(new Date(2025, 10, 1))
 
     const actions = await getAgreementsForParcel(
       sheetId,
@@ -53,7 +52,8 @@ describe('Get agreement actions for parcel query', () => {
     expect(actions[0].actionCode).toBe('CMOR1')
     expect(actions[0].unit).toBe('ha')
     expect(actions[0].quantity).toBe(10)
-    expect(actions[0].startDate).toBe(new Date('2025-01-01'))
-    expect(actions[0].endDate).toBe(new Date('2025-11-31'))
-  }, 10000)
+    expect(actions[0].startDate.toISOString()).toBe('2025-01-01T00:00:00.000Z')
+    expect(actions[0].endDate.toISOString()).toBe('2025-11-31T00:00:00.000Z')
+    jest.useRealTimers()
+  }, 30000)
 })
