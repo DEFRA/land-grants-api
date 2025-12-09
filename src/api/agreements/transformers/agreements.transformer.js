@@ -8,14 +8,14 @@ function agreementActionsTransformer(agreements) {
     return []
   }
 
-  return agreements.flatMap((agreement) => {
-    return agreement.actions.map((action) => {
-      return {
-        actionCode: action.action_code,
-        quantity: action.quantity,
-        unit: action.unit
-      }
-    })
+  return agreements[0].actions?.map((action) => {
+    return {
+      actionCode: action.action_code,
+      quantity: action.quantity,
+      unit: action.unit,
+      startDate: action.start_date ? new Date(action.start_date) : null,
+      endDate: action.end_date ? new Date(action.end_date) : null
+    }
   })
 }
 

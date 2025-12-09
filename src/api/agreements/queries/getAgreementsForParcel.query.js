@@ -23,15 +23,16 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
   try {
     client = await db.connect()
 
-    const query =
-      'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2'
+    const query = `SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2`
     const values = [sheetId, parcelId]
     const result = await client.query(query, values)
     logInfo(logger, {
       category: 'database',
       message: 'Get agreements for parcel'
     })
-    return agreementActionsTransformer(result.rows)
+    return agreementActionsTransformer(result.rows).filter(
+      (action) => action.endDate > new Date()
+    )
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get agreements for parcel',
