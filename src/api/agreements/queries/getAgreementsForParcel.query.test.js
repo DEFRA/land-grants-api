@@ -4,7 +4,6 @@ describe('getAgreementsForParcel', () => {
   let mockDb
   let mockLogger
   let mockClient
-  let mockResult
 
   beforeEach(() => {
     mockClient = {
