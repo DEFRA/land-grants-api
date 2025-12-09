@@ -41,13 +41,13 @@ describe('Moorland import', () => {
 
     const moorland = await getRecordsByQuery(
       connection,
-      'SELECT ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m',
+      'SELECT id, ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m',
       []
     )
 
     for (const fixture of fixtures) {
       const moorlandResult = moorland.find(
-        (m) => m.lfa_moor_id === fixture.LFAMOORID
+        (m) => m.id === Number(fixture.OBJECTID)
       )
 
       expect(moorlandResult.lfa_moor_id).toEqual(fixture.LFAMOORID)
@@ -59,5 +59,31 @@ describe('Moorland import', () => {
     const files = await listTestFiles(s3Client)
     expect(files).toHaveLength(1)
     expect(files[0]).toBe('moorland/moorland_head.csv')
+  }, 10000)
+
+  test('should import moorland and upsert data', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'moorland_head.csv',
+      'moorland/moorland_head.csv'
+    )
+    await uploadFixtureFile(
+      s3Client,
+      'moorland_head_upsert.csv',
+      'moorland/moorland_head_upsert.csv'
+    )
+
+    await importLandData('moorland/moorland_head.csv')
+    await importLandData('moorland/moorland_head_upsert.csv')
+
+    const moorland = await getRecordsByQuery(
+      connection,
+      'SELECT id, ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m where id = $1',
+      [9]
+    )
+
+    expect(moorland[0].lfa_moor_id).toBe('735')
+    expect(moorland[0].ref_code).toBe('MS1')
+    expect(moorland[0].name).toBe('MS1')
   }, 10000)
 })
