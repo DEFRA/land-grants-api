@@ -18,9 +18,8 @@ for (const line of lines) {
   const parcelId = parts[2].replace(/'/g, '')
   const landCoverClassCode = parts[3].replace(/'/g, '')
   const isLinearFeature = parts[4].replace(/'/g, '')
-  const areaSqm = parts[5]
 
-  const deleteStatement = `DELETE FROM land_covers WHERE sheet_id = '${sheetId}' AND parcel_id = '${parcelId}' AND land_cover_class_code = '${landCoverClassCode}' AND is_linear_feature = '${isLinearFeature}' AND area_sqm = ${areaSqm};`
+  const deleteStatement = `DELETE FROM land_covers WHERE sheet_id = '${sheetId}' AND parcel_id = '${parcelId}' AND land_cover_class_code = '${landCoverClassCode}' AND is_linear_feature = '${isLinearFeature}'`
   deleteStatements.push(deleteStatement)
 }
 
