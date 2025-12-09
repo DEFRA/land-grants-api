@@ -21,7 +21,7 @@ describe('Get agreement actions for parcel query', () => {
   afterAll(async () => {
     await resetAgreementsTestData(connection)
     await connection.end()
-  }, 60000)
+  })
 
   test('should return 0 actions when parcel is missing', async () => {
     const sheetId = 'Missing'
@@ -40,7 +40,16 @@ describe('Get agreement actions for parcel query', () => {
   test('should return 1 action when parcel is present', async () => {
     const sheetId = 'SD6920'
     const parcelId = '69'
-    jest.useFakeTimers().setSystemTime(new Date(2025, 10, 1))
+
+    const RealDate = global.Date
+    const mockCurrentDate = new RealDate(2025, 10, 1) // November 1, 2025
+
+    jest.spyOn(global, 'Date').mockImplementation((...args) => {
+      if (args.length === 0) {
+        return mockCurrentDate
+      }
+      return new RealDate(...args)
+    })
 
     const actions = await getAgreementsForParcel(
       sheetId,
@@ -53,7 +62,8 @@ describe('Get agreement actions for parcel query', () => {
     expect(actions[0].unit).toBe('ha')
     expect(actions[0].quantity).toBe(10)
     expect(actions[0].startDate.toISOString()).toBe('2025-01-01T00:00:00.000Z')
-    expect(actions[0].endDate.toISOString()).toBe('2025-11-31T00:00:00.000Z')
-    jest.useRealTimers()
+    expect(actions[0].endDate.toISOString()).toBe('2025-11-30T00:00:00.000Z')
+
+    jest.restoreAllMocks()
   }, 30000)
 })
