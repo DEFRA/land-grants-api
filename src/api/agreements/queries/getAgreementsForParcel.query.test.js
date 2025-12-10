@@ -51,18 +51,18 @@ describe('getAgreementsForParcel', () => {
         {
           actions: [
             {
-              action_code: 'UPL1',
+              actionCode: 'UPL1',
               unit: 'ha',
               quantity: 0.5,
-              start_date: '2025-01-01',
-              end_date: '2025-12-31'
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
             },
             {
-              action_code: 'CMOR1',
+              actionCode: 'CMOR1',
               unit: 'ha',
               quantity: 1.2,
-              start_date: '2025-01-01',
-              end_date: '2025-12-31'
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
             }
           ]
         }
@@ -102,18 +102,18 @@ describe('getAgreementsForParcel', () => {
         {
           actions: [
             {
-              action_code: 'UPL1',
+              actionCode: 'UPL1',
               unit: 'ha',
               quantity: 0.5,
-              start_date: '2025-01-01',
-              end_date: '2025-11-31'
+              startDate: '2025-01-01',
+              endDate: '2025-11-31'
             },
             {
-              action_code: 'CMOR1',
+              actionCode: 'CMOR1',
               unit: 'ha',
               quantity: 1.2,
-              start_date: '2025-01-01',
-              end_date: '2025-12-31'
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
             }
           ]
         }

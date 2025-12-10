@@ -30,8 +30,8 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
       category: 'database',
       message: 'Get agreements for parcel'
     })
-    return agreementActionsTransformer(result.rows).filter(({ endDate }) =>
-      endDate ? endDate > new Date() : true
+    return agreementActionsTransformer(result.rows).filter(
+      ({ endDate }) => endDate > new Date()
     )
   } catch (error) {
     logDatabaseError(logger, {

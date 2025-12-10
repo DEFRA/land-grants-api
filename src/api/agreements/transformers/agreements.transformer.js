@@ -10,11 +10,11 @@ function agreementActionsTransformer(agreements) {
 
   return agreements[0].actions?.map((action) => {
     return {
-      actionCode: action.action_code,
+      actionCode: action.actionCode,
       quantity: action.quantity,
       unit: action.unit,
-      startDate: action.start_date ? new Date(action.start_date) : null,
-      endDate: action.end_date ? new Date(action.end_date) : null
+      startDate: action.startDate ? new Date(action.startDate) : null,
+      endDate: action.endDate ? new Date(action.endDate) : null
     }
   })
 }
