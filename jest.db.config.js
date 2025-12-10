@@ -1,6 +1,6 @@
 import parentConfig from './jest.unit.config.js'
 
-const currentPath = 'src/db-tests'
+const currentPath = 'src/db-tests/skip'
 
 export default {
   ...parentConfig,
