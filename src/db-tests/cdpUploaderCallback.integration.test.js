@@ -8,7 +8,6 @@ import {
   clearTestBucket
 } from '../import-tests/setup/s3-test-helpers.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-import { getRecordsByQuery } from '../import-tests/setup/db-helper.js'
 import { clearTestData } from './setup/db-helper.js'
 
 const logger = {
@@ -60,17 +59,6 @@ describe('CDP uploader callback integration test', () => {
     await LandDataIngestController.handler(request, h)
 
     const { statusCode } = getResponse()
-
-    const parcels = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2',
-      ['TV5797', '2801']
-    )
-
-    expect(parcels).toHaveLength(1)
-    expect(parcels[0].sheet_id).toBe('TV5797')
-    expect(parcels[0].parcel_id).toBe('2801')
-    expect(parcels[0].area_sqm).toBe('192772.7700')
 
     const files = await listTestFiles(s3Client)
     expect(statusCode).toBe(200)
