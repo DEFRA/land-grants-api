@@ -1,9 +1,10 @@
-import { health } from '~/src/api/health/index.js'
+import { health } from './health/index.js'
 import { parcel } from './parcel/index.js'
 import { payments } from './payment/index.js'
 import { application } from './application/index.js'
 import { caseManagementAdapter } from './case-management-adapter/index.js'
 import { landDataIngest } from './land-data-ingest/index.js'
+import { statistics } from './statistics/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -15,12 +16,13 @@ const router = {
       // Health-check route. Used by platform to check if service is running, do not remove!
       await server.register([health])
 
-      // Application specific routes, add your own routes here.
+      // Application specific routes
       await server.register([parcel])
       await server.register([payments])
       await server.register([application])
       await server.register([caseManagementAdapter])
       await server.register([landDataIngest])
+      await server.register([statistics])
     }
   }
 }
