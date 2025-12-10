@@ -10,6 +10,15 @@ import { agreementActionsTransformer } from '../transformers/agreements.transfor
  */
 
 /**
+ * Filter expired actions
+ * @param {AgreementAction} action - The action to filter
+ * @returns {boolean} True if the action is not expired, false otherwise
+ */
+function filterExpiredActions({ startDate, endDate }) {
+  return startDate < new Date() && endDate > new Date()
+}
+
+/**
  * Get agreements for a parcel
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
@@ -30,9 +39,7 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
       category: 'database',
       message: 'Get agreements for parcel'
     })
-    return agreementActionsTransformer(result.rows).filter(
-      ({ endDate }) => endDate > new Date()
-    )
+    return agreementActionsTransformer(result.rows).filter(filterExpiredActions)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get agreements for parcel',
