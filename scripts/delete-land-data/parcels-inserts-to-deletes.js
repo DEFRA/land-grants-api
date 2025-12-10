@@ -26,7 +26,9 @@ const output = deleteStatements.join('\n')
 
 if (outputFile) {
   writeFileSync(outputFile, output)
-  console.log(`Generated ${deleteStatements.length} DELETE statements in ${outputFile}`)
+  console.log(
+    `Generated ${deleteStatements.length} DELETE statements in ${outputFile}`
+  )
 } else {
   console.log(output)
 }
