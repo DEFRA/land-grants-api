@@ -5,12 +5,12 @@ const cron = {
   options: {
     jobs: [
       {
-        name: 'ingest-land-data',
+        name: 'land-grants-statistics',
         time: '*/30 * * * *', // Every 30 minutes
         timezone: 'Europe/London',
         request: {
           method: 'GET',
-          url: '/ingest-land-data-schedule'
+          url: '/statistics'
         }
       }
     ]

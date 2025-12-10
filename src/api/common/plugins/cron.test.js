@@ -13,24 +13,24 @@ describe('#cron', () => {
     expect(Array.isArray(cron.options.jobs)).toBe(true)
   })
 
-  test('Should configure ingest-land-data job', () => {
-    const ingestJob = cron.options.jobs.find(
-      (job) => job.name === 'ingest-land-data'
+  test('Should configure land-grants-statistics job', () => {
+    const statisticsJob = cron.options.jobs.find(
+      (job) => job.name === 'land-grants-statistics'
     )
 
-    expect(ingestJob).toBeDefined()
-    expect(ingestJob.name).toBe('ingest-land-data')
-    expect(ingestJob.time).toBe('*/30 * * * *')
-    expect(ingestJob.timezone).toBe('Europe/London')
+    expect(statisticsJob).toBeDefined()
+    expect(statisticsJob.name).toBe('land-grants-statistics')
+    expect(statisticsJob.time).toBe('*/30 * * * *')
+    expect(statisticsJob.timezone).toBe('Europe/London')
   })
 
-  test('Should configure correct request for ingest-land-data job', () => {
-    const ingestJob = cron.options.jobs.find(
-      (job) => job.name === 'ingest-land-data'
+  test('Should configure correct request for land-grants-statistics job', () => {
+    const statisticsJob = cron.options.jobs.find(
+      (job) => job.name === 'land-grants-statistics'
     )
 
-    expect(ingestJob.request).toBeDefined()
-    expect(ingestJob.request.method).toBe('GET')
-    expect(ingestJob.request.url).toBe('/ingest-land-data-schedule')
+    expect(statisticsJob.request).toBeDefined()
+    expect(statisticsJob.request.method).toBe('GET')
+    expect(statisticsJob.request.url).toBe('/statistics')
   })
 })
