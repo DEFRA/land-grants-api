@@ -13,8 +13,8 @@ function agreementActionsTransformer(agreements) {
       actionCode: action.actionCode,
       quantity: action.quantity,
       unit: action.unit,
-      startDate: action.startDate ? new Date(action.startDate) : null,
-      endDate: action.endDate ? new Date(action.endDate) : null
+      startDate: new Date(action.startDate),
+      endDate: new Date(action.endDate)
     }
   })
 }
