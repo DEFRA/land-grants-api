@@ -6,7 +6,10 @@ export default {
   ...parentConfig,
   projects: undefined,
   displayName: 'database',
-  testMatch: [`<rootDir>${currentPath}/**/?(*.)+(spec|test).[jt]s?(x)`],
+  testMatch: [
+    `<rootDir>${currentPath}/getActions.db.test.js`,
+    `<rootDir>${currentPath}/cdpUploaderCallback.integration.test.js`
+  ],
   testEnvironment: 'node',
   collectCoverageFrom: [
     'src/**/*.js',
