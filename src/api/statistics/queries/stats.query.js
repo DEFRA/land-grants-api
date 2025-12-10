@@ -13,7 +13,18 @@ async function getStats(logger, db) {
   try {
     client = await db.connect()
 
-    const results = await Promise.all([
+    const [
+      actionsResult,
+      actionsConfigResult,
+      agreementsResult,
+      applicationResultsResult,
+      compatibilityMatrixResult,
+      landCoverCodesResult,
+      landCoverCodesActionsResult,
+      landCoversResult,
+      landParcelsResult,
+      moorlandDesignationsResult
+    ] = await Promise.all([
       client.query(`SELECT COUNT(*) FROM actions`),
       client.query(`SELECT COUNT(*) FROM actions_config`),
       client.query(`SELECT COUNT(*) FROM agreements`),
@@ -26,16 +37,16 @@ async function getStats(logger, db) {
       client.query(`SELECT COUNT(*) FROM moorland_designations`)
     ])
 
-    const actionsCount = results[0].rows[0].count
-    const actionsConfigCount = results[1].rows[0].count
-    const agreementsCount = results[2].rows[0].count
-    const applicationResultsCount = results[3].rows[0].count
-    const compatibilityMatrixCount = results[4].rows[0].count
-    const landCoverCodesCount = results[5].rows[0].count
-    const landCoverCodesActionsCount = results[6].rows[0].count
-    const landCoversCount = results[7].rows[0].count
-    const landParcelsCount = results[8].rows[0].count
-    const moorlandDesignationsCount = results[9].rows[0].count
+    const actionsCount = actionsResult.rows[0].count
+    const actionsConfigCount = actionsConfigResult.rows[0].count
+    const agreementsCount = agreementsResult.rows[0].count
+    const applicationResultsCount = applicationResultsResult.rows[0].count
+    const compatibilityMatrixCount = compatibilityMatrixResult.rows[0].count
+    const landCoverCodesCount = landCoverCodesResult.rows[0].count
+    const landCoverCodesActionsCount = landCoverCodesActionsResult.rows[0].count
+    const landCoversCount = landCoversResult.rows[0].count
+    const landParcelsCount = landParcelsResult.rows[0].count
+    const moorlandDesignationsCount = moorlandDesignationsResult.rows[0].count
 
     logInfo(logger, {
       category: 'database',
