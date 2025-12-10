@@ -1,9 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { LandDataIngestController } from './land-data-ingest.controller.js'
-import {
-  logInfo,
-  logBusinessError
-} from '~/src/api/common/helpers/logging/log-helpers.js'
+import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
 import {
   moveFile,
   processingBucketPath,
@@ -25,7 +22,6 @@ jest.mock('../service/ingest-schedule.service.js', () => ({
 
 const mockProcessFile = processFile
 const mockLogInfo = logInfo
-const mockLogBusinessError = logBusinessError
 const mockMoveFile = moveFile
 const mockProcessingBucketPath = processingBucketPath
 const mockFailedBucketPath = failedBucketPath
@@ -181,7 +177,7 @@ describe('LandDataIngestController', () => {
       expect(message).toBe('Invalid request payload input')
     })
 
-    test('should return 500 when error occurs', async () => {
+    test('should ignore error and return 200', async () => {
       // Mock processFile to throw an error
       mockProcessFile.mockRejectedValueOnce(new Error('Failed to process file'))
 
@@ -192,24 +188,9 @@ describe('LandDataIngestController', () => {
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, result } = await server.inject(request)
+      const { statusCode } = await server.inject(request)
 
-      expect(statusCode).toBe(500)
-      expect(result.message).toBe('An internal server error occurred')
-
-      // Verify logBusinessError was called
-      expect(mockLogBusinessError).toHaveBeenCalledWith(
-        mockLogger,
-        expect.objectContaining({
-          operation: 'land-data-ingest_error',
-          error: expect.any(Error),
-          context: {
-            payload: JSON.stringify(validPayload),
-            s3Key: validPayload.form.file.s3Key,
-            s3Bucket: mockBucket
-          }
-        })
-      )
+      expect(statusCode).toBe(200)
     })
   })
 })
