@@ -7,8 +7,8 @@ SELECT
             'actionCode', option_code,
             'quantity', option_quantity,
             'unit', 'ha',
-            'startDate', option_start_date,
-            'endDate', option_end_date
+            'startDate', TO_TIMESTAMP(option_start_date, 'MM/DD/YY'),
+            'endDate', TO_TIMESTAMP(option_end_date, 'MM/DD/YY')
         )
     ) as actions,
     $1

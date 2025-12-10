@@ -43,3 +43,15 @@ export async function seedForGetParcelTest(connection) {
 export async function resetGetParcelTestData(connection) {
   await runSqlScript(connection, 'getParcel-test-data-down.sql', fixtureDirPath)
 }
+
+export async function seedForAgreementsTest(connection) {
+  await runSqlScript(connection, 'getAgreements-test-data.sql', fixtureDirPath)
+}
+
+export async function resetAgreementsTestData(connection) {
+  await runSqlScript(
+    connection,
+    'getAgreements-test-data-down.sql',
+    fixtureDirPath
+  )
+}
