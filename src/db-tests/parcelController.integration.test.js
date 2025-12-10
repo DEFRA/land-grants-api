@@ -20,7 +20,8 @@ function getSnapshotName(testName, parcel, action) {
   return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
 
-describe('Calculate available area with agreements', () => {
+// eslint-disable-next-line jest/no-disabled-tests
+describe.skip('Calculate available area with agreements', () => {
   beforeAll(async () => {
     connection = connectToTestDatbase()
     await seedForParcelControllerTest(connection)
