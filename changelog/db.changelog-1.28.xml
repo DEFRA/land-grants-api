@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="grant-truncate-for-agreements" author="system">
+    <sql>GRANT insert, update, truncate on agreements to land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-truncate-for-actions" author="system">
+    <sql>GRANT insert, update, truncate on actions to land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-truncate-for-actions-config" author="system">
+    <sql>GRANT insert, update, truncate on actions_config to land_grants_api;</sql>
+  </changeSet>
+
+   <changeSet id="grant-truncate-for-application-results" author="system">
+    <sql>GRANT insert, update, truncate on application_results to land_grants_api;</sql>
+  </changeSet>
+
+   <changeSet id="grant-truncate-for-land-cover-codes" author="system">
+    <sql>GRANT insert, update, truncate on land_cover_codes to land_grants_api;</sql>
+  </changeSet>
+
+     <changeSet id="grant-truncate-for-land-cover-codes-actions" author="system">
+    <sql>GRANT insert, update, truncate on land_cover_codes_actions to land_grants_api;</sql>
+  </changeSet>
+
+</databaseChangeLog>
