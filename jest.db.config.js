@@ -6,10 +6,7 @@ export default {
   ...parentConfig,
   projects: undefined,
   displayName: 'database',
-  testMatch: [
-    `<rootDir>${currentPath}/getActions.db.test.js`,
-    `<rootDir>${currentPath}/cdpUploaderCallback.integration.test.js`
-  ],
+  testMatch: [`<rootDir>${currentPath}/**/?(*.)+(spec|test).[jt]s?(x)`],
   testEnvironment: 'node',
   collectCoverageFrom: [
     'src/**/*.js',
@@ -17,5 +14,7 @@ export default {
     '!**/__tests__/**',
     '!**/__snapshots__/**'
   ],
-  coverageDirectory: '<rootDir>/coverage/db'
+  coverageDirectory: '<rootDir>/coverage/db',
+  globalSetup: './jest.db.setup.js',
+  globalTeardown: './jest.db.teardown.js'
 }
