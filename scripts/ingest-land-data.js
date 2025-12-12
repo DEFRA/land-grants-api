@@ -1,6 +1,20 @@
 import fs from 'fs'
 import path from 'path'
 
+// Important: configure these values for the ingestion
+const environment = 'prod'
+const clientId = process.env.CLIENT_ID
+const clientSecret = process.env.CLIENT_SECRET
+
+// The script expects folders named after each resource under scripts/ingestion-data/data/
+const resources = [
+  'agreements',
+  'compatibility_matrix',
+  'moorland',
+  'parcels',
+  'covers'
+]
+
 const CONFIG = {
   dev: {
     cdpUrl: 'https://cdp-uploader.dev.cdp-int.defra.cloud',
@@ -25,6 +39,17 @@ const CONFIG = {
     apiBaseUrl: 'https://land-grants-api.api.prod.cdp-int.defra.cloud',
     tokenUrl:
       'https://land-grants-api-75ee2.auth.eu-west-2.amazoncognito.com/oauth2/token'
+  }
+}
+
+async function transferAllResources() {
+  for (const resource of resources) {
+    try {
+      await transferResource(resource)
+    } catch (error) {
+      console.error(`✗ Unhandled error: ${error.message}`)
+      process.exit(1)
+    }
   }
 }
 
@@ -175,13 +200,13 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
 /**
  * Main function to run the ingestion process
  */
-async function main() {
-  // Important: configure these values for the ingestion
-  const resource = 'parcels'
-  const environment = 'dev'
-  const clientId = process.env.CLIENT_ID
-  const clientSecret = process.env.CLIENT_SECRET
-  const ingestionDataDirectory = path.join(process.cwd(), 'ingestion-data/data')
+async function transferResource(resource) {
+  console.log(`\n=== Starting ingestion for resource: ${resource} ===`)
+
+  const ingestionDataDirectory = path.join(
+    process.cwd(),
+    'ingestion-data/data/' + resource
+  )
 
   if (!clientId || !clientSecret) {
     throw new Error('CLIENT_ID and CLIENT_SECRET must be set')
@@ -259,10 +284,7 @@ async function main() {
     }
   }
 
-  console.log('✓ Ingestion complete')
+  console.log('✓ Ingestion complete for : ' + resource)
 }
 
-main().catch((error) => {
-  console.error(`✗ Unhandled error: ${error.message}`)
-  process.exit(1)
-})
+transferAllResources()
