@@ -1,37 +1,40 @@
 TRUNCATE TABLE public.agreements;
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('7268', 'SD6743', '[{"action_code": "CMOR1", "unit": "ha", "quantity": 10}, {"action_code": "UPL1", "unit": "ha", "quantity": 50}]');
+VALUES ('7268', 'SD6743', '[{"actionCode": "CMOR1", "unit": "ha", "quantity": 10, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL1", "unit": "ha", "quantity": 50, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('0637', 'SD5665', '[{"action_code": "CMOR1", "unit": "ha", "quantity": 4.47936112}]');
+VALUES ('0637', 'SD5665', '[{"actionCode": "CMOR1", "unit": "ha", "quantity": 4.47936112, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('4622', 'SD4963', '[{"action_code": "UPL1", "unit": "ha", "quantity": 1.75055834}]');
+VALUES ('4622', 'SD4963', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 1.75055834, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('8058', 'SD7164', '[{"action_code": "WS1", "unit": "ha", "quantity": 2.53282335}]');
+VALUES ('8058', 'SD7164', '[{"actionCode": "WS1", "unit": "ha", "quantity": 2.53282335, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('5484', 'SD5253', '[{"action_code": "CNUM2", "unit": "ha", "quantity": 6.96432067}]');
+VALUES ('5484', 'SD5253', '[{"actionCode": "CNUM2", "unit": "ha", "quantity": 6.96432067, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('4156', 'SD7948', '[{"action_code": "OP1", "unit": "ha", "quantity": 0.2},{"action_code": "OP2", "unit": "ha", "quantity": 0.2},{"action_code": "OP3", "unit": "ha", "quantity": 0.2}]');
+VALUES ('4156', 'SD7948', '[{"actionCode": "OP1", "unit": "ha", "quantity": 0.2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "OP2", "unit": "ha", "quantity": 0.2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "OP3", "unit": "ha", "quantity": 0.2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('1509', 'SD8447', '[{"action_code": "CHRW1", "unit": "ha", "quantity": 10},{"action_code": "CHRW2", "unit": "ha", "quantity": 8},{"action_code": "CHRW3", "unit": "ha", "quantity": 7}]');
+VALUES ('1509', 'SD8447', '[{"actionCode": "CHRW1", "unit": "ha", "quantity": 10, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "CHRW2", "unit": "ha", "quantity": 8, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "CHRW3", "unit": "ha", "quantity": 7, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('8307', 'SD4957', '[{"action_code": "CHRW1", "unit": "ha", "quantity": 6},{"action_code": "CHRW2", "unit": "ha", "quantity": 4},{"action_code": "CHRW3", "unit": "ha", "quantity": 2},{"action_code": "PRF1", "unit": "ha", "quantity": 2},{"action_code": "PRF2", "unit": "ha", "quantity": 4},{"action_code": "GRH6", "unit": "ha", "quantity": 6},{"action_code": "GRH7", "unit": "ha", "quantity": 4}]');
+VALUES ('8307', 'SD4957', '[{"actionCode": "CHRW1", "unit": "ha", "quantity": 6, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "CHRW2", "unit": "ha", "quantity": 4, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "CHRW3", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "PRF1", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "PRF2", "unit": "ha", "quantity": 4, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "GRH6", "unit": "ha", "quantity": 6, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "GRH7", "unit": "ha", "quantity": 4, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('3264', 'SD8743', '[{"action_code": "UPL1", "unit": "ha", "quantity": 2},{"action_code": "UPL2", "unit": "ha", "quantity": 2},{"action_code": "UPL3", "unit": "ha", "quantity": 1.85360918},{"action_code": "UPL4", "unit": "ha", "quantity": 2}]');
+VALUES ('3264', 'SD8743', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL2", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL3", "unit": "ha", "quantity": 1.85360918, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL4", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('1283', 'SD6441', '[{"action_code": "CMOR1", "unit": "ha", "quantity": 4.59566486},{"action_code": "UPL2", "unit": "ha", "quantity": 1},{"action_code": "UPL3", "unit": "ha", "quantity": 1.59566486},{"action_code": "UPL5", "unit": "ha", "quantity": 1.59566486}]');
+VALUES ('1283', 'SD6441', '[{"actionCode": "CMOR1", "unit": "ha", "quantity": 4.59566486, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL2", "unit": "ha", "quantity": 1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL3", "unit": "ha", "quantity": 1.59566486, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL5", "unit": "ha", "quantity": 1.59566486, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('8326', 'SD5563', '[{"action_code": "CMOR1", "unit": "ha", "quantity": 8.81196426},{"action_code": "UPL1", "unit": "ha", "quantity": 3},{"action_code": "UPL2", "unit": "ha", "quantity": 2},{"action_code": "UPL3", "unit": "ha", "quantity": 3.8119643}]');
+VALUES ('8326', 'SD5563', '[{"actionCode": "CMOR1", "unit": "ha", "quantity": 8.81196426, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL1", "unit": "ha", "quantity": 3, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL2", "unit": "ha", "quantity": 2, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}, {"actionCode": "UPL3", "unit": "ha", "quantity": 3.8119643, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
-VALUES ('2399', 'SD6943', '[{"action_code": "UPL1", "unit": "ha", "quantity": 3.01241373}]');
+VALUES ('2399', 'SD6943', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 3.01241373, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
+
+INSERT INTO public.agreements(parcel_id, sheet_id, actions)
+VALUES ('7269', 'SD6747', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 0.1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
