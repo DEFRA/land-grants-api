@@ -35,3 +35,6 @@ VALUES ('8326', 'SD5563', '[{"action_code": "CMOR1", "unit": "ha", "quantity": 8
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
 VALUES ('2399', 'SD6943', '[{"action_code": "UPL1", "unit": "ha", "quantity": 3.01241373}]');
+
+INSERT INTO public.agreements(parcel_id, sheet_id, actions)
+VALUES ('7269', 'SD6747', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 0.1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
