@@ -9,8 +9,7 @@
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet id="update-action-config-duration-years" author="system">
-    <sql>UPDATE actions_config SET config = jsonb_set(config, '{duration_years}', '1') WHERE code = 'CMOR1' OR code = 'UPL1' OR code = 'UPL2' OR code = 'UPL3';</sql>
+    <sql>UPDATE actions_config SET config = jsonb_set(config, '{duration_years}', '1') WHERE (code = 'CMOR1' OR code = 'UPL1' OR code = 'UPL2' OR code = 'UPL3') AND version = 1;</sql>
   </changeSet>
-
 
 </databaseChangeLog>
