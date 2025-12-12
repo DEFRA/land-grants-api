@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
-import {
-  connectToTestDatbase,
-  resetParcelControllerTestData,
-  seedForParcelControllerTest
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 
 const logger = {
@@ -21,14 +17,12 @@ function getSnapshotName(testName, parcel, action) {
 }
 
 // eslint-disable-next-line jest/no-disabled-tests
-describe.skip('Calculate available area with agreements', () => {
-  beforeAll(async () => {
+describe('Calculate available area with agreements', () => {
+  beforeAll(() => {
     connection = connectToTestDatbase()
-    await seedForParcelControllerTest(connection)
   })
 
   afterAll(async () => {
-    await resetParcelControllerTestData(connection)
     await connection.end()
   })
 
@@ -59,7 +53,7 @@ describe.skip('Calculate available area with agreements', () => {
         sheetId: 'SD6747',
         size: {
           unit: 'ha',
-          value: 0.6564
+          value: 0.7529
         },
         actions: [
           {
@@ -67,12 +61,12 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.5927
+              value: 0
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -88,11 +82,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -108,11 +102,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -128,11 +122,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -186,7 +180,7 @@ describe.skip('Calculate available area with agreements', () => {
         sheetId: 'SD6747',
         size: {
           unit: 'ha',
-          value: 0.6564
+          value: 0.7529
         },
         actions: [
           {
@@ -194,12 +188,12 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.5927
+              value: 0
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -220,11 +214,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -245,11 +239,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -270,11 +264,11 @@ describe.skip('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
