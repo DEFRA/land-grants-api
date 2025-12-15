@@ -87,6 +87,7 @@ node ./src/scripts/ingest-land-data-local.js <resource type> <file path>
 ```
 
 To ingest a parcels file:
+
 ```shell
 node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
 ```
