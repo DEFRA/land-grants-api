@@ -1,7 +1,7 @@
 // @ts-nocheck
 import fs from 'fs'
 import path from 'path'
-import { createReadStream } from 'fs';
+import { createReadStream } from 'fs'
 import { config } from '../src/config/index.js'
 import {
   importLandCovers,
@@ -21,7 +21,7 @@ export async function importLandData(file, resourceType, ingestId) {
       debug: (message) => void 0
     }
 
-    const bodyContents = createReadStream(file);
+    const bodyContents = createReadStream(file)
 
     switch (resourceType) {
       case 'parcels':
@@ -49,9 +49,12 @@ export async function importLandData(file, resourceType, ingestId) {
   }
 }
 
-const resource = 'parcels' | 'moorland' | 'covers' | 'agreements' | 'compatibility_matrix'
+const resource =
+  'parcels' | 'moorland' | 'covers' | 'agreements' | 'compatibility_matrix'
 const folder = path.join('./ingestion-data/data', resource)
-const files = fs.readdirSync(folder).sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
+const files = fs
+  .readdirSync(folder)
+  .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 
 for (const file of files) {
   console.log(`Importing ${file}`)

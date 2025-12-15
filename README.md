@@ -61,7 +61,6 @@ nvm use
 
 Copy the `env.example` file to `.env`, ask a colleague for the missing information.
 
-
 ### Setup
 
 Install application dependencies:
@@ -71,8 +70,8 @@ npm install
 ```
 
 ### Development
-If you would like to run the API via docker, see here:  [Starting the API with Docker](docs/working-with-docker.md)
 
+If you would like to run the API via docker, see here: [Starting the API with Docker](docs/working-with-docker.md)
 
 In order to run this api locally in order to carry out development on the api, please follow:
 
@@ -103,19 +102,17 @@ We support the ingestion of the following resources:
     - agreements
     - compatibility_matrix
 
-
 Run the local ingest script for each resource type:
 
 `node scripts/local-ingest`
 
-
 #### Localstack
+
 If you would like to run the ingestion process end to end using AWS S3, you can use localstack:
 
 ```
 npm run docker:localstack:up
 ```
-
 
 #### Start the api
 
@@ -124,7 +121,6 @@ To run the application in `development` mode run the following command:
 ```bash
 npm run dev
 ```
-
 
 #### Start the api via docker compose
 
