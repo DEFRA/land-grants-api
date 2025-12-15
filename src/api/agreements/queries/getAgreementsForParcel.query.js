@@ -1,3 +1,4 @@
+import { isAfter, isBefore, isSameDay } from 'date-fns'
 import {
   logDatabaseError,
   logInfo
@@ -15,7 +16,10 @@ import { agreementActionsTransformer } from '../transformers/agreements.transfor
  * @returns {boolean} True if the action is not expired, false otherwise
  */
 function filterExpiredActions({ startDate, endDate }) {
-  return startDate < new Date() && endDate > new Date()
+  return (
+    (isBefore(startDate, new Date()) || isSameDay(startDate, new Date())) &&
+    isAfter(endDate, new Date())
+  )
 }
 
 /**
