@@ -106,7 +106,7 @@ describe('getAgreementsForParcel', () => {
               unit: 'ha',
               quantity: 0.5,
               startDate: '2025-01-01',
-              endDate: '2025-11-31'
+              endDate: '2025-12-01'
             },
             {
               actionCode: 'CMOR1',
