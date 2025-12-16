@@ -83,13 +83,17 @@ There is a script to ingest data files for local development: (./src/scripts/ing
 You will need to run the service locally, including database and localstack.
 
 ```shell
-node ./src/scripts/ingest-land-data-local.js <resource type> <file path>
+node ./src/scripts/ingest-land-data-local.js <resource type> <file path/directory>
 ```
 
 To ingest a parcels file:
 
 ```shell
 node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
+```
+
+```shell
+node ./src/scripts/ingest-land-data-local.js parcels ../data-files/parcels/
 ```
 
 #### Excluded Endpoints
