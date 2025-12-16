@@ -107,6 +107,7 @@ Run the local ingest script for each resource type:
 `node scripts/local-ingest`
 
 #### Increase docker storage
+
 If you have issues running this, and ot throws errors like : `No space left on device`
 
 - Delete your docker volumes via desktop
