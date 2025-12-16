@@ -106,6 +106,21 @@ Run the local ingest script for each resource type:
 
 `node scripts/local-ingest`
 
+#### Increase docker storage
+If you have issues running this, and ot throws errors like : `No space left on device`
+
+- Delete your docker volumes via desktop
+- Clean your docker instance
+  `docker system prune -a`
+
+- Edit your compose.yml file, and increase the `shm_size`
+
+```
+land-grants-backend-postgres:
+    image: postgis/postgis:16-3.4
+    shm_size: 2gb
+```
+
 #### Localstack
 
 If you would like to run the ingestion process end to end using AWS S3, you can use localstack:
