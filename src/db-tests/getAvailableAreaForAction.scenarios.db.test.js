@@ -62,6 +62,7 @@ describe('Calculate available area', () => {
           'OFM2',
           'OFM3',
           'SP1',
+          'WD2',
           'WS1',
           'WS2',
           'CAHL3',

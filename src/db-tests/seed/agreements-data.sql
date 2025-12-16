@@ -38,3 +38,6 @@ VALUES ('2399', 'SD6943', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 3.0
 
 INSERT INTO public.agreements(parcel_id, sheet_id, actions)
 VALUES ('7269', 'SD6747', '[{"actionCode": "UPL1", "unit": "ha", "quantity": 0.1, "startDate": "2025-01-01T00:00:00Z", "endDate": "2031-11-30T00:00:00Z"}]');
+
+INSERT INTO public.agreements(parcel_id, sheet_id, actions)
+VALUES ('8851', 'SX5373', '[{ "unit": "ha", "endDate": "2026-12-31T00:00:00+00:00", "quantity": 0.82, "startDate": "2022-01-01T00:00:00+00:00", "actionCode": "SP3" }, { "unit": "ha", "endDate": "2026-12-31T00:00:00+00:00", "quantity": 4.05, "startDate": "2022-01-01T00:00:00+00:00", "actionCode": "SP1" }, { "unit": "ha", "endDate": "2026-12-31T00:00:00+00:00", "quantity": 4.05, "startDate": "2022-01-01T00:00:00+00:00", "actionCode": "WD10" }, { "unit": "ha", "endDate": "2026-12-31T00:00:00+00:00", "quantity": 2.7301, "startDate": "2022-01-01T00:00:00+00:00", "actionCode": "WD2" }]');

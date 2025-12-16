@@ -1,14 +1,2 @@
 scenarioName,sheetId,parcelId,applyingForAction,existingActions,expectedAvailableArea
-CMOR1 - No existing actions,SD6743,7268,CMOR1,[],0.5927
-CMOR1 - One existing compatible action,SD6743,7268,CMOR1,"[{ ""actionCode"": ""UPL1"", ""areaSqm"": 12.9 }]",0.5927
-UPL2 - One existing incompatible action,SD6743,7268,UPL2,"[{ ""actionCode"": ""UPL1"", ""areaSqm"": 1049.9 }]",0.4877
-CMOR1 - Multiple existing compatible actions,SD6743,7268,CMOR1,"[{ ""actionCode"": ""UPL6"", ""areaSqm"": 122.9 }, { ""actionCode"": ""UPL7"", ""areaSqm"": 522.9 }]",0.5927
-UPL1 - Multiple existing incompatible actions,SD6743,7268,UPL1,"[{ ""actionCode"": ""UPL2"", ""areaSqm"": 122.9 }, { ""actionCode"": ""UPL3"", ""areaSqm"": 522.9 }]",0.5281
-UPL1 - Multiple existing compatible and incompatible actions,SD6743,7268,UPL1,"[{ ""actionCode"": ""UPL2"", ""areaSqm"": 122.9 }, { ""actionCode"": ""CMOR1"", ""areaSqm"": 522.9 }]",0.5804
-OFM3 - Multiple existing incompatible actions that are compatible between them,SD6743,7268,OFM3,"[{ ""actionCode"": ""SPM4"", ""areaSqm"": 122.9 }, { ""actionCode"": ""SAM1"", ""areaSqm"": 522.9 }]",0.5404
-CSAM1 - One existing incompatible action with no land cover in common,SD6853,6707,CSAM1,"[{ ""actionCode"": ""WBD1"", ""areaSqm"": 175.07 }]",2.4133
-CMOR1 - One existing incompatible action with land cover in common,SD7164,8058,CMOR1,"[{ ""actionCode"": ""WS1"", ""areaSqm"": 25328.2335  }]",3.1254
-UPL1 - Multiple existing incompatible actions-Existing and new actions are on different land covers,SD7948,4156,UPL1,"[ {  ""actionCode"": ""OP1"" ,  ""areaSqm"": 2000 }, {  ""actionCode"": ""OP2"" ,  ""areaSqm"": 2000 }, {  ""actionCode"": ""OP3"" ,  ""areaSqm"": 2000 }]",3.2844
-CMOR1 - Multiple existing incompatible actions with single stack on mixed land covers,SD8447,1509,CMOR1,"[ {  ""actionCode"": ""CHRW1"" ,  ""areaSqm"": 100000 }, {  ""actionCode"": ""CHRW2"" ,  ""areaSqm"": 80000 }, {  ""actionCode"": ""CHRW3"" ,  ""areaSqm"": 70000 }]",1.1506
-UPL1 - Multiple existing Incompatible actions with multiple stacks on mixed landcovers,SD4957,8307,UPL1,"[ {  ""actionCode"": ""CHRW1"" ,  ""areaSqm"": 60000 }, {  ""actionCode"": ""CHRW2"" ,  ""areaSqm"": 40000 }, {  ""actionCode"": ""CHRW3"" ,  ""areaSqm"": 20000 }, {  ""actionCode"": ""PRF1"" ,  ""areaSqm"": 20000 }, {  ""actionCode"": ""PRF2"" ,  ""areaSqm"": 40000 }, {  ""actionCode"": ""GRH6"" ,  ""areaSqm"": 60000 }, {  ""actionCode"": ""GRH7"" ,  ""areaSqm"": 40000 }]",6.9184
-UPL2 - Multiple compatible and incompatible actions with multiple stacks that need splitting,SD8644,9243,UPL2,"[ {  ""actionCode"": ""CMOR1"" ,  ""areaSqm"": 30000 }, {  ""actionCode"": ""UPL1"" ,  ""areaSqm"": 20000 }, {  ""actionCode"": ""UPL3"" ,  ""areaSqm"": 20000 }, {  ""actionCode"": ""OFM1"" ,  ""areaSqm"": 30000 }, {  ""actionCode"": ""OFM2"" ,  ""areaSqm"": 30000 }, {  ""actionCode"": ""SP1"" ,  ""areaSqm"": 20000 }, {  ""actionCode"": ""WS1"" ,  ""areaSqm"": 40000 },  {  ""actionCode"": ""WS2"" ,  ""areaSqm"": 20000 }]",1.4362
+CMOR1 - Multiple existing compatible and incompatible actions with multiple stacks and mixed land cover class codes,SX5373,8851,CMOR1,"[]",0.5578
