@@ -1,18 +1,17 @@
 import fs from 'fs'
 import path from 'path'
+import secrets from './secrets.json' with { type: 'json' }
 
 // Important: configure these values for the ingestion
-const environment = 'prod'
-const clientId = process.env.CLIENT_ID
-const clientSecret = process.env.CLIENT_SECRET
+const environments = ['dev', 'test', 'perf-test', 'ext-test', 'prod'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
-  'agreements',
-  'compatibility_matrix',
-  'moorland',
-  'parcels',
-  'covers'
+  // 'agreements',
+  'compatibility_matrix'
+  // 'moorland',
+  //'parcels',
+  //'covers'
 ]
 
 const CONFIG = {
@@ -34,6 +33,12 @@ const CONFIG = {
     tokenUrl:
       'https://land-grants-api-05244.auth.eu-west-2.amazoncognito.com/oauth2/token'
   },
+  'ext-test': {
+    cdpUrl: 'https://cdp-uploader.ext-test.cdp-int.defra.cloud',
+    apiBaseUrl: 'https://land-grants-api.api.ext-test.cdp-int.defra.cloud',
+    tokenUrl:
+      'https://land-grants-api-8ec5c.auth.eu-west-2.amazoncognito.com/oauth2/token'
+  },
   prod: {
     cdpUrl: 'https://cdp-uploader.prod.cdp-int.defra.cloud',
     apiBaseUrl: 'https://land-grants-api.api.prod.cdp-int.defra.cloud',
@@ -42,10 +47,10 @@ const CONFIG = {
   }
 }
 
-async function transferAllResources() {
+async function transferAllResources(environment) {
   for (const resource of resources) {
     try {
-      await transferResource(resource)
+      await transferResource(resource, environment)
     } catch (error) {
       console.error(`✗ Unhandled error: ${error.message}`)
       process.exit(1)
@@ -200,7 +205,9 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
 /**
  * Main function to run the ingestion process
  */
-async function transferResource(resource) {
+async function transferResource(resource, environment) {
+  const { clientId, clientSecret } = secrets[environment]
+
   console.log(`\n=== Starting ingestion for resource: ${resource} ===`)
 
   const ingestionDataDirectory = path.join(
@@ -287,4 +294,9 @@ async function transferResource(resource) {
   console.log('✓ Ingestion complete for : ' + resource)
 }
 
-transferAllResources()
+for (const env of environments) {
+  console.log(
+    `\n########## Starting ingestion for environment: ${env} ##########`
+  )
+  transferAllResources(env)
+}

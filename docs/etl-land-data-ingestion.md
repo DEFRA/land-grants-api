@@ -122,18 +122,29 @@ The `cdp-uploader-callback` will trigger the import process for that file
 
 ### Running the ingestion process
 
-We have a script which carrys out all of the steps above,
+We have a script which carries out the steps above,
 
 - `land-grants-api/scripts/ingest-land-data.js`
 
-Configure the varaibles on lines `183-187`
+For this to work you will need to create a `secrets.json` file in the `land-grants-api/scripts/` directory. You can use the `secrets.example.json` file as a template, or get a copy of the `secrets.json` from a colleague.
+
+The data files to import should be placed in the `land-grants-api/scripts/ingestion-data/` directory, in folders named after each resource, e.g.
 
 ```
-const resource = 'parcels|moorland|covers|agreements|compatibility-matrix'
-const environment = 'dev|test|perf-test|prod'
-const clientId = {COGNITO_CLIENT_ID}
-const clientSecret = {COGNITO_CLIENT_SECRET}
-const ingestionDataDirectory = {LOCATION_OF_FILES_TO_IMPORT}
+land-grants-api/scripts/ingestion-data/parcels/
+land-grants-api/scripts/ingestion-data/moorland/
+land-grants-api/scripts/ingestion-data/covers/
+land-grants-api/scripts/ingestion-data/agreements/
+land-grants-api/scripts/ingestion-data/compatibility-matrix/
+```
+
+Once these are in place, you can choose which resources and environments to run the ingestion for by editing the arrays at the top of `land-grants-api/scripts/ingest-land-data.js`
+
+Then run the script using node:
+
+```
+cd land-grants-api/scripts
+node ingest-land-data.js
 ```
 
 ### Testing locally
