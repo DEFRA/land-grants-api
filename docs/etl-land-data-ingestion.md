@@ -126,7 +126,7 @@ We have a script which carries out the steps above,
 
 - `land-grants-api/scripts/ingest-land-data.js`
 
-For this to work you will need to create a `secrets.json` file in the `land-grants-api/scripts/` directory. You can use the `secrets.example.json` file as a template, or get a copy of the `secrets.json` from a colleague.
+For this to work you will need to add the relevant client IDs and secrets to the environment variables in a `.env` file in the project root, see `.env.example` for details.
 
 The data files to import should be placed in the `land-grants-api/scripts/ingestion-data/` directory, in folders named after each resource, e.g.
 

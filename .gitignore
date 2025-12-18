@@ -13,7 +13,6 @@ docs/.obsidian
 
 # @shelf/jest-mongodb generated file
 globalConfig.json
-secrets.json
 
 tsconfig.tsbuildinfo
 
