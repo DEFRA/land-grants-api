@@ -76,6 +76,26 @@ Clients must:
 3. Base64 encode the entire formatted string
 4. Send as a Bearer token: `Authorization: Bearer {base64EncodedEncryptedToken}`
 
+#### Local data
+
+There is a script to ingest data files for local development: (./src/scripts/ingest-land-data-local.js)
+
+You will need to run the service locally, including database and localstack.
+
+```shell
+node ./src/scripts/ingest-land-data-local.js <resource type> <file path/directory>
+```
+
+To ingest a parcels file:
+
+```shell
+node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
+```
+
+```shell
+node ./src/scripts/ingest-land-data-local.js parcels ../data-files/parcels/
+```
+
 #### Excluded Endpoints
 
 The following endpoints do not require authentication:
