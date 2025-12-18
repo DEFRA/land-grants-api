@@ -130,6 +130,27 @@ If you would like to run the ingestion process end to end using AWS S3, you can 
 npm run docker:localstack:up
 ```
 
+#### Local data
+
+There is a script to ingest data files for local development: (./src/scripts/ingest-land-data-local.js)
+
+You will need to run the service locally, including database and localstack.
+
+```shell
+node ./src/scripts/ingest-land-data-local.js <resource type> <file path/directory>
+```
+
+To ingest a parcels file:
+
+```shell
+node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
+```
+
+```shell
+node ./src/scripts/ingest-land-data-local.js parcels ../data-files/parcels/
+```
+
+
 #### Start the api
 
 To run the application in `development` mode run the following command:
