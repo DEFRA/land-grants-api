@@ -150,7 +150,6 @@ node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
 node ./src/scripts/ingest-land-data-local.js parcels ../data-files/parcels/
 ```
 
-
 #### Start the api
 
 To run the application in `development` mode run the following command:
