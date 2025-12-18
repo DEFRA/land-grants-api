@@ -2,6 +2,7 @@ import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
+import { getStats } from '../../statistics/queries/stats.query.js'
 
 const DEFAULT_PORT = 5432
 
@@ -123,6 +124,7 @@ export const postgresDb = {
         const client = await pool.connect()
         server.logger.info('Postgres connection successful')
         client.release()
+        await getStats(server.logger, pool)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')

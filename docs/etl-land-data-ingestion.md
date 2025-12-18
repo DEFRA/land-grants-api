@@ -200,6 +200,12 @@ Import moorland
 aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/moorland.csv s3://land-data/moorland/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
+Import agreements
+
+```
+aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/real_agreements.csv s3://land-data/agreements/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
+```
+
 #### List all buckets
 
 ```
