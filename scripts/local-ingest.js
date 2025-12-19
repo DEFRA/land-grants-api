@@ -50,18 +50,27 @@ export async function importLandData(file, resourceType, ingestId) {
   }
 }
 
-const resources =
-  ['parcels', 'moorland', 'covers', 'agreements', 'compatibility_matrix']
+const resources = [
+  'parcels',
+  'moorland',
+  'covers',
+  'agreements',
+  'compatibility_matrix'
+]
 
-  for (const resource of resources) {
-    const folder = path.join('./src/land-data', resource)
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = path.dirname(__filename)
+for (const resource of resources) {
+  const folder = path.join('./src/land-data', resource)
+  const __filename = fileURLToPath(import.meta.url)
+  const __dirname = path.dirname(__filename)
 
-    const files = fs
-      .readdirSync(folder)
-      .filter(file => file.endsWith('.csv'))
-      .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
+  const files = fs
+    .readdirSync(folder)
+    .filter((file) => file.endsWith('.csv'))
+    .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 
-    await Promise.all(files.map(file => importLandData(path.join(folder, file), resource, crypto.randomUUID())))
-  }
+  await Promise.all(
+    files.map((file) =>
+      importLandData(path.join(folder, file), resource, crypto.randomUUID())
+    )
+  )
+}
