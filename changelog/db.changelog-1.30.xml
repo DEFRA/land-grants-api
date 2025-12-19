@@ -10,6 +10,8 @@
 
   <changeSet id="add-actions-data" author="system">
     <sqlFile path="actions-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="land-cover-codes-actions-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="land-cover-codes-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
   </changeSet>
 
 </databaseChangeLog>
