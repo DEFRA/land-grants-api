@@ -14,7 +14,7 @@
     "dev": "NODE_ENV=local npm run server:watch",
     "dev:setup": "npm run setup:husky && npm run extractsql && docker compose up land-grants-backend-postgres -d && npm run docker:migrate:up && npm run dev:ingest",
     "dev:debug": "npm run server:debug",
-    "dev:ingest": "node scripts/local-ingest",
+    "dev:ingest": "NODE_ENV='test' node scripts/local-ingest",
     "docker:migrate:up": "docker compose --profile migrations run --rm database-up && npm run dev:ingest",
     "docker:migrate:down": "docker compose --profile migrations run --rm database-down",
     "docker:migrate:ext:up": "npm run extractsql && docker compose -f compose.migrations.yml run --rm database-up && npm run dev:ingest",
