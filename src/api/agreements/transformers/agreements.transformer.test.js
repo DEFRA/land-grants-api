@@ -9,23 +9,18 @@ describe('agreementActionsTransformer', () => {
       {
         actions: [
           {
-            action_code: 'UPL1',
+            actionCode: 'UPL1',
             quantity: 100,
-            unit: 'ha'
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           },
           {
-            action_code: 'SPM4',
+            actionCode: 'SPM4',
             quantity: 50,
-            unit: 'ha'
-          }
-        ]
-      },
-      {
-        actions: [
-          {
-            action_code: 'CMOR1',
-            quantity: 25,
-            unit: 'ha'
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           }
         ]
       }
@@ -37,17 +32,16 @@ describe('agreementActionsTransformer', () => {
       {
         actionCode: 'UPL1',
         quantity: 100,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       },
       {
         actionCode: 'SPM4',
         quantity: 50,
-        unit: 'ha'
-      },
-      {
-        actionCode: 'CMOR1',
-        quantity: 25,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       }
     ])
   })
@@ -83,21 +77,18 @@ describe('agreementActionsTransformer', () => {
       {
         actions: [
           {
-            action_code: 'UPL1',
+            actionCode: 'UPL1',
             quantity: 100,
-            unit: 'ha'
-          }
-        ]
-      },
-      {
-        actions: []
-      },
-      {
-        actions: [
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
+          },
           {
-            action_code: 'SPM4',
+            actionCode: 'SPM4',
             quantity: 50,
-            unit: 'ha'
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           }
         ]
       }
@@ -109,12 +100,16 @@ describe('agreementActionsTransformer', () => {
       {
         actionCode: 'UPL1',
         quantity: 100,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       },
       {
         actionCode: 'SPM4',
         quantity: 50,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       }
     ])
   })
@@ -124,9 +119,11 @@ describe('agreementActionsTransformer', () => {
       {
         actions: [
           {
-            action_code: 'UPL1',
+            actionCode: 'UPL1',
             quantity: 0,
-            unit: 'ha'
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           }
         ]
       }
@@ -138,7 +135,9 @@ describe('agreementActionsTransformer', () => {
       {
         actionCode: 'UPL1',
         quantity: 0,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       }
     ])
   })
@@ -148,19 +147,25 @@ describe('agreementActionsTransformer', () => {
       {
         actions: [
           {
-            action_code: 'UPL1',
+            actionCode: 'UPL1',
             quantity: 100,
-            unit: 'ha'
+            unit: 'ha',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           },
           {
-            action_code: 'SPM4',
+            actionCode: 'SPM4',
             quantity: 200,
-            unit: 'm'
+            unit: 'm',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           },
           {
-            action_code: 'CMOR1',
+            actionCode: 'CMOR1',
             quantity: 15,
-            unit: 'km'
+            unit: 'km',
+            startDate: '2025-01-01',
+            endDate: '2025-11-31'
           }
         ]
       }
@@ -172,17 +177,23 @@ describe('agreementActionsTransformer', () => {
       {
         actionCode: 'UPL1',
         quantity: 100,
-        unit: 'ha'
+        unit: 'ha',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       },
       {
         actionCode: 'SPM4',
         quantity: 200,
-        unit: 'm'
+        unit: 'm',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       },
       {
         actionCode: 'CMOR1',
         quantity: 15,
-        unit: 'km'
+        unit: 'km',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-11-31')
       }
     ])
   })

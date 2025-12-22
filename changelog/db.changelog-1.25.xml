@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="delete-seed-data" author="system" context="@test">
+    <sqlFile path="delete-agreements-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-agreements-data-v2.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-compatibility-matrix-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-moorland-designations-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-land-covers-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-land-cover-test-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-land-cover-test-data-v2.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+    <sqlFile path="delete-land-parcels-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+  </changeSet>
+
+</databaseChangeLog>

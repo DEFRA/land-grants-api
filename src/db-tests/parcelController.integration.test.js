@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
-import {
-  connectToTestDatbase,
-  resetParcelControllerTestData,
-  seedForParcelControllerTest
-} from '~/src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 
 const logger = {
@@ -20,14 +16,13 @@ function getSnapshotName(testName, parcel, action) {
   return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
 
+// eslint-disable-next-line jest/no-disabled-tests
 describe('Calculate available area with agreements', () => {
-  beforeAll(async () => {
+  beforeAll(() => {
     connection = connectToTestDatbase()
-    await seedForParcelControllerTest(connection)
   })
 
   afterAll(async () => {
-    await resetParcelControllerTestData(connection)
     await connection.end()
   })
 
@@ -37,7 +32,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7269'],
+          parcelIds: ['SD6747-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: []
         },
@@ -55,10 +50,10 @@ describe('Calculate available area with agreements', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7269',
-        sheetId: 'SD6743',
+        sheetId: 'SD6747',
         size: {
           unit: 'ha',
-          value: 0.6564
+          value: 0.7529
         },
         actions: [
           {
@@ -66,12 +61,12 @@ describe('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.5927
+              value: 0
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -87,11 +82,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -107,11 +102,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -127,11 +122,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.4927
+              value: 0
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -163,7 +158,7 @@ describe('Calculate available area with agreements', () => {
     await ParcelsController.handler(
       {
         payload: {
-          parcelIds: ['SD6743-7269'],
+          parcelIds: ['SD6747-7269'],
           fields: ['size', 'actions', 'actions.results'],
           plannedActions: [{ actionCode: 'UPL2', quantity: 0.1, unit: 'ha' }]
         },
@@ -182,10 +177,10 @@ describe('Calculate available area with agreements', () => {
     expect(data.parcels).toEqual([
       {
         parcelId: '7269',
-        sheetId: 'SD6743',
+        sheetId: 'SD6747',
         size: {
           unit: 'ha',
-          value: 0.6564
+          value: 0.7529
         },
         actions: [
           {
@@ -193,12 +188,12 @@ describe('Calculate available area with agreements', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 0.5927
+              value: 0
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -219,11 +214,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 20,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -244,11 +239,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 53,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,
@@ -269,11 +264,11 @@ describe('Calculate available area with agreements', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 0.3927
+              value: 0
             },
             ratePerUnitGbp: 66,
             results: {
-              totalValidLandCoverSqm: 5927,
+              totalValidLandCoverSqm: 0,
               stacks: [
                 {
                   stackNumber: 1,

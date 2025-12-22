@@ -4,55 +4,10 @@ describe('getAgreementsForParcel', () => {
   let mockDb
   let mockLogger
   let mockClient
-  let mockResult
-  let expectedTransformedResult
 
   beforeEach(() => {
-    mockResult = {
-      rows: [
-        {
-          id: 1,
-          sheet_id: 'SH123',
-          parcel_id: 'PA456',
-          actions: [
-            {
-              action_code: 'UPL1',
-              unit: 'ha',
-              quantity: 0.5
-            }
-          ]
-        },
-        {
-          id: 2,
-          sheet_id: 'SH123',
-          parcel_id: 'PA456',
-          actions: [
-            {
-              action_code: 'CMOR1',
-              unit: 'ha',
-              quantity: 1.2
-            }
-          ]
-        }
-      ]
-    }
-
-    // Expected result after transformation
-    expectedTransformedResult = [
-      {
-        actionCode: 'UPL1',
-        unit: 'ha',
-        quantity: 0.5
-      },
-      {
-        actionCode: 'CMOR1',
-        unit: 'ha',
-        quantity: 1.2
-      }
-    ]
-
     mockClient = {
-      query: jest.fn().mockResolvedValue(mockResult),
+      query: jest.fn(),
       release: jest.fn()
     }
 
@@ -64,6 +19,7 @@ describe('getAgreementsForParcel', () => {
       info: jest.fn(),
       error: jest.fn()
     }
+    jest.useFakeTimers().setSystemTime(new Date(2025, 11, 1))
   })
 
   test('should connect to the database', async () => {
@@ -90,6 +46,28 @@ describe('getAgreementsForParcel', () => {
   test('should return the transformed query results', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    mockClient.query = jest.fn().mockResolvedValue({
+      rows: [
+        {
+          actions: [
+            {
+              actionCode: 'UPL1',
+              unit: 'ha',
+              quantity: 0.5,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            },
+            {
+              actionCode: 'CMOR1',
+              unit: 'ha',
+              quantity: 1.2,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            }
+          ]
+        }
+      ]
+    })
 
     const result = await getAgreementsForParcel(
       sheetId,
@@ -98,13 +76,211 @@ describe('getAgreementsForParcel', () => {
       mockLogger
     )
 
-    expect(result).toEqual(expectedTransformedResult)
+    expect(result).toEqual([
+      {
+        actionCode: 'UPL1',
+        unit: 'ha',
+        quantity: 0.5,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      },
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+    ])
+  })
+
+  test('should excluded expired actions', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockClient.query = jest.fn().mockResolvedValue({
+      rows: [
+        {
+          actions: [
+            {
+              actionCode: 'UPL1',
+              unit: 'ha',
+              quantity: 0.5,
+              startDate: '2025-01-01',
+              endDate: '2025-12-01'
+            },
+            {
+              actionCode: 'CMOR1',
+              unit: 'ha',
+              quantity: 1.2,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            }
+          ]
+        }
+      ]
+    })
+
+    const result = await getAgreementsForParcel(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual([
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+    ])
+  })
+
+  test('should excluded actions not yet started', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockClient.query = jest.fn().mockResolvedValue({
+      rows: [
+        {
+          actions: [
+            {
+              actionCode: 'UPL1',
+              unit: 'ha',
+              quantity: 0.5,
+              startDate: '2026-01-01',
+              endDate: '2026-12-31'
+            },
+            {
+              actionCode: 'CMOR1',
+              unit: 'ha',
+              quantity: 1.2,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            }
+          ]
+        }
+      ]
+    })
+
+    const result = await getAgreementsForParcel(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual([
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+    ])
+  })
+
+  test('should include action when starting today', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockClient.query = jest.fn().mockResolvedValue({
+      rows: [
+        {
+          actions: [
+            {
+              actionCode: 'UPL1',
+              unit: 'ha',
+              quantity: 0.5,
+              startDate: '2025-12-01',
+              endDate: '2026-12-31'
+            },
+            {
+              actionCode: 'CMOR1',
+              unit: 'ha',
+              quantity: 1.2,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            }
+          ]
+        }
+      ]
+    })
+
+    const result = await getAgreementsForParcel(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual([
+      {
+        actionCode: 'UPL1',
+        unit: 'ha',
+        quantity: 0.5,
+        startDate: new Date('2025-12-01'),
+        endDate: new Date('2026-12-31')
+      },
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+    ])
+  })
+
+  test('should excluded actions where end date is today', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockClient.query = jest.fn().mockResolvedValue({
+      rows: [
+        {
+          actions: [
+            {
+              actionCode: 'UPL1',
+              unit: 'ha',
+              quantity: 0.5,
+              startDate: '2025-01-01',
+              endDate: '2025-12-01'
+            },
+            {
+              actionCode: 'CMOR1',
+              unit: 'ha',
+              quantity: 1.2,
+              startDate: '2025-01-01',
+              endDate: '2025-12-31'
+            }
+          ]
+        }
+      ]
+    })
+
+    const result = await getAgreementsForParcel(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual([
+      {
+        actionCode: 'CMOR1',
+        unit: 'ha',
+        quantity: 1.2,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+    ])
   })
 
   test('should return empty array when no agreements found', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockResult.rows = []
+    mockClient.query = jest.fn().mockResolvedValue({ rows: [] })
 
     const result = await getAgreementsForParcel(
       sheetId,
@@ -228,6 +404,6 @@ describe('getAgreementsForParcel', () => {
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2',
       [null, undefined]
     )
-    expect(result).toEqual(expectedTransformedResult)
+    expect(result).toEqual([])
   })
 })

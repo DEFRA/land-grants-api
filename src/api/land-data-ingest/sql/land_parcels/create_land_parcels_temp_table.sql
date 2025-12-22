@@ -1,22 +1,17 @@
-DROP TABLE IF EXISTS land_parcels_tmp CASCADE;
-
 CREATE TEMPORARY TABLE land_parcels_tmp (
-    geometry_wkt TEXT,
-    object_id INTEGER,
-    record_id INTEGER,
-    sheet_id VARCHAR(10),
-    parcel_id VARCHAR(4),
-    valid_start TIMESTAMP WITH TIME ZONE,
-    valid_end TIMESTAMP WITH TIME ZONE,
-    area_sqm DECIMAL(20,4),
-    verification_date TIMESTAMP WITH TIME ZONE,
-    verification_method INTEGER,
-    creation_date TIMESTAMP WITH TIME ZONE,
-    created_by_user VARCHAR(50),
-    is_validated CHAR(1),
-    center_x DECIMAL(20,12),
-    center_y DECIMAL(20,12),
-    last_updated TIMESTAMP WITH TIME ZONE,
-    perimeter_length DECIMAL(20,12),
-    calculated_area DECIMAL(20,12)
+    geom TEXT,
+    ID INTEGER,
+    SHEET_ID VARCHAR(10),
+    PARCEL_ID VARCHAR(5),
+    VALID_FROM TIMESTAMP WITH TIME ZONE,
+    VALID_TO TIMESTAMP WITH TIME ZONE,
+    GEOM_AREA_SQM NUMERIC(20, 4),
+    VERIFIED_ON TIMESTAMP WITH TIME ZONE,
+    VERIFICATION_TYPE INTEGER,
+    CREATED_ON TIMESTAMP WITH TIME ZONE,
+    CREATED_BY VARCHAR(50),
+    VALIDATED CHAR(1),
+    CENTROID_X NUMERIC(20, 12),
+    CENTROID_Y NUMERIC(20, 12),
+    LAST_REFRESH_DATE TIMESTAMP WITH TIME ZONE
 );

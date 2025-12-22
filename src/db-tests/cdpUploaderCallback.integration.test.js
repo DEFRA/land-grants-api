@@ -6,7 +6,9 @@ import {
   ensureBucketExists,
   listTestFiles,
   clearTestBucket
-} from './setup/s3-test-helpers.js'
+} from '../import-tests/setup/s3-test-helpers.js'
+import { connectToTestDatbase } from './setup/postgres.js'
+import { clearTestData } from './setup/db-helper.js'
 
 const logger = {
   info: jest.fn(),
@@ -18,14 +20,18 @@ const logger = {
 describe('CDP uploader callback integration test', () => {
   const { h, getResponse } = createResponseCapture()
   let s3Client
+  let connection
 
   beforeAll(async () => {
+    connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
+    await clearTestBucket(s3Client)
   })
 
-  afterEach(async () => {
-    await clearTestBucket(s3Client)
+  afterAll(async () => {
+    await clearTestData(connection)
+    await connection.end()
   })
 
   test('should return 200 with success message when payload is valid', async () => {
@@ -53,6 +59,7 @@ describe('CDP uploader callback integration test', () => {
     await LandDataIngestController.handler(request, h)
 
     const { statusCode } = getResponse()
+
     const files = await listTestFiles(s3Client)
     expect(statusCode).toBe(200)
     expect(files).toHaveLength(1)

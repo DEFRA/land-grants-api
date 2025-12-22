@@ -14,5 +14,7 @@ export default {
     '!**/__tests__/**',
     '!**/__snapshots__/**'
   ],
-  coverageDirectory: '<rootDir>/coverage/db'
+  coverageDirectory: '<rootDir>/coverage/db',
+  globalSetup: './jest.db.setup.js',
+  globalTeardown: './jest.db.teardown.js'
 }

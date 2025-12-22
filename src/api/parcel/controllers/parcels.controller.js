@@ -139,14 +139,6 @@ async function getActionsForParcel(
   request
 ) {
   const { fields, plannedActions } = payload
-  const agreements = await getAgreementsForParcel(
-    parcel.sheet_id,
-    parcel.parcel_id,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
   const parcelResponse = {
     parcelId: parcel.parcel_id,
@@ -158,6 +150,15 @@ async function getActionsForParcel(
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {
+    const agreements = await getAgreementsForParcel(
+      parcel.sheet_id,
+      parcel.parcel_id,
+      request.server.postgresDb,
+      request.logger
+    )
+
+    const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
+
     const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
       parcel,
       mergedActions,
