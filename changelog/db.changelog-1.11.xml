@@ -8,7 +8,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="add-seed-data" author="system">
+  <changeSet id="add-seed-data" author="system" context="@test">
     <sqlFile path="actions-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
     <sqlFile path="agreements-data.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
     <sqlFile path="compatibility-matrix.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
