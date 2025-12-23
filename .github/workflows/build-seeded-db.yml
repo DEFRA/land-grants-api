@@ -33,5 +33,5 @@ jobs:
         with:
           image-name: 'land-grants-postgres-seeded'
           dockerfile: ./db/Dockerfile.seeded
-          context: ./db
+          context: .
           version: latest
