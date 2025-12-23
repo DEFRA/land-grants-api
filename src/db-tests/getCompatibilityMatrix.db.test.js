@@ -5,7 +5,7 @@ import { vi } from 'vitest'
 
 describe('Get compatibility matrix', () => {
   let logger, connection
-    
+
   beforeAll(() => {
     logger = {
       info: vi.fn(),

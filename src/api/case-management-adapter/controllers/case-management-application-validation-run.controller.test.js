@@ -3,9 +3,12 @@ import Hapi from '@hapi/hapi'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 
-vi.mock('~/src/api/application/queries/getApplicationValidationRun.query.js', () => ({
-  getApplicationValidationRun: vi.fn()
-}))
+vi.mock(
+  '~/src/api/application/queries/getApplicationValidationRun.query.js',
+  () => ({
+    getApplicationValidationRun: vi.fn()
+  })
+)
 
 const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun)
 
@@ -316,7 +319,9 @@ describe('Case Management Application Validation Run Controller', () => {
         }
       }
 
-      mockGetApplicationValidationRun.mockResolvedValue(applicationValidationRun)
+      mockGetApplicationValidationRun.mockResolvedValue(
+        applicationValidationRun
+      )
 
       const request = {
         method: 'GET',

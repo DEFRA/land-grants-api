@@ -31,13 +31,19 @@ vi.mock('../transformers/application.transformer.js', () => ({
   ruleEngineApplicationTransformer: vi.fn()
 }))
 
-const mockGetMoorlandInterceptPercentage = vi.mocked(getMoorlandInterceptPercentage)
-const mockGetAvailableAreaDataRequirements = vi.mocked(getAvailableAreaDataRequirements)
+const mockGetMoorlandInterceptPercentage = vi.mocked(
+  getMoorlandInterceptPercentage
+)
+const mockGetAvailableAreaDataRequirements = vi.mocked(
+  getAvailableAreaDataRequirements
+)
 const mockGetAvailableAreaForAction = vi.mocked(getAvailableAreaForAction)
 const mockExecuteRules = vi.mocked(executeRules)
 const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
-const mockRuleEngineApplicationTransformer = vi.mocked(ruleEngineApplicationTransformer)
+const mockRuleEngineApplicationTransformer = vi.mocked(
+  ruleEngineApplicationTransformer
+)
 
 describe('Action Validation Service', () => {
   const mockLogger = {

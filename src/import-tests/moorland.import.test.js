@@ -25,7 +25,10 @@ describe('Moorland import', () => {
 
   afterAll(async () => {
     await connection.end()
-    await deleteFiles(s3Client, ['moorland/moorland_head.csv', 'moorland/moorland_head_upsert.csv'])
+    await deleteFiles(s3Client, [
+      'moorland/moorland_head.csv',
+      'moorland/moorland_head_upsert.csv'
+    ])
   })
 
   test('should import moorland data and return 200 ok', async () => {

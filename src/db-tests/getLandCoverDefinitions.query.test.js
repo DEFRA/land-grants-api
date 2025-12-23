@@ -4,7 +4,7 @@ import { vi } from 'vitest'
 
 describe('Get land cover definitions query', () => {
   let logger, connection
-  
+
   beforeAll(() => {
     logger = {
       info: vi.fn(),

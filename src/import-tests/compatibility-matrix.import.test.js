@@ -22,7 +22,9 @@ describe('Compatibility matrix import', () => {
 
   afterAll(async () => {
     await connection.end()
-    await deleteFiles(s3Client, ['compatibility_matrix/compatibility_matrix_head.csv'])
+    await deleteFiles(s3Client, [
+      'compatibility_matrix/compatibility_matrix_head.csv'
+    ])
   })
 
   test('should import compatibility matrix data and return 200 ok', async () => {
@@ -50,6 +52,8 @@ describe('Compatibility matrix import', () => {
     expect(compatibilityMatrix[0].year).toBe('2025')
 
     const files = await listTestFiles(s3Client)
-    expect(files).toContain('compatibility_matrix/compatibility_matrix_head.csv')
+    expect(files).toContain(
+      'compatibility_matrix/compatibility_matrix_head.csv'
+    )
   }, 10000)
 })

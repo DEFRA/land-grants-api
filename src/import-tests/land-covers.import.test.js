@@ -22,7 +22,7 @@ describe('Land covers import', () => {
     await ensureBucketExists(s3Client)
     fixtures = getCsvFixtures('covers_head.csv')
   })
-  
+
   afterAll(async () => {
     await connection.end()
   })

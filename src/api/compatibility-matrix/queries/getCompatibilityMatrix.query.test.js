@@ -7,7 +7,7 @@ describe('getCompatibilityMatrix', () => {
   let queryMock
   let releaseMock
   let dbMock
-  
+
   const cm = {
     id: 1,
     option_code: 'AFC',
@@ -20,7 +20,7 @@ describe('getCompatibilityMatrix', () => {
       error: vi.fn(),
       info: vi.fn()
     }
-    
+
     queryMock = vi.fn().mockResolvedValue({
       rows: [cm]
     })

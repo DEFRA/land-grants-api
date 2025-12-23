@@ -56,9 +56,7 @@ describe('Postgres Helper', () => {
     })
 
     test('should return database options from config for test environment', () => {
-      config.get = vi.fn((value) =>
-        value === 'isTest' ? true : 'test-value'
-      )
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
       const result = getDBOptions()
 
       expect(result).toEqual({
@@ -386,9 +384,9 @@ describe('Postgres Helper', () => {
         await postgresDb.plugin.register(mockServer, options)
 
         // Get the stop event handler
-        const stopHandler = vi.mocked(mockServer.events.on).mock.calls.find(
-          (call) => call[0] === 'stop'
-        )[1]
+        const stopHandler = vi
+          .mocked(mockServer.events.on)
+          .mock.calls.find((call) => call[0] === 'stop')[1]
 
         // Trigger the stop event
         await stopHandler()

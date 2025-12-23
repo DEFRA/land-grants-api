@@ -49,11 +49,9 @@ describe('payment calculate controller integration', () => {
         expectedFirstPaymentDate
       }
     ) => {
-      vi
-        .useFakeTimers({
-          doNotFake: ['nextTick']
-        })
-        .setSystemTime(new Date(dateToday))
+      vi.useFakeTimers({
+        doNotFake: ['nextTick']
+      }).setSystemTime(new Date(dateToday))
 
       await PaymentsCalculateController.handler(
         {

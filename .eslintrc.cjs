@@ -23,7 +23,8 @@ module.exports = {
         'prettier'
       ],
       env: {
-        browser: false
+        browser: false,
+        node: true
       },
       files: ['**/*.{cjs,js}'],
       parser: '@typescript-eslint/parser',
@@ -129,7 +130,7 @@ module.exports = {
     },
     {
       env: {
-        'vitest-globals/env': true
+        node: false
       },
       globals: {
         fetchMock: true,
@@ -144,15 +145,11 @@ module.exports = {
         beforeAll: 'readonly',
         afterAll: 'readonly'
       },
-      extends: [
-        'plugin:vitest/recommended'
-      ],
       files: ['**/*.test.{cjs,js}', '**/__mocks__/**', '**/db-tests/**'],
       plugins: ['vitest'],
       rules: {
         // Allow Vitest to assert on mocked unbound methods
         '@typescript-eslint/unbound-method': 'off',
-        'vitest/unbound-method': 'error',
 
         // Allow import devDependencies
         'n/no-unpublished-import': [

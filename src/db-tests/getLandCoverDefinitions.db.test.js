@@ -3,7 +3,7 @@ import { connectToTestDatbase } from './setup/postgres.js'
 import { logger } from './testLogger.js'
 
 describe('Get land cover definitions', () => {
-  let connection;
+  let connection
 
   beforeAll(() => {
     connection = connectToTestDatbase()

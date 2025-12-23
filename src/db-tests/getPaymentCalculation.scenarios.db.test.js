@@ -45,11 +45,9 @@ describe('Calculate payments', () => {
         expectedFirstPaymentDate
       }
     ) => {
-      vi
-        .useFakeTimers({
-          doNotFake: ['nextTick']
-        })
-        .setSystemTime(new Date(dateToday))
+      vi.useFakeTimers({
+        doNotFake: ['nextTick']
+      }).setSystemTime(new Date(dateToday))
 
       let parcels = []
       try {

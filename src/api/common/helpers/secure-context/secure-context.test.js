@@ -5,11 +5,6 @@ import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { requestLogger } from '~/src/api/common/helpers/logging/request-logger.js'
 import { config } from '~/src/config/index.js'
 
-const mockAddCACert = vi.fn()
-const mockTlsCreateSecureContext = vi
-  .fn()
-  .mockReturnValue({ context: { addCACert: mockAddCACert } })
-
 vi.mock('hapi-pino', () => ({
   default: {
     register: (server) => {
@@ -24,14 +19,14 @@ vi.mock('hapi-pino', () => ({
 vi.mock('node:tls', async () => {
   const actual = await vi.importActual('node:tls')
   const mockAddCACertFn = vi.fn()
-  const mockTlsCreateSecureContextFn = vi.fn((options) => {
+  const mockTlsCreateSecureContextFn = vi.fn(() => {
     return { context: { addCACert: mockAddCACertFn } }
   })
-  
+
   // Store references globally so tests can access them
   global.mockTlsCreateSecureContext = mockTlsCreateSecureContextFn
   global.mockAddCACert = mockAddCACertFn
-  
+
   return {
     default: {
       ...actual.default,
