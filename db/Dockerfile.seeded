@@ -1,0 +1,84 @@
+##############################
+# Stage 1 - Generate seed SQL
+##############################
+FROM liquibase/liquibase:4.31-alpine AS liquibase-build
+
+WORKDIR /workspace
+
+COPY changelog ./changelog
+COPY scripts ./scripts
+COPY src/api/common/migration ./migration
+
+# Switch to root to fix ownership
+USER root
+RUN chown -R liquibase:liquibase /workspace && \
+    chmod +x /workspace/scripts/extract-gz-to-sql
+
+# Back to liquibase user for the rest
+USER liquibase
+
+# Extract .gz files into the changelog folder
+RUN scripts/extract-gz-to-sql migration changelog
+
+# Generate seed SQL using offline mode
+RUN liquibase \
+  --changeLogFile=changelog/db.changelog.xml \
+  --url=offline:postgresql?outputLiquibaseSql=true \
+  updateSQL > /workspace/seed.sql
+
+#######################################################
+# Stage 2 - Create a pre-seeded PostGIS data directory
+#######################################################
+FROM postgis/postgis:16-3.4 AS db-build
+
+ENV PGDATA=/var/lib/postgresql/data
+
+ARG APP_DB=land_grants_api
+ARG APP_PASSWORD=land_grants_api
+ARG APP_USER=land_grants_api
+
+# Copy the SQL generated in the first stage
+COPY --from=liquibase-build /workspace/seed.sql /tmp/seed.sql
+
+USER postgres
+
+RUN initdb -D "$PGDATA" && \
+    pg_ctl -D "$PGDATA" -o "-c listen_addresses=''" -w start && \
+    \
+    # Allow password auth from any host \
+    echo "host all all all scram-sha-256" >> "$PGDATA/pg_hba.conf" && \
+    \
+    # Create application login role \
+    psql -v ON_ERROR_STOP=1 -c "CREATE ROLE \"${APP_USER}\" WITH LOGIN PASSWORD '${APP_PASSWORD}';" && \
+    \
+    # Create application database owned by that user \
+    createdb -O "${APP_USER}" "${APP_DB}" && \
+    \
+    # Enable PostGIS extension \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "CREATE EXTENSION IF NOT EXISTS postgis;" && \
+    \
+    # Apply generated schema and seed data \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -f /tmp/seed.sql && \
+    \
+    # Give the app role full access to everything in public \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${APP_USER}\";" && \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${APP_USER}\";" && \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO \"${APP_USER}\";" && \
+    \
+    # Ensure any future objects created by postgres in public are usable by the app role \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"${APP_USER}\";" && \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO \"${APP_USER}\";" && \
+    psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO \"${APP_USER}\";" && \
+    \
+    # Shut down cleanly \
+    pg_ctl -D "$PGDATA" -m fast -w stop
+
+#######################################
+# Stage 3 - Final seeded runtime image
+#######################################
+FROM postgis/postgis:16-3.4
+
+ENV PGDATA=/var/lib/postgresql/data
+
+COPY --from=db-build /var/lib/postgresql/data /var/lib/postgresql/data
+
