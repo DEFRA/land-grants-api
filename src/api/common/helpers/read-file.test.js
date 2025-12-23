@@ -1,11 +1,12 @@
 import { readFile } from './read-file.js'
 import fs from 'node:fs/promises'
+import { vi } from 'vitest'
 
-jest.mock('node:fs/promises')
+vi.mock('node:fs/promises')
 
 describe('Read File', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     fs.readFile.mockResolvedValue('test')
   })

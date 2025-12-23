@@ -1,41 +1,49 @@
 import { startServer } from '~/src/api/common/helpers/start-server.js'
 import { createServer } from '~/src/api/index.js'
 import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
+import { vi } from 'vitest'
 
-// Mock all external dependencies
-jest.mock('~/src/config/index.js', () => ({
+vi.mock('~/src/config/index.js', () => ({
   config: {
-    get: jest.fn().mockReturnValue(3000)
+    get: vi.fn((key) => {
+      if (key === 'port') {
+        return 3000
+      }
+      return undefined
+    })
   }
 }))
 
-jest.mock('~/src/api/index.js', () => ({
-  createServer: jest.fn()
+vi.mock('~/src/api/index.js', () => ({
+  createServer: vi.fn()
 }))
 
-jest.mock('~/src/api/common/helpers/logging/logger.js', () => ({
-  createLogger: jest.fn()
+vi.mock('~/src/api/common/helpers/logging/logger.js', () => ({
+  createLogger: vi.fn()
 }))
 
 describe('startServer', () => {
-  // Mock server and logger objects
-  const mockServer = {
-    start: jest.fn().mockResolvedValue(),
-    logger: {
-      info: jest.fn(),
-      error: jest.fn()
-    }
-  }
-
-  const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn()
-  }
+  let mockServer
+  let mockLogger
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockServer = {
+      start: vi.fn().mockResolvedValue(),
+      logger: {
+        info: vi.fn(),
+        error: vi.fn()
+      }
+    }
+    mockLogger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     createServer.mockResolvedValue(mockServer)
     createLogger.mockReturnValue(mockLogger)
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   test('successfully starts the server', async () => {

@@ -9,22 +9,22 @@ describe('getParcelAvailableArea', () => {
   const pool = new Pool()
 
   const mockLogger = {
-    error: jest.fn(),
-    info: jest.fn()
+    error: vi.fn(),
+    info: vi.fn()
   }
   let mockClient
 
   beforeEach(() => {
     mockClient = {
-      query: jest.fn(),
-      release: jest.fn()
+      query: vi.fn(),
+      release: vi.fn()
     }
 
-    jest.spyOn(pool, 'connect').mockResolvedValue(mockClient)
+    vi.spyOn(pool, 'connect').mockResolvedValue(mockClient)
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('returns area when query succeeds', async () => {

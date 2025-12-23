@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals'
+import { vi, describe, test, beforeEach, expect } from 'vitest'
 import {
   validateRequest,
   validateLandActionsRequest,
@@ -6,17 +6,17 @@ import {
 } from './application.validation.js'
 import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
-jest.mock('~/src/api/parcel/queries/getLandData.query.js')
+vi.mock('~/src/api/parcel/queries/getLandData.query.js')
 
 describe('Application Validation', () => {
   const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn()
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn()
   }
 
   const mockDb = {
-    connect: jest.fn()
+    connect: vi.fn()
   }
 
   const mockRequest = {
@@ -27,7 +27,7 @@ describe('Application Validation', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('validateLandActionsRequest', () => {

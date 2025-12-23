@@ -2,9 +2,9 @@ import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLand
 import { connectToTestDatbase } from './setup/postgres.js'
 import { logger } from './testLogger.js'
 
-let connection
-
 describe('Get land cover definitions', () => {
+  let connection
+
   beforeAll(() => {
     connection = connectToTestDatbase()
   })

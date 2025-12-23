@@ -3,7 +3,7 @@ import {
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
-  clearTestBucket
+  deleteFiles
 } from './setup/s3-test-helpers.js'
 
 import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.module.js'
@@ -20,12 +20,16 @@ describe('Parcels import', () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
-    await clearTestBucket(s3Client)
     fixtures = getCsvFixtures('parcels_head.csv')
   })
 
   afterAll(async () => {
     await connection.end()
+    await deleteFiles(s3Client, ['parcels/parcels_head_upsert.csv'])
+  })
+
+  afterEach(async () => {
+    await deleteFiles(s3Client, ['parcels/parcels_head.csv'])
   })
 
   test('should import parcels data and return 200 ok', async () => {
@@ -59,8 +63,7 @@ describe('Parcels import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files).toHaveLength(1)
-    expect(files[0]).toBe('parcels/parcels_head.csv')
+    expect(files).toContain('parcels/parcels_head.csv')
   }, 10000)
 
   test('should import parcels data and upsert data', async () => {

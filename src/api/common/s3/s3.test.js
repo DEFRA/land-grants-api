@@ -1,6 +1,3 @@
-/* eslint-disable jest/no-commented-out-tests */
-
-// import { Readable } from 'stream'
 import {
   getFiles,
   getFile,
@@ -17,12 +14,12 @@ describe('S3 Buckets', () => {
 
     beforeEach(() => {
       mockS3Client = {
-        send: jest.fn()
+        send: vi.fn()
       }
     })
 
     afterEach(() => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
     })
 
     describe('Get files from s3 bucket', () => {
@@ -197,12 +194,12 @@ describe('S3 Buckets', () => {
 
     beforeEach(() => {
       mockS3Client = {
-        send: jest.fn()
+        send: vi.fn()
       }
     })
 
     afterEach(() => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
     })
 
     describe('error handling', () => {
@@ -269,12 +266,12 @@ describe('S3 Buckets', () => {
 
     beforeEach(() => {
       mockS3Client = {
-        send: jest.fn()
+        send: vi.fn()
       }
     })
 
     afterEach(() => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
     })
 
     const createMockCopyResult = () => ({

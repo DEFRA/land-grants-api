@@ -1,16 +1,15 @@
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
-
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 describe('Get actions', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

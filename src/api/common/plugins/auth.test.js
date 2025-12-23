@@ -1,21 +1,21 @@
 import Boom from '@hapi/boom'
 import crypto from 'node:crypto'
 import { auth, decryptToken, validateAuthToken } from './auth.js'
-
+import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 import { logBusinessError } from '../helpers/logging/log-helpers.js'
 
-const mockLoggerError = jest.fn()
+const mockLoggerError = vi.fn()
 
-jest.mock('~/src/config/index.js', () => ({
-  config: { get: jest.fn() }
+vi.mock('~/src/config/index.js', () => ({
+  config: { get: vi.fn() }
 }))
 
-jest.mock('../helpers/logging/log-helpers.js', () => ({
-  logBusinessError: jest.fn()
+vi.mock('../helpers/logging/log-helpers.js', () => ({
+  logBusinessError: vi.fn()
 }))
 
-jest.mock('~/src/api/common/helpers/logging/logger.js', () => ({
+vi.mock('~/src/api/common/helpers/logging/logger.js', () => ({
   createLogger: () => ({ error: (...args) => mockLoggerError(...args) })
 }))
 
@@ -34,7 +34,7 @@ function encryptToken(token, encryptionKey) {
 }
 
 const createHMock = () => ({
-  authenticated: jest.fn().mockReturnValue('ok')
+  authenticated: vi.fn().mockReturnValue('ok')
 })
 
 describe('auth plugin', () => {
@@ -146,8 +146,8 @@ describe('auth plugin', () => {
             const result = authenticate(request, h)
             expect(result).toBe('ok')
           },
-          strategy: jest.fn(),
-          default: jest.fn()
+          strategy: vi.fn(),
+          default: vi.fn()
         }
       }
 
@@ -169,8 +169,8 @@ describe('auth plugin', () => {
             const { authenticate } = impl()
             expect(() => authenticate(request, h)).toThrow(Boom.Boom)
           },
-          strategy: jest.fn(),
-          default: jest.fn()
+          strategy: vi.fn(),
+          default: vi.fn()
         }
       }
 

@@ -1,27 +1,31 @@
+import { vi } from 'vitest'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import { createCompatibilityMatrix } from './compatibilityMatrix.js'
 
-jest.mock(
-  '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
+vi.mock(
+  '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js',
+  () => ({
+    getCompatibilityMatrix: vi.fn()
+  })
 )
 
-const mockGetCompatibilityMatrix = getCompatibilityMatrix
+const mockGetCompatibilityMatrix = vi.mocked(getCompatibilityMatrix)
 
 describe('Compatibility Matrix', () => {
   const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn()
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn()
   }
   const mockDb = {
-    connect: jest.fn(() => ({
-      query: jest.fn()
+    connect: vi.fn(() => ({
+      query: vi.fn()
     })),
-    release: jest.fn()
+    release: vi.fn()
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('createCompatibilityMatrix', () => {

@@ -8,9 +8,9 @@ import {
 import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
 import { logger } from './testLogger.js'
 
-let connection
-
 describe('Calculate available area', () => {
+  let connection
+
   beforeAll(async () => {
     connection = connectToTestDatbase()
     await seedForGetParcelTest(connection)

@@ -5,24 +5,24 @@ import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/api/application/validation/application.validation.js')
+vi.mock('~/src/api/application/validation/application.validation.js')
 
-const logger = {
-  info: console.info,
-  error: console.error,
-  warn: console.warn,
-  debug: console.debug
-}
-
-let connection
 const mockValidateRequest = validateRequest
 
 describe('payment calculate controller integration', () => {
+  let logger, connection
   const fixtures = getPaymentCalculationFixtures()
   const { h, getResponse } = createResponseCapture()
 
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 
@@ -49,11 +49,9 @@ describe('payment calculate controller integration', () => {
         expectedFirstPaymentDate
       }
     ) => {
-      jest
-        .useFakeTimers({
-          doNotFake: ['nextTick']
-        })
-        .setSystemTime(new Date(dateToday))
+      vi.useFakeTimers({
+        doNotFake: ['nextTick']
+      }).setSystemTime(new Date(dateToday))
 
       await PaymentsCalculateController.handler(
         {

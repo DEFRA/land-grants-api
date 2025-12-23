@@ -5,8 +5,9 @@ import {
   getPaymentCalculationForParcels
 } from '~/src/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/api/application/validation/application.validation.js')
+vi.mock('~/src/api/application/validation/application.validation.js')
 
 const mockValidateRequest = validateRequest
 
@@ -30,7 +31,7 @@ const mockLandActions = {
   ]
 }
 
-jest.mock('~/src/payment-calculation/paymentCalculation.js')
+vi.mock('~/src/payment-calculation/paymentCalculation.js')
 
 const mockGetPaymentCalculationForParcels = getPaymentCalculationForParcels
 const mockGetPaymentCalculationDataRequirements =
@@ -85,14 +86,14 @@ describe('Payment calculate controller', () => {
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
-      info: jest.fn(),
-      debug: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn()
+      info: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn()
     })
     server.decorate('server', 'postgresDb', {
-      connect: jest.fn(),
-      query: jest.fn()
+      connect: vi.fn(),
+      query: vi.fn()
     })
 
     await server.register([payments])
@@ -104,7 +105,7 @@ describe('Payment calculate controller', () => {
   })
 
   beforeEach(async () => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockValidateRequest.mockResolvedValue([])
     mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)

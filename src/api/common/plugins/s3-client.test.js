@@ -1,15 +1,16 @@
 import { s3Client, createS3Client } from '~/src/api/common/plugins/s3-client.js'
 import { S3Client } from '@aws-sdk/client-s3'
+import { vi } from 'vitest'
 
-jest.mock('@aws-sdk/client-s3', () => ({
-  S3Client: jest.fn(() => ({
-    destroy: jest.fn()
+vi.mock('@aws-sdk/client-s3', () => ({
+  S3Client: vi.fn(() => ({
+    destroy: vi.fn()
   }))
 }))
 
-jest.mock('~/src/config/index.js', () => ({
+vi.mock('~/src/config/index.js', () => ({
   config: {
-    get: jest.fn((key) => {
+    get: vi.fn((key) => {
       const config = {
         's3.region': 'eu-west-2',
         's3.endpoint': 'http://localhost:4566',
@@ -29,11 +30,11 @@ describe('#s3Client', () => {
   let mockLogger
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockDecorate = jest.fn()
-    mockEventsOn = jest.fn()
+    vi.clearAllMocks()
+    mockDecorate = vi.fn()
+    mockEventsOn = vi.fn()
     mockLogger = {
-      info: jest.fn()
+      info: vi.fn()
     }
     mockServer = {
       decorate: mockDecorate,

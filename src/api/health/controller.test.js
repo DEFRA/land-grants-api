@@ -6,9 +6,9 @@ describe('Health controller', () => {
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
-      info: jest.fn(),
-      debug: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn()
     })
 
     await server.register([health])
@@ -20,7 +20,7 @@ describe('Health controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('POST /health route', () => {

@@ -1,4 +1,5 @@
 import { getAgreementsForParcel } from './getAgreementsForParcel.query.js'
+import { vi } from 'vitest'
 
 describe('getAgreementsForParcel', () => {
   let mockDb
@@ -7,19 +8,19 @@ describe('getAgreementsForParcel', () => {
 
   beforeEach(() => {
     mockClient = {
-      query: jest.fn(),
-      release: jest.fn()
+      query: vi.fn(),
+      release: vi.fn()
     }
 
     mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      error: vi.fn()
     }
-    jest.useFakeTimers().setSystemTime(new Date(2025, 11, 1))
+    vi.useFakeTimers().setSystemTime(new Date(2025, 11, 1))
   })
 
   test('should connect to the database', async () => {
@@ -46,7 +47,7 @@ describe('getAgreementsForParcel', () => {
   test('should return the transformed query results', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({
+    mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
           actions: [
@@ -97,7 +98,7 @@ describe('getAgreementsForParcel', () => {
   test('should excluded expired actions', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({
+    mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
           actions: [
@@ -141,7 +142,7 @@ describe('getAgreementsForParcel', () => {
   test('should excluded actions not yet started', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({
+    mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
           actions: [
@@ -185,7 +186,7 @@ describe('getAgreementsForParcel', () => {
   test('should include action when starting today', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({
+    mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
           actions: [
@@ -236,7 +237,7 @@ describe('getAgreementsForParcel', () => {
   test('should excluded actions where end date is today', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({
+    mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
           actions: [
@@ -280,7 +281,7 @@ describe('getAgreementsForParcel', () => {
   test('should return empty array when no agreements found', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockClient.query = jest.fn().mockResolvedValue({ rows: [] })
+    mockClient.query = vi.fn().mockResolvedValue({ rows: [] })
 
     const result = await getAgreementsForParcel(
       sheetId,
@@ -305,7 +306,7 @@ describe('getAgreementsForParcel', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const error = new Error('Database error')
-    mockClient.query = jest.fn().mockRejectedValue(error)
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
     const result = await getAgreementsForParcel(
       sheetId,
@@ -333,7 +334,7 @@ describe('getAgreementsForParcel', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const connectionError = new Error('Connection failed')
-    mockDb.connect = jest.fn().mockRejectedValue(connectionError)
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
     const result = await getAgreementsForParcel(
       sheetId,
@@ -361,7 +362,7 @@ describe('getAgreementsForParcel', () => {
   test('should handle client release if client is not defined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     const result = await getAgreementsForParcel(
       sheetId,

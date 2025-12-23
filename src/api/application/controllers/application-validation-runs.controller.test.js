@@ -2,24 +2,25 @@ import Hapi from '@hapi/hapi'
 import { application } from '../index.js'
 import { getApplicationValidationRuns } from '../queries/getApplicationValidationRuns.query.js'
 import { applicationValidationRunTransformer } from '../transformers/application.transformer.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/api/application/queries/getApplicationValidationRuns.query.js')
-jest.mock('~/src/api/application/transformers/application.transformer.js')
+vi.mock('~/src/api/application/queries/getApplicationValidationRuns.query.js')
+vi.mock('~/src/api/application/transformers/application.transformer.js')
 
 describe('Application Validation Runs Controller', () => {
   const server = Hapi.server()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
-      info: jest.fn(),
-      debug: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn()
     })
 
     server.decorate('server', 'postgresDb', {
-      connect: jest.fn().mockImplementation(() => ({
-        query: jest.fn(),
-        release: jest.fn()
+      connect: vi.fn().mockImplementation(() => ({
+        query: vi.fn(),
+        release: vi.fn()
       }))
     })
 
@@ -32,7 +33,7 @@ describe('Application Validation Runs Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('GET /application/{applicationId}/validation-runs', () => {

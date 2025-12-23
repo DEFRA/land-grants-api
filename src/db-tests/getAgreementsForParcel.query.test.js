@@ -4,16 +4,16 @@ import {
   seedForAgreementsTest,
   resetAgreementsTestData
 } from './setup/postgres.js'
-
-let connection
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('Get agreement actions for parcel query', () => {
+  let logger, connection
+
   beforeAll(async () => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
     await seedForAgreementsTest(connection)
   })
@@ -44,7 +44,7 @@ describe('Get agreement actions for parcel query', () => {
     const RealDate = global.Date
     const mockCurrentDate = new RealDate(2025, 10, 1) // November 1, 2025
 
-    jest.spyOn(global, 'Date').mockImplementation((...args) => {
+    vi.spyOn(global, 'Date').mockImplementation((...args) => {
       if (args.length === 0) {
         return mockCurrentDate
       }
@@ -64,6 +64,6 @@ describe('Get agreement actions for parcel query', () => {
     expect(actions[0].startDate.toISOString()).toBe('2025-01-01T00:00:00.000Z')
     expect(actions[0].endDate.toISOString()).toBe('2025-11-30T00:00:00.000Z')
 
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   }, 30000)
 })

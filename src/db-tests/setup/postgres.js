@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'url'
 import path from 'node:path'
 
-import { DB_CONFIG } from './jestSetup.js'
+import { DB_CONFIG } from './test-config.js'
 const fixtureDirPath = '../fixtures'
 
 export const connectToTestDatbase = () => {

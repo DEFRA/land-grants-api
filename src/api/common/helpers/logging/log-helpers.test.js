@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals'
+import { vi, describe, beforeEach, expect } from 'vitest'
 import {
   logInfo,
   logDatabaseError,
@@ -12,10 +12,10 @@ describe('Log Helpers', () => {
 
   beforeEach(() => {
     mockLogger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-      debug: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      debug: vi.fn()
     }
   })
 

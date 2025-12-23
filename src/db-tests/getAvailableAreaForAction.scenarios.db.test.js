@@ -7,19 +7,17 @@ import {
 import { createCompatibilityMatrix } from '../available-area/compatibilityMatrix.js'
 import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
 
-const logger = {
-  log: jest.fn(),
-  warn: jest.fn(),
-  info: jest.fn(),
-  error: jest.fn()
-}
-
-let connection
-
 describe('Calculate available area', () => {
+  let logger, connection
   const fixtures = getAvailableAreaFixtures()
 
   beforeAll(() => {
+    logger = {
+      log: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

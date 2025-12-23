@@ -10,11 +10,12 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { getFiles, filterFilesByDate } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import { vi } from 'vitest'
 
-jest.mock('../service/ingest-schedule.service.js')
-jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
-jest.mock('../../common/s3/s3.js')
-jest.mock('../../common/plugins/s3-client.js')
+vi.mock('../service/ingest-schedule.service.js')
+vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
+vi.mock('../../common/s3/s3.js')
+vi.mock('../../common/plugins/s3-client.js')
 
 const mockProcessFile = processFile
 const mockCreateTaskInfo = createTaskInfo
@@ -27,14 +28,14 @@ const mockCreateS3Client = createS3Client
 describe('Ingest Schedule Controller', () => {
   const server = Hapi.server()
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
   }
 
   const mockS3 = {
-    send: jest.fn()
+    send: vi.fn()
   }
 
   beforeAll(async () => {
@@ -50,7 +51,7 @@ describe('Ingest Schedule Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockCreateTaskInfo.mockReturnValue({
       category: 'land_data_ingest',
@@ -59,8 +60,8 @@ describe('Ingest Schedule Controller', () => {
       bucket: 'test-bucket'
     })
     mockProcessFile.mockResolvedValue(undefined)
-    mockLogInfo.mockImplementation(jest.fn())
-    mockLogBusinessError.mockImplementation(jest.fn())
+    mockLogInfo.mockImplementation(vi.fn())
+    mockLogBusinessError.mockImplementation(vi.fn())
     mockCreateS3Client.mockReturnValue(mockS3)
     mockGetFiles.mockResolvedValue([])
     mockFilterFilesByDate.mockReturnValue([])

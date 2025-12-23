@@ -2,23 +2,22 @@
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 function getSnapshotName(testName, parcel, action) {
   return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
 
-// eslint-disable-next-line jest/no-disabled-tests
 describe('Calculate available area with agreements', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

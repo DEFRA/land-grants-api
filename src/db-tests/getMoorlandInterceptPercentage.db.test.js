@@ -2,16 +2,16 @@
 
 import { getMoorlandInterceptPercentage } from '../api/parcel/queries/getMoorlandInterceptPercentage.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-
-let connection
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('Get moorland intercept percentage query', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

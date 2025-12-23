@@ -47,23 +47,23 @@ describe('getLandCoverDefinitions', () => {
     }
 
     mockClient = {
-      query: jest.fn().mockResolvedValue(mockResult),
-      release: jest.fn()
+      query: vi.fn().mockResolvedValue(mockResult),
+      release: vi.fn()
     }
 
     mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     mockLogger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     }
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('successful operation', () => {

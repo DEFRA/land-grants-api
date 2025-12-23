@@ -5,13 +5,14 @@ import { applicationDataTransformer } from '../transformers/application.transfor
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
 import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/available-area/compatibilityMatrix.js')
-jest.mock('../mutations/saveApplication.mutation.js')
-jest.mock('../transformers/application.transformer.js')
-jest.mock('./land-parcel-validation.service.js')
-jest.mock('../validation/application.validation.js')
-jest.mock('../../actions/queries/getActions.query.js')
+vi.mock('~/src/available-area/compatibilityMatrix.js')
+vi.mock('../mutations/saveApplication.mutation.js')
+vi.mock('../transformers/application.transformer.js')
+vi.mock('./land-parcel-validation.service.js')
+vi.mock('../validation/application.validation.js')
+vi.mock('../../actions/queries/getActions.query.js')
 
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockSaveApplication = saveApplication
@@ -22,15 +23,15 @@ const mockGetEnabledActions = getEnabledActions
 
 describe('Application Validation Service', () => {
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn(),
-    query: jest.fn()
+    connect: vi.fn(),
+    query: vi.fn()
   }
 
   const mockRequest = {
@@ -81,7 +82,7 @@ describe('Application Validation Service', () => {
     }
   ]
 
-  const mockCompatibilityCheckFn = jest.fn()
+  const mockCompatibilityCheckFn = vi.fn()
 
   const mockParcelResults = [
     {
@@ -141,14 +142,16 @@ describe('Application Validation Service', () => {
   const mockApplicationValidationRunId = 'val-run-123'
 
   beforeEach(() => {
-    jest.clearAllMocks()
-
     mockGetEnabledActions.mockResolvedValue(mockEnabledActions)
     mockValidateRequest.mockResolvedValue(null)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockValidateLandParcelActions.mockResolvedValue(mockParcelResults[0])
     mockApplicationDataTransformer.mockReturnValue(mockApplicationData)
     mockSaveApplication.mockResolvedValue(mockApplicationValidationRunId)
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
   })
 
   describe('validateApplication', () => {
