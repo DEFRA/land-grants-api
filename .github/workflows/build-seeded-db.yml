@@ -1,0 +1,26 @@
+name: Build and push seeded PostGIS image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'changelog/**'
+      - 'src/api/common/migration/**'
+      - 'db/Dockerfile.seeded'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build and Publish
+        uses: DEFRA/cdp-build-action/build-dockerhub@main
+        with:
+          image-name: 'land-grants-postgres-seeded'
+          dockerfile: ./db/Dockerfile.seeded
+          context: ./db
+          version: latest
