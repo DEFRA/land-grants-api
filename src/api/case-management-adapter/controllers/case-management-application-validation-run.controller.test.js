@@ -1,23 +1,28 @@
+import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 
-jest.mock('~/src/api/application/queries/getApplicationValidationRun.query.js')
+vi.mock('~/src/api/application/queries/getApplicationValidationRun.query.js', () => ({
+  getApplicationValidationRun: vi.fn()
+}))
+
+const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun)
 
 describe('Case Management Application Validation Run Controller', () => {
   const server = Hapi.server()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
-      info: jest.fn(),
-      debug: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn()
     })
 
     server.decorate('server', 'postgresDb', {
-      connect: jest.fn().mockImplementation(() => ({
-        query: jest.fn(),
-        release: jest.fn()
+      connect: vi.fn().mockImplementation(() => ({
+        query: vi.fn(),
+        release: vi.fn()
       }))
     })
 
@@ -30,7 +35,7 @@ describe('Case Management Application Validation Run Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('GET /application/{id}/validation-run', () => {
@@ -311,7 +316,7 @@ describe('Case Management Application Validation Run Controller', () => {
         }
       }
 
-      getApplicationValidationRun.mockResolvedValue(applicationValidationRun)
+      mockGetApplicationValidationRun.mockResolvedValue(applicationValidationRun)
 
       const request = {
         method: 'GET',
@@ -842,7 +847,7 @@ describe('Case Management Application Validation Run Controller', () => {
     })
 
     test('should return 404 if application validation run does not exist', async () => {
-      getApplicationValidationRun.mockResolvedValue(null)
+      mockGetApplicationValidationRun.mockResolvedValue(null)
 
       const request = {
         method: 'GET',
@@ -858,7 +863,7 @@ describe('Case Management Application Validation Run Controller', () => {
     })
 
     test('should return 500 if application validation run query fails', async () => {
-      getApplicationValidationRun.mockRejectedValue(
+      mockGetApplicationValidationRun.mockRejectedValue(
         new Error('Error getting application validation run')
       )
 

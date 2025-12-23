@@ -1,32 +1,36 @@
-import { jest } from '@jest/globals'
+import { vi, describe, test, beforeEach, expect } from 'vitest'
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
 
 describe('getCompatibilityMatrix', () => {
-  const mockLogger = {
-    error: jest.fn(),
-    info: jest.fn()
-  }
-  const queryMock = jest.fn()
+  let mockLogger
+  let queryMock
+  let releaseMock
+  let dbMock
+  
   const cm = {
     id: 1,
     option_code: 'AFC',
     option_code_compat: 'ABC',
     year: 2019
   }
-  queryMock.mockResolvedValue({
-    rows: [cm]
-  })
-  const releaseMock = jest.fn()
-  const dbMock = {
-    connect: jest.fn(() => ({
-      query: queryMock,
-      release: releaseMock
-    }))
-  }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockLogger = {
+      error: vi.fn(),
+      info: vi.fn()
+    }
+    
+    queryMock = vi.fn().mockResolvedValue({
+      rows: [cm]
+    })
+    releaseMock = vi.fn()
+    dbMock = {
+      connect: vi.fn().mockResolvedValue({
+        query: queryMock,
+        release: releaseMock
+      })
+    }
   })
 
   test('should select all compatibility matrix', async () => {

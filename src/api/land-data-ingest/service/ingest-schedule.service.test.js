@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals'
+import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import {
   processFile,
   createTaskInfo,
@@ -7,11 +7,11 @@ import {
 import * as workerThread from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
-jest.mock('../../common/worker-thread/start-worker-thread.js')
-jest.mock('../../../config/index.js')
+vi.mock('../../common/worker-thread/start-worker-thread.js')
+vi.mock('../../../config/index.js')
 
 // Mock global fetch
-global.fetch = jest.fn()
+global.fetch = vi.fn()
 
 describe('Ingest Schedule Service', () => {
   let mockRequest
@@ -19,15 +19,15 @@ describe('Ingest Schedule Service', () => {
 
   beforeEach(() => {
     mockLogger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     }
 
     mockRequest = {
       server: {
         s3: {
-          send: jest.fn()
+          send: vi.fn()
         }
       },
       logger: mockLogger
@@ -36,7 +36,7 @@ describe('Ingest Schedule Service', () => {
     // Mock startWorker to return a resolved promise
     workerThread.startWorker.mockResolvedValue()
 
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('processFile', () => {
@@ -172,8 +172,8 @@ describe('Ingest Schedule Service', () => {
 
     it('should handle different request objects', async () => {
       const differentRequest = {
-        server: { s3: { send: jest.fn() } },
-        logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+        server: { s3: { send: vi.fn() } },
+        logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
       }
 
       await processFile(
@@ -288,7 +288,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue(mockResponse)
+          json: vi.fn().mockResolvedValue(mockResponse)
         })
 
         await initiateLandDataUpload(
@@ -320,7 +320,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue(mockResponse)
+          json: vi.fn().mockResolvedValue(mockResponse)
         })
 
         const result = await initiateLandDataUpload(
@@ -344,7 +344,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue(mockResponse)
+          json: vi.fn().mockResolvedValue(mockResponse)
         })
 
         const result = await initiateLandDataUpload(
@@ -363,7 +363,7 @@ describe('Ingest Schedule Service', () => {
       it('should include correct redirect path in request', async () => {
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -391,7 +391,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -414,7 +414,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -436,7 +436,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -456,7 +456,7 @@ describe('Ingest Schedule Service', () => {
       it('should set correct Content-Type header', async () => {
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -480,7 +480,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -507,7 +507,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
+          json: vi.fn().mockResolvedValue({ uploadUrl: '/upload/test' })
         })
 
         await initiateLandDataUpload(
@@ -545,7 +545,7 @@ describe('Ingest Schedule Service', () => {
       it('should throw error when JSON parsing fails', async () => {
         const jsonError = new Error('Invalid JSON')
         global.fetch.mockResolvedValue({
-          json: jest.fn().mockRejectedValue(jsonError)
+          json: vi.fn().mockRejectedValue(jsonError)
         })
 
         await expect(
@@ -594,7 +594,7 @@ describe('Ingest Schedule Service', () => {
       it('should handle empty response object', async () => {
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue({})
+          json: vi.fn().mockResolvedValue({})
         })
 
         const result = await initiateLandDataUpload(
@@ -616,7 +616,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue(mockResponse)
+          json: vi.fn().mockResolvedValue(mockResponse)
         })
 
         const result = await initiateLandDataUpload(
@@ -642,7 +642,7 @@ describe('Ingest Schedule Service', () => {
 
         global.fetch.mockResolvedValue({
           ok: true,
-          json: jest.fn().mockResolvedValue(mockResponse)
+          json: vi.fn().mockResolvedValue(mockResponse)
         })
 
         const result = await initiateLandDataUpload(

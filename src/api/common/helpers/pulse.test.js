@@ -1,12 +1,15 @@
 import { pulse } from '~/src/api/common/helpers/pulse.js'
+import { vi } from 'vitest'
 
-jest.mock('hapi-pulse', () => 'mock-hapi-pulse')
-jest.mock('~/src/api/common/helpers/logging/logger.js', () => ({
-  createLogger: jest.fn(() => ({
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn()
+vi.mock('hapi-pulse', () => ({
+  default: 'mock-hapi-pulse'
+}))
+vi.mock('~/src/api/common/helpers/logging/logger.js', () => ({
+  createLogger: vi.fn(() => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
   }))
 }))
 

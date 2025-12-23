@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-commented-out-tests */
-import { jest } from '@jest/globals'
+import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import {
   importLandParcels,
   importLandCovers,
@@ -14,8 +14,8 @@ import {
   truncateTableAndInsertData
 } from './data-helpers.js'
 
-jest.mock('../../common/helpers/postgres.js')
-jest.mock('./data-helpers.js')
+vi.mock('../../common/helpers/postgres.js')
+vi.mock('./data-helpers.js')
 
 describe('Import Land Data Service', () => {
   let mockClient
@@ -25,21 +25,21 @@ describe('Import Land Data Service', () => {
 
   beforeEach(() => {
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      error: vi.fn()
     }
     mockClient = {
-      query: jest.fn().mockImplementation((query) => {
+      query: vi.fn().mockImplementation((query) => {
         if (query.includes('SELECT COUNT(*)')) {
           return Promise.resolve({ rows: [{ count: 1 }] })
         }
         return Promise.resolve({ rowCount: 1 })
       }),
-      end: jest.fn()
+      end: vi.fn()
     }
     mockConnection = {
-      connect: jest.fn().mockResolvedValue(mockClient),
-      end: jest.fn()
+      connect: vi.fn().mockResolvedValue(mockClient),
+      end: vi.fn()
     }
     createDBPool.mockReturnValue(mockConnection)
     getDBOptions.mockReturnValue({
@@ -55,7 +55,7 @@ describe('Import Land Data Service', () => {
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('importLandParcels', () => {

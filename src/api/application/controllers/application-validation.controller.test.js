@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { ApplicationValidationController } from './application-validation.controller.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
@@ -11,34 +12,47 @@ import {
 import { saveApplication } from '../mutations/saveApplication.mutation.js'
 
 // Mock all dependencies
-jest.mock('~/src/api/actions/queries/getActions.query.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
-jest.mock('../validation/application.validation.js')
-jest.mock('../service/land-parcel-validation.service.js')
-jest.mock('../transformers/application.transformer.js')
-jest.mock('../mutations/saveApplication.mutation.js')
+vi.mock('~/src/api/actions/queries/getActions.query.js', () => ({
+  getEnabledActions: vi.fn()
+}))
+vi.mock('~/src/available-area/compatibilityMatrix.js', () => ({
+  createCompatibilityMatrix: vi.fn()
+}))
+vi.mock('../validation/application.validation.js', () => ({
+  validateRequest: vi.fn()
+}))
+vi.mock('../service/land-parcel-validation.service.js', () => ({
+  validateLandParcelActions: vi.fn()
+}))
+vi.mock('../transformers/application.transformer.js', () => ({
+  errorMessagesTransformer: vi.fn(),
+  applicationDataTransformer: vi.fn()
+}))
+vi.mock('../mutations/saveApplication.mutation.js', () => ({
+  saveApplication: vi.fn()
+}))
 
-const mockGetEnabledActions = getEnabledActions
-const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockValidateRequest = validateRequest
-const mockValidateLandParcelActions = validateLandParcelActions
-const mockErrorMessagesTransformer = errorMessagesTransformer
-const mockApplicationDataTransformer = applicationDataTransformer
-const mockSaveApplication = saveApplication
+const mockGetEnabledActions = vi.mocked(getEnabledActions)
+const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
+const mockValidateRequest = vi.mocked(validateRequest)
+const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
+const mockErrorMessagesTransformer = vi.mocked(errorMessagesTransformer)
+const mockApplicationDataTransformer = vi.mocked(applicationDataTransformer)
+const mockSaveApplication = vi.mocked(saveApplication)
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
 
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn(),
-    query: jest.fn()
+    connect: vi.fn(),
+    query: vi.fn()
   }
 
   const mockActions = [
@@ -138,7 +152,7 @@ describe('ApplicationValidationController', () => {
     parcelLevelResults: mockParcelResults
   }
 
-  const mockCompatibilityCheckFn = jest.fn()
+  const mockCompatibilityCheckFn = vi.fn()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', mockLogger)
@@ -166,7 +180,7 @@ describe('ApplicationValidationController', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Default mock implementations
     mockGetEnabledActions.mockResolvedValue(mockActions)

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
@@ -12,30 +13,42 @@ import {
   ruleEngineApplicationTransformer
 } from '../transformers/application.transformer.js'
 
-jest.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js')
-jest.mock('~/src/available-area/availableArea.js')
-jest.mock('~/src/rules-engine/rulesEngine.js')
-jest.mock('../../parcel/transformers/parcelActions.transformer.js')
-jest.mock('../transformers/application.transformer.js')
+vi.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js', () => ({
+  getMoorlandInterceptPercentage: vi.fn()
+}))
+vi.mock('~/src/available-area/availableArea.js', () => ({
+  getAvailableAreaDataRequirements: vi.fn(),
+  getAvailableAreaForAction: vi.fn()
+}))
+vi.mock('~/src/rules-engine/rulesEngine.js', () => ({
+  executeRules: vi.fn()
+}))
+vi.mock('../../parcel/transformers/parcelActions.transformer.js', () => ({
+  plannedActionsTransformer: vi.fn()
+}))
+vi.mock('../transformers/application.transformer.js', () => ({
+  actionResultTransformer: vi.fn(),
+  ruleEngineApplicationTransformer: vi.fn()
+}))
 
-const mockGetMoorlandInterceptPercentage = getMoorlandInterceptPercentage
-const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
-const mockGetAvailableAreaForAction = getAvailableAreaForAction
-const mockExecuteRules = executeRules
-const mockPlannedActionsTransformer = plannedActionsTransformer
-const mockActionResultTransformer = actionResultTransformer
-const mockRuleEngineApplicationTransformer = ruleEngineApplicationTransformer
+const mockGetMoorlandInterceptPercentage = vi.mocked(getMoorlandInterceptPercentage)
+const mockGetAvailableAreaDataRequirements = vi.mocked(getAvailableAreaDataRequirements)
+const mockGetAvailableAreaForAction = vi.mocked(getAvailableAreaForAction)
+const mockExecuteRules = vi.mocked(executeRules)
+const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
+const mockActionResultTransformer = vi.mocked(actionResultTransformer)
+const mockRuleEngineApplicationTransformer = vi.mocked(ruleEngineApplicationTransformer)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn(),
-    query: jest.fn()
+    connect: vi.fn(),
+    query: vi.fn()
   }
 
   const mockRequest = {
@@ -62,7 +75,7 @@ describe('Action Validation Service', () => {
     }
   ]
 
-  const mockCompatibilityCheckFn = jest.fn()
+  const mockCompatibilityCheckFn = vi.fn()
 
   const mockAvailableAreaDataRequirements = {
     landCoverCodesForAppliedForAction: ['130', '240'],
@@ -101,7 +114,7 @@ describe('Action Validation Service', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockGetAvailableAreaDataRequirements.mockResolvedValue(
       mockAvailableAreaDataRequirements

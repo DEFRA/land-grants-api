@@ -1,6 +1,9 @@
 import { cron } from '~/src/api/common/plugins/cron.js'
+import { vi } from 'vitest'
 
-jest.mock('hapi-cron', () => 'mock-hapi-cron')
+vi.mock('hapi-cron', () => ({
+  default: 'mock-hapi-cron'
+}))
 
 describe('#cron', () => {
   test('Should have the correct plugin', () => {

@@ -1,3 +1,4 @@
+import { vi } from 'vitest'
 import { getPaymentCalculationForParcels } from './paymentCalculation.js'
 
 const mockEnabledActions = [
@@ -39,7 +40,8 @@ const mockEnabledActions = [
 
 describe('getPaymentCalculationForParcels', () => {
   it('should return a valid payload for valid parcel data', () => {
-    jest.useFakeTimers().setSystemTime(new Date(2025, 6, 2))
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2025, 6, 2))
     const durationYears = 1
 
     const parcels = [
@@ -183,10 +185,12 @@ describe('getPaymentCalculationForParcels', () => {
     )
 
     expect(response).toEqual(expectedResponse)
+    vi.useRealTimers()
   })
 
   it('should return a response based on startDate if provided', () => {
-    jest.useFakeTimers().setSystemTime(new Date(2025, 6, 2))
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2025, 6, 2))
     const durationYears = 1
 
     const parcels = [
@@ -331,5 +335,6 @@ describe('getPaymentCalculationForParcels', () => {
     )
 
     expect(response).toEqual(expectedResponse)
+    vi.useRealTimers()
   })
 })

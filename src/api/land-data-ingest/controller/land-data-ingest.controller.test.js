@@ -8,19 +8,22 @@ import {
 } from '../../common/s3/s3.js'
 import { config } from '~/src/config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
-import { processFile } from '../service/ingest-schedule.service.js'
+import { processFile, createTaskInfo } from '../service/ingest-schedule.service.js'
+import { vi } from 'vitest'
 
 // Mock dependencies
-jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
-jest.mock('../../common/s3/s3.js')
-jest.mock('~/src/config/index.js')
-jest.mock('../../common/plugins/s3-client.js')
-jest.mock('../service/ingest-schedule.service.js', () => ({
-  ...jest.requireActual('../service/ingest-schedule.service.js'),
-  processFile: jest.fn()
+vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
+vi.mock('../../common/s3/s3.js')
+vi.mock('~/src/config/index.js')
+vi.mock('../../common/plugins/s3-client.js')
+vi.mock('../service/ingest-schedule.service.js', () => ({
+  ...vi.importActual('../service/ingest-schedule.service.js'),
+  processFile: vi.fn(),
+  createTaskInfo: vi.fn()
 }))
 
 const mockProcessFile = processFile
+const mockCreateTaskInfo = createTaskInfo
 const mockLogInfo = logInfo
 const mockMoveFile = moveFile
 const mockProcessingBucketPath = processingBucketPath
@@ -32,14 +35,14 @@ describe('LandDataIngestController', () => {
   const server = Hapi.server()
 
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
   }
 
   const mockS3Client = {
-    send: jest.fn()
+    send: vi.fn()
   }
 
   const mockBucket = 'land-grants-bucket'
@@ -90,7 +93,7 @@ describe('LandDataIngestController', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Setup mock implementations
     mockCreateS3Client.mockReturnValue(mockS3Client)
@@ -107,6 +110,18 @@ describe('LandDataIngestController', () => {
     mockProcessingBucketPath.mockImplementation((key) => `processing/${key}`)
     mockFailedBucketPath.mockImplementation((key) => `failed/${key}`)
     mockProcessFile.mockResolvedValue(undefined)
+    // Mock createTaskInfo to return expected values
+    mockCreateTaskInfo.mockImplementation((taskId, category) => {
+      const title =
+        category.charAt(0).toUpperCase() +
+        category.slice(1).replaceAll('_', ' ').trim()
+      return {
+        category,
+        title,
+        taskId,
+        bucket: mockBucket
+      }
+    })
   })
 
   describe('POST /land-data-ingest/callback route', () => {

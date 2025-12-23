@@ -1,27 +1,44 @@
 import hapi from '@hapi/hapi'
+import { vi } from 'vitest'
 
 import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { requestLogger } from '~/src/api/common/helpers/logging/request-logger.js'
 import { config } from '~/src/config/index.js'
 
-const mockAddCACert = jest.fn()
-const mockTlsCreateSecureContext = jest
+const mockAddCACert = vi.fn()
+const mockTlsCreateSecureContext = vi
   .fn()
   .mockReturnValue({ context: { addCACert: mockAddCACert } })
 
-jest.mock('hapi-pino', () => ({
-  register: (server) => {
-    server.decorate('server', 'logger', {
-      info: jest.fn(),
-      error: jest.fn()
-    })
-  },
-  name: 'mock-hapi-pino'
+vi.mock('hapi-pino', () => ({
+  default: {
+    register: (server) => {
+      server.decorate('server', 'logger', {
+        info: vi.fn(),
+        error: vi.fn()
+      })
+    },
+    name: 'mock-hapi-pino'
+  }
 }))
-jest.mock('node:tls', () => ({
-  ...jest.requireActual('node:tls'),
-  createSecureContext: (...args) => mockTlsCreateSecureContext(...args)
-}))
+vi.mock('node:tls', async () => {
+  const actual = await vi.importActual('node:tls')
+  const mockAddCACertFn = vi.fn()
+  const mockTlsCreateSecureContextFn = vi.fn((options) => {
+    return { context: { addCACert: mockAddCACertFn } }
+  })
+  
+  // Store references globally so tests can access them
+  global.mockTlsCreateSecureContext = mockTlsCreateSecureContextFn
+  global.mockAddCACert = mockAddCACertFn
+  
+  return {
+    default: {
+      ...actual.default,
+      createSecureContext: mockTlsCreateSecureContextFn
+    }
+  }
+})
 
 describe('#secureContext', () => {
   let server
@@ -73,11 +90,11 @@ describe('#secureContext', () => {
     })
 
     test('Original tls.createSecureContext should have been called', () => {
-      expect(mockTlsCreateSecureContext).toHaveBeenCalledWith({})
+      expect(global.mockTlsCreateSecureContext).toHaveBeenCalledWith({})
     })
 
     test('addCACert should have been called', () => {
-      expect(mockAddCACert).toHaveBeenCalled()
+      expect(global.mockAddCACert).toHaveBeenCalled()
     })
 
     test('secureContext decorator should be available', () => {
