@@ -8,7 +8,7 @@ export default defineConfig({
     }
   },
   test: {
-    rootDir: '.',
+    root: '.',
     name: 'unit',
     include: [
       '**/src/api/**/*.test.js',

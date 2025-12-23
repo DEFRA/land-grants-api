@@ -10,7 +10,7 @@ import {
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'url'
-import { S3_CONFIG } from '../../db-tests/setup/jestSetup.js'
+import { S3_CONFIG } from '../../db-tests/setup/test-config.js'
 import { config } from '~/src/config/index.js'
 
 /**

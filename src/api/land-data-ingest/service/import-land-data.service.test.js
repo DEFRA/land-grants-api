@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-commented-out-tests */
 import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import {
   importLandParcels,

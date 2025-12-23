@@ -3,7 +3,7 @@ import { logger } from '../db-tests/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
 
-jest.mock(
+vi.mock(
   '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 )
 
@@ -22,7 +22,7 @@ const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
 describe('Available Area', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('getAvailableAreaForAction', function () {
