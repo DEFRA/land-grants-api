@@ -147,3 +147,24 @@ export async function clearTestBucket(s3Client, bucket = S3_CONFIG.bucket) {
 
   await s3Client.send(command)
 }
+
+/**
+ * 
+ * @param {*} s3Client 
+ * @param {string | string[]} filenames 
+ * @param {*} bucket 
+ */
+export async function deleteFiles(s3Client, filenames, bucket = S3_CONFIG.bucket) {
+  const files = Array.isArray(filenames) ? filenames : [filenames]
+  const commands = files.map((filename) => new DeleteObjectCommand({
+    Bucket: bucket,
+    Key: filename
+  }))
+
+  await s3Client.send(new DeleteObjectsCommand({
+    Bucket: bucket,
+    Delete: {
+      Objects: commands.map((command) => ({ Key: command.input.Key }))
+    }
+  }))
+}

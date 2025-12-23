@@ -5,20 +5,19 @@ import {
   getPaymentCalculationForParcels
 } from '../payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
-
-const logger = {
-  log: jest.fn(),
-  warn: jest.fn(),
-  info: jest.fn(),
-  error: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 describe('Calculate payments', () => {
+  let logger, connection
   const fixtures = getPaymentCalculationFixtures()
 
   beforeAll(() => {
+    logger = {
+      log: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 
@@ -27,7 +26,7 @@ describe('Calculate payments', () => {
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   test.each(fixtures)(
@@ -46,7 +45,7 @@ describe('Calculate payments', () => {
         expectedFirstPaymentDate
       }
     ) => {
-      jest
+      vi
         .useFakeTimers({
           doNotFake: ['nextTick']
         })

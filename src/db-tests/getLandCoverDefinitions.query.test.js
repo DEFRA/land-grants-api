@@ -1,16 +1,16 @@
 import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-
-let connection
-
-const logger = {
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('Get land cover definitions query', () => {
+  let logger, connection
+  
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 
@@ -156,7 +156,7 @@ describe('Get land cover definitions query', () => {
   test('should handle database connection errors', async () => {
     const landCoverCodes = ['131']
     const mockDb = {
-      connect: jest.fn().mockRejectedValue(new Error('Connection failed'))
+      connect: vi.fn().mockRejectedValue(new Error('Connection failed'))
     }
 
     await expect(
@@ -167,11 +167,11 @@ describe('Get land cover definitions query', () => {
   test('should handle database query errors and release client', async () => {
     const landCoverCodes = ['131']
     const mockClient = {
-      query: jest.fn().mockRejectedValue(new Error('Query failed')),
-      release: jest.fn()
+      query: vi.fn().mockRejectedValue(new Error('Query failed')),
+      release: vi.fn()
     }
     const mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     await expect(
