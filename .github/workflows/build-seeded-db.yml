@@ -9,6 +9,15 @@ on:
       - 'src/api/common/migration/**'
       - 'db/Dockerfile.seeded'
 
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_ACCOUNT_ID: '094954420758'
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
