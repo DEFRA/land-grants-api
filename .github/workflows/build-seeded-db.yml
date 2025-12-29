@@ -1,0 +1,37 @@
+name: Build and push seeded PostGIS image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'changelog/**'
+      - 'src/api/common/migration/**'
+      - 'db/Dockerfile.seeded'
+      - '.github/workflows/build-seeded-db.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_ACCOUNT_ID: '094954420758'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build and Publish
+        uses: DEFRA/cdp-build-action/build-dockerhub@main
+        with:
+          image-name: 'land-grants-postgres-seeded'
+          dockerfile: ./db/Dockerfile.seeded
+          context: .
+          version: latest
