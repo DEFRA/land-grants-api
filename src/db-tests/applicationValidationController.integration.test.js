@@ -2,18 +2,18 @@ import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from './setup/utils.js'
 import { ApplicationValidationController } from '~/src/api/application/controllers/application-validation.controller.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 describe('Application Validation Controller', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

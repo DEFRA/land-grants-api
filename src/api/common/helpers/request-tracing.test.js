@@ -1,14 +1,15 @@
 // Mock the config module with the actual value we want to test
 import { requestTracing } from './request-tracing.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/config/index.js', () => ({
+vi.mock('~/src/config/index.js', () => ({
   config: {
-    get: jest.fn().mockReturnValue('mock-tracing-header')
+    get: vi.fn().mockReturnValue('mock-tracing-header')
   }
 }))
 
 // Mock the hapi-tracing module
-jest.mock('@defra/hapi-tracing', () => ({
+vi.mock('@defra/hapi-tracing', () => ({
   tracing: {
     plugin: {
       name: 'tracing',

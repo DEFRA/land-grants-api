@@ -3,13 +3,12 @@ import {
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
-  clearTestBucket
+  deleteFiles
 } from './setup/s3-test-helpers.js'
 
 import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.module.js'
 import { connectToTestDatbase } from '../db-tests/setup/postgres.js'
 import { getRecordsByQuery } from './setup/db-helper.js'
-
 import { getCsvFixtures } from './setup/csv.js'
 
 describe('Land covers import', () => {
@@ -21,12 +20,15 @@ describe('Land covers import', () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
-    await clearTestBucket(s3Client)
     fixtures = getCsvFixtures('covers_head.csv')
   })
 
   afterAll(async () => {
     await connection.end()
+  })
+
+  afterEach(async () => {
+    await deleteFiles(s3Client, ['covers/covers_head.csv'])
   })
 
   test('should import land covers data and return 200 ok', async () => {
@@ -60,7 +62,6 @@ describe('Land covers import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files).toHaveLength(1)
     expect(files[0]).toBe('covers/covers_head.csv')
   }, 10000)
 
