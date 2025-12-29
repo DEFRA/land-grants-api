@@ -1,10 +1,9 @@
 import fs from 'fs'
 import path from 'path'
+import { config } from './config.js'
 
 // Important: configure these values for the ingestion
-const environment = 'prod'
-const clientId = process.env.CLIENT_ID
-const clientSecret = process.env.CLIENT_SECRET
+const environments = ['dev', 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
@@ -15,75 +14,40 @@ const resources = [
   'covers'
 ]
 
-const CONFIG = {
-  dev: {
-    cdpUrl: 'https://cdp-uploader.dev.cdp-int.defra.cloud',
-    apiBaseUrl: 'https://land-grants-api.api.dev.cdp-int.defra.cloud',
-    tokenUrl:
-      'https://land-grants-api-c63f2.auth.eu-west-2.amazoncognito.com/oauth2/token'
-  },
-  test: {
-    cdpUrl: 'https://cdp-uploader.test.cdp-int.defra.cloud',
-    apiBaseUrl: 'https://land-grants-api.api.test.cdp-int.defra.cloud',
-    tokenUrl:
-      'https://land-grants-api-6bf3a.auth.eu-west-2.amazoncognito.com/oauth2/token'
-  },
-  'perf-test': {
-    cdpUrl: 'https://cdp-uploader.perf-test.cdp-int.defra.cloud',
-    apiBaseUrl: 'https://land-grants-api.api.perf-test.cdp-int.defra.cloud',
-    tokenUrl:
-      'https://land-grants-api-05244.auth.eu-west-2.amazoncognito.com/oauth2/token'
-  },
-  prod: {
-    cdpUrl: 'https://cdp-uploader.prod.cdp-int.defra.cloud',
-    apiBaseUrl: 'https://land-grants-api.api.prod.cdp-int.defra.cloud',
-    tokenUrl:
-      'https://land-grants-api-75ee2.auth.eu-west-2.amazoncognito.com/oauth2/token'
-  }
-}
+transferAllResources()
 
 async function transferAllResources() {
-  for (const resource of resources) {
-    try {
-      await transferResource(resource)
-    } catch (error) {
-      console.error(`✗ Unhandled error: ${error.message}`)
-      process.exit(1)
+  for (const environment of environments) {
+    console.log(
+      `\n########## Starting ingestion for environment: ${environment} ##########`
+    )
+    for (const resource of resources) {
+      console.log(`\n=== Starting ingestion for resource: ${resource} ===`)
+      try {
+        await transferResource(resource, environment)
+      } catch (error) {
+        console.error(`✗ Unhandled error: ${error.message}`)
+        process.exit(1)
+      }
     }
   }
 }
 
 /**
- * Get config value for the given environment and key
- * @param {string} env - Environment name
- * @param {string} key - Config key (apiBaseUrl or tokenUrl)
- * @returns {string} Config value
- */
-function getConfigValue(env, key) {
-  const config = CONFIG[env]
-  if (!config) {
-    throw new Error(`Invalid environment: ${env}`)
-  }
-  return config[key]
-}
-
-/**
  * Get Cognito access token using client credentials
- * @param {string} clientId - Cognito client ID
- * @param {string} clientSecret - Cognito client secret
  * @param {string} environment - Environment name
  * @returns {Promise<string>} Access token
  */
-async function getCognitoToken(clientId, clientSecret, environment) {
+async function getCognitoToken(environment) {
   try {
-    const tokenUrl = getConfigValue(environment, 'tokenUrl')
-    console.log(`✓ Getting Cognito token from ${tokenUrl}`)
+    const envConfig = config[environment]
+    console.log(`✓ Getting Cognito token from ${envConfig.tokenUrl}`)
 
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
-      'base64'
-    )
+    const credentials = Buffer.from(
+      `${envConfig.clientId}:${envConfig.clientSecret}`
+    ).toString('base64')
 
-    const response = await fetch(tokenUrl, {
+    const response = await fetch(envConfig.tokenUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -114,7 +78,7 @@ async function getCognitoToken(clientId, clientSecret, environment) {
  */
 async function initiateLandDataUpload(jsonData, accessToken, environment) {
   try {
-    const apiBaseUrl = getConfigValue(environment, 'apiBaseUrl')
+    const apiBaseUrl = config[environment].apiBaseUrl
     console.log(
       `✓ Initiating land data upload to ${apiBaseUrl}/initiate-upload`
     )
@@ -146,7 +110,7 @@ async function initiateLandDataUpload(jsonData, accessToken, environment) {
 
 async function checkUploadStatus(uploadId, accessToken, environment) {
   try {
-    const apiBaseUrl = getConfigValue(environment, 'cdpUrl')
+    const apiBaseUrl = config[environment].cdpUrl
     console.log(
       `✓ Getting CDP Uploader status from ${apiBaseUrl}/status/${uploadId}`
     )
@@ -200,8 +164,8 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
 /**
  * Main function to run the ingestion process
  */
-async function transferResource(resource) {
-  console.log(`\n=== Starting ingestion for resource: ${resource} ===`)
+async function transferResource(resource, environment) {
+  const { clientId, clientSecret } = config[environment]
 
   const ingestionDataDirectory = path.join(
     process.cwd(),
@@ -231,7 +195,7 @@ async function transferResource(resource) {
   const customerId = 'DEV_TEAM'
 
   // get the access token from cognito
-  const accessToken = await getCognitoToken(clientId, clientSecret, environment)
+  const accessToken = await getCognitoToken(environment)
   console.log(`${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`)
 
   // get the files to ingest from the directory
@@ -286,5 +250,3 @@ async function transferResource(resource) {
 
   console.log('✓ Ingestion complete for : ' + resource)
 }
-
-transferAllResources()
