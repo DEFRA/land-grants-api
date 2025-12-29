@@ -7,11 +7,11 @@ const environments = ['dev', 'test', 'perf-test', 'ext-test'] // dev, test, perf
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
-  // 'agreements',
-  'compatibility_matrix'
-  // 'moorland',
-  //'parcels',
-  //'covers'
+  'agreements',
+  'compatibility_matrix',
+  'moorland',
+  'parcels',
+  'covers'
 ]
 
 transferAllResources()
