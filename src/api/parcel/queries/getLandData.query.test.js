@@ -2,24 +2,24 @@ import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
 
 describe('getLandData', () => {
   const mockLogger = {
-    info: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    error: vi.fn()
   }
 
   const mockClient = {
-    query: jest.fn(),
-    release: jest.fn()
+    query: vi.fn(),
+    release: vi.fn()
   }
 
   const mockDb = {
-    connect: jest.fn()
+    connect: vi.fn()
   }
 
   const testSheetId = 'test-sheet-123'
   const testParcelId = 'test-parcel-456'
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
     mockDb.connect.mockResolvedValue(mockClient)
   })
 

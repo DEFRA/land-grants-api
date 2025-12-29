@@ -9,11 +9,11 @@ const showLogs = false
 // @ts-ignore
 export const logger = {
   level: 'info',
-  info: showLogs ? console.info : jest.fn(),
-  error: showLogs ? console.error : jest.fn(),
-  warn: showLogs ? console.warn : jest.fn(),
-  debug: showLogs ? console.debug : jest.fn(),
-  fatal: showLogs ? console.error : jest.fn(),
-  trace: showLogs ? console.trace : jest.fn(),
-  silent: showLogs ? console.info : jest.fn()
+  info: showLogs ? console.info : vi.fn(),
+  error: showLogs ? console.error : vi.fn(),
+  warn: showLogs ? console.warn : vi.fn(),
+  debug: showLogs ? console.debug : vi.fn(),
+  fatal: showLogs ? console.error : vi.fn(),
+  trace: showLogs ? console.trace : vi.fn(),
+  silent: showLogs ? console.info : vi.fn()
 }

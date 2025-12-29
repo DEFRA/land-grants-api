@@ -7,15 +7,16 @@ import {
   insertData,
   truncateTableAndInsertData
 } from './data-helpers.js'
+import { vi } from 'vitest'
 
-jest.mock('../../common/helpers/read-file.js', () => ({
-  readFile: jest.fn()
+vi.mock('../../common/helpers/read-file.js', () => ({
+  readFile: vi.fn()
 }))
-jest.mock('pg-copy-streams', () => ({
-  from: jest.fn()
+vi.mock('pg-copy-streams', () => ({
+  from: vi.fn()
 }))
-jest.mock('node:stream/promises', () => ({
-  pipeline: jest.fn()
+vi.mock('node:stream/promises', () => ({
+  pipeline: vi.fn()
 }))
 
 describe('Data helpers', () => {
@@ -23,13 +24,13 @@ describe('Data helpers', () => {
 
   beforeEach(() => {
     dbClient = {
-      query: jest.fn().mockResolvedValue({ rowCount: 1 }),
-      end: jest.fn()
+      query: vi.fn().mockResolvedValue({ rowCount: 1 }),
+      end: vi.fn()
     }
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   test('should create a temporary table', async () => {

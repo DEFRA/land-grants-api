@@ -11,7 +11,7 @@ describe('getStats', () => {
     })
 
     mockClient = {
-      query: jest
+      query: vi
         .fn()
         .mockResolvedValueOnce(createMockResult(10)) // actions
         .mockResolvedValueOnce(createMockResult(15)) // actions_config
@@ -23,16 +23,16 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult(1000)) // land_covers
         .mockResolvedValueOnce(createMockResult(500)) // land_parcels
         .mockResolvedValueOnce(createMockResult(30)), // moorland_designations
-      release: jest.fn()
+      release: vi.fn()
     }
 
     mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      error: vi.fn()
     }
   })
 
@@ -112,7 +112,7 @@ describe('getStats', () => {
 
   test('should handle errors and log them', async () => {
     const error = new Error('Database error')
-    mockClient.query = jest.fn().mockRejectedValue(error)
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
     await getStats(mockLogger, mockDb)
 
@@ -135,7 +135,7 @@ describe('getStats', () => {
 
   test('should handle database connection error', async () => {
     const connectionError = new Error('Connection failed')
-    mockDb.connect = jest.fn().mockRejectedValue(connectionError)
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
     await getStats(mockLogger, mockDb)
 
@@ -157,7 +157,7 @@ describe('getStats', () => {
   })
 
   test('should handle client release if client is not defined', async () => {
-    mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     await getStats(mockLogger, mockDb)
 

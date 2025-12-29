@@ -1,14 +1,21 @@
 import { swagger } from '~/src/api/common/plugins/swagger.js'
 import packageJson from '~/package.json' with { type: 'json' }
+import { vi } from 'vitest'
 
-const mockRegister = jest.fn()
+const mockRegister = vi.fn()
 const mockServer = {
   register: mockRegister
 }
 
-jest.mock('@hapi/inert', () => 'mock-inert')
-jest.mock('@hapi/vision', () => 'mock-vision')
-jest.mock('hapi-swagger', () => 'mock-hapi-swagger')
+vi.mock('@hapi/inert', () => ({
+  default: 'mock-inert'
+}))
+vi.mock('@hapi/vision', () => ({
+  default: 'mock-vision'
+}))
+vi.mock('hapi-swagger', () => ({
+  default: 'mock-hapi-swagger'
+}))
 
 describe('#swagger', () => {
   beforeEach(() => {

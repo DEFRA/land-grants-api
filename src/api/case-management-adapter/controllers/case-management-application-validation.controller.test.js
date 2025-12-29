@@ -2,24 +2,25 @@ import Hapi from '@hapi/hapi'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 import { validateApplication } from '../../application/service/application-validation.service.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/api/application/queries/getApplicationValidationRun.query.js')
-jest.mock('../../application/service/application-validation.service.js')
+vi.mock('~/src/api/application/queries/getApplicationValidationRun.query.js')
+vi.mock('../../application/service/application-validation.service.js')
 
 describe('Case Management Application Validation Controller', () => {
   const server = Hapi.server()
 
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn().mockImplementation(() => ({
-      query: jest.fn(),
-      release: jest.fn()
+    connect: vi.fn().mockImplementation(() => ({
+      query: vi.fn(),
+      release: vi.fn()
     }))
   }
 
@@ -36,7 +37,7 @@ describe('Case Management Application Validation Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('POST /case-management-adapter/application/validation-run/rerun', () => {
@@ -89,10 +90,10 @@ describe('Case Management Application Validation Controller', () => {
     }
 
     test('should return 200 when validation passes', async () => {
-      getApplicationValidationRun.mockResolvedValue(
+      vi.mocked(getApplicationValidationRun).mockResolvedValue(
         mockApplicationValidationRun
       )
-      validateApplication.mockResolvedValue({
+      vi.mocked(validateApplication).mockResolvedValue({
         validationErrors: null,
         applicationData: mockApplicationData,
         applicationValidationRunId: 1
@@ -139,7 +140,7 @@ describe('Case Management Application Validation Controller', () => {
     })
 
     test('should return 404 when application validation run is not found', async () => {
-      getApplicationValidationRun.mockResolvedValue(null)
+      vi.mocked(getApplicationValidationRun).mockResolvedValue(null)
 
       const request = {
         method: 'POST',

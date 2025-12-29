@@ -3,7 +3,7 @@ import {
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
-  clearTestBucket
+  deleteFiles
 } from './setup/s3-test-helpers.js'
 
 import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.module.js'
@@ -20,12 +20,15 @@ describe('Moorland import', () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
-    await clearTestBucket(s3Client)
     fixtures = getCsvFixtures('moorland_head.csv')
   })
 
   afterAll(async () => {
     await connection.end()
+    await deleteFiles(s3Client, [
+      'moorland/moorland_head.csv',
+      'moorland/moorland_head_upsert.csv'
+    ])
   })
 
   test('should import moorland data and return 200 ok', async () => {
@@ -57,8 +60,7 @@ describe('Moorland import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files).toHaveLength(1)
-    expect(files[0]).toBe('moorland/moorland_head.csv')
+    expect(files).toContain('moorland/moorland_head.csv')
   }, 10000)
 
   test('should import moorland and upsert data', async () => {

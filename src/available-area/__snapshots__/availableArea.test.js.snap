@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Available Area getAvailableAreaForAction "should calculate available area with one existing compatible action": explanations-UPL1-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should calculate available area with one existing compatible action > explanations-UPL1-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -70,7 +70,7 @@ exports[`Available Area getAvailableAreaForAction "should calculate available ar
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should handle multiple compatible actions in same stack": explanations-UPL3-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should handle multiple compatible actions in same stack > explanations-UPL3-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -148,7 +148,7 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple compat
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should handle multiple incompatible actions in separate stacks": explanations-UPL3-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should handle multiple incompatible actions in separate stacks > explanations-UPL3-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -229,7 +229,7 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple incomp
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should handle multiple incompatible actions that are compatible among them in separate stacks": explanations-CMOR1-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should handle multiple incompatible actions that are compatible among them in separate stacks > explanations-CMOR1-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -324,7 +324,7 @@ exports[`Available Area getAvailableAreaForAction "should handle multiple incomp
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should return full area when no existing actions": explanations-CMOR1-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should return full area when no existing actions > explanations-CMOR1-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -385,7 +385,7 @@ exports[`Available Area getAvailableAreaForAction "should return full area when 
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should return zero available area when all land is used by incompatible actions": explanations-UPL2-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should return zero available area when all land is used by incompatible actions > explanations-UPL2-SD6743-7268 1`] = `
 [
   {
     "content": [
@@ -456,7 +456,7 @@ exports[`Available Area getAvailableAreaForAction "should return zero available 
 ]
 `;
 
-exports[`Available Area getAvailableAreaForAction "should subtract incompatible stack area from available area": explanations-UPL2-SD6743-7268 1`] = `
+exports[`Available Area > getAvailableAreaForAction > %p should subtract incompatible stack area from available area > explanations-UPL2-SD6743-7268 1`] = `
 [
   {
     "content": [

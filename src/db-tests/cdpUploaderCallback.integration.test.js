@@ -9,20 +9,21 @@ import {
 } from '../import-tests/setup/s3-test-helpers.js'
 import { connectToTestDatbase } from './setup/postgres.js'
 import { clearTestData } from './setup/db-helper.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('CDP uploader callback integration test', () => {
   const { h, getResponse } = createResponseCapture()
   let s3Client
   let connection
+  let logger
 
   beforeAll(async () => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn()
+    }
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)

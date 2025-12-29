@@ -1,9 +1,9 @@
-import { jest } from '@jest/globals'
+import { vi, describe, beforeEach, afterEach } from 'vitest'
 import { Worker } from 'node:worker_threads'
 import { startWorker } from './start-worker-thread.js'
 import * as logHelpers from '../helpers/logging/log-helpers.js'
 
-jest.mock('node:worker_threads')
+vi.mock('node:worker_threads')
 
 describe('Start Worker Thread', () => {
   let mockRequest
@@ -15,9 +15,9 @@ describe('Start Worker Thread', () => {
 
   beforeEach(() => {
     mockLogger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     }
 
     mockRequest = {
@@ -25,7 +25,7 @@ describe('Start Worker Thread', () => {
     }
 
     mockWorker = {
-      on: jest.fn((event, handler) => {
+      on: vi.fn((event, handler) => {
         if (event === 'message') messageHandler = handler
         if (event === 'error') errorHandler = handler
         if (event === 'exit') exitHandler = handler
@@ -34,12 +34,12 @@ describe('Start Worker Thread', () => {
 
     Worker.mockImplementation(() => mockWorker)
 
-    jest.spyOn(logHelpers, 'logInfo')
-    jest.spyOn(logHelpers, 'logBusinessError')
+    vi.spyOn(logHelpers, 'logInfo')
+    vi.spyOn(logHelpers, 'logBusinessError')
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('Start worker thread', () => {

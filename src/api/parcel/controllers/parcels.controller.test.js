@@ -4,11 +4,12 @@ import { getParcelActionsWithAvailableArea } from '~/src/api/parcel/service/parc
 import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/api/parcel/validation/parcel.validation.js'
+import { vi } from 'vitest'
 
-jest.mock('~/src/api/parcel/validation/parcel.validation.js')
-jest.mock('~/src/api/parcel/service/parcel.service.js')
-jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
+vi.mock('~/src/api/parcel/validation/parcel.validation.js')
+vi.mock('~/src/api/parcel/service/parcel.service.js')
+vi.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('~/src/available-area/compatibilityMatrix.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetParcelActionsWithAvailableArea = getParcelActionsWithAvailableArea
@@ -78,14 +79,14 @@ describe('Parcels Controller', () => {
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
-      info: jest.fn(),
-      warn: jest.fn(),
-      debug: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn(),
+      error: vi.fn()
     })
     server.decorate('server', 'postgresDb', {
-      connect: jest.fn(),
-      query: jest.fn()
+      connect: vi.fn(),
+      query: vi.fn()
     })
 
     await server.register([parcel])
@@ -97,7 +98,7 @@ describe('Parcels Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockGetDataAndValidateRequest.mockResolvedValue({
       errors: null,
@@ -109,7 +110,7 @@ describe('Parcels Controller', () => {
     mockGetParcelActionsWithAvailableArea.mockResolvedValue(
       mockActionsWithAvailableArea
     )
-    mockCreateCompatibilityMatrix.mockResolvedValue(jest.fn())
+    mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
   })
 
   describe('POST /parcels route', () => {

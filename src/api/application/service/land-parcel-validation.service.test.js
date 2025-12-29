@@ -2,23 +2,24 @@ import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
+import { vi } from 'vitest'
 
-jest.mock('../../agreements/queries/getAgreementsForParcel.query.js')
-jest.mock('./action-validation.service.js')
+vi.mock('../../agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('./action-validation.service.js')
 
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockValidateLandAction = validateLandAction
 
 describe('Land Parcel Validation Service', () => {
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn(),
-    query: jest.fn()
+    connect: vi.fn(),
+    query: vi.fn()
   }
 
   const mockRequest = {
@@ -45,7 +46,7 @@ describe('Land Parcel Validation Service', () => {
 
   const mockActions = mockActionConfig
 
-  const mockCompatibilityCheckFn = jest.fn()
+  const mockCompatibilityCheckFn = vi.fn()
 
   const mockAgreements = [
     {
@@ -89,7 +90,7 @@ describe('Land Parcel Validation Service', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockGetAgreementsForParcel.mockResolvedValue(mockAgreements)
     mockValidateLandAction.mockResolvedValue(mockActionResult1)

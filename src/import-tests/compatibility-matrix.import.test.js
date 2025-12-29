@@ -3,7 +3,7 @@ import {
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
-  clearTestBucket
+  deleteFiles
 } from './setup/s3-test-helpers.js'
 
 import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.module.js'
@@ -18,11 +18,13 @@ describe('Compatibility matrix import', () => {
     connection = connectToTestDatbase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
-    await clearTestBucket(s3Client)
   })
 
   afterAll(async () => {
     await connection.end()
+    await deleteFiles(s3Client, [
+      'compatibility_matrix/compatibility_matrix_head.csv'
+    ])
   })
 
   test('should import compatibility matrix data and return 200 ok', async () => {
@@ -50,7 +52,8 @@ describe('Compatibility matrix import', () => {
     expect(compatibilityMatrix[0].year).toBe('2025')
 
     const files = await listTestFiles(s3Client)
-    expect(files).toHaveLength(1)
-    expect(files[0]).toBe('compatibility_matrix/compatibility_matrix_head.csv')
+    expect(files).toContain(
+      'compatibility_matrix/compatibility_matrix_head.csv'
+    )
   }, 10000)
 })

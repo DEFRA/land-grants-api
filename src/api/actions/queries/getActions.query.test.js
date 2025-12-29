@@ -74,17 +74,17 @@ describe('getEnabledActions', () => {
     ]
 
     mockClient = {
-      query: jest.fn().mockResolvedValue(mockResult),
-      release: jest.fn()
+      query: vi.fn().mockResolvedValue(mockResult),
+      release: vi.fn()
     }
 
     mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      error: vi.fn()
     }
   })
 
@@ -138,7 +138,7 @@ describe('getEnabledActions', () => {
 
   test('should handle errors and return empty array', async () => {
     const error = new Error('Database error')
-    mockClient.query = jest.fn().mockRejectedValue(error)
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
     const result = await getEnabledActions(mockLogger, mockDb)
 
@@ -157,7 +157,7 @@ describe('getEnabledActions', () => {
 
   test('should handle database connection error', async () => {
     const connectionError = new Error('Connection failed')
-    mockDb.connect = jest.fn().mockRejectedValue(connectionError)
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
     const result = await getEnabledActions(mockLogger, mockDb)
 
@@ -176,7 +176,7 @@ describe('getEnabledActions', () => {
   })
 
   test('should handle client release if client is not defined', async () => {
-    mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     const result = await getEnabledActions(mockLogger, mockDb)
 

@@ -1,16 +1,16 @@
 import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 describe('Get compatibility matrix', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

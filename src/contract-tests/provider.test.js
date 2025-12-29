@@ -19,13 +19,13 @@ import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import { getLatestVersion } from './git.js'
 
-jest.mock('~/src/api/parcel/queries/getLandData.query.js')
-jest.mock('~/src/api/actions/queries/getActions.query.js')
-jest.mock('~/src/api/application/mutations/saveApplication.mutation.js')
-jest.mock('~/src/available-area/compatibilityMatrix.js')
-jest.mock('~/src/available-area/availableArea.js')
-jest.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
-jest.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('~/src/api/parcel/queries/getLandData.query.js')
+vi.mock('~/src/api/actions/queries/getActions.query.js')
+vi.mock('~/src/api/application/mutations/saveApplication.mutation.js')
+vi.mock('~/src/available-area/compatibilityMatrix.js')
+vi.mock('~/src/available-area/availableArea.js')
+vi.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
+vi.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
 
 const mockGetLandData = getLandData
 const mockGetEnabledActions = getEnabledActions
@@ -34,7 +34,7 @@ const mockGetAvailableAreaForAction = getAvailableAreaForAction
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
-const mockCompatibilityCheckFn = jest.fn()
+const mockCompatibilityCheckFn = vi.fn()
 
 const mockAvailableAreaResult = {
   stacks: [],
@@ -94,7 +94,7 @@ const pactVerifierOptions = async () => {
     },
 
     afterEach: () => {
-      jest.clearAllMocks()
+      vi.clearAllMocks()
     }
   }
 }
@@ -105,8 +105,8 @@ describe('Pact Verification', () => {
   beforeAll(async () => {
     server.decorate('request', 'logger', logger)
     server.decorate('server', 'postgresDb', {
-      connect: jest.fn(),
-      query: jest.fn()
+      connect: vi.fn(),
+      query: vi.fn()
     })
     await server.register([parcel, payments, application])
     await server.initialize()

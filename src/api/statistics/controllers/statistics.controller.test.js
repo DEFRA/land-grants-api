@@ -5,9 +5,10 @@ import {
   logInfo,
   logBusinessError
 } from '~/src/api/common/helpers/logging/log-helpers.js'
+import { vi } from 'vitest'
 
-jest.mock('../queries/stats.query.js')
-jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
+vi.mock('../queries/stats.query.js')
+vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
 
 const mockGetStats = getStats
 const mockLogInfo = logInfo
@@ -16,14 +17,14 @@ const mockLogBusinessError = logBusinessError
 describe('Statistics Controller', () => {
   const server = Hapi.server()
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
   }
 
   const mockPostgresDb = {
-    connect: jest.fn()
+    connect: vi.fn()
   }
 
   beforeAll(async () => {
@@ -39,11 +40,11 @@ describe('Statistics Controller', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     mockGetStats.mockResolvedValue(undefined)
-    mockLogInfo.mockImplementation(jest.fn())
-    mockLogBusinessError.mockImplementation(jest.fn())
+    mockLogInfo.mockImplementation(vi.fn())
+    mockLogBusinessError.mockImplementation(vi.fn())
   })
 
   describe('GET /statistics route', () => {

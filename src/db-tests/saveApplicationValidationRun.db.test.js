@@ -1,16 +1,16 @@
 import { saveApplicationValidationRun } from '~/src/api/application/mutations/saveApplicationValidationRun.mutation.js'
 
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
-
-let connection
+import { vi } from 'vitest'
 
 describe('Save application validation run result', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 
@@ -42,9 +42,9 @@ describe('Save application validation run result', () => {
 
   test('should release client in finally block when error occurs', async () => {
     const mockDb = {
-      connect: jest.fn().mockResolvedValue({
-        query: jest.fn().mockRejectedValue(new Error('Database error')),
-        release: jest.fn()
+      connect: vi.fn().mockResolvedValue({
+        query: vi.fn().mockRejectedValue(new Error('Database error')),
+        release: vi.fn()
       })
     }
 

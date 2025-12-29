@@ -3,16 +3,16 @@
 import { mockActionConfig } from '../api/actions/fixtures/index.js'
 import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-
-let connection
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('Available Area query', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

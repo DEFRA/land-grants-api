@@ -3,11 +3,12 @@ import { InitiateLandDataUploadController } from './initiate-land-data-upload.co
 import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { initiateLandDataUpload } from '../service/ingest-schedule.service.js'
 import { config } from '~/src/config/index.js'
+import { vi } from 'vitest'
 
 // Mock dependencies
-jest.mock('~/src/api/common/helpers/logging/log-helpers.js')
-jest.mock('../service/ingest-schedule.service.js')
-jest.mock('~/src/config/index.js')
+vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
+vi.mock('../service/ingest-schedule.service.js')
+vi.mock('~/src/config/index.js')
 
 const mockLogInfo = logInfo
 const mockInitiateLandDataUpload = initiateLandDataUpload
@@ -17,10 +18,10 @@ describe('InitiateLandDataUploadController', () => {
   const server = Hapi.server()
 
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
   }
 
   const validPayload = {
@@ -60,7 +61,7 @@ describe('InitiateLandDataUploadController', () => {
   })
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Setup default config mocks
     mockConfig.get.mockImplementation((key) => {

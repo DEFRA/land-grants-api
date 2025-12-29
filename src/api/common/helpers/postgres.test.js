@@ -1,21 +1,36 @@
+import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
 import { getDBOptions, createDBPool, postgresDb } from './postgres.js'
 
-jest.mock('@aws-sdk/credential-providers')
-jest.mock('@aws-sdk/rds-signer')
-jest.mock('pg')
-jest.mock('../../../config/index.js')
+vi.mock('@aws-sdk/credential-providers', () => ({
+  fromNodeProviderChain: vi.fn()
+}))
+
+vi.mock('@aws-sdk/rds-signer', () => ({
+  Signer: vi.fn()
+}))
+
+vi.mock('pg', () => ({
+  Pool: vi.fn()
+}))
+
+vi.mock('../../../config/index.js', () => ({
+  config: {
+    get: vi.fn()
+  }
+}))
 
 describe('Postgres Helper', () => {
   beforeEach(() => {
-    config.get = jest.fn((value) => (value === 'isTest' ? false : 'test-value'))
+    config.get = vi.fn((value) => (value === 'isTest' ? false : 'test-value'))
+    vi.mocked(Pool).mockClear()
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('getDBOptions', () => {
@@ -41,9 +56,7 @@ describe('Postgres Helper', () => {
     })
 
     test('should return database options from config for test environment', () => {
-      config.get = jest.fn((value) =>
-        value === 'isTest' ? true : 'test-value'
-      )
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
       const result = getDBOptions()
 
       expect(result).toEqual({
@@ -60,7 +73,7 @@ describe('Postgres Helper', () => {
     })
 
     test('should handle undefined config values', () => {
-      config.get = jest.fn(() => undefined)
+      config.get = vi.fn(() => undefined)
 
       const result = getDBOptions()
 
@@ -81,10 +94,10 @@ describe('Postgres Helper', () => {
 
     beforeEach(() => {
       mockPool = {
-        connect: jest.fn(),
-        end: jest.fn()
+        connect: vi.fn(),
+        end: vi.fn()
       }
-      Pool.mockImplementation(() => mockPool)
+      vi.mocked(Pool).mockImplementation(() => mockPool)
     })
 
     describe('local development', () => {
@@ -99,7 +112,7 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
-            info: jest.fn()
+            info: vi.fn()
           }
         }
 
@@ -125,13 +138,13 @@ describe('Postgres Helper', () => {
         }
 
         const mockServer = {
-          logger: { info: jest.fn() },
+          logger: { info: vi.fn() },
           secureContext: {}
         }
 
         createDBPool(options, mockServer)
 
-        const poolConfig = Pool.mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
         expect(poolConfig.ssl).toBeUndefined()
       })
 
@@ -146,13 +159,13 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
-            info: jest.fn()
+            info: vi.fn()
           }
         }
 
         createDBPool(options, mockServer)
 
-        const poolConfig = Pool.mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
         const password = await poolConfig.password()
 
         expect(password).toBe('my-local-password')
@@ -165,10 +178,10 @@ describe('Postgres Helper', () => {
     describe('not local development', () => {
       test('should create pool with token for remote environment', async () => {
         const mockCredentials = { mock: 'credentials' }
-        fromNodeProviderChain.mockReturnValue(mockCredentials)
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
 
-        const mockGetAuthToken = jest.fn().mockResolvedValue('rds-auth-token')
-        Signer.mockImplementation(() => ({
+        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token')
+        vi.mocked(Signer).mockImplementation(() => ({
           getAuthToken: mockGetAuthToken
         }))
 
@@ -182,13 +195,13 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
-            info: jest.fn()
+            info: vi.fn()
           }
         }
 
         createDBPool(options, mockServer)
 
-        const poolConfig = Pool.mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
         const password = await poolConfig.password()
 
         expect(Signer).toHaveBeenCalledWith({
@@ -214,13 +227,13 @@ describe('Postgres Helper', () => {
 
         const mockSecureContext = { mock: 'context' }
         const mockServer = {
-          logger: { info: jest.fn() },
+          logger: { info: vi.fn() },
           secureContext: mockSecureContext
         }
 
         createDBPool(options, mockServer)
 
-        const poolConfig = Pool.mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
         expect(poolConfig.ssl).toEqual({
           secureContext: mockSecureContext
         })
@@ -259,7 +272,7 @@ describe('Postgres Helper', () => {
 
       createDBPool(options, mockServer)
 
-      const poolConfig = Pool.mock.calls[0][0]
+      const poolConfig = vi.mocked(Pool).mock.calls[0][0]
       const password = await poolConfig.password()
 
       expect(password).toBe('password')
@@ -273,24 +286,24 @@ describe('Postgres Helper', () => {
 
     beforeEach(() => {
       mockClient = {
-        release: jest.fn()
+        release: vi.fn()
       }
 
       mockPool = {
-        connect: jest.fn().mockResolvedValue(mockClient),
-        end: jest.fn().mockResolvedValue()
+        connect: vi.fn().mockResolvedValue(mockClient),
+        end: vi.fn().mockResolvedValue()
       }
 
-      Pool.mockImplementation(() => mockPool)
+      vi.mocked(Pool).mockImplementation(() => mockPool)
 
       mockServer = {
         logger: {
-          info: jest.fn(),
-          error: jest.fn()
+          info: vi.fn(),
+          error: vi.fn()
         },
-        decorate: jest.fn(),
+        decorate: vi.fn(),
         events: {
-          on: jest.fn()
+          on: vi.fn()
         }
       }
     })
@@ -371,9 +384,9 @@ describe('Postgres Helper', () => {
         await postgresDb.plugin.register(mockServer, options)
 
         // Get the stop event handler
-        const stopHandler = mockServer.events.on.mock.calls.find(
-          (call) => call[0] === 'stop'
-        )[1]
+        const stopHandler = vi
+          .mocked(mockServer.events.on)
+          .mock.calls.find((call) => call[0] === 'stop')[1]
 
         // Trigger the stop event
         await stopHandler()
