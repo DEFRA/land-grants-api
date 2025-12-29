@@ -10,8 +10,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "types": ["jest"]
+    "strictNullChecks": true
   },
   "exclude": [
     ".cache",
@@ -20,7 +19,8 @@
     "coverage",
     "node_modules",
     "src/**/*.test.js",
-    "src/db-tests/**"
+    "src/db-tests/**",
+    "vitest.*.config.js"
   ],
   "include": [
     "**/*.cjs",

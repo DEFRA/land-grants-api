@@ -20,17 +20,17 @@ describe('getMoorlandInterceptPercentage', () => {
     }
 
     mockClient = {
-      query: jest.fn().mockResolvedValue(mockResult),
-      release: jest.fn()
+      query: vi.fn().mockResolvedValue(mockResult),
+      release: vi.fn()
     }
 
     mockDb = {
-      connect: jest.fn().mockResolvedValue(mockClient)
+      connect: vi.fn().mockResolvedValue(mockClient)
     }
 
     mockLogger = {
-      info: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      error: vi.fn()
     }
   })
 
@@ -112,7 +112,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const error = new Error('Database error')
-    mockClient.query = jest.fn().mockRejectedValue(error)
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
@@ -141,7 +141,7 @@ describe('getMoorlandInterceptPercentage', () => {
   test('should handle client release if client is not defined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockDb.connect = jest.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,

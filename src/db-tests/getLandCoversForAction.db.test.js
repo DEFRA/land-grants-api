@@ -3,17 +3,17 @@ import {
   getLandCoversForActions
 } from '../api/land-cover-codes/queries/getLandCoversForActions.query.js'
 import { connectToTestDatbase } from './setup/postgres.js'
-
-let connection
-
-const logger = {
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn()
-}
+import { vi } from 'vitest'
 
 describe('Get land cover codes', () => {
+  let logger, connection
+
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 

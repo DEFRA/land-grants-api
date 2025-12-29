@@ -5,17 +5,18 @@ import {
 import { splitParcelId } from '../service/parcel.service.js'
 import { getEnabledActions } from '../../actions/queries/getActions.query.js'
 import { getLandData } from '../queries/getLandData.query.js'
+import { vi } from 'vitest'
 
 // Mock the dependencies
-jest.mock('../service/parcel.service.js')
-jest.mock('../../actions/queries/getActions.query.js')
-jest.mock('../queries/getLandData.query.js')
+vi.mock('../service/parcel.service.js')
+vi.mock('../../actions/queries/getActions.query.js')
+vi.mock('../queries/getLandData.query.js')
 
 describe('Parcel Validation', () => {
   const mockLogger = {
-    error: jest.fn(),
-    info: jest.fn(),
-    debug: jest.fn()
+    error: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn()
   }
 
   const mockPostgresDb = {}
@@ -28,7 +29,7 @@ describe('Parcel Validation', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('getAndValidateParcels', () => {

@@ -10,15 +10,16 @@ import {
   actionTransformer,
   plannedActionsTransformer
 } from '~/src/api/parcel/transformers/parcelActions.transformer.js'
+import { vi } from 'vitest'
 
 // Mock the dependencies
-jest.mock('~/src/available-area/availableArea.js')
-jest.mock('~/src/api/parcel/transformers/parcelActions.transformer.js')
+vi.mock('~/src/available-area/availableArea.js')
+vi.mock('~/src/api/parcel/transformers/parcelActions.transformer.js')
 
 describe('Parcel Service', () => {
   const mockLogger = {
-    error: jest.fn(),
-    info: jest.fn()
+    error: vi.fn(),
+    info: vi.fn()
   }
 
   describe('splitParcelId', () => {
@@ -56,7 +57,7 @@ describe('Parcel Service', () => {
 
     beforeEach(() => {
       // Reset all mocks
-      jest.clearAllMocks()
+      vi.clearAllMocks()
 
       // Setup test data
       mockParcel = {
@@ -91,7 +92,7 @@ describe('Parcel Service', () => {
         }
       ]
 
-      mockCompatibilityCheckFn = jest.fn()
+      mockCompatibilityCheckFn = vi.fn()
       mockPostgresDb = {}
 
       mockTransformedActions = [
