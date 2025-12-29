@@ -130,7 +130,7 @@ module.exports = {
     },
     {
       env: {
-        node: false
+        node: true
       },
       globals: {
         fetchMock: true,
@@ -151,6 +151,9 @@ module.exports = {
         // Allow Vitest to assert on mocked unbound methods
         '@typescript-eslint/unbound-method': 'off',
 
+        // Allow console in tests
+        'no-console': 'off',
+
         // Allow import devDependencies
         'n/no-unpublished-import': [
           'error',
@@ -158,6 +161,15 @@ module.exports = {
             allowModules: ['testcontainers']
           }
         ]
+      }
+    },
+    {
+      env: {
+        node: true
+      },
+      files: ['vitest.*.config.js'],
+      globals: {
+        __dirname: 'readonly'
       }
     }
   ],
