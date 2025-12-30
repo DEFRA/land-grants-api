@@ -8,7 +8,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="update-actions-description" author="system" context="@test">
+   <changeSet id="update-actions-description" author="system">
      <sql>
             UPDATE actions 
             SET description = trim(split_part(description, ':', 2));
