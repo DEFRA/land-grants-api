@@ -8,7 +8,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="add-description-to-actions-rule" author="system">
+  <changeSet id="add-description-to-actions-rule" author="system" context="@test">
     <sql>
        UPDATE actions_config
       SET config = jsonb_set(
