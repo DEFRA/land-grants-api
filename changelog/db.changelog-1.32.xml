@@ -12,4 +12,40 @@
     <sql>UPDATE actions_config SET config = jsonb_set(config, '{duration_years}', '1') WHERE (code = 'CMOR1' OR code = 'UPL1' OR code = 'UPL2' OR code = 'UPL3') AND version = 1;</sql>
   </changeSet>
 
+    <changeSet id="add-description-to-actions-rule" author="system">
+    <sql>
+       UPDATE actions_config
+      SET config = jsonb_set(
+          config,
+          '{rules}',
+          (
+              SELECT COALESCE(
+                  jsonb_agg(
+                      rule || jsonb_build_object(
+                          'description',
+                          CASE
+                              WHEN rule->>'name' = 'parcel-has-intersection-with-data-layer'
+                                  THEN 'Is this parcel on the moorland?'
+                              WHEN rule->>'name' = 'applied-for-total-available-area'
+                                  THEN 'Has the total available area been applied for?'
+                              ELSE ''
+                          END
+                      )
+                  ),
+                  '[]'::jsonb
+              )
+              FROM jsonb_array_elements(config->'rules') AS rule
+          )
+      )
+      WHERE config->'rules' IS NOT NULL;
+    </sql>
+    <rollback>
+        <sql>
+            UPDATE actions_config
+            SET config = jsonb_set(config, '{rules}', config->'rules')
+            WHERE config->'rules' IS NOT NULL;
+        </sql>
+    </rollback>
+  </changeSet>
+
 </databaseChangeLog>
