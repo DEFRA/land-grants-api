@@ -20,3 +20,4 @@ tsconfig.tsbuildinfo
 changelog/*.sql
 
 ingestion-data
+src/land-data-full
