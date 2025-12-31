@@ -68,9 +68,14 @@ for (const resource of resources) {
     .filter((file) => file.endsWith('.csv'))
     .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 
-  await Promise.all(
-    files.map((file) =>
-      importLandData(path.join(folder, file), resource, crypto.randomUUID())
-    )
-  )
+  // take 10 items from the files array and import in parallel, then take the next 10 and so on
+  for (let i = 0; i < files.length; i += 10) {
+    const batch = files.slice(i, i + 10)
+    await Promise.all(
+      batch.map((file) => {
+        console.log(`Importing ${file}`)
+        return importLandData(path.join(folder, file), resource, crypto.randomUUID())
+      }
+    ))
+  }
 }
