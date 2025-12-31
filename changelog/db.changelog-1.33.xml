@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="add-sssi-table" author="system">
+    <createTable tableName="sssi" schemaName="land">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="sbi" type="NUMERIC"/>
+      <column name="verification_type" type="TEXT"/>
+      <column name="verified_on" type="DATE"/>
+      <column name="valid_from" type="DATE"/>
+      <column name="valid_to" type="DATE"/>
+      <column name="area_sqm" type="NUMERIC"/>
+      <column name="geom" type="GEOMETRY"/>
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>
