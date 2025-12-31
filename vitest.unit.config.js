@@ -45,7 +45,11 @@ export default defineConfig({
         'src/db-tests/testLogger.js',
         'src/db-tests/setup/',
         'src/db-tests/fixtures/',
-        'scripts/'
+        'scripts/',
+        'src/contract-tests/',
+        '**/*.d.js',
+        'src/import-tests/setup/',
+        'src/api/land-cover-codes/fixtures/'
       ],
       reportsDirectory: 'coverage/unit'
     }
