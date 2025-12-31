@@ -126,6 +126,10 @@ export async function importAgreements(agreementsStream, ingestId, logger) {
   await importData(agreementsStream, 'agreements', ingestId, logger, true)
 }
 
+export async function importSSSI(sssiStream, ingestId, logger) {
+  await importData(sssiStream, 'sssi', ingestId, logger, true)
+}
+
 /**
  * @import { Logger } from '../../common/logger.d.js'
  */
