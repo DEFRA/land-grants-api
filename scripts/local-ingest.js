@@ -74,8 +74,12 @@ for (const resource of resources) {
     await Promise.all(
       batch.map((file) => {
         console.log(`Importing ${file}`)
-        return importLandData(path.join(folder, file), resource, crypto.randomUUID())
-      }
-    ))
+        return importLandData(
+          path.join(folder, file),
+          resource,
+          crypto.randomUUID()
+        )
+      })
+    )
   }
 }
