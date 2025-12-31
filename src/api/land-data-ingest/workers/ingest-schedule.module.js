@@ -7,7 +7,8 @@ import {
   importLandParcels,
   importMoorlandDesignations,
   importCompatibilityMatrix,
-  importAgreements
+  importAgreements,
+  importSSSI
 } from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import {
@@ -94,6 +95,9 @@ export async function importLandData(file) {
         break
       case 'agreements':
         await importAgreements(bodyContents, ingestId, logger)
+        break
+      case 'sssi':
+        await importSSSI(bodyContents, ingestId, logger)
         break
       default:
         throw new Error(`Invalid resource type: ${resourceType}`)

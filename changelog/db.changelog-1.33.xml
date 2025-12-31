@@ -9,17 +9,21 @@
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
    <changeSet id="add-sssi-table" author="system">
-    <createTable tableName="sssi" schemaName="land">
+    <createTable tableName="sssi" schemaName="public">
       <column name="id" type="SERIAL" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="sbi" type="NUMERIC"/>
+      <column name="sheet_id" type="TEXT"/>
+      <column name="parcel_id" type="TEXT"/>
       <column name="verification_type" type="TEXT"/>
       <column name="verified_on" type="DATE"/>
       <column name="valid_from" type="DATE"/>
       <column name="valid_to" type="DATE"/>
       <column name="area_sqm" type="NUMERIC"/>
       <column name="geom" type="GEOMETRY"/>
+      <column name="last_updated" type="DATE"/>
+      <column name="ingest_id" type="TEXT"/>
     </createTable>
   </changeSet>
 
