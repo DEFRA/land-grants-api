@@ -23,7 +23,7 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(
+export async function importData(
   dataStream,
   tableName,
   ingestId,

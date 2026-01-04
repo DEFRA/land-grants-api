@@ -9,9 +9,9 @@ const environments = ['dev', 'test', 'perf-test', 'ext-test'] // dev, test, perf
 const resources = [
   'agreements',
   'compatibility_matrix',
-  'moorland',
-  'parcels',
-  'covers'
+  'moorland_designations',
+  'land_parcels',
+  'land_covers'
 ]
 
 transferAllResources()

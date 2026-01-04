@@ -28,17 +28,17 @@ describe('Land covers import', () => {
   })
 
   afterEach(async () => {
-    await deleteFiles(s3Client, ['covers/covers_head.csv'])
+    await deleteFiles(s3Client, ['land_covers/covers_head.csv'])
   })
 
   test('should import land covers data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
-      'covers/covers_head.csv'
+      'land_covers/covers_head.csv'
     )
 
-    const result = await importLandData('covers/covers_head.csv')
+    const result = await importLandData('land_covers/covers_head.csv')
 
     expect(result).toBe('Land data imported successfully')
 
@@ -62,23 +62,23 @@ describe('Land covers import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files[0]).toBe('covers/covers_head.csv')
+    expect(files[0]).toBe('land_covers/covers_head.csv')
   }, 10000)
 
   test('should import land covers data and upsert data', async () => {
     await uploadFixtureFile(
       s3Client,
       'covers_head.csv',
-      'covers/covers_head.csv'
+      'land_covers/covers_head.csv'
     )
     await uploadFixtureFile(
       s3Client,
       'covers_head_upsert.csv',
-      'covers/covers_head_upsert.csv'
+      'land_covers/covers_head_upsert.csv'
     )
 
-    await importLandData('covers/covers_head.csv')
-    await importLandData('covers/covers_head_upsert.csv')
+    await importLandData('land_covers/covers_head.csv')
+    await importLandData('land_covers/covers_head_upsert.csv')
 
     const covers = await getRecordsByQuery(
       connection,
