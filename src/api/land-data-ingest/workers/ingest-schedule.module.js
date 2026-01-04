@@ -2,18 +2,28 @@ import { parentPort } from 'node:worker_threads'
 import { failedBucketPath, getFile } from '../../common/s3/s3.js'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
-import {
-  importLandCovers,
-  importLandParcels,
-  importMoorlandDesignations,
-  importCompatibilityMatrix,
-  importAgreements
-} from '../service/import-land-data.service.js'
+import { importData } from '../service/import-land-data.service.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
+
+export const resources = [
+  { name: 'land_parcels', truncateTable: false },
+  { name: 'moorland_designations', truncateTable: false },
+  { name: 'land_covers', truncateTable: false },
+  { name: 'compatibility_matrix', truncateTable: true },
+  { name: 'agreements', truncateTable: true }
+]
+
+const getResourceByType = (resourceType) => {
+  const resource = resources.find((resource) => resource.name === resourceType)
+  if (!resource) {
+    throw new Error(`Resource type ${resourceType} not found`)
+  }
+  return resource
+}
 
 /**
  * Post a message to the parent thread
@@ -69,6 +79,14 @@ export async function importLandData(file) {
     }
 
     const bodyContents = await response.Body.transformToWebStream()
+    const resource = getResourceByType(resourceType)
+    await importData(
+      bodyContents,
+      resource.name,
+      ingestId,
+      logger,
+      resource.truncateTable
+    )
 
     logInfo(logger, {
       category,
@@ -78,26 +96,6 @@ export async function importLandData(file) {
         data: `size: ${response.ContentLength} bytes, type: ${response.ContentType}`
       }
     })
-
-    switch (resourceType) {
-      case 'parcels':
-        await importLandParcels(bodyContents, ingestId, logger)
-        break
-      case 'covers':
-        await importLandCovers(bodyContents, ingestId, logger)
-        break
-      case 'moorland':
-        await importMoorlandDesignations(bodyContents, ingestId, logger)
-        break
-      case 'compatibility_matrix':
-        await importCompatibilityMatrix(bodyContents, ingestId, logger)
-        break
-      case 'agreements':
-        await importAgreements(bodyContents, ingestId, logger)
-        break
-      default:
-        throw new Error(`Invalid resource type: ${resourceType}`)
-    }
 
     return 'Land data imported successfully'
   } catch (error) {
