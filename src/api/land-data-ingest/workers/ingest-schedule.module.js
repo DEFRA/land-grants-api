@@ -17,7 +17,7 @@ export const resources = [
   { name: 'agreements', truncateTable: true }
 ]
 
-const getResourceByType = (resourceType) => {
+export const getResourceByType = (resourceType) => {
   const resource = resources.find((resource) => resource.name === resourceType)
   if (!resource) {
     throw new Error(`Resource type ${resourceType} not found`)
