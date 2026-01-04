@@ -18,7 +18,7 @@ export const resources = [
 ]
 
 export const getResourceByType = (resourceType) => {
-  const resource = resources.find((resource) => resource.name === resourceType)
+  const resource = resources.find((r) => r.name === resourceType)
   if (!resource) {
     throw new Error(`Resource type ${resourceType} not found`)
   }
