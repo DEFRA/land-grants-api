@@ -109,7 +109,7 @@ describe('initiateLandDataUploadRequestSchema', () => {
   const validData = {
     reference: 'REF-123456',
     customerId: 'CUST-789',
-    resource: 'parcels'
+    resource: 'land_parcels'
   }
 
   it('should validate valid data', () => {
@@ -120,7 +120,7 @@ describe('initiateLandDataUploadRequestSchema', () => {
   it('should reject missing reference', () => {
     const data = {
       customerId: 'CUST-789',
-      resource: 'parcels'
+      resource: 'land_parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeDefined()
@@ -195,7 +195,7 @@ describe('initiateLandDataUploadRequestSchema', () => {
     const data = {
       reference: 'REF-123456',
       customerId: 'CUST-789',
-      resource: 'parcels'
+      resource: 'land_parcels'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeUndefined()
@@ -205,7 +205,7 @@ describe('initiateLandDataUploadRequestSchema', () => {
     const data = {
       reference: 'REF-123456',
       customerId: 'CUST-789',
-      resource: 'covers'
+      resource: 'land_covers'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeUndefined()
@@ -215,7 +215,7 @@ describe('initiateLandDataUploadRequestSchema', () => {
     const data = {
       reference: 'REF-123456',
       customerId: 'CUST-789',
-      resource: 'moorland'
+      resource: 'moorland_designations'
     }
     const { error } = initiateLandDataUploadRequestSchema.validate(data)
     expect(error).toBeUndefined()

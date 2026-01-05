@@ -25,21 +25,21 @@ describe('Parcels import', () => {
 
   afterAll(async () => {
     await connection.end()
-    await deleteFiles(s3Client, ['parcels/parcels_head_upsert.csv'])
+    await deleteFiles(s3Client, ['land_parcels/parcels_head_upsert.csv'])
   })
 
   afterEach(async () => {
-    await deleteFiles(s3Client, ['parcels/parcels_head.csv'])
+    await deleteFiles(s3Client, ['land_parcels/parcels_head.csv'])
   })
 
   test('should import parcels data and return 200 ok', async () => {
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
-      'parcels/parcels_head.csv'
+      'land_parcels/parcels_head.csv'
     )
 
-    const result = await importLandData('parcels/parcels_head.csv')
+    const result = await importLandData('land_parcels/parcels_head.csv')
 
     expect(result).toBe('Land data imported successfully')
 
@@ -63,23 +63,23 @@ describe('Parcels import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files).toContain('parcels/parcels_head.csv')
+    expect(files).toContain('land_parcels/parcels_head.csv')
   }, 10000)
 
   test('should import parcels data and upsert data', async () => {
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
-      'parcels/parcels_head.csv'
+      'land_parcels/parcels_head.csv'
     )
     await uploadFixtureFile(
       s3Client,
       'parcels_head_upsert.csv',
-      'parcels/parcels_head_upsert.csv'
+      'land_parcels/parcels_head_upsert.csv'
     )
 
-    await importLandData('parcels/parcels_head.csv')
-    await importLandData('parcels/parcels_head_upsert.csv')
+    await importLandData('land_parcels/parcels_head.csv')
+    await importLandData('land_parcels/parcels_head_upsert.csv')
 
     const parcels = await getRecordsByQuery(
       connection,

@@ -13,7 +13,15 @@ const initiateLandDataUploadSuccessResponseSchema = Joi.object({
 const initiateLandDataUploadRequestSchema = Joi.object({
   reference: Joi.string().required(),
   customerId: Joi.string().required(),
-  resource: Joi.string().required().valid('parcels', 'covers', 'moorland')
+  resource: Joi.string()
+    .required()
+    .valid(
+      'land_parcels',
+      'land_covers',
+      'moorland_designations',
+      'compatibility_matrix',
+      'agreements'
+    )
 })
 
 export {
