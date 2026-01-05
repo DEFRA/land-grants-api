@@ -27,7 +27,7 @@ describe('Moorland import', () => {
     await connection.end()
     await deleteFiles(s3Client, [
       'moorland/moorland_head.csv',
-      'moorland/moorland_head_upsert.csv'
+      'moorland_designations/moorland_head_upsert.csv'
     ])
   })
 
@@ -35,10 +35,12 @@ describe('Moorland import', () => {
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
-      'moorland/moorland_head.csv'
+      'moorland_designations/moorland_head.csv'
     )
 
-    const result = await importLandData('moorland/moorland_head.csv')
+    const result = await importLandData(
+      'moorland_designations/moorland_head.csv'
+    )
 
     expect(result).toBe('Land data imported successfully')
 
@@ -60,23 +62,23 @@ describe('Moorland import', () => {
     }
 
     const files = await listTestFiles(s3Client)
-    expect(files).toContain('moorland/moorland_head.csv')
+    expect(files).toContain('moorland_designations/moorland_head.csv')
   }, 10000)
 
   test('should import moorland and upsert data', async () => {
     await uploadFixtureFile(
       s3Client,
       'moorland_head.csv',
-      'moorland/moorland_head.csv'
+      'moorland_designations/moorland_head.csv'
     )
     await uploadFixtureFile(
       s3Client,
       'moorland_head_upsert.csv',
-      'moorland/moorland_head_upsert.csv'
+      'moorland_designations/moorland_head_upsert.csv'
     )
 
-    await importLandData('moorland/moorland_head.csv')
-    await importLandData('moorland/moorland_head_upsert.csv')
+    await importLandData('moorland_designations/moorland_head.csv')
+    await importLandData('moorland_designations/moorland_head_upsert.csv')
 
     const moorland = await getRecordsByQuery(
       connection,

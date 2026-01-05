@@ -27,7 +27,7 @@ describe('InitiateLandDataUploadController', () => {
   const validPayload = {
     reference: 'REF-123456',
     customerId: 'CUST-789',
-    resource: 'parcels'
+    resource: 'land_parcels'
   }
 
   const mockEndpoint = 'https://cdp-uploader.example.com/initiate'
@@ -104,7 +104,7 @@ describe('InitiateLandDataUploadController', () => {
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'parcels', // s3Path (the resource type)
+        'land_parcels', // s3Path (the resource type)
         validPayload // metadata
       )
 
@@ -374,7 +374,7 @@ describe('InitiateLandDataUploadController', () => {
       const payload = {
         reference: 'REF-123456',
         customerId: 'CUST-789',
-        resource: 'covers'
+        resource: 'land_covers'
       }
 
       const request = {
@@ -392,7 +392,7 @@ describe('InitiateLandDataUploadController', () => {
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'covers', // s3Path
+        'land_covers', // s3Path
         payload // metadata
       )
     })
@@ -401,7 +401,7 @@ describe('InitiateLandDataUploadController', () => {
       const payload = {
         reference: 'REF-123456',
         customerId: 'CUST-789',
-        resource: 'moorland'
+        resource: 'moorland_designations'
       }
 
       const request = {
@@ -419,7 +419,7 @@ describe('InitiateLandDataUploadController', () => {
         mockEndpoint,
         mockCallback,
         mockBucket,
-        'moorland', // s3Path
+        'moorland_designations', // s3Path
         payload // metadata
       )
     })

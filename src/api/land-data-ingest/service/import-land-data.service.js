@@ -23,7 +23,15 @@ function hasDBOptions(options, logger) {
   return options.user && options.database && options.host
 }
 
-async function importData(
+/**
+ * Import data to the database
+ * @param {ReadableStream} dataStream - The data stream
+ * @param {string} tableName - The table name
+ * @param {string} ingestId - The ingest ID
+ * @param {Logger} logger - The logger
+ * @param {boolean} truncateTable - Whether to truncate the table
+ */
+export async function importData(
   dataStream,
   tableName,
   ingestId,
@@ -79,51 +87,6 @@ async function importData(
     await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
     await client?.end()
   }
-}
-
-/**
- *
- * @param {ReadableStream} landParcelsStream
- * @param {string} ingestId
- * @param {Logger} logger
- */
-export async function importLandParcels(landParcelsStream, ingestId, logger) {
-  await importData(landParcelsStream, 'land_parcels', ingestId, logger)
-}
-
-export async function importLandCovers(landCoversStream, ingestId, logger) {
-  await importData(landCoversStream, 'land_covers', ingestId, logger)
-}
-
-export async function importMoorlandDesignations(
-  moorlandDesignationsStream,
-  ingestId,
-  logger
-) {
-  await importData(
-    moorlandDesignationsStream,
-    'moorland_designations',
-    ingestId,
-    logger
-  )
-}
-
-export async function importCompatibilityMatrix(
-  compatibilityMatrixStream,
-  ingestId,
-  logger
-) {
-  await importData(
-    compatibilityMatrixStream,
-    'compatibility_matrix',
-    ingestId,
-    logger,
-    true
-  )
-}
-
-export async function importAgreements(agreementsStream, ingestId, logger) {
-  await importData(agreementsStream, 'agreements', ingestId, logger, true)
 }
 
 /**

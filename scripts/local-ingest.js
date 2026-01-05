@@ -3,63 +3,16 @@ import fs from 'fs'
 import path from 'path'
 import { createReadStream } from 'fs'
 import { fileURLToPath } from 'url'
-import { config } from '../src/config/index.js'
-import {
-  importLandCovers,
-  importLandParcels,
-  importMoorlandDesignations,
-  importCompatibilityMatrix,
-  importAgreements
-} from '../src/api/land-data-ingest/service/import-land-data.service.js'
-import { createLogger } from '../src/api/common/helpers/logging/logger.js'
+import { importData } from '../src/api/land-data-ingest/service/import-land-data.service.js'
+import { resources } from '../src/api/land-data-ingest/workers/ingest-schedule.module.js'
 
-export async function importLandData(file, resourceType, ingestId) {
-  try {
-    const logger = {
-      info: (message) => void 0,
-      error: (message) => void 0,
-      warn: (message) => void 0,
-      debug: (message) => void 0
-    }
-
-    const bodyContents = createReadStream(file)
-
-    switch (resourceType) {
-      case 'parcels':
-        await importLandParcels(bodyContents, ingestId, logger)
-        break
-      case 'covers':
-        await importLandCovers(bodyContents, ingestId, logger)
-        break
-      case 'moorland':
-        await importMoorlandDesignations(bodyContents, ingestId, logger)
-        break
-      case 'compatibility_matrix':
-        await importCompatibilityMatrix(bodyContents, ingestId, logger)
-        break
-      case 'agreements':
-        await importAgreements(bodyContents, ingestId, logger)
-        break
-      default:
-        throw new Error(`Invalid resource type: ${resourceType}`)
-    }
-
-    return 'Land data imported successfully'
-  } catch (error) {
-    throw error
-  }
+const logger = {
+  info: () => void 0,
+  error: () => void 0
 }
 
-const resources = [
-  'parcels',
-  'moorland',
-  'covers',
-  'agreements',
-  'compatibility_matrix'
-]
-
 for (const resource of resources) {
-  const folder = path.join('./src/land-data', resource)
+  const folder = path.join('./src/land-data', resource.name)
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
 
@@ -68,16 +21,18 @@ for (const resource of resources) {
     .filter((file) => file.endsWith('.csv'))
     .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 
-  // take 10 items from the files array and import in parallel, then take the next 10 and so on
   for (let i = 0; i < files.length; i += 10) {
     const batch = files.slice(i, i + 10)
     await Promise.all(
       batch.map((file) => {
-        console.log(`Importing ${file}`)
-        return importLandData(
-          path.join(folder, file),
-          resource,
-          crypto.randomUUID()
+        console.log(`Importing ${resource.name} - ${file}`)
+        const bodyContents = createReadStream(path.join(folder, file))
+        return importData(
+          bodyContents,
+          resource.name,
+          crypto.randomUUID(),
+          logger,
+          resource.truncateTable
         )
       })
     )
