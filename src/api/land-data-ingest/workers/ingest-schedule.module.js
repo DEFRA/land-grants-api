@@ -17,6 +17,11 @@ export const resources = [
   { name: 'agreements', truncateTable: true }
 ]
 
+/**
+ * Get resource by type
+ * @param {string} resourceType - The resource type
+ * @returns {object} The resource
+ */
 export const getResourceByType = (resourceType) => {
   const resource = resources.find((r) => r.name === resourceType)
   if (!resource) {
