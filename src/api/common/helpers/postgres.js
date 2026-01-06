@@ -103,6 +103,22 @@ export function createDBPool(options, server = {}) {
 }
 
 /**
+ * Keep the connection alive by sending a keep-alive query
+ * @param {Pool} pool - The database pool
+ * @param {import('@hapi/hapi').Server} server - The server instance
+ * @returns {Promise<void>}
+ */
+export async function keepAlive(pool, server) {
+  try {
+    server.logger.info('Keeping connection alive')
+    await pool.query('SELECT 1')
+    server.logger.info('Connection alive')
+  } catch (err) {
+    server.logger.error('Keep-alive query failed:', err)
+  }
+}
+
+/**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
  */
 export const postgresDb = {
@@ -131,8 +147,19 @@ export const postgresDb = {
         throw err
       }
 
+      // Keep-alive interval to maintain connection warmth (every 1 minute)
+      const keepAliveInterval = setInterval(
+        () => {
+          keepAlive(pool, server).catch((err) => {
+            server.logger.error('Keep-alive interval error:', err)
+          })
+        },
+        1 * 60 * 1000
+      )
+
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       server.events.on('stop', async () => {
+        clearInterval(keepAliveInterval)
         server.logger.info('Closing Postgres pool')
         await pool.end()
       })
