@@ -147,7 +147,6 @@ export const postgresDb = {
 
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       server.events.on('stop', async () => {
-        // clearInterval(keepAliveInterval)
         server.logger.info('Closing Postgres pool')
         await pool.end()
       })
