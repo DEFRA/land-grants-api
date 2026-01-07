@@ -97,10 +97,12 @@ export function createDBPool(options, server = {}) {
     },
     host: options.host,
     database: options.database,
-    max: 10, // Maximum number of connections the pool can create
-    min: 2, // Minimum number of connections kept warm and ready
-    idleTimeoutMillis: 60000, // Close idle connections after 60 seconds (except min connections)
-    connectionTimeoutMillis: 3000, // Fail requests after 3 seconds if no connection available
+    // Start New Pool configuration
+    max: 10, // Maximum number of connections the pool can create, we keep this at 10, as we use aurora, which scales number of connections automatically
+    min: 2, // Minimum number of connections kept warm and ready, when we start the server, we keep 2 connections warm and ready (requires us to connect twice to the database)
+    idleTimeoutMillis: 60000, // Close idle connections after 60 seconds (except min connections), connection timeout for connections greater than the 2 warm and ready connections
+    connectionTimeoutMillis: 3000, // Fail requests after 3 seconds if no connection available, if the connection is not available, we fail the request
+    // End New Pool configuration
     maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
     ...(!options.isLocal &&
       server?.secureContext && {
@@ -130,10 +132,13 @@ export const postgresDb = {
       const pool = createDBPool(options, server)
 
       try {
-        console.log('🔵 Before init, pool connections:', pool.totalCount)
+        server.logger.info(`Before init, pool connections: ${pool.totalCount}`)
+        await Promise.all([
+          initializePool(server.logger, pool),
+          initializePool(server.logger, pool)
+        ])
         await getStats(server.logger, pool)
-        // await initializePool(server.logger, pool)
-        console.log('🟢 After init, pool connections:', pool.totalCount)
+        server.logger.info(`After init, pool connections: ${pool.totalCount}`)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
