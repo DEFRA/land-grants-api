@@ -57,6 +57,11 @@ export function getDBOptions() {
   }
 }
 
+const initializePool = async (logger, pool) => {
+  await pool.query('SELECT 1')
+  logger.info('Connection pool initialized')
+}
+
 /**
  *
  * @param {*} options - database configuration options
@@ -92,6 +97,10 @@ export function createDBPool(options, server = {}) {
     },
     host: options.host,
     database: options.database,
+    max: 10, // Maximum number of connections the pool can create
+    min: 2, // Minimum number of connections kept warm and ready
+    idleTimeoutMillis: 60000, // Close idle connections after 60 seconds (except min connections)
+    connectionTimeoutMillis: 3000, // Fail requests after 3 seconds if no connection available
     maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
     ...(!options.isLocal &&
       server?.secureContext && {
@@ -100,22 +109,6 @@ export function createDBPool(options, server = {}) {
         }
       })
   })
-}
-
-/**
- * Keep the connection alive by sending a keep-alive query
- * @param {Pool} pool - The database pool
- * @param {import('@hapi/hapi').Server} server - The server instance
- * @returns {Promise<void>}
- */
-export async function keepAlive(pool, server) {
-  try {
-    server.logger.info('Keeping connection alive')
-    await pool.query('SELECT 1')
-    server.logger.info('Connection alive')
-  } catch (err) {
-    server.logger.error('Keep-alive query failed:', err)
-  }
 }
 
 /**
@@ -137,29 +130,19 @@ export const postgresDb = {
       const pool = createDBPool(options, server)
 
       try {
-        const client = await pool.connect()
-        server.logger.info('Postgres connection successful')
-        client.release()
+        console.log('🔵 Before init, pool connections:', pool.totalCount)
         await getStats(server.logger, pool)
+        // await initializePool(server.logger, pool)
+        console.log('🟢 After init, pool connections:', pool.totalCount)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
         throw err
       }
 
-      // Keep-alive interval to maintain connection warmth (every 1 minute)
-      const keepAliveInterval = setInterval(
-        () => {
-          keepAlive(pool, server).catch((err) => {
-            server.logger.error('Keep-alive interval error:', err)
-          })
-        },
-        1 * 60 * 1000
-      )
-
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       server.events.on('stop', async () => {
-        clearInterval(keepAliveInterval)
+        // clearInterval(keepAliveInterval)
         server.logger.info('Closing Postgres pool')
         await pool.end()
       })
