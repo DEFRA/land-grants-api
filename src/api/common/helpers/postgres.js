@@ -141,16 +141,16 @@ export const postgresDb = {
         await pool.end()
       })
 
-      pool.on('connect', (client) => {
-        server.logger.info('New client connected', { client })
+      pool.on('connect', () => {
+        server.logger.debug('New client connected')
       })
 
-      pool.on('acquire', (client) => {
-        server.logger.info('Client acquired from pool', { client })
+      pool.on('acquire', () => {
+        server.logger.debug('Client acquired from pool')
       })
 
-      pool.on('remove', (client) => {
-        server.logger.info('Client removed from pool', { client })
+      pool.on('remove', () => {
+        server.logger.debug('Client removed from pool')
       })
     }
   },
