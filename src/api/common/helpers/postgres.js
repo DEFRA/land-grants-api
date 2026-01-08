@@ -57,11 +57,6 @@ export function getDBOptions() {
   }
 }
 
-const initializePool = async (logger, pool) => {
-  await pool.query('SELECT 1')
-  logger.info('Connection pool initialized')
-}
-
 /**
  *
  * @param {*} options - database configuration options
@@ -97,11 +92,14 @@ export function createDBPool(options, server = {}) {
     },
     host: options.host,
     database: options.database,
-    max: 10, // Maximum number of connections the pool can create, we keep this at 10, as we use aurora, which scales number of connections automatically
-    min: 2, // Minimum number of connections kept warm and ready, when we start the server, we keep 2 connections warm and ready (requires us to connect twice to the database)
-    idleTimeoutMillis: 60000, // Close idle connections after 60 seconds (except min connections), connection timeout for connections greater than the 2 warm and ready connections
-    connectionTimeoutMillis: 10000, // Fail requests after 10 seconds if no connection available, if the connection is not available, we fail the request
     maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
+    min: 2, // Minimum number of connections to keep warm, Reduces cold-start latency and connection churn
+    max: 10, // Maximum number of connections the pool can create, we keep this at 10, as we use aurora, which scales number of connections automatically
+    keepAlive: true, // Enable OS-level TCP keepalive probes, detects dead connections early (no SELECT 1 needed)
+    keepAliveInitialDelayMillis: 10000, // Wait 10s after a connection becomes idle before sending first probe, balances early detection vs unnecessary network traffic
+    idleTimeoutMillis: 0, // Prevent pg from closing idle connections, Aurora networks handle idle sockets better with keepalive
+    connectionTimeoutMillis: 10000, // How long to wait for a free connection before failing, prevents requests from hanging under load
+    allowExitOnIdle: false, // Keep Node.js process alive even when pool is idle, required for servers / APIs
     ...(!options.isLocal &&
       server?.secureContext && {
         ssl: {
@@ -130,13 +128,7 @@ export const postgresDb = {
       const pool = createDBPool(options, server)
 
       try {
-        server.logger.info(`Before init, pool connections: ${pool.totalCount}`)
-        await Promise.all([
-          initializePool(server.logger, pool),
-          initializePool(server.logger, pool)
-        ])
         await getStats(server.logger, pool)
-        server.logger.info(`After init, pool connections: ${pool.totalCount}`)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
@@ -147,6 +139,18 @@ export const postgresDb = {
       server.events.on('stop', async () => {
         server.logger.info('Closing Postgres pool')
         await pool.end()
+      })
+
+      pool.on('connect', (client) => {
+        server.logger.info('New client connected', { client })
+      })
+
+      pool.on('acquire', (client) => {
+        server.logger.info('Client acquired from pool', { client })
+      })
+
+      pool.on('remove', (client) => {
+        server.logger.info('Client removed from pool', { client })
       })
     }
   },

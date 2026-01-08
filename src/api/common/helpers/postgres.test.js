@@ -287,11 +287,19 @@ describe('Postgres Helper', () => {
   describe('postgresDb plugin', () => {
     let mockPool
     let mockServer
+    let mockClient
 
     beforeEach(() => {
+      mockClient = {
+        query: vi.fn().mockResolvedValue({ rows: [{ count: '0' }] }),
+        release: vi.fn()
+      }
+
       mockPool = {
         query: vi.fn().mockResolvedValue({ rows: [] }),
+        connect: vi.fn().mockResolvedValue(mockClient),
         end: vi.fn().mockResolvedValue(),
+        on: vi.fn(),
         totalCount: 0
       }
 
@@ -344,23 +352,24 @@ describe('Postgres Helper', () => {
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Setting up postgres'
         )
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
-          'Before init, pool connections: 0'
-        )
-        expect(mockPool.query).toHaveBeenCalledWith('SELECT 1')
-        expect(mockPool.query).toHaveBeenCalledTimes(2) // Called twice for initializePool
         expect(vi.mocked(getStats)).toHaveBeenCalledWith(
           mockServer.logger,
           mockPool
-        )
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
-          'After init, pool connections: 0'
         )
         expect(mockServer.decorate).toHaveBeenCalledWith(
           'server',
           'postgresDb',
           mockPool
         )
+        expect(mockPool.on).toHaveBeenCalledWith(
+          'connect',
+          expect.any(Function)
+        )
+        expect(mockPool.on).toHaveBeenCalledWith(
+          'acquire',
+          expect.any(Function)
+        )
+        expect(mockPool.on).toHaveBeenCalledWith('remove', expect.any(Function))
       })
 
       test('should register stop event handler', async () => {
@@ -378,7 +387,10 @@ describe('Postgres Helper', () => {
           'stop',
           expect.any(Function)
         )
-        expect(mockPool.query).toHaveBeenCalledWith('SELECT 1')
+        expect(vi.mocked(getStats)).toHaveBeenCalledWith(
+          mockServer.logger,
+          mockPool
+        )
       })
 
       test('should close pool on server stop event', async () => {
@@ -408,7 +420,7 @@ describe('Postgres Helper', () => {
 
       test('should handle connection failure', async () => {
         const connectionError = new Error('Connection refused')
-        mockPool.query.mockRejectedValue(connectionError)
+        vi.mocked(getStats).mockRejectedValue(connectionError)
 
         const options = {
           user: 'test-user',
