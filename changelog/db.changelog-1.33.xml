@@ -8,19 +8,35 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-   <changeSet id="add-sssi-table" author="system">
-    <createTable tableName="sssi" schemaName="public">
-      <column name="ensis_id" type="NUMERIC" />
-      <column name="global_id" type="TEXT" />
+   <changeSet id="add-intersections-table" author="system">
+    <createTable tableName="intersections" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="int_id" type="NUMERIC" />
       <column name="geom" type="GEOMETRY"/>
-      <column name="sssi_name" type="TEXT"/>
+      <column name="name" type="TEXT"/>
+      <column name="metadata" type="TEXT"/>
+      <column name="intersection_type_id" type="NUMERIC"/>
       <column name="last_updated" type="DATE"/>
       <column name="ingest_id" type="TEXT"/>
     </createTable>
+
+  <addForeignKeyConstraint 
+      baseTableName="intersections" 
+      baseColumnNames="intersection_type_id" 
+      constraintName="fk_intersections_intersection_type_id"
+      referencedTableName="intersection_type" 
+      referencedColumnNames="id"
+      onDelete="NO ACTION"/>f
   </changeSet>
 
-   <changeSet id="unique-sssi-id" author="system">
-    <sql>CREATE UNIQUE INDEX IF NOT EXISTS idx_sssi_id ON sssi (ensis_id, global_id);</sql>
+    <createTable tableName="intersection_type" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="TEXT"/>
+    </createTable>
   </changeSet>
 
 </databaseChangeLog>
