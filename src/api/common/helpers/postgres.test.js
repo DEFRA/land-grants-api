@@ -4,6 +4,7 @@ import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
 import { getDBOptions, createDBPool, postgresDb } from './postgres.js'
+import { getStats } from '../../statistics/queries/stats.query.js'
 
 vi.mock('@aws-sdk/credential-providers', () => ({
   fromNodeProviderChain: vi.fn()
@@ -21,6 +22,10 @@ vi.mock('../../../config/index.js', () => ({
   config: {
     get: vi.fn()
   }
+}))
+
+vi.mock('../../statistics/queries/stats.query.js', () => ({
+  getStats: vi.fn().mockResolvedValue()
 }))
 
 describe('Postgres Helper', () => {
@@ -238,6 +243,51 @@ describe('Postgres Helper', () => {
           secureContext: mockSecureContext
         })
       })
+
+      test('should handle error when getting token fails', async () => {
+        const mockCredentials = { mock: 'credentials' }
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+
+        const tokenError = new Error('Failed to get auth token')
+        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError)
+        vi.mocked(Signer).mockImplementation(() => ({
+          getAuthToken: mockGetAuthToken
+        }))
+
+        const options = {
+          user: 'remote-user',
+          database: 'remote-db',
+          host: 'remote-host',
+          isLocal: false,
+          region: 'eu-west-1'
+        }
+
+        const mockServer = {
+          logger: {
+            info: vi.fn(),
+            error: vi.fn()
+          }
+        }
+
+        createDBPool(options, mockServer)
+
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
+        await expect(poolConfig.password()).rejects.toThrow(
+          'Failed to get auth token'
+        )
+
+        expect(mockServer.logger.info).toHaveBeenCalledWith(
+          'Getting Postgres authentication token'
+        )
+        expect(mockServer.logger.error).toHaveBeenCalledWith(
+          'Failed to get Postgres authentication token',
+          {
+            error: 'Failed to get auth token',
+            user: 'remote-user',
+            host: 'remote-host'
+          }
+        )
+      })
     })
 
     test('should create pool with no server', () => {
@@ -257,6 +307,47 @@ describe('Postgres Helper', () => {
           database: 'test-db'
         })
       )
+    })
+
+    test('should create pool for test environment', () => {
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
+      const options = {
+        user: 'test-user',
+        database: 'test-db',
+        host: 'localhost',
+        password: 'test-password',
+        port: 5433
+      }
+
+      createDBPool(options)
+
+      expect(Pool).toHaveBeenCalledWith({
+        port: 5433,
+        user: 'test-user',
+        password: 'test-password',
+        host: 'localhost',
+        database: 'test-db'
+      })
+    })
+
+    test('should use default port for test environment when port not provided', () => {
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
+      const options = {
+        user: 'test-user',
+        database: 'test-db',
+        host: 'localhost',
+        password: 'test-password'
+      }
+
+      createDBPool(options)
+
+      expect(Pool).toHaveBeenCalledWith({
+        port: 5432,
+        user: 'test-user',
+        password: 'test-password',
+        host: 'localhost',
+        database: 'test-db'
+      })
     })
 
     test('should handle server with missing logger gracefully', async () => {
@@ -281,17 +372,21 @@ describe('Postgres Helper', () => {
 
   describe('postgresDb plugin', () => {
     let mockPool
-    let mockClient
     let mockServer
+    let mockClient
 
     beforeEach(() => {
       mockClient = {
+        query: vi.fn().mockResolvedValue({ rows: [{ count: '0' }] }),
         release: vi.fn()
       }
 
       mockPool = {
+        query: vi.fn().mockResolvedValue({ rows: [] }),
         connect: vi.fn().mockResolvedValue(mockClient),
-        end: vi.fn().mockResolvedValue()
+        end: vi.fn().mockResolvedValue(),
+        on: vi.fn(),
+        totalCount: 0
       }
 
       vi.mocked(Pool).mockImplementation(() => mockPool)
@@ -299,7 +394,8 @@ describe('Postgres Helper', () => {
       mockServer = {
         logger: {
           info: vi.fn(),
-          error: vi.fn()
+          error: vi.fn(),
+          debug: vi.fn()
         },
         decorate: vi.fn(),
         events: {
@@ -343,16 +439,24 @@ describe('Postgres Helper', () => {
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Setting up postgres'
         )
-        expect(mockPool.connect).toHaveBeenCalled()
-        expect(mockClient.release).toHaveBeenCalled()
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
-          'Postgres connection successful'
+        expect(vi.mocked(getStats)).toHaveBeenCalledWith(
+          mockServer.logger,
+          mockPool
         )
         expect(mockServer.decorate).toHaveBeenCalledWith(
           'server',
           'postgresDb',
           mockPool
         )
+        expect(mockPool.on).toHaveBeenCalledWith(
+          'connect',
+          expect.any(Function)
+        )
+        expect(mockPool.on).toHaveBeenCalledWith(
+          'acquire',
+          expect.any(Function)
+        )
+        expect(mockPool.on).toHaveBeenCalledWith('remove', expect.any(Function))
       })
 
       test('should register stop event handler', async () => {
@@ -369,6 +473,10 @@ describe('Postgres Helper', () => {
         expect(mockServer.events.on).toHaveBeenCalledWith(
           'stop',
           expect.any(Function)
+        )
+        expect(vi.mocked(getStats)).toHaveBeenCalledWith(
+          mockServer.logger,
+          mockPool
         )
       })
 
@@ -399,7 +507,7 @@ describe('Postgres Helper', () => {
 
       test('should handle connection failure', async () => {
         const connectionError = new Error('Connection refused')
-        mockPool.connect.mockRejectedValue(connectionError)
+        vi.mocked(getStats).mockRejectedValue(connectionError)
 
         const options = {
           user: 'test-user',
@@ -418,6 +526,81 @@ describe('Postgres Helper', () => {
           'Failed to connect to Postgres'
         )
         expect(mockServer.decorate).not.toHaveBeenCalled()
+      })
+
+      test('should invoke connect event handler', async () => {
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        let connectHandler
+        mockPool.on.mockImplementation((event, handler) => {
+          if (event === 'connect') {
+            connectHandler = handler
+          }
+        })
+
+        await postgresDb.plugin.register(mockServer, options)
+
+        connectHandler()
+
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
+          'New client connected'
+        )
+      })
+
+      test('should invoke acquire event handler', async () => {
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        let acquireHandler
+        mockPool.on.mockImplementation((event, handler) => {
+          if (event === 'acquire') {
+            acquireHandler = handler
+          }
+        })
+
+        await postgresDb.plugin.register(mockServer, options)
+
+        acquireHandler()
+
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
+          'Client acquired from pool'
+        )
+      })
+
+      test('should invoke remove event handler', async () => {
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        let removeHandler
+        mockPool.on.mockImplementation((event, handler) => {
+          if (event === 'remove') {
+            removeHandler = handler
+          }
+        })
+
+        await postgresDb.plugin.register(mockServer, options)
+
+        removeHandler()
+
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
+          'Client removed from pool'
+        )
       })
     })
   })

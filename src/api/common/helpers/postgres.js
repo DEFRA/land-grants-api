@@ -93,6 +93,13 @@ export function createDBPool(options, server = {}) {
     host: options.host,
     database: options.database,
     maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
+    min: 2, // Minimum number of connections to keep warm, Reduces cold-start latency and connection churn
+    max: 10, // Maximum number of connections the pool can create, we keep this at 10, as we use aurora, which scales number of connections automatically
+    keepAlive: true, // Enable OS-level TCP keepalive probes, detects dead connections early (no SELECT 1 needed)
+    keepAliveInitialDelayMillis: 10000, // Wait 10s after a connection becomes idle before sending first probe, balances early detection vs unnecessary network traffic
+    idleTimeoutMillis: 0, // Prevent pg from closing idle connections, Aurora networks handle idle sockets better with keepalive
+    connectionTimeoutMillis: 10000, // How long to wait for a free connection before failing, prevents requests from hanging under load
+    allowExitOnIdle: false, // Keep Node.js process alive even when pool is idle, required for servers / APIs
     ...(!options.isLocal &&
       server?.secureContext && {
         ssl: {
@@ -121,9 +128,6 @@ export const postgresDb = {
       const pool = createDBPool(options, server)
 
       try {
-        const client = await pool.connect()
-        server.logger.info('Postgres connection successful')
-        client.release()
         await getStats(server.logger, pool)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
@@ -135,6 +139,18 @@ export const postgresDb = {
       server.events.on('stop', async () => {
         server.logger.info('Closing Postgres pool')
         await pool.end()
+      })
+
+      pool.on('connect', () => {
+        server.logger.debug('New client connected')
+      })
+
+      pool.on('acquire', () => {
+        server.logger.debug('Client acquired from pool')
+      })
+
+      pool.on('remove', () => {
+        server.logger.debug('Client removed from pool')
       })
     }
   },
