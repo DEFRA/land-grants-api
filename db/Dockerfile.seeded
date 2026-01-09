@@ -26,8 +26,23 @@ RUN liquibase \
   --url=offline:postgresql?outputLiquibaseSql=true \
   updateSQL > /workspace/seed.sql
 
+################################
+# Stage 2 - Prepare ingest data
+################################
+FROM node:24-alpine AS ingest-prep
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copy source code and data files
+COPY src ./src
+COPY scripts ./scripts
+
 #######################################################
-# Stage 2 - Create a pre-seeded PostGIS data directory
+# Stage 3 - Create a pre-seeded PostGIS data directory
 #######################################################
 FROM postgis/postgis:16-3.4 AS db-build
 
@@ -40,10 +55,23 @@ ARG APP_USER=land_grants_api
 # Copy the SQL generated in the first stage
 COPY --from=liquibase-build /workspace/seed.sql /tmp/seed.sql
 
+# Copy the ingest script and data
+COPY --from=ingest-prep /app/package.json /app/package.json
+COPY --from=ingest-prep /app/node_modules ./app/node_modules
+COPY --from=ingest-prep /app/src ./app/src
+COPY --from=ingest-prep /app/scripts ./app/scripts
+
+# Install Node.js in the db-build stage
+USER root
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 USER postgres
 
 RUN initdb -D "$PGDATA" && \
-    pg_ctl -D "$PGDATA" -o "-c listen_addresses=''" -w start && \
+    pg_ctl -D "$PGDATA" -o "-c listen_addresses='localhost'" -w start && \
     \
     # Allow password auth from any host \
     echo "host all all all scram-sha-256" >> "$PGDATA/pg_hba.conf" && \
@@ -70,11 +98,17 @@ RUN initdb -D "$PGDATA" && \
     psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO \"${APP_USER}\";" && \
     psql -v ON_ERROR_STOP=1 -d "${APP_DB}" -c "ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO \"${APP_USER}\";" && \
     \
+    # Run the ingest script \
+    export POSTGRES_HOST=localhost && \
+    export POSTGRES_DATABASE="${APP_DB}" && \
+    export POSTGRES_USERNAME="${APP_USER}" && \
+    export POSTGRES_PASSWORD="${APP_PASSWORD}" && \
+    cd /app && NODE_ENV=test node scripts/local-ingest.js && \
     # Shut down cleanly \
     pg_ctl -D "$PGDATA" -m fast -w stop
 
 #######################################
-# Stage 3 - Final seeded runtime image
+# Stage 4 - Final seeded runtime image
 #######################################
 FROM postgis/postgis:16-3.4
 
