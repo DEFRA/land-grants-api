@@ -14,7 +14,8 @@ export const resources = [
   { name: 'moorland_designations', truncateTable: false },
   { name: 'land_covers', truncateTable: false },
   { name: 'compatibility_matrix', truncateTable: true },
-  { name: 'agreements', truncateTable: true }
+  { name: 'agreements', truncateTable: true },
+  { name: 'sssi', truncateTable: false }
 ]
 
 /**
