@@ -33,21 +33,26 @@ describe('SSSI import', () => {
 
     const allSSSI = await getRecordsByQuery(
       connection,
-      'SELECT * FROM sssi',
+      'SELECT * FROM data_layer WHERE data_layer_type_id = 1',
       []
     )
     expect(allSSSI).toHaveLength(102)
 
     const sssi = await getRecordsByQuery(
       connection,
-      'SELECT * FROM sssi WHERE ensis_id = $1 and global_id = $2',
-      ['1001855', '{318ACB47-BB29-41E3-848E-BC27A7019C97}']
+      'SELECT * FROM data_layer WHERE source_id = $1',
+      ['{318ACB47-BB29-41E3-848E-BC27A7019C97}']
     )
     expect(sssi).toHaveLength(1)
-    expect(sssi[0].ensis_id).toBe('1001855')
-    expect(sssi[0].global_id).toBe('{318ACB47-BB29-41E3-848E-BC27A7019C97}')
-    expect(sssi[0].sssi_name).toBe('Freeholders Wood')
+    expect(sssi[0].name).toBe('Freeholders Wood')
+    expect(sssi[0].metadata).toEqual({
+      ensis_id: 1001855,
+      condition: 'FAVOURABLE'
+    })
+    expect(sssi[0].data_layer_type_id).toBe(1)
     expect(sssi[0].last_updated).toBeDefined()
+    expect(sssi[0].ingest_date).toBeDefined()
     expect(sssi[0].ingest_id).toBeDefined()
+    expect(sssi[0].geom).toBeDefined()
   }, 10000)
 })

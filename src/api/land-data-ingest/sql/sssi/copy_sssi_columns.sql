@@ -1,1 +1,0 @@
-(ensis_id, globalid, geom, sssi_name)
