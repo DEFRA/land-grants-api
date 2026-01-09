@@ -129,6 +129,7 @@ export const postgresDb = {
 
       try {
         await getStats(server.logger, pool)
+        setInterval(() => pool.query('SELECT 1'), 60000)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
