@@ -602,6 +602,32 @@ describe('Postgres Helper', () => {
           'Client removed from pool'
         )
       })
+
+      test('should execute setInterval callback to keep connections warm', async () => {
+        vi.useFakeTimers()
+
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        await postgresDb.plugin.register(mockServer, options)
+
+        // Clear previous calls
+        mockPool.query.mockClear()
+
+        // Advance time by 60 seconds to trigger the interval
+        await vi.advanceTimersByTimeAsync(60000)
+
+        // Verify pool.query was called once with SELECT 1
+        expect(mockPool.query).toHaveBeenCalledTimes(1)
+        expect(mockPool.query).toHaveBeenCalledWith('SELECT 1')
+
+        vi.useRealTimers()
+      })
     })
   })
 })
