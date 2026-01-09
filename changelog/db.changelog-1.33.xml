@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="add-data-layer-table" author="system">
+    <createTable tableName="data_layer" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="source_id" type="TEXT" />
+      <column name="geom" type="GEOMETRY"/>
+      <column name="name" type="TEXT"/>
+      <column name="metadata" type="JSONB"/>
+      <column name="data_layer_type_id" type="INTEGER"/>
+      <column name="last_updated" type="DATE"/>
+      <column name="ingest_date" type="DATE" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="ingest_id" type="TEXT"/>
+    </createTable>
+
+     <createIndex tableName="data_layer" indexName="idx_data_layer_source_id">
+      <column name="source_id"/>
+    </createIndex>
+
+    <addUniqueConstraint 
+      tableName="data_layer" 
+      columnNames="source_id"
+      constraintName="unique_constraint_source_id"/>
+
+    <createTable tableName="data_layer_type" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="false">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="TEXT"/>
+    </createTable>
+
+    <addForeignKeyConstraint 
+      baseTableName="data_layer" 
+      baseColumnNames="data_layer_type_id" 
+      constraintName="fk_data_layer_data_layer_type_id"
+      referencedTableName="data_layer_type" 
+      referencedColumnNames="id"
+      onDelete="NO ACTION"/>
+
+  </changeSet>
+
+  <changeSet id="add-data-layer-type-data" author="system">
+    <sql>INSERT INTO data_layer_type (id, name) VALUES (1, 'SSSI');</sql>
+    <sql>INSERT INTO data_layer_type (id, name) VALUES (2, 'Moorland');</sql>
+  </changeSet>
+
+</databaseChangeLog>
