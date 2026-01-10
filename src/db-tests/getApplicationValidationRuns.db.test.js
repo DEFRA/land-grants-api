@@ -7,9 +7,9 @@ import { vi } from 'vitest'
 describe('Get application validation runs', () => {
   let logger, connection
   const applicationValidationRun = {
-    application_id: '123456789',
-    sbi: '123456789',
-    crn: '123456789',
+    application_id: '99999999',
+    sbi: '99999999',
+    crn: '99999999',
     data: {
       sheetId: 'SX0679',
       parcelId: '9238'
