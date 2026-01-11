@@ -11,7 +11,9 @@ const resources = [
   'compatibility_matrix',
   'moorland_designations',
   'land_parcels',
-  'land_covers'
+  'land_covers',
+  'actions',
+  'actions_config'
 ]
 
 transferAllResources()

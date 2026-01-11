@@ -1,0 +1,6 @@
+id,code,description,enabled,display
+1,CMOR1,"CMOR1: Assess moorland and produce a written record",TRUE,TRUE
+2,UPL1,"UPL1: Moderate livestock grazing on moorland",TRUE,TRUE
+3,UPL2,"UPL2: Low livestock grazing on moorland",TRUE,TRUE
+4,UPL3,"UPL3: Limited livestock grazing on moorland",TRUE,TRUE
+5,UPL4,"UPL4: Keep cattle and ponies on moorland supplement (minimum 30% GLU)",FALSE,FALSE
