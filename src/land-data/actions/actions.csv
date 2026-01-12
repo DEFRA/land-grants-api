@@ -1,16 +1,16 @@
-id,code,description,enabled,display
-1,CMOR1,"CMOR1: Assess moorland and produce a written record",TRUE,TRUE
-2,UPL1,"UPL1: Moderate livestock grazing on moorland",TRUE,TRUE
-3,UPL2,"UPL2: Low livestock grazing on moorland",TRUE,TRUE
-4,UPL3,"UPL3: Limited livestock grazing on moorland",TRUE,TRUE
-5,UPL4,"UPL4: Keep cattle and ponies on moorland supplement (minimum 30% GLU)",FALSE,FALSE
-6,UPL5,"UPL5: Keep cattle and ponies on moorland supplement (minimum 70% GLU)",FALSE,FALSE
-7,UPL6,"UPL6: Keep cattle and ponies on moorland supplement (100% GLU)",FALSE,FALSE
+code,description,enabled,display
+CMOR1,"CMOR1: Assess moorland and produce a written record",TRUE,TRUE
+UPL1,"UPL1: Moderate livestock grazing on moorland",TRUE,TRUE
+UPL2,"UPL2: Low livestock grazing on moorland",TRUE,TRUE
+UPL3,"UPL3: Limited livestock grazing on moorland",TRUE,TRUE
+UPL4,"UPL4: Keep cattle and ponies on moorland supplement (minimum 30% GLU)",FALSE,FALSE
+UPL5,"UPL5: Keep cattle and ponies on moorland supplement (minimum 70% GLU)",FALSE,FALSE
+UPL6,"UPL6: Keep cattle and ponies on moorland supplement (100% GLU)",FALSE,FALSE
 8,UPL7,"UPL7: Shepherding livestock on moorland (no required stock removal period)",FALSE,FALSE
-9,UPL8,"UPL8: Shepherding livestock on moorland (remove stock for at least 4 months)",FALSE,FALSE
-10,UPL9,"UPL9: Shepherding livestock on moorland (remove stock for at least 6 months)",FALSE,FALSE
+UPL8,"UPL8: Shepherding livestock on moorland (remove stock for at least 4 months)",FALSE,FALSE
+UPL9,"UPL9: Shepherding livestock on moorland (remove stock for at least 6 months)",FALSE,FALSE
 11,SPM4,"SPM4: Keep native breeds on extensively managed habitats supplement (50-80%)",TRUE,FALSE
-12,SPM5,"SPM5: Keep native breeds on extensively managed habitats supplement (more than 80%)",FALSE,FALSE
-13,SAM1,"SAM1: Assess soil, produce a soil management plan and test soil organic matter",TRUE,FALSE
-14,OFM3,"OFM3: Organic land management – enclosed rough grazing",TRUE,FALSE
-15,CSAM1,"CSAM1: Assess soil, produce a soil management plan and test soil organic matter",TRUE,FALSE
+SPM5,"SPM5: Keep native breeds on extensively managed habitats supplement (more than 80%)",FALSE,FALSE
+SAM1,"SAM1: Assess soil, produce a soil management plan and test soil organic matter",TRUE,FALSE
+OFM3,"OFM3: Organic land management – enclosed rough grazing",TRUE,FALSE
+CSAM1,"CSAM1: Assess soil, produce a soil management plan and test soil organic matter",TRUE,FALSE
