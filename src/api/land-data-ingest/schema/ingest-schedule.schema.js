@@ -20,7 +20,8 @@ const initiateLandDataUploadRequestSchema = Joi.object({
       'land_covers',
       'moorland_designations',
       'compatibility_matrix',
-      'agreements'
+      'agreements',
+      'sssi'
     )
 })
 
