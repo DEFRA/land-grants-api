@@ -19,9 +19,9 @@ describe('Get data layer intercept percentage query', () => {
     await connection.end()
   })
 
-  test('when large amount of data layer and sheet_id = SD7324 AND parcel_id = 4765', async () => {
-    const sheetId = 'SD7324'
-    const parcelId = '4765'
+  test('when large amount of data layer and sheet_id = SJ3073 AND parcel_id = 7746', async () => {
+    const sheetId = 'SJ3073'
+    const parcelId = '7746'
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
@@ -32,9 +32,9 @@ describe('Get data layer intercept percentage query', () => {
     expect(result).toBe(99)
   })
 
-  test('when small amount of data layer and sheet_id = SD7348 AND parcel_id = 1554', async () => {
-    const sheetId = 'SD7324'
-    const parcelId = '8173'
+  test('when small amount of data layer and sheet_id = SK0065 AND parcel_id = 6812', async () => {
+    const sheetId = 'SK0065'
+    const parcelId = '6812'
 
     const result = await getDataLayerQuery(
       sheetId,

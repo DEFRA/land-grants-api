@@ -11,18 +11,18 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
     client = await db.connect()
     const query = `
       SELECT
-          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, d.geom))::float8), 0)
-              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
+          COALESCE(SUM(ST_Area(ST_Intersection(lc.geom, dl.geom))::float8), 0)
+              / NULLIF(ST_Area(lc.geom)::float8, 0) * 100 AS overlap_percent
       FROM
-          land_parcels p
+          land_covers lc
       LEFT JOIN
-          data_layer d
-          ON ST_Intersects(p.geom, d.geom)
+          data_layer dl
+          ON ST_Intersects(lc.geom, dl.geom)
       WHERE
-          p.sheet_id = $1 AND
-          p.parcel_id = $2
+          lc.sheet_id = $1 AND
+          lc.parcel_id = $2
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom;
+          lc.sheet_id, lc.parcel_id, lc.geom;
     `
 
     const values = [sheetId, parcelId]
