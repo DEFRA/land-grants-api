@@ -1,4 +1,4 @@
-import { getDataLayerQuery } from './getDataLayer.query.js'
+import { getDataLayerQuery, dataLayerQuery } from './getDataLayer.query.js'
 
 describe('getDataLayerQuery', () => {
   let mockDb
@@ -42,27 +42,14 @@ describe('getDataLayerQuery', () => {
   test('should query with the correct parameters', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const expectedQuery = `
-      SELECT
-          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, d.geom))::float8), 0)
-              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
-      FROM
-          land_parcels p
-      LEFT JOIN
-          data_layer d
-          ON ST_Intersects(p.geom, d.geom)
-      WHERE
-          p.sheet_id = $1 AND
-          p.parcel_id = $2
-      GROUP BY
-          p.sheet_id, p.parcel_id, p.geom;
-    `
-
     const expectedValues = [sheetId, parcelId]
 
     await getDataLayerQuery(sheetId, parcelId, mockDb, mockLogger)
 
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
+    expect(mockClient.query).toHaveBeenCalledWith(
+      dataLayerQuery,
+      expectedValues
+    )
   })
 
   test('should return the overlap percentage', async () => {

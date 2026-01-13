@@ -4,29 +4,30 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
+export const dataLayerQuery = `
+  SELECT
+      COALESCE(SUM(ST_Area(ST_Intersection(lc.geom, dl.geom))::float8), 0)
+          / NULLIF(ST_Area(lc.geom)::float8, 0) * 100 AS overlap_percent
+  FROM
+      land_covers lc
+  LEFT JOIN
+      data_layer dl
+      ON ST_Intersects(lc.geom, dl.geom)
+  WHERE
+      lc.sheet_id = $1 AND
+      lc.parcel_id = $2
+  GROUP BY
+      lc.sheet_id, lc.parcel_id, lc.geom;
+`
+
 async function getDataLayerQuery(sheetId, parcelId, db, logger) {
   let client
 
   try {
     client = await db.connect()
-    const query = `
-      SELECT
-          COALESCE(SUM(ST_Area(ST_Intersection(lc.geom, dl.geom))::float8), 0)
-              / NULLIF(ST_Area(lc.geom)::float8, 0) * 100 AS overlap_percent
-      FROM
-          land_covers lc
-      LEFT JOIN
-          data_layer dl
-          ON ST_Intersects(lc.geom, dl.geom)
-      WHERE
-          lc.sheet_id = $1 AND
-          lc.parcel_id = $2
-      GROUP BY
-          lc.sheet_id, lc.parcel_id, lc.geom;
-    `
 
     const values = [sheetId, parcelId]
-    const result = await client.query(query, values)
+    const result = await client.query(dataLayerQuery, values)
 
     if (result?.rows?.length === 0) {
       return 0
