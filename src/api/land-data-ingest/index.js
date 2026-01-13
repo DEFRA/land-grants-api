@@ -13,24 +13,27 @@ const landDataIngest = {
         {
           method: 'POST',
           path: '/initiate-upload',
-          ...InitiateLandDataUploadController,
+          handler: InitiateLandDataUploadController.handler,
           options: {
+            ...InitiateLandDataUploadController.options,
             auth: false
           }
         },
         {
           method: 'POST',
           path: '/cdp-uploader-callback',
-          ...LandDataIngestController,
+          handler: LandDataIngestController.handler,
           options: {
+            ...LandDataIngestController.options,
             auth: false
           }
         },
         {
           method: 'GET',
           path: '/ingest-land-data-schedule',
-          ...IngestScheduleController,
+          handler: IngestScheduleController.handler,
           options: {
+            ...IngestScheduleController.options,
             auth: false
           }
         }
