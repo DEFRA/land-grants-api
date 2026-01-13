@@ -4,7 +4,7 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
-export const dataLayerQuery = `
+const dataLayerQuery = `
   SELECT
       COALESCE(SUM(ST_Area(ST_Intersection(lc.geom, dl.geom))::float8), 0)
           / NULLIF(ST_Area(lc.geom)::float8, 0) * 100 AS overlap_percent
@@ -64,4 +64,4 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
   }
 }
 
-export { getDataLayerQuery }
+export { getDataLayerQuery, dataLayerQuery }
