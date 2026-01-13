@@ -15,18 +15,25 @@ const dataLayerQuery = `
       ON ST_Intersects(lc.geom, dl.geom)
   WHERE
       lc.sheet_id = $1 AND
-      lc.parcel_id = $2
+      lc.parcel_id = $2 AND
+      lc.land_cover_class_code = ANY($3)
   GROUP BY
       lc.sheet_id, lc.parcel_id, lc.geom;
 `
 
-async function getDataLayerQuery(sheetId, parcelId, db, logger) {
+async function getDataLayerQuery(
+  sheetId,
+  parcelId,
+  landCoverClassCodes,
+  db,
+  logger
+) {
   let client
 
   try {
     client = await db.connect()
 
-    const values = [sheetId, parcelId]
+    const values = [sheetId, parcelId, landCoverClassCodes]
     const result = await client.query(dataLayerQuery, values)
 
     if (result?.rows?.length === 0) {

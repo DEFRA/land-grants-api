@@ -33,8 +33,15 @@ describe('getDataLayerQuery', () => {
   test('should connect to the database', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
 
-    await getDataLayerQuery(sheetId, parcelId, mockDb, mockLogger)
+    await getDataLayerQuery(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      mockDb,
+      mockLogger
+    )
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -42,9 +49,16 @@ describe('getDataLayerQuery', () => {
   test('should query with the correct parameters', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    const expectedValues = [sheetId, parcelId]
+    const landCoverClassCodes = ['131']
+    const expectedValues = [sheetId, parcelId, landCoverClassCodes]
 
-    await getDataLayerQuery(sheetId, parcelId, mockDb, mockLogger)
+    await getDataLayerQuery(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      mockDb,
+      mockLogger
+    )
 
     expect(mockClient.query).toHaveBeenCalledWith(
       dataLayerQuery,
@@ -55,10 +69,12 @@ describe('getDataLayerQuery', () => {
   test('should return the overlap percentage', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
 
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      landCoverClassCodes,
       mockDb,
       mockLogger
     )
@@ -69,11 +85,13 @@ describe('getDataLayerQuery', () => {
   test('should return 0 when no overlap', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
     mockResult.rows[0].overlap_percent = null
 
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      landCoverClassCodes,
       mockDb,
       mockLogger
     )
@@ -84,8 +102,15 @@ describe('getDataLayerQuery', () => {
   test('should release the client when done', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
 
-    await getDataLayerQuery(sheetId, parcelId, mockDb, mockLogger)
+    await getDataLayerQuery(
+      sheetId,
+      parcelId,
+      landCoverClassCodes,
+      mockDb,
+      mockLogger
+    )
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -93,12 +118,14 @@ describe('getDataLayerQuery', () => {
   test('should handle errors and return undefined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      landCoverClassCodes,
       mockDb,
       mockLogger
     )
@@ -121,11 +148,13 @@ describe('getDataLayerQuery', () => {
   test('should handle client release if client is not defined', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
+    const landCoverClassCodes = ['131']
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      landCoverClassCodes,
       mockDb,
       mockLogger
     )
