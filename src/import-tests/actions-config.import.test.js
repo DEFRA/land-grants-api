@@ -49,7 +49,7 @@ describe('Actions config import', () => {
     )
     expect(actionConfig).toHaveLength(1)
     expect(actionConfig[0].code).toBe('CMOR1')
-    expect(Number(actionConfig[0].version)).toBe(1)
+    expect(actionConfig[0].version).toBe('1')
     expect(actionConfig[0].config).toBeDefined()
     expect(actionConfig[0].config.start_date).toBe('2025-01-01')
     expect(Number(actionConfig[0].config.duration_years)).toBe(3)

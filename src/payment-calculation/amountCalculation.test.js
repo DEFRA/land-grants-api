@@ -13,7 +13,7 @@ const mockEnabledActions = [
   {
     code: 'CMOR1',
     description: 'CMOR1: Assess moorland and produce a written record',
-    version: 1,
+    version: '1',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -24,7 +24,7 @@ const mockEnabledActions = [
   {
     code: 'UPL1',
     description: 'UPL1: Moderate livestock grazing on moorland',
-    version: 1,
+    version: '1',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -35,7 +35,7 @@ const mockEnabledActions = [
   {
     code: 'OFM1',
     description: 'OFM1: Organic land management – improved permanent grassland',
-    version: 1,
+    version: '1',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -47,7 +47,7 @@ const mockEnabledActions = [
     code: 'CSAM1',
     description:
       'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
-    version: 1,
+    version: '1',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -186,7 +186,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
+        version: '1',
         parcelId: '5484',
         durationYears: 3,
         quantity: undefined,
@@ -198,7 +198,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
       2: {
         code: 'UPL1',
         description: 'Moderate livestock grazing on moorland',
-        version: 1,
+        version: '1',
         durationYears: 3,
         parcelId: '5485',
         quantity: undefined,
@@ -212,7 +212,7 @@ describe('calculateAnnualAndAgreementTotals', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
+        version: '1',
         durationYears: 3,
         annualPaymentPence: undefined
       }
@@ -236,7 +236,7 @@ describe('createPaymentItems', () => {
       {
         code: 'CMOR1',
         description: 'Test action',
-        version: 1,
+        version: '1',
         applicationUnitOfMeasurement: 'ha',
         durationYears: 3,
         payment: {}
@@ -260,7 +260,7 @@ describe('createPaymentItems', () => {
       1: {
         code: 'CMOR1',
         description: 'Test action',
-        version: 1,
+        version: '1',
         parcelId: '5484',
         durationYears: 3,
         quantity: 0.34,
@@ -278,7 +278,7 @@ describe('createPaymentItems', () => {
       {
         code: null,
         description: null,
-        version: 1,
+        version: '1',
         applicationUnitOfMeasurement: null,
         durationYears: 3,
         payment: {
@@ -304,7 +304,7 @@ describe('createPaymentItems', () => {
       1: {
         code: '',
         description: '',
-        version: 1,
+        version: '1',
         parcelId: '5484',
         durationYears: 3,
         quantity: 1,
@@ -395,7 +395,7 @@ describe('createPaymentItems', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
+        version: '1',
         unit: 'ha',
         durationYears: 3,
         quantity: 0.34,
@@ -407,7 +407,7 @@ describe('createPaymentItems', () => {
       2: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
+        version: '1',
         unit: 'ha',
         durationYears: 3,
         quantity: 0.99,
@@ -423,7 +423,7 @@ describe('createPaymentItems', () => {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
         durationYears: 3,
-        version: 1,
+        version: '1',
         annualPaymentPence: 27200
       }
     })
@@ -478,7 +478,7 @@ describe('createPaymentItems', () => {
     expect(agreementItems).toEqual({
       1: {
         code: 'CMOR1',
-        version: 1,
+        version: '1',
         description: 'CMOR1: Assess moorland and produce a written record',
         durationYears: 3,
         annualPaymentPence: 27200
@@ -488,7 +488,7 @@ describe('createPaymentItems', () => {
         description:
           'CSAM1: Assess soil, produce a soil management plan and test soil organic matter',
         durationYears: 3,
-        version: 1,
+        version: '1',
         annualPaymentPence: 970000
       }
     })
@@ -517,7 +517,7 @@ describe('createPaymentItems', () => {
       1: {
         code: 'CMOR1',
         description: 'CMOR1: Assess moorland and produce a written record',
-        version: 1,
+        version: '1',
         parcelId: '5484',
         durationYears: 3,
         quantity: 0.34,
@@ -528,7 +528,7 @@ describe('createPaymentItems', () => {
       },
       2: {
         code: 'UPL1',
-        version: 1,
+        version: '1',
         description: 'UPL1: Moderate livestock grazing on moorland',
         parcelId: '5485',
         durationYears: 3,
@@ -545,7 +545,7 @@ describe('createPaymentItems', () => {
         annualPaymentPence: 27200,
         code: 'CMOR1',
         durationYears: 3,
-        version: 1,
+        version: '1',
         description: 'CMOR1: Assess moorland and produce a written record'
       }
     })
@@ -569,7 +569,7 @@ describe('createPaymentItems', () => {
       1: {
         code: 'UPL1',
         description: 'UPL1: Moderate livestock grazing on moorland',
-        version: 1,
+        version: '1',
         parcelId: '5485',
         durationYears: 3,
         quantity: 2.5,
@@ -1304,7 +1304,7 @@ describe('addAgreementItem', () => {
       code: 'TEST1',
       description: 'Test action',
       durationYears: 3,
-      version: 1,
+      version: '1',
       payment: {
         ratePerUnitGbp: 10,
         ratePerAgreementPerYearGbp: null

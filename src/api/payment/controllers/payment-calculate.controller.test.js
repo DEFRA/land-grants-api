@@ -112,7 +112,7 @@ describe('Payment calculate controller', () => {
     await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
       enabledActions: [
         {
-          version: 1,
+          version: '1',
           startDate: '2025-01-01',
           code: 'BND1',
           durationYears: 3,
@@ -270,7 +270,7 @@ describe('Payment calculate controller', () => {
       await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
         enabledActions: [
           {
-            version: 1,
+            version: '1',
             startDate: '2025-01-01',
             code: 'DIFFERENT_CODE',
             durationYears: 3,

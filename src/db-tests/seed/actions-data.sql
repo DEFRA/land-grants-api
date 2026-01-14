@@ -26,7 +26,7 @@ INSERT INTO actions_config (code, version, config, is_active, last_updated_at)
 VALUES
 (
     'CMOR1',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -59,7 +59,7 @@ VALUES
 ),
 (
     'UPL1',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -91,7 +91,7 @@ VALUES
 ),
 (
     'UPL2',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -123,7 +123,7 @@ VALUES
 ),
 (
     'UPL3',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -155,7 +155,7 @@ VALUES
 ),
 (
     'UPL4',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -172,7 +172,7 @@ VALUES
 ),
 (
     'UPL5',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -189,7 +189,7 @@ VALUES
 ),
 (
     'UPL6',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -206,7 +206,7 @@ VALUES
 ),
 (
     'UPL7',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -223,7 +223,7 @@ VALUES
 ),
 (
     'UPL8',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -240,7 +240,7 @@ VALUES
 ),
 (
     'UPL9',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -257,7 +257,7 @@ VALUES
 ),
 (
     'SPM4',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -274,7 +274,7 @@ VALUES
 ),
 (
     'SPM5',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -291,7 +291,7 @@ VALUES
 ),
 (
     'SAM1',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -308,7 +308,7 @@ VALUES
 ),
 (
     'OFM3',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,
@@ -327,7 +327,7 @@ VALUES
 ),
 (
     'CSAM1',
-    1,
+    '1',
     '{
         "start_date": "2025-01-01",
         "duration_years": 3,

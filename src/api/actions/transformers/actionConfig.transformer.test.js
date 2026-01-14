@@ -6,7 +6,7 @@ describe('actionConfigTransformer', () => {
       code: 'CMOR1',
       name: 'Create or restore wetland',
       enabled: true,
-      version: 1,
+      version: '1',
       application_unit_of_measurement: 'hectares',
       duration_years: 3,
       payment: { rate: 100 },
@@ -22,7 +22,7 @@ describe('actionConfigTransformer', () => {
       code: 'CMOR1',
       name: 'Create or restore wetland',
       enabled: true,
-      version: 1,
+      version: '1',
       applicationUnitOfMeasurement: 'hectares',
       durationYears: 3,
       payment: { rate: 100 },
@@ -194,7 +194,7 @@ describe('actionConfigTransformer', () => {
       code: 'UPL1',
       name: 'Action Name',
       enabled: true,
-      version: 2,
+      version: '2',
       payment: { rate: 200, type: 'annual' },
       rules: { minArea: 10, maxArea: 100 },
       customField: 'custom value',
@@ -210,7 +210,7 @@ describe('actionConfigTransformer', () => {
     expect(result.code).toBe('UPL1')
     expect(result.name).toBe('Action Name')
     expect(result.enabled).toBe(true)
-    expect(result.version).toBe(2)
+    expect(result.version).toBe('2')
     expect(result.payment).toEqual({ rate: 200, type: 'annual' })
     expect(result.rules).toEqual({ minArea: 10, maxArea: 100 })
     expect(result.customField).toBe('custom value')
@@ -432,7 +432,7 @@ describe('actionConfigTransformer', () => {
   test('should handle action config with numeric version', () => {
     const action = {
       code: 'UPL1',
-      version: 42,
+      version: '42',
       duration_years: 5,
       application_unit_of_measurement: 'hectares',
       land_cover_class_codes: ['LC001'],
@@ -442,7 +442,7 @@ describe('actionConfigTransformer', () => {
 
     const result = actionConfigTransformer(action)
 
-    expect(result.version).toBe(42)
+    expect(result.version).toBe('42')
   })
 
   test('should not mutate original action object', () => {

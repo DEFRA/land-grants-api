@@ -245,7 +245,7 @@ const createParcelPaymentItem = (action, actionData, parcel) => ({
   code: actionData?.code ?? '',
   description: actionData?.description ?? '',
   durationYears: actionData?.durationYears,
-  version: Number(actionData?.version),
+  version: actionData?.version ?? '',
   unit: actionData?.applicationUnitOfMeasurement ?? '',
   quantity: action.quantity,
   rateInPence: gbpToPence(actionData?.payment.ratePerUnitGbp),
@@ -265,7 +265,7 @@ const createAgreementPaymentItem = (actionData) => ({
   code: actionData?.code,
   description: actionData?.description,
   durationYears: actionData?.durationYears,
-  version: Number(actionData?.version),
+  version: actionData?.version ?? '',
   annualPaymentPence: gbpToPence(actionData?.payment.ratePerAgreementPerYearGbp)
 })
 

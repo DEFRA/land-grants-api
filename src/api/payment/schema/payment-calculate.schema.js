@@ -22,7 +22,7 @@ const PaymentCalculateResponseSchema = Joi.object({
         Joi.object({
           code: Joi.string(),
           description: Joi.string(),
-          version: Joi.number(),
+          version: Joi.string(),
           unit: Joi.string(),
           quantity: Joi.number(),
           rateInPence: Joi.number().integer(),
@@ -40,7 +40,7 @@ const PaymentCalculateResponseSchema = Joi.object({
           code: Joi.string(),
           description: Joi.string(),
           durationYears: Joi.number().integer(),
-          version: Joi.number(),
+          version: Joi.string(),
           annualPaymentPence: Joi.number().integer()
         })
       )
