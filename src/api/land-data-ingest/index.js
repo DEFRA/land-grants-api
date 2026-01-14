@@ -1,4 +1,4 @@
-import { IngestScheduleController } from './controller/ingest-schedule.controller.js'
+import { IngestController } from './controller/ingest.controller.js'
 import { LandDataIngestController } from './controller/land-data-ingest.controller.js'
 import { InitiateLandDataUploadController } from './controller/initiate-land-data-upload.controller.js'
 
@@ -31,9 +31,9 @@ const landDataIngest = {
         {
           method: 'GET',
           path: '/ingest-land-data-schedule',
-          handler: IngestScheduleController.handler,
+          handler: IngestController.handler,
           options: {
-            ...IngestScheduleController.options,
+            ...IngestController.options,
             auth: false
           }
         }

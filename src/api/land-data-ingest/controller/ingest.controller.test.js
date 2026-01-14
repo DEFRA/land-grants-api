@@ -1,9 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { landDataIngest } from '../index.js'
-import {
-  processFile,
-  createTaskInfo
-} from '../service/ingest-schedule.service.js'
+import { processFile, createTaskInfo } from '../service/ingest.service.js'
 import {
   logInfo,
   logBusinessError
@@ -12,7 +9,7 @@ import { getFiles, filterFilesByDate } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import { vi } from 'vitest'
 
-vi.mock('../service/ingest-schedule.service.js')
+vi.mock('../service/ingest.service.js')
 vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
 vi.mock('../../common/s3/s3.js')
 vi.mock('../../common/plugins/s3-client.js')
@@ -25,7 +22,7 @@ const mockGetFiles = getFiles
 const mockFilterFilesByDate = filterFilesByDate
 const mockCreateS3Client = createS3Client
 
-describe('Ingest Schedule Controller', () => {
+describe('Ingest Controller', () => {
   const server = Hapi.server()
   const mockLogger = {
     info: vi.fn(),
@@ -67,7 +64,7 @@ describe('Ingest Schedule Controller', () => {
     mockFilterFilesByDate.mockReturnValue([])
   })
 
-  describe('GET /ingest-land-data-schedule route', () => {
+  describe('GET /ingest-land-data route', () => {
     it('should return 200 when new files are found', async () => {
       const mockTaskInfo = {
         category: 'land_data_ingest',

@@ -1,13 +1,13 @@
 import Hapi from '@hapi/hapi'
 import { InitiateLandDataUploadController } from './initiate-land-data-upload.controller.js'
 import { logInfo } from '~/src/api/common/helpers/logging/log-helpers.js'
-import { initiateLandDataUpload } from '../service/ingest-schedule.service.js'
+import { initiateLandDataUpload } from '../service/ingest.service.js'
 import { config } from '~/src/config/index.js'
 import { vi } from 'vitest'
 
 // Mock dependencies
 vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
-vi.mock('../service/ingest-schedule.service.js')
+vi.mock('../service/ingest.service.js')
 vi.mock('~/src/config/index.js')
 
 const mockLogInfo = logInfo

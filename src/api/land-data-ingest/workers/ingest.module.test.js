@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getResourceByType, resources } from './ingest-schedule.module.js'
+import { getResourceByType, resources } from './ingest.module.js'
 
 vi.mock('../../common/s3/s3.js', () => ({
   getFile: vi.fn(),
@@ -32,7 +32,7 @@ vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
   logBusinessError: vi.fn()
 }))
 
-describe('Ingest Schedule Module', () => {
+describe('Ingest Module', () => {
   describe('getResourceByType', () => {
     it('should return correct resource for all valid resource types', () => {
       resources.forEach((resource) => {
@@ -73,7 +73,7 @@ describe('Ingest Schedule Module', () => {
     beforeEach(async () => {
       vi.clearAllMocks()
 
-      const module = await import('./ingest-schedule.module.js')
+      const module = await import('./ingest.module.js')
       const s3Module = await import('../../common/s3/s3.js')
       const importServiceModule = await import(
         '../service/import-land-data.service.js'

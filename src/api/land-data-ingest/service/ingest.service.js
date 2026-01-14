@@ -5,7 +5,7 @@ import { config } from '../../../config/index.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
- * @import { InitiateUploaderResponse, Task } from '../ingest-schedule.d.js'
+ * @import { InitiateUploaderResponse, Task } from '../ingest.d.js'
  */
 
 /**
@@ -31,7 +31,7 @@ export const processFile = async (
     context: { filepath }
   })
   const __dirname = dirname(fileURLToPath(import.meta.url))
-  const workerPath = join(__dirname, '../workers/ingest-schedule.worker.js')
+  const workerPath = join(__dirname, '../workers/ingest.worker.js')
   return startWorker(request, workerPath, title, category, taskId, filepath)
 }
 

@@ -1,8 +1,8 @@
 import {
-  ingestScheduleSuccessResponseSchema,
+  ingestSuccessResponseSchema,
   initiateLandDataUploadSuccessResponseSchema,
   initiateLandDataUploadRequestSchema
-} from './ingest-schedule.schema.js'
+} from './ingest.schema.js'
 
 describe('ingestScheduleSuccessResponseSchema', () => {
   const validData = {
@@ -11,7 +11,7 @@ describe('ingestScheduleSuccessResponseSchema', () => {
   }
 
   it('should validate valid data', () => {
-    const { error } = ingestScheduleSuccessResponseSchema.validate(validData)
+    const { error } = ingestSuccessResponseSchema.validate(validData)
     expect(error).toBeUndefined()
   })
 
@@ -19,7 +19,7 @@ describe('ingestScheduleSuccessResponseSchema', () => {
     const data = {
       taskId: 123
     }
-    const { error } = ingestScheduleSuccessResponseSchema.validate(data)
+    const { error } = ingestSuccessResponseSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('message')
   })
@@ -28,7 +28,7 @@ describe('ingestScheduleSuccessResponseSchema', () => {
     const data = {
       message: 'Ingest scheduled successfully'
     }
-    const { error } = ingestScheduleSuccessResponseSchema.validate(data)
+    const { error } = ingestSuccessResponseSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('taskId')
   })
@@ -38,7 +38,7 @@ describe('ingestScheduleSuccessResponseSchema', () => {
       message: 'Ingest scheduled successfully',
       taskId: 'not-a-number'
     }
-    const { error } = ingestScheduleSuccessResponseSchema.validate(data)
+    const { error } = ingestSuccessResponseSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('number')
   })
@@ -48,7 +48,7 @@ describe('ingestScheduleSuccessResponseSchema', () => {
       message: 'Ingest scheduled successfully',
       taskId: 123.45
     }
-    const { error } = ingestScheduleSuccessResponseSchema.validate(data)
+    const { error } = ingestSuccessResponseSchema.validate(data)
     expect(error).toBeDefined()
     expect(error.details[0].message).toContain('integer')
   })
