@@ -69,7 +69,8 @@ export async function seedDatabaseForTests(connection) {
     genericSeedForActions(connection, 'land-cover-codes-data.sql'),
     genericSeedForActions(connection, 'land-covers-data.sql'),
     genericSeedForActions(connection, 'land-parcels-data.sql'),
-    genericSeedForActions(connection, 'moorland-designations-data.sql')
+    genericSeedForActions(connection, 'moorland-designations-data.sql'),
+    genericSeedForActions(connection, 'sssi-data-layer-data.sql')
   ])
 }
 
