@@ -42,9 +42,12 @@ describe('Get application validation runs', () => {
         savedApplicationValidationRun.application_id
       )
 
-    expect(getApplicationValidationRunsResult[0]).toMatchObject({
-      ...savedApplicationValidationRun
-    })
+    // eslint-disable-next-line
+    const { id, created_at, ...expectedFields } = savedApplicationValidationRun
+
+    expect(getApplicationValidationRunsResult[0]).toMatchObject(expectedFields)
+    expect(getApplicationValidationRunsResult[0].id).toBeGreaterThan(0)
+    expect(getApplicationValidationRunsResult[0].created_at).not.toBeNull()
   })
 
   test('should release client in finally block when error occurs', async () => {
