@@ -6,7 +6,7 @@ import {
   deleteFiles
 } from './setup/s3-test-helpers.js'
 
-import { importLandData } from '../api/land-data-ingest/workers/ingest-schedule.module.js'
+import { importLandData } from '../api/land-data-ingest/workers/ingest.module.js'
 import { connectToTestDatbase } from '../db-tests/setup/postgres.js'
 import { getRecordsByQuery } from './setup/db-helper.js'
 import { getCsvFixtures } from './setup/csv.js'

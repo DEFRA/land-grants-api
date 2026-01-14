@@ -11,10 +11,7 @@ import {
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { config } from '../../../config/index.js'
-import {
-  createTaskInfo,
-  processFile
-} from '../service/ingest-schedule.service.js'
+import { createTaskInfo, processFile } from '../service/ingest.service.js'
 
 export const LandDataIngestController = {
   options: {

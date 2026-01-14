@@ -8,10 +8,7 @@ import {
 } from '../../common/s3/s3.js'
 import { config } from '~/src/config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
-import {
-  processFile,
-  createTaskInfo
-} from '../service/ingest-schedule.service.js'
+import { processFile, createTaskInfo } from '../service/ingest.service.js'
 import { vi } from 'vitest'
 
 // Mock dependencies
@@ -19,8 +16,8 @@ vi.mock('~/src/api/common/helpers/logging/log-helpers.js')
 vi.mock('../../common/s3/s3.js')
 vi.mock('~/src/config/index.js')
 vi.mock('../../common/plugins/s3-client.js')
-vi.mock('../service/ingest-schedule.service.js', async () => ({
-  ...(await vi.importActual('../service/ingest-schedule.service.js')),
+vi.mock('../service/ingest.service.js', async () => ({
+  ...(await vi.importActual('../service/ingest.service.js')),
   processFile: vi.fn(),
   createTaskInfo: vi.fn()
 }))

@@ -4,23 +4,20 @@ import {
   logBusinessError,
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
-import {
-  createTaskInfo,
-  processFile
-} from '../service/ingest-schedule.service.js'
+import { createTaskInfo, processFile } from '../service/ingest.service.js'
 import { internalServerErrorResponseSchema } from '~/src/api/common/schema/index.js'
-import { ingestScheduleSuccessResponseSchema } from '../schema/ingest-schedule.schema.js'
+import { ingestSuccessResponseSchema } from '../schema/ingest.schema.js'
 import { filterFilesByDate, getFiles } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 
-export const IngestScheduleController = {
+export const IngestController = {
   options: {
     tags: ['api'],
-    description: 'Ingest land data schedule',
-    notes: 'Ingest land data schedule',
+    description: 'Ingest land data',
+    notes: 'Ingest land data',
     response: {
       status: {
-        200: ingestScheduleSuccessResponseSchema,
+        200: ingestSuccessResponseSchema,
         500: internalServerErrorResponseSchema
       }
     }
