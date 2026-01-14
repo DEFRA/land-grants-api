@@ -51,6 +51,6 @@ describe('Actions import', () => {
     expect(action[0].enabled).toBe(true)
     expect(action[0].display).toBe(true)
     expect(action[0].ingest_id).toBeDefined()
-    expect(action[0].import_date).toBeDefined()
+    expect(action[0].ingest_date).toBeDefined()
   }, 10000)
 })
