@@ -22,7 +22,8 @@ const initiateLandDataUploadRequestSchema = Joi.object({
       'compatibility_matrix',
       'agreements',
       'actions',
-      'actions_config'
+      'actions_config',
+      'sssi'
     )
 })
 

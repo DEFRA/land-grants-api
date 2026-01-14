@@ -1,4 +1,4 @@
-INSERT INTO actions (code, description, enabled, display, ingest_id, import_date)
+INSERT INTO actions (code, description, enabled, display, ingest_id, ingest_date)
 SELECT code, description, enabled, display, $1, NOW()
 FROM actions_tmp
 ON CONFLICT (code) DO UPDATE SET
@@ -7,4 +7,4 @@ ON CONFLICT (code) DO UPDATE SET
   enabled = EXCLUDED.enabled,
   display = EXCLUDED.display,
   ingest_id = $1,
-  import_date = NOW();
+  ingest_date = NOW();

@@ -13,7 +13,8 @@ const resources = [
   'land_parcels',
   'land_covers',
   'actions',
-  'actions_config'
+  'actions_config',
+  'sssi'
 ]
 
 transferAllResources()

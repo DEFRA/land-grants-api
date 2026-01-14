@@ -8,8 +8,9 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="grant-select-for-data-layer" author="system">
-    <sql>GRANT select on data_layer to land_grants_api;</sql>
+  <changeSet id="add-columns-to-actions" author="system">
+    <sql>ALTER TABLE actions ADD COLUMN ingest_date TIMESTAMP;</sql>
+    <sql>ALTER TABLE actions ADD COLUMN ingest_id TEXT NOT NULL DEFAULT '';</sql>
   </changeSet>
 
 </databaseChangeLog>

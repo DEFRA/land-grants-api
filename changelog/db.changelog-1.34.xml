@@ -8,10 +8,8 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="add-columns-to-actions" author="system">
-    <sql>ALTER TABLE actions ADD COLUMN import_date TIMESTAMP;</sql>
-    <sql>ALTER TABLE actions ADD COLUMN ingest_id TEXT NOT NULL DEFAULT '';</sql>
+  <changeSet id="grant-truncate-for-data-layer" author="system">
+    <sql>GRANT insert, update, truncate on data_layer to land_grants_api;</sql>
   </changeSet>
-
 
 </databaseChangeLog>
