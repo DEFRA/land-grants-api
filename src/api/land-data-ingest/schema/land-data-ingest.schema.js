@@ -3,10 +3,7 @@ import Joi from 'joi'
 const cdpUploaderCallbackSchema = Joi.object({
   uploadStatus: Joi.string().valid('initiated', 'pending', 'ready').required(),
   numberOfRejectedFiles: Joi.number().integer(),
-  metadata: Joi.object({
-    customerId: Joi.string(),
-    accountId: Joi.string()
-  }),
+  metadata: Joi.object(),
   form: Joi.object({
     file: Joi.object({
       fileId: Joi.string().required(),
