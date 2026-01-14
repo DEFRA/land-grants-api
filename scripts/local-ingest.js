@@ -4,7 +4,7 @@ import path from 'path'
 import { createReadStream } from 'fs'
 import { fileURLToPath } from 'url'
 import { importData } from '../src/api/land-data-ingest/service/import-land-data.service.js'
-import { resources } from '../src/api/land-data-ingest/workers/ingest-schedule.module.js'
+import { resources } from '../src/api/land-data-ingest/workers/ingest.module.js'
 
 const logger = {
   info: () => void 0,

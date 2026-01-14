@@ -3,7 +3,7 @@ import {
   processFile,
   createTaskInfo,
   initiateLandDataUpload
-} from './ingest-schedule.service.js'
+} from './ingest.service.js'
 import * as workerThread from '../../common/worker-thread/start-worker-thread.js'
 import { config } from '../../../config/index.js'
 
@@ -13,7 +13,7 @@ vi.mock('../../../config/index.js')
 // Mock global fetch
 global.fetch = vi.fn()
 
-describe('Ingest Schedule Service', () => {
+describe('Ingest Service', () => {
   let mockRequest
   let mockLogger
 
@@ -60,7 +60,7 @@ describe('Ingest Schedule Service', () => {
         workerThread.startWorker.mock.calls[0]
 
       expect(request).toBe(mockRequest)
-      expect(workerPath).toContain('ingest-schedule.worker.js')
+      expect(workerPath).toContain('ingest.worker.js')
       expect(title).toBe(mockTitle)
       expect(category).toBe(mockCategory)
       expect(taskId).toBe(mockTaskId)
@@ -77,8 +77,8 @@ describe('Ingest Schedule Service', () => {
       )
 
       const workerPath = workerThread.startWorker.mock.calls[0][1]
-      expect(workerPath).toContain('workers/ingest-schedule.worker.js')
-      expect(workerPath).toMatch(/ingest-schedule\.worker\.js$/)
+      expect(workerPath).toContain('workers/ingest.worker.js')
+      expect(workerPath).toMatch(/ingest\.worker\.js$/)
     })
 
     it('should return promise that resolves when worker completes', async () => {

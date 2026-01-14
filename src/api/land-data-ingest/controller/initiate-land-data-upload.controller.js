@@ -6,11 +6,11 @@ import {
 } from '~/src/api/common/helpers/logging/log-helpers.js'
 import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
-import { initiateLandDataUpload } from '../service/ingest-schedule.service.js'
+import { initiateLandDataUpload } from '../service/ingest.service.js'
 import {
   initiateLandDataUploadRequestSchema,
   initiateLandDataUploadSuccessResponseSchema
-} from '../schema/ingest-schedule.schema.js'
+} from '../schema/ingest.schema.js'
 
 export const InitiateLandDataUploadController = {
   options: {

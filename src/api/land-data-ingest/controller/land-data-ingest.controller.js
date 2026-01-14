@@ -14,7 +14,7 @@ import { config } from '../../../config/index.js'
 import {
   createTaskInfo,
   processFile
-} from '../service/ingest-schedule.service.js'
+} from '../service/ingest.service.js'
 
 export const LandDataIngestController = {
   options: {

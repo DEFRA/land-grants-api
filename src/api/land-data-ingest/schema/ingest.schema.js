@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-const ingestScheduleSuccessResponseSchema = Joi.object({
+const ingestSuccessResponseSchema = Joi.object({
   message: Joi.string().required(),
   taskId: Joi.number().integer().required()
 })
@@ -28,7 +28,7 @@ const initiateLandDataUploadRequestSchema = Joi.object({
 })
 
 export {
-  ingestScheduleSuccessResponseSchema,
+  ingestSuccessResponseSchema,
   initiateLandDataUploadSuccessResponseSchema,
   initiateLandDataUploadRequestSchema
 }

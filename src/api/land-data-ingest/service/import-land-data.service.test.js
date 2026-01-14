@@ -7,7 +7,7 @@ import {
   truncateTableAndInsertData
 } from './data-helpers.js'
 
-import { resources } from '../workers/ingest-schedule.module.js'
+import { resources } from '../workers/ingest.module.js'
 
 vi.mock('../../common/helpers/postgres.js')
 vi.mock('./data-helpers.js')
