@@ -1,6 +1,6 @@
 CREATE TEMPORARY TABLE actions_config_tmp (
   code TEXT,
-  version NUMERIC,
+  version TEXT,
   start_date DATE,
   duration_years NUMERIC,
   application_unit_of_measurement TEXT,
