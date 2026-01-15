@@ -12,8 +12,6 @@ const resources = [
   'moorland_designations',
   'land_parcels',
   'land_covers',
-  'actions',
-  'actions_config',
   'sssi'
 ]
 
