@@ -9,7 +9,7 @@
  * @returns {RuleResultItem} - The result of the rule
  */
 export const sssiConsentRequired = {
-  execute: (application, rule) => {
+  execute: (_application, rule) => {
     const { layerName, caveatDescription } = rule.config
     const name = `${rule.name}-${layerName}`
 
