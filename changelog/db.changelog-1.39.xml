@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="drop-actions-ingest-id-column" author="system">
+    <sql>ALTER TABLE actions_config DROP COLUMN ingest_id;</sql>
+    <sql>ALTER TABLE actions_config DROP COLUMN ingest_date;</sql>
+    <sql>ALTER TABLE actions DROP COLUMN ingest_id;</sql>
+    <sql>ALTER TABLE actions DROP COLUMN ingest_date;</sql>
+   </changeSet>
+
+   <changeSet id="update-action-config-disable-upl-actions" author="system">
+    <sql>UPDATE actions_config SET is_active = false WHERE (code = 'UPL1' OR code = 'UPL2' OR code = 'UPL3') AND version = '1';</sql>
+   </changeSet>
+
+   <changeSet id="add-new-upl1-actions-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at) VALUES ('UPL1', 2, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 20
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now());</sql>
+   </changeSet>
+
+   <changeSet id="add-new-upl2-actions-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at) VALUES ('UPL2', 2, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 53
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now());</sql>
+   </changeSet>
+
+   <changeSet id="add-new-upl3-actions-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at) VALUES ('UPL3', 2, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 66
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now());</sql>
+   </changeSet>
+</databaseChangeLog>
