@@ -6,7 +6,7 @@
 /**
  * @typedef {object} Action
  * @property {number} id
- * @property {number} version
+ * @property {string} version
  * @property {boolean} display
  * @property {boolean} enabled
  * @property {Date} startDate

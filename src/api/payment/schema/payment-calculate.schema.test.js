@@ -1,4 +1,7 @@
-import { PaymentCalculateResponseSchema } from './payment-calculate.schema.js'
+import {
+  PaymentCalculateResponseSchema,
+  paymentCalculateSchema
+} from './payment-calculate.schema.js'
 
 describe('Payment Calculate Schema Validation', () => {
   describe('PaymentCalculateResponseSchema', () => {
@@ -16,10 +19,12 @@ describe('Payment Calculate Schema Validation', () => {
               code: 'CSAM1',
               description:
                 'Assess soil, test soil organic matter and produce a soil management plan',
+              version: '1.0.0',
               unit: 'Hectare',
               quantity: 10.63,
               rateInPence: 600,
               annualPaymentPence: 12000,
+              durationYears: 3,
               sheetId: 'SD2324',
               parcelId: '1253'
             }
@@ -29,6 +34,8 @@ describe('Payment Calculate Schema Validation', () => {
               code: 'CMOR1',
               description:
                 'Assess moorland and produce a written record - Agreement level part',
+              version: '1.0.0',
+              durationYears: 3,
               annualPaymentPence: 27200
             }
           },
@@ -248,6 +255,119 @@ describe('Payment Calculate Schema Validation', () => {
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain(
         '"payment.payments[0].totalPaymentPence" must be greater than or equal to 0'
+      )
+    })
+  })
+
+  describe('paymentCalculateSchema', () => {
+    it('should validate correct payment calculate request', () => {
+      const validRequest = {
+        parcel: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              }
+            ]
+          }
+        ]
+      }
+
+      const result = paymentCalculateSchema.validate(validRequest)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject missing parcel array', () => {
+      const invalidRequest = {
+        startDate: '2025-08-01',
+        sbi: '123456789'
+      }
+
+      const result = paymentCalculateSchema.validate(invalidRequest)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain('"parcel" is required')
+    })
+
+    it('should reject missing sheetId in parcel item', () => {
+      const invalidRequest = {
+        parcel: [
+          {
+            parcelId: '9238',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: 99.0
+              }
+            ]
+          }
+        ]
+      }
+
+      const result = paymentCalculateSchema.validate(invalidRequest)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain('"parcel[0].sheetId" is required')
+    })
+
+    it('should reject missing actions array in parcel item', () => {
+      const invalidRequest = {
+        parcel: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238'
+          }
+        ]
+      }
+
+      const result = paymentCalculateSchema.validate(invalidRequest)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain('"parcel[0].actions" is required')
+    })
+
+    it('should reject missing code in action', () => {
+      const invalidRequest = {
+        parcel: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            actions: [
+              {
+                quantity: 99.0
+              }
+            ]
+          }
+        ]
+      }
+
+      const result = paymentCalculateSchema.validate(invalidRequest)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain(
+        '"parcel[0].actions[0].code" is required'
+      )
+    })
+
+    it('should reject invalid quantity in action', () => {
+      const invalidRequest = {
+        parcel: [
+          {
+            sheetId: 'SX0679',
+            parcelId: '9238',
+            actions: [
+              {
+                code: 'BND1',
+                quantity: -10
+              }
+            ]
+          }
+        ]
+      }
+
+      const result = paymentCalculateSchema.validate(invalidRequest)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain(
+        '"parcel[0].actions[0].quantity" must be a positive number'
       )
     })
   })

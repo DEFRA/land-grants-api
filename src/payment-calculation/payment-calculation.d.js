@@ -27,7 +27,7 @@
  * @property {string} code - The code of the action
  * @property {string} description - The description of the action
  * @property {string} unit
- * @property {number} version - The action version
+ * @property {string} version - The action version
  * @property {string} sheetId
  * @property {string} parcelId
  * @property {number} quantity - The quantity applied for the action
@@ -41,7 +41,7 @@
  * @property {string} code - The code of the action
  * @property {string} description - The description of the action
  * @property {number} durationYears - The duration in years for the action
- * @property {number} version - The action version
+ * @property {string} version - The action version
  * @property {number} annualPaymentPence - The annual payment paid for the action
  */
 
