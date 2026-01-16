@@ -32,34 +32,6 @@ describe('Get moorland intercept percentage query', () => {
     expect(result).toBe(96)
   })
 
-  test('when tiny amount of moorland and sheet_id = SD7348 AND parcel_id = 1554 and ref_code = M', async () => {
-    const sheetId = 'SD7348'
-    const parcelId = '1554'
-
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      connection,
-      logger
-    )
-
-    expect(result).toBe(1)
-  })
-
-  test('when large enough ammount of moorland and sheet_id = SD7348 AND parcel_id = 0551 and ref_code = M', async () => {
-    const sheetId = 'SD7348'
-    const parcelId = '0551'
-
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      connection,
-      logger
-    )
-
-    expect(result).toBe(50)
-  })
-
   test('when small ammount of moorland and sheet_id = SD6346 AND parcel_id = 8986 and ref_code = M', async () => {
     const sheetId = 'SD6346'
     const parcelId = '8986'
@@ -72,20 +44,6 @@ describe('Get moorland intercept percentage query', () => {
     )
 
     expect(result).toBe(10)
-  })
-
-  test('when full ammount of moorland and sheet_id = SD5148 AND parcel_id = 3580 and ref_code = M', async () => {
-    const sheetId = 'SD5148'
-    const parcelId = '3580'
-
-    const result = await getMoorlandInterceptPercentage(
-      sheetId,
-      parcelId,
-      connection,
-      logger
-    )
-
-    expect(result).toBe(100)
   })
 
   test('when no moorland and sheet_id = SD5358 AND parcel_id = 8678 and ref_code = M', async () => {

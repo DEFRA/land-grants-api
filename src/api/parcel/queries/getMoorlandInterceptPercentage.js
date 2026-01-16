@@ -12,18 +12,18 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
     const query = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
-              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS moorland_overlap_percent
+              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
       FROM
           land_parcels p
       LEFT JOIN
-          moorland_designations m
+          data_layer m
           ON ST_Intersects(p.geom, m.geom)
       WHERE
           p.sheet_id = $1 AND
           p.parcel_id = $2 AND
-          m.ref_code LIKE 'M%'
+          m.metadata ->> 'ref_code' LIKE 'M%'
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom, m.ref_code;
+          p.sheet_id, p.parcel_id, p.geom, m.metadata ->> 'ref_code';
     `
 
     const values = [sheetId, parcelId]
@@ -34,9 +34,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
     }
 
     const roundedMoorlandOverlapPercent = Math.max(
-      ...(result.rows.map((row) =>
-        roundSqm(row.moorland_overlap_percent || 0)
-      ) || 0)
+      ...(result.rows.map((row) => roundSqm(row.overlap_percent || 0)) || 0)
     )
 
     logInfo(logger, {
