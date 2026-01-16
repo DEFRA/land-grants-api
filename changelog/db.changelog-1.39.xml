@@ -8,8 +8,12 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet id="add-columns-to-actions-config" author="system">
+  <changeSet id="drop-moorland-designations-table" author="system">
     <sql>DROP TABLE moorland_designations;</sql>
+  </changeSet>
+
+  <changeSet id="alter-moorland-data-layer-type" author="system">
+    <sql>UPDATE data_layer_type SET name 'less_favoured_areas' WHERE id = 2;</sql>
   </changeSet>
 
 </databaseChangeLog>
