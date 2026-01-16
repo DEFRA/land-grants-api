@@ -21,7 +21,8 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
       WHERE
           p.sheet_id = $1 AND
           p.parcel_id = $2 AND
-          m.metadata ->> 'ref_code' LIKE 'M%'
+          m.metadata ->> 'ref_code' LIKE 'M%' AND
+          m.data_layer_type_id = 2
       GROUP BY
           p.sheet_id, p.parcel_id, p.geom, m.metadata ->> 'ref_code';
     `
