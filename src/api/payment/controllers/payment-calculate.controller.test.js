@@ -112,7 +112,7 @@ describe('Payment calculate controller', () => {
     await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
       enabledActions: [
         {
-          version: 1,
+          version: '1.0.0',
           startDate: '2025-01-01',
           code: 'BND1',
           durationYears: 3,
@@ -254,9 +254,7 @@ describe('Payment calculate controller', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe(
-        'Error calculating payment land actions, no land or actions data provided'
-      )
+      expect(message).toBe('Invalid request payload input')
     })
 
     test('should return 400 if totalDurationYears is 0 (no enabled actions match)', async () => {
@@ -270,7 +268,7 @@ describe('Payment calculate controller', () => {
       await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
         enabledActions: [
           {
-            version: 1,
+            version: '1.0.0',
             startDate: '2025-01-01',
             code: 'DIFFERENT_CODE',
             durationYears: 3,
