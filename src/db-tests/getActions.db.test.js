@@ -27,7 +27,7 @@ describe('Get actions', () => {
     const actions = await getEnabledActions(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, ingest_date, ingest_id, ...cmor1 } = actions.find(
+    const { lastUpdated, id, ...cmor1 } = actions.find(
       (a) => a.code === 'CMOR1'
     )
 
