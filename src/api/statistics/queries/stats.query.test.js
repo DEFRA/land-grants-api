@@ -22,6 +22,7 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult(50)) // land_cover_codes_actions
         .mockResolvedValueOnce(createMockResult(1000)) // land_covers
         .mockResolvedValueOnce(createMockResult(500)) // land_parcels
+        .mockResolvedValueOnce(createMockResult(70)) // sssi
         .mockResolvedValueOnce(createMockResult(30)), // moorland_designations
       release: vi.fn()
     }
@@ -45,7 +46,7 @@ describe('getStats', () => {
   test('should query all tables for counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(10)
+    expect(mockClient.query).toHaveBeenCalledTimes(11)
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM actions'
     )
@@ -74,7 +75,10 @@ describe('getStats', () => {
       'SELECT COUNT(*) FROM land_parcels'
     )
     expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM moorland_designations'
+      'SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 1'
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2'
     )
   })
 
@@ -101,6 +105,7 @@ describe('getStats', () => {
     expect(logMessage).toContain('landCoverCodesActionsCount=50')
     expect(logMessage).toContain('landCoversCount=1000')
     expect(logMessage).toContain('landParcelsCount=500')
+    expect(logMessage).toContain('sssiCount=70')
     expect(logMessage).toContain('moorlandDesignationsCount=30')
   })
 
