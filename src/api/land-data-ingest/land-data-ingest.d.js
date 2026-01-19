@@ -15,4 +15,6 @@
  * @property {string} form.file.checksumSha256
  * @property {string} form.file.s3Key
  * @property {string} form.file.s3Bucket
+ * @property {boolean} form.file.hasError
+ * @property {string} form.file.errorMessage
  */

@@ -207,5 +207,59 @@ describe('LandDataIngestController', () => {
 
       expect(statusCode).toBe(200)
     })
+
+    test('should return 400 when file has error', async () => {
+      const payload = {
+        ...validPayload,
+        form: {
+          file: {
+            hasError: true,
+            errorMessage: 'File has error'
+          }
+        }
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('File has error')
+    })
+
+    test('should return 400 when file is not ready', async () => {
+      const payload = {
+        ...validPayload,
+        form: {
+          file: {
+            ...validPayload.form.file,
+            fileStatus: 'pending'
+          }
+        }
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('File is not ready')
+    })
   })
 })
