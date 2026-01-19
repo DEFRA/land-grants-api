@@ -50,7 +50,11 @@ export const LandDataIngestController = {
         }
       })
 
-      if (payload.form.file.fileStatus !== 'complete') {
+      if (payload.form.file?.hasError) {
+        return Boom.badRequest(payload.form.file.errorMessage)
+      }
+
+      if (payload.form.file?.fileStatus !== 'complete') {
         return Boom.badRequest('File is not ready')
       }
 
