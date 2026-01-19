@@ -10,7 +10,7 @@ const availableAreaSchema = Joi.object({
 const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
-  version: Joi.number(),
+  version: Joi.string(),
   availableArea: availableAreaSchema.optional(),
   results: Joi.object({
     totalValidLandCoverSqm: Joi.number().optional(),
