@@ -2,7 +2,7 @@ import { applicationUnitOfMeasurement } from '~/src/api/common/helpers/measureme
 
 const mockActionConfig = [
   {
-    version: 1,
+    version: '1.0.0',
     startDate: '2025-01-01',
     code: 'CMOR1',
     durationYears: 3,
@@ -45,7 +45,7 @@ const mockActionConfig = [
     ]
   },
   {
-    version: 1,
+    version: '1.0.0',
     enabled: true,
     display: true,
     startDate: '2025-01-01',
@@ -85,7 +85,7 @@ const mockActionConfig = [
     ]
   },
   {
-    version: 1,
+    version: '1.0.0',
     enabled: true,
     display: true,
     startDate: '2025-01-01',
