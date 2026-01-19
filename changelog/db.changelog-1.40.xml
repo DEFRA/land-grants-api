@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="drop-moorland-designations-table" author="system">
+    <sql>DROP TABLE moorland_designations;</sql>
+  </changeSet>
+
+  <changeSet id="alter-moorland-data-layer-type" author="system">
+    <sql>UPDATE data_layer_type SET name = 'less_favoured_areas' WHERE id = 2;</sql>
+  </changeSet>
+
+</databaseChangeLog>

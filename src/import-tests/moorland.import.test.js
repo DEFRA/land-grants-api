@@ -44,21 +44,22 @@ describe('Moorland import', () => {
 
     expect(result).toBe('Land data imported successfully')
 
-    const moorland = await getRecordsByQuery(
+    const allMoorlandDesignations = await getRecordsByQuery(
       connection,
-      'SELECT id, ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m',
+      'SELECT name, source_id, ST_AsText(geom) as geom, metadata FROM data_layer WHERE data_layer_type_id = 2',
       []
     )
 
     for (const fixture of fixtures) {
-      const moorlandResult = moorland.find(
-        (m) => m.id === Number(fixture.OBJECTID)
+      const moorlandResult = allMoorlandDesignations.find(
+        (m) => m.source_id === fixture.OBJECTID
       )
-
-      expect(moorlandResult.lfa_moor_id).toEqual(fixture.LFAMOORID)
-      expect(moorlandResult.ref_code).toEqual(fixture.REF_CODE)
       expect(moorlandResult.name).toEqual(fixture.NAME)
       expect(moorlandResult.geom).toEqual(fixture.geom)
+      expect(moorlandResult.metadata).toEqual({
+        ref_code: fixture.REF_CODE,
+        lfamoorid: Number(fixture.LFAMOORID)
+      })
     }
 
     const files = await listTestFiles(s3Client)
@@ -80,14 +81,17 @@ describe('Moorland import', () => {
     await importLandData('moorland_designations/moorland_head.csv')
     await importLandData('moorland_designations/moorland_head_upsert.csv')
 
-    const moorland = await getRecordsByQuery(
+    const [moorland] = await getRecordsByQuery(
       connection,
-      'SELECT id, ST_AsText(m.geom) as geom, m.lfa_moor_id, m.name, m.ref_code FROM moorland_designations m where id = $1',
-      [9]
+      'SELECT id, source_id, name, metadata FROM data_layer where source_id = $1',
+      ['9']
     )
 
-    expect(moorland[0].lfa_moor_id).toBe('735')
-    expect(moorland[0].ref_code).toBe('MS1')
-    expect(moorland[0].name).toBe('MS1')
+    expect(moorland.name).toBe('MS1')
+    expect(moorland.metadata).toEqual({
+      ref_code: 'MS1',
+      lfamoorid: 735
+    })
+    expect(moorland.source_id).toBe('9')
   }, 10000)
 })
