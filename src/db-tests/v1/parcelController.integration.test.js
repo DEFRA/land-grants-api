@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { ParcelsController } from '~/src/api/parcel/controllers/parcels.controller.js'
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import { createResponseCapture } from './setup/utils.js'
+import { createResponseCapture } from '../setup/utils.js'
 import { vi } from 'vitest'
 
 function getSnapshotName(testName, parcel, action) {

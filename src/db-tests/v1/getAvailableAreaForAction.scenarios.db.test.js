@@ -3,9 +3,9 @@ import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
-} from '../available-area/availableArea.js'
-import { createCompatibilityMatrix } from '../available-area/compatibilityMatrix.js'
-import { getAvailableAreaFixtures } from './setup/getAvailableAreaFixtures.js'
+} from '../../available-area/availableArea.js'
+import { createCompatibilityMatrix } from '../../available-area/compatibilityMatrix.js'
+import { getAvailableAreaFixtures } from '../setup/getAvailableAreaFixtures.js'
 
 describe('Calculate available area', () => {
   let logger, connection

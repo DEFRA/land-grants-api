@@ -1,9 +1,9 @@
-import { getAgreementsForParcel } from '../api/agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreementsForParcel } from '../../api/agreements/queries/getAgreementsForParcel.query.js'
 import {
   connectToTestDatbase,
   seedForAgreementsTest,
   resetAgreementsTestData
-} from './setup/postgres.js'
+} from '../setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get agreement actions for parcel query', () => {

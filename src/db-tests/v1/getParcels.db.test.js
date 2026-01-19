@@ -6,7 +6,7 @@ import {
   seedForGetParcelTest
 } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
-import { logger } from './testLogger.js'
+import { logger } from '../setup/testLogger.js'
 
 describe('Calculate available area', () => {
   let connection

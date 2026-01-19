@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
-import { mockActionConfig } from '../api/actions/fixtures/index.js'
-import { getParcelAvailableArea } from '../api/parcel/queries/getParcelAvailableArea.query.js'
-import { connectToTestDatbase } from './setup/postgres.js'
+import { mockActionConfig } from '../../api/actions/fixtures/index.js'
+import { getParcelAvailableArea } from '../../api/parcel/queries/getParcelAvailableArea.query.js'
+import { connectToTestDatbase } from '../setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Available Area query', () => {

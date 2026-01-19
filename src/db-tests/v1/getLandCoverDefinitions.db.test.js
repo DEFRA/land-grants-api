@@ -1,6 +1,6 @@
-import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
-import { connectToTestDatbase } from './setup/postgres.js'
-import { logger } from './testLogger.js'
+import { getLandCoverDefinitions } from '../../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
+import { connectToTestDatbase } from '../setup/postgres.js'
+import { logger } from '../setup/testLogger.js'
 
 describe('Get land cover definitions', () => {
   let connection

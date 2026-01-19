@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
-import { PaymentsCalculateController } from '~/src/api/payment/controllers/payment-calculate.controller.js'
+import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/api/payment/controllers/v1/payment-calculate.controller.js'
 
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import { createResponseCapture } from './setup/utils.js'
-import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
+import { createResponseCapture } from '../setup/utils.js'
+import { getPaymentCalculationFixtures } from '../setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
 import { vi } from 'vitest'
 

@@ -1,5 +1,5 @@
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import { createResponseCapture } from './setup/utils.js'
+import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
 import { ApplicationValidationController } from '~/src/api/application/controllers/application-validation.controller.js'
 import { getApplicationValidationRun } from '~/src/api/application/queries/getApplicationValidationRun.query.js'
 import { vi } from 'vitest'

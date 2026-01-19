@@ -3,8 +3,8 @@ import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import {
   getPaymentCalculationDataRequirements,
   getPaymentCalculationForParcels
-} from '../payment-calculation/paymentCalculation.js'
-import { getPaymentCalculationFixtures } from './setup/getPaymentCalculationFixtures.js'
+} from '../../payment-calculation/paymentCalculation.js'
+import { getPaymentCalculationFixtures } from '../setup/getPaymentCalculationFixtures.js'
 import { vi } from 'vitest'
 
 describe('Calculate payments', () => {

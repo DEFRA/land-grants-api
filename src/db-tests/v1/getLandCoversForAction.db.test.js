@@ -1,8 +1,8 @@
 import {
   getLandCoversForAction,
   getLandCoversForActions
-} from '../api/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { connectToTestDatbase } from './setup/postgres.js'
+} from '../../api/land-cover-codes/queries/getLandCoversForActions.query.js'
+import { connectToTestDatbase } from '../setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get land cover codes', () => {

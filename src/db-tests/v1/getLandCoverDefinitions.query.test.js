@@ -1,5 +1,5 @@
-import { getLandCoverDefinitions } from '../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
-import { connectToTestDatbase } from './setup/postgres.js'
+import { getLandCoverDefinitions } from '../../api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
+import { connectToTestDatbase } from '../setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get land cover definitions query', () => {

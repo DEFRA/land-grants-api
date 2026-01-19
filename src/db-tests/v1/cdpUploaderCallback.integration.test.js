@@ -1,14 +1,14 @@
-import { LandDataIngestController } from '../api/land-data-ingest/controller/land-data-ingest.controller.js'
-import { createResponseCapture } from './setup/utils.js'
+import { LandDataIngestController } from '../../api/land-data-ingest/controller/land-data-ingest.controller.js'
+import { createResponseCapture } from '../setup/utils.js'
 import {
   createTestS3Client,
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
   clearTestBucket
-} from '../import-tests/setup/s3-test-helpers.js'
-import { connectToTestDatbase } from './setup/postgres.js'
-import { clearTestData } from './setup/db-helper.js'
+} from '../../import-tests/setup/s3-test-helpers.js'
+import { connectToTestDatbase } from '../setup/postgres.js'
+import { clearTestData } from '../setup/db-helper.js'
 import { vi } from 'vitest'
 
 describe('CDP uploader callback integration test', () => {
