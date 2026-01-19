@@ -16,7 +16,8 @@ const dataLayerQuery = `
   WHERE
       lc.sheet_id = $1 AND
       lc.parcel_id = $2 AND
-      lc.land_cover_class_code = ANY($3)
+      lc.land_cover_class_code = ANY($3) AND
+      dl.data_layer_type_id = 1
   GROUP BY
       lc.sheet_id, lc.parcel_id, lc.geom;
 `

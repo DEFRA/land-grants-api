@@ -12,9 +12,7 @@ describe('getMoorlandInterceptPercentage', () => {
         {
           sheet_id: 'SH123',
           parcel_id: 'PA456',
-          parcel_area_m2: 1000,
-          moorland_overlap_m2: 500,
-          moorland_overlap_percent: 50
+          overlap_percent: 50
         }
       ]
     }
@@ -49,18 +47,19 @@ describe('getMoorlandInterceptPercentage', () => {
     const expectedQuery = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
-              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS moorland_overlap_percent
+              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
       FROM
           land_parcels p
       LEFT JOIN
-          moorland_designations m
+          data_layer m
           ON ST_Intersects(p.geom, m.geom)
       WHERE
           p.sheet_id = $1 AND
           p.parcel_id = $2 AND
-          m.ref_code LIKE 'M%'
+          m.metadata ->> 'ref_code' LIKE 'M%' AND
+          m.data_layer_type_id = 2
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom, m.ref_code;
+          p.geom, m.metadata ->> 'ref_code';
     `
 
     const expectedValues = [sheetId, parcelId]
@@ -87,7 +86,7 @@ describe('getMoorlandInterceptPercentage', () => {
   test('should return 0 when no moorland overlap', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
-    mockResult.rows[0].moorland_overlap_percent = null
+    mockResult.rows[0].overlap_percent = null
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
