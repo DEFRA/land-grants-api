@@ -25,6 +25,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
     code: action.code,
     description: action.description,
+    version: action.version,
     availableArea: Number.isFinite(availableArea?.availableAreaHectares)
       ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
       : undefined,
