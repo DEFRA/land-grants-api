@@ -58,6 +58,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'CMOR1',
             description: 'Assess moorland and produce a written record',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -79,6 +81,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL1',
             description: 'Moderate livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -99,6 +103,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL2',
             description: 'Low livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -119,6 +125,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL3',
             description: 'Limited livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -185,6 +193,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'CMOR1',
             description: 'Assess moorland and produce a written record',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -211,6 +221,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL1',
             description: 'Moderate livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -236,6 +248,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL2',
             description: 'Low livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
@@ -261,6 +275,8 @@ describe('Calculate available area with agreements', () => {
           {
             code: 'UPL3',
             description: 'Limited livestock grazing on moorland',
+            version: '1',
+
             availableArea: {
               unit: 'ha',
               value: 0
