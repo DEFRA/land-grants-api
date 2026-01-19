@@ -15,7 +15,7 @@ describe('getEnabledActions', () => {
           name: 'Upland Action 1',
           description: 'Test upland action',
           enabled: true,
-          version: 1,
+          version: '1.0.0',
           start_date: '2024-01-01',
           application_unit_of_measurement: 'ha',
           duration_years: 5,
@@ -29,7 +29,7 @@ describe('getEnabledActions', () => {
           name: 'Moorland Action 1',
           description: 'Test moorland action',
           enabled: true,
-          version: 2,
+          version: '1.0.0',
           start_date: '2024-02-01',
           application_unit_of_measurement: 'ha',
           duration_years: 3,
@@ -48,7 +48,7 @@ describe('getEnabledActions', () => {
         name: 'Upland Action 1',
         description: 'Test upland action',
         enabled: true,
-        version: 1,
+        version: '1.0.0',
         applicationUnitOfMeasurement: 'ha',
         durationYears: 5,
         payment: { amount: 100, unit: 'ha' },
@@ -62,7 +62,7 @@ describe('getEnabledActions', () => {
         name: 'Moorland Action 1',
         description: 'Test moorland action',
         enabled: true,
-        version: 2,
+        version: '1.0.0',
         applicationUnitOfMeasurement: 'ha',
         durationYears: 3,
         payment: { amount: 150, unit: 'ha' },
@@ -192,7 +192,7 @@ describe('getEnabledActions', () => {
         name: 'Test Action',
         description: 'Test description',
         enabled: true,
-        version: 1,
+        version: '1.0.0',
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: '10',
@@ -216,7 +216,7 @@ describe('getEnabledActions', () => {
         name: 'Action 1',
         description: 'Test',
         enabled: true,
-        version: 99,
+        version: '20.0.0',
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: 5,
@@ -229,7 +229,7 @@ describe('getEnabledActions', () => {
 
     const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result[0].version).toBe(99)
+    expect(result[0].version).toBe('20.0.0')
   })
 
   test('should handle null payment and rules', async () => {
@@ -239,7 +239,7 @@ describe('getEnabledActions', () => {
         name: 'Action 1',
         description: 'Test',
         enabled: true,
-        version: 1,
+        version: '1.0.0',
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: 5,

@@ -5,7 +5,7 @@ const mockEnabledActions = [
   {
     code: 'CMOR1',
     description: 'Assess moorland and produce a written record',
-    version: 1,
+    version: '1.0.0',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -16,7 +16,7 @@ const mockEnabledActions = [
   {
     code: 'UPL1',
     description: 'Moderate livestock grazing on moorland',
-    version: 1,
+    version: '1.0.0',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -28,7 +28,7 @@ const mockEnabledActions = [
     code: 'CSAM1',
     description:
       'Assess soil, test soil organic matter and produce a soil management plan',
-    version: 1,
+    version: '1.0.0',
     applicationUnitOfMeasurement: 'ha',
     durationYears: 3,
     payment: {
@@ -113,7 +113,7 @@ describe('getPaymentCalculationForParcels', () => {
         1: {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
-          version: 1,
+          version: '1.0.0',
           unit: 'ha',
           quantity: 0.34,
           durationYears: 3,
@@ -126,7 +126,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CSAM1',
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
-          version: 1,
+          version: '1.0.0',
           durationYears: 3,
           unit: 'ha',
           quantity: 1.45,
@@ -141,7 +141,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           annualPaymentPence: 27200
         },
         2: {
@@ -149,7 +149,7 @@ describe('getPaymentCalculationForParcels', () => {
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           annualPaymentPence: 9700
         }
       },
@@ -263,7 +263,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           unit: 'ha',
           quantity: 0.34,
           rateInPence: 1060,
@@ -276,7 +276,7 @@ describe('getPaymentCalculationForParcels', () => {
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           unit: 'ha',
           quantity: 1.45,
           rateInPence: 600,
@@ -290,7 +290,7 @@ describe('getPaymentCalculationForParcels', () => {
           code: 'CMOR1',
           description: 'Assess moorland and produce a written record',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           annualPaymentPence: 27200
         },
         2: {
@@ -298,7 +298,7 @@ describe('getPaymentCalculationForParcels', () => {
           description:
             'Assess soil, test soil organic matter and produce a soil management plan',
           durationYears: 3,
-          version: 1,
+          version: '1.0.0',
           annualPaymentPence: 9700
         }
       },
