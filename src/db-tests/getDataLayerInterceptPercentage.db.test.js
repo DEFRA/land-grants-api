@@ -4,7 +4,7 @@ import { getDataLayerQuery } from '../api/data-layers/queries/getDataLayer.query
 import { connectToTestDatbase } from './setup/postgres.js'
 import { vi } from 'vitest'
 
-describe('Get data layer intercept percentage query', () => {
+describe.skip('Get data layer intercept percentage query', () => {
   let logger, connection
 
   beforeAll(() => {

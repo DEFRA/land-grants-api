@@ -23,7 +23,8 @@ async function getStats(logger, db) {
       landCoverCodesActionsResult,
       landCoversResult,
       landParcelsResult,
-      moorlandDesignationsResult
+      sssiResults,
+      moorlandDesignationResult
     ] = await Promise.all([
       client.query(`SELECT COUNT(*) FROM actions`),
       client.query(`SELECT COUNT(*) FROM actions_config`),
@@ -34,7 +35,12 @@ async function getStats(logger, db) {
       client.query(`SELECT COUNT(*) FROM land_cover_codes_actions`),
       client.query(`SELECT COUNT(*) FROM land_covers`),
       client.query(`SELECT COUNT(*) FROM land_parcels`),
-      client.query(`SELECT COUNT(*) FROM moorland_designations`)
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 1`
+      ),
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2`
+      )
     ])
 
     const actionsCount = actionsResult.rows[0].count
@@ -46,7 +52,8 @@ async function getStats(logger, db) {
     const landCoverCodesActionsCount = landCoverCodesActionsResult.rows[0].count
     const landCoversCount = landCoversResult.rows[0].count
     const landParcelsCount = landParcelsResult.rows[0].count
-    const moorlandDesignationsCount = moorlandDesignationsResult.rows[0].count
+    const sssiCount = sssiResults.rows[0].count
+    const moorlandDesignationsCount = moorlandDesignationResult.rows[0].count
 
     logInfo(logger, {
       category: 'database',
@@ -61,6 +68,7 @@ async function getStats(logger, db) {
         landCoverCodesActionsCount,
         landCoversCount,
         landParcelsCount,
+        sssiCount,
         moorlandDesignationsCount
       }
     })
