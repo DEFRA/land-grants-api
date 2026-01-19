@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="update-action-config-set versions to semantic versioning for version 1" author="system">
+    <sql>UPDATE actions_config SET version = '1.0.0' WHERE version = '1';</sql>
+   </changeSet>
+
+   <changeSet id="update-action-config-set versions to semantic versioning for version 2" author="system">
+    <sql>UPDATE actions_config SET version = '2.0.0' WHERE version = '2';</sql>
+   </changeSet>
+
+</databaseChangeLog>
