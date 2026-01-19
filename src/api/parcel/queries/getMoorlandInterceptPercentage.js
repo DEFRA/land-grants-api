@@ -24,7 +24,7 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
           m.metadata ->> 'ref_code' LIKE 'M%' AND
           m.data_layer_type_id = 2
       GROUP BY
-          p.sheet_id, p.parcel_id, p.geom, m.metadata ->> 'ref_code';
+          p.geom, m.metadata ->> 'ref_code';
     `
 
     const values = [sheetId, parcelId]
