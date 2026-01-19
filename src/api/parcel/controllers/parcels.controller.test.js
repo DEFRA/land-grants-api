@@ -55,6 +55,7 @@ const mockActionsWithAvailableArea = [
   {
     code: 'BND1',
     description: 'Hedgerow management',
+    version: '1.0.0',
     availableArea: {
       unit: 'ha',
       value: 10
@@ -65,6 +66,7 @@ const mockActionsWithAvailableArea = [
   {
     code: 'BND2',
     description: 'Hedge laying',
+    version: '1.0.0',
     availableArea: {
       unit: 'ha',
       value: 8
@@ -256,6 +258,7 @@ describe('Parcels Controller', () => {
         {
           code: 'UPL3',
           description: 'Action 3',
+          version: '1.0.0',
           availableArea: { unit: 'ha', value: 5 },
           ratePerUnitGbp: 10,
           ratePerAgreementPerYearGbp: 0
@@ -263,6 +266,7 @@ describe('Parcels Controller', () => {
         {
           code: 'BND1',
           description: 'Action 1',
+          version: '1.0.0',
           availableArea: { unit: 'ha', value: 10 },
           ratePerUnitGbp: 10.6,
           ratePerAgreementPerYearGbp: 272
@@ -270,6 +274,7 @@ describe('Parcels Controller', () => {
         {
           code: 'CSAM1',
           description: 'Action 2',
+          version: '1.0.0',
           availableArea: { unit: 'ha', value: 8 },
           ratePerUnitGbp: 15,
           ratePerAgreementPerYearGbp: 0

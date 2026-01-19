@@ -58,7 +58,7 @@ describe('ApplicationValidationController', () => {
   const mockActions = [
     {
       code: 'BND1',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management',
@@ -72,7 +72,7 @@ describe('ApplicationValidationController', () => {
     },
     {
       code: 'BND2',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management 2',
