@@ -8,7 +8,6 @@ import {
   paymentCalculateResponseSchemaV1,
   paymentCalculateSchemaV1
 } from '~/src/api/payment/schema/v1/payment-calculate.schema.js'
-import { getPaymentCalculationDataRequirements } from '~/src/payment-calculation/paymentCalculation.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
   logBusinessError,
@@ -21,6 +20,7 @@ import {
   calculatePayment
 } from '~/src/api/payment/services/payment.service.js'
 import { paymentCalculationTransformerV1 } from '../../transformers/v1/payment.transformer.js'
+import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
 
 /**
  * PaymentsCalculateController
@@ -78,10 +78,7 @@ const PaymentsCalculateControllerV1 = {
       }
 
       // Get enabled actions from database
-      const { enabledActions } = await getPaymentCalculationDataRequirements(
-        postgresDb,
-        request.logger
-      )
+      const enabledActions = await getEnabledActions(request.logger, postgresDb)
 
       // Validate request data
       const requestValidation = await validateRequestData(

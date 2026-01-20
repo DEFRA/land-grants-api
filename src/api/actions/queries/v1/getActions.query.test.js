@@ -22,10 +22,7 @@ describe('getEnabledActions', () => {
           payment: { amount: 100, unit: 'ha' },
           land_cover_class_codes: ['GRASS', 'ARABLE'],
           rules: { minArea: 0.5 },
-          last_updated: '2024-01-15T10:00:00Z',
-          major_version: 1,
-          minor_version: 0,
-          patch_version: 0
+          last_updated: '2024-01-15T10:00:00Z'
         },
         {
           code: 'CMOR1',
@@ -39,10 +36,7 @@ describe('getEnabledActions', () => {
           payment: { amount: 150, unit: 'ha' },
           land_cover_class_codes: ['MOORLAND'],
           rules: { minArea: 1.0 },
-          last_updated: '2024-02-10T12:00:00Z',
-          major_version: 2,
-          minor_version: 0,
-          patch_version: 0
+          last_updated: '2024-02-10T12:00:00Z'
         }
       ]
     }
@@ -62,9 +56,6 @@ describe('getEnabledActions', () => {
         rules: { minArea: 0.5 },
         startDate: '2024-01-01',
         lastUpdated: '2024-01-15T10:00:00Z',
-        majorVersion: 1,
-        minorVersion: 0,
-        patchVersion: 0,
         semanticVersion: '1.0.0'
       },
       {
@@ -80,10 +71,7 @@ describe('getEnabledActions', () => {
         rules: { minArea: 1.0 },
         startDate: '2024-02-01',
         lastUpdated: '2024-02-10T12:00:00Z',
-        majorVersion: 2,
-        minorVersion: 0,
-        patchVersion: 0,
-        semanticVersion: '2.0.0'
+        semanticVersion: '1.0.0'
       }
     ]
 
@@ -115,9 +103,6 @@ describe('getEnabledActions', () => {
       SELECT
         a.*,
         ac.version,
-        ac.major_version,
-        ac.minor_version,
-        ac.patch_version,
         ac.config->>'start_date' as start_date,
         ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
         (ac.config->>'duration_years')::numeric as duration_years,
@@ -216,10 +201,7 @@ describe('getEnabledActions', () => {
         payment: { amount: 200 },
         land_cover_class_codes: ['TEST'],
         rules: {},
-        last_updated: '2024-01-01T00:00:00Z',
-        major_version: 1,
-        minor_version: 0,
-        patch_version: 0
+        last_updated: '2024-01-01T00:00:00Z'
       }
     ]
 
@@ -243,10 +225,7 @@ describe('getEnabledActions', () => {
         payment: {},
         land_cover_class_codes: [],
         rules: {},
-        last_updated: '2024-01-01T00:00:00Z',
-        major_version: 1,
-        minor_version: 0,
-        patch_version: 0
+        last_updated: '2024-01-01T00:00:00Z'
       }
     ]
 
@@ -269,10 +248,7 @@ describe('getEnabledActions', () => {
         payment: null,
         land_cover_class_codes: null,
         rules: null,
-        last_updated: '2024-01-01T00:00:00Z',
-        major_version: 1,
-        minor_version: 0,
-        patch_version: 0
+        last_updated: '2024-01-01T00:00:00Z'
       }
     ]
 

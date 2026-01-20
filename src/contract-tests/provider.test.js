@@ -20,7 +20,7 @@ import { saveApplication } from '~/src/api/application/mutations/saveApplication
 import { getLatestVersion } from './git.js'
 
 vi.mock('~/src/api/parcel/queries/getLandData.query.js')
-vi.mock('~/src/api/actions/queries/getActions.query.js')
+vi.mock('~/src/api/actions/queries/v1/getActions.query.js')
 vi.mock('~/src/api/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/available-area/compatibilityMatrix.js')
 vi.mock('~/src/available-area/availableArea.js')

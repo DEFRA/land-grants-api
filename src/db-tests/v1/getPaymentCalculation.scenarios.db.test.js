@@ -1,10 +1,8 @@
 /* eslint-disable no-console */
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import {
-  getPaymentCalculationDataRequirements,
-  getPaymentCalculationForParcels
-} from '../../payment-calculation/paymentCalculation.js'
+import { getPaymentCalculationForParcels } from '../../payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from '../setup/getPaymentCalculationFixtures.js'
+import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
 import { vi } from 'vitest'
 
 describe('Calculate payments', () => {
@@ -57,10 +55,7 @@ describe('Calculate payments', () => {
       }
 
       const durationYears = 3
-      const { enabledActions } = await getPaymentCalculationDataRequirements(
-        connection,
-        logger
-      )
+      const enabledActions = await getEnabledActions(logger, connection)
 
       const result = getPaymentCalculationForParcels(
         parcels,

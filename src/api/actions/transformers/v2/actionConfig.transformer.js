@@ -3,7 +3,7 @@
 /**
  * Transform action config
  * @param {object} action - db action config
- * @returns {import("../action.d.js").Action} The action config
+ * @returns {import("../../action.d.js").Action} The action config
  */
 export function actionConfigTransformer(action) {
   const {
@@ -15,6 +15,7 @@ export function actionConfigTransformer(action) {
     major_version,
     minor_version,
     patch_version,
+    version,
     ...actionObj
   } = action
   return {
@@ -24,6 +25,7 @@ export function actionConfigTransformer(action) {
     landCoverClassCodes: land_cover_class_codes,
     startDate: start_date,
     lastUpdated: last_updated,
+    version: Number(version),
     majorVersion: Number(major_version),
     minorVersion: Number(minor_version),
     patchVersion: Number(patch_version),

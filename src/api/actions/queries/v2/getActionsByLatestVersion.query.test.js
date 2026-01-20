@@ -56,6 +56,9 @@ describe('getActionsByLatestVersion', () => {
         description: 'Test upland action',
         enabled: true,
         version: 2,
+        majorVersion: 2,
+        minorVersion: 0,
+        patchVersion: 0,
         applicationUnitOfMeasurement: 'ha',
         durationYears: 5,
         payment: { amount: 100, unit: 'ha' },
@@ -63,9 +66,6 @@ describe('getActionsByLatestVersion', () => {
         rules: { minArea: 0.5 },
         startDate: '2024-01-01',
         lastUpdated: '2024-01-15T10:00:00Z',
-        majorVersion: 2,
-        minorVersion: 0,
-        patchVersion: 0,
         semanticVersion: '2.0.0'
       },
       {
@@ -74,6 +74,9 @@ describe('getActionsByLatestVersion', () => {
         description: 'Test moorland action',
         enabled: true,
         version: 3,
+        majorVersion: 3,
+        minorVersion: 0,
+        patchVersion: 0,
         applicationUnitOfMeasurement: 'ha',
         durationYears: 3,
         payment: { amount: 150, unit: 'ha' },
@@ -81,9 +84,6 @@ describe('getActionsByLatestVersion', () => {
         rules: { minArea: 1.0 },
         startDate: '2024-02-01',
         lastUpdated: '2024-02-10T12:00:00Z',
-        majorVersion: 3,
-        minorVersion: 0,
-        patchVersion: 0,
         semanticVersion: '3.0.0'
       }
     ]

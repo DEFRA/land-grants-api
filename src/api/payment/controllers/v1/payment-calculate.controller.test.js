@@ -1,15 +1,15 @@
 import Hapi from '@hapi/hapi'
 import { payments } from '~/src/api/payment/index.js'
-import {
-  getPaymentCalculationDataRequirements,
-  getPaymentCalculationForParcels
-} from '~/src/payment-calculation/paymentCalculation.js'
+import { getPaymentCalculationForParcels } from '~/src/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
 import { vi } from 'vitest'
+import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
 
 vi.mock('~/src/api/application/validation/application.validation.js')
+vi.mock('~/src/api/actions/queries/v1/getActions.query.js')
 
-const mockValidateRequest = validateRequest
+const mockGetEnabledActions = vi.mocked(getEnabledActions)
+const mockValidateRequest = vi.mocked(validateRequest)
 
 const mockLandActions = {
   sbi: '123456789',
@@ -33,9 +33,9 @@ const mockLandActions = {
 
 vi.mock('~/src/payment-calculation/paymentCalculation.js')
 
-const mockGetPaymentCalculationForParcels = getPaymentCalculationForParcels
-const mockGetPaymentCalculationDataRequirements =
-  getPaymentCalculationDataRequirements
+const mockGetPaymentCalculationForParcels = vi.mocked(
+  getPaymentCalculationForParcels
+)
 const validResponse = {
   agreementStartDate: '2025-08-01',
   agreementEndDate: '2028-08-01',
@@ -104,29 +104,28 @@ describe('Payment calculate controller', () => {
     await server.stop()
   })
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks()
 
     mockValidateRequest.mockResolvedValue([])
     mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
-    await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
-      enabledActions: [
-        {
-          version: 1,
-          startDate: '2025-01-01',
-          code: 'BND1',
-          durationYears: 3,
-          description: 'BND1',
-          applicationUnitOfMeasurement: 'ha',
-          enabled: true,
-          display: true,
-          payment: {
-            ratePerUnitGbp: 10.6,
-            ratePerAgreementPerYearGbp: 272
-          }
+    mockGetEnabledActions.mockResolvedValue([
+      {
+        version: 1,
+        semanticVersion: '1.0.0',
+        startDate: '2025-01-01',
+        code: 'BND1',
+        durationYears: 3,
+        description: 'BND1',
+        applicationUnitOfMeasurement: 'ha',
+        enabled: true,
+        display: true,
+        payment: {
+          ratePerUnitGbp: 10.6,
+          ratePerAgreementPerYearGbp: 272
         }
-      ]
-    })
+      }
+    ])
   })
 
   describe('GET /payments/calculate route', () => {
@@ -245,7 +244,7 @@ describe('Payment calculate controller', () => {
         }
       }
 
-      getPaymentCalculationForParcels.mockResolvedValue(null)
+      mockGetPaymentCalculationForParcels.mockReturnValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -267,24 +266,23 @@ describe('Payment calculate controller', () => {
       }
 
       // Mock enabledActions with no matching action codes
-      await mockGetPaymentCalculationDataRequirements.mockResolvedValue({
-        enabledActions: [
-          {
-            version: 1,
-            startDate: '2025-01-01',
-            code: 'DIFFERENT_CODE',
-            durationYears: 3,
-            description: 'Different action',
-            applicationUnitOfMeasurement: 'ha',
-            enabled: true,
-            display: true,
-            payment: {
-              ratePerUnitGbp: 10.6,
-              ratePerAgreementPerYearGbp: 272
-            }
+      mockGetEnabledActions.mockResolvedValue([
+        {
+          version: 1,
+          semanticVersion: '1.0.0',
+          startDate: '2025-01-01',
+          code: 'DIFFERENT_CODE',
+          durationYears: 3,
+          description: 'Different action',
+          applicationUnitOfMeasurement: 'ha',
+          enabled: true,
+          display: true,
+          payment: {
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
           }
-        ]
-      })
+        }
+      ])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -323,9 +321,7 @@ describe('Payment calculate controller', () => {
       }
 
       const errorMessage = 'Database connection failed'
-      mockGetPaymentCalculationDataRequirements.mockRejectedValue(
-        new Error(errorMessage)
-      )
+      mockGetEnabledActions.mockRejectedValue(new Error(errorMessage))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {

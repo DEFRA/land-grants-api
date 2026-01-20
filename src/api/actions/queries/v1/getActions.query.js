@@ -1,5 +1,5 @@
 import { logDatabaseError } from '../../../common/helpers/logging/log-helpers.js'
-import { actionConfigTransformer } from '../../transformers/actionConfig.transformer.js'
+import { actionConfigTransformer } from '../../transformers/v1/actionConfig.transformer.js'
 
 /**
  * Get enabled action configs
@@ -16,9 +16,6 @@ async function getEnabledActions(logger, db) {
       SELECT
         a.*,
         ac.version,
-        ac.major_version,
-        ac.minor_version,
-        ac.patch_version,
         ac.config->>'start_date' as start_date,
         ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
         (ac.config->>'duration_years')::numeric as duration_years,

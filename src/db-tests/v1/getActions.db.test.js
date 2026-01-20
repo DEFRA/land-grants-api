@@ -26,20 +26,14 @@ describe('Get actions', () => {
   test('should return CMOR1', async () => {
     const actions = await getEnabledActions(logger, connection)
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const {
-      lastUpdated,
-      id,
-      semanticVersion,
-      majorVersion,
-      minorVersion,
-      patchVersion,
-      ...cmor1
-    } = actions.find((a) => a.code === 'CMOR1')
-    /* eslint-enable @typescript-eslint/no-unused-vars */
+    // eslint-disable-next-line
+    const { lastUpdated, id, ...cmor1 } = actions.find(
+      (a) => a.code === 'CMOR1'
+    )
 
     expect(cmor1).toEqual({
-      version: '1',
+      version: 1,
+      semanticVersion: '1.0.0',
       enabled: true,
       display: true,
       durationYears: 3,

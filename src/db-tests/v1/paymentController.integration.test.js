@@ -35,7 +35,7 @@ describe('payment calculate controller v1 integration', () => {
   })
 
   test.each(fixtures)(
-    `%p`,
+    `%s`,
     async (
       name,
       {

@@ -32,7 +32,7 @@ describe('Get actions by latest version', () => {
     )
 
     expect(cmor1).toEqual({
-      version: '1',
+      version: 1,
       majorVersion: 1,
       minorVersion: 0,
       patchVersion: 0,
