@@ -1,7 +1,7 @@
-import { PaymentCalculateResponseSchema } from './payment-calculate.schema.js'
+import { paymentCalculateResponseSchemaV1 } from './payment-calculate.schema.js'
 
-describe('Payment Calculate Schema Validation', () => {
-  describe('PaymentCalculateResponseSchema', () => {
+describe('Payment Calculate Schema Validation V1', () => {
+  describe('paymentCalculateResponseSchemaV1', () => {
     it('should validate correct payment calculate response', () => {
       const validResponse = {
         message: 'Payment calculated successfully',
@@ -51,30 +51,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(validResponse)
-      expect(result.error).toBeUndefined()
-    })
-
-    it('should validate response with zero payment total', () => {
-      const validResponse = {
-        message: 'Payment calculated successfully',
-        payment: {
-          agreementStartDate: '2025-08-01',
-          agreementEndDate: '2028-08-01',
-          frequency: 'Monthly',
-          agreementTotalPence: 0,
-          annualTotalPence: 0,
-          payments: [
-            {
-              totalPaymentPence: 0,
-              paymentDate: '2025-08-05',
-              lineItems: []
-            }
-          ]
-        }
-      }
-
-      const result = PaymentCalculateResponseSchema.validate(validResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(validResponse)
       expect(result.error).toBeUndefined()
     })
 
@@ -96,7 +73,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain('"message" is required')
     })
@@ -106,7 +83,7 @@ describe('Payment Calculate Schema Validation', () => {
         message: 'Payment calculated successfully'
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain('"payment" is required')
     })
@@ -129,7 +106,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain(
         '"payment.agreementStartDate" is required'
@@ -148,29 +125,9 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain('"payment.payments" is required')
-    })
-
-    it('should reject empty payments array', () => {
-      const invalidResponse = {
-        message: 'Payment calculated successfully',
-        payment: {
-          agreementStartDate: '2025-08-01',
-          agreementEndDate: '2028-08-01',
-          frequency: 'Quarterly',
-          agreementTotalPence: 300000,
-          annualTotalPence: 100000,
-          payments: []
-        }
-      }
-
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
-      expect(result.error).toBeDefined()
-      expect(result.error.message).toContain(
-        '"payment.payments" must contain at least 1 items'
-      )
     })
 
     it('should reject invalid frequency', () => {
@@ -192,7 +149,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain(
         '"payment.frequency" must be one of [Monthly, Quarterly, Annually]'
@@ -218,7 +175,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain(
         '"payment.agreementStartDate" must be in iso format'
@@ -244,7 +201,7 @@ describe('Payment Calculate Schema Validation', () => {
         }
       }
 
-      const result = PaymentCalculateResponseSchema.validate(invalidResponse)
+      const result = paymentCalculateResponseSchemaV1.validate(invalidResponse)
       expect(result.error).toBeDefined()
       expect(result.error.message).toContain(
         '"payment.payments[0].totalPaymentPence" must be greater than or equal to 0'

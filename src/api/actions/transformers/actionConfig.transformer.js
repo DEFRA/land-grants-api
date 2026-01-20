@@ -12,6 +12,9 @@ export function actionConfigTransformer(action) {
     start_date,
     last_updated,
     duration_years,
+    major_version,
+    minor_version,
+    patch_version,
     ...actionObj
   } = action
   return {
@@ -20,6 +23,10 @@ export function actionConfigTransformer(action) {
     durationYears: Number(duration_years),
     landCoverClassCodes: land_cover_class_codes,
     startDate: start_date,
-    lastUpdated: last_updated
+    lastUpdated: last_updated,
+    majorVersion: Number(major_version),
+    minorVersion: Number(minor_version),
+    patchVersion: Number(patch_version),
+    semanticVersion: `${major_version}.${minor_version}.${patch_version}`
   }
 }

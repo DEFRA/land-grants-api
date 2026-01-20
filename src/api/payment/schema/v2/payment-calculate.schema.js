@@ -2,7 +2,7 @@ import Joi from 'joi'
 import {
   explanationsSchema,
   paymentsSchema
-} from '../payment-calculate.schema.js'
+} from '../v1/payment-calculate.schema.js'
 
 const parcelItemsSchemaV2 = Joi.object()
   .pattern(

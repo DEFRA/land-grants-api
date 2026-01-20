@@ -5,9 +5,9 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import {
-  PaymentCalculateResponseSchema,
-  paymentCalculateSchema
-} from '~/src/api/payment/schema/payment-calculate.schema.js'
+  paymentCalculateResponseSchemaV1,
+  paymentCalculateSchemaV1
+} from '~/src/api/payment/schema/v1/payment-calculate.schema.js'
 import { getPaymentCalculationDataRequirements } from '~/src/payment-calculation/paymentCalculation.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
@@ -20,6 +20,7 @@ import {
   getTotalDurationInYears,
   calculatePayment
 } from '~/src/api/payment/services/payment.service.js'
+import { paymentCalculationTransformerV1 } from '../../transformers/v1/payment.transformer.js'
 
 /**
  * PaymentsCalculateController
@@ -32,12 +33,12 @@ const PaymentsCalculateControllerV1 = {
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
     validate: {
-      payload: paymentCalculateSchema,
+      payload: paymentCalculateSchemaV1,
       failAction: quantityValidationFailAction
     },
     response: {
       status: {
-        200: PaymentCalculateResponseSchema,
+        200: paymentCalculateResponseSchemaV1,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
@@ -108,21 +109,25 @@ const PaymentsCalculateControllerV1 = {
         totalDurationYears,
         startDate
       )
+
       if (Boom.isBoom(calculateResponse)) {
         return calculateResponse
       }
+
+      const transformedResponse =
+        paymentCalculationTransformerV1(calculateResponse)
 
       logInfo(request.logger, {
         category: 'payment',
         message: 'Payment calculation success',
         context: {
-          annualTotalPence: calculateResponse.annualTotalPence,
-          agreementTotalPence: calculateResponse.agreementTotalPence
+          annualTotalPence: transformedResponse.annualTotalPence,
+          agreementTotalPence: transformedResponse.agreementTotalPence
         }
       })
 
       return h
-        .response({ message: 'success', payment: calculateResponse })
+        .response({ message: 'success', payment: transformedResponse })
         .code(statusCodes.ok)
     } catch (error) {
       /** @type {PaymentCalculateRequestPayload} */

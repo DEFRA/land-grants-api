@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="add-actions-config-version-column" author="system">
+    <sql>ALTER TABLE actions_config Add COLUMN major_version INTEGER;</sql>
+    <sql>ALTER TABLE actions_config Add COLUMN minor_version INTEGER;</sql>
+    <sql>ALTER TABLE actions_config Add COLUMN patch_version INTEGER;</sql>
+  </changeSet>
+
+  <changeSet id="update-actions-config-version-1-column" author="system">
+    <sql>UPDATE actions_config SET major_version = 1, minor_version = 0, patch_version = 0 WHERE version = '1';</sql>
+  </changeSet>
+
+  <changeSet id="update-actions-config-version-2-column" author="system">
+    <sql>UPDATE actions_config SET major_version = 2, minor_version = 0, patch_version = 0 WHERE version = '2';</sql>
+  </changeSet>
+</databaseChangeLog>

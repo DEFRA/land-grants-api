@@ -55,7 +55,7 @@ export const explanationsSchema = Joi.array().items(
   })
 )
 
-export const PaymentCalculateResponseSchema = Joi.object({
+export const paymentCalculateResponseSchemaV1 = Joi.object({
   message: Joi.string().required(),
   payment: Joi.object({
     explanations: explanationsSchema,
@@ -72,7 +72,7 @@ export const PaymentCalculateResponseSchema = Joi.object({
   }).required()
 })
 
-export const paymentCalculateSchema = Joi.object({
+export const paymentCalculateSchemaV1 = Joi.object({
   startDate: Joi.date().optional(),
   sbi: Joi.string().optional(),
   parcel: Joi.array()

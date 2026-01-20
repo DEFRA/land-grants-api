@@ -1,6 +1,6 @@
 // import { validateLandParcelsRequest } from '../../application/validation/application.validation.js'
 import { splitParcelId } from '../service/parcel.service.js'
-import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { getEnabledActions } from '../../actions/queries/v1/getActions.query.js'
 import { getLandData } from '../queries/getLandData.query.js'
 
 /**

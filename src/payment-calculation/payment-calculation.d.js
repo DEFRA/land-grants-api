@@ -34,6 +34,7 @@
  * @property {number} durationYears - The duration in years for the action
  * @property {number} rateInPence - The rate paid for the action
  * @property {number} annualPaymentPence - The annual payment paid for the action
+ * @property {string} semanticVersion - The semantic version of the action
  */
 
 /**
@@ -43,6 +44,7 @@
  * @property {number} durationYears - The duration in years for the action
  * @property {number} version - The action version
  * @property {number} annualPaymentPence - The annual payment paid for the action
+ * @property {string} semanticVersion - The semantic version of the action
  */
 
 /**

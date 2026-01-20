@@ -4,9 +4,8 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { paymentCalculateSchema } from '~/src/api/payment/schema/payment-calculate.schema.js'
+import { paymentCalculateSchemaV1 } from '~/src/api/payment/schema/v1/payment-calculate.schema.js'
 import { PaymentCalculateResponseSchemaV2 } from '~/src/api/payment/schema/v2/payment-calculate.schema.js'
-import { getPaymentCalculationDataRequirements } from '~/src/payment-calculation/paymentCalculation.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
   logBusinessError,
@@ -18,6 +17,8 @@ import {
   getTotalDurationInYears,
   calculatePayment
 } from '~/src/api/payment/services/payment.service.js'
+import { paymentCalculationTransformerV2 } from '../../transformers/v2/payment.transformer.js'
+import { getActionsByLatestVersion } from '~/src/api/actions/queries/v2/getActionsByLatestVersion.query.js'
 
 /**
  * PaymentsCalculateController
@@ -30,7 +31,7 @@ const PaymentsCalculateControllerV2 = {
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
     validate: {
-      payload: paymentCalculateSchema,
+      payload: paymentCalculateSchemaV1,
       failAction: quantityValidationFailAction
     },
     response: {
@@ -74,10 +75,10 @@ const PaymentsCalculateControllerV2 = {
         return landActionsValidation
       }
 
-      // Get enabled actions from database
-      const { enabledActions } = await getPaymentCalculationDataRequirements(
-        postgresDb,
-        request.logger
+      // Get actions by latest version from database
+      const enabledActions = await getActionsByLatestVersion(
+        request.logger,
+        postgresDb
       )
 
       // Validate request data
@@ -110,17 +111,20 @@ const PaymentsCalculateControllerV2 = {
         return calculateResponse
       }
 
+      const transformedResponse =
+        paymentCalculationTransformerV2(calculateResponse)
+
       logInfo(request.logger, {
         category: 'payment',
         message: 'Payment calculation success',
         context: {
-          annualTotalPence: calculateResponse.annualTotalPence,
-          agreementTotalPence: calculateResponse.agreementTotalPence
+          annualTotalPence: transformedResponse.annualTotalPence,
+          agreementTotalPence: transformedResponse.agreementTotalPence
         }
       })
 
       return h
-        .response({ message: 'success', payment: calculateResponse })
+        .response({ message: 'success', payment: transformedResponse })
         .code(statusCodes.ok)
     } catch (error) {
       /** @type {PaymentCalculateRequestPayload} */

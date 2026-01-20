@@ -1,6 +1,7 @@
-import { getEnabledActions } from './getActions.query.js'
+import { getActionsByLatestVersion } from './getActionsByLatestVersion.query.js'
+import { vi } from 'vitest'
 
-describe('getEnabledActions', () => {
+describe('getActionsByLatestVersion', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -15,28 +16,34 @@ describe('getEnabledActions', () => {
           name: 'Upland Action 1',
           description: 'Test upland action',
           enabled: true,
-          version: 1,
+          version: 2,
           start_date: '2024-01-01',
           application_unit_of_measurement: 'ha',
           duration_years: 5,
           payment: { amount: 100, unit: 'ha' },
           land_cover_class_codes: ['GRASS', 'ARABLE'],
           rules: { minArea: 0.5 },
-          last_updated: '2024-01-15T10:00:00Z'
+          last_updated: '2024-01-15T10:00:00Z',
+          major_version: 2,
+          minor_version: 0,
+          patch_version: 0
         },
         {
           code: 'CMOR1',
           name: 'Moorland Action 1',
           description: 'Test moorland action',
           enabled: true,
-          version: 2,
+          version: 3,
           start_date: '2024-02-01',
           application_unit_of_measurement: 'ha',
           duration_years: 3,
           payment: { amount: 150, unit: 'ha' },
           land_cover_class_codes: ['MOORLAND'],
           rules: { minArea: 1.0 },
-          last_updated: '2024-02-10T12:00:00Z'
+          last_updated: '2024-02-10T12:00:00Z',
+          major_version: 3,
+          minor_version: 0,
+          patch_version: 0
         }
       ]
     }
@@ -48,28 +55,36 @@ describe('getEnabledActions', () => {
         name: 'Upland Action 1',
         description: 'Test upland action',
         enabled: true,
-        version: 1,
+        version: 2,
         applicationUnitOfMeasurement: 'ha',
         durationYears: 5,
         payment: { amount: 100, unit: 'ha' },
         landCoverClassCodes: ['GRASS', 'ARABLE'],
         rules: { minArea: 0.5 },
         startDate: '2024-01-01',
-        lastUpdated: '2024-01-15T10:00:00Z'
+        lastUpdated: '2024-01-15T10:00:00Z',
+        majorVersion: 2,
+        minorVersion: 0,
+        patchVersion: 0,
+        semanticVersion: '2.0.0'
       },
       {
         code: 'CMOR1',
         name: 'Moorland Action 1',
         description: 'Test moorland action',
         enabled: true,
-        version: 2,
+        version: 3,
         applicationUnitOfMeasurement: 'ha',
         durationYears: 3,
         payment: { amount: 150, unit: 'ha' },
         landCoverClassCodes: ['MOORLAND'],
         rules: { minArea: 1.0 },
         startDate: '2024-02-01',
-        lastUpdated: '2024-02-10T12:00:00Z'
+        lastUpdated: '2024-02-10T12:00:00Z',
+        majorVersion: 3,
+        minorVersion: 0,
+        patchVersion: 0,
+        semanticVersion: '3.0.0'
       }
     ]
 
@@ -89,18 +104,21 @@ describe('getEnabledActions', () => {
   })
 
   test('should connect to the database', async () => {
-    await getEnabledActions(mockLogger, mockDb)
+    await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query with the correct SQL', async () => {
-    await getEnabledActions(mockLogger, mockDb)
+  test('should query with the correct SQL using DISTINCT ON', async () => {
+    await getActionsByLatestVersion(mockLogger, mockDb)
 
     const expectedQuery = `
-      SELECT
+      SELECT DISTINCT ON (a.code)
         a.*,
         ac.version,
+        ac.major_version,
+        ac.minor_version,
+        ac.patch_version,
         ac.config->>'start_date' as start_date,
         ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
         (ac.config->>'duration_years')::numeric as duration_years,
@@ -110,14 +128,15 @@ describe('getEnabledActions', () => {
         ac.last_updated_at as last_updated
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
-      WHERE a.enabled = TRUE AND ac.is_active = TRUE
+      WHERE a.enabled = TRUE
+      ORDER BY a.code, ac.version DESC
     `
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery)
   })
 
   test('should return the transformed query results', async () => {
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual(expectedTransformedResult)
   })
@@ -125,13 +144,13 @@ describe('getEnabledActions', () => {
   test('should return empty array when no enabled actions found', async () => {
     mockResult.rows = []
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual([])
   })
 
   test('should release the client when done', async () => {
-    await getEnabledActions(mockLogger, mockDb)
+    await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -140,7 +159,7 @@ describe('getEnabledActions', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
@@ -149,7 +168,9 @@ describe('getEnabledActions', () => {
           message: 'Database error'
         })
       }),
-      expect.stringContaining('Database operation failed: Get enabled actions')
+      expect.stringContaining(
+        'Database operation failed: Get actions by latest version'
+      )
     )
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -159,7 +180,7 @@ describe('getEnabledActions', () => {
     const connectionError = new Error('Connection failed')
     mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual([])
 
@@ -169,7 +190,9 @@ describe('getEnabledActions', () => {
           message: 'Connection failed'
         })
       }),
-      expect.stringContaining('Database operation failed: Get enabled actions')
+      expect.stringContaining(
+        'Database operation failed: Get actions by latest version'
+      )
     )
 
     expect(mockClient.release).not.toHaveBeenCalled()
@@ -178,7 +201,7 @@ describe('getEnabledActions', () => {
   test('should handle client release if client is not defined', async () => {
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalled()
@@ -199,11 +222,14 @@ describe('getEnabledActions', () => {
         payment: { amount: 200 },
         land_cover_class_codes: ['TEST'],
         rules: {},
-        last_updated: '2024-01-01T00:00:00Z'
+        last_updated: '2024-01-01T00:00:00Z',
+        major_version: 1,
+        minor_version: 0,
+        patch_version: 0
       }
     ]
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result[0].durationYears).toBe(10)
     expect(typeof result[0].durationYears).toBe('number')
@@ -223,11 +249,14 @@ describe('getEnabledActions', () => {
         payment: {},
         land_cover_class_codes: [],
         rules: {},
-        last_updated: '2024-01-01T00:00:00Z'
+        last_updated: '2024-01-01T00:00:00Z',
+        major_version: 1,
+        minor_version: 0,
+        patch_version: 0
       }
     ]
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result[0].version).toBe(99)
   })
@@ -246,14 +275,45 @@ describe('getEnabledActions', () => {
         payment: null,
         land_cover_class_codes: null,
         rules: null,
-        last_updated: '2024-01-01T00:00:00Z'
+        last_updated: '2024-01-01T00:00:00Z',
+        major_version: 1,
+        minor_version: 0,
+        patch_version: 0
       }
     ]
 
-    const result = await getEnabledActions(mockLogger, mockDb)
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result[0].payment).toBeNull()
     expect(result[0].landCoverClassCodes).toBeNull()
     expect(result[0].rules).toBeNull()
+  })
+
+  test('should return latest version when multiple versions exist for same action code', async () => {
+    // Simulate database returning latest version due to DISTINCT ON and ORDER BY
+    mockResult.rows = [
+      {
+        code: 'MULTI1',
+        name: 'Multi Version Action',
+        description: 'Action with multiple versions',
+        enabled: true,
+        version: 5,
+        start_date: '2024-03-01',
+        application_unit_of_measurement: 'ha',
+        duration_years: 7,
+        payment: { amount: 300 },
+        land_cover_class_codes: ['GRASS'],
+        rules: { minArea: 2.0 },
+        last_updated: '2024-03-15T10:00:00Z',
+        major_version: 5,
+        minor_version: 0,
+        patch_version: 0
+      }
+    ]
+
+    const result = await getActionsByLatestVersion(mockLogger, mockDb)
+
+    expect(result[0].version).toBe(5)
+    expect(result[0].semanticVersion).toBe('5.0.0')
   })
 })

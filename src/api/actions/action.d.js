@@ -19,6 +19,10 @@
  * @property {ActionRule[]} rules
  * @property {Date} lastUpdated
  * @property {string} actionConfigVersion
+ * @property {number} majorVersion
+ * @property {number} minorVersion
+ * @property {number} patchVersion
+ * @property {string} semanticVersion
  */
 
 /**
