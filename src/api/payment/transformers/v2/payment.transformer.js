@@ -7,12 +7,15 @@ export function paymentCalculationTransformerV2(response) {
   const transformedResponse = structuredClone(response)
   transformedResponse.parcelItems = { ...response.parcelItems }
 
+  // Restrict what this loop acts on by testing each property.
   for (const key in transformedResponse.parcelItems) {
-    const parcelItem = transformedResponse.parcelItems[key]
-    const { semanticVersion, ...rest } = parcelItem
-    transformedResponse.parcelItems[key] = {
-      ...rest,
-      version: semanticVersion
+    if (Object.hasOwn(transformedResponse.parcelItems, key)) {
+      const parcelItem = transformedResponse.parcelItems[key]
+      const { semanticVersion, ...rest } = parcelItem
+      transformedResponse.parcelItems[key] = {
+        ...rest,
+        version: semanticVersion
+      }
     }
   }
 
