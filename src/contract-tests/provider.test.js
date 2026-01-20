@@ -14,8 +14,8 @@ import {
   getAvailableAreaForAction
 } from '~/src/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { logger } from '~/src/db-tests/testLogger.js'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
+import { logger } from '~/src/db-tests/setup/testLogger.js'
+import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import { getLatestVersion } from './git.js'
 
