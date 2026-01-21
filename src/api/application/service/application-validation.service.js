@@ -3,7 +3,7 @@ import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getEnabledActions } from '../../actions/queries/v1/getActions.query.js'
+import { getEnabledActions } from '../../actions/queries/1.0.0/getActions.query.js'
 import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
 
 /**
