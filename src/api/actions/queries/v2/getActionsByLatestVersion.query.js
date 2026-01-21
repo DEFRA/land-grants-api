@@ -29,7 +29,7 @@ async function getActionsByLatestVersion(logger, db) {
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE
-      ORDER BY a.code, ac.version DESC
+      ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
     `
     const result = await client.query(query)
 

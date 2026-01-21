@@ -1,22 +1,38 @@
 /**
- * Transforms a payment calculation response
+ * Transforms semanticVersion to version in an item
+ * @param {object} item - The item to transform
+ * @returns {object} The transformed item with version instead of semanticVersion
+ */
+function transformSemanticVersionToVersion(item) {
+  const { semanticVersion, ...rest } = item
+  return {
+    ...rest,
+    version: semanticVersion
+  }
+}
+
+/**
+ * Transforms a payment calculation response by converting semanticVersion to version
  * @param {object} response - The payment calculation response object
- * @returns {object} A new response object
+ * @returns {object} A new response object with semanticVersion converted to version in parcelItems and agreementLevelItems
  */
 export function paymentCalculationTransformerV2(response) {
   const transformedResponse = structuredClone(response)
-  transformedResponse.parcelItems = { ...response.parcelItems }
 
-  // Restrict what this loop acts on by testing each property.
-  for (const key in transformedResponse.parcelItems) {
-    if (Object.hasOwn(transformedResponse.parcelItems, key)) {
-      const parcelItem = transformedResponse.parcelItems[key]
-      const { semanticVersion, ...rest } = parcelItem
-      transformedResponse.parcelItems[key] = {
-        ...rest,
-        version: semanticVersion
-      }
-    }
+  // Transform semanticVersion to version in parcelItems
+  for (const [key, parcelItem] of Object.entries(
+    transformedResponse.parcelItems
+  )) {
+    transformedResponse.parcelItems[key] =
+      transformSemanticVersionToVersion(parcelItem)
+  }
+
+  // Transform semanticVersion to version in agreementLevelItems
+  for (const [key, agreementLevelItem] of Object.entries(
+    transformedResponse.agreementLevelItems
+  )) {
+    transformedResponse.agreementLevelItems[key] =
+      transformSemanticVersionToVersion(agreementLevelItem)
   }
 
   return transformedResponse

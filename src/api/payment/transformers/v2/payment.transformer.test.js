@@ -28,7 +28,7 @@ describe('paymentCalculationTransformerV2', () => {
           description:
             'Assess moorland and produce a written record - Agreement level part',
           durationYears: 1,
-          version: 2,
+          semanticVersion: '2.0.0',
           annualPaymentPence: 27200
         }
       },
@@ -53,7 +53,15 @@ describe('paymentCalculationTransformerV2', () => {
     expect(result.parcelItems[1].semanticVersion).toBeUndefined()
     expect(result.parcelItems[2].version).toBe('1.5.0')
     expect(result.parcelItems[2].semanticVersion).toBeUndefined()
-    expect(result.agreementLevelItems).toEqual(response.agreementLevelItems)
+    expect(result.agreementLevelItems[1]).toEqual({
+      code: 'CMOR1',
+      description:
+        'Assess moorland and produce a written record - Agreement level part',
+      durationYears: 1,
+      version: '2.0.0',
+      annualPaymentPence: 27200
+    })
+    expect(result.agreementLevelItems[1].semanticVersion).toBeUndefined()
     expect(result.annualTotalPence).toBe(36268)
     expect(result.agreementTotalPence).toBe(27200)
   })

@@ -16,7 +16,6 @@ describe('getActionsByLatestVersion', () => {
           name: 'Upland Action 1',
           description: 'Test upland action',
           enabled: true,
-          version: 2,
           start_date: '2024-01-01',
           application_unit_of_measurement: 'ha',
           duration_years: 5,
@@ -24,6 +23,7 @@ describe('getActionsByLatestVersion', () => {
           land_cover_class_codes: ['GRASS', 'ARABLE'],
           rules: { minArea: 0.5 },
           last_updated: '2024-01-15T10:00:00Z',
+          version: 2,
           major_version: 2,
           minor_version: 0,
           patch_version: 0
@@ -33,7 +33,6 @@ describe('getActionsByLatestVersion', () => {
           name: 'Moorland Action 1',
           description: 'Test moorland action',
           enabled: true,
-          version: 3,
           start_date: '2024-02-01',
           application_unit_of_measurement: 'ha',
           duration_years: 3,
@@ -41,6 +40,7 @@ describe('getActionsByLatestVersion', () => {
           land_cover_class_codes: ['MOORLAND'],
           rules: { minArea: 1.0 },
           last_updated: '2024-02-10T12:00:00Z',
+          version: 3,
           major_version: 3,
           minor_version: 0,
           patch_version: 0
@@ -129,7 +129,7 @@ describe('getActionsByLatestVersion', () => {
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE
-      ORDER BY a.code, ac.version DESC
+      ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
     `
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery)
@@ -215,7 +215,6 @@ describe('getActionsByLatestVersion', () => {
         name: 'Test Action',
         description: 'Test description',
         enabled: true,
-        version: 1,
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: '10',
@@ -223,6 +222,7 @@ describe('getActionsByLatestVersion', () => {
         land_cover_class_codes: ['TEST'],
         rules: {},
         last_updated: '2024-01-01T00:00:00Z',
+        version: 1,
         major_version: 1,
         minor_version: 0,
         patch_version: 0
@@ -242,7 +242,6 @@ describe('getActionsByLatestVersion', () => {
         name: 'Action 1',
         description: 'Test',
         enabled: true,
-        version: 99,
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: 5,
@@ -250,6 +249,7 @@ describe('getActionsByLatestVersion', () => {
         land_cover_class_codes: [],
         rules: {},
         last_updated: '2024-01-01T00:00:00Z',
+        version: 1,
         major_version: 1,
         minor_version: 0,
         patch_version: 0
@@ -258,7 +258,7 @@ describe('getActionsByLatestVersion', () => {
 
     const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
-    expect(result[0].version).toBe(99)
+    expect(result[0].version).toBe(1)
   })
 
   test('should handle null payment and rules', async () => {
@@ -268,7 +268,6 @@ describe('getActionsByLatestVersion', () => {
         name: 'Action 1',
         description: 'Test',
         enabled: true,
-        version: 1,
         start_date: '2024-01-01',
         application_unit_of_measurement: 'ha',
         duration_years: 5,
@@ -276,6 +275,7 @@ describe('getActionsByLatestVersion', () => {
         land_cover_class_codes: null,
         rules: null,
         last_updated: '2024-01-01T00:00:00Z',
+        version: 1,
         major_version: 1,
         minor_version: 0,
         patch_version: 0
@@ -297,7 +297,6 @@ describe('getActionsByLatestVersion', () => {
         name: 'Multi Version Action',
         description: 'Action with multiple versions',
         enabled: true,
-        version: 5,
         start_date: '2024-03-01',
         application_unit_of_measurement: 'ha',
         duration_years: 7,
@@ -305,6 +304,7 @@ describe('getActionsByLatestVersion', () => {
         land_cover_class_codes: ['GRASS'],
         rules: { minArea: 2.0 },
         last_updated: '2024-03-15T10:00:00Z',
+        version: 5,
         major_version: 5,
         minor_version: 0,
         patch_version: 0
