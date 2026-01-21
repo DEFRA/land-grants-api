@@ -4,7 +4,7 @@ import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { getEnabledActions } from '../../actions/queries/v1/getActions.query.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/available-area/compatibilityMatrix.js')
@@ -12,7 +12,7 @@ vi.mock('../mutations/saveApplication.mutation.js')
 vi.mock('../transformers/application.transformer.js')
 vi.mock('./land-parcel-validation.service.js')
 vi.mock('../validation/application.validation.js')
-vi.mock('../../actions/queries/getActions.query.js')
+vi.mock('../../actions/queries/v1/getActions.query.js')
 
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockSaveApplication = saveApplication

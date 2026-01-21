@@ -41,6 +41,12 @@ Starting the api via Docker
 
 - [Starting the API with Docker](docs/working-with-docker.md)
 
+## Changelog -> V2
+
+Details of changes to upcoming release can be found here:
+
+- [Changelog](docs/changelog.md)
+
 ## Requirements
 
 ### Node.js
@@ -101,6 +107,7 @@ We support the ingestion of the following resources:
     - moorland
     - agreements
     - compatibility_matrix
+    - sssi
 
 Run the local ingest script for each resource type:
 

@@ -1,4 +1,7 @@
-import { PaymentsCalculateController } from './controllers/index.js'
+import {
+  PaymentsCalculateControllerV1,
+  PaymentsCalculateControllerV2
+} from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -11,7 +14,12 @@ const payments = {
         {
           method: 'POST',
           path: '/payments/calculate',
-          ...PaymentsCalculateController
+          ...PaymentsCalculateControllerV1
+        },
+        {
+          method: 'POST',
+          path: '/api/v2/payments/calculate',
+          ...PaymentsCalculateControllerV2
         }
       ])
     }

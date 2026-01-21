@@ -1,4 +1,3 @@
-import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
@@ -7,20 +6,6 @@ import {
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
 import { createExplanationSection } from '../available-area/explanations.js'
-
-/**
- * Gets payment calculation data requirements
- * @param {Pool} postgresDb
- * @param {Logger} logger
- * @returns {Promise<{enabledActions: Array<Action>}>}
- */
-export const getPaymentCalculationDataRequirements = async (
-  postgresDb,
-  logger
-) => {
-  const enabledActions = await getEnabledActions(logger, postgresDb)
-  return { enabledActions }
-}
 
 /**
  * Returns the payment calculation for an array of parcels
@@ -106,6 +91,4 @@ export const getPaymentCalculationForParcels = (
 /**
  * @import { PaymentParcel, PaymentCalculationResponse } from './payment-calculation.d.js'
  * @import { Action } from '../api/actions/action.d.js'
- * @import { Pool } from '~/src/api/common/postgres.d.js'
- * @import { Logger } from '~/src/api/common/logger.d.js'
  */

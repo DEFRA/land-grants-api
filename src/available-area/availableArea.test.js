@@ -1,5 +1,5 @@
 import { createLandCoverCodeToString } from '../api/land-cover-codes/services/createLandCoverCodeToString.js'
-import { logger } from '../db-tests/testLogger.js'
+import { logger } from '~/src/db-tests/setup/testLogger.js'
 import { getAvailableAreaForAction } from './availableArea.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
 

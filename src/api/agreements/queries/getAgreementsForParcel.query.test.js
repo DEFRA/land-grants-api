@@ -20,7 +20,11 @@ describe('getAgreementsForParcel', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    vi.useFakeTimers().setSystemTime(new Date(2025, 11, 1))
+    vi.useFakeTimers().setSystemTime(new Date('2025-12-01T00:00:00.000Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   test('should connect to the database', async () => {
