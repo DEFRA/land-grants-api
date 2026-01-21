@@ -9,9 +9,15 @@
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet id="add-actions-config-version-column" author="system">
-    <sql>ALTER TABLE actions_config Add COLUMN major_version INTEGER;</sql>
-    <sql>ALTER TABLE actions_config Add COLUMN minor_version INTEGER;</sql>
-    <sql>ALTER TABLE actions_config Add COLUMN patch_version INTEGER;</sql>
+    <addColumn tableName="actions_config" schemaName="public">
+      <column name="major_version" type="INTEGER" defaultValueNumeric="1"/>
+    </addColumn>
+    <addColumn tableName="actions_config" schemaName="public">
+      <column name="minor_version" type="INTEGER" defaultValueNumeric="0"/>
+    </addColumn>
+    <addColumn tableName="actions_config" schemaName="public">
+      <column name="patch_version" type="INTEGER" defaultValueNumeric="0"/>
+    </addColumn>
   </changeSet>
 
   <changeSet id="update-actions-config-version-1-column" author="system">
