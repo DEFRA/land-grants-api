@@ -1,3 +1,4 @@
-import { getEnabledActions } from './getActions.query.js'
+import { getEnabledActions } from './v1/getActions.query.js'
+import { getActionsByLatestVersion } from './v2/getActionsByLatestVersion.query.js'
 
-export { getEnabledActions }
+export { getEnabledActions, getActionsByLatestVersion }
