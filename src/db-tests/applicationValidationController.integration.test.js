@@ -62,6 +62,8 @@ describe('Application Validation Controller', () => {
       data.id
     )
 
+    expect(applicationResult).toMatchSnapshot()
+
     expect(statusCode).toBe(200)
     expect(data.message).toBe('Application validated successfully')
     expect(data.valid).toBe(false)
