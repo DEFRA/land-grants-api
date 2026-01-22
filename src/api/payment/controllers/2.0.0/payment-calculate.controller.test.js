@@ -2,11 +2,11 @@ import Hapi from '@hapi/hapi'
 import { payments } from '~/src/api/payment/index.js'
 import { getPaymentCalculationForParcels } from '~/src/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
-import { getActionsByLatestVersion } from '~/src/api/actions/queries/v2/getActionsByLatestVersion.query.js'
+import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/api/application/validation/application.validation.js')
-vi.mock('~/src/api/actions/queries/v2/getActionsByLatestVersion.query.js')
+vi.mock('~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js')
 
 const mockValidateRequest = validateRequest
 const mockGetActionsByLatestVersion = getActionsByLatestVersion
