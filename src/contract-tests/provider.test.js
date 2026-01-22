@@ -16,11 +16,13 @@ import {
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/db-tests/setup/testLogger.js'
 import { getEnabledActions } from '~/src/api/actions/queries/1.0.0/getActions.query.js'
+import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import { getLatestVersion } from './git.js'
 
 vi.mock('~/src/api/parcel/queries/getLandData.query.js')
 vi.mock('~/src/api/actions/queries/1.0.0/getActions.query.js')
+vi.mock('~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js')
 vi.mock('~/src/api/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/available-area/compatibilityMatrix.js')
 vi.mock('~/src/available-area/availableArea.js')
@@ -28,6 +30,7 @@ vi.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
 vi.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
 
 const mockGetLandData = getLandData
+const mockGetActionsByLatestVersion = getActionsByLatestVersion
 const mockGetEnabledActions = getEnabledActions
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockGetAvailableAreaForAction = getAvailableAreaForAction
@@ -81,6 +84,7 @@ const pactVerifierOptions = async () => {
 
     beforeEach: () => {
       mockGetEnabledActions.mockResolvedValue(mockActionConfig)
+      mockGetActionsByLatestVersion.mockResolvedValue(mockActionConfig)
 
       mockGetAvailableAreaDataRequirements.mockResolvedValue({
         landCoverCodesForAppliedForAction: [],
