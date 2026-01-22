@@ -1,8 +1,8 @@
-import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
+import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 
-describe('Get actions', () => {
+describe('Get actions by latest version', () => {
   let logger, connection
 
   beforeAll(() => {
@@ -17,23 +17,25 @@ describe('Get actions', () => {
     await connection.end()
   })
 
-  test('should return all enabled actions', async () => {
-    const actions = await getEnabledActions(logger, connection)
+  test('should return all actions by latest version', async () => {
+    const actions = await getActionsByLatestVersion(logger, connection)
 
     expect(actions.length).toBeGreaterThan(0)
   })
 
   test('should return CMOR1', async () => {
-    const actions = await getEnabledActions(logger, connection)
+    const actions = await getActionsByLatestVersion(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, ...cmor1 } = actions.find(
+    const { lastUpdated, id, semanticVersion, ...cmor1 } = actions.find(
       (a) => a.code === 'CMOR1'
     )
 
     expect(cmor1).toEqual({
       version: 1,
-      semanticVersion: '1.0.0',
+      majorVersion: 1,
+      minorVersion: 0,
+      patchVersion: 0,
       enabled: true,
       display: true,
       durationYears: 3,
@@ -80,7 +82,7 @@ describe('Get actions', () => {
   })
 
   test('should not return UPL4', async () => {
-    const actions = await getEnabledActions(logger, connection)
+    const actions = await getActionsByLatestVersion(logger, connection)
 
     // eslint-disable-next-line
     const upl4 = actions.find((a) => a.code === 'UPL4')

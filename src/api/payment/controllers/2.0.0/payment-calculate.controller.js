@@ -4,8 +4,8 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { paymentCalculateSchemaV1 } from '~/src/api/payment/schema/v1/payment-calculate.schema.js'
-import { PaymentCalculateResponseSchemaV2 } from '~/src/api/payment/schema/v2/payment-calculate.schema.js'
+import { paymentCalculateSchemaV1 } from '~/src/api/payment/schema/1.0.0/payment-calculate.schema.js'
+import { PaymentCalculateResponseSchemaV2 } from '~/src/api/payment/schema/2.0.0/payment-calculate.schema.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
   logBusinessError,
@@ -17,8 +17,8 @@ import {
   getTotalDurationInYears,
   calculatePayment
 } from '~/src/api/payment/services/payment.service.js'
-import { paymentCalculationTransformerV2 } from '../../transformers/v2/payment.transformer.js'
-import { getActionsByLatestVersion } from '~/src/api/actions/queries/v2/getActionsByLatestVersion.query.js'
+import { paymentCalculationTransformerV2 } from '../../transformers/2.0.0/payment.transformer.js'
+import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 
 /**
  * PaymentsCalculateController

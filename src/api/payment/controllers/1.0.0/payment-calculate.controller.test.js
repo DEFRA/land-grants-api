@@ -3,10 +3,10 @@ import { payments } from '~/src/api/payment/index.js'
 import { getPaymentCalculationForParcels } from '~/src/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
 import { vi } from 'vitest'
-import { getEnabledActions } from '~/src/api/actions/queries/v1/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/1.0.0/getActions.query.js'
 
 vi.mock('~/src/api/application/validation/application.validation.js')
-vi.mock('~/src/api/actions/queries/v1/getActions.query.js')
+vi.mock('~/src/api/actions/queries/1.0.0/getActions.query.js')
 
 const mockGetEnabledActions = vi.mocked(getEnabledActions)
 const mockValidateRequest = vi.mocked(validateRequest)

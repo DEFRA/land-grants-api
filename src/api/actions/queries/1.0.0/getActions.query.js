@@ -1,5 +1,5 @@
 import { logDatabaseError } from '../../../common/helpers/logging/log-helpers.js'
-import { actionConfigTransformer } from '../../transformers/v1/actionConfig.transformer.js'
+import { actionConfigTransformer } from '../../transformers/1.0.0/actionConfig.transformer.js'
 
 /**
  * Get enabled action configs
