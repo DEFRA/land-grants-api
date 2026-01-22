@@ -33,6 +33,7 @@
  * @property {number} name
  * @property {string} description
  * @property {ActionRuleConfig} config
+ * @property {string} version
  */
 
 /**

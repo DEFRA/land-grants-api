@@ -2,7 +2,7 @@ import { executeRules } from './rulesEngine.js'
 import { mockActionConfig } from '../api/actions/fixtures/index.js'
 
 const rules = {
-  'parcel-has-intersection-with-data-layer': {
+  'parcel-has-intersection-with-data-layer-1.0.0': {
     execute: () => {
       return {
         name: 'parcel-has-intersection-with-data-layer',
@@ -11,7 +11,7 @@ const rules = {
       }
     }
   },
-  'applied-for-total-available-area': {
+  'applied-for-total-available-area-1.0.0': {
     execute: () => {
       return {
         name: 'applied-for-total-available-area',

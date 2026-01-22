@@ -1,9 +1,10 @@
-import { parcelHasIntersectionWithDataLayer } from './parcel-has-intersection-with-data-layer.js'
-import { appliedForTotalAvailableArea } from './applied-for-total-available-area.js'
-import { sssiConsentRequired } from './sssi-consent-required.js'
+import { parcelHasIntersectionWithDataLayer } from './1.0.0/parcel-has-intersection-with-data-layer.js'
+import { appliedForTotalAvailableArea } from './1.0.0/applied-for-total-available-area.js'
+import { sssiConsentRequired } from './1.0.0/sssi-consent-required.js'
 
 export const rules = {
-  'parcel-has-intersection-with-data-layer': parcelHasIntersectionWithDataLayer,
-  'applied-for-total-available-area': appliedForTotalAvailableArea,
-  'sssi-consent-required': sssiConsentRequired
+  'parcel-has-intersection-with-data-layer-1.0.0':
+    parcelHasIntersectionWithDataLayer,
+  'applied-for-total-available-area-1.0.0': appliedForTotalAvailableArea,
+  'sssi-consent-required-1.0.0': sssiConsentRequired
 }
