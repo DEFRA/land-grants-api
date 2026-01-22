@@ -7,11 +7,13 @@
  */
 
 export const executeRules = (rules, application, actionRules = []) => {
-  const results = actionRules.map((rule) =>
-    rules[rule.name]
-      ? { ...rules[rule.name].execute(application, rule) }
+  const results = actionRules.map((rule) => {
+    const version = rule.version ?? '1.0.0'
+    const ruleKey = `${rule.name}-${version}`
+    return rules[ruleKey]
+      ? { ...rules[ruleKey].execute(application, rule) }
       : { name: rule.name, passed: false, message: 'Rule not found' }
-  )
+  })
 
   return {
     results,
