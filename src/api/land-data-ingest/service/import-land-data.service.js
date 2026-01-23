@@ -74,7 +74,7 @@ export async function importData(
       operation: `${tableName}_import_completed`,
       message: `${tableName} imported successfully in ${duration}ms`,
       context: { rowCount: result?.rowCount, duration },
-      outcome: duration
+      outcome: `${duration}`
     })
   } catch (error) {
     logBusinessError(logger, {
