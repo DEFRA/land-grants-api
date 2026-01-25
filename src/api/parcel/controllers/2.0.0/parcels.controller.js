@@ -4,10 +4,8 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import {
-  parcelsSchema,
-  parcelsSuccessResponseSchemaV2
-} from '~/src/api/parcel/schema/2.0.0/parcel.schema.js'
+import { parcelsSuccessResponseSchemaV2 } from '~/src/api/parcel/schema/2.0.0/parcel.schema.js'
+import { parcelsSchema } from '~/src/api/parcel/schema/1.0.0/parcel.schema.js'
 import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {

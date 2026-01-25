@@ -1,7 +1,5 @@
 import Joi from 'joi'
 
-const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
-
 const availableAreaSchema = Joi.object({
   unit: Joi.string().required(),
   value: Joi.number().required()
@@ -31,32 +29,9 @@ const parcelSchema = Joi.object({
   actions: Joi.array().items(actionSchema).optional()
 })
 
-const parcelsSchema = Joi.object({
-  parcelIds: Joi.array().items(parcelIdSchema).required(),
-  fields: Joi.array()
-    .items(
-      Joi.string().valid(
-        'size',
-        'actions',
-        'actions.results',
-        'actions.sssiConsentRequired'
-      )
-    )
-    .required(),
-  plannedActions: Joi.array()
-    .items(
-      Joi.object({
-        actionCode: Joi.string().required(),
-        quantity: Joi.number().required(),
-        unit: Joi.string().valid('ha', 'sqm').required()
-      })
-    )
-    .optional()
-})
-
 const parcelsSuccessResponseSchemaV2 = Joi.object({
   message: Joi.string().valid('success').required(),
   parcels: Joi.array().items(parcelSchema).required()
 })
 
-export { parcelsSchema, parcelsSuccessResponseSchemaV2 }
+export { parcelsSuccessResponseSchemaV2 }
