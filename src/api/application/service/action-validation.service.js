@@ -54,12 +54,12 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
-    landAction.sheetId,
-    landAction.parcelId,
-    request.server.postgresDb,
-    request.logger
-  )
+  // const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
+  //   landAction.sheetId,
+  //   landAction.parcelId,
+  //   request.server.postgresDb,
+  //   request.logger
+  // )
 
   const sssiIntersectingAreaPercentage = await getDataLayerQuery(
     landAction.sheetId,
