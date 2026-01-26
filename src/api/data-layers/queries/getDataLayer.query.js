@@ -7,7 +7,9 @@ const dataLayerQuery = `
     SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
       COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
-          / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
+          / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent,
+    m.metadata as metadata,
+    m.name as name
   FROM
       land_parcels p
   LEFT JOIN
@@ -26,7 +28,7 @@ const dataLayerQuery = `
  * @param {string} parcelId - The parcel id
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<number>} The data layer query
+ * @returns {Promise<object>} The data layer query
  */
 async function getDataLayerQuery(sheetId, parcelId, db, logger) {
   let client
@@ -56,7 +58,13 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
         roundedOverlapPercent: roundedToTwoDecimals
       }
     })
-    return roundedToTwoDecimals
+
+    return {
+      intersectingAreaPercentage: roundedToTwoDecimals,
+      intersectionAreaSqm: result.rows[0].sqm,
+      metadata: result.rows[0].metadata,
+      sssiName: result.rows[0].name
+    }
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get data layer query',
