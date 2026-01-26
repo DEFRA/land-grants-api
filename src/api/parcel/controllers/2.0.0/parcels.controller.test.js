@@ -308,26 +308,7 @@ describe('Parcels Controller 2.0.0', () => {
       )
     })
 
-    test('should not call getActionsForParcelWithSSSIConsentRequired when requesting actions.sssiConsentRequired with multiple parcels', async () => {
-      mockGetDataAndValidateRequest.mockResolvedValue({
-        errors: null,
-        parcels: [mockParcelData, { ...mockParcelData, parcel_id: '9239' }],
-        enabledActions: mockEnabledActions
-      })
-
-      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
-        const result = {
-          parcelId: parcel.parcel_id,
-          sheetId: parcel.sheet_id
-        }
-
-        if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithAvailableArea
-        }
-
-        return Promise.resolve(result)
-      })
-
+    test('should return 400 when requesting actions.sssiConsentRequired with multiple parcels', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -340,12 +321,15 @@ describe('Parcels Controller 2.0.0', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, parcels }
+        result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(parcels).toHaveLength(2)
+      expect(statusCode).toBe(400)
+      expect(message).toBe(
+        'SSSI consent required is not supported for multiple parcels.'
+      )
+      expect(mockGetDataAndValidateRequest).not.toHaveBeenCalled()
+      expect(mockGetActionsForParcel).not.toHaveBeenCalled()
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
       ).not.toHaveBeenCalled()
