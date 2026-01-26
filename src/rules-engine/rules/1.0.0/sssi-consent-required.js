@@ -32,12 +32,15 @@ export const sssiConsentRequired = {
 
     return {
       name,
-      passed: isConsentRequired,
+      passed: true,
       reason: !isConsentRequired
         ? caveatDescription
         : caveatDescription.replace('A', 'No'),
       description: rule.description,
-      explanations
+      explanations,
+      cavets: {
+        isConsentRequired
+      }
     }
   }
 }

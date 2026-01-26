@@ -41,11 +41,17 @@ Starting the api via Docker
 
 - [Starting the API with Docker](docs/working-with-docker.md)
 
-## Changelog -> V2
+## Versioning
 
-Details of changes to upcoming release can be found here:
+Details of changes to upcoming `V2` release can be found here:
 
 - [Changelog](docs/changelog.md)
+
+We have 3 levels of versioning.
+
+1. Versioned endpoints, e.g. `api/v2/*` this is achieved by versioned subfolders
+2. Versioned action configuration, action configs have a version number
+3. Versioned rules, part of action configuration, rules have a version number
 
 ## Requirements
 

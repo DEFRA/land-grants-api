@@ -51,11 +51,11 @@ export const executeSingleRuleForEnabledActions = (
         const matchingRule = action.rules?.find(
           (rule) => String(rule.name) === ruleName
         )
-        const passed = matchingRule
-          ? ruleToExecute.execute(application, matchingRule).passed
+        const result = matchingRule
+          ? ruleToExecute.execute(application, matchingRule)
           : false
 
-        return [action.code, passed]
+        return [action.code, result]
       })
   )
 }
