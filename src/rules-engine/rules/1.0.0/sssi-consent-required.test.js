@@ -27,14 +27,14 @@ describe('sssiConsentRequired', () => {
     }
   })
 
-  test('should return passed false when no intersection exists', () => {
+  test('should return passed true when no intersection exists', () => {
     const application = createApplication(0)
     const rule = createRule()
     const result = sssiConsentRequired.execute(application, rule)
 
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
-      passed: false,
+      passed: true,
       reason: 'A parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
@@ -44,11 +44,14 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 0% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ]
+      ],
+      cavets: {
+        isConsentRequired: false
+      }
     })
   })
 
-  test('should return passed false when intersection percentage is below tolerance', () => {
+  test('should return passed true when intersection percentage is below tolerance', () => {
     const application = createApplication(0.5)
     const rule = createRule(
       'sssi-consent-required',
@@ -60,7 +63,7 @@ describe('sssiConsentRequired', () => {
 
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
-      passed: false,
+      passed: true,
       reason: 'A parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
@@ -70,7 +73,10 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 0.5% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ]
+      ],
+      cavets: {
+        isConsentRequired: false
+      }
     })
   })
 
@@ -96,11 +102,14 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 5% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ]
+      ],
+      cavets: {
+        isConsentRequired: true
+      }
     })
   })
 
-  test('should return passed false when intersection percentage equals tolerance', () => {
+  test('should return passed true when intersection percentage equals tolerance', () => {
     const application = createApplication(1)
     const rule = createRule(
       'sssi-consent-required',
@@ -112,7 +121,7 @@ describe('sssiConsentRequired', () => {
 
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
-      passed: false,
+      passed: true,
       reason: 'A parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
@@ -122,7 +131,10 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 1% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ]
+      ],
+      cavets: {
+        isConsentRequired: false
+      }
     })
   })
 
@@ -141,5 +153,6 @@ describe('sssiConsentRequired', () => {
     expect(result.explanations[0].lines).toEqual([
       'This parcel has a 5% intersection with the custom-layer layer. The tolerance is 1%.'
     ])
+    expect(result.cavets.isConsentRequired).toBe(true)
   })
 })
