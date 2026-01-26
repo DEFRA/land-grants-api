@@ -1,19 +1,21 @@
 import Hapi from '@hapi/hapi'
 import { parcel } from '~/src/api/parcel/index.js'
-import { getParcelActionsWithAvailableArea } from '~/src/api/parcel/service/parcel.service.js'
-import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import {
+  getActionsForParcel,
+  getActionsForParcelWithSSSIConsentRequired
+} from '~/src/api/parcel/service/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { getDataAndValidateRequest } from '~/src/api/parcel/validation/parcel.validation.js'
+import { getDataAndValidateRequest } from '~/src/api/parcel/validation/2.0.0/parcel.validation.js'
 import { vi } from 'vitest'
 
-vi.mock('~/src/api/parcel/validation/parcel.validation.js')
+vi.mock('~/src/api/parcel/validation/2.0.0/parcel.validation.js')
 vi.mock('~/src/api/parcel/service/parcel.service.js')
-vi.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
 vi.mock('~/src/available-area/compatibilityMatrix.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
-const mockGetParcelActionsWithAvailableArea = getParcelActionsWithAvailableArea
-const mockGetAgreementsForParcel = getAgreementsForParcel
+const mockGetActionsForParcel = getActionsForParcel
+const mockGetActionsForParcelWithSSSIConsentRequired =
+  getActionsForParcelWithSSSIConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 
 const mockParcelData = {
@@ -43,14 +45,6 @@ const mockEnabledActions = [
   }
 ]
 
-const mockAgreements = [
-  {
-    actionCode: 'BND1',
-    quantity: 5,
-    unit: 'ha'
-  }
-]
-
 const mockActionsWithAvailableArea = [
   {
     code: 'BND1',
@@ -74,7 +68,7 @@ const mockActionsWithAvailableArea = [
   }
 ]
 
-describe('Parcels Controller', () => {
+describe('Parcels Controller 2.0.0', () => {
   const server = Hapi.server()
 
   beforeAll(async () => {
@@ -106,18 +100,46 @@ describe('Parcels Controller', () => {
       enabledActions: mockEnabledActions
     })
 
-    mockGetAgreementsForParcel.mockResolvedValue(mockAgreements)
-    mockGetParcelActionsWithAvailableArea.mockResolvedValue(
-      mockActionsWithAvailableArea
-    )
+    mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+      const result = {
+        parcelId: parcel.parcel_id,
+        sheetId: parcel.sheet_id
+      }
+
+      if (payload.fields.includes('size')) {
+        result.size = {
+          unit: 'ha',
+          value: 10
+        }
+      }
+
+      if (payload.fields.some((f) => f.startsWith('actions'))) {
+        result.actions = mockActionsWithAvailableArea
+      }
+
+      return Promise.resolve(result)
+    })
     mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
+    mockGetActionsForParcelWithSSSIConsentRequired.mockImplementation(
+      (parcelIds, responseParcels) => {
+        return Promise.resolve(
+          responseParcels.map((parcel) => ({
+            ...parcel,
+            actions: parcel.actions?.map((action) => ({
+              ...action,
+              sssiConsentRequired: action.code === 'BND1'
+            }))
+          }))
+        )
+      }
+    )
   })
 
-  describe('POST /parcels route', () => {
+  describe('POST /api/v2/parcels route', () => {
     test('should return 200 with parcel data when requesting only size field', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['size']
@@ -145,12 +167,15 @@ describe('Parcels Controller', () => {
         ['SX0679-9238'],
         expect.anything()
       )
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
     })
 
     test('should return 200 with parcel data when requesting actions field', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -169,7 +194,10 @@ describe('Parcels Controller', () => {
       expect(parcels[0]).toHaveProperty('actions')
       expect(parcels[0].actions).toHaveLength(2)
       expect(parcels[0].actions[0].code).toBe('BND1')
-      expect(mockGetParcelActionsWithAvailableArea).toHaveBeenCalled()
+      expect(mockGetActionsForParcel).toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
     })
 
     test('should return 200 with parcel data when requesting actions.results field', async () => {
@@ -184,13 +212,29 @@ describe('Parcels Controller', () => {
         }
       ]
 
-      mockGetParcelActionsWithAvailableArea.mockResolvedValue(
-        mockActionsWithResults
-      )
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.includes('size')) {
+          result.size = {
+            unit: 'ha',
+            value: 10
+          }
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = mockActionsWithResults
+        }
+
+        return Promise.resolve(result)
+      })
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions.results']
@@ -207,21 +251,133 @@ describe('Parcels Controller', () => {
       expect(message).toBe('success')
       expect(parcels).toHaveLength(1)
       expect(parcels[0]).toHaveProperty('actions')
-      expect(mockGetParcelActionsWithAvailableArea).toHaveBeenCalledWith(
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,
-        expect.anything(),
+        expect.objectContaining({
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions.results']
+        }),
         true, // showActionResults should be true
         mockEnabledActions,
         expect.any(Function),
+        expect.anything()
+      )
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
+    })
+
+    test('should return 200 and call getActionsForParcelWithSSSIConsentRequired when requesting actions.sssiConsentRequired with single parcel', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions', 'actions.sssiConsentRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0]).toHaveProperty('actions')
+      expect(parcels[0].actions).toHaveLength(2)
+      expect(parcels[0].actions[0]).toHaveProperty('sssiConsentRequired')
+      expect(parcels[0].actions[0].sssiConsentRequired).toBe(true)
+      expect(parcels[0].actions[1].sssiConsentRequired).toBe(false)
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).toHaveBeenCalledWith(
+        ['SX0679-9238'],
+        expect.arrayContaining([
+          expect.objectContaining({
+            parcelId: '9238',
+            sheetId: 'SX0679',
+            actions: expect.any(Array)
+          })
+        ]),
+        mockEnabledActions,
         expect.anything(),
         expect.anything()
       )
     })
 
+    test('should not call getActionsForParcelWithSSSIConsentRequired when requesting actions.sssiConsentRequired with multiple parcels', async () => {
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: null,
+        parcels: [mockParcelData, { ...mockParcelData, parcel_id: '9239' }],
+        enabledActions: mockEnabledActions
+      })
+
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = mockActionsWithAvailableArea
+        }
+
+        return Promise.resolve(result)
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238', 'SX0679-9239'],
+          fields: ['actions', 'actions.sssiConsentRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(2)
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
+    })
+
+    test('should not call getActionsForParcelWithSSSIConsentRequired when not requesting actions.sssiConsentRequired', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(
+        mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
+    })
+
     test('should return 200 with plannedActions included', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
@@ -243,10 +399,22 @@ describe('Parcels Controller', () => {
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        'SX0679',
-        '9238',
-        expect.anything(),
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.objectContaining({
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions'],
+          plannedActions: [
+            {
+              actionCode: 'BND2',
+              quantity: 5.5,
+              unit: 'ha'
+            }
+          ]
+        }),
+        false,
+        mockEnabledActions,
+        expect.any(Function),
         expect.anything()
       )
     })
@@ -276,11 +444,34 @@ describe('Parcels Controller', () => {
         }
       ]
 
-      mockGetParcelActionsWithAvailableArea.mockResolvedValue(unsortedActions)
+      // Mock to return sorted actions (since sorting happens in getActionsForParcel)
+      const sortedActions = [...unsortedActions].sort((a, b) =>
+        a.code.localeCompare(b.code)
+      )
+
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.includes('size')) {
+          result.size = {
+            unit: 'ha',
+            value: 10
+          }
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = sortedActions
+        }
+
+        return Promise.resolve(result)
+      })
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -308,7 +499,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9999'],
           fields: ['size']
@@ -334,7 +525,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9999'],
           fields: ['size']
@@ -356,7 +547,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid payload - missing parcelIds', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           fields: ['size']
         }
@@ -375,7 +566,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid payload - missing fields', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238']
         }
@@ -394,7 +585,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid parcelId format', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['invalid-parcel-id'],
           fields: ['size']
@@ -414,7 +605,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid field value', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['invalid-field']
@@ -434,7 +625,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid plannedActions - missing actionCode', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
@@ -460,7 +651,7 @@ describe('Parcels Controller', () => {
     test('should return 400 with invalid plannedActions - invalid unit', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
@@ -491,7 +682,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -508,14 +699,14 @@ describe('Parcels Controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 when getParcelActionsWithAvailableArea throws error', async () => {
-      mockGetParcelActionsWithAvailableArea.mockRejectedValue(
+    test('should return 500 when getActionsForParcel throws error', async () => {
+      mockGetActionsForParcel.mockRejectedValue(
         new Error('Failed to get actions')
       )
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -532,14 +723,38 @@ describe('Parcels Controller', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 when getAgreementsForParcel throws error', async () => {
-      mockGetAgreementsForParcel.mockRejectedValue(
+    test('should return 500 when getActionsForParcelWithSSSIConsentRequired throws error', async () => {
+      mockGetActionsForParcelWithSSSIConsentRequired.mockRejectedValue(
+        new Error('Failed to get SSSI consent required')
+      )
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions', 'actions.sssiConsentRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 when getActionsForParcel throws error from getAgreementsForParcel', async () => {
+      mockGetActionsForParcel.mockRejectedValue(
         new Error('Database query failed')
       )
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -563,7 +778,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['size']
@@ -583,7 +798,7 @@ describe('Parcels Controller', () => {
     test('should call compatibility matrix creation with correct parameters', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -598,10 +813,10 @@ describe('Parcels Controller', () => {
       )
     })
 
-    test('should call getAgreementsForParcel with correct parcel identifiers', async () => {
+    test('should call getActionsForParcel with correct parcel data', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -610,10 +825,15 @@ describe('Parcels Controller', () => {
 
       await server.inject(request)
 
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        'SX0679',
-        '9238',
-        expect.anything(),
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.objectContaining({
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }),
+        false,
+        mockEnabledActions,
+        expect.any(Function),
         expect.anything()
       )
     })
@@ -621,7 +841,7 @@ describe('Parcels Controller', () => {
     test('should handle empty plannedActions array', async () => {
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
@@ -640,9 +860,29 @@ describe('Parcels Controller', () => {
     })
 
     test('should not include size when not requested in fields', async () => {
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.includes('size')) {
+          result.size = {
+            unit: 'ha',
+            value: 10
+          }
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = mockActionsWithAvailableArea
+        }
+
+        return Promise.resolve(result)
+      })
+
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
@@ -661,9 +901,29 @@ describe('Parcels Controller', () => {
     })
 
     test('should not include actions when not requested in fields', async () => {
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.includes('size')) {
+          result.size = {
+            unit: 'ha',
+            value: 10
+          }
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = mockActionsWithAvailableArea
+        }
+
+        return Promise.resolve(result)
+      })
+
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['size']
@@ -690,7 +950,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9999'],
           fields: ['size']
@@ -709,7 +969,7 @@ describe('Parcels Controller', () => {
 
       const request = {
         method: 'POST',
-        url: '/parcels',
+        url: '/api/v2/parcels',
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['size']

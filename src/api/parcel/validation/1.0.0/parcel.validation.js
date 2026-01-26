@@ -1,7 +1,6 @@
-// import { validateLandParcelsRequest } from '../../application/validation/application.validation.js'
-import { splitParcelId } from '../service/parcel.service.js'
-import { getEnabledActions } from '../../actions/queries/1.0.0/getActions.query.js'
-import { getLandData } from '../queries/getLandData.query.js'
+import { splitParcelId } from '../../service/parcel.service.js'
+import { getEnabledActions } from '../../../actions/queries/1.0.0/getActions.query.js'
+import { getLandData } from '../../queries/getLandData.query.js'
 
 /**
  * @import {LandParcelDb} from '~/src/api/parcel/parcel.d.js'

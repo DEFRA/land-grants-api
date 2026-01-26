@@ -2,39 +2,39 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
-import { roundSqm } from '~/src/api/common/helpers/measurement.js'
 
 const dataLayerQuery = `
-  SELECT
-      COALESCE(SUM(ST_Area(ST_Intersection(lc.geom, dl.geom))::float8), 0)
-          / NULLIF(ST_Area(lc.geom)::float8, 0) * 100 AS overlap_percent
+    SELECT
+    COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
+      COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
+          / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
   FROM
-      land_covers lc
+      land_parcels p
   LEFT JOIN
-      data_layer dl
-      ON ST_Intersects(lc.geom, dl.geom)
+      data_layer m
+      ON ST_Intersects(p.geom, m.geom)
+  AND m.data_layer_type_id = 1
   WHERE
-      lc.sheet_id = $1 AND
-      lc.parcel_id = $2 AND
-      lc.land_cover_class_code = ANY($3) AND
-      dl.data_layer_type_id = 1
+      p.sheet_id = $1 AND
+      p.parcel_id = $2
   GROUP BY
-      lc.sheet_id, lc.parcel_id, lc.geom;
+      p.geom
 `
-
-async function getDataLayerQuery(
-  sheetId,
-  parcelId,
-  landCoverClassCodes,
-  db,
-  logger
-) {
+/**
+ * Get the data layer query
+ * @param {string} sheetId - The sheet id
+ * @param {string} parcelId - The parcel id
+ * @param {object} db - The database connection
+ * @param {object} logger - The logger
+ * @returns {Promise<number>} The data layer query
+ */
+async function getDataLayerQuery(sheetId, parcelId, db, logger) {
   let client
 
   try {
     client = await db.connect()
 
-    const values = [sheetId, parcelId, landCoverClassCodes]
+    const values = [sheetId, parcelId]
     const result = await client.query(dataLayerQuery, values)
 
     if (result?.rows?.length === 0) {
@@ -42,8 +42,10 @@ async function getDataLayerQuery(
     }
 
     const roundedOverlapPercent = Math.max(
-      ...(result.rows.map((row) => roundSqm(row.overlap_percent || 0)) || 0)
+      ...(result.rows.map((row) => row.overlap_percent) || 0)
     )
+
+    const roundedToTwoDecimals = parseFloat(roundedOverlapPercent.toFixed(2))
 
     logInfo(logger, {
       category: 'database',
@@ -51,10 +53,10 @@ async function getDataLayerQuery(
       context: {
         parcelId,
         sheetId,
-        roundedOverlapPercent
+        roundedOverlapPercent: roundedToTwoDecimals
       }
     })
-    return roundedOverlapPercent
+    return roundedToTwoDecimals
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get data layer query',

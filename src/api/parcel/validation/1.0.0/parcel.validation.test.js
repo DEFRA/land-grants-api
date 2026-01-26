@@ -2,17 +2,17 @@ import {
   getAndValidateParcels,
   getDataAndValidateRequest
 } from './parcel.validation.js'
-import { splitParcelId } from '../service/parcel.service.js'
-import { getEnabledActions } from '../../actions/queries/1.0.0/getActions.query.js'
-import { getLandData } from '../queries/getLandData.query.js'
+import { splitParcelId } from '../../service/parcel.service.js'
+import { getEnabledActions } from '../../../actions/queries/1.0.0/getActions.query.js'
+import { getLandData } from '../../queries/getLandData.query.js'
 import { vi } from 'vitest'
 
 // Mock the dependencies
-vi.mock('../service/parcel.service.js')
-vi.mock('../../actions/queries/1.0.0/getActions.query.js')
-vi.mock('../queries/getLandData.query.js')
+vi.mock('../../service/parcel.service.js')
+vi.mock('../../../actions/queries/1.0.0/getActions.query.js')
+vi.mock('../../queries/getLandData.query.js')
 
-describe('Parcel Validation', () => {
+describe('Parcel Validation 1.0.0', () => {
   const mockLogger = {
     error: vi.fn(),
     info: vi.fn(),
