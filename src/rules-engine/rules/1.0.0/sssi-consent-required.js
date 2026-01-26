@@ -9,9 +9,10 @@
  * @returns {RuleResultItem} - The result of the rule
  */
 export const sssiConsentRequired = {
-  execute: (_application, rule) => {
-    const { layerName, caveatDescription } = rule.config
+  execute: (application, rule) => {
+    const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}-${layerName}`
+    const intersection = application.landParcel.intersections?.[layerName]
 
     const explanations = [
       {
@@ -20,12 +21,19 @@ export const sssiConsentRequired = {
       }
     ]
 
-    const isConsentRequired = false
+    const isConsentRequired =
+      intersection != null &&
+      intersection.intersectingAreaPercentage - tolerancePercent > 0
+
+    explanations[0].lines.push(
+      // @ts-expect-error - lines
+      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The tolerance is ${tolerancePercent}%.`
+    )
 
     return {
       name,
-      passed: !isConsentRequired,
-      reason: isConsentRequired
+      passed: isConsentRequired,
+      reason: !isConsentRequired
         ? caveatDescription
         : caveatDescription.replace('A', 'No'),
       description: rule.description,
