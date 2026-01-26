@@ -4,8 +4,10 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { parcelsSuccessResponseSchemaV2 } from '~/src/api/parcel/schema/2.0.0/parcel.schema.js'
-import { parcelsSchema } from '~/src/api/parcel/schema/1.0.0/parcel.schema.js'
+import {
+  parcelsSchema,
+  parcelsSuccessResponseSchema
+} from '~/src/api/parcel/schema/2.0.0/parcel.schema.js'
 import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import {
@@ -34,7 +36,7 @@ const ParcelsControllerV2 = {
     },
     response: {
       status: {
-        200: parcelsSuccessResponseSchemaV2,
+        200: parcelsSuccessResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
