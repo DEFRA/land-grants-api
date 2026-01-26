@@ -11,6 +11,7 @@
  * @property {boolean} passed
  * @property {string} reason
  * @property {Explanation[]} explanations
+ * @property {object} cavets
  */
 
 /**

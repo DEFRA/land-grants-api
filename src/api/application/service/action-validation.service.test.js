@@ -12,6 +12,7 @@ import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
 } from '../transformers/application.transformer.js'
+import { getDataLayerQuery } from '../../data-layers/queries/getDataLayer.query.js'
 
 vi.mock('~/src/api/parcel/queries/getMoorlandInterceptPercentage.js', () => ({
   getMoorlandInterceptPercentage: vi.fn()
@@ -30,6 +31,9 @@ vi.mock('../transformers/application.transformer.js', () => ({
   actionResultTransformer: vi.fn(),
   ruleEngineApplicationTransformer: vi.fn()
 }))
+vi.mock('../../data-layers/queries/getDataLayer.query.js', () => ({
+  getDataLayerQuery: vi.fn()
+}))
 
 const mockGetMoorlandInterceptPercentage = vi.mocked(
   getMoorlandInterceptPercentage
@@ -44,6 +48,7 @@ const mockActionResultTransformer = vi.mocked(actionResultTransformer)
 const mockRuleEngineApplicationTransformer = vi.mocked(
   ruleEngineApplicationTransformer
 )
+const mockGetDataLayerQuery = vi.mocked(getDataLayerQuery)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -127,6 +132,7 @@ describe('Action Validation Service', () => {
     )
     mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
     mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
+    mockGetDataLayerQuery.mockResolvedValue(15.5)
     mockPlannedActionsTransformer.mockReturnValue([])
     mockRuleEngineApplicationTransformer.mockReturnValue({
       areaAppliedFor: 10,
@@ -135,7 +141,8 @@ describe('Action Validation Service', () => {
         area: 0.1,
         existingAgreements: [],
         intersections: {
-          moorland: { intersectingAreaPercentage: 50 }
+          moorland: { intersectingAreaPercentage: 50 },
+          sssi: { intersectingAreaPercentage: 15.5 }
         }
       }
     })
@@ -177,6 +184,20 @@ describe('Action Validation Service', () => {
         mockLandAction.parcelId,
         mockPostgresDb,
         mockLogger
+      )
+      expect(mockGetDataLayerQuery).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockRuleEngineApplicationTransformer).toHaveBeenCalledWith(
+        mockAction.quantity,
+        mockAction.code,
+        expect.any(Number),
+        50,
+        15.5,
+        mockAgreements
       )
       expect(mockExecuteRules).toHaveBeenCalled()
       expect(mockActionResultTransformer).toHaveBeenCalledWith(
