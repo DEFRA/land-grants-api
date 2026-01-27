@@ -21,7 +21,7 @@ export const sssiConsentRequired = {
         lines: []
       }
     ]
-    let caveat = {}
+    let caveat = null
 
     const isConsentRequired =
       intersectingAreaPercentage != null &&
@@ -51,7 +51,7 @@ export const sssiConsentRequired = {
         : caveatDescription.replace('A', 'No'),
       description: rule.description,
       explanations,
-      caveat
+      ...(caveat && { caveat })
     }
   }
 }

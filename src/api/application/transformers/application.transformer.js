@@ -62,24 +62,37 @@ export const errorMessagesTransformer = (parcelResults) => {
 }
 
 /**
+ * map rules for application validation v2
+ * @param {*} rules
+ * @returns
+ */
+export const mapRules = (rule) => {
+  return {
+    name: rule.name,
+    passed: rule.passed,
+    ...(rule?.reason && { reason: rule?.reason }),
+    ...(rule?.description && { description: rule?.description }),
+    ...(rule?.explanations && { explanations: rule?.explanations }),
+    ...(rule?.caveat && { caveat: rule?.caveat })
+  }
+}
+
+/**
  * Transform the action validation results for V2
  * @param {object[]} parcelResults - The parcel results
  * @returns {string[]} The error messages
  */
 export const actionValidationResultsTransformer = (parcelResults) => {
   return parcelResults.flatMap((parcel) =>
-    parcel.actions.flatMap((action) =>
-      action.rules.flat().map((rule) => {
-        return {
-          actionCode: action.code,
-          description: rule.reason,
-          sheetId: parcel.sheetId,
-          parcelId: parcel.parcelId,
-          hasPassed: rule.passed,
-          rules: rule.results
-        }
-      })
-    )
+    parcel.actions.flatMap((action) => {
+      return {
+        actionCode: action.code,
+        sheetId: parcel.sheetId,
+        parcelId: parcel.parcelId,
+        hasPassed: action.rules.every((rule) => rule.passed),
+        rules: action.rules?.map(mapRules) ?? []
+      }
+    })
   )
 }
 

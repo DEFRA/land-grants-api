@@ -8,7 +8,7 @@ describe('sssiConsentRequired', () => {
           ? {
               [layerName]: {
                 intersectingAreaPercentage: intersectionValue,
-                intersectionAreaSqm: 1000
+                intersectionAreaHa: 0.1
               }
             }
           : {}
@@ -47,8 +47,7 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 0% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ],
-      caveat: {}
+      ]
     })
   })
 
@@ -74,8 +73,7 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 0.5% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ],
-      caveat: {}
+      ]
     })
   })
 
@@ -135,8 +133,7 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 1% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ],
-      caveat: {}
+      ]
     })
   })
 
