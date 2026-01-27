@@ -18,17 +18,17 @@ vi.mock('~/src/api/actions/queries/index.js', () => ({
 vi.mock('~/src/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
-vi.mock('../validation/application.validation.js', () => ({
+vi.mock('../../validation/application.validation.js', () => ({
   validateRequest: vi.fn()
 }))
-vi.mock('../service/land-parcel-validation.service.js', () => ({
+vi.mock('../../service/land-parcel-validation.service.js', () => ({
   validateLandParcelActions: vi.fn()
 }))
-vi.mock('../transformers/application.transformer.js', () => ({
+vi.mock('../../transformers/application.transformer.js', () => ({
   errorMessagesTransformer: vi.fn(),
   applicationDataTransformer: vi.fn()
 }))
-vi.mock('../mutations/saveApplication.mutation.js', () => ({
+vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
 }))
 

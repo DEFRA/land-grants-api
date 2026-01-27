@@ -7,9 +7,7 @@ const dataLayerQuery = `
     SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
       COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
-          / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent,
-    m.metadata as metadata,
-    m.name as name
+          / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
   FROM
       land_parcels p
   LEFT JOIN
@@ -47,7 +45,13 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
       ...(result.rows.map((row) => row.overlap_percent) || 0)
     )
 
-    const roundedToTwoDecimals = parseFloat(roundedOverlapPercent.toFixed(2))
+    const roundedOverlapPercentToTwoDecimals = parseFloat(
+      roundedOverlapPercent.toFixed(2)
+    )
+
+    const intersectionAreaSqm = Math.max(
+      ...(result.rows.map((row) => row.sqm) || 0)
+    )
 
     logInfo(logger, {
       category: 'database',
@@ -55,15 +59,14 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
       context: {
         parcelId,
         sheetId,
-        roundedOverlapPercent: roundedToTwoDecimals
+        roundedOverlapPercent: roundedOverlapPercentToTwoDecimals,
+        intersectionAreaSqm
       }
     })
 
     return {
-      intersectingAreaPercentage: roundedToTwoDecimals,
-      intersectionAreaSqm: result.rows[0].sqm,
-      metadata: result.rows[0].metadata,
-      sssiName: result.rows[0].name
+      intersectingAreaPercentage: roundedOverlapPercentToTwoDecimals,
+      intersectionAreaSqm
     }
   } catch (error) {
     logDatabaseError(logger, {

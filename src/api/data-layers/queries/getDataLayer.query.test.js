@@ -11,7 +11,8 @@ describe('getDataLayerQuery', () => {
     mockResult = {
       rows: [
         {
-          overlap_percent: 50
+          overlap_percent: 50,
+          sqm: 1000
         }
       ]
     }
@@ -64,13 +65,17 @@ describe('getDataLayerQuery', () => {
       mockLogger
     )
 
-    expect(result).toBe(50)
+    expect(result).toStrictEqual({
+      intersectingAreaPercentage: 50,
+      intersectionAreaSqm: 1000
+    })
   })
 
   test('should return 0 when no overlap', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = null
+    mockResult.rows[0].sqm = null
 
     const result = await getDataLayerQuery(
       sheetId,
@@ -79,7 +84,10 @@ describe('getDataLayerQuery', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toStrictEqual({
+      intersectingAreaPercentage: 0,
+      intersectionAreaSqm: 0
+    })
   })
 
   test('should release the client when done', async () => {

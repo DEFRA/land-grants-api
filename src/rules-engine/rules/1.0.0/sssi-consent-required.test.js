@@ -6,7 +6,10 @@ describe('sssiConsentRequired', () => {
       intersections:
         intersectionValue !== undefined
           ? {
-              [layerName]: { intersectingAreaPercentage: intersectionValue }
+              [layerName]: {
+                intersectingAreaPercentage: intersectionValue,
+                intersectionAreaSqm: 1000
+              }
             }
           : {}
     }
@@ -45,9 +48,7 @@ describe('sssiConsentRequired', () => {
           ]
         }
       ],
-      cavets: {
-        isConsentRequired: false
-      }
+      caveat: {}
     })
   })
 
@@ -74,9 +75,7 @@ describe('sssiConsentRequired', () => {
           ]
         }
       ],
-      cavets: {
-        isConsentRequired: false
-      }
+      caveat: {}
     })
   })
 
@@ -103,8 +102,13 @@ describe('sssiConsentRequired', () => {
           ]
         }
       ],
-      cavets: {
-        isConsentRequired: true
+      caveat: {
+        code: 'sssi-consent-required',
+        description: 'A parcel requires SSSI consent from Natural England',
+        metadata: {
+          percentageOverlap: 5,
+          overlapAreaHectares: 0.1
+        }
       }
     })
   })
@@ -132,9 +136,7 @@ describe('sssiConsentRequired', () => {
           ]
         }
       ],
-      cavets: {
-        isConsentRequired: false
-      }
+      caveat: {}
     })
   })
 
@@ -151,8 +153,15 @@ describe('sssiConsentRequired', () => {
     expect(result.name).toBe('sssi-consent-required-custom-layer')
     expect(result.explanations[0].title).toBe('custom-layer check')
     expect(result.explanations[0].lines).toEqual([
-      'This parcel has a 5% intersection with the custom-layer layer. The tolerance is 1%.'
+      'This parcel has a 5% intersection with the sssi layer. The tolerance is 1%.'
     ])
-    expect(result.cavets.isConsentRequired).toBe(true)
+    expect(result.caveat).toEqual({
+      code: 'sssi-consent-required',
+      description: 'A parcel requires SSSI consent from Natural England',
+      metadata: {
+        percentageOverlap: 5,
+        overlapAreaHectares: 0.1
+      }
+    })
   })
 })

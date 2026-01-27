@@ -62,6 +62,27 @@ export const errorMessagesTransformer = (parcelResults) => {
 }
 
 /**
+ * Transform the action validation results for V2
+ * @param {object[]} parcelResults - The parcel results
+ * @returns {string[]} The error messages
+ */
+export const actionValidationResultsTransformer = (parcelResults) => {
+  return parcelResults.flatMap((parcel) =>
+    parcel.actions.flatMap((action) =>
+      action.rules.flat().map((rule) => {
+        return {
+          actionCode: action.code,
+          description: rule.reason,
+          sheetId: parcel.sheetId,
+          parcelId: parcel.parcelId,
+          hasPassed: rule.passed
+        }
+      })
+    )
+  )
+}
+
+/**
  * Transform the application data
  * @param {string} applicationId - The application id
  * @param {string} applicantCrn - The applicant crn

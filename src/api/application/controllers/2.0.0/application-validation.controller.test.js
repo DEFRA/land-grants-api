@@ -6,8 +6,8 @@ import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMat
 import { validateRequest } from '../../validation/application.validation.js'
 import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import {
-  errorMessagesTransformer,
-  applicationDataTransformer
+  applicationDataTransformer,
+  actionValidationResultsTransformer
 } from '../../transformers/application.transformer.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 
@@ -18,17 +18,17 @@ vi.mock('~/src/api/actions/queries/index.js', () => ({
 vi.mock('~/src/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
-vi.mock('../validation/application.validation.js', () => ({
+vi.mock('../../validation/application.validation.js', () => ({
   validateRequest: vi.fn()
 }))
-vi.mock('../service/land-parcel-validation.service.js', () => ({
+vi.mock('../../service/land-parcel-validation.service.js', () => ({
   validateLandParcelActions: vi.fn()
 }))
-vi.mock('../transformers/application.transformer.js', () => ({
-  errorMessagesTransformer: vi.fn(),
-  applicationDataTransformer: vi.fn()
+vi.mock('../../transformers/application.transformer.js', () => ({
+  applicationDataTransformer: vi.fn(),
+  actionValidationResultsTransformer: vi.fn()
 }))
-vi.mock('../mutations/saveApplication.mutation.js', () => ({
+vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
 }))
 
@@ -36,9 +36,11 @@ const mockGetEnabledActions = vi.mocked(getEnabledActions)
 const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
 const mockValidateRequest = vi.mocked(validateRequest)
 const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
-const mockErrorMessagesTransformer = vi.mocked(errorMessagesTransformer)
 const mockApplicationDataTransformer = vi.mocked(applicationDataTransformer)
 const mockSaveApplication = vi.mocked(saveApplication)
+const mockActionValidationResultsTransformer = vi.mocked(
+  actionValidationResultsTransformer
+)
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
@@ -116,7 +118,18 @@ describe('ApplicationValidationController', () => {
             explanations: ['Valid area'],
             areaInHa: 1.5
           },
-          rules: [{ passed: true, results: [] }]
+          rules: [
+            {
+              passed: true,
+              results: [
+                {
+                  name: 'parcel-has-intersection-with-data-layer',
+                  passed: true,
+                  message: 'Success'
+                }
+              ]
+            }
+          ]
         },
         {
           hasPassed: true,
@@ -126,7 +139,26 @@ describe('ApplicationValidationController', () => {
             explanations: ['Valid area'],
             areaInHa: 2.0
           },
-          rules: [{ passed: true, results: [] }]
+          rules: [
+            {
+              passed: true,
+              results: [
+                {
+                  name: 'sssi-consent-required-1.0.0-sssi',
+                  passed: true,
+                  reason: 'A consent is required from Natural England',
+                  description: 'SSSI consent check',
+                  explanations: [
+                    {
+                      title: 'sssi check',
+                      lines: []
+                    }
+                  ],
+                  caveat: {}
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -181,15 +213,13 @@ describe('ApplicationValidationController', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-
-    // Default mock implementations
     mockGetEnabledActions.mockResolvedValue(mockActions)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockValidateRequest.mockResolvedValue([])
     mockValidateLandParcelActions.mockResolvedValue(mockParcelResults[0])
-    mockErrorMessagesTransformer.mockReturnValue([])
     mockApplicationDataTransformer.mockReturnValue(mockApplicationData)
     mockSaveApplication.mockResolvedValue(1)
+    mockActionValidationResultsTransformer.mockReturnValue([])
   })
 
   describe('POST /applications/validate route', () => {
@@ -209,14 +239,14 @@ describe('ApplicationValidationController', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, valid, errorMessages, id }
+        result: { message, valid, actions, id }
       } = await server.inject(request)
 
       expect(statusCode).toBe(200)
       expect(message).toBe('Application validated successfully')
       expect(valid).toBe(true)
-      expect(errorMessages).toEqual([])
       expect(id).toBe(1)
+      expect(actions).toEqual([])
 
       // Verify all dependencies were called correctly
       expect(mockGetEnabledActions).toHaveBeenCalledWith(
@@ -252,9 +282,6 @@ describe('ApplicationValidationController', () => {
         mockLandActions,
         [mockParcelResults[0]]
       )
-      expect(mockErrorMessagesTransformer).toHaveBeenCalledWith([
-        mockParcelResults[0]
-      ])
     })
 
     test('should return 400 when validation errors exist', async () => {
@@ -569,7 +596,6 @@ describe('ApplicationValidationController', () => {
 
       mockValidateLandParcelActions.mockResolvedValue(failedParcelResults[0])
       mockApplicationDataTransformer.mockReturnValue(failedApplicationData)
-      mockErrorMessagesTransformer.mockReturnValue(errorMessages)
 
       const request = {
         method: 'POST',
@@ -586,13 +612,12 @@ describe('ApplicationValidationController', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, valid, errorMessages: responseErrorMessages }
+        result: { message, valid }
       } = await server.inject(request)
 
       expect(statusCode).toBe(200)
       expect(message).toBe('Application validated successfully')
       expect(valid).toBe(false)
-      expect(responseErrorMessages).toEqual(errorMessages)
     })
 
     test('should return 422 when quantity is not a valid number', async () => {

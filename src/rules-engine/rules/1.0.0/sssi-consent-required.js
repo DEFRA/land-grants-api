@@ -12,12 +12,8 @@ export const sssiConsentRequired = {
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}-${layerName}`
-    const {
-      intersectingAreaPercentage,
-      intersectionAreaSqm,
-      sssiName,
-      metadata
-    } = application.landParcel.intersections?.[layerName]
+    const { intersectingAreaPercentage, intersectionAreaSqm } =
+      application.landParcel.intersections?.[layerName]
 
     const explanations = [
       {
@@ -25,39 +21,37 @@ export const sssiConsentRequired = {
         lines: []
       }
     ]
-    const caveats = []
+    let caveat = {}
 
     const isConsentRequired =
       intersectingAreaPercentage != null &&
       intersectingAreaPercentage - tolerancePercent > 0
 
     if (isConsentRequired) {
-      caveats.push({
+      caveat = {
         code: rule.name,
         description: caveatDescription,
         metadata: {
           percentageOverlap: intersectingAreaPercentage,
-          overlapAreaHectares: intersectionAreaSqm / 10000,
-          sssiName,
-          sssiId: metadata.ensis_id
+          overlapAreaHectares: intersectionAreaSqm / 10000
         }
-      })
+      }
     }
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersectingAreaPercentage}% intersection with the ${sssiName} layer. The tolerance is ${tolerancePercent}%.`
+      `This parcel has a ${intersectingAreaPercentage}% intersection with the sssi layer. The tolerance is ${tolerancePercent}%.`
     )
 
     return {
       name,
-      passed: true,
-      reason: !isConsentRequired
+      passed: !isConsentRequired,
+      reason: isConsentRequired
         ? caveatDescription
         : caveatDescription.replace('A', 'No'),
       description: rule.description,
       explanations,
-      caveats
+      caveat
     }
   }
 }

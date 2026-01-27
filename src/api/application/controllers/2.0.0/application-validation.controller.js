@@ -10,8 +10,8 @@ import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMat
 import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import {
-  errorMessagesTransformer,
-  applicationDataTransformer
+  applicationDataTransformer,
+  actionValidationResultsTransformer
 } from '../../transformers/application.transformer.js'
 import { validateRequest } from '../../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
@@ -155,7 +155,7 @@ const buildValidationResponse = (
   return {
     message: 'Application validated successfully',
     valid: applicationData.hasPassed,
-    errorMessages: errorMessagesTransformer(parcelResults),
+    actions: actionValidationResultsTransformer(parcelResults),
     id
   }
 }
@@ -251,8 +251,7 @@ const ApplicationValidationController = {
           applicationId,
           sbi,
           crn: applicantCrn,
-          valid: responseData.valid,
-          errorCount: responseData.errorMessages.length
+          valid: responseData.valid
         }
       })
 
