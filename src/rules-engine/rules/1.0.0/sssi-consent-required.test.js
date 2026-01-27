@@ -38,7 +38,7 @@ describe('sssiConsentRequired', () => {
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
       passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
+      reason: 'No parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
@@ -65,7 +65,7 @@ describe('sssiConsentRequired', () => {
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
       passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
+      reason: 'No parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
@@ -91,8 +91,8 @@ describe('sssiConsentRequired', () => {
 
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
-      passed: true,
-      reason: 'No parcel requires SSSI consent from Natural England',
+      passed: false,
+      reason: 'A parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
@@ -126,7 +126,7 @@ describe('sssiConsentRequired', () => {
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
       passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
+      reason: 'No parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
