@@ -2,6 +2,7 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
+import { sqmToHaRounded } from '../../common/helpers/measurement.js'
 
 const dataLayerQuery = `
     SELECT
@@ -60,13 +61,13 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
         parcelId,
         sheetId,
         roundedOverlapPercent: roundedOverlapPercentToTwoDecimals,
-        intersectionAreaSqm
+        intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
       }
     })
 
     return {
       intersectingAreaPercentage: roundedOverlapPercentToTwoDecimals,
-      intersectionAreaSqm
+      intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
     }
   } catch (error) {
     logDatabaseError(logger, {

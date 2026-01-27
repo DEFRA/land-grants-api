@@ -12,7 +12,7 @@ export const sssiConsentRequired = {
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}-${layerName}`
-    const { intersectingAreaPercentage, intersectionAreaSqm } =
+    const { intersectingAreaPercentage, intersectionAreaHa } =
       application.landParcel.intersections?.[layerName]
 
     const explanations = [
@@ -33,7 +33,7 @@ export const sssiConsentRequired = {
         description: caveatDescription,
         metadata: {
           percentageOverlap: intersectingAreaPercentage,
-          overlapAreaHectares: intersectionAreaSqm / 10000
+          overlapAreaHectares: intersectionAreaHa
         }
       }
     }

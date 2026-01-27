@@ -75,7 +75,8 @@ export const actionValidationResultsTransformer = (parcelResults) => {
           description: rule.reason,
           sheetId: parcel.sheetId,
           parcelId: parcel.parcelId,
-          hasPassed: rule.passed
+          hasPassed: rule.passed,
+          rules: rule.results
         }
       })
     )

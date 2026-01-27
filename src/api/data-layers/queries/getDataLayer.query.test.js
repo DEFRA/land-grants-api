@@ -67,7 +67,7 @@ describe('getDataLayerQuery', () => {
 
     expect(result).toStrictEqual({
       intersectingAreaPercentage: 50,
-      intersectionAreaSqm: 1000
+      intersectionAreaHa: 0.1
     })
   })
 
@@ -86,7 +86,7 @@ describe('getDataLayerQuery', () => {
 
     expect(result).toStrictEqual({
       intersectingAreaPercentage: 0,
-      intersectionAreaSqm: 0
+      intersectionAreaHa: 0
     })
   })
 
