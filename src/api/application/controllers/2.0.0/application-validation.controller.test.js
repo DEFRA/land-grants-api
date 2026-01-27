@@ -584,16 +584,6 @@ describe('ApplicationValidationController', () => {
         hasPassed: false
       }
 
-      const errorMessages = [
-        {
-          code: 'BND1',
-          description: 'Insufficient area available',
-          sheetId: 'SX0679',
-          parcelId: '9238',
-          passed: false
-        }
-      ]
-
       mockValidateLandParcelActions.mockResolvedValue(failedParcelResults[0])
       mockApplicationDataTransformer.mockReturnValue(failedApplicationData)
 
