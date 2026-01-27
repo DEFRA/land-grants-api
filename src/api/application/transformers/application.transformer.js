@@ -63,7 +63,7 @@ export const errorMessagesTransformer = (parcelResults) => {
 
 /**
  * map rules for application validation v2
- * @param {*} rules
+ * @param {*} rule - The rule
  * @returns
  */
 export const mapRules = (rule) => {
