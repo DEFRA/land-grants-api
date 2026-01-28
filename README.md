@@ -102,20 +102,9 @@ npm run dev:setup
 
 #### Ingest data into your local database
 
-In order to ingest data into your database, edit the file `scripts/local-ingest`, and set the path to you data directory, currently set to `./ingestion-data/data/`.
+In order to ingest data into your database, edit the file `scripts/local-ingest`, and set the path to you data directory, currently set to `./src/land-data`.
 
-We support the ingestion of the following resources:
-
-- ingestion-data
-  - data
-    - parcels
-    - covers
-    - moorland
-    - agreements
-    - compatibility_matrix
-    - sssi
-
-Run the local ingest script for each resource type:
+This will ingest a sensible amount of data suitable for local development.
 
 `node scripts/local-ingest`
 
