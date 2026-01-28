@@ -161,7 +161,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
 ) {
   const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
 
-  const intersectingAreaPercentage = await getDataLayerQuery(
+  const { intersectingAreaPercentage } = await getDataLayerQuery(
     sheetId,
     parcelId,
     postgresDb,

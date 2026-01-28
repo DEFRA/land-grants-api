@@ -118,8 +118,7 @@ function sssiConsentRequiredActionTransformer(
     actions: parcel.actions?.map((action) => ({
       ...action,
       sssiConsentRequired:
-        sssiConsentRequiredAction[action.code]?.cavets?.isConsentRequired ??
-        false
+        sssiConsentRequiredAction[action.code]?.caveat?.metadata !== undefined
     }))
   }))
 }
