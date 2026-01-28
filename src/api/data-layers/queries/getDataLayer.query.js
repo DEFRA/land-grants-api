@@ -2,6 +2,7 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/api/common/helpers/logging/log-helpers.js'
+import { sqmToHaRounded } from '../../common/helpers/measurement.js'
 
 const dataLayerQuery = `
     SELECT
@@ -26,7 +27,7 @@ const dataLayerQuery = `
  * @param {string} parcelId - The parcel id
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<number>} The data layer query
+ * @returns {Promise<object>} The data layer query
  */
 async function getDataLayerQuery(sheetId, parcelId, db, logger) {
   let client
@@ -45,7 +46,13 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
       ...(result.rows.map((row) => row.overlap_percent) || 0)
     )
 
-    const roundedToTwoDecimals = parseFloat(roundedOverlapPercent.toFixed(2))
+    const roundedOverlapPercentToTwoDecimals = Number.parseFloat(
+      roundedOverlapPercent.toFixed(2)
+    )
+
+    const intersectionAreaSqm = Math.max(
+      ...(result.rows.map((row) => row.sqm) || 0)
+    )
 
     logInfo(logger, {
       category: 'database',
@@ -53,10 +60,15 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
       context: {
         parcelId,
         sheetId,
-        roundedOverlapPercent: roundedToTwoDecimals
+        roundedOverlapPercent: roundedOverlapPercentToTwoDecimals,
+        intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
       }
     })
-    return roundedToTwoDecimals
+
+    return {
+      intersectingAreaPercentage: roundedOverlapPercentToTwoDecimals,
+      intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
+    }
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get data layer query',

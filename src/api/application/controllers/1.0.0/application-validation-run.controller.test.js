@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
-import { application } from '../index.js'
-import { getApplicationValidationRun } from '../queries/getApplicationValidationRun.query.js'
+import { application } from '../../index.js'
+import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 
 vi.mock(
   '~/src/api/application/queries/getApplicationValidationRun.query.js',

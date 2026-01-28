@@ -61,7 +61,7 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const sssiIntersectingAreaPercentage = await getDataLayerQuery(
+  const dataLayerData = await getDataLayerQuery(
     landAction.sheetId,
     landAction.parcelId,
     request.server.postgresDb,
@@ -73,7 +73,7 @@ export const validateLandAction = async (
     action.code,
     sqmToHaRounded(availableArea.availableAreaSqm),
     intersectingAreaPercentage,
-    sssiIntersectingAreaPercentage,
+    dataLayerData,
     agreements
   )
 

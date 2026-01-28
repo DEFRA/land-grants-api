@@ -1,7 +1,7 @@
 import Hapi from '@hapi/hapi'
-import { application } from '../index.js'
-import { getApplicationValidationRuns } from '../queries/getApplicationValidationRuns.query.js'
-import { applicationValidationRunTransformer } from '../transformers/application.transformer.js'
+import { application } from '../../index.js'
+import { getApplicationValidationRuns } from '../../queries/getApplicationValidationRuns.query.js'
+import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/api/application/queries/getApplicationValidationRuns.query.js')

@@ -62,6 +62,41 @@ export const errorMessagesTransformer = (parcelResults) => {
 }
 
 /**
+ * map rules for application validation v2
+ * @param {*} rule - The rule
+ * @returns
+ */
+export const mapRules = (rule) => {
+  return {
+    name: rule.name,
+    passed: rule.passed,
+    ...(rule?.reason && { reason: rule?.reason }),
+    ...(rule?.description && { description: rule?.description }),
+    ...(rule?.explanations && { explanations: rule?.explanations }),
+    ...(rule?.caveat && { caveat: rule?.caveat })
+  }
+}
+
+/**
+ * Transform the action validation results for V2
+ * @param {object[]} parcelResults - The parcel results
+ * @returns {string[]} The error messages
+ */
+export const actionValidationResultsTransformer = (parcelResults) => {
+  return parcelResults.flatMap((parcel) =>
+    parcel.actions.flatMap((action) => {
+      return {
+        actionCode: action.code,
+        sheetId: parcel.sheetId,
+        parcelId: parcel.parcelId,
+        hasPassed: action.rules.every((rule) => rule.passed),
+        rules: action.rules?.map(mapRules) ?? []
+      }
+    })
+  )
+}
+
+/**
  * Transform the application data
  * @param {string} applicationId - The application id
  * @param {string} applicantCrn - The applicant crn
@@ -110,7 +145,7 @@ export const applicationDataTransformer = (
  * @param {string} code - The code of the action
  * @param {number} area - The area of the parcel
  * @param {number} intersectingAreaPercentage - The intersecting area percentage
- * @param {number} sssiIntersectingAreaPercentage - The sssi intersecting area percentage
+ * @param {object} dataLayerData - The sssi data
  * @param {Array} existingAgreements - The existing agreements
  * @returns {RuleEngineApplication} - The application
  */
@@ -119,7 +154,7 @@ export function ruleEngineApplicationTransformer(
   code,
   area,
   intersectingAreaPercentage,
-  sssiIntersectingAreaPercentage,
+  dataLayerData,
   existingAgreements
 ) {
   return {
@@ -130,7 +165,7 @@ export function ruleEngineApplicationTransformer(
       existingAgreements,
       intersections: {
         moorland: { intersectingAreaPercentage },
-        sssi: { intersectingAreaPercentage: sssiIntersectingAreaPercentage }
+        sssi: dataLayerData
       }
     }
   }
