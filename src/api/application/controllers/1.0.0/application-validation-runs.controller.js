@@ -7,10 +7,10 @@ import {
   applicationValidationRunsRequestSchema,
   applicationValidationRunsBodyRequestSchema,
   applicationValidationRunsResponseSchema
-} from '../schema/application-validation.schema.js'
+} from '../../schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
-import { getApplicationValidationRuns } from '../queries/getApplicationValidationRuns.query.js'
-import { applicationValidationRunTransformer } from '../transformers/application.transformer.js'
+import { getApplicationValidationRuns } from '../../queries/getApplicationValidationRuns.query.js'
+import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js'
 import { logBusinessError } from '~/src/api/common/helpers/logging/log-helpers.js'
 
 export const ApplicationValidationRunsController = {

@@ -1,21 +1,19 @@
 import Boom from '@hapi/boom'
-import {
-  applicationValidationSchema,
-  applicationValidationResponseSchema
-} from '~/src/api/application/schema/application-validation.schema.js'
+import { applicationValidationSchema } from '~/src/api/application/schema/application-validation.schema.js'
+import { applicationValidationResponseSchemaV2 } from '~/src/api/application/schema/2.0.0/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { validateLandParcelActions } from '../service/land-parcel-validation.service.js'
+import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
 import {
-  errorMessagesTransformer,
-  applicationDataTransformer
-} from '../transformers/application.transformer.js'
-import { validateRequest } from '../validation/application.validation.js'
+  applicationDataTransformer,
+  actionValidationResultsTransformer
+} from '../../transformers/application.transformer.js'
+import { validateRequest } from '../../validation/application.validation.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { quantityValidationFailAction } from '~/src/api/common/helpers/joi-validations.js'
 import {
@@ -157,7 +155,7 @@ const buildValidationResponse = (
   return {
     message: 'Application validated successfully',
     valid: applicationData.hasPassed,
-    errorMessages: errorMessagesTransformer(parcelResults),
+    actions: actionValidationResultsTransformer(parcelResults),
     id
   }
 }
@@ -174,7 +172,7 @@ const ApplicationValidationController = {
     },
     response: {
       status: {
-        200: applicationValidationResponseSchema,
+        200: applicationValidationResponseSchemaV2,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
@@ -253,8 +251,7 @@ const ApplicationValidationController = {
           applicationId,
           sbi,
           crn: applicantCrn,
-          valid: responseData.valid,
-          errorCount: responseData.errorMessages.length
+          valid: responseData.valid
         }
       })
 

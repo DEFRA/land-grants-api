@@ -75,3 +75,9 @@ Updated response:
 ### Deprecation
 
 The v1 endpoint remains available but will be deprecated.
+
+## API v2 application validation Endpoint
+
+- **New Endpoint**: `POST /api/v2/application/validate`
+- Returns rules results, including SSSI
+- New response schema

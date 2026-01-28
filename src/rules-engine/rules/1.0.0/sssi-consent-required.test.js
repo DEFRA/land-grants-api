@@ -6,7 +6,10 @@ describe('sssiConsentRequired', () => {
       intersections:
         intersectionValue !== undefined
           ? {
-              [layerName]: { intersectingAreaPercentage: intersectionValue }
+              [layerName]: {
+                intersectingAreaPercentage: intersectionValue,
+                intersectionAreaHa: 0.1
+              }
             }
           : {}
     }
@@ -35,7 +38,7 @@ describe('sssiConsentRequired', () => {
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
       passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
+      reason: 'No parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
@@ -44,44 +47,12 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 0% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ],
-      cavets: {
-        isConsentRequired: false
-      }
+      ]
     })
   })
 
   test('should return passed true when intersection percentage is below tolerance', () => {
     const application = createApplication(0.5)
-    const rule = createRule(
-      'sssi-consent-required',
-      'sssi',
-      'A parcel requires SSSI consent from Natural England',
-      1
-    )
-    const result = sssiConsentRequired.execute(application, rule)
-
-    expect(result).toEqual({
-      name: 'sssi-consent-required-sssi',
-      passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
-      description: 'SSSI consent check',
-      explanations: [
-        {
-          title: 'sssi check',
-          lines: [
-            'This parcel has a 0.5% intersection with the sssi layer. The tolerance is 1%.'
-          ]
-        }
-      ],
-      cavets: {
-        isConsentRequired: false
-      }
-    })
-  })
-
-  test('should return passed true when intersection percentage exceeds tolerance', () => {
-    const application = createApplication(5)
     const rule = createRule(
       'sssi-consent-required',
       'sssi',
@@ -99,12 +70,43 @@ describe('sssiConsentRequired', () => {
         {
           title: 'sssi check',
           lines: [
+            'This parcel has a 0.5% intersection with the sssi layer. The tolerance is 1%.'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should return passed true when intersection percentage exceeds tolerance', () => {
+    const application = createApplication(5)
+    const rule = createRule(
+      'sssi-consent-required',
+      'sssi',
+      'A parcel requires SSSI consent from Natural England',
+      1
+    )
+    const result = sssiConsentRequired.execute(application, rule)
+
+    expect(result).toEqual({
+      name: 'sssi-consent-required-sssi',
+      passed: false,
+      reason: 'A parcel requires SSSI consent from Natural England',
+      description: 'SSSI consent check',
+      explanations: [
+        {
+          title: 'sssi check',
+          lines: [
             'This parcel has a 5% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
       ],
-      cavets: {
-        isConsentRequired: true
+      caveat: {
+        code: 'sssi-consent-required',
+        description: 'A parcel requires SSSI consent from Natural England',
+        metadata: {
+          percentageOverlap: 5,
+          overlapAreaHectares: 0.1
+        }
       }
     })
   })
@@ -122,7 +124,7 @@ describe('sssiConsentRequired', () => {
     expect(result).toEqual({
       name: 'sssi-consent-required-sssi',
       passed: true,
-      reason: 'A parcel requires SSSI consent from Natural England',
+      reason: 'No parcel requires SSSI consent from Natural England',
       description: 'SSSI consent check',
       explanations: [
         {
@@ -131,10 +133,7 @@ describe('sssiConsentRequired', () => {
             'This parcel has a 1% intersection with the sssi layer. The tolerance is 1%.'
           ]
         }
-      ],
-      cavets: {
-        isConsentRequired: false
-      }
+      ]
     })
   })
 
@@ -151,8 +150,15 @@ describe('sssiConsentRequired', () => {
     expect(result.name).toBe('sssi-consent-required-custom-layer')
     expect(result.explanations[0].title).toBe('custom-layer check')
     expect(result.explanations[0].lines).toEqual([
-      'This parcel has a 5% intersection with the custom-layer layer. The tolerance is 1%.'
+      'This parcel has a 5% intersection with the sssi layer. The tolerance is 1%.'
     ])
-    expect(result.cavets.isConsentRequired).toBe(true)
+    expect(result.caveat).toEqual({
+      code: 'sssi-consent-required',
+      description: 'A parcel requires SSSI consent from Natural England',
+      metadata: {
+        percentageOverlap: 5,
+        overlapAreaHectares: 0.1
+      }
+    })
   })
 })
