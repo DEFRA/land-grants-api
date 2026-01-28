@@ -46,7 +46,7 @@ async function getDataLayerQuery(sheetId, parcelId, db, logger) {
       ...(result.rows.map((row) => row.overlap_percent) || 0)
     )
 
-    const roundedOverlapPercentToTwoDecimals = parseFloat(
+    const roundedOverlapPercentToTwoDecimals = Number.parseFloat(
       roundedOverlapPercent.toFixed(2)
     )
 

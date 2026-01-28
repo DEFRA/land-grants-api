@@ -12,8 +12,6 @@ export const sssiConsentRequired = {
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}-${layerName}`
-    const { intersectingAreaPercentage, intersectionAreaHa } =
-      application.landParcel.intersections?.[layerName]
 
     const explanations = [
       {
@@ -22,6 +20,19 @@ export const sssiConsentRequired = {
       }
     ]
     let caveat = null
+
+    if (application?.landParcel?.intersections?.[layerName] == null) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason: `An intersection with the ${layerName} layer was not provided in the application data`,
+        explanations
+      }
+    }
+
+    const { intersectingAreaPercentage, intersectionAreaHa } =
+      application.landParcel.intersections?.[layerName]
 
     const isConsentRequired =
       intersectingAreaPercentage != null &&
