@@ -31,8 +31,8 @@ export const sssiConsentRequired = {
       }
     }
 
-    const { intersectingAreaPercentage, intersectionAreaHa } =
-      application.landParcel.intersections?.[layerName]
+    const { intersectingAreaPercentage = 0, intersectionAreaHa = 0 } =
+      application.landParcel.intersections[layerName]
 
     const isConsentRequired =
       intersectingAreaPercentage != null &&
