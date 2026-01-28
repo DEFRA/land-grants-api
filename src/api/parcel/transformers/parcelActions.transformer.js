@@ -102,7 +102,7 @@ function plannedActionsTransformer(plannedActions) {
 /**
  * Add sssiConsentRequired property to each action in response parcels
  * @param {object[]} responseParcels - The response parcels to transform
- * @param {Record<string, boolean>} sssiConsentRequiredAction - Map of action codes to consent required flags
+ * @param {Record<string, object>} sssiConsentRequiredAction - Map of action codes to consent required flags
  * @returns {object[]} The transformed parcels with sssiConsentRequired added to actions
  */
 function sssiConsentRequiredActionTransformer(
@@ -117,7 +117,9 @@ function sssiConsentRequiredActionTransformer(
     ...parcel,
     actions: parcel.actions?.map((action) => ({
       ...action,
-      sssiConsentRequired: sssiConsentRequiredAction[action.code] ?? false
+      sssiConsentRequired:
+        sssiConsentRequiredAction[action.code]?.cavets?.isConsentRequired ??
+        false
     }))
   }))
 }

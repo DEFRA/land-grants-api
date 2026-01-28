@@ -11,6 +11,7 @@ import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
 } from '../transformers/application.transformer.js'
+import { getDataLayerQuery } from '../../data-layers/queries/getDataLayer.query.js'
 
 /**
  * Validate a land action
@@ -60,11 +61,19 @@ export const validateLandAction = async (
     request.logger
   )
 
+  const dataLayerData = await getDataLayerQuery(
+    landAction.sheetId,
+    landAction.parcelId,
+    request.server.postgresDb,
+    request.logger
+  )
+
   const application = ruleEngineApplicationTransformer(
     action.quantity,
     action.code,
     sqmToHaRounded(availableArea.availableAreaSqm),
     intersectingAreaPercentage,
+    dataLayerData,
     agreements
   )
 

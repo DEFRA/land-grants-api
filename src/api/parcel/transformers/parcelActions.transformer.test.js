@@ -308,8 +308,8 @@ describe('sssiConsentRequiredActionTransformer', () => {
       }
     ]
     const sssiConsentRequiredAction = {
-      ACTION1: true,
-      ACTION2: false
+      ACTION1: { cavets: { isConsentRequired: true } },
+      ACTION2: { cavets: { isConsentRequired: false } }
     }
 
     const result = sssiConsentRequiredActionTransformer(
@@ -357,9 +357,9 @@ describe('sssiConsentRequiredActionTransformer', () => {
       }
     ]
     const sssiConsentRequiredAction = {
-      ACTION1: true,
-      ACTION2: false,
-      ACTION3: true
+      ACTION1: { cavets: { isConsentRequired: true } },
+      ACTION2: { cavets: { isConsentRequired: false } },
+      ACTION3: { cavets: { isConsentRequired: true } }
     }
 
     const result = sssiConsentRequiredActionTransformer(
@@ -415,7 +415,7 @@ describe('sssiConsentRequiredActionTransformer', () => {
       }
     ]
     const sssiConsentRequiredAction = {
-      ACTION1: true
+      ACTION1: { cavets: { isConsentRequired: true } }
     }
 
     const result = sssiConsentRequiredActionTransformer(
@@ -452,7 +452,7 @@ describe('sssiConsentRequiredActionTransformer', () => {
       }
     ]
     const sssiConsentRequiredAction = {
-      ACTION1: true
+      ACTION1: { cavets: { isConsentRequired: true } }
     }
 
     const result = sssiConsentRequiredActionTransformer(
@@ -472,7 +472,7 @@ describe('sssiConsentRequiredActionTransformer', () => {
   test('should handle empty parcels array', () => {
     const responseParcels = []
     const sssiConsentRequiredAction = {
-      ACTION1: true
+      ACTION1: { cavets: { isConsentRequired: true } }
     }
 
     const result = sssiConsentRequiredActionTransformer(

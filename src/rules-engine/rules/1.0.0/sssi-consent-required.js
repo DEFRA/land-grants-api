@@ -12,7 +12,6 @@ export const sssiConsentRequired = {
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}-${layerName}`
-    const intersection = application.landParcel.intersections?.[layerName]
 
     const explanations = [
       {
@@ -20,24 +19,50 @@ export const sssiConsentRequired = {
         lines: []
       }
     ]
+    let caveat = null
+
+    if (application?.landParcel?.intersections?.[layerName] == null) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason: `An intersection with the ${layerName} layer was not provided in the application data`,
+        explanations
+      }
+    }
+
+    const { intersectingAreaPercentage = 0, intersectionAreaHa = 0 } =
+      application.landParcel.intersections[layerName]
 
     const isConsentRequired =
-      intersection != null &&
-      intersection.intersectingAreaPercentage - tolerancePercent > 0
+      intersectingAreaPercentage != null &&
+      intersectingAreaPercentage - tolerancePercent > 0
+
+    if (isConsentRequired) {
+      caveat = {
+        code: rule.name,
+        description: caveatDescription,
+        metadata: {
+          percentageOverlap: intersectingAreaPercentage,
+          overlapAreaHectares: intersectionAreaHa
+        }
+      }
+    }
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The tolerance is ${tolerancePercent}%.`
+      `This parcel has a ${intersectingAreaPercentage}% intersection with the sssi layer. The tolerance is ${tolerancePercent}%.`
     )
 
     return {
       name,
-      passed: isConsentRequired,
-      reason: !isConsentRequired
+      passed: !isConsentRequired,
+      reason: isConsentRequired
         ? caveatDescription
         : caveatDescription.replace('A', 'No'),
       description: rule.description,
-      explanations
+      explanations,
+      ...(caveat && { caveat })
     }
   }
 }

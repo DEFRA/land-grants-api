@@ -3,13 +3,13 @@ import Hapi from '@hapi/hapi'
 import { ApplicationValidationController } from './application-validation.controller.js'
 import { getEnabledActions } from '~/src/api/actions/queries/index.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
-import { validateRequest } from '../validation/application.validation.js'
-import { validateLandParcelActions } from '../service/land-parcel-validation.service.js'
+import { validateRequest } from '../../validation/application.validation.js'
+import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import {
   errorMessagesTransformer,
   applicationDataTransformer
-} from '../transformers/application.transformer.js'
-import { saveApplication } from '../mutations/saveApplication.mutation.js'
+} from '../../transformers/application.transformer.js'
+import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 
 // Mock all dependencies
 vi.mock('~/src/api/actions/queries/index.js', () => ({
@@ -18,17 +18,17 @@ vi.mock('~/src/api/actions/queries/index.js', () => ({
 vi.mock('~/src/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
-vi.mock('../validation/application.validation.js', () => ({
+vi.mock('../../validation/application.validation.js', () => ({
   validateRequest: vi.fn()
 }))
-vi.mock('../service/land-parcel-validation.service.js', () => ({
+vi.mock('../../service/land-parcel-validation.service.js', () => ({
   validateLandParcelActions: vi.fn()
 }))
-vi.mock('../transformers/application.transformer.js', () => ({
+vi.mock('../../transformers/application.transformer.js', () => ({
   errorMessagesTransformer: vi.fn(),
   applicationDataTransformer: vi.fn()
 }))
-vi.mock('../mutations/saveApplication.mutation.js', () => ({
+vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
 }))
 

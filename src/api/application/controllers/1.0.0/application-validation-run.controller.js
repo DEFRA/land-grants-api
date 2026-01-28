@@ -3,11 +3,11 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/api/common/schema/index.js'
-import { getApplicationValidationRun } from '../queries/getApplicationValidationRun.query.js'
+import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 import {
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema
-} from '../schema/application-validation.schema.js'
+} from '../../schema/application-validation.schema.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 import {
   logResourceNotFound,

@@ -64,6 +64,15 @@ const ParcelsControllerV2 = {
         }
       })
 
+      if (
+        parcelIds.length > 1 &&
+        fields.includes('actions.sssiConsentRequired')
+      ) {
+        return Boom.badRequest(
+          'SSSI consent required is not supported for multiple parcels.'
+        )
+      }
+
       const showActionResults = fields.includes('actions.results')
 
       const validationResponse = await getDataAndValidateRequest(
@@ -103,10 +112,7 @@ const ParcelsControllerV2 = {
 
       let transformedResponseParcels = responseParcels
 
-      if (
-        parcelIds.length === 1 &&
-        fields.includes('actions.sssiConsentRequired')
-      ) {
+      if (fields.includes('actions.sssiConsentRequired')) {
         transformedResponseParcels =
           await getActionsForParcelWithSSSIConsentRequired(
             parcelIds,

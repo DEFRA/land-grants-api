@@ -424,6 +424,8 @@ describe('ruleEngineApplicationTransformer', () => {
     const code = 'UPL1'
     const area = 500
     const intersectingAreaPercentage = 25.5
+    const sssiIntersectingAreaPercentage = 10.0
+    const sssiIntersectionAreaSqm = 1000
     const existingAgreements = [
       { id: 'AG1', type: 'agreement1' },
       { id: 'AG2', type: 'agreement2' }
@@ -434,6 +436,10 @@ describe('ruleEngineApplicationTransformer', () => {
       code,
       area,
       intersectingAreaPercentage,
+      {
+        intersectingAreaPercentage: sssiIntersectingAreaPercentage,
+        intersectionAreaSqm: sssiIntersectionAreaSqm
+      },
       existingAgreements
     )
 
@@ -447,14 +453,28 @@ describe('ruleEngineApplicationTransformer', () => {
           { id: 'AG2', type: 'agreement2' }
         ],
         intersections: {
-          moorland: { intersectingAreaPercentage: 25.5 }
+          moorland: { intersectingAreaPercentage: 25.5 },
+          sssi: {
+            intersectingAreaPercentage: sssiIntersectingAreaPercentage,
+            intersectionAreaSqm: sssiIntersectionAreaSqm
+          }
         }
       }
     })
   })
 
   test('should handle zero values', () => {
-    const result = ruleEngineApplicationTransformer(0, 'UPL1', 0, 0, [])
+    const result = ruleEngineApplicationTransformer(
+      0,
+      'UPL1',
+      0,
+      0,
+      {
+        intersectingAreaPercentage: 0,
+        intersectionAreaSqm: 0
+      },
+      []
+    )
 
     expect(result).toEqual({
       areaAppliedFor: 0,
@@ -463,7 +483,8 @@ describe('ruleEngineApplicationTransformer', () => {
         area: 0,
         existingAgreements: [],
         intersections: {
-          moorland: { intersectingAreaPercentage: 0 }
+          moorland: { intersectingAreaPercentage: 0 },
+          sssi: { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 }
         }
       }
     })
@@ -475,6 +496,7 @@ describe('ruleEngineApplicationTransformer', () => {
       'UPL1',
       -500,
       -25.5,
+      { intersectingAreaPercentage: -10.0, intersectionAreaSqm: 1000 },
       []
     )
 
@@ -485,7 +507,8 @@ describe('ruleEngineApplicationTransformer', () => {
         area: -500,
         existingAgreements: [],
         intersections: {
-          moorland: { intersectingAreaPercentage: -25.5 }
+          moorland: { intersectingAreaPercentage: -25.5 },
+          sssi: { intersectingAreaPercentage: -10.0, intersectionAreaSqm: 1000 }
         }
       }
     })
@@ -497,6 +520,7 @@ describe('ruleEngineApplicationTransformer', () => {
       'UPL1',
       undefined,
       0,
+      { intersectingAreaPercentage: null, intersectionAreaSqm: null },
       null
     )
 
@@ -507,14 +531,22 @@ describe('ruleEngineApplicationTransformer', () => {
         area: undefined,
         existingAgreements: null,
         intersections: {
-          moorland: { intersectingAreaPercentage: 0 }
+          moorland: { intersectingAreaPercentage: 0 },
+          sssi: { intersectingAreaPercentage: null, intersectionAreaSqm: null }
         }
       }
     })
   })
 
   test('should handle empty existingAgreements array', () => {
-    const result = ruleEngineApplicationTransformer(100, 'UPL1', 500, 25.5, [])
+    const result = ruleEngineApplicationTransformer(
+      100,
+      'UPL1',
+      500,
+      25.5,
+      0,
+      []
+    )
 
     expect(result.landParcel.existingAgreements).toEqual([])
   })
@@ -535,6 +567,7 @@ describe('ruleEngineApplicationTransformer', () => {
       'UPL1',
       500,
       25.5,
+      0,
       existingAgreements
     )
 
