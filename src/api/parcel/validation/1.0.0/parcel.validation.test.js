@@ -3,13 +3,13 @@ import {
   getDataAndValidateRequest
 } from './parcel.validation.js'
 import { splitParcelId } from '../../service/parcel.service.js'
-import { getEnabledActions } from '../../../actions/queries/1.0.0/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { getLandData } from '../../queries/getLandData.query.js'
 import { vi } from 'vitest'
 
 // Mock the dependencies
 vi.mock('../../service/parcel.service.js')
-vi.mock('../../../actions/queries/1.0.0/getActions.query.js')
+vi.mock('~/src/api/actions/queries/getActions.query.js')
 vi.mock('../../queries/getLandData.query.js')
 
 describe('Parcel Validation 1.0.0', () => {
