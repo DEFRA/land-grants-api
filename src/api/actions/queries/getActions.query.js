@@ -1,5 +1,5 @@
-import { logDatabaseError } from '../../../common/helpers/logging/log-helpers.js'
-import { actionConfigTransformer } from '../../transformers/1.0.0/actionConfig.transformer.js'
+import { logDatabaseError } from '~/src/api/common/helpers/logging/log-helpers.js'
+import { actionConfigTransformer } from '~/src/api/actions/transformers/1.0.0/actionConfig.transformer.js'
 
 /**
  * Get enabled action configs
@@ -46,7 +46,7 @@ async function getEnabledActions(logger, db) {
 export { getEnabledActions }
 
 /**
- * @import {Action} from '../../action.d.js'
+ * @import {Action} from '../action.d.js'
  * @import {Logger} from '~/src/api/common/logger.d.js'
  * @import {Pool} from '~/src/api/common/postgres.d.js'
  */

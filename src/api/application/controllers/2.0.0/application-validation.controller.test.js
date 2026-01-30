@@ -1,14 +1,14 @@
 import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { ApplicationValidationController } from './application-validation.controller.js'
-import { getEnabledActions } from '~/src/api/actions/queries/index.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
 import { validateRequest } from '../../validation/application.validation.js'
 import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 
 // Mock all dependencies
-vi.mock('~/src/api/actions/queries/index.js', () => ({
+vi.mock('~/src/api/actions/queries/getActions.query.js', () => ({
   getEnabledActions: vi.fn()
 }))
 vi.mock('~/src/available-area/compatibilityMatrix.js', () => ({

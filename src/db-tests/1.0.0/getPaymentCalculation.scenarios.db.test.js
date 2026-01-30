@@ -2,7 +2,7 @@
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { getPaymentCalculationForParcels } from '../../payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from '../setup/getPaymentCalculationFixtures.js'
-import { getEnabledActions } from '~/src/api/actions/queries/1.0.0/getActions.query.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { vi } from 'vitest'
 
 describe('Calculate payments', () => {
