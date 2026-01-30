@@ -5,6 +5,7 @@ import { config } from '../../../config/index.js'
 import { getStats } from '../../statistics/queries/stats.query.js'
 
 const DEFAULT_PORT = 5432
+const keepAliveInterval = 60000
 
 /**
  * Gets a database token for authentication
@@ -129,7 +130,7 @@ export const postgresDb = {
 
       try {
         await getStats(server.logger, pool)
-        setInterval(() => pool.query('SELECT 1'), 60000)
+        setInterval(() => pool.query('SELECT 1'), keepAliveInterval)
         server.decorate('server', 'postgresDb', pool)
       } catch (err) {
         server.logger.error({ err }, 'Failed to connect to Postgres')
