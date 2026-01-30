@@ -21,6 +21,20 @@ import {
 } from '../../service/parcel.service.js'
 
 /**
+ * Validate SSSI consent required
+ * @param {string[]} parcelIds - The parcelIds
+ * @param {string[]} fields - The fields
+ * @returns {undefined | import('@hapi/boom').Boom} The error message
+ */
+const validateSSSIConsentRequired = (parcelIds, fields) => {
+  if (parcelIds.length > 1 && fields.includes('actions.sssiConsentRequired')) {
+    return Boom.badRequest(
+      'SSSI consent required is not supported for multiple parcels.'
+    )
+  }
+}
+
+/**
  * ParcelsController
  * Returns a single land parcel merged with land actions
  * @satisfies {Partial<ServerRoute>}
@@ -64,13 +78,9 @@ const ParcelsControllerV2 = {
         }
       })
 
-      if (
-        parcelIds.length > 1 &&
-        fields.includes('actions.sssiConsentRequired')
-      ) {
-        return Boom.badRequest(
-          'SSSI consent required is not supported for multiple parcels.'
-        )
+      const validationError = validateSSSIConsentRequired(parcelIds, fields)
+      if (validationError) {
+        return validationError
       }
 
       const showActionResults = fields.includes('actions.results')
