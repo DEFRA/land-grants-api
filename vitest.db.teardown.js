@@ -1,7 +1,7 @@
 import {
   connectToTestDatbase,
   clearSeedDatabaseForTests
-} from './src/db-tests/setup/postgres.js'
+} from './src/tests/db-tests/setup/postgres.js'
 
 export default async () => {
   const connection = connectToTestDatbase()

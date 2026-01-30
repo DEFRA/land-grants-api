@@ -13,7 +13,7 @@ export default defineConfig({
   test: {
     ...unitConfig.test,
     name: 'database',
-    include: ['src/db-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
+    include: ['src/tests/db-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
     globalSetup: [resolve(__dirname, 'vitest.db.setup.js')],
     globalTeardown: [resolve(__dirname, 'vitest.db.teardown.js')],
     coverage: {
