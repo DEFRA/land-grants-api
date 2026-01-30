@@ -32,6 +32,7 @@ const validateSSSIConsentRequired = (parcelIds, fields) => {
       'SSSI consent required is not supported for multiple parcels.'
     )
   }
+  return undefined
 }
 
 /**
