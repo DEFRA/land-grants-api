@@ -11,7 +11,7 @@
 export const sssiConsentRequired = {
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
-    const name = `${rule.name}-${layerName}`
+    const name = `${rule.name}`
 
     const explanations = [
       {
@@ -40,7 +40,7 @@ export const sssiConsentRequired = {
 
     if (isConsentRequired) {
       caveat = {
-        code: rule.name,
+        code: 'ne-consent-required',
         description: caveatDescription,
         metadata: {
           percentageOverlap: intersectingAreaPercentage,
