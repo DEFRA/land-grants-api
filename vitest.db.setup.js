@@ -1,7 +1,7 @@
 import {
   connectToTestDatbase,
   seedDatabaseForTests
-} from './src/db-tests/setup/postgres.js'
+} from './src/tests/db-tests/setup/postgres.js'
 
 let isSeeded = false
 
