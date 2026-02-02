@@ -13,7 +13,6 @@ import { sqmToHaRounded } from '~/src/api/common/helpers/measurement.js'
  * @param {Action[]} actions - The actions
  * @param {object} availableArea - The available area
  * @param {object} ruleResult - The rule result
- * @param {object} ruleResult - The rule result
  * @returns {object} The action result
  */
 export const actionResultTransformer = (
