@@ -1,7 +1,6 @@
-import { saveApplicationValidationRun } from '~/src/api/application/mutations/saveApplicationValidationRun.mutation.js'
-
-import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
+import { saveApplicationValidationRun } from '~/src/api/application/mutations/saveApplicationValidationRun.mutation.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('Save Application Validation Run Mutation', () => {
   let logger, connection

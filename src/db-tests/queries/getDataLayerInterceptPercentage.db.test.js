@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
-
-import { getDataLayerQuery } from '../../../api/data-layers/queries/getDataLayer.query.js'
-import { connectToTestDatbase } from '../../setup/postgres.js'
 import { vi } from 'vitest'
+import { getDataLayerQuery } from '~/src/api/data-layers/queries/getDataLayer.query.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('Get Data Layer Intercept Percentage Query', () => {
   let logger, connection

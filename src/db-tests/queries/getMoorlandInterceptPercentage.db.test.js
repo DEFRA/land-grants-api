@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
-
-import { getMoorlandInterceptPercentage } from '../../../api/parcel/queries/getMoorlandInterceptPercentage.js'
-import { connectToTestDatbase } from '../../setup/postgres.js'
 import { vi } from 'vitest'
+import { getMoorlandInterceptPercentage } from '~/src/api/parcel/queries/getMoorlandInterceptPercentage.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('Get Moorland Intercept Percentage Query', () => {
   let logger, connection

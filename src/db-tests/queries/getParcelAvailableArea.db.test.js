@@ -1,9 +1,7 @@
-/* eslint-disable no-console */
-
-import { mockActionConfig } from '../../../api/actions/fixtures/index.js'
-import { getParcelAvailableArea } from '../../../api/parcel/queries/getParcelAvailableArea.query.js'
-import { connectToTestDatbase } from '../../setup/postgres.js'
 import { vi } from 'vitest'
+import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
+import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('Get Parcel Available Area Query', () => {
   let logger, connection

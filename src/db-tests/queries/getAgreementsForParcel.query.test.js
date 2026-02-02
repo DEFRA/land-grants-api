@@ -1,6 +1,6 @@
-import { getAgreementsForParcel } from '../../../api/agreements/queries/getAgreementsForParcel.query.js'
-import { connectToTestDatbase } from '../../setup/postgres.js'
 import { vi } from 'vitest'
+import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('Get Agreements For Parcel Query', () => {
   let logger, connection

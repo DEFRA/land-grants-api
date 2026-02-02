@@ -1,15 +1,14 @@
-import { LandDataIngestController } from '../../../api/land-data-ingest/controller/land-data-ingest.controller.js'
-import { createResponseCapture } from '../../setup/utils.js'
+import { vi } from 'vitest'
+import { LandDataIngestController } from '~/src/api/land-data-ingest/controller/land-data-ingest.controller.js'
+import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
 import {
   createTestS3Client,
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
   clearTestBucket
-} from '../../../import-tests/setup/s3-test-helpers.js'
-import { connectToTestDatbase } from '../../setup/postgres.js'
-// import { clearTestData } from '../../setup/db-helper.js'
-import { vi } from 'vitest'
+} from '~/src/db-tests/setup/s3-test-helpers.js'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 
 describe('CDP Uploader Callback Controller', () => {
   const { h, getResponse } = createResponseCapture()
@@ -31,7 +30,6 @@ describe('CDP Uploader Callback Controller', () => {
   })
 
   afterAll(async () => {
-    // await clearTestData(connection)
     await connection.end()
   })
 

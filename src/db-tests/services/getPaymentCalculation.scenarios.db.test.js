@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
-import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import { getPaymentCalculationForParcels } from '../../../payment-calculation/paymentCalculation.js'
-import { getPaymentCalculationFixtures } from '../../setup/getPaymentCalculationFixtures.js'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { vi } from 'vitest'
+import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
+import { getPaymentCalculationForParcels } from '~/src/payment-calculation/paymentCalculation.js'
+import { getPaymentCalculationFixtures } from '~/src/db-tests/setup/getPaymentCalculationFixtures.js'
+import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 
 describe('Payment Calculation Service', () => {
   let logger, connection

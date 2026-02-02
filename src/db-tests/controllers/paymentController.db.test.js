@@ -2,8 +2,8 @@
 import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/api/payment/controllers/1.0.0/payment-calculate.controller.js'
 import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-import { createResponseCapture } from '../../setup/utils.js'
-import { getPaymentCalculationFixtures } from '../../setup/getPaymentCalculationFixtures.js'
+import { createResponseCapture } from '~/src/db-tests/setup/utils.js'
+import { getPaymentCalculationFixtures } from '~/src/db-tests/setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
 import { vi } from 'vitest'
 
