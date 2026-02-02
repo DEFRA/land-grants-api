@@ -78,7 +78,15 @@ export const validateLandAction = async (
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
-  const ruleResult = executeRules(rules, application, ruleToExecute?.rules)
+  const ruleResult = executeRules(
+    rules,
+    {
+      ...application,
+      parcelId: landAction.parcelId,
+      sheetId: landAction.sheetId
+    },
+    ruleToExecute?.rules
+  )
   return actionResultTransformer(action, actions, availableArea, ruleResult)
 }
 
