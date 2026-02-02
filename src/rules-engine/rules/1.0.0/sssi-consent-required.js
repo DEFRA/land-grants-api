@@ -39,10 +39,13 @@ export const sssiConsentRequired = {
       intersectingAreaPercentage - tolerancePercent > 0
 
     if (isConsentRequired) {
+      const { parcelId, sheetId } = application
       caveat = {
         code: 'ne-consent-required',
         description: caveatDescription,
         metadata: {
+          parcelId,
+          sheetId,
           percentageOverlap: intersectingAreaPercentage,
           overlapAreaHectares: intersectionAreaHa
         }
