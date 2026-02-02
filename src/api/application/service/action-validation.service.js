@@ -83,7 +83,7 @@ export const validateLandAction = async (
     {
       ...application,
       parcelId: landAction.parcelId,
-      sheetId: landAction
+      sheetId: landAction.sheetId
     },
     ruleToExecute?.rules
   )
