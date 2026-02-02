@@ -1,27 +1,115 @@
 /* eslint-disable no-console */
-import { vi } from 'vitest'
-import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/api/payment/controllers/2.0.0/payment-calculate.controller.js'
+import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/api/payment/controllers/1.0.0/payment-calculate.controller.js'
+import { getEnabledActions } from '~/src/api/actions/queries/1.0.0/getActions.query.js'
 import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
 import { createResponseCapture } from '../../setup/utils.js'
 import { getPaymentCalculationFixtures } from '../../setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/api/application/validation/application.validation.js'
-import { logger } from '~/src/db-tests/setup/testLogger.js'
+import { vi } from 'vitest'
 
 vi.mock('~/src/api/application/validation/application.validation.js')
+vi.mock('~/src/api/actions/queries/1.0.0/getActions.query.js')
 
 const mockValidateRequest = validateRequest
+const mockGetEnabledActions = getEnabledActions
+const landCoverClassCodes = [
+  '130',
+  '240',
+  '250',
+  '270',
+  '280',
+  '300',
+  '330',
+  '580',
+  '590',
+  '620',
+  '640',
+  '650'
+]
 
-describe('Payment Controller 2.0.0', () => {
-  let connection
+const actions = [
+  {
+    enabled: true,
+    code: 'CMOR1',
+    payment: {
+      ratePerUnitGbp: 10.6,
+      ratePerAgreementPerYearGbp: 272
+    },
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    landCoverClassCodes,
+    startDate: '2025-01-01',
+    version: 1
+  },
+  {
+    enabled: true,
+    code: 'UPL1',
+    payment: {
+      ratePerUnitGbp: 20
+    },
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    landCoverClassCodes,
+    startDate: '2025-01-01',
+    version: 1
+  },
+  {
+    enabled: true,
+    code: 'UPL2',
+    payment: {
+      ratePerUnitGbp: 53
+    },
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    landCoverClassCodes,
+    startDate: '2025-01-01',
+    version: 1
+  },
+  {
+    enabled: true,
+    code: 'UPL3',
+    payment: {
+      ratePerUnitGbp: 66
+    },
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    landCoverClassCodes,
+    startDate: '2025-01-01',
+    version: 1
+  },
+  {
+    enabled: true,
+    code: 'CSAM1',
+    payment: {
+      ratePerUnitGbp: 6,
+      ratePerAgreementPerYearGbp: 97
+    },
+    applicationUnitOfMeasurement: 'ha',
+    durationYears: 3,
+    landCoverClassCodes,
+    startDate: '2025-01-01',
+    version: 1
+  }
+]
+
+describe('Payment Controller', () => {
+  let logger, connection
   const fixtures = getPaymentCalculationFixtures()
   const { h, getResponse } = createResponseCapture()
 
   beforeAll(() => {
+    logger = {
+      info: vi.fn(),
+      error: vi.fn(),
+      warn: vi.fn(),
+      debug: vi.fn()
+    }
     connection = connectToTestDatbase()
   })
 
   beforeEach(() => {
     mockValidateRequest.mockResolvedValue([])
+    mockGetEnabledActions.mockResolvedValue(actions)
   })
 
   afterAll(async () => {
@@ -29,7 +117,7 @@ describe('Payment Controller 2.0.0', () => {
   })
 
   test.each(fixtures)(
-    `%p`,
+    `%s`,
     async (
       name,
       {
@@ -74,12 +162,11 @@ describe('Payment Controller 2.0.0', () => {
       expect(secondPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentOtherQuarters)
       )
-
       expect(payment.agreementStartDate).toEqual(expectedStartDate)
       expect(payment.agreementEndDate).toEqual(expectedEndDate)
       expect(payment.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
       expect(firstPayment.paymentDate).toEqual(expectedFirstPaymentDate)
-      expect(payment.parcelItems[1].version).toBe('1.0.0')
+      expect(payment.parcelItems[1].version).toBe(1)
     }
   )
 })
