@@ -1,15 +1,10 @@
-import {
-  connectToTestDatbase,
-  seedDatabaseForTests
-} from './src/db-tests/setup/postgres.js'
+import { ingestLandData } from './scripts/local-ingest-service.js'
 
 let isSeeded = false
 
 export default async () => {
   if (!isSeeded) {
-    const connection = connectToTestDatbase()
-    await seedDatabaseForTests(connection)
-    await connection.end()
+    await ingestLandData()
     isSeeded = true
   }
 }
