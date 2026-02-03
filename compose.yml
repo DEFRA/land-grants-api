@@ -89,7 +89,7 @@ services:
       - '4566:4566' # LocalStack Gateway
       - '4510-4559:4510-4559' # external services port range
     env_file:
-      - 'compose/aws.env'
+      - 'scripts/infra/aws.env'
     environment:
       DEBUG: ${DEBUG:-1}
       LS_LOG: WARN # Localstack DEBUG Level
@@ -97,7 +97,7 @@ services:
       LOCALSTACK_HOST: 127.0.0.1
     volumes:
       - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-      - ./compose/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+      - ./scripts/infra/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
     healthcheck:
       test: [ 'CMD', 'curl', 'localhost:4566' ]
       interval: 5s
