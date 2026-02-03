@@ -13,7 +13,7 @@ export default defineConfig({
   test: {
     ...unitConfig.test,
     name: 'import',
-    include: ['src/import-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
+    include: ['src/tests/import-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
     coverage: {
       ...unitConfig.test.coverage,
       reporter: ['text', ['json', { file: 'coverage-final.json' }], 'html'],

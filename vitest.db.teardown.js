@@ -1,4 +1,4 @@
-import { connectToTestDatbase } from './src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from './src/tests/db-tests/setup/postgres.js'
 
 export default async () => {
   const connection = connectToTestDatbase()

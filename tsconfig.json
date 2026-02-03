@@ -19,7 +19,7 @@
     "coverage",
     "node_modules",
     "src/**/*.test.js",
-    "src/db-tests/**",
+    "src/tests/**",
     "vitest.*.config.js"
   ],
   "include": [
