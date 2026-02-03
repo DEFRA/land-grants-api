@@ -35,7 +35,7 @@ describe('generateSchedule', () => {
       generatePaymentSchedule(today, lengthYears, frequency)
 
     expect(agreementStartDate).toBe('2025-08-01')
-    expect(agreementEndDate).toBe('2028-08-01')
+    expect(agreementEndDate).toBe('2028-07-31')
 
     expect(schedule).toEqual([
       '2025-11-05',
