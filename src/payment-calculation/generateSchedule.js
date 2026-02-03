@@ -7,7 +7,8 @@ import {
   isBefore,
   isWeekend,
   setDate,
-  startOfMonth
+  startOfMonth,
+  subDays
 } from 'date-fns'
 
 const PAYMENT_DAY_OF_MONTH = 5
@@ -46,7 +47,10 @@ export function getFirstDayOfNextMonth(startDate) {
  * @returns the end date of an agreement
  */
 export function getAgreementEndDate(startDate, agreementYears) {
-  return format(addYears(startDate, agreementYears), SCHEDULE_DATE_FORMAT)
+  return format(
+    subDays(addYears(startDate, agreementYears), 1),
+    SCHEDULE_DATE_FORMAT
+  )
 }
 
 /**
@@ -59,6 +63,15 @@ function getFrequencyIntervalMonths(frequency = 'quarterly') {
     quarterly: 3
   }
   return intervals[frequency.toLowerCase()] || intervals.quarterly
+}
+
+/**
+ * Get the last payment date of the agreement
+ * @param {string} agreementEndDate
+ * @returns {string} the last payment date of the agreement
+ */
+function getLastPaymentDate(agreementEndDate) {
+  return format(endOfMonth(addDays(agreementEndDate, 1)), SCHEDULE_DATE_FORMAT)
 }
 
 /**
@@ -90,7 +103,7 @@ export function generatePaymentSchedule(
   let currentPaymentDate = getPaymentDayForDate(
     addMonths(agreementStartDate, intervalMonths)
   )
-  const lastPaymentDate = endOfMonth(agreementEndDate)
+  const lastPaymentDate = getLastPaymentDate(agreementEndDate)
 
   while (isBefore(currentPaymentDate, lastPaymentDate)) {
     schedule.push(format(currentPaymentDate, SCHEDULE_DATE_FORMAT))
