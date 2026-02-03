@@ -105,7 +105,7 @@ describe('getPaymentCalculationForParcels', () => {
     ]
     const expectedResponse = {
       agreementStartDate: '2025-08-01',
-      agreementEndDate: '2026-08-01',
+      agreementEndDate: '2026-07-31',
       frequency: 'Quarterly',
       agreementTotalPence: 38130,
       annualTotalPence: 38130,
@@ -254,7 +254,7 @@ describe('getPaymentCalculationForParcels', () => {
     ]
     const expectedResponse = {
       agreementStartDate: '2026-02-01',
-      agreementEndDate: '2027-02-01',
+      agreementEndDate: '2027-01-31',
       frequency: 'Quarterly',
       agreementTotalPence: 38130,
       annualTotalPence: 38130,
