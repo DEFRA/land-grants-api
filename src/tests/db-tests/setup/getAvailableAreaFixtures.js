@@ -13,5 +13,6 @@ export function getAvailableAreaFixtures() {
     delimiter: ',',
     columns: true
   })
-  return fixtures.map((fixture) => [fixture.scenarioName, fixture])
+  // eslint-disable-next-line
+  return fixtures.map((fixture) => [fixture.scenarioName, fixture]) 
 }

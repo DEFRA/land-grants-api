@@ -1,4 +1,4 @@
-import { connectToTestDatbase } from '../../src/db-tests/setup/postgres.js'
+import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import fs from 'fs/promises'
 import { createReadStream } from 'fs'
 import { dirname, join } from 'path'
