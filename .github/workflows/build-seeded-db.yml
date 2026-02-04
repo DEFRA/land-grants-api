@@ -8,7 +8,7 @@ on:
       - 'changelog/**'
       - 'src/api/common/migration/**'
       - 'src/land-data/**'
-      - 'db/Dockerfile.seeded'
+      - 'Dockerfile.seeded'
       - '.github/workflows/build-seeded-db.yml'
   workflow_dispatch:
 
@@ -33,6 +33,6 @@ jobs:
         uses: DEFRA/cdp-build-action/build-dockerhub@main
         with:
           image-name: 'land-grants-postgres-seeded'
-          dockerfile: ./db/Dockerfile.seeded
+          dockerfile: ./Dockerfile.seeded
           context: .
           version: latest
