@@ -16,6 +16,16 @@ export default defineConfig({
     include: ['src/tests/db-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
     globalSetup: [resolve(__dirname, 'vitest.db.setup.js')],
     globalTeardown: [resolve(__dirname, 'vitest.db.teardown.js')],
+    threads: false,
+    sequence: {
+      concurrent: false
+    },
+    fileParallelism: false,
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
+    },
     coverage: {
       ...unitConfig.test.coverage,
       reporter: ['text', ['json', { file: 'coverage-final.json' }], 'html'],

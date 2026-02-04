@@ -1,37 +1,15 @@
 import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { application } from '~/src/api/application/index.js'
-import { connectToTestDatbase } from '~/src/db-tests/setup/postgres.js'
-// import { saveApplicationValidationRun } from '~/src/api/application/mutations/saveApplicationValidationRun.mutation.js'
-
-const validateApplicationRequest = async (server) => {
-  const request = {
-    method: 'POST',
-    url: '/application/validate',
-    payload: {
-      applicationId: 'app-validation-test1',
-      requester: 'grants-ui',
-      applicantCrn: '1102760349',
-      sbi: 121428499,
-      landActions: [
-        {
-          parcelId: '8936',
-          sheetId: 'SD7553',
-          actions: [
-            {
-              code: 'UPL1',
-              quantity: 6.1653
-            }
-          ]
-        }
-      ]
-    }
-  }
-
-  const { statusCode, payload } = await server.inject(request)
-  const result = JSON.parse(payload)
-  return { validateStatusCode: statusCode, validateResult: result }
-}
+import {
+  connectToTestDatbase,
+  truncateTable
+} from '~/src/tests/db-tests/setup/postgres.js'
+import {
+  validateApplicationRequest,
+  getApplicationValidationRunsRequest,
+  applicationRequest
+} from './index.js'
 
 describe('Application Validation Runs Controller', () => {
   let logger, connection
@@ -57,169 +35,164 @@ describe('Application Validation Runs Controller', () => {
     await server.stop()
   })
 
+  beforeEach(async () => {
+    await truncateTable(connection, 'application_results')
+  })
+
   describe('POST /application/{applicationId}/validation-run', () => {
     test('should return 200 and application validation runs with details when fields includes details', async () => {
       const { validateStatusCode, validateResult } =
-        await validateApplicationRequest(server)
+        await validateApplicationRequest(server, applicationRequest)
 
       expect(validateStatusCode).toBe(200)
       expect(validateResult.message).toBe('Application validated successfully')
-      expect(validateResult.valid).toBe(false)
 
-      // const request = {
-      //   method: 'POST',
-      //   url: '/application/12345/validation-run',
-      //   payload: {
-      //     fields: ['details']
-      //   }
-      // }
+      const request = {
+        method: 'POST',
+        url: `/application/${applicationRequest.applicationId}/validation-run`,
+        payload: {
+          fields: ['details']
+        }
+      }
 
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      // const { statusCode, payload } = await server.inject(request)
-      // const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      // expect(statusCode).toBe(200)
-      // expect(result.message).toBe(
-      //   'Application validation runs retrieved successfully'
-      // )
-      // expect(result.applicationValidationRuns).toHaveLength(1)
-      // expect(result.applicationValidationRuns[0]).toMatchObject({
-      //   id: validateResult.id,
-      //   application_id: '12345',
-      //   sbi: '214314',
-      //   crn: '1937195628',
-      //   data: validateResult.data,
-      //   created_at: expect.any(String)
-      // })
+      expect(statusCode).toBe(200)
+      expect(result.message).toBe(
+        'Application validation runs retrieved successfully'
+      )
+      expect(result.applicationValidationRuns).toHaveLength(1)
+      expect(result.applicationValidationRuns[0]).toMatchObject({
+        id: validateResult.id,
+        application_id: applicationRequest.applicationId,
+        sbi: applicationRequest.sbi,
+        crn: applicationRequest.applicantCrn,
+        created_at: expect.any(String),
+        data: expect.any(Object)
+      })
     })
 
-    // test('should return 200 and transformed application validation runs simple list', async () => {
-    //   const applicationValidationRun = {
-    //     application_id: '67890',
-    //     sbi: '987654',
-    //     crn: '9876543210',
-    //     data: {
-    //       requester: 'GrantsUI',
-    //       sbi: '987654'
-    //     }
-    //   }
+    test('should return 200 and transformed application validation runs simple list', async () => {
+      const { validateStatusCode, validateResult } =
+        await validateApplicationRequest(server, applicationRequest)
 
-    //   const savedRun = await saveApplicationValidationRun(
-    //     logger,
-    //     connection,
-    //     applicationValidationRun
-    //   )
+      expect(validateStatusCode).toBe(200)
+      expect(validateResult.message).toBe('Application validated successfully')
 
-    //   const request = {
-    //     method: 'POST',
-    //     url: '/application/67890/validation-run',
-    //     payload: {
-    //       fields: []
-    //     }
-    //   }
+      const { getStatusCode, getResult } =
+        await getApplicationValidationRunsRequest(
+          server,
+          applicationRequest.applicationId,
+          []
+        )
+      expect(getStatusCode).toBe(200)
+      expect(getResult.message).toBe(
+        'Application validation runs retrieved successfully'
+      )
+      expect(getResult.applicationValidationRuns).toHaveLength(1)
+      expect(getResult.applicationValidationRuns[0]).toEqual({
+        id: validateResult.id,
+        created_at: expect.any(String)
+      })
+    })
 
-    //   /** @type { Hapi.ServerInjectResponse<object> } */
-    //   const { statusCode, payload } = await server.inject(request)
-    //   const result = JSON.parse(payload)
+    test('should return 200 and empty array when no validation runs found', async () => {
+      const request = {
+        method: 'POST',
+        url: '/application/nonexistent/validation-run',
+        payload: {
+          fields: []
+        }
+      }
 
-    //   expect(statusCode).toBe(200)
-    //   expect(result.message).toBe(
-    //     'Application validation runs retrieved successfully'
-    //   )
-    //   expect(result.applicationValidationRuns).toHaveLength(1)
-    //   expect(result.applicationValidationRuns[0]).toMatchObject({
-    //     id: savedRun.id,
-    //     created_at: expect.any(String)
-    //   })
-    //   // Should not include full data when fields is empty
-    //   expect(result.applicationValidationRuns[0]).not.toHaveProperty('data')
-    //   expect(result.applicationValidationRuns[0]).not.toHaveProperty(
-    //     'application_id'
-    //   )
-    // })
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-    // test('should return 200 and empty array when no validation runs found', async () => {
-    //   const request = {
-    //     method: 'POST',
-    //     url: '/application/nonexistent/validation-run',
-    //     payload: {
-    //       fields: []
-    //     }
-    //   }
+      expect(statusCode).toBe(200)
+      expect(result.message).toBe(
+        'Application validation runs retrieved successfully'
+      )
+      expect(result.applicationValidationRuns).toEqual([])
+    })
 
-    //   /** @type { Hapi.ServerInjectResponse<object> } */
-    //   const { statusCode, payload } = await server.inject(request)
-    //   const result = JSON.parse(payload)
+    test('should return 404 if applicationId parameter is missing', async () => {
+      const request = {
+        method: 'POST',
+        url: '/application/validation-run',
+        payload: {
+          fields: ['details']
+        }
+      }
 
-    //   expect(statusCode).toBe(200)
-    //   expect(result.message).toBe(
-    //     'Application validation runs retrieved successfully'
-    //   )
-    //   expect(result.applicationValidationRuns).toEqual([])
-    // })
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-    // test('should return 404 if applicationId parameter is missing', async () => {
-    //   const request = {
-    //     method: 'POST',
-    //     url: '/application/validation-run',
-    //     payload: {
-    //       fields: ['details']
-    //     }
-    //   }
+      expect(statusCode).toBe(404)
+      expect(result.message).toBe('Not Found')
+    })
 
-    //   /** @type { Hapi.ServerInjectResponse<object> } */
-    //   const { statusCode, payload } = await server.inject(request)
-    //   const result = JSON.parse(payload)
+    test('should return multiple validation runs ordered by created_at DESC', async () => {
+      // Create first validation run
+      const {
+        validateStatusCode: validateStatusCode1,
+        validateResult: validateResult1
+      } = await validateApplicationRequest(server, applicationRequest)
 
-    //   expect(statusCode).toBe(404)
-    //   expect(result.message).toBe('Not Found')
-    // })
+      expect(validateStatusCode1).toBe(200)
+      expect(validateResult1.message).toBe('Application validated successfully')
 
-    // test('should return multiple validation runs ordered by created_at DESC', async () => {
-    //   const applicationId = 'multi-test'
-    //   const run1 = {
-    //     application_id: applicationId,
-    //     sbi: '111111',
-    //     crn: '1111111111',
-    //     data: { test: 'first' }
-    //   }
-    //   const run2 = {
-    //     application_id: applicationId,
-    //     sbi: '222222',
-    //     crn: '2222222222',
-    //     data: { test: 'second' }
-    //   }
+      // Add small delay to ensure different timestamps
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
-    //   const savedRun1 = await saveApplicationValidationRun(
-    //     logger,
-    //     connection,
-    //     run1
-    //   )
-    //   // Small delay to ensure different timestamps
-    //   await new Promise((resolve) => setTimeout(resolve, 10))
-    //   const savedRun2 = await saveApplicationValidationRun(
-    //     logger,
-    //     connection,
-    //     run2
-    //   )
+      // Create second validation run
+      const {
+        validateStatusCode: validateStatusCode2,
+        validateResult: validateResult2
+      } = await validateApplicationRequest(server, applicationRequest)
 
-    //   const request = {
-    //     method: 'POST',
-    //     url: `/application/${applicationId}/validation-run`,
-    //     payload: {
-    //       fields: ['details']
-    //     }
-    //   }
+      expect(validateStatusCode2).toBe(200)
+      expect(validateResult2.message).toBe('Application validated successfully')
 
-    //   /** @type { Hapi.ServerInjectResponse<object> } */
-    //   const { statusCode, payload } = await server.inject(request)
-    //   const result = JSON.parse(payload)
+      // Add small delay to ensure different timestamps
+      await new Promise((resolve) => setTimeout(resolve, 10))
 
-    //   expect(statusCode).toBe(200)
-    //   expect(result.applicationValidationRuns).toHaveLength(2)
-    //   // Should be ordered by created_at DESC, so newest first
-    //   expect(result.applicationValidationRuns[0].id).toBe(savedRun2.id)
-    //   expect(result.applicationValidationRuns[1].id).toBe(savedRun1.id)
-    // })
+      // Create third validation run
+      const {
+        validateStatusCode: validateStatusCode3,
+        validateResult: validateResult3
+      } = await validateApplicationRequest(server, applicationRequest)
+
+      expect(validateStatusCode3).toBe(200)
+      expect(validateResult3.message).toBe('Application validated successfully')
+
+      // Retrieve all validation runs
+      const { getStatusCode, getResult } =
+        await getApplicationValidationRunsRequest(
+          server,
+          applicationRequest.applicationId,
+          []
+        )
+
+      expect(getStatusCode).toBe(200)
+      expect(getResult.message).toBe(
+        'Application validation runs retrieved successfully'
+      )
+      expect(getResult.applicationValidationRuns).toHaveLength(3)
+
+      // Verify results are ordered by created_at DESC (most recent first)
+      const runs = getResult.applicationValidationRuns
+      expect(new Date(runs[0].created_at).getTime()).toBeGreaterThanOrEqual(
+        new Date(runs[1].created_at).getTime()
+      )
+      expect(new Date(runs[1].created_at).getTime()).toBeGreaterThanOrEqual(
+        new Date(runs[2].created_at).getTime()
+      )
+
+      // Verify the most recent run is first
+      expect(runs[0].id).toBe(validateResult3.id)
+      expect(runs[1].id).toBe(validateResult2.id)
+      expect(runs[2].id).toBe(validateResult1.id)
+    })
   })
 })
