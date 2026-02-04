@@ -26,6 +26,7 @@ const applicationValidationResponseSchemaV2 = Joi.object({
             code: Joi.string().required(),
             description: Joi.string().required(),
             metadata: Joi.object({
+              actionCode: Joi.string().required(),
               parcelId: Joi.string().required(),
               sheetId: Joi.string().required(),
               percentageOverlap: Joi.number().required(),
