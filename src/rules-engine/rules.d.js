@@ -34,6 +34,7 @@
  * @property {LandParcel} landParcel
  * @property {string} [sheetId]
  * @property {string} [parcelId]
+ * @property {string} [actionCode]
  */
 
 /**
