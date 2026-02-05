@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { accessTokenLocal } from './config.js'
 
 /* eslint-disable no-undef */
