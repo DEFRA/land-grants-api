@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-// k6 run src/tests/load-tests/application-validate.js --env ACCESS_TOKEN=123345
+// k6 run src/tests/load-tests/application-validate.js
 
 import http from 'k6/http'
 import { check } from 'k6'

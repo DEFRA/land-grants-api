@@ -1,3 +1,5 @@
+import { accessTokenLocal } from './config.js'
+
 /* eslint-disable no-undef */
 const { ACCESS_TOKEN } = __ENV
 
@@ -7,4 +9,4 @@ export const defaultOptions = {
 }
 
 export const url = 'http://localhost:3001'
-export const accessToken = ACCESS_TOKEN
+export const accessToken = ACCESS_TOKEN || accessTokenLocal

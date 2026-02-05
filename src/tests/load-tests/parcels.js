@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-// k6 run src/tests/load-tests/parcels.js --env ACCESS_TOKEN=12345
+// k6 run src/tests/load-tests/parcels.js
 
 import http from 'k6/http'
 import { check } from 'k6'
