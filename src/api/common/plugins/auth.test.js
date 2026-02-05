@@ -39,18 +39,18 @@ const createHMock = () => ({
 
 describe('auth plugin', () => {
   describe('decryptToken', () => {
-    it('decrypts a valid token successfully', () => {
+    it('decrypts a valid token successfully', async () => {
       const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
       config.get.mockReturnValueOnce(ENCRYPTION_KEY)
 
-      const decrypted = decryptToken(encrypted)
+      const decrypted = await decryptToken(encrypted)
 
       expect(decrypted).toBe(VALID_TOKEN)
     })
 
-    it('returns null and logs error when encryption key is missing', () => {
+    it('returns null and logs error when encryption key is missing', async () => {
       config.get.mockReturnValueOnce(undefined)
-      const result = decryptToken('irrelevant')
+      const result = await decryptToken('irrelevant')
 
       expect(result).toBeNull()
       expect(logBusinessError).toHaveBeenCalledWith(
@@ -61,44 +61,44 @@ describe('auth plugin', () => {
       )
     })
 
-    it('returns null when token format is invalid', () => {
+    it('returns null when token format is invalid', async () => {
       config.get.mockReturnValue(ENCRYPTION_KEY)
-      const result = decryptToken('invalid-format')
+      const result = await decryptToken('invalid-format')
       expect(result).toBeNull()
       expect(logBusinessError).toHaveBeenCalled()
     })
   })
 
   describe('validateAuthToken', () => {
-    it('returns false when Authorization header missing', () => {
-      const result = validateAuthToken(null)
+    it('returns false when Authorization header missing', async () => {
+      const result = await validateAuthToken(null)
       expect(result.isValid).toBe(false)
       expect(result.error).toMatch(/Missing/)
     })
 
-    it('returns false when server token is missing', () => {
+    it('returns false when server token is missing', async () => {
       config.get.mockImplementation((key) => {
         if (key === 'auth.token') return undefined
         if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
       })
 
-      const result = validateAuthToken('Bearer xyz')
+      const result = await validateAuthToken('Bearer xyz')
       expect(result.isValid).toBe(false)
       expect(result.error).toMatch(/not configured/i)
     })
 
-    it('returns false when encryption key missing', () => {
+    it('returns false when encryption key missing', async () => {
       config.get.mockImplementation((key) => {
         if (key === 'auth.token') return VALID_TOKEN
         if (key === 'auth.encryptionKey') return undefined
       })
 
-      const result = validateAuthToken('Bearer xyz')
+      const result = await validateAuthToken('Bearer xyz')
       expect(result.isValid).toBe(false)
       expect(result.error).toMatch(/encryption/i)
     })
 
-    it('validates and returns true for a valid encrypted bearer token', () => {
+    it('validates and returns true for a valid encrypted bearer token', async () => {
       const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
       const encodedHeader = Buffer.from(encrypted).toString('base64')
       config.get.mockImplementation((key) => {
@@ -106,12 +106,12 @@ describe('auth plugin', () => {
         if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
       })
 
-      const result = validateAuthToken(`Bearer ${encodedHeader}`)
+      const result = await validateAuthToken(`Bearer ${encodedHeader}`)
 
       expect(result.isValid).toBe(true)
     })
 
-    it('returns false for invalid bearer token mismatch', () => {
+    it('returns false for invalid bearer token mismatch', async () => {
       const encrypted = encryptToken('wrong-token', ENCRYPTION_KEY)
       const encodedHeader = Buffer.from(encrypted).toString('base64')
       config.get.mockImplementation((key) => {
@@ -119,7 +119,7 @@ describe('auth plugin', () => {
         if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
       })
 
-      const result = validateAuthToken(`Bearer ${encodedHeader}`)
+      const result = await validateAuthToken(`Bearer ${encodedHeader}`)
 
       expect(result.isValid).toBe(false)
       expect(result.error).toMatch(/Invalid bearer token/)
@@ -127,7 +127,7 @@ describe('auth plugin', () => {
   })
 
   describe('Hapi auth plugin integration', () => {
-    it('authenticates successfully with valid token', () => {
+    it('authenticates successfully with valid token', async () => {
       const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
       const encodedHeader = Buffer.from(encrypted).toString('base64')
 
@@ -139,12 +139,12 @@ describe('auth plugin', () => {
       const request = { headers: { authorization: `Bearer ${encodedHeader}` } }
       const h = createHMock()
 
+      let authenticateFn
       const fakeServer = {
         auth: {
           scheme: (name, impl) => {
-            const { authenticate } = impl()
-            const result = authenticate(request, h)
-            expect(result).toBe('ok')
+            const schemeImpl = impl()
+            authenticateFn = schemeImpl.authenticate
           },
           strategy: vi.fn(),
           default: vi.fn()
@@ -153,21 +153,24 @@ describe('auth plugin', () => {
 
       auth.plugin.register(fakeServer)
 
+      const result = await authenticateFn(request, h)
+      expect(result).toBe('ok')
       expect(h.authenticated).toHaveBeenCalledWith({
         credentials: { authenticated: true }
       })
     })
 
-    it('throws Boom.unauthorized for invalid token', () => {
+    it('throws Boom.unauthorized for invalid token', async () => {
       const request = { headers: { authorization: 'Bearer badtoken' } }
       config.get.mockReturnValue(ENCRYPTION_KEY)
       const h = createHMock()
 
+      let authenticateFn
       const fakeServer = {
         auth: {
           scheme: (name, impl) => {
-            const { authenticate } = impl()
-            expect(() => authenticate(request, h)).toThrow(Boom.Boom)
+            const schemeImpl = impl()
+            authenticateFn = schemeImpl.authenticate
           },
           strategy: vi.fn(),
           default: vi.fn()
@@ -175,6 +178,7 @@ describe('auth plugin', () => {
       }
 
       auth.plugin.register(fakeServer)
+      await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
     })
   })
 })

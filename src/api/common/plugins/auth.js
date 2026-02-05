@@ -1,8 +1,11 @@
 import Boom from '@hapi/boom'
 import crypto from 'node:crypto'
+import { promisify } from 'node:util'
 import { config } from '~/src/config/index.js'
 import { logBusinessError } from '../helpers/logging/log-helpers.js'
 import { createLogger } from '../helpers/logging/logger.js'
+
+const scrypt = promisify(crypto.scrypt)
 
 const TOKEN_PARTS_COUNT = 3
 const OPERATION_NAME = 'Validate auth token'
@@ -11,9 +14,9 @@ const logger = createLogger()
 /**
  * Decrypts an encrypted bearer token using AES-256-GCM
  * @param {string} encryptedToken - Token in format: iv:authTag:encryptedData (base64)
- * @returns {string | null} Decrypted token
+ * @returns {Promise<string | null>} Decrypted token
  */
-function decryptToken(encryptedToken) {
+async function decryptToken(encryptedToken) {
   const encryptionKey = config.get('auth.encryptionKey')
   if (!encryptionKey) {
     logBusinessError(logger, {
@@ -36,7 +39,7 @@ function decryptToken(encryptedToken) {
 
     const iv = Buffer.from(ivB64, 'base64')
     const authTag = Buffer.from(authTagB64, 'base64')
-    const key = crypto.scryptSync(encryptionKey, 'salt', 32)
+    const key = await scrypt(encryptionKey, 'salt', 32)
 
     const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
     decipher.setAuthTag(authTag)
@@ -54,7 +57,12 @@ function decryptToken(encryptedToken) {
   }
 }
 
-function validateAuthToken(authHeader) {
+/**
+ * Validates an authentication token from the Authorization header
+ * @param {string} authHeader - Authorization header value (e.g., "Bearer <token>")
+ * @returns {Promise<{isValid: boolean, error?: string}>} Validation result
+ */
+async function validateAuthToken(authHeader) {
   if (!authHeader?.startsWith('Bearer ')) {
     return {
       isValid: false,
@@ -85,10 +93,10 @@ function validateAuthToken(authHeader) {
 
   try {
     const encryptedToken = Buffer.from(
-      authHeader.split(' ').pop(),
+      authHeader.split(' ').pop() ?? '',
       'base64'
     ).toString('utf-8')
-    const actualToken = decryptToken(encryptedToken)
+    const actualToken = await decryptToken(encryptedToken)
     if (!actualToken) {
       return { isValid: false, error: 'Invalid encrypted token' }
     }
@@ -115,10 +123,10 @@ const auth = {
     register: (server) => {
       server.auth.scheme('bearer', () => {
         return {
-          authenticate: (request, h) => {
+          authenticate: async (request, h) => {
             const authHeader = request.headers.authorization
 
-            const validation = validateAuthToken(authHeader)
+            const validation = await validateAuthToken(authHeader)
 
             if (!validation.isValid) {
               throw Boom.unauthorized('Invalid authentication credentials')
