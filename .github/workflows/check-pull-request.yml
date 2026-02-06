@@ -39,16 +39,18 @@ jobs:
       - run: |
           npm run test:import
 
-      - name: Api e2e tests
+      - name: Setup Node for e2e tests
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: npm
-        env: # Or as an environment variable
+
+      - name: Run e2e tests
+        env:
           AUTH_HEADER_TOKEN: ${{ secrets.AUTH_HEADER_TOKEN }}
           LAND_GRANTS_AUTH_TOKEN: ${{ secrets.LAND_GRANTS_AUTH_TOKEN }}
           LAND_GRANTS_ENCRYPTION_KEY: ${{ secrets.LAND_GRANTS_ENCRYPTION_KEY }}
-      - run: |
+        run: |
           npm run test:e2e
 
       - name: Test Docker Image Build
