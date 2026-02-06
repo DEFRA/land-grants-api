@@ -9,3 +9,6 @@ fi
 if [ -f "coverage/db/coverage-final.json" ]; then
   cp coverage/db/coverage-final.json coverage/tmp/coverage-final-db.json
 fi
+if [ -f "coverage/e2e/coverage-final.json" ]; then
+  cp coverage/e2e/coverage-final.json coverage/tmp/coverage-final-e2e.json
+fi
