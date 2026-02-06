@@ -7,3 +7,7 @@ export const connectToTestDatbase = () => {
     port: Number(process.env.POSTGRES_PORT)
   })
 }
+
+export async function truncateTable(client, table) {
+  await client.query(`TRUNCATE TABLE ${table} CASCADE`)
+}
