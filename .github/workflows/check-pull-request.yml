@@ -31,13 +31,14 @@ jobs:
           npm run lint
           npm test
 
-      - name: Import tests
+      - name: Import & Api tests
         uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: npm
       - run: |
           npm run test:import
+          npm run test:e2e
 
       - name: Test Docker Image Build
         run: |

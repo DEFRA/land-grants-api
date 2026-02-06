@@ -2,7 +2,7 @@ import { describe, test, expect } from 'vitest'
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
-describe('Application Validation', () => {
+describe('Application Validation Endpoints', () => {
   describe('POST /api/v2/application/validate', () => {
     test('should validate application with authentication', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
