@@ -2,8 +2,8 @@ import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
-} from '~/src/available-area/availableArea.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+} from '~/src/features/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getAvailableAreaFixtures } from '~/src/tests/db-tests/setup/getAvailableAreaFixtures.js'
 
 describe('Available Area Calculation Service', () => {

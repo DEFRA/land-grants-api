@@ -1,5 +1,5 @@
-import { saveApplicationValidationRun } from '~/src/api/application/mutations/saveApplicationValidationRun.mutation.js'
-import { getApplicationValidationRuns } from '~/src/api/application/queries/getApplicationValidationRuns.query.js'
+import { saveApplicationValidationRun } from '~/src/features/application/mutations/saveApplicationValidationRun.mutation.js'
+import { getApplicationValidationRuns } from '~/src/features/application/queries/getApplicationValidationRuns.query.js'
 
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
