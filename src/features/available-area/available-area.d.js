@@ -1,6 +1,6 @@
 /**
  * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCover } from '../features/parcel/parcel.d.js'
+ * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  * @import { LandCoverCodes } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
  */
 

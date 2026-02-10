@@ -3,8 +3,8 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 /**
  * @import { ActionRequest, ApplicationValidationRun } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
- * @import { RuleEngineApplication } from '~/src/rules-engine/rules.d.js'
- * @import {ApplicationValidationRunList} from '../application.d.js'
+ * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
+ * @import {ApplicationValidationRunList} from '~/src/features/application/application.d.js'
  */
 
 /**

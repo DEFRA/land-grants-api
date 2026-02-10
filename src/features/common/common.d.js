@@ -1,5 +1,5 @@
 /**
- * @import { Explanation } from '~/src/rules-engine/rules.d.js'
+ * @import { Explanation } from '~/src/features/rules-engine/rules.d.js'
  * @import { AvailableArea } from '~/src/features/actions/action.d.js'
  */
 

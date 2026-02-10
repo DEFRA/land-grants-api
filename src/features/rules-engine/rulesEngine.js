@@ -1,7 +1,7 @@
 /**
- * @import {ActionRule} from '../features/actions/action.d.js'
- * @import {RulesResult, RuleExecutor, RuleEngineApplication} from '../rules-engine/rules.d.js'
- * @import {Action} from '../features/actions/action.d.js'
+ * @import {ActionRule} from '~/src/features/actions/action.d.js'
+ * @import {RulesResult, RuleExecutor, RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
+ * @import {Action} from '~/src/features/actions/action.d.js'
  */
 
 /**

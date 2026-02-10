@@ -1,5 +1,5 @@
 /**
- * @import { RuleEngineApplication, RuleResultItem } from '~/src/rules-engine/rules.d.js'
+ * @import { RuleEngineApplication, RuleResultItem } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 

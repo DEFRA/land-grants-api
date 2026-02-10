@@ -63,6 +63,6 @@ export const calculateTotalValidLandCoverArea = (
 
 /**
  * @import { ExplanationSection } from './explanations.d.js'
- * @import { LandCover } from '../features/parcel/parcel.d.js'
+ * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  * @import { CodeToString } from './available-area.d.js'
  */

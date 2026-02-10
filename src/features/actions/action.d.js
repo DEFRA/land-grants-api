@@ -1,6 +1,6 @@
 /**
- * @import { Explanation } from '~/src/rules-engine/rules.d.js'
- * @import { RulesResult } from '~/src/rules-engine/rules.d.js'
+ * @import { Explanation } from '~/src/features/rules-engine/rules.d.js'
+ * @import { RulesResult } from '~/src/features/rules-engine/rules.d.js'
  */
 
 /**
