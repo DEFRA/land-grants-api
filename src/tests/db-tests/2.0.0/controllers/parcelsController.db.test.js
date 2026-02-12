@@ -1,4 +1,4 @@
-import { ParcelsControllerV2 } from '~/src/api/parcel/controllers/2.0.0/parcels.controller.js'
+import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/parcels.controller.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'

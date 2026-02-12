@@ -1,4 +1,4 @@
-import { createServer } from '~/src/api/index.js'
+import { createServer } from '~/src/routes/index.js'
 import { config } from '~/src/config/index.js'
 import { TEST_PORT } from './test-config.js'
 

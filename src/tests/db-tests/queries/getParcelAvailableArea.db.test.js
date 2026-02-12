@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
-import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
-import { getParcelAvailableArea } from '~/src/api/parcel/queries/getParcelAvailableArea.query.js'
+import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
+import { getParcelAvailableArea } from '~/src/features/parcel/queries/getParcelAvailableArea.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Parcel Available Area Query', () => {

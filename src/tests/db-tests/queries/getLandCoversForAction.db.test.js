@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import {
   getLandCoversForAction,
   getLandCoversForActions
-} from '~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js'
+} from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Land Covers For Action Query', () => {

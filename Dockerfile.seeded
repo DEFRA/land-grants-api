@@ -7,7 +7,7 @@ WORKDIR /workspace
 
 COPY changelog ./changelog
 COPY scripts ./scripts
-COPY src/api/common/migration ./migration
+COPY src/land-data/migration ./migration
 
 # Switch to root to fix ownership
 USER root

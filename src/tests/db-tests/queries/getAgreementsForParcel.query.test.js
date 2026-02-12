@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Agreements For Parcel Query', () => {
