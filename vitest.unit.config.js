@@ -11,9 +11,9 @@ export default defineConfig({
     root: '.',
     name: 'unit',
     include: [
-      '**/src/api/**/*.test.js',
+      '**/src/features/**/*.test.js',
       '**/src/rules-engine/**/*.test.js',
-      '**/src/available-area/**/*.test.js',
+      '**/src/features/available-area/**/*.test.js',
       '**/src/payment-calculation/**/*.test.js'
     ],
     exclude: ['.server'],
@@ -27,9 +27,9 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', ['json', { file: 'coverage-final.json' }], 'html'],
       include: [
-        'src/api/**/*.js',
+        'src/features/**/*.js',
         'src/rules-engine/**/*.js',
-        'src/available-area/**/*.js',
+        'src/features/available-area/**/*.js',
         'src/payment-calculation/**/*.js'
       ],
       exclude: [
@@ -49,7 +49,7 @@ export default defineConfig({
         'src/contract-tests/',
         '**/*.d.js',
         'src/import-tests/setup/',
-        'src/api/land-cover-codes/fixtures/'
+        'src/features/land-cover-codes/fixtures/'
       ],
       reportsDirectory: 'coverage/unit'
     }

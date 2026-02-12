@@ -36,7 +36,7 @@ jobs:
 
       - name: Extract seed files
         run:
-          ./scripts/extract-gz-to-sql src/api/common/migration changelog/
+          ./scripts/extract-gz-to-sql src/land-data/migration changelog/
 
       - name: Publish Database Schema
         uses: DEFRA/cdp-build-action/publish-db-migrations@main

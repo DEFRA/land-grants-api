@@ -1,4 +1,4 @@
-import { getCompatibilityMatrix } from '~/src/api/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
+import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'

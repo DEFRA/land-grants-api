@@ -2,32 +2,36 @@ import { env } from 'node:process'
 
 import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
-import { getLandData } from '~/src/api/parcel/queries/getLandData.query.js'
-import { getAgreementsForParcel } from '~/src/api/agreements/queries/getAgreementsForParcel.query.js'
+import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import Hapi from '@hapi/hapi'
-import { mockActionConfig } from '~/src/api/actions/fixtures/index.js'
-import { parcel } from '~/src/api/parcel/index.js'
-import { payments } from '~/src/api/payment/index.js'
-import { application } from '~/src/api/application/index.js'
+import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
+import { parcel } from '~/src/features/parcel/index.js'
+import { payments } from '~/src/features/payment/index.js'
+import { application } from '~/src/features/application/index.js'
 import {
   getAvailableAreaDataRequirements,
   getAvailableAreaForAction
-} from '~/src/available-area/availableArea.js'
-import { createCompatibilityMatrix } from '~/src/available-area/compatibilityMatrix.js'
+} from '~/src/features/available-area/availableArea.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
-import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
 import { getLatestVersion } from './git.js'
 
-vi.mock('~/src/api/parcel/queries/getLandData.query.js')
-vi.mock('~/src/api/actions/queries/getActions.query.js')
-vi.mock('~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js')
-vi.mock('~/src/api/application/mutations/saveApplication.mutation.js')
-vi.mock('~/src/available-area/compatibilityMatrix.js')
-vi.mock('~/src/available-area/availableArea.js')
-vi.mock('~/src/api/land-cover-codes/queries/getLandCoversForActions.query.js')
-vi.mock('~/src/api/agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('~/src/features/parcel/queries/getLandData.query.js')
+vi.mock('~/src/features/actions/queries/getActions.query.js')
+vi.mock(
+  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+)
+vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
+vi.mock('~/src/features/available-area/compatibilityMatrix.js')
+vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock(
+  '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
+)
+vi.mock('~/src/features/agreements/queries/getAgreementsForParcel.query.js')
 
 const mockGetLandData = getLandData
 const mockGetActionsByLatestVersion = getActionsByLatestVersion

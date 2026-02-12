@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { LandDataIngestController } from '~/src/api/land-data-ingest/controller/land-data-ingest.controller.js'
+import { LandDataIngestController } from '~/src/features/land-data-ingest/controller/land-data-ingest.controller.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import {
   createTestS3Client,

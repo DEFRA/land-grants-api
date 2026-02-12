@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
-import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/api/payment/controllers/1.0.0/payment-calculate.controller.js'
-import { getEnabledActions } from '~/src/api/actions/queries/getActions.query.js'
+import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/features/payment/controllers/1.0.0/payment-calculate.controller.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
-import { validateRequest } from '~/src/api/application/validation/application.validation.js'
+import { validateRequest } from '~/src/features/application/validation/application.validation.js'
 import { vi } from 'vitest'
 
-vi.mock('~/src/api/application/validation/application.validation.js')
-vi.mock('~/src/api/actions/queries/getActions.query.js')
+vi.mock('~/src/features/application/validation/application.validation.js')
+vi.mock('~/src/features/actions/queries/getActions.query.js')
 
 const mockValidateRequest = validateRequest
 const mockGetEnabledActions = getEnabledActions

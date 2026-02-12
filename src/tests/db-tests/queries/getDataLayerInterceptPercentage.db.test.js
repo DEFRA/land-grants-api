@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { getDataLayerQuery } from '~/src/api/data-layers/queries/getDataLayer.query.js'
+import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Data Layer Intercept Percentage Query', () => {

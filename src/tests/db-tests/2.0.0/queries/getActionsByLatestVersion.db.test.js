@@ -1,4 +1,4 @@
-import { getActionsByLatestVersion } from '~/src/api/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 

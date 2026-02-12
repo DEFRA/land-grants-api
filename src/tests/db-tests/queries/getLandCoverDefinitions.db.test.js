@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { getLandCoverDefinitions } from '~/src/api/land-cover-codes/queries/getLandCoverDefinitions.query.js'
+import { getLandCoverDefinitions } from '~/src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 

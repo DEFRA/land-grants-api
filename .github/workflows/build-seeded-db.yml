@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'changelog/**'
-      - 'src/api/common/migration/**'
+      - 'src/land-data/migration/**'
       - 'src/land-data/**'
       - 'Dockerfile.seeded'
       - '.github/workflows/build-seeded-db.yml'

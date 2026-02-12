@@ -45,7 +45,7 @@
     "test:contracts": "npx vitest run --config=vitest.contract.config.js",
     "merge:coverage": "./scripts/move-coverage && nyc merge coverage/tmp coverage/merged/coverage.json && nyc report --temp-dir coverage/merged --reporter=html --reporter=lcov --report-dir coverage/merged",
     "coverage:open": "open coverage/merged/index.html",
-    "extractsql": "scripts/extract-gz-to-sql src/api/common/migration changelog/",
+    "extractsql": "scripts/extract-gz-to-sql src/land-data/migration changelog/",
     "server:watch": "nodemon --exec tsx --enable-source-maps ./src",
     "server:debug": "nodemon --exec tsx --enable-source-maps --inspect ./src",
     "prestart": "npm run build",

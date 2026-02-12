@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { ParcelsController } from '~/src/api/parcel/controllers/1.0.0/parcels.controller.js'
+import { ParcelsController } from '~/src/features/parcel/controllers/1.0.0/parcels.controller.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { vi } from 'vitest'

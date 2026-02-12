@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { saveApplication } from '~/src/api/application/mutations/saveApplication.mutation.js'
+import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Save Application Mutation', () => {
