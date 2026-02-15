@@ -187,6 +187,7 @@ npm run test
 npm run test:unit
 npm run test:db
 npm run test:ingest
+npm run test:e2e
 ```
 
 ## Database Migrations
