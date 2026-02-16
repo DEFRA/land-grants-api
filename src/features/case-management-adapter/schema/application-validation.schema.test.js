@@ -1,4 +1,5 @@
 import {
+  caseManagementApplicationValidationReRunResponseSchema,
   caseManagementApplicationValidationRunRequestSchema,
   caseManagementApplicationValidationRunResponseSchema
 } from './application-validation.schema.js'
@@ -674,5 +675,55 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
       expect(error).toBeDefined()
       expect(error.details[0].message).toContain('response')
     })
+  })
+})
+
+describe('caseManagementApplicationValidationReRunResponseSchema', () => {
+  const validData = {
+    message: 'Validation rerun successfully',
+    valid: true,
+    id: 123,
+    date: new Date()
+  }
+
+  it('should validate valid data', () => {
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(validData)
+    expect(error).toBeUndefined()
+  })
+
+  it('should require message', () => {
+    const data = { ...validData, message: undefined }
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(data)
+    expect(error.details[0].message).toContain('message')
+  })
+
+  it('should require valid', () => {
+    const data = { ...validData, valid: undefined }
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(data)
+    expect(error.details[0].message).toContain('valid')
+  })
+
+  it('should require id as integer', () => {
+    const data = { ...validData, id: 'not-a-number' }
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(data)
+    expect(error.details[0].message).toContain('id')
+  })
+
+  it('should require id', () => {
+    const data = { ...validData, id: undefined }
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(data)
+    expect(error.details[0].message).toContain('id')
+  })
+
+  it('should require date', () => {
+    const data = { ...validData, date: undefined }
+    const { error } =
+      caseManagementApplicationValidationReRunResponseSchema.validate(data)
+    expect(error.details[0].message).toContain('date')
   })
 })
