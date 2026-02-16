@@ -11,7 +11,7 @@ import {
   subDays
 } from 'date-fns'
 
-const PAYMENT_DAY_OF_MONTH = 5
+const PAYMENT_DAY_OF_MONTH = 15
 export const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd'
 
 /**
