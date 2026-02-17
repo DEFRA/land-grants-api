@@ -50,6 +50,7 @@ describe('Compatibility matrix import', () => {
     expect(compatibilityMatrix[0].option_code).toBe('AB1')
     expect(compatibilityMatrix[0].option_code_compat).toBe('AB4')
     expect(compatibilityMatrix[0].year).toBe('2025')
+    expect(compatibilityMatrix[0].ingestion_date).toBeDefined()
 
     const files = await listTestFiles(s3Client)
     expect(files).toContain(

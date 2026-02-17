@@ -45,7 +45,7 @@ describe('Parcels import', () => {
 
     const parcels = await getRecordsByQuery(
       connection,
-      'SELECT ST_AsText(p.geom) as geom, p.sheet_id, p.parcel_id, p.area_sqm FROM land_parcels p',
+      'SELECT ST_AsText(p.geom) as geom, p.sheet_id, p.parcel_id, p.area_sqm, p.ingestion_date FROM land_parcels p',
       []
     )
 
@@ -60,6 +60,7 @@ describe('Parcels import', () => {
       expect(parcelResult.parcel_id).toBe(fixture.PARCEL_ID)
       expect(Number(parcelResult.area_sqm)).toBe(Number(fixture.GEOM_AREA_SQM))
       expect(parcelResult.geom).toBe(fixture.geom)
+      expect(parcelResult.ingestion_date).toBeDefined()
     }
 
     const files = await listTestFiles(s3Client)
