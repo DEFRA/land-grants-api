@@ -17,4 +17,5 @@ DO UPDATE SET
   name = EXCLUDED.name,
   metadata = EXCLUDED.metadata,
   last_updated = EXCLUDED.last_updated,
+  ingest_date = NOW(),
   ingest_id = $1;

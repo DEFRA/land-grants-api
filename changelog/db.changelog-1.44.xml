@@ -10,10 +10,10 @@
 
     <changeSet id="create-ingestion-date-columns" author="system">
       <sql>
-         ALTER TABLE land_parcels ADD COLUMN ingestion_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
-         ALTER TABLE land_covers ADD COLUMN ingestion_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
-         ALTER TABLE compatibility_matrix ADD COLUMN ingestion_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
-         ALTER TABLE agreements ADD COLUMN ingestion_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+         ALTER TABLE land_parcels ADD COLUMN ingest_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+         ALTER TABLE land_covers ADD COLUMN ingest_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+         ALTER TABLE compatibility_matrix ADD COLUMN ingest_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+         ALTER TABLE agreements ADD COLUMN ingest_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
       </sql>
     </changeSet>
 

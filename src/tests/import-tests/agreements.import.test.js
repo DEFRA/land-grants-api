@@ -48,7 +48,7 @@ describe('Agreements import', () => {
     expect(agreement.sheet_id).toBe('SD6919')
     expect(agreement.parcel_id).toBe('68')
     expect(agreement.actions).toHaveLength(2)
-    expect(agreement.ingestion_date).toBeDefined()
+    expect(agreement.ingest_date).toBeDefined()
     const [action1, action2] = agreement.actions
     expect(action1.actionCode).toBe('CMOR1')
     expect(action1.unit).toBe('ha')

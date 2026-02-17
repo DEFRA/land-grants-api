@@ -45,7 +45,7 @@ describe('Parcels import', () => {
 
     const parcels = await getRecordsByQuery(
       connection,
-      'SELECT ST_AsText(p.geom) as geom, p.sheet_id, p.parcel_id, p.area_sqm, p.ingestion_date FROM land_parcels p',
+      'SELECT ST_AsText(p.geom) as geom, p.sheet_id, p.parcel_id, p.area_sqm, p.ingest_date FROM land_parcels p',
       []
     )
 
@@ -60,7 +60,7 @@ describe('Parcels import', () => {
       expect(parcelResult.parcel_id).toBe(fixture.PARCEL_ID)
       expect(Number(parcelResult.area_sqm)).toBe(Number(fixture.GEOM_AREA_SQM))
       expect(parcelResult.geom).toBe(fixture.geom)
-      expect(parcelResult.ingestion_date).toBeDefined()
+      expect(parcelResult.ingest_date).toBeDefined()
     }
 
     const files = await listTestFiles(s3Client)
@@ -92,5 +92,8 @@ describe('Parcels import', () => {
     expect(parcels[0].sheet_id).toBe('TV5797')
     expect(parcels[0].parcel_id).toBe('2801')
     expect(parcels[0].area_sqm).toBe('182772.7700')
+    expect(parcels[0].last_updated.toISOString()).toBe(
+      '2024-03-06T00:00:00.000Z'
+    )
   }, 10000)
 })
