@@ -5627,12 +5627,12 @@
     "list": []
   },
   "time": {
-    "from": "now-7d",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "land-grants-api (custom v2)",
-  "uid": "26becc50-ddd3-40f3-a74c-db200ea83f82",
+  "title": "land-grants-api (custom)",
+  "uid": "effef73f-1f8c-45b5-b2de-b0678bbd5f03",
   "version": 35
 }
