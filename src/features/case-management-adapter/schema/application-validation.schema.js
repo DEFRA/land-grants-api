@@ -68,8 +68,16 @@ const caseManagementApplicationValidationRerunRequestSchema = Joi.object({
   id: Joi.number().integer().required()
 })
 
+const caseManagementApplicationValidationReRunResponseSchema = Joi.object({
+  message: Joi.string().required(),
+  valid: Joi.boolean().required(),
+  id: Joi.number().integer().required(),
+  date: Joi.date().required()
+})
+
 export {
   caseManagementApplicationValidationRunRequestSchema,
   caseManagementApplicationValidationRunResponseSchema,
-  caseManagementApplicationValidationRerunRequestSchema
+  caseManagementApplicationValidationRerunRequestSchema,
+  caseManagementApplicationValidationReRunResponseSchema
 }
