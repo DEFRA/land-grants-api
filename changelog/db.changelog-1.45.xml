@@ -9,6 +9,6 @@
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
     <changeSet id="add-data-layer-type-data-hefer" author="system">
-    <sql>INSERT INTO data_layer_type (id, name) VALUES (3, 'HEFER');</sql>
+    <sql>INSERT INTO data_layer_type (id, name) VALUES (3, 'historic_features');</sql>
     </changeSet>
 </databaseChangeLog>
