@@ -45,7 +45,7 @@ describe('Land covers import', () => {
     for (const fixture of fixtures) {
       const [coverResult] = await getRecordsByQuery(
         connection,
-        'SELECT id, ST_AsText(c.geom) as geom, c.sheet_id, c.parcel_id, c.land_cover_class_code, c.is_linear_feature, c.last_updated FROM land_covers c where c.id = $1',
+        'SELECT id, ST_AsText(c.geom) as geom, c.sheet_id, c.parcel_id, c.land_cover_class_code, c.is_linear_feature, c.last_updated, c.ingest_date FROM land_covers c where c.id = $1',
         [fixture.ID]
       )
 
@@ -59,6 +59,7 @@ describe('Land covers import', () => {
       )
       expect(coverResult.last_updated).toBeDefined()
       expect(coverResult.geom).toBe(fixture.geom)
+      expect(coverResult.ingest_date).toBeDefined()
     }
 
     const files = await listTestFiles(s3Client)
@@ -90,5 +91,8 @@ describe('Land covers import', () => {
     expect(covers[0].sheet_id).toBe('TV5699')
     expect(covers[0].parcel_id).toBe('1419')
     expect(covers[0].land_cover_class_code).toBe('132')
+    expect(covers[0].last_updated.toISOString()).toBe(
+      '2024-03-06T00:00:00.000Z'
+    )
   }, 10000)
 })

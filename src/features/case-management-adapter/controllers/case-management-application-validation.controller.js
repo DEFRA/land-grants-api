@@ -5,7 +5,10 @@ import {
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
-import { caseManagementApplicationValidationRerunRequestSchema } from '../schema/application-validation.schema.js'
+import {
+  caseManagementApplicationValidationRerunRequestSchema,
+  caseManagementApplicationValidationReRunResponseSchema
+} from '../schema/application-validation.schema.js'
 import { validateApplication } from '../../application/service/application-validation.service.js'
 import {
   logResourceNotFound,
@@ -24,7 +27,7 @@ const CaseManagementApplicationValidationController = {
     },
     response: {
       status: {
-        // 200: applicationValidationResponseSchema,
+        200: caseManagementApplicationValidationReRunResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }

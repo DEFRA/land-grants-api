@@ -9,5 +9,6 @@ DO UPDATE SET
   land_cover_class_code = EXCLUDED.land_cover_class_code,
   is_linear_feature = EXCLUDED.is_linear_feature,
   geom = EXCLUDED.geom,
-  last_updated = NOW(),
+  last_updated = EXCLUDED.last_updated,
+  ingest_date = NOW(),
   ingest_id = $1;
