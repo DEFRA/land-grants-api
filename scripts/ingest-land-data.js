@@ -290,6 +290,9 @@ async function transferResource(resource, environment) {
   }
 
   await saveResults(resource, failedFiles)
+  if (failedFiles.length === 0) {
+    await deleteFailedFiles(resource);
+  }
 
   console.log('✓ Ingestion complete for : ' + resource)
 }
@@ -308,4 +311,10 @@ async function readFailedFiles(resource) {
   const fileContents = files.map(file => fs.readFileSync(path.join(currentDirectory, file), 'utf-8'));
   const failedFiles = fileContents.flatMap(d => d.split('\n'));
   return [...new Set(failedFiles)];
+}
+
+async function deleteFailedFiles(resource) {
+  const currentDirectory = process.cwd();
+  const files = fs.readdirSync(currentDirectory).filter(file => file.startsWith(`failed_files_${resource}`));
+  files.forEach(file => fs.unlinkSync(path.join(currentDirectory, file)));
 }
