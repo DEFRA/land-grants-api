@@ -426,6 +426,8 @@ describe('ruleEngineApplicationTransformer', () => {
     const intersectingAreaPercentage = 25.5
     const sssiIntersectingAreaPercentage = 10.0
     const sssiIntersectionAreaSqm = 1000
+    const historicFeaturesIntersectingAreaPercentage = 5.0
+    const historicFeaturesIntersectionAreaHa = 0.05
     const existingAgreements = [
       { id: 'AG1', type: 'agreement1' },
       { id: 'AG2', type: 'agreement2' }
@@ -439,6 +441,10 @@ describe('ruleEngineApplicationTransformer', () => {
       {
         intersectingAreaPercentage: sssiIntersectingAreaPercentage,
         intersectionAreaSqm: sssiIntersectionAreaSqm
+      },
+      {
+        intersectingAreaPercentage: historicFeaturesIntersectingAreaPercentage,
+        intersectionAreaHa: historicFeaturesIntersectionAreaHa
       },
       existingAgreements
     )
@@ -457,6 +463,11 @@ describe('ruleEngineApplicationTransformer', () => {
           sssi: {
             intersectingAreaPercentage: sssiIntersectingAreaPercentage,
             intersectionAreaSqm: sssiIntersectionAreaSqm
+          },
+          historic_features: {
+            intersectingAreaPercentage:
+              historicFeaturesIntersectingAreaPercentage,
+            intersectionAreaHa: historicFeaturesIntersectionAreaHa
           }
         }
       }
@@ -473,6 +484,10 @@ describe('ruleEngineApplicationTransformer', () => {
         intersectingAreaPercentage: 0,
         intersectionAreaSqm: 0
       },
+      {
+        intersectingAreaPercentage: 0,
+        intersectionAreaHa: 0
+      },
       []
     )
 
@@ -484,7 +499,11 @@ describe('ruleEngineApplicationTransformer', () => {
         existingAgreements: [],
         intersections: {
           moorland: { intersectingAreaPercentage: 0 },
-          sssi: { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 }
+          sssi: { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 },
+          historic_features: {
+            intersectingAreaPercentage: 0,
+            intersectionAreaHa: 0
+          }
         }
       }
     })
@@ -497,6 +516,7 @@ describe('ruleEngineApplicationTransformer', () => {
       -500,
       -25.5,
       { intersectingAreaPercentage: -10.0, intersectionAreaSqm: 1000 },
+      { intersectingAreaPercentage: -5.0, intersectionAreaHa: 0.05 },
       []
     )
 
@@ -508,7 +528,14 @@ describe('ruleEngineApplicationTransformer', () => {
         existingAgreements: [],
         intersections: {
           moorland: { intersectingAreaPercentage: -25.5 },
-          sssi: { intersectingAreaPercentage: -10.0, intersectionAreaSqm: 1000 }
+          sssi: {
+            intersectingAreaPercentage: -10.0,
+            intersectionAreaSqm: 1000
+          },
+          historic_features: {
+            intersectingAreaPercentage: -5.0,
+            intersectionAreaHa: 0.05
+          }
         }
       }
     })
@@ -521,6 +548,7 @@ describe('ruleEngineApplicationTransformer', () => {
       undefined,
       0,
       { intersectingAreaPercentage: null, intersectionAreaSqm: null },
+      { intersectingAreaPercentage: null, intersectionAreaHa: null },
       null
     )
 
@@ -532,7 +560,11 @@ describe('ruleEngineApplicationTransformer', () => {
         existingAgreements: null,
         intersections: {
           moorland: { intersectingAreaPercentage: 0 },
-          sssi: { intersectingAreaPercentage: null, intersectionAreaSqm: null }
+          sssi: { intersectingAreaPercentage: null, intersectionAreaSqm: null },
+          historic_features: {
+            intersectingAreaPercentage: null,
+            intersectionAreaHa: null
+          }
         }
       }
     })
@@ -544,7 +576,8 @@ describe('ruleEngineApplicationTransformer', () => {
       'UPL1',
       500,
       25.5,
-      0,
+      { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 },
+      { intersectingAreaPercentage: 0, intersectionAreaHa: 0 },
       []
     )
 
@@ -567,7 +600,8 @@ describe('ruleEngineApplicationTransformer', () => {
       'UPL1',
       500,
       25.5,
-      0,
+      { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 },
+      { intersectingAreaPercentage: 0, intersectionAreaHa: 0 },
       existingAgreements
     )
 

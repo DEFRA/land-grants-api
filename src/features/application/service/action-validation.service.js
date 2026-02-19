@@ -11,7 +11,10 @@ import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
 } from '../transformers/application.transformer.js'
-import { getDataLayerQuery } from '../../data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQuery
+} from '../../data-layers/queries/getDataLayer.query.js'
 
 /**
  * Validate a land action
@@ -61,9 +64,18 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const dataLayerData = await getDataLayerQuery(
+  const sssiDataLayerData = await getDataLayerQuery(
     landAction.sheetId,
     landAction.parcelId,
+    DATA_LAYER_TYPES.sssi,
+    request.server.postgresDb,
+    request.logger
+  )
+
+  const historicFeaturesDataLayerData = await getDataLayerQuery(
+    landAction.sheetId,
+    landAction.parcelId,
+    DATA_LAYER_TYPES.historic_features,
     request.server.postgresDb,
     request.logger
   )
@@ -73,7 +85,8 @@ export const validateLandAction = async (
     action.code,
     sqmToHaRounded(availableArea.availableAreaSqm),
     intersectingAreaPercentage,
-    dataLayerData,
+    sssiDataLayerData,
+    historicFeaturesDataLayerData,
     agreements
   )
 

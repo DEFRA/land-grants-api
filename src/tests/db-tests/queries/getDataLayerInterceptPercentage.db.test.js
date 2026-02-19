@@ -1,5 +1,8 @@
 import { vi } from 'vitest'
-import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQuery
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Data Layer Intercept Percentage Query', () => {
@@ -24,6 +27,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -40,6 +44,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -57,6 +62,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -73,6 +79,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -90,6 +97,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -106,6 +114,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -123,6 +132,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -139,6 +149,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -156,6 +167,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -172,6 +184,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -189,6 +202,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -206,6 +220,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )
@@ -222,6 +237,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
     const result = await getDataLayerQuery(
       sheetId,
       parcelId,
+      DATA_LAYER_TYPES.sssi,
       connection,
       logger
     )

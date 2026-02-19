@@ -40,9 +40,16 @@ vi.mock(
     ruleEngineApplicationTransformer: vi.fn()
   })
 )
-vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js', () => ({
-  getDataLayerQuery: vi.fn()
-}))
+vi.mock(
+  '~/src/features/data-layers/queries/getDataLayer.query.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      getDataLayerQuery: vi.fn()
+    }
+  }
+)
 
 const mockGetMoorlandInterceptPercentage = vi.mocked(
   getMoorlandInterceptPercentage
@@ -141,7 +148,10 @@ describe('Action Validation Service', () => {
     )
     mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
     mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
-    mockGetDataLayerQuery.mockResolvedValue(15.5)
+    mockGetDataLayerQuery.mockResolvedValue({
+      intersectingAreaPercentage: 15.5,
+      intersectionAreaHa: 0.1
+    })
     mockPlannedActionsTransformer.mockReturnValue([])
     mockRuleEngineApplicationTransformer.mockReturnValue({
       areaAppliedFor: 10,
@@ -151,7 +161,8 @@ describe('Action Validation Service', () => {
         existingAgreements: [],
         intersections: {
           moorland: { intersectingAreaPercentage: 50 },
-          sssi: { intersectingAreaPercentage: 15.5 }
+          sssi: { intersectingAreaPercentage: 15.5 },
+          historic_features: { intersectingAreaPercentage: 15.5 }
         }
       }
     })
@@ -194,9 +205,20 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetDataLayerQuery).toHaveBeenCalledWith(
+      expect(mockGetDataLayerQuery).toHaveBeenCalledTimes(2)
+      expect(mockGetDataLayerQuery).toHaveBeenNthCalledWith(
+        1,
         mockLandAction.sheetId,
         mockLandAction.parcelId,
+        1,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockGetDataLayerQuery).toHaveBeenNthCalledWith(
+        2,
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        3,
         mockPostgresDb,
         mockLogger
       )
@@ -205,7 +227,8 @@ describe('Action Validation Service', () => {
         mockAction.code,
         expect.any(Number),
         50,
-        15.5,
+        { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
+        { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
         mockAgreements
       )
       expect(mockExecuteRules).toHaveBeenCalled()
