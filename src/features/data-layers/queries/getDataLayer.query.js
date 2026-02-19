@@ -4,6 +4,12 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 
+export const DATA_LAYER_TYPES = {
+  sssi: 1,
+  less_favoured_areas: 2,
+  historic_features: 3
+}
+
 const dataLayerQuery = `
     SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
@@ -14,7 +20,7 @@ const dataLayerQuery = `
   LEFT JOIN
       data_layer m
       ON ST_Intersects(p.geom, m.geom)
-  AND m.data_layer_type_id = 1
+  AND m.data_layer_type_id = $3
   WHERE
       p.sheet_id = $1 AND
       p.parcel_id = $2
@@ -25,17 +31,24 @@ const dataLayerQuery = `
  * Get the data layer query
  * @param {string} sheetId - The sheet id
  * @param {string} parcelId - The parcel id
+ * @param {number} dataLayerTypeId - The data layer type id
  * @param {object} db - The database connection
  * @param {object} logger - The logger
  * @returns {Promise<object>} The data layer query
  */
-async function getDataLayerQuery(sheetId, parcelId, db, logger) {
+async function getDataLayerQuery(
+  sheetId,
+  parcelId,
+  dataLayerTypeId,
+  db,
+  logger
+) {
   let client
 
   try {
     client = await db.connect()
 
-    const values = [sheetId, parcelId]
+    const values = [sheetId, parcelId, dataLayerTypeId]
     const result = await client.query(dataLayerQuery, values)
 
     if (result?.rows?.length === 0) {
