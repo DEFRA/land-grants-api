@@ -22,6 +22,7 @@ const initiateLandDataUploadRequestSchema = Joi.object({
       'compatibility_matrix',
       'agreements',
       'sssi',
+      'scheduled_monuments',
       'registered_parks_gardens'
     )
 })
