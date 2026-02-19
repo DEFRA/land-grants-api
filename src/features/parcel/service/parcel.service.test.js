@@ -630,6 +630,7 @@ describe('Parcel Service', () => {
       expect(getDataLayerQuery).toHaveBeenCalledWith(
         'SX0679',
         '9238',
+        1,
         mockPostgresDb,
         mockLogger
       )

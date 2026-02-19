@@ -145,7 +145,8 @@ export const applicationDataTransformer = (
  * @param {string} code - The code of the action
  * @param {number} area - The area of the parcel
  * @param {number} intersectingAreaPercentage - The intersecting area percentage
- * @param {object} dataLayerData - The sssi data
+ * @param {object} sssiDataLayerData - The sssi data
+ * @param {object} historicFeaturesDataLayerData - The historic features data
  * @param {Array} existingAgreements - The existing agreements
  * @returns {RuleEngineApplication} - The application
  */
@@ -154,7 +155,8 @@ export function ruleEngineApplicationTransformer(
   code,
   area,
   intersectingAreaPercentage,
-  dataLayerData,
+  sssiDataLayerData,
+  historicFeaturesDataLayerData,
   existingAgreements
 ) {
   return {
@@ -165,7 +167,8 @@ export function ruleEngineApplicationTransformer(
       existingAgreements,
       intersections: {
         moorland: { intersectingAreaPercentage },
-        sssi: dataLayerData
+        sssi: sssiDataLayerData,
+        historic_features: historicFeaturesDataLayerData
       }
     }
   }
