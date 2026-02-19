@@ -13,6 +13,7 @@ const resources = [
   'land_parcels',
   'land_covers',
   'sssi',
+  'registered_battlefields',
   'registered_parks_gardens'
 ]
 
