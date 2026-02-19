@@ -15,7 +15,11 @@ export const resources = [
   { name: 'land_covers', truncateTable: false },
   { name: 'compatibility_matrix', truncateTable: true },
   { name: 'agreements', truncateTable: true },
-  { name: 'sssi', truncateTable: false }
+  { name: 'sssi', truncateTable: false },
+  { name: 'registered_battlefields', truncateTable: false },
+  { name: 'shine', truncateTable: false },
+  { name: 'scheduled_monuments', truncateTable: false },
+  { name: 'registered_parks_gardens', truncateTable: false }
 ]
 
 /**

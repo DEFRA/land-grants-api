@@ -12,7 +12,11 @@ const resources = [
   'moorland_designations',
   'land_parcels',
   'land_covers',
-  'sssi'
+  'sssi',
+  'registered_battlefields',
+  'shine',
+  'scheduled_monuments',
+  'registered_parks_gardens'
 ]
 
 transferAllResources()
