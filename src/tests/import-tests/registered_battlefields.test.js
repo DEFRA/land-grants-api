@@ -41,19 +41,14 @@ describe('Registered battlefields import', () => {
 
     const allBattlefields = await getRecordsByQuery(
       connection,
-      'SELECT * FROM data_layer WHERE data_layer_type_id = 3',
+      "SELECT * FROM data_layer WHERE data_layer_type_id = 3 and metadata->>'type' = 'registered_battlefields';",
       []
     )
     expect(allBattlefields).toHaveLength(2)
 
-    const battlefield = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM data_layer WHERE source_id = $1',
-      ['1000000']
-    )
-    expect(battlefield).toHaveLength(1)
-    expect(battlefield[0].name).toBe('Battle of Adwalton Moor 1643')
-    expect(battlefield[0].metadata).toEqual({
+    const battlefield = allBattlefields.find((b) => b.source_id === '1000000')
+    expect(battlefield.name).toBe('Battle of Adwalton Moor 1643')
+    expect(battlefield.metadata).toEqual({
       area_ha: 107.585931633297,
       ngr: 'SE2164428855',
       hyperlink:
@@ -63,10 +58,10 @@ describe('Registered battlefields import', () => {
       capture_scale: '1:10000',
       type: 'registered_battlefields'
     })
-    expect(battlefield[0].data_layer_type_id).toBe(3)
-    expect(battlefield[0].last_updated).toBeDefined()
-    expect(battlefield[0].ingest_date).toBeDefined()
-    expect(battlefield[0].ingest_id).toBeDefined()
-    expect(battlefield[0].geom).toBeDefined()
+    expect(battlefield.data_layer_type_id).toBe(3)
+    expect(battlefield.last_updated).toBeDefined()
+    expect(battlefield.ingest_date).toBeDefined()
+    expect(battlefield.ingest_id).toBeDefined()
+    expect(battlefield.geom).toBeDefined()
   }, 10000)
 })

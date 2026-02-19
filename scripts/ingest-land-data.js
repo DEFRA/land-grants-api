@@ -14,6 +14,8 @@ const resources = [
   'land_covers',
   'sssi',
   'registered_battlefields',
+  'shine',
+  'scheduled_monuments',
   'registered_parks_gardens'
 ]
 
