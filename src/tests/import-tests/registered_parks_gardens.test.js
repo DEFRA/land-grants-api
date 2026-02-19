@@ -41,19 +41,14 @@ describe('Registered parks and gardens import', () => {
 
     const allParksGardens = await getRecordsByQuery(
       connection,
-      'SELECT * FROM data_layer WHERE data_layer_type_id = 3',
+      "SELECT * FROM data_layer WHERE data_layer_type_id = 3 and metadata->>'type' = 'registered_parks_gardens';",
       []
     )
     expect(allParksGardens).toHaveLength(2)
 
-    const parkGarden = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM data_layer WHERE source_id = $1',
-      ['1000108']
-    )
-    expect(parkGarden).toHaveLength(1)
-    expect(parkGarden[0].name).toBe('HAMPTON COURT')
-    expect(parkGarden[0].metadata).toEqual({
+    const parkGarden = allParksGardens.find((p) => p.source_id === '1000108')
+    expect(parkGarden.name).toBe('HAMPTON COURT')
+    expect(parkGarden.metadata).toEqual({
       grade: 'I',
       area_ha: 289.590371746925,
       ngr: 'TQ 16570 68051',
@@ -64,10 +59,10 @@ describe('Registered parks and gardens import', () => {
       capture_scale: '1:10000',
       type: 'registered_parks_gardens'
     })
-    expect(parkGarden[0].data_layer_type_id).toBe(3)
-    expect(parkGarden[0].last_updated).toBeDefined()
-    expect(parkGarden[0].ingest_date).toBeDefined()
-    expect(parkGarden[0].ingest_id).toBeDefined()
-    expect(parkGarden[0].geom).toBeDefined()
+    expect(parkGarden.data_layer_type_id).toBe(3)
+    expect(parkGarden.last_updated).toBeDefined()
+    expect(parkGarden.ingest_date).toBeDefined()
+    expect(parkGarden.ingest_id).toBeDefined()
+    expect(parkGarden.geom).toBeDefined()
   }, 10000)
 })
