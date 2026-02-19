@@ -21,7 +21,11 @@ const initiateLandDataUploadRequestSchema = Joi.object({
       'moorland_designations',
       'compatibility_matrix',
       'agreements',
-      'sssi'
+      'sssi',
+      'registered_battlefields',
+      'shine',
+      'scheduled_monuments',
+      'registered_parks_gardens'
     )
 })
 
