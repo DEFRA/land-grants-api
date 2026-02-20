@@ -2,7 +2,7 @@
 import { accessTokenLocal } from './config.js'
 
 /* eslint-disable no-undef */
-const { ACCESS_TOKEN } = __ENV
+const { AUTH_HEADER_TOKEN } = __ENV
 
 export const defaultOptions = {
   vus: 100, // equivalent to -c 20 (20 concurrent users)
@@ -10,4 +10,4 @@ export const defaultOptions = {
 }
 
 export const url = 'http://localhost:3001'
-export const accessToken = ACCESS_TOKEN || accessTokenLocal
+export const accessToken = AUTH_HEADER_TOKEN || accessTokenLocal
