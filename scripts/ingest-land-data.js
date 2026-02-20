@@ -3,14 +3,14 @@ import path from 'path'
 import { config } from './config.js'
 
 // Important: configure these values for the ingestion
-const environments = ['dev', 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
+const environments = ['test']//, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
-  'agreements',
-  'compatibility_matrix',
-  'moorland_designations',
-  'land_parcels',
+  // 'agreements',
+  // 'compatibility_matrix',
+  // 'moorland_designations',
+  // 'land_parcels',
   'land_covers',
   'sssi',
   'registered_battlefields',
@@ -74,6 +74,28 @@ async function getCognitoToken(environment) {
   }
 }
 
+const RETRY_WAIT = 10000;
+
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    // wait after first attempt
+    if (i > 0) {
+      console.log(`Waiting for ${RETRY_WAIT * i}ms before retry...`);
+      await new Promise(resolve => setTimeout(resolve, RETRY_WAIT * i));
+    }
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        continue;
+      }
+      return response;
+    } catch (error) {
+      console.warn(`Attempt ${i + 1} failed. Retrying...`, error);
+    }
+  }
+  throw new Error(`Failed to fetch with retries: ${url}`);
+}
+
 /**
  * Make POST request to API with authentication
  * @param {object} jsonData - JSON payload
@@ -88,7 +110,7 @@ async function initiateLandDataUpload(jsonData, accessToken, environment) {
       `✓ Initiating land data upload to ${apiBaseUrl}/initiate-upload`
     )
 
-    const response = await fetch(`${apiBaseUrl}/initiate-upload`, {
+    const response = await fetchWithRetry(`${apiBaseUrl}/initiate-upload`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -204,9 +226,16 @@ async function transferResource(resource, environment) {
   console.log(`${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`)
 
   // get the files to ingest from the directory
-  const files = fs.readdirSync(ingestionDataDirectory)
+  const currentfailedFiles = await readFailedFiles(resource);
+  let files = [];
+  if (currentfailedFiles.length > 0) {
+    files = currentfailedFiles;
+  } else {
+    files = fs.readdirSync(ingestionDataDirectory)
+  }
   console.log(`✓ ${files.length} files to ingest found`)
 
+  const failedFiles = [];
   // iterate over the files and ingest them
   for (const landDataFile of files) {
     console.log(`✓ Start ingesting ${landDataFile}`)
@@ -217,41 +246,66 @@ async function transferResource(resource, environment) {
       continue
     }
 
-    const initiateUploadResponse = await initiateLandDataUpload(
-      {
-        reference,
-        customerId,
-        resource
-      },
-      accessToken,
-      environment
-    )
-
-    console.log(`✓ Initiate upload successful for ${landDataFile}`)
-
-    // Upload the file to S3
-    await uploadFileToS3(
-      initiateUploadResponse.uploadUrl,
-      path.join(ingestionDataDirectory, landDataFile),
-      accessToken
-    )
-
-    // Check the upload status, should be pending
-    const uploadStatusResponse = await checkUploadStatus(
-      initiateUploadResponse.uploadUrl.split('/').pop(),
-      accessToken,
-      environment
-    )
-
-    if (uploadStatusResponse.uploadStatus === 'pending') {
-      console.log(
-        `✓ File upload successful and ${uploadStatusResponse.uploadStatus} status for ${landDataFile}`
+    try {
+      const initiateUploadResponse = await initiateLandDataUpload(
+        {
+          reference,
+          customerId,
+          resource
+        },
+        accessToken,
+        environment
       )
-    } else {
-      console.log(`✗ Upload status is not pending for ${landDataFile}`)
-      throw new Error(`Upload status is not pending`)
+
+      console.log(`✓ Initiate upload successful for ${landDataFile}`)
+
+      // Upload the file to S3
+      await uploadFileToS3(
+        initiateUploadResponse.uploadUrl,
+        path.join(ingestionDataDirectory, landDataFile),
+        accessToken
+      )
+
+      // Check the upload status, should be pending
+      const uploadStatusResponse = await checkUploadStatus(
+        initiateUploadResponse.uploadUrl.split('/').pop(),
+        accessToken,
+        environment
+      )
+
+
+      if (uploadStatusResponse.uploadStatus === 'pending') {
+        console.log(
+          `✓ File upload successful and ${uploadStatusResponse.uploadStatus} status for ${landDataFile}`
+        )
+      } else {
+        console.log(`✗ Upload status is not pending for ${landDataFile}`)
+        throw new Error(`Upload status is not pending`)
+      }
+    } catch (error) {
+      console.log(`✗ Failed to ingest ${landDataFile} - ${error}`)
+      failedFiles.push(landDataFile);
+      continue;
     }
   }
 
+  await saveResults(resource, failedFiles)
+
   console.log('✓ Ingestion complete for : ' + resource)
+}
+
+async function saveResults(resource, filesCompleted) {
+  if (filesCompleted.length > 0) {
+    const textString = filesCompleted.join('\n');
+    const datePart = new Date().toISOString().replace('T', ':').slice(0, 19);
+    fs.writeFileSync(`failed_files_${resource}_${datePart}.txt`, textString);
+  }
+}
+
+async function readFailedFiles(resource) {
+  const currentDirectory = process.cwd();
+  const files = fs.readdirSync(currentDirectory).filter(file => file.startsWith(`failed_files_${resource}`));
+  const fileContents = files.map(file => fs.readFileSync(path.join(currentDirectory, file), 'utf-8'));
+  const failedFiles = fileContents.flatMap(d => d.split('\n'));
+  return [...new Set(failedFiles)];
 }
