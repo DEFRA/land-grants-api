@@ -96,26 +96,6 @@ describe('getDataLayerQuery', () => {
     )
   })
 
-  test('should default to accumulated query when queryType is undefined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-
-    await getDataLayerQuery(
-      sheetId,
-      parcelId,
-      dataLayerTypeId,
-      undefined,
-      mockDb,
-      mockLogger
-    )
-
-    expect(mockClient.query).toHaveBeenCalledWith(
-      accumulatedIntersectionAreaQuery,
-      [sheetId, parcelId, dataLayerTypeId]
-    )
-  })
-
   test('should return the overlap percentage', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'

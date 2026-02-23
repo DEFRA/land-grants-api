@@ -64,7 +64,7 @@ export async function getDataLayerQuery(
   sheetId,
   parcelId,
   dataLayerTypeId,
-  queryType = DATA_LAYER_QUERY_TYPES.accumulated,
+  queryType,
   db,
   logger
 ) {
