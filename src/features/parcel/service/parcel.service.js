@@ -4,6 +4,7 @@ import {
 } from '~/src/features/available-area/availableArea.js'
 import {
   actionTransformer,
+  heferRequiredActionTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer
@@ -17,6 +18,7 @@ import {
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
+import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -195,4 +197,43 @@ export async function getActionsForParcelWithSSSIConsentRequired(
     responseParcels,
     sssiConsentRequiredAction
   )
+}
+
+export async function getActionsForParcelWithHEFERConsentRequired(
+  parcelIds,
+  responseParcels,
+  enabledActions,
+  logger,
+  postgresDb
+) {
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+
+  const { intersectingAreaPercentage } = await getDataLayerQuery(
+    sheetId,
+    parcelId,
+    DATA_LAYER_TYPES.hefer,
+    postgresDb,
+    logger
+  )
+
+  const application = {
+    areaAppliedFor: 0,
+    actionCodeAppliedFor: '',
+    landParcel: {
+      area: 0,
+      existingAgreements: [],
+      intersections: {
+        hefer: { intersectingAreaPercentage }
+      }
+    }
+  }
+
+  const heferRequiredAction = executeSingleRuleForEnabledActions(
+    enabledActions,
+    application,
+    'hefer-consent-required',
+    heferConsentRequired
+  )
+
+  return heferRequiredActionTransformer(responseParcels, heferRequiredAction)
 }

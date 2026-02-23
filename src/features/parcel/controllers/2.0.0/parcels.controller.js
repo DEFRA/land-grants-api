@@ -17,7 +17,8 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired
+  getActionsForParcelWithSSSIConsentRequired,
+  getActionsForParcelWithHEFERConsentRequired
 } from '../../service/parcel.service.js'
 
 /**
@@ -128,6 +129,17 @@ const ParcelsControllerV2 = {
           await getActionsForParcelWithSSSIConsentRequired(
             parcelIds,
             responseParcels,
+            validationResponse.enabledActions,
+            request.logger,
+            postgresDb
+          )
+      }
+
+      if (fields.includes('actions.heferRequired')) {
+        transformedResponseParcels =
+          await getActionsForParcelWithHEFERConsentRequired(
+            parcelIds,
+            transformedResponseParcels,
             validationResponse.enabledActions,
             request.logger,
             postgresDb

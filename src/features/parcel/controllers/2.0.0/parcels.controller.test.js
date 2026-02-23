@@ -2,7 +2,8 @@ import Hapi from '@hapi/hapi'
 import { parcel } from '~/src/features/parcel/index.js'
 import {
   getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired
+  getActionsForParcelWithSSSIConsentRequired,
+  getActionsForParcelWithHEFERConsentRequired
 } from '~/src/features/parcel/service/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
@@ -16,6 +17,8 @@ const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
 const mockGetActionsForParcelWithSSSIConsentRequired =
   getActionsForParcelWithSSSIConsentRequired
+const mockGetActionsForParcelWithHEFERConsentRequired =
+  getActionsForParcelWithHEFERConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 
 const mockParcelData = {
@@ -133,6 +136,19 @@ describe('Parcels Controller 2.0.0', () => {
         )
       }
     )
+    mockGetActionsForParcelWithHEFERConsentRequired.mockImplementation(
+      (parcelIds, responseParcels) => {
+        return Promise.resolve(
+          responseParcels.map((parcel) => ({
+            ...parcel,
+            actions: parcel.actions?.map((action) => ({
+              ...action,
+              heferRequired: action.code === 'BND2'
+            }))
+          }))
+        )
+      }
+    )
   })
 
   describe('POST /api/v2/parcels route', () => {
@@ -170,6 +186,9 @@ describe('Parcels Controller 2.0.0', () => {
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
       ).not.toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
+      ).not.toHaveBeenCalled()
     })
 
     test('should return 200 with parcel data when requesting actions field', async () => {
@@ -197,6 +216,9 @@ describe('Parcels Controller 2.0.0', () => {
       expect(mockGetActionsForParcel).toHaveBeenCalled()
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
       ).not.toHaveBeenCalled()
     })
 
@@ -264,6 +286,9 @@ describe('Parcels Controller 2.0.0', () => {
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
+      ).not.toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
       ).not.toHaveBeenCalled()
     })
 
@@ -356,6 +381,126 @@ describe('Parcels Controller 2.0.0', () => {
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
       ).not.toHaveBeenCalled()
+    })
+
+    test('should return 200 and call getActionsForParcelWithHEFERConsentRequired when requesting actions.heferRequired', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions', 'actions.heferRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0]).toHaveProperty('actions')
+      expect(parcels[0].actions).toHaveLength(2)
+      expect(parcels[0].actions[0]).toHaveProperty('heferRequired')
+      expect(parcels[0].actions[0].heferRequired).toBe(false)
+      expect(parcels[0].actions[1].heferRequired).toBe(true)
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
+      ).toHaveBeenCalledWith(
+        ['SX0679-9238'],
+        expect.arrayContaining([
+          expect.objectContaining({
+            parcelId: '9238',
+            sheetId: 'SX0679',
+            actions: expect.any(Array)
+          })
+        ]),
+        mockEnabledActions,
+        expect.anything(),
+        expect.anything()
+      )
+    })
+
+    test('should not call getActionsForParcelWithHEFERConsentRequired when not requesting actions.heferRequired', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
+      ).not.toHaveBeenCalled()
+    })
+
+    test('should return 200 with both sssiConsentRequired and heferRequired when both fields requested', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: [
+            'actions',
+            'actions.sssiConsentRequired',
+            'actions.heferRequired'
+          ]
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels).toHaveLength(1)
+      expect(parcels[0].actions[0]).toHaveProperty('sssiConsentRequired')
+      expect(parcels[0].actions[0]).toHaveProperty('heferRequired')
+      expect(parcels[0].actions[0].sssiConsentRequired).toBe(true)
+      expect(parcels[0].actions[0].heferRequired).toBe(false)
+      expect(parcels[0].actions[1].sssiConsentRequired).toBe(false)
+      expect(parcels[0].actions[1].heferRequired).toBe(true)
+      expect(mockGetActionsForParcelWithSSSIConsentRequired).toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
+      ).toHaveBeenCalledWith(
+        ['SX0679-9238'],
+        expect.arrayContaining([
+          expect.objectContaining({
+            parcelId: '9238',
+            sheetId: 'SX0679',
+            actions: expect.arrayContaining([
+              expect.objectContaining({
+                code: 'BND1',
+                sssiConsentRequired: true
+              }),
+              expect.objectContaining({
+                code: 'BND2',
+                sssiConsentRequired: false
+              })
+            ])
+          })
+        ]),
+        mockEnabledActions,
+        expect.anything(),
+        expect.anything()
+      )
     })
 
     test('should return 200 with plannedActions included', async () => {
@@ -718,6 +863,30 @@ describe('Parcels Controller 2.0.0', () => {
         payload: {
           parcelIds: ['SX0679-9238'],
           fields: ['actions', 'actions.sssiConsentRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should return 500 when getActionsForParcelWithHEFERConsentRequired throws error', async () => {
+      mockGetActionsForParcelWithHEFERConsentRequired.mockRejectedValue(
+        new Error('Failed to get HEFER consent required')
+      )
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions', 'actions.heferRequired']
         }
       }
 
