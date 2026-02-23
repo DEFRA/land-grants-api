@@ -1,7 +1,7 @@
 INSERT INTO data_layer (source_id, geom, name, metadata, data_layer_type_id, last_updated, ingest_id)
 SELECT
     list_entry::TEXT,
-    ST_GeomFromText(shape, 27700),
+    shape,
     name,
     json_build_object(
         'area_ha', area_ha,
