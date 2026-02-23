@@ -36,8 +36,12 @@ vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
 vi.mock('~/src/features/agreements/queries/getAgreementsForParcel.query.js')
-vi.mock('~/src/features/application/queries/getApplicationValidationRun.query.js')
-vi.mock('~/src/features/case-management-adapter/transformers/application-validation.transformer.js')
+vi.mock(
+  '~/src/features/application/queries/getApplicationValidationRun.query.js'
+)
+vi.mock(
+  '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
+)
 vi.mock('~/src/features/application/service/application-validation.service.js')
 
 const mockGetLandData = getLandData
@@ -50,7 +54,8 @@ const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
 const mockCompatibilityCheckFn = vi.fn()
 const mockGetApplicationValidationRun = getApplicationValidationRun
-const mockApplicationValidationRunToCaseManagement = applicationValidationRunToCaseManagement
+const mockApplicationValidationRunToCaseManagement =
+  applicationValidationRunToCaseManagement
 const mockValidateApplication = validateApplication
 
 const mockAvailableAreaResult = {
@@ -60,6 +65,8 @@ const mockAvailableAreaResult = {
   availableAreaSqm: 300,
   availableAreaHectares: 0.03
 }
+
+// eslint-disable-next-line
 const mockGetApplicationValidationRunResult = async (logger, db, id) => {
   if (id === 999) {
     return null
@@ -71,22 +78,25 @@ const mockGetApplicationValidationRunResult = async (logger, db, id) => {
     application_id: 1,
     validation_run_id: 1,
     data: {
-      application_id: 1,
+      application_id: 1
     }
   }
 }
 
-const mockValidationRunToCaseManagementResult = [{
-  component: 'heading',
-  text: 'Land parcel rules checks',
-  level: 2,
-  id: '1'
-}, {
-  component: 'heading',
-  text: 'Parcel ID: SD6743 8083 checks',
-  level: 3,
-  id: undefined
-}]
+const mockValidationRunToCaseManagementResult = [
+  {
+    component: 'heading',
+    text: 'Land parcel rules checks',
+    level: 2,
+    id: '1'
+  },
+  {
+    component: 'heading',
+    text: 'Parcel ID: SD6743 8083 checks',
+    level: 3,
+    id: undefined
+  }
+]
 
 const mockValidateApplicationResult = {
   validationErrors: [],
@@ -145,8 +155,12 @@ const pactVerifierOptions = async () => {
       mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
       mockGetAgreementsForParcel.mockResolvedValue([])
       mockSaveApplication.mockResolvedValue(251)
-      mockGetApplicationValidationRun.mockImplementation(mockGetApplicationValidationRunResult)
-      mockApplicationValidationRunToCaseManagement.mockReturnValue(mockValidationRunToCaseManagementResult)
+      mockGetApplicationValidationRun.mockImplementation(
+        mockGetApplicationValidationRunResult
+      )
+      mockApplicationValidationRunToCaseManagement.mockReturnValue(
+        mockValidationRunToCaseManagementResult
+      )
       mockValidateApplication.mockResolvedValue(mockValidateApplicationResult)
     },
 
@@ -165,7 +179,12 @@ describe('Pact Verification', () => {
       connect: vi.fn(),
       query: vi.fn()
     })
-    await server.register([parcel, payments, application, caseManagementAdapter])
+    await server.register([
+      parcel,
+      payments,
+      application,
+      caseManagementAdapter
+    ])
     await server.initialize()
     await server.start()
   })
