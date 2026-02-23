@@ -12,7 +12,10 @@ import {
   plannedActionsTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_QUERY_TYPES,
+  getDataLayerQuery
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { vi } from 'vitest'
 
@@ -631,6 +634,7 @@ describe('Parcel Service', () => {
         'SX0679',
         '9238',
         1,
+        DATA_LAYER_QUERY_TYPES.accumulated,
         mockPostgresDb,
         mockLogger
       )

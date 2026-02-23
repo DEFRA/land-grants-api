@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import {
   DATA_LAYER_TYPES,
+  DATA_LAYER_QUERY_TYPES,
   getDataLayerQuery
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
@@ -28,6 +29,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -45,6 +47,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -63,6 +66,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -80,6 +84,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -98,6 +103,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -115,6 +121,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -133,6 +140,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -150,6 +158,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -168,6 +177,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -185,6 +195,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -203,6 +214,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -221,6 +233,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )
@@ -238,6 +251,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       connection,
       logger
     )

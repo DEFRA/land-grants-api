@@ -1,5 +1,10 @@
 import { vi } from 'vitest'
-import { getDataLayerQuery, dataLayerQuery } from './getDataLayer.query.js'
+import {
+  getDataLayerQuery,
+  DATA_LAYER_QUERY_TYPES,
+  accumulatedIntersectionAreaQuery,
+  largestIntersectionAreaQuery
+} from './getDataLayer.query.js'
 
 describe('getDataLayerQuery', () => {
   let mockDb
@@ -41,6 +46,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
@@ -48,7 +54,7 @@ describe('getDataLayerQuery', () => {
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query with the correct parameters', async () => {
+  test('should use accumulated query when queryType is accumulated', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
@@ -58,13 +64,55 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
 
     expect(mockClient.query).toHaveBeenCalledWith(
-      dataLayerQuery,
+      accumulatedIntersectionAreaQuery,
       expectedValues
+    )
+  })
+
+  test('should use largest query when queryType is largest', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    const dataLayerTypeId = 1
+    const expectedValues = [sheetId, parcelId, dataLayerTypeId]
+
+    await getDataLayerQuery(
+      sheetId,
+      parcelId,
+      dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.largest,
+      mockDb,
+      mockLogger
+    )
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      largestIntersectionAreaQuery,
+      expectedValues
+    )
+  })
+
+  test('should default to accumulated query when queryType is undefined', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    const dataLayerTypeId = 1
+
+    await getDataLayerQuery(
+      sheetId,
+      parcelId,
+      dataLayerTypeId,
+      undefined,
+      mockDb,
+      mockLogger
+    )
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      accumulatedIntersectionAreaQuery,
+      [sheetId, parcelId, dataLayerTypeId]
     )
   })
 
@@ -77,6 +125,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
@@ -97,6 +146,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
@@ -113,6 +163,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
@@ -131,6 +182,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )
@@ -160,6 +212,7 @@ describe('getDataLayerQuery', () => {
       sheetId,
       parcelId,
       dataLayerTypeId,
+      DATA_LAYER_QUERY_TYPES.accumulated,
       mockDb,
       mockLogger
     )

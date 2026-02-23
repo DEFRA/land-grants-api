@@ -12,6 +12,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import {
+  DATA_LAYER_QUERY_TYPES,
   DATA_LAYER_TYPES,
   getDataLayerQuery
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
@@ -168,6 +169,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
     sheetId,
     parcelId,
     DATA_LAYER_TYPES.sssi,
+    DATA_LAYER_QUERY_TYPES.accumulated,
     postgresDb,
     logger
   )

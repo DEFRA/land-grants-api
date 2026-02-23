@@ -12,7 +12,10 @@ import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
 } from '~/src/features/application/transformers/application.transformer.js'
-import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_QUERY_TYPES,
+  getDataLayerQuery
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 vi.mock(
   '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js',
@@ -211,6 +214,7 @@ describe('Action Validation Service', () => {
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         1,
+        DATA_LAYER_QUERY_TYPES.accumulated,
         mockPostgresDb,
         mockLogger
       )
@@ -219,6 +223,7 @@ describe('Action Validation Service', () => {
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         3,
+        DATA_LAYER_QUERY_TYPES.largest,
         mockPostgresDb,
         mockLogger
       )

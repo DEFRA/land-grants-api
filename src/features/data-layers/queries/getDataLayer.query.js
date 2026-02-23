@@ -10,7 +10,12 @@ export const DATA_LAYER_TYPES = {
   historic_features: 3
 }
 
-const dataLayerQuery = `
+export const DATA_LAYER_QUERY_TYPES = {
+  accumulated: 'accumulated',
+  largest: 'largest'
+}
+
+export const accumulatedIntersectionAreaQuery = `
     SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
       COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -27,19 +32,39 @@ const dataLayerQuery = `
   GROUP BY
       p.geom
 `
+
+export const largestIntersectionAreaQuery = `
+     WITH parcel AS (
+  SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2 LIMIT 1
+),
+intersections AS (
+  SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
+  FROM parcel p
+  JOIN data_layer m
+	ON ST_Intersects(p.geom, m.geom)
+	AND m.data_layer_type_id = $3
+)
+SELECT
+  COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
+  COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
+	/ NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
+FROM parcel
+`
 /**
  * Get the data layer query
  * @param {string} sheetId - The sheet id
  * @param {string} parcelId - The parcel id
  * @param {number} dataLayerTypeId - The data layer type id
+ * @param {string} queryType - The query type
  * @param {object} db - The database connection
  * @param {object} logger - The logger
  * @returns {Promise<object>} The data layer query
  */
-async function getDataLayerQuery(
+export async function getDataLayerQuery(
   sheetId,
   parcelId,
   dataLayerTypeId,
+  queryType = DATA_LAYER_QUERY_TYPES.accumulated,
   db,
   logger
 ) {
@@ -48,8 +73,13 @@ async function getDataLayerQuery(
   try {
     client = await db.connect()
 
+    const query =
+      queryType === DATA_LAYER_QUERY_TYPES.accumulated
+        ? accumulatedIntersectionAreaQuery
+        : largestIntersectionAreaQuery
+
     const values = [sheetId, parcelId, dataLayerTypeId]
-    const result = await client.query(dataLayerQuery, values)
+    const result = await client.query(query, values)
 
     if (result?.rows?.length === 0) {
       return 0
@@ -98,5 +128,3 @@ async function getDataLayerQuery(
     }
   }
 }
-
-export { getDataLayerQuery, dataLayerQuery }
