@@ -30,7 +30,7 @@ describe('actionConfigTransformer', () => {
       lastUpdated: new Date('2024-01-01T00:00:00Z'),
       payment: { rate: 100 },
       rules: { minArea: 5 },
-      semanticVersion: '1.0.0'
+      semanticVersion: '2.0.0'
     })
   })
 
@@ -92,7 +92,7 @@ describe('actionConfigTransformer', () => {
 
     const result = actionConfigTransformer(action)
 
-    expect(result.semanticVersion).toBe('1.0.0')
+    expect(result.semanticVersion).toBe('2.0.0')
   })
 
   test('should not include original snake_case fields in result', () => {

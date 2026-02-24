@@ -32,8 +32,8 @@ describe('Get Actions By Latest Version Query', () => {
     )
 
     expect(cmor1).toEqual({
-      version: 1,
-      majorVersion: 1,
+      version: 2,
+      majorVersion: 2,
       minorVersion: 0,
       patchVersion: 0,
       enabled: true,
@@ -76,6 +76,16 @@ describe('Get Actions By Latest Version Query', () => {
           name: 'applied-for-total-available-area',
           version: '1.0.0',
           description: 'Has the total available area been applied for?'
+        },
+        {
+          name: 'hefer-consent-required',
+          description:
+            'Does the site require a Historic Environment Farm Environment Record?',
+          config: {
+            layerName: 'historic_features',
+            tolerancePercent: 0,
+            caveatDescription: 'A hefer is needed from Historic England'
+          }
         }
       ]
     })

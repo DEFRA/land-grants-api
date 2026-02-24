@@ -56,7 +56,7 @@ describe('getEnabledActions', () => {
         rules: { minArea: 0.5 },
         startDate: '2024-01-01',
         lastUpdated: '2024-01-15T10:00:00Z',
-        semanticVersion: '1.0.0'
+        semanticVersion: '2.0.0'
       },
       {
         code: 'CMOR1',
@@ -71,7 +71,7 @@ describe('getEnabledActions', () => {
         rules: { minArea: 1.0 },
         startDate: '2024-02-01',
         lastUpdated: '2024-02-10T12:00:00Z',
-        semanticVersion: '1.0.0'
+        semanticVersion: '2.0.0'
       }
     ]
 
