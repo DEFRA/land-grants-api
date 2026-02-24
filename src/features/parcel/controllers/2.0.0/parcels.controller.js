@@ -17,7 +17,8 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired
+  getActionsForParcelWithSSSIConsentRequired,
+  getActionsForParcelWithHEFERConsentRequired
 } from '../../service/parcel.service.js'
 
 /**
@@ -30,6 +31,21 @@ const validateSSSIConsentRequired = (parcelIds, fields) => {
   if (parcelIds.length > 1 && fields.includes('actions.sssiConsentRequired')) {
     return Boom.badRequest(
       'SSSI consent required is not supported for multiple parcels.'
+    )
+  }
+  return undefined
+}
+
+/**
+ * Validate HEFER consent required
+ * @param {string[]} parcelIds - The parcelIds
+ * @param {string[]} fields - The fields
+ * @returns {undefined | import('@hapi/boom').Boom} The error message
+ */
+const validateHEFERConsentRequired = (parcelIds, fields) => {
+  if (parcelIds.length > 1 && fields.includes('actions.heferRequired')) {
+    return Boom.badRequest(
+      'HEFER required is not supported for multiple parcels.'
     )
   }
   return undefined
@@ -79,9 +95,20 @@ const ParcelsControllerV2 = {
         }
       })
 
-      const validationError = validateSSSIConsentRequired(parcelIds, fields)
-      if (validationError) {
-        return validationError
+      const sssiConsentRequiredError = validateSSSIConsentRequired(
+        parcelIds,
+        fields
+      )
+      if (sssiConsentRequiredError) {
+        return sssiConsentRequiredError
+      }
+
+      const heferConsentRequiredError = validateHEFERConsentRequired(
+        parcelIds,
+        fields
+      )
+      if (heferConsentRequiredError) {
+        return heferConsentRequiredError
       }
 
       const showActionResults = fields.includes('actions.results')
@@ -128,6 +155,17 @@ const ParcelsControllerV2 = {
           await getActionsForParcelWithSSSIConsentRequired(
             parcelIds,
             responseParcels,
+            validationResponse.enabledActions,
+            request.logger,
+            postgresDb
+          )
+      }
+
+      if (fields.includes('actions.heferRequired')) {
+        transformedResponseParcels =
+          await getActionsForParcelWithHEFERConsentRequired(
+            parcelIds,
+            transformedResponseParcels,
             validationResponse.enabledActions,
             request.logger,
             postgresDb

@@ -123,13 +123,35 @@ function sssiConsentRequiredActionTransformer(
   }))
 }
 
+/**
+ * Add heferRequired property to each action in response parcels
+ * @param {object[]} responseParcels - The response parcels to transform
+ * @param {Record<string, object>} heferRequiredAction - Map of action codes to consent required flags
+ * @returns {object[]} The transformed parcels with heferRequired property added to actions
+ */
+function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
+  if (!responseParcels || !heferRequiredAction) {
+    return responseParcels
+  }
+
+  return responseParcels.map((parcel) => ({
+    ...parcel,
+    actions: parcel.actions?.map((action) => ({
+      ...action,
+      heferRequired:
+        heferRequiredAction[action.code]?.caveat?.metadata !== undefined
+    }))
+  }))
+}
+
 export {
   actionTransformer,
   parcelActionsTransformer,
   parcelTransformer,
   plannedActionsTransformer,
   sizeTransformer,
-  sssiConsentRequiredActionTransformer
+  sssiConsentRequiredActionTransformer,
+  heferRequiredActionTransformer
 }
 
 /**
