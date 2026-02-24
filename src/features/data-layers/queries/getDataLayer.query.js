@@ -16,7 +16,7 @@ export const DATA_LAYER_QUERY_TYPES = {
 }
 
 export const accumulatedIntersectionAreaQuery = `
-    SELECT
+  SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
       COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
           / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
@@ -34,22 +34,22 @@ export const accumulatedIntersectionAreaQuery = `
 `
 
 export const largestIntersectionAreaQuery = `
-     WITH parcel AS (
-      SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
-    ),
-    intersections AS (
-      SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
-      FROM parcel p
-      JOIN data_layer m
-      ON ST_Intersects(p.geom, m.geom)
-      AND m.data_layer_type_id = $3
-    )
-    SELECT
-      COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
-      COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
-      / NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
-    FROM parcel
-    `
+  WITH parcel AS (
+    SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
+  ),
+  intersections AS (
+    SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
+    FROM parcel p
+    JOIN data_layer m
+    ON ST_Intersects(p.geom, m.geom)
+    AND m.data_layer_type_id = $3
+  )
+  SELECT
+    COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
+    COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
+    / NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
+  FROM parcel
+`
 
 /**
  * Get the accumulated data layer query
