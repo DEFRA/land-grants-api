@@ -16,7 +16,8 @@ import {
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import {
   DATA_LAYER_TYPES,
-  getDataLayerQuery
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { vi } from 'vitest'
@@ -614,7 +615,7 @@ describe('Parcel Service', () => {
       ]
 
       // Setup mock implementations
-      getDataLayerQuery.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryAccumulated.mockResolvedValue(mockDataLayerResult)
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockSssiConsentRequiredAction
       )
@@ -632,10 +633,10 @@ describe('Parcel Service', () => {
         mockPostgresDb
       )
 
-      expect(getDataLayerQuery).toHaveBeenCalledWith(
+      expect(getDataLayerQueryAccumulated).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        1,
+        DATA_LAYER_TYPES.sssi,
         mockPostgresDb,
         mockLogger
       )
@@ -654,7 +655,7 @@ describe('Parcel Service', () => {
     })
 
     test('should handle zero intersecting area percentage', async () => {
-      getDataLayerQuery.mockResolvedValue({
+      getDataLayerQueryAccumulated.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
       })
@@ -692,9 +693,9 @@ describe('Parcel Service', () => {
       expect(result).toEqual(mockResponseParcels)
     })
 
-    test('should propagate error from getDataLayerQuery', async () => {
+    test('should propagate error from getDataLayerQueryAccumulated', async () => {
       const dbError = new Error('Database connection failed')
-      getDataLayerQuery.mockRejectedValue(dbError)
+      getDataLayerQueryAccumulated.mockRejectedValue(dbError)
 
       await expect(
         getActionsForParcelWithSSSIConsentRequired(
@@ -830,7 +831,7 @@ describe('Parcel Service', () => {
         }
       ]
 
-      getDataLayerQuery.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryLargest.mockResolvedValue(mockDataLayerResult)
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockHeferConsentRequiredAction
       )
@@ -846,7 +847,7 @@ describe('Parcel Service', () => {
         mockPostgresDb
       )
 
-      expect(getDataLayerQuery).toHaveBeenCalledWith(
+      expect(getDataLayerQueryLargest).toHaveBeenCalledWith(
         'SX0679',
         '9238',
         DATA_LAYER_TYPES.hefer,
@@ -868,7 +869,7 @@ describe('Parcel Service', () => {
     })
 
     test('should handle zero intersecting area percentage', async () => {
-      getDataLayerQuery.mockResolvedValue({
+      getDataLayerQueryLargest.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
       })
@@ -906,9 +907,9 @@ describe('Parcel Service', () => {
       expect(result).toEqual(mockResponseParcels)
     })
 
-    test('should propagate error from getDataLayerQuery', async () => {
+    test('should propagate error from getDataLayerQueryLargest', async () => {
       const dbError = new Error('Database connection failed')
-      getDataLayerQuery.mockRejectedValue(dbError)
+      getDataLayerQueryLargest.mockRejectedValue(dbError)
 
       await expect(
         getActionsForParcelWithHEFERConsentRequired(

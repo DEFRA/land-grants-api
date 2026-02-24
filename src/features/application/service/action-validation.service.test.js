@@ -12,7 +12,11 @@ import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
 } from '~/src/features/application/transformers/application.transformer.js'
-import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 vi.mock(
   '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js',
@@ -46,7 +50,8 @@ vi.mock(
     const actual = await importOriginal()
     return {
       ...actual,
-      getDataLayerQuery: vi.fn()
+      getDataLayerQueryAccumulated: vi.fn(),
+      getDataLayerQueryLargest: vi.fn()
     }
   }
 )
@@ -64,7 +69,8 @@ const mockActionResultTransformer = vi.mocked(actionResultTransformer)
 const mockRuleEngineApplicationTransformer = vi.mocked(
   ruleEngineApplicationTransformer
 )
-const mockGetDataLayerQuery = vi.mocked(getDataLayerQuery)
+const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
+const mockGetDataLayerQueryLargest = vi.mocked(getDataLayerQueryLargest)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -148,7 +154,11 @@ describe('Action Validation Service', () => {
     )
     mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
     mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
-    mockGetDataLayerQuery.mockResolvedValue({
+    mockGetDataLayerQueryAccumulated.mockResolvedValue({
+      intersectingAreaPercentage: 15.5,
+      intersectionAreaHa: 0.1
+    })
+    mockGetDataLayerQueryLargest.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
     })
@@ -205,20 +215,19 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetDataLayerQuery).toHaveBeenCalledTimes(2)
-      expect(mockGetDataLayerQuery).toHaveBeenNthCalledWith(
-        1,
+      expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledTimes(1)
+      expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
-        1,
+        DATA_LAYER_TYPES.sssi,
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetDataLayerQuery).toHaveBeenNthCalledWith(
-        2,
+      expect(mockGetDataLayerQueryLargest).toHaveBeenCalledTimes(1)
+      expect(mockGetDataLayerQueryLargest).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
-        3,
+        DATA_LAYER_TYPES.historic_features,
         mockPostgresDb,
         mockLogger
       )
