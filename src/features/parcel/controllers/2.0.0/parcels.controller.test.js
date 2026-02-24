@@ -447,6 +447,33 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
+    test('should return 400 when requesting actions.heferRequired with multiple parcels', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238', 'SX0679-9239'],
+          fields: ['actions', 'actions.heferRequired']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe(
+        'HEFER required is not supported for multiple parcels.'
+      )
+      expect(mockGetDataAndValidateRequest).not.toHaveBeenCalled()
+      expect(mockGetActionsForParcel).not.toHaveBeenCalled()
+      expect(
+        mockGetActionsForParcelWithHEFERConsentRequired
+      ).not.toHaveBeenCalled()
+    })
+
     test('should return 200 with both sssiConsentRequired and heferRequired when both fields requested', async () => {
       const request = {
         method: 'POST',

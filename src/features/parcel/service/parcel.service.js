@@ -224,7 +224,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
       area: 0,
       existingAgreements: [],
       intersections: {
-        hefer: { intersectingAreaPercentage }
+        historic_features: { intersectingAreaPercentage }
       }
     }
   }

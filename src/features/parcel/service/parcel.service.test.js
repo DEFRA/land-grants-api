@@ -754,7 +754,7 @@ describe('Parcel Service', () => {
               name: 'hefer-consent-required',
               version: '1.0.0',
               config: {
-                layerName: 'hefer',
+                layerName: 'historic_features',
                 caveatDescription: 'A hefer is needed from Historic England',
                 tolerancePercent: 0
               }
@@ -771,7 +771,7 @@ describe('Parcel Service', () => {
               name: 'hefer-consent-required',
               version: '1.0.0',
               config: {
-                layerName: 'hefer',
+                layerName: 'historic_features',
                 caveatDescription: 'A hefer is needed from Historic England',
                 tolerancePercent: 0
               }
@@ -789,7 +789,7 @@ describe('Parcel Service', () => {
 
       mockHeferConsentRequiredAction = {
         UPL1: {
-          name: 'hefer-consent-required-hefer',
+          name: 'hefer-consent-required',
           passed: true,
           reason: 'A hefer is needed from Historic England',
           caveat: {
@@ -802,7 +802,7 @@ describe('Parcel Service', () => {
           }
         },
         UPL2: {
-          name: 'hefer-consent-required-hefer',
+          name: 'hefer-consent-required',
           passed: true,
           reason: 'No hefer is needed from Historic England',
           caveat: null
@@ -858,7 +858,8 @@ describe('Parcel Service', () => {
       const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
       expect(callArgs[0]).toEqual(mockEnabledActions)
       expect(
-        callArgs[1].landParcel.intersections.hefer.intersectingAreaPercentage
+        callArgs[1].landParcel.intersections.historic_features
+          .intersectingAreaPercentage
       ).toBe(15.2)
       expect(callArgs[2]).toBe('hefer-consent-required')
       expect(heferRequiredActionTransformer).toHaveBeenCalledWith(
@@ -884,7 +885,8 @@ describe('Parcel Service', () => {
 
       const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
       expect(
-        callArgs[1].landParcel.intersections.hefer.intersectingAreaPercentage
+        callArgs[1].landParcel.intersections.historic_features
+          .intersectingAreaPercentage
       ).toBe(0)
     })
 
