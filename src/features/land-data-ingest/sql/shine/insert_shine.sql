@@ -13,7 +13,7 @@ SELECT
     TO_DATE(last_edit,'YYYY/MM/DD'), 
     $1
 FROM shine_tmp
-ON CONFLICT (source_id) 
+ON CONFLICT (source_id, data_layer_type_id, (metadata->>'type')) 
 DO UPDATE SET
   geom = EXCLUDED.geom,
   "name" = EXCLUDED."name",
