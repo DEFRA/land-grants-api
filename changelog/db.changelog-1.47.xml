@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="add-data-layer-unique-constraint" author="system">
+    <sql>ALTER TABLE data_layer DROP CONSTRAINT IF EXISTS unique_constraint_source_id;</sql>
+    <sql>CREATE UNIQUE INDEX data_layer_unique_source_data_layer_type_id ON data_layer (source_id, data_layer_type_id);</sql>
+    <sql>CREATE UNIQUE INDEX data_layer_unique_source_type_id ON data_layer (source_id, data_layer_type_id, (metadata->>'type'));</sql>
+   </changeSet>
+
+</databaseChangeLog>
