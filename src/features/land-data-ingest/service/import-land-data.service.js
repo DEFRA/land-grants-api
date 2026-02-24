@@ -73,8 +73,7 @@ export async function importData(
       category: logCategory,
       operation: `${tableName}_import_completed`,
       message: `${tableName} imported successfully in ${duration}ms`,
-      context: { rowCount: result?.rowCount, duration },
-      outcome: `${duration}`
+      context: { rowCount: result?.rowCount, duration }
     })
   } catch (error) {
     logBusinessError(logger, {
