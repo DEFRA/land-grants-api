@@ -35,7 +35,7 @@ export const accumulatedIntersectionAreaQuery = `
 
 export const largestIntersectionAreaQuery = `
      WITH parcel AS (
-      SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2 LIMIT 1
+      SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
     ),
     intersections AS (
       SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
