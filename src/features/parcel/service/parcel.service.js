@@ -212,7 +212,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   const { intersectingAreaPercentage } = await getDataLayerQueryLargest(
     sheetId,
     parcelId,
-    DATA_LAYER_TYPES.hefer,
+    DATA_LAYER_TYPES.historic_features,
     postgresDb,
     logger
   )

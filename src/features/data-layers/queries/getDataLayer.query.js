@@ -7,8 +7,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 export const DATA_LAYER_TYPES = {
   sssi: 1,
   less_favoured_areas: 2,
-  historic_features: 3,
-  hefer: 3
+  historic_features: 3
 }
 
 export const DATA_LAYER_QUERY_TYPES = {

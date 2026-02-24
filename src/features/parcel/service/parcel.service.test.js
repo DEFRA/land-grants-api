@@ -850,7 +850,7 @@ describe('Parcel Service', () => {
       expect(getDataLayerQueryLargest).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        DATA_LAYER_TYPES.hefer,
+        DATA_LAYER_TYPES.historic_features,
         mockPostgresDb,
         mockLogger
       )
