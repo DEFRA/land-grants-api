@@ -32,8 +32,8 @@ describe('Get Actions Query', () => {
     )
 
     expect(cmor1).toEqual({
-      version: 1,
-      semanticVersion: '1.0.0',
+      version: 2,
+      semanticVersion: '2.0.0',
       enabled: true,
       display: true,
       durationYears: 1,
@@ -72,8 +72,18 @@ describe('Get Actions Query', () => {
         },
         {
           name: 'applied-for-total-available-area',
-          description: 'Has the total available area been applied for?',
-          version: '1.0.0'
+          version: '1.0.0',
+          description: 'Has the total available area been applied for?'
+        },
+        {
+          name: 'hefer-consent-required',
+          description:
+            'Does the site require a Historic Environment Farm Environment Record?',
+          config: {
+            layerName: 'historic_features',
+            tolerancePercent: 0,
+            caveatDescription: 'A hefer is needed from Historic England'
+          }
         }
       ]
     })

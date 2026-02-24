@@ -1,7 +1,8 @@
 import {
   splitParcelId,
   getParcelActionsWithAvailableArea,
-  getActionsForParcelWithSSSIConsentRequired
+  getActionsForParcelWithSSSIConsentRequired,
+  getActionsForParcelWithHEFERConsentRequired
 } from './parcel.service.js'
 import {
   getAvailableAreaDataRequirements,
@@ -9,10 +10,15 @@ import {
 } from '~/src/features/available-area/availableArea.js'
 import {
   actionTransformer,
+  heferRequiredActionTransformer,
   plannedActionsTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import { getDataLayerQuery } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { vi } from 'vitest'
 
@@ -609,7 +615,7 @@ describe('Parcel Service', () => {
       ]
 
       // Setup mock implementations
-      getDataLayerQuery.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryAccumulated.mockResolvedValue(mockDataLayerResult)
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockSssiConsentRequiredAction
       )
@@ -627,10 +633,10 @@ describe('Parcel Service', () => {
         mockPostgresDb
       )
 
-      expect(getDataLayerQuery).toHaveBeenCalledWith(
+      expect(getDataLayerQueryAccumulated).toHaveBeenCalledWith(
         'SX0679',
         '9238',
-        1,
+        DATA_LAYER_TYPES.sssi,
         mockPostgresDb,
         mockLogger
       )
@@ -649,7 +655,7 @@ describe('Parcel Service', () => {
     })
 
     test('should handle zero intersecting area percentage', async () => {
-      getDataLayerQuery.mockResolvedValue({
+      getDataLayerQueryAccumulated.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
       })
@@ -687,12 +693,228 @@ describe('Parcel Service', () => {
       expect(result).toEqual(mockResponseParcels)
     })
 
-    test('should propagate error from getDataLayerQuery', async () => {
+    test('should propagate error from getDataLayerQueryAccumulated', async () => {
       const dbError = new Error('Database connection failed')
-      getDataLayerQuery.mockRejectedValue(dbError)
+      getDataLayerQueryAccumulated.mockRejectedValue(dbError)
 
       await expect(
         getActionsForParcelWithSSSIConsentRequired(
+          mockParcelIds,
+          mockResponseParcels,
+          mockEnabledActions,
+          mockLogger,
+          mockPostgresDb
+        )
+      ).rejects.toThrow('Database connection failed')
+    })
+  })
+
+  describe('getActionsForParcelWithHEFERConsentRequired', () => {
+    let mockParcelIds
+    let mockResponseParcels
+    let mockEnabledActions
+    let mockPostgresDb
+    let mockDataLayerResult
+    let mockHeferConsentRequiredAction
+    let mockTransformedParcels
+
+    beforeEach(() => {
+      vi.clearAllMocks()
+
+      mockParcelIds = ['SX0679-9238']
+
+      mockResponseParcels = [
+        {
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          size: { unit: 'ha', value: 1.0 },
+          actions: [
+            {
+              code: 'UPL1',
+              description: 'Action 1',
+              availableArea: { unit: 'ha', value: 0.5 }
+            },
+            {
+              code: 'UPL2',
+              description: 'Action 2',
+              availableArea: { unit: 'ha', value: 0.3 }
+            }
+          ]
+        }
+      ]
+
+      mockEnabledActions = [
+        {
+          code: 'UPL1',
+          description: 'Action 1',
+          enabled: true,
+          display: true,
+          rules: [
+            {
+              name: 'hefer-consent-required',
+              version: '1.0.0',
+              config: {
+                layerName: 'historic_features',
+                caveatDescription: 'A hefer is needed from Historic England',
+                tolerancePercent: 0
+              }
+            }
+          ]
+        },
+        {
+          code: 'UPL2',
+          description: 'Action 2',
+          enabled: true,
+          display: true,
+          rules: [
+            {
+              name: 'hefer-consent-required',
+              version: '1.0.0',
+              config: {
+                layerName: 'historic_features',
+                caveatDescription: 'A hefer is needed from Historic England',
+                tolerancePercent: 0
+              }
+            }
+          ]
+        }
+      ]
+
+      mockPostgresDb = {}
+
+      mockDataLayerResult = {
+        intersectingAreaPercentage: 15.2,
+        intersectionAreaHa: 0.15
+      }
+
+      mockHeferConsentRequiredAction = {
+        UPL1: {
+          name: 'hefer-consent-required',
+          passed: true,
+          reason: 'A hefer is needed from Historic England',
+          caveat: {
+            code: 'hefer-consent-required',
+            description: 'A hefer is needed from Historic England',
+            metadata: {
+              percentageOverlap: 15.2,
+              overlapAreaHectares: 0.15
+            }
+          }
+        },
+        UPL2: {
+          name: 'hefer-consent-required',
+          passed: true,
+          reason: 'No hefer is needed from Historic England',
+          caveat: null
+        }
+      }
+
+      mockTransformedParcels = [
+        {
+          parcelId: '9238',
+          sheetId: 'SX0679',
+          size: { unit: 'ha', value: 1.0 },
+          actions: [
+            {
+              code: 'UPL1',
+              description: 'Action 1',
+              availableArea: { unit: 'ha', value: 0.5 },
+              heferRequired: true
+            },
+            {
+              code: 'UPL2',
+              description: 'Action 2',
+              availableArea: { unit: 'ha', value: 0.3 },
+              heferRequired: false
+            }
+          ]
+        }
+      ]
+
+      getDataLayerQueryLargest.mockResolvedValue(mockDataLayerResult)
+      executeSingleRuleForEnabledActions.mockReturnValue(
+        mockHeferConsentRequiredAction
+      )
+      heferRequiredActionTransformer.mockReturnValue(mockTransformedParcels)
+    })
+
+    test('should transform response parcels with HEFER consent required flags', async () => {
+      const result = await getActionsForParcelWithHEFERConsentRequired(
+        mockParcelIds,
+        mockResponseParcels,
+        mockEnabledActions,
+        mockLogger,
+        mockPostgresDb
+      )
+
+      expect(getDataLayerQueryLargest).toHaveBeenCalledWith(
+        'SX0679',
+        '9238',
+        DATA_LAYER_TYPES.historic_features,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(executeSingleRuleForEnabledActions).toHaveBeenCalled()
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
+      expect(callArgs[0]).toEqual(mockEnabledActions)
+      expect(
+        callArgs[1].landParcel.intersections.historic_features
+          .intersectingAreaPercentage
+      ).toBe(15.2)
+      expect(callArgs[2]).toBe('hefer-consent-required')
+      expect(heferRequiredActionTransformer).toHaveBeenCalledWith(
+        mockResponseParcels,
+        mockHeferConsentRequiredAction
+      )
+      expect(result).toEqual(mockTransformedParcels)
+    })
+
+    test('should handle zero intersecting area percentage', async () => {
+      getDataLayerQueryLargest.mockResolvedValue({
+        intersectingAreaPercentage: 0,
+        intersectionAreaHa: 0
+      })
+
+      await getActionsForParcelWithHEFERConsentRequired(
+        mockParcelIds,
+        mockResponseParcels,
+        mockEnabledActions,
+        mockLogger,
+        mockPostgresDb
+      )
+
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
+      expect(
+        callArgs[1].landParcel.intersections.historic_features
+          .intersectingAreaPercentage
+      ).toBe(0)
+    })
+
+    test('should handle empty enabled actions array', async () => {
+      executeSingleRuleForEnabledActions.mockReturnValue({})
+      heferRequiredActionTransformer.mockReturnValue(mockResponseParcels)
+
+      const result = await getActionsForParcelWithHEFERConsentRequired(
+        mockParcelIds,
+        mockResponseParcels,
+        [],
+        mockLogger,
+        mockPostgresDb
+      )
+
+      expect(heferRequiredActionTransformer).toHaveBeenCalledWith(
+        mockResponseParcels,
+        {}
+      )
+      expect(result).toEqual(mockResponseParcels)
+    })
+
+    test('should propagate error from getDataLayerQueryLargest', async () => {
+      const dbError = new Error('Database connection failed')
+      getDataLayerQueryLargest.mockRejectedValue(dbError)
+
+      await expect(
+        getActionsForParcelWithHEFERConsentRequired(
           mockParcelIds,
           mockResponseParcels,
           mockEnabledActions,

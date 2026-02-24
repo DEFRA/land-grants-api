@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+<changeSet id="update-action-config-disable-cmor1-actions" author="system">
+    <sql>UPDATE actions_config SET is_active = false WHERE (code = 'CMOR1') AND version = '1';</sql>
+   </changeSet>
+
+   <changeSet id="add-new-cmor1-actions-config-v2" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('CMOR1', 2, '{
+  "rules": [
+    {
+      "name": "parcel-has-intersection-with-data-layer",
+      "config": {
+        "layerName": "moorland",
+        "tolerancePercent": 1,
+        "minimumIntersectionPercent": 50
+      },
+      "version": "1.0.0",
+      "description": "Is this parcel on the moorland?"
+    },
+    {
+      "name": "applied-for-total-available-area",
+      "version": "1.0.0",
+      "description": "Has the total available area been applied for?"
+    },
+    {
+      "name": "hefer-consent-required",
+      "description": "Does the site require a Historic Environment Farm Environment Record?",
+      "config": {
+        "layerName": "historic_features",
+        "tolerancePercent": 0,
+        "caveatDescription": "A hefer is needed from Historic England"
+      }
+    }
+  ],
+  "payment": {
+    "ratePerUnitGbp": 10.6,
+    "ratePerAgreementPerYearGbp": 272
+  },
+  "start_date": "2025-01-01",
+  "duration_years": 1,
+  "land_cover_class_codes": [
+    "130",
+    "240",
+    "250",
+    "270",
+    "280",
+    "300",
+    "330",
+    "580",
+    "590",
+    "620",
+    "640",
+    "650"
+  ],
+  "application_unit_of_measurement": "ha"
+}', TRUE, now(), 2, 0, 0);</sql>
+   </changeSet>
+</databaseChangeLog>

@@ -1,5 +1,10 @@
 import { vi } from 'vitest'
-import { getDataLayerQuery, dataLayerQuery } from './getDataLayer.query.js'
+import {
+  accumulatedIntersectionAreaQuery,
+  largestIntersectionAreaQuery,
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
+} from './getDataLayer.query.js'
 
 describe('getDataLayerQuery', () => {
   let mockDb
@@ -37,7 +42,7 @@ describe('getDataLayerQuery', () => {
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
 
-    await getDataLayerQuery(
+    await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -48,13 +53,13 @@ describe('getDataLayerQuery', () => {
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query with the correct parameters', async () => {
+  test('should use accumulated query when queryType is accumulated', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
     const expectedValues = [sheetId, parcelId, dataLayerTypeId]
 
-    await getDataLayerQuery(
+    await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -63,7 +68,27 @@ describe('getDataLayerQuery', () => {
     )
 
     expect(mockClient.query).toHaveBeenCalledWith(
-      dataLayerQuery,
+      accumulatedIntersectionAreaQuery,
+      expectedValues
+    )
+  })
+
+  test('should use largest query when queryType is largest', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    const dataLayerTypeId = 1
+    const expectedValues = [sheetId, parcelId, dataLayerTypeId]
+
+    await getDataLayerQueryLargest(
+      sheetId,
+      parcelId,
+      dataLayerTypeId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      largestIntersectionAreaQuery,
       expectedValues
     )
   })
@@ -73,7 +98,7 @@ describe('getDataLayerQuery', () => {
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
 
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -93,7 +118,7 @@ describe('getDataLayerQuery', () => {
     const dataLayerTypeId = 1
     mockResult.rows = []
 
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -109,7 +134,7 @@ describe('getDataLayerQuery', () => {
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
 
-    await getDataLayerQuery(
+    await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -127,7 +152,7 @@ describe('getDataLayerQuery', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -156,7 +181,7 @@ describe('getDataLayerQuery', () => {
     const dataLayerTypeId = 1
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       dataLayerTypeId,

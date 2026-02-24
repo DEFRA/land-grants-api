@@ -4,6 +4,7 @@ import {
 } from '~/src/features/available-area/availableArea.js'
 import {
   actionTransformer,
+  heferRequiredActionTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer
@@ -13,10 +14,12 @@ import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgr
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import {
   DATA_LAYER_TYPES,
-  getDataLayerQuery
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
+import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -164,7 +167,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
 ) {
   const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
 
-  const { intersectingAreaPercentage } = await getDataLayerQuery(
+  const { intersectingAreaPercentage } = await getDataLayerQueryAccumulated(
     sheetId,
     parcelId,
     DATA_LAYER_TYPES.sssi,
@@ -195,4 +198,43 @@ export async function getActionsForParcelWithSSSIConsentRequired(
     responseParcels,
     sssiConsentRequiredAction
   )
+}
+
+export async function getActionsForParcelWithHEFERConsentRequired(
+  parcelIds,
+  responseParcels,
+  enabledActions,
+  logger,
+  postgresDb
+) {
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+
+  const { intersectingAreaPercentage } = await getDataLayerQueryLargest(
+    sheetId,
+    parcelId,
+    DATA_LAYER_TYPES.historic_features,
+    postgresDb,
+    logger
+  )
+
+  const application = {
+    areaAppliedFor: 0,
+    actionCodeAppliedFor: '',
+    landParcel: {
+      area: 0,
+      existingAgreements: [],
+      intersections: {
+        historic_features: { intersectingAreaPercentage }
+      }
+    }
+  }
+
+  const heferRequiredAction = executeSingleRuleForEnabledActions(
+    enabledActions,
+    application,
+    'hefer-consent-required',
+    heferConsentRequired
+  )
+
+  return heferRequiredActionTransformer(responseParcels, heferRequiredAction)
 }

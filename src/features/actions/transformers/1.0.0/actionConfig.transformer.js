@@ -23,6 +23,6 @@ export function actionConfigTransformer(action) {
     startDate: start_date,
     lastUpdated: last_updated,
     version: Number(version),
-    semanticVersion: '1.0.0'
+    semanticVersion: '2.0.0'
   }
 }
