@@ -3,7 +3,7 @@ import path from 'path'
 import { config } from './config.js'
 
 // Important: configure these values for the ingestion
-const environments = ['test']//, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
+const environments = ['test'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
@@ -74,26 +74,26 @@ async function getCognitoToken(environment) {
   }
 }
 
-const RETRY_WAIT = 10000;
+const RETRY_WAIT = 10000
 
 async function fetchWithRetry(url, options = {}, retries = 3) {
   for (let i = 0; i < retries; i++) {
     // wait after first attempt
     if (i > 0) {
-      console.log(`Waiting for ${RETRY_WAIT * i}ms before retry...`);
-      await new Promise(resolve => setTimeout(resolve, RETRY_WAIT * i));
+      console.log(`Waiting for ${RETRY_WAIT * i}ms before retry...`)
+      await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT * i))
     }
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, options)
       if (!response.ok) {
-        continue;
+        continue
       }
-      return response;
+      return response
     } catch (error) {
-      console.warn(`Attempt ${i + 1} failed. Retrying...`, error);
+      console.warn(`Attempt ${i + 1} failed. Retrying...`, error)
     }
   }
-  throw new Error(`Failed to fetch with retries: ${url}`);
+  throw new Error(`Failed to fetch with retries: ${url}`)
 }
 
 /**
@@ -226,16 +226,16 @@ async function transferResource(resource, environment) {
   console.log(`${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`)
 
   // get the files to ingest from the directory
-  const currentfailedFiles = await readFailedFiles(resource);
-  let files = [];
+  const currentfailedFiles = await readFailedFiles(resource)
+  let files = []
   if (currentfailedFiles.length > 0) {
-    files = currentfailedFiles;
+    files = currentfailedFiles
   } else {
     files = fs.readdirSync(ingestionDataDirectory)
   }
   console.log(`✓ ${files.length} files to ingest found`)
 
-  const failedFiles = [];
+  const failedFiles = []
   // iterate over the files and ingest them
   for (const landDataFile of files) {
     console.log(`✓ Start ingesting ${landDataFile}`)
@@ -273,7 +273,6 @@ async function transferResource(resource, environment) {
         environment
       )
 
-
       if (uploadStatusResponse.uploadStatus === 'pending') {
         console.log(
           `✓ File upload successful and ${uploadStatusResponse.uploadStatus} status for ${landDataFile}`
@@ -284,14 +283,14 @@ async function transferResource(resource, environment) {
       }
     } catch (error) {
       console.log(`✗ Failed to ingest ${landDataFile} - ${error}`)
-      failedFiles.push(landDataFile);
-      continue;
+      failedFiles.push(landDataFile)
+      continue
     }
   }
 
   await saveResults(resource, failedFiles)
   if (failedFiles.length === 0) {
-    await deleteFailedFiles(resource);
+    await deleteFailedFiles(resource)
   }
 
   console.log('✓ Ingestion complete for : ' + resource)
@@ -299,22 +298,28 @@ async function transferResource(resource, environment) {
 
 async function saveResults(resource, filesCompleted) {
   if (filesCompleted.length > 0) {
-    const textString = filesCompleted.join('\n');
-    const datePart = new Date().toISOString().replace('T', ':').slice(0, 19);
-    fs.writeFileSync(`failed_files_${resource}_${datePart}.txt`, textString);
+    const textString = filesCompleted.join('\n')
+    const datePart = new Date().toISOString().replace('T', ':').slice(0, 19)
+    fs.writeFileSync(`failed_files_${resource}_${datePart}.txt`, textString)
   }
 }
 
 async function readFailedFiles(resource) {
-  const currentDirectory = process.cwd();
-  const files = fs.readdirSync(currentDirectory).filter(file => file.startsWith(`failed_files_${resource}`));
-  const fileContents = files.map(file => fs.readFileSync(path.join(currentDirectory, file), 'utf-8'));
-  const failedFiles = fileContents.flatMap(d => d.split('\n'));
-  return [...new Set(failedFiles)];
+  const currentDirectory = process.cwd()
+  const files = fs
+    .readdirSync(currentDirectory)
+    .filter((file) => file.startsWith(`failed_files_${resource}`))
+  const fileContents = files.map((file) =>
+    fs.readFileSync(path.join(currentDirectory, file), 'utf-8')
+  )
+  const failedFiles = fileContents.flatMap((d) => d.split('\n'))
+  return [...new Set(failedFiles)]
 }
 
 async function deleteFailedFiles(resource) {
-  const currentDirectory = process.cwd();
-  const files = fs.readdirSync(currentDirectory).filter(file => file.startsWith(`failed_files_${resource}`));
-  files.forEach(file => fs.unlinkSync(path.join(currentDirectory, file)));
+  const currentDirectory = process.cwd()
+  const files = fs
+    .readdirSync(currentDirectory)
+    .filter((file) => file.startsWith(`failed_files_${resource}`))
+  files.forEach((file) => fs.unlinkSync(path.join(currentDirectory, file)))
 }
