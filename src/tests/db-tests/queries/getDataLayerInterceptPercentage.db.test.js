@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import {
   DATA_LAYER_TYPES,
-  getDataLayerQuery
+  getDataLayerQueryAccumulated
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
@@ -24,7 +24,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 1: when SSSI is in all land covers and sheet_id = TQ4530 AND parcel_id = 0522', async () => {
     const sheetId = 'TQ4530'
     const parcelId = '0522'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -41,7 +41,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 1: when SSSI is in all land covers and sheet_id = TQ4432 AND parcel_id = 6044', async () => {
     const sheetId = 'TQ4432'
     const parcelId = '6044'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -59,7 +59,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 2: when SSSI is in all land covers for CMOR1 and sheet_id = TQ4530 AND parcel_id = 0522', async () => {
     const sheetId = 'TQ4530'
     const parcelId = '0522'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -76,7 +76,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 2: when SSSI is in all land covers for CMOR1 and sheet_id = TQ4432 AND parcel_id = 6044', async () => {
     const sheetId = 'TQ4432'
     const parcelId = '6044'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -94,7 +94,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 3: when SSSI is in all land covers for CMOR1 + UPL1 and sheet_id = TQ4530 AND parcel_id = 0522', async () => {
     const sheetId = 'TQ4530'
     const parcelId = '0522'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -111,7 +111,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 3: when SSSI is in all land covers for CMOR1 + UPL1 and sheet_id = TQ4432 AND parcel_id = 6044', async () => {
     const sheetId = 'TQ4432'
     const parcelId = '6044'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -129,7 +129,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 4: when SSSI is not in any land covers and sheet_id = TQ5039 AND parcel_id = 6856', async () => {
     const sheetId = 'TQ5039'
     const parcelId = '6856'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -146,7 +146,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 4: when SSSI is not in any land covers and sheet_id = TQ4441 AND parcel_id = 6801', async () => {
     const sheetId = 'TQ4441'
     const parcelId = '6801'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -164,7 +164,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 5: when SSSI is in eligible land covers and sheet_id = SD2396 AND parcel_id = 0165', async () => {
     const sheetId = 'SD2396'
     const parcelId = '0165'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -181,7 +181,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 5: when SSSI is in eligible land covers and sheet_id = NY1725 AND parcel_id = 8271', async () => {
     const sheetId = 'NY1725'
     const parcelId = '8271'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -199,7 +199,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 6: when SSSI is not in eligible land covers but in other covers and sheet_id = SU7226 AND parcel_id = 8761', async () => {
     const sheetId = 'SU7226'
     const parcelId = '8761'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -217,7 +217,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 7: when SSSI intersection is less than 1% and sheet_id = SX1976 AND parcel_id = 3746', async () => {
     const sheetId = 'SX1976'
     const parcelId = '3746'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,
@@ -234,7 +234,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
   test('Scenario 7: when SSSI intersection is less than 1% and sheet_id = SP3875 AND parcel_id = 0438', async () => {
     const sheetId = 'SP3875'
     const parcelId = '0438'
-    const result = await getDataLayerQuery(
+    const result = await getDataLayerQueryAccumulated(
       sheetId,
       parcelId,
       DATA_LAYER_TYPES.sssi,

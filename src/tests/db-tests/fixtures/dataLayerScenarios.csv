@@ -1,0 +1,14 @@
+sheet_id,parcel_id,type,name,overlap_percent
+NT8109,3967,shine,shine NT8109/3967,89.37
+NT8109,6188,shine,shine NT8109/6188,72.31
+NT8109,6898,shine,shine NT8109/6898,99.85
+NT9528,7864,registered_battlefields,registered_battlefields NT9528/7864,46.06
+NT9628,3858,registered_battlefields,registered_battlefields NT9628/3858,93.19
+NT9628,8726,registered_battlefields,registered_battlefields NT9628/8726,45.16
+NT9728,0556,registered_battlefields,registered_battlefields NT9728/0556,100.00
+NU0014,4582,scheduled_monuments,scheduled_monuments NU0014/4582,99.82
+NU0114,5221,scheduled_monuments,scheduled_monuments NU0114/5221,99.78
+NU1514,2607,registered_parks_gardens,registered_parks_gardens NU1514/2607,100.00
+NZ5500,0465,shine,shine NZ5500/0465,1.80
+NZ6300,8335,shine,shine NZ6300/8335,63.68
+SJ9581,7827,registered_parks_gardens,registered_parks_gardens SJ9581/7827,100.00

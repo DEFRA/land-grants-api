@@ -13,7 +13,7 @@ import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgr
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import {
   DATA_LAYER_TYPES,
-  getDataLayerQuery
+  getDataLayerQueryAccumulated
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
@@ -164,7 +164,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
 ) {
   const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
 
-  const { intersectingAreaPercentage } = await getDataLayerQuery(
+  const { intersectingAreaPercentage } = await getDataLayerQueryAccumulated(
     sheetId,
     parcelId,
     DATA_LAYER_TYPES.sssi,
