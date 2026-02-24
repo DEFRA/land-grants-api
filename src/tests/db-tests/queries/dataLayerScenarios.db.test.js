@@ -1,12 +1,11 @@
 /* eslint-disable camelcase */
 import { vi } from 'vitest'
-import {
-  DATA_LAYER_QUERY_TYPES,
-  DATA_LAYER_TYPES,
-  getDataLayerQuery
-} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getDataLayerScenariosFixtures } from '~/src/tests/db-tests/setup/getDataLayerScenariosFixtures.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQueryLargest
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 describe('Data Layer Scenarios', () => {
   let logger, connection
@@ -28,16 +27,11 @@ describe('Data Layer Scenarios', () => {
 
   test.each(fixtures)(
     `%s`,
-    async (_name, { sheet_id, parcel_id, type, overlap_percent }) => {
-      const result = await getDataLayerQuery(
+    async (_name, { sheet_id, parcel_id, overlap_percent }) => {
+      const result = await getDataLayerQueryLargest(
         sheet_id,
         parcel_id,
-        type === DATA_LAYER_TYPES.sssi
-          ? DATA_LAYER_TYPES.sssi
-          : DATA_LAYER_TYPES.historic_features,
-        type === DATA_LAYER_TYPES.sssi
-          ? DATA_LAYER_QUERY_TYPES.accumulated
-          : DATA_LAYER_QUERY_TYPES.largest,
+        DATA_LAYER_TYPES.historic_features,
         connection,
         logger
       )

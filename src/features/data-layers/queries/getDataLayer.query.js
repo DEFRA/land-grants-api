@@ -35,36 +35,89 @@ export const accumulatedIntersectionAreaQuery = `
 
 export const largestIntersectionAreaQuery = `
      WITH parcel AS (
-  SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2 LIMIT 1
-),
-intersections AS (
-  SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
-  FROM parcel p
-  JOIN data_layer m
-	ON ST_Intersects(p.geom, m.geom)
-	AND m.data_layer_type_id = $3
-)
-SELECT
-  COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
-  COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
-	/ NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
-FROM parcel
-`
+      SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2 LIMIT 1
+    ),
+    intersections AS (
+      SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
+      FROM parcel p
+      JOIN data_layer m
+      ON ST_Intersects(p.geom, m.geom)
+      AND m.data_layer_type_id = $3
+    )
+    SELECT
+      COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
+      COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
+      / NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
+    FROM parcel
+    `
+
+/**
+ * Get the accumulated data layer query
+ * @param {string} sheetId - The sheet id
+ * @param {string} parcelId - The parcel id
+ * @param {number} dataLayerTypeId - The data layer type id
+ * @param {object} db - The database connection
+ * @param {object} logger - The logger
+ * @returns {Promise<object>} The data layer query
+ */
+export async function getDataLayerQueryAccumulated(
+  sheetId,
+  parcelId,
+  dataLayerTypeId,
+  db,
+  logger
+) {
+  return getDataLayerQuery(
+    sheetId,
+    parcelId,
+    dataLayerTypeId,
+    accumulatedIntersectionAreaQuery,
+    db,
+    logger
+  )
+}
+
+/**
+ * Get the largest data layer query
+ * @param {string} sheetId - The sheet id
+ * @param {string} parcelId - The parcel id
+ * @param {number} dataLayerTypeId - The data layer type id
+ * @param {object} db - The database connection
+ * @param {object} logger - The logger
+ * @returns {Promise<object>} The data layer query
+ */
+export async function getDataLayerQueryLargest(
+  sheetId,
+  parcelId,
+  dataLayerTypeId,
+  db,
+  logger
+) {
+  return getDataLayerQuery(
+    sheetId,
+    parcelId,
+    dataLayerTypeId,
+    largestIntersectionAreaQuery,
+    db,
+    logger
+  )
+}
+
 /**
  * Get the data layer query
  * @param {string} sheetId - The sheet id
  * @param {string} parcelId - The parcel id
  * @param {number} dataLayerTypeId - The data layer type id
- * @param {string} queryType - The query type
+ * @param {string} query - The query
  * @param {object} db - The database connection
  * @param {object} logger - The logger
  * @returns {Promise<object>} The data layer query
  */
-export async function getDataLayerQuery(
+async function getDataLayerQuery(
   sheetId,
   parcelId,
   dataLayerTypeId,
-  queryType,
+  query,
   db,
   logger
 ) {
@@ -72,11 +125,6 @@ export async function getDataLayerQuery(
 
   try {
     client = await db.connect()
-
-    const query =
-      queryType === DATA_LAYER_QUERY_TYPES.accumulated
-        ? accumulatedIntersectionAreaQuery
-        : largestIntersectionAreaQuery
 
     const values = [sheetId, parcelId, dataLayerTypeId]
     const result = await client.query(query, values)

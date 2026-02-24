@@ -13,8 +13,8 @@ import {
 } from '../transformers/application.transformer.js'
 import {
   DATA_LAYER_TYPES,
-  DATA_LAYER_QUERY_TYPES,
-  getDataLayerQuery
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
 } from '../../data-layers/queries/getDataLayer.query.js'
 
 /**
@@ -65,20 +65,18 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const sssiDataLayerData = await getDataLayerQuery(
+  const sssiDataLayerData = await getDataLayerQueryAccumulated(
     landAction.sheetId,
     landAction.parcelId,
     DATA_LAYER_TYPES.sssi,
-    DATA_LAYER_QUERY_TYPES.accumulated,
     request.server.postgresDb,
     request.logger
   )
 
-  const historicFeaturesDataLayerData = await getDataLayerQuery(
+  const historicFeaturesDataLayerData = await getDataLayerQueryLargest(
     landAction.sheetId,
     landAction.parcelId,
     DATA_LAYER_TYPES.historic_features,
-    DATA_LAYER_QUERY_TYPES.largest,
     request.server.postgresDb,
     request.logger
   )
