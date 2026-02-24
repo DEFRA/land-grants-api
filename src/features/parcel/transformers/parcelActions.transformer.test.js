@@ -4,7 +4,8 @@ import {
   parcelActionsTransformer,
   plannedActionsTransformer,
   sizeTransformer,
-  sssiConsentRequiredActionTransformer
+  sssiConsentRequiredActionTransformer,
+  heferRequiredActionTransformer
 } from './parcelActions.transformer.js'
 
 describe('sizeTransformer', () => {
@@ -519,5 +520,256 @@ describe('sssiConsentRequiredActionTransformer', () => {
         ]
       }
     ])
+  })
+})
+
+describe('heferRequiredActionTransformer', () => {
+  test('should add heferRequired property to actions based on action code', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          { code: 'ACTION1', description: 'Action 1' },
+          { code: 'ACTION2', description: 'Action 2' }
+        ]
+      }
+    ]
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
+      ACTION2: {}
+    }
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          {
+            code: 'ACTION1',
+            description: 'Action 1',
+            heferRequired: true
+          },
+          {
+            code: 'ACTION2',
+            description: 'Action 2',
+            heferRequired: false
+          }
+        ]
+      }
+    ])
+  })
+
+  test('should handle multiple parcels with multiple actions', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          { code: 'ACTION1', description: 'Action 1' },
+          { code: 'ACTION2', description: 'Action 2' }
+        ]
+      },
+      {
+        parcelId: 'P789',
+        sheetId: 'S012',
+        actions: [
+          { code: 'ACTION3', description: 'Action 3' },
+          { code: 'ACTION1', description: 'Action 1' }
+        ]
+      }
+    ]
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
+      ACTION2: {},
+      ACTION3: { caveat: { metadata: { percentageOverlap: 15 } } }
+    }
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          {
+            code: 'ACTION1',
+            description: 'Action 1',
+            heferRequired: true
+          },
+          {
+            code: 'ACTION2',
+            description: 'Action 2',
+            heferRequired: false
+          }
+        ]
+      },
+      {
+        parcelId: 'P789',
+        sheetId: 'S012',
+        actions: [
+          {
+            code: 'ACTION3',
+            description: 'Action 3',
+            heferRequired: true
+          },
+          {
+            code: 'ACTION1',
+            description: 'Action 1',
+            heferRequired: true
+          }
+        ]
+      }
+    ])
+  })
+
+  test('should set heferRequired to false when action code is not in map', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          { code: 'ACTION1', description: 'Action 1' },
+          { code: 'ACTION2', description: 'Action 2' }
+        ]
+      }
+    ]
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
+    }
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          {
+            code: 'ACTION1',
+            description: 'Action 1',
+            heferRequired: true
+          },
+          {
+            code: 'ACTION2',
+            description: 'Action 2',
+            heferRequired: false
+          }
+        ]
+      }
+    ])
+  })
+
+  test('should handle empty actions array', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: []
+      }
+    ]
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
+    }
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: []
+      }
+    ])
+  })
+
+  test('should handle empty parcels array', () => {
+    const responseParcels = []
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
+    }
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([])
+  })
+
+  test('should handle empty heferRequiredAction map', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          { code: 'ACTION1', description: 'Action 1' },
+          { code: 'ACTION2', description: 'Action 2' }
+        ]
+      }
+    ]
+    const heferRequiredAction = {}
+
+    const result = heferRequiredActionTransformer(
+      responseParcels,
+      heferRequiredAction
+    )
+
+    expect(result).toEqual([
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [
+          {
+            code: 'ACTION1',
+            description: 'Action 1',
+            heferRequired: false
+          },
+          {
+            code: 'ACTION2',
+            description: 'Action 2',
+            heferRequired: false
+          }
+        ]
+      }
+    ])
+  })
+
+  test('should return responseParcels when responseParcels is null', () => {
+    const heferRequiredAction = {
+      ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
+    }
+
+    const result = heferRequiredActionTransformer(null, heferRequiredAction)
+
+    expect(result).toBeNull()
+  })
+
+  test('should return responseParcels when heferRequiredAction is null', () => {
+    const responseParcels = [
+      {
+        parcelId: 'P123',
+        sheetId: 'S456',
+        actions: [{ code: 'ACTION1', description: 'Action 1' }]
+      }
+    ]
+
+    const result = heferRequiredActionTransformer(responseParcels, null)
+
+    expect(result).toEqual(responseParcels)
   })
 })

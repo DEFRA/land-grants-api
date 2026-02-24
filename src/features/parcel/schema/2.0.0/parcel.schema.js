@@ -18,7 +18,8 @@ const actionSchema = Joi.object({
   }),
   ratePerUnitGbp: Joi.number().required(),
   ratePerAgreementPerYearGbp: Joi.number().optional(),
-  sssiConsentRequired: Joi.boolean().optional()
+  sssiConsentRequired: Joi.boolean().optional(),
+  heferRequired: Joi.boolean().optional()
 })
 
 const parcelSchema = Joi.object({
@@ -39,7 +40,8 @@ const parcelsSchema = Joi.object({
         'size',
         'actions',
         'actions.results',
-        'actions.sssiConsentRequired'
+        'actions.sssiConsentRequired',
+        'actions.heferRequired'
       )
     )
     .required(),

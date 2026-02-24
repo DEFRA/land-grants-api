@@ -74,6 +74,15 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
+    it('should validate with heferRequired field', () => {
+      const valid = {
+        ...validParcelsRequest,
+        fields: ['actions.heferRequired']
+      }
+      const result = parcelsSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
     it('should validate with all valid fields', () => {
       const valid = {
         ...validParcelsRequest,
@@ -81,7 +90,8 @@ describe('Parcel Schema Validation v2', () => {
           'size',
           'actions',
           'actions.results',
-          'actions.sssiConsentRequired'
+          'actions.sssiConsentRequired',
+          'actions.heferRequired'
         ]
       }
       const result = parcelsSchema.validate(valid)
