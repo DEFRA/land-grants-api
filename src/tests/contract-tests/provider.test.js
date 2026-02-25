@@ -78,7 +78,10 @@ const mockGetApplicationValidationRunResult = async (logger, db, id) => {
     application_id: 1,
     validation_run_id: 1,
     data: {
-      application_id: 1
+      application_id: 1,
+      application: {
+        parcels: []
+      }
     }
   }
 }
