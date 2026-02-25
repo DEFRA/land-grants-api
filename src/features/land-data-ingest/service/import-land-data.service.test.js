@@ -84,7 +84,10 @@ describe('Import Land Data Service', () => {
 
       expect(mockLogger.info).toHaveBeenCalledTimes(4)
       expect(metricsCounter).toHaveBeenCalledTimes(1)
-      expect(metricsCounter).toHaveBeenCalledWith(`${name}_data_ingest_completed`, 1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${name}_data_ingest_completed`,
+        1
+      )
     })
 
     it(`should handle error when importing ${name}`, async () => {
@@ -104,7 +107,10 @@ describe('Import Land Data Service', () => {
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
       expect(metricsCounter).toHaveBeenCalledTimes(1)
-      expect(metricsCounter).toHaveBeenCalledWith(`${name}_data_ingest_failed`, 1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${name}_data_ingest_failed`,
+        1
+      )
     })
   })
 })
