@@ -11,6 +11,7 @@ import {
   insertData,
   truncateTableAndInsertData
 } from './data-helpers.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 const logCategory = 'land-data-ingest'
 
@@ -75,12 +76,14 @@ export async function importData(
       message: `${tableName} imported successfully in ${duration}ms`,
       context: { rowCount: result?.rowCount, duration }
     })
+    await metricsCounter(`${tableName}_data_ingest_completed`, result?.rowCount)
   } catch (error) {
     logBusinessError(logger, {
       operation: `${tableName}_import_failed`,
       error,
       context: { tableName }
     })
+    await metricsCounter(`${tableName}_data_ingest_failed`, 1)
     throw error
   } finally {
     await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)

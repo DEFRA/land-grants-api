@@ -6,11 +6,13 @@ import {
   insertData,
   truncateTableAndInsertData
 } from './data-helpers.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 import { resources } from '../workers/ingest.module.js'
 
 vi.mock('../../common/helpers/postgres.js')
 vi.mock('./data-helpers.js')
+vi.mock('../../common/helpers/metrics.js')
 
 describe('Import Land Data Service', () => {
   let mockClient
@@ -45,8 +47,9 @@ describe('Import Land Data Service', () => {
     })
     createTempTable.mockResolvedValue()
     copyDataToTempTable.mockResolvedValue()
-    insertData.mockResolvedValue()
-    truncateTableAndInsertData.mockResolvedValue()
+    insertData.mockResolvedValue({ rowCount: 1 })
+    truncateTableAndInsertData.mockResolvedValue({ rowCount: 1 })
+    metricsCounter.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -80,6 +83,11 @@ describe('Import Land Data Service', () => {
       }
 
       expect(mockLogger.info).toHaveBeenCalledTimes(4)
+      expect(metricsCounter).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${name}_data_ingest_completed`,
+        1
+      )
     })
 
     it(`should handle error when importing ${name}`, async () => {
@@ -98,6 +106,11 @@ describe('Import Land Data Service', () => {
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${name}_data_ingest_failed`,
+        1
+      )
     })
   })
 })

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getResourceByType, resources } from './ingest.module.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 vi.mock('../../common/s3/s3.js', () => ({
   getFile: vi.fn(),
@@ -31,6 +32,7 @@ vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
   logInfo: vi.fn(),
   logBusinessError: vi.fn()
 }))
+vi.mock('../../common/helpers/metrics.js')
 
 describe('Ingest Module', () => {
   describe('getResourceByType', () => {
@@ -132,6 +134,7 @@ describe('Ingest Module', () => {
       ).rejects.toThrow('Invalid content type: application/json')
 
       expect(importData).not.toHaveBeenCalled()
+      expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
     })
 
     it('should handle S3 errors', async () => {
@@ -143,6 +146,7 @@ describe('Ingest Module', () => {
       )
 
       expect(logBusinessError).toHaveBeenCalled()
+      expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
     })
 
     it('should handle invalid resource type in file path', async () => {
@@ -160,6 +164,7 @@ describe('Ingest Module', () => {
       ).rejects.toThrow('Resource type invalid_resource not found')
 
       expect(logBusinessError).toHaveBeenCalled()
+      expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
     })
   })
 })

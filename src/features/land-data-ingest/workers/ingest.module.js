@@ -8,6 +8,7 @@ import {
   logInfo,
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 export const resources = [
   { name: 'land_parcels', truncateTable: false },
@@ -120,6 +121,7 @@ export async function importLandData(file) {
         bucket
       }
     })
+    await metricsCounter('land_data_ingest_failed', 1)
 
     throw error
   }

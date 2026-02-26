@@ -75,10 +75,13 @@ const mockGetApplicationValidationRunResult = async (logger, db, id) => {
     id,
     sbi: 123456,
     crn: '123456',
-    application_id: 1,
+    application_id: id,
     validation_run_id: 1,
     data: {
-      application_id: 1
+      application_id: 1,
+      application: {
+        parcels: []
+      }
     }
   }
 }
@@ -98,13 +101,17 @@ const mockValidationRunToCaseManagementResult = [
   }
 ]
 
-const mockValidateApplicationResult = {
-  validationErrors: [],
-  applicationData: {
-    hasPassed: true,
-    date: '2026-02-23T11:09:46.263Z'
-  },
-  applicationValidationRunId: 1
+/* eslint-disable no-unused-vars, @typescript-eslint/require-await */
+const mockValidateApplicationResult = async (_, applicationId) => {
+  const validationErrors = applicationId === 456 ? [{ error: 'error' }] : []
+  return {
+    validationErrors,
+    applicationData: {
+      hasPassed: true,
+      date: '2026-02-23T11:09:46.263Z'
+    },
+    applicationValidationRunId: 1
+  }
 }
 
 dotenv.config()
@@ -161,7 +168,7 @@ const pactVerifierOptions = async () => {
       mockApplicationValidationRunToCaseManagement.mockReturnValue(
         mockValidationRunToCaseManagementResult
       )
-      mockValidateApplication.mockResolvedValue(mockValidateApplicationResult)
+      mockValidateApplication.mockImplementation(mockValidateApplicationResult)
     },
 
     afterEach: () => {
