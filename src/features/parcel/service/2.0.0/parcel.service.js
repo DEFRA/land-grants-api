@@ -8,9 +8,7 @@ import {
   sizeTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import {
-  actionTransformer
-} from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -31,7 +29,6 @@ import { splitParcelId } from '../parcel.service.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
-
 
 /**
  * Get parcel actions with available area

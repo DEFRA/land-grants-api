@@ -31,11 +31,9 @@ function actionTransformer(action, availableArea = null, showResults = false) {
   return response
 }
 
-
-export {
-  actionTransformer
-}
+export { actionTransformer }
 
 /**
  * @import { AvailableAreaForAction } from "~/src/features/available-area/available-area.d.js"
+ * @import {Action} from '~/src/features/actions/action.d.js'
  */

@@ -12,9 +12,7 @@ import {
   plannedActionsTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import {
-  actionTransformer
-} from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,

@@ -1,6 +1,6 @@
 import {
   splitParcelId,
-  getParcelActionsWithAvailableArea,
+  getParcelActionsWithAvailableArea
 } from './parcel.service.js'
 import {
   getAvailableAreaDataRequirements,
@@ -8,7 +8,7 @@ import {
 } from '~/src/features/available-area/availableArea.js'
 import {
   actionTransformer,
-  plannedActionsTransformer,
+  plannedActionsTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { vi } from 'vitest'
 
@@ -479,5 +479,4 @@ describe('Parcel Service', () => {
       )
     })
   })
-
 })

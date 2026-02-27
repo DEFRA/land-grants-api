@@ -5,7 +5,7 @@ import {
 import {
   actionTransformer,
   plannedActionsTransformer,
-  sizeTransformer,
+  sizeTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
@@ -18,7 +18,6 @@ import { mergeAgreementsTransformer } from '~/src/features/agreements/transforme
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
-
 
 /**
  * Split id into sheet id and parcel id
@@ -148,4 +147,3 @@ export async function getActionsForParcel(
   }
   return parcelResponse
 }
-

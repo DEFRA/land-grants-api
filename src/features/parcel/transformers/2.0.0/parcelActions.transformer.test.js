@@ -1,7 +1,4 @@
-import {
-  actionTransformer
-} from './parcelActions.transformer.js'
-
+import { actionTransformer } from './parcelActions.transformer.js'
 
 describe('actionTransformer 2.0.0', () => {
   test('should transform action with available area', () => {
