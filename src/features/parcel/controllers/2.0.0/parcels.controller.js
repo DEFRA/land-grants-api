@@ -19,7 +19,7 @@ import {
   getActionsForParcel,
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
-} from '../../service/parcel.service.js'
+} from '../../service/2.0.0/parcel.service.js'
 
 /**
  * Validate SSSI consent required

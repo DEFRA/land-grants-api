@@ -62,7 +62,7 @@ describe('Parcels Controller', () => {
               value: 762.8977
             },
             ratePerUnitGbp: 10.6,
-            ratePerAgreementPerYearGbp: 272
+            ratePerAgreementPerYearGbp: 272,
           },
           {
             code: 'UPL1',
@@ -145,7 +145,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL1',
@@ -165,7 +165,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL2',
@@ -185,7 +185,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL3',
@@ -205,7 +205,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           }
         ]
       }
@@ -282,7 +282,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL1',
@@ -312,7 +312,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL2',
@@ -342,7 +342,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           },
           {
             code: 'UPL3',
@@ -372,7 +372,7 @@ describe('Parcels Controller', () => {
                 }
               ],
               explanations: expect.any(Array)
-            }
+            },
           }
         ]
       }
