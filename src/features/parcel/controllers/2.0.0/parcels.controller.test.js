@@ -4,13 +4,13 @@ import {
   getActionsForParcel,
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
-} from '~/src/features/parcel/service/parcel.service.js'
+} from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
-vi.mock('~/src/features/parcel/service/parcel.service.js')
+vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
