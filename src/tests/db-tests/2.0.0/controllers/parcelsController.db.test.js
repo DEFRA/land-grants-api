@@ -53,7 +53,8 @@ describe('Parcels Controller 2.0.0', () => {
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
-            sssiConsentRequired: false
+            sssiConsentRequired: false,
+            version: '2.0.0'
           },
           {
             code: 'UPL1',
@@ -63,7 +64,8 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.8977
             },
             ratePerUnitGbp: 35,
-            sssiConsentRequired: true
+            sssiConsentRequired: true,
+            version: '3.1.0'
           },
           {
             code: 'UPL2',
@@ -73,7 +75,8 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.8977
             },
             ratePerUnitGbp: 89,
-            sssiConsentRequired: true
+            sssiConsentRequired: true,
+            version: '3.1.0'
           },
           {
             code: 'UPL3',
@@ -83,7 +86,8 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.8977
             },
             ratePerUnitGbp: 111,
-            sssiConsentRequired: true
+            sssiConsentRequired: true,
+            version: '3.1.0'
           }
         ]
       }

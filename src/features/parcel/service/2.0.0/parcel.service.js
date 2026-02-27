@@ -3,13 +3,24 @@ import {
   getAvailableAreaForAction
 } from '~/src/features/available-area/availableArea.js'
 import {
-  actionTransformer,
+  heferRequiredActionTransformer,
   plannedActionsTransformer,
-  sizeTransformer
+  sizeTransformer,
+  sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryLargest
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
+import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
+import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
+import { splitParcelId } from '../parcel.service.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -18,31 +29,6 @@ import { mergeAgreementsTransformer } from '~/src/features/agreements/transforme
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
-
-/**
- * Split id into sheet id and parcel id
- * @param {string} id - 6-character long alpha-numeric string - 4-character long numeric string
- * @returns {object} The sheet id and parcel id
- */
-export function splitParcelId(id, logger) {
-  try {
-    const parts = id?.split('-')
-    const sheetId = parts?.[0] || null
-    const parcelId = parts?.[1] || null
-
-    if (!sheetId || !parcelId) {
-      throw new Error(`Unable to split parcel id ${id}`)
-    }
-
-    return {
-      sheetId,
-      parcelId
-    }
-  } catch (error) {
-    logger.error(`Unable to split parcel id ${id}`, error)
-    throw error
-  }
-}
 
 /**
  * Get parcel actions with available area
@@ -146,4 +132,85 @@ export async function getActionsForParcel(
     parcelResponse.actions = sortedParcelActions
   }
   return parcelResponse
+}
+
+export async function getActionsForParcelWithSSSIConsentRequired(
+  parcelIds,
+  responseParcels,
+  enabledActions,
+  logger,
+  postgresDb
+) {
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+
+  const { intersectingAreaPercentage } = await getDataLayerQueryAccumulated(
+    sheetId,
+    parcelId,
+    DATA_LAYER_TYPES.sssi,
+    postgresDb,
+    logger
+  )
+
+  const application = {
+    areaAppliedFor: 0,
+    actionCodeAppliedFor: '',
+    landParcel: {
+      area: 0,
+      existingAgreements: [],
+      intersections: {
+        sssi: { intersectingAreaPercentage }
+      }
+    }
+  }
+
+  const sssiConsentRequiredAction = executeSingleRuleForEnabledActions(
+    enabledActions,
+    application,
+    'sssi-consent-required',
+    sssiConsentRequired
+  )
+
+  return sssiConsentRequiredActionTransformer(
+    responseParcels,
+    sssiConsentRequiredAction
+  )
+}
+
+export async function getActionsForParcelWithHEFERConsentRequired(
+  parcelIds,
+  responseParcels,
+  enabledActions,
+  logger,
+  postgresDb
+) {
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+
+  const { intersectingAreaPercentage } = await getDataLayerQueryLargest(
+    sheetId,
+    parcelId,
+    DATA_LAYER_TYPES.historic_features,
+    postgresDb,
+    logger
+  )
+
+  const application = {
+    areaAppliedFor: 0,
+    actionCodeAppliedFor: '',
+    landParcel: {
+      area: 0,
+      existingAgreements: [],
+      intersections: {
+        historic_features: { intersectingAreaPercentage }
+      }
+    }
+  }
+
+  const heferRequiredAction = executeSingleRuleForEnabledActions(
+    enabledActions,
+    application,
+    'hefer-consent-required',
+    heferConsentRequired
+  )
+
+  return heferRequiredActionTransformer(responseParcels, heferRequiredAction)
 }
