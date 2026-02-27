@@ -65,7 +65,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             ratePerUnitGbp: 35,
             sssiConsentRequired: true,
-            version: '3.0.0'
+            version: '3.1.0'
           },
           {
             code: 'UPL2',
@@ -76,7 +76,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             ratePerUnitGbp: 89,
             sssiConsentRequired: true,
-            version: '3.0.0'
+            version: '3.1.0'
           },
           {
             code: 'UPL3',
@@ -87,7 +87,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             ratePerUnitGbp: 111,
             sssiConsentRequired: true,
-            version: '3.0.0'
+            version: '3.1.0'
           }
         ]
       }
