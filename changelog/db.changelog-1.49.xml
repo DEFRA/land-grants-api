@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="update-actions-payment-rates" author="system">
+    <sql>UPDATE actions_config SET is_active = false WHERE (code = 'UPL1' OR code = 'UPL2' OR code = 'UPL3') AND version = '3';</sql>
+   </changeSet>
+
+   <changeSet id="remove-unique-constraint-action-config-version" author="system">
+    <dropUniqueConstraint tableName="actions_config" constraintName="unique_code_version"/>
+   </changeSet>
+
+   <changeSet id="update-new-upl1-action-payment-rate" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('UPL1', 3, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 35
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 3, 1, 0);</sql>
+   </changeSet>
+
+   <changeSet id="update-new-upl2-action-payment-rate" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('UPL2', 3, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 89
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 3, 1, 0);</sql>
+   </changeSet>
+
+   <changeSet id="update-new-upl3-action-payment-rate" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('UPL3', 3, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 111
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [
+        "130",
+        "240",
+        "250",
+        "270",
+        "280",
+        "300",
+        "330",
+        "580",
+        "590",
+        "620",
+        "640",
+        "650"
+      ],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 3, 1, 0);</sql>
+   </changeSet>
+</databaseChangeLog>
