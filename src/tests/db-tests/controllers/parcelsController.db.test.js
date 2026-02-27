@@ -71,7 +71,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 20
+            ratePerUnitGbp: 35
           },
           {
             code: 'UPL2',
@@ -80,7 +80,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 53
+            ratePerUnitGbp: 89
           },
           {
             code: 'UPL3',
@@ -89,7 +89,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 66
+            ratePerUnitGbp: 111
           }
         ]
       }
@@ -154,7 +154,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 20,
+            ratePerUnitGbp: 35,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -174,7 +174,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 53,
+            ratePerUnitGbp: 89,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -194,7 +194,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 66,
+            ratePerUnitGbp: 111,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -291,7 +291,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 20,
+            ratePerUnitGbp: 35,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -321,7 +321,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 53,
+            ratePerUnitGbp: 89,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -351,7 +351,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 66,
+            ratePerUnitGbp: 111,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [

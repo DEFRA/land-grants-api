@@ -2,7 +2,6 @@ import { vi } from 'vitest'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
 
 describe('Payment Calculation Service', () => {
   let logger, connection
@@ -28,7 +27,7 @@ describe('Payment Calculation Service', () => {
 
   test.each(fixtures)(
     `%p`,
-    async (
+    (
       name,
       {
         parcels: parcelsStr,
@@ -53,18 +52,72 @@ describe('Payment Calculation Service', () => {
         logger.error(`Error parsing parcels in CSV file`)
       }
 
-      const durationYears = 3
-      const enabledActions = await getEnabledActions(logger, connection)
-      enabledActions.forEach((action) => {
-        action.version = 1
-        action.durationYears = 3
-      })
+      const landCoverClassCodes = [
+        '110',
+        '111',
+        '112',
+        '117',
+        '118',
+        '121',
+        '130',
+        '131',
+        '140',
+        '141',
+        '142',
+        '143'
+      ]
 
-      const result = getPaymentCalculationForParcels(
-        parcels,
-        enabledActions,
-        durationYears
-      )
+      const enabledActions = [
+        {
+          code: 'CMOR1',
+          payment: {
+            ratePerUnitGbp: 10.6,
+            ratePerAgreementPerYearGbp: 272
+          },
+          durationYears: 3,
+          landCoverClassCodes,
+          startDate: '2025-01-01'
+        },
+        {
+          code: 'UPL1',
+          payment: {
+            ratePerUnitGbp: 20
+          },
+          durationYears: 3,
+          landCoverClassCodes,
+          startDate: '2025-01-01'
+        },
+        {
+          code: 'UPL2',
+          payment: {
+            ratePerUnitGbp: 53
+          },
+          durationYears: 3,
+          landCoverClassCodes,
+          startDate: '2025-01-01'
+        },
+        {
+          code: 'UPL3',
+          payment: {
+            ratePerUnitGbp: 66
+          },
+          durationYears: 3,
+          landCoverClassCodes,
+          startDate: '2025-01-01'
+        },
+        {
+          code: 'CSAM1',
+          payment: {
+            ratePerUnitGbp: 6,
+            ratePerAgreementPerYearGbp: 97
+          },
+          landCoverClassCodes,
+          durationYears: 3,
+          startDate: '2025-01-01'
+        }
+      ]
+
+      const result = getPaymentCalculationForParcels(parcels, enabledActions, 3)
 
       const firstPayment = result.payments[0]
       const secondPayment = result.payments[1]
