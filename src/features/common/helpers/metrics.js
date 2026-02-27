@@ -3,8 +3,8 @@ import {
   Unit,
   StorageResolution
 } from 'aws-embedded-metrics'
-import { config } from '~/src/config/index.js'
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
+import { config } from '../../../config/index.js'
+import { createLogger } from '../../../features/common/helpers/logging/logger.js'
 
 /**
  * @param {string} metricName
