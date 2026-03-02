@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="delete-upl8-action-config" author="system">
+    <sql>DELETE FROM actions_config WHERE code = 'UPL8' AND version = '1';</sql>
+   </changeSet>
+
+   <changeSet id="update-upl-8-action" author="system">
+    <sql>UPDATE actions set enabled = true WHERE code = 'UPL8';</sql>
+   </changeSet>
+
+   <changeSet id="add-upl-10-action" author="system">
+    <sql>INSERT INTO actions (code, description, enabled, display) VALUES ('UPL10', 'Shepherding livestock on moorland (remove stock for at least 8 months)', TRUE, FALSE);</sql>
+   </changeSet>
+
+   <changeSet id="add-new-upl-8-action-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('UPL8', 1, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 74
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 1, 0, 0);</sql>
+   </changeSet>
+
+   <changeSet id="add-new-upl-10-action-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('UPL10', 1, '{
+      "rules": [
+        {
+          "name": "parcel-has-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland",
+            "tolerancePercent": 1,
+            "minimumIntersectionPercent": 50
+          },
+          "description": "Is this parcel on the moorland?"
+        },
+        {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 102
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 1, 0, 0);</sql>
+   </changeSet>
+</databaseChangeLog>
