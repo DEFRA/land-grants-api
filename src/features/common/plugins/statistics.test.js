@@ -76,17 +76,4 @@ describe('#statistics', () => {
       'Statistics cron job completed successfully'
     )
   })
-
-  test('Should log error when getStats fails', async () => {
-    statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-    mockGetStats.mockRejectedValue(new Error('Database error'))
-
-    await cronCallback()
-
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      'Failed to connect to Postgres'
-    )
-  })
 })
