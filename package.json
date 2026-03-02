@@ -79,6 +79,7 @@
     "https-proxy-agent": "^7.0.5",
     "joi": "^17.13.3",
     "lodash": "^4.17.21",
+    "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "pg": "^8.16.3",
     "pg-copy-streams": "^7.0.0",

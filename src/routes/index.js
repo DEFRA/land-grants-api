@@ -12,7 +12,7 @@ import { config } from '~/src/config/index.js'
 import { postgresDb } from '~/src/features/common/helpers/postgres.js'
 import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
-import { cron } from '~/src/features/common/plugins/cron.js'
+import { statistics } from '~/src/features/common/plugins/statistics.js'
 
 async function createServer() {
   const server = hapi.server({
@@ -50,6 +50,8 @@ async function createServer() {
   // pulse          - provides shutdown handlers
   // auth           - provides service-to-service authentication
   // router         - routes used in the app
+  // s3Client       - S3 client
+  // statistics     - statistics cron job
   // swagger        - swagger documentation
   await server.register([
     requestLogger,
@@ -60,7 +62,7 @@ async function createServer() {
     auth,
     router,
     s3Client,
-    cron
+    statistics
   ])
 
   // Register swagger separately as it needs Inert and Vision plugins
