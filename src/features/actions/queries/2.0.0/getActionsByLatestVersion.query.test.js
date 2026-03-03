@@ -26,7 +26,8 @@ describe('getActionsByLatestVersion', () => {
           version: 2,
           major_version: 2,
           minor_version: 0,
-          patch_version: 0
+          patch_version: 0,
+          semantic_version: '2.0.0'
         },
         {
           code: 'CMOR1',
@@ -43,7 +44,8 @@ describe('getActionsByLatestVersion', () => {
           version: 3,
           major_version: 3,
           minor_version: 0,
-          patch_version: 0
+          patch_version: 0,
+          semantic_version: '3.0.0'
         }
       ]
     }
@@ -125,7 +127,8 @@ describe('getActionsByLatestVersion', () => {
         ac.config->'payment' as payment,
         ac.config->'land_cover_class_codes' as land_cover_class_codes,
         ac.config->'rules' as rules,
-        ac.last_updated_at as last_updated
+        ac.last_updated_at as last_updated,
+        ac.semantic_version as semantic_version
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE
@@ -287,33 +290,5 @@ describe('getActionsByLatestVersion', () => {
     expect(result[0].payment).toBeNull()
     expect(result[0].landCoverClassCodes).toBeNull()
     expect(result[0].rules).toBeNull()
-  })
-
-  test('should return latest version when multiple versions exist for same action code', async () => {
-    // Simulate database returning latest version due to DISTINCT ON and ORDER BY
-    mockResult.rows = [
-      {
-        code: 'MULTI1',
-        name: 'Multi Version Action',
-        description: 'Action with multiple versions',
-        enabled: true,
-        start_date: '2024-03-01',
-        application_unit_of_measurement: 'ha',
-        duration_years: 7,
-        payment: { amount: 300 },
-        land_cover_class_codes: ['GRASS'],
-        rules: { minArea: 2.0 },
-        last_updated: '2024-03-15T10:00:00Z',
-        version: 5,
-        major_version: 5,
-        minor_version: 0,
-        patch_version: 0
-      }
-    ]
-
-    const result = await getActionsByLatestVersion(mockLogger, mockDb)
-
-    expect(result[0].version).toBe(5)
-    expect(result[0].semanticVersion).toBe('5.0.0')
   })
 })

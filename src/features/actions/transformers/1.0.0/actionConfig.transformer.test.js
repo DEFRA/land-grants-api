@@ -13,7 +13,8 @@ describe('actionConfigTransformer', () => {
       start_date: '2024-01-01',
       last_updated: new Date('2024-01-01T00:00:00Z'),
       payment: { rate: 100 },
-      rules: { minArea: 5 }
+      rules: { minArea: 5 },
+      semantic_version: '2.0.0'
     }
 
     const result = actionConfigTransformer(action)
@@ -78,21 +79,6 @@ describe('actionConfigTransformer', () => {
     const result = actionConfigTransformer(action)
 
     expect(result.landCoverClassCodes).toBeNull()
-  })
-
-  test('should default semanticVersion to 1.0.0', () => {
-    const action = {
-      code: 'UPL1',
-      duration_years: 5,
-      application_unit_of_measurement: 'hectares',
-      land_cover_class_codes: ['LC001'],
-      start_date: '2024-01-01',
-      last_updated: new Date('2024-01-01T00:00:00Z')
-    }
-
-    const result = actionConfigTransformer(action)
-
-    expect(result.semanticVersion).toBe('2.0.0')
   })
 
   test('should not include original snake_case fields in result', () => {

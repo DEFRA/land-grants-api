@@ -22,7 +22,8 @@ describe('getEnabledActions', () => {
           payment: { amount: 100, unit: 'ha' },
           land_cover_class_codes: ['GRASS', 'ARABLE'],
           rules: { minArea: 0.5 },
-          last_updated: '2024-01-15T10:00:00Z'
+          last_updated: '2024-01-15T10:00:00Z',
+          semantic_version: '2.0.0'
         },
         {
           code: 'CMOR1',
@@ -36,7 +37,8 @@ describe('getEnabledActions', () => {
           payment: { amount: 150, unit: 'ha' },
           land_cover_class_codes: ['MOORLAND'],
           rules: { minArea: 1.0 },
-          last_updated: '2024-02-10T12:00:00Z'
+          last_updated: '2024-02-10T12:00:00Z',
+          semantic_version: '2.0.0'
         }
       ]
     }
@@ -109,7 +111,8 @@ describe('getEnabledActions', () => {
         ac.config->'payment' as payment,
         ac.config->'land_cover_class_codes' as land_cover_class_codes,
         ac.config->'rules' as rules,
-        ac.last_updated_at as last_updated
+        ac.last_updated_at as last_updated,
+        ac.semantic_version as semantic_version
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE AND ac.is_active = TRUE

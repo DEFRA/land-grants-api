@@ -10,6 +10,7 @@ const applicationValidationResponseSchemaV2 = Joi.object({
       sheetId: Joi.string().required(),
       parcelId: Joi.string().required(),
       hasPassed: Joi.boolean().required(),
+      version: Joi.string().required(),
       rules: Joi.array().items(
         Joi.object({
           name: Joi.string().required(),
