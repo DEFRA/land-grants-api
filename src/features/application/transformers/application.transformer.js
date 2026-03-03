@@ -26,7 +26,7 @@ export const actionResultTransformer = (
   return {
     hasPassed: ruleResult.passed,
     code: action.code,
-    actionConfigVersion: actionConfig?.actionConfigVersion ?? '',
+    actionConfigVersion: actionConfig?.semanticVersion,
     availableArea: {
       explanations: availableArea.explanations,
       areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
@@ -90,7 +90,8 @@ export const actionValidationResultsTransformer = (parcelResults) => {
         sheetId: parcel.sheetId,
         parcelId: parcel.parcelId,
         hasPassed: action.rules.every((rule) => rule.passed),
-        rules: action.rules?.map(mapRules) ?? []
+        rules: action.rules?.map(mapRules) ?? [],
+        version: action.actionConfigVersion
       }
     })
   )

@@ -13,6 +13,7 @@ export function actionConfigTransformer(action) {
     last_updated,
     duration_years,
     version,
+    semantic_version,
     ...actionObj
   } = action
   return {
@@ -23,6 +24,6 @@ export function actionConfigTransformer(action) {
     startDate: start_date,
     lastUpdated: last_updated,
     version: Number(version),
-    semanticVersion: '2.0.0'
+    semanticVersion: semantic_version
   }
 }

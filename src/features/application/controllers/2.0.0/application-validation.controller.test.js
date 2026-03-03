@@ -1,16 +1,19 @@
 import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { ApplicationValidationController } from './application-validation.controller.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { validateRequest } from '../../validation/application.validation.js'
 import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 
 // Mock all dependencies
-vi.mock('~/src/features/actions/queries/getActions.query.js', () => ({
-  getEnabledActions: vi.fn()
-}))
+vi.mock(
+  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js',
+  () => ({
+    getActionsByLatestVersion: vi.fn()
+  })
+)
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
@@ -24,7 +27,7 @@ vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
 }))
 
-const mockGetEnabledActions = vi.mocked(getEnabledActions)
+const mockGetEnabledActions = vi.mocked(getActionsByLatestVersion)
 const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
 const mockValidateRequest = vi.mocked(validateRequest)
 const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
@@ -48,7 +51,7 @@ describe('ApplicationValidationController', () => {
   const mockActions = [
     {
       code: 'BND1',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management',
@@ -62,7 +65,7 @@ describe('ApplicationValidationController', () => {
     },
     {
       code: 'BND2',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management 2',
@@ -101,7 +104,7 @@ describe('ApplicationValidationController', () => {
         {
           hasPassed: true,
           code: 'BND1',
-          actionConfigVersion: '1',
+          actionConfigVersion: '1.0.0',
           availableArea: {
             explanations: ['Valid area'],
             areaInHa: 1.5
@@ -202,6 +205,7 @@ describe('ApplicationValidationController', () => {
           actionCode: 'BND1',
           hasPassed: true,
           parcelId: '9238',
+          version: '1.0.0',
           rules: [
             {
               name: 'parcel-has-intersection-with-data-layer',

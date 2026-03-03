@@ -10,8 +10,8 @@ describe('actionResultTransformer', () => {
   test('should transform action result correctly', () => {
     const action = { code: 'UPL1' }
     const actions = [
-      { code: 'UPL1', actionConfigVersion: '1.0' },
-      { code: 'SPM4', actionConfigVersion: '2.0' }
+      { code: 'UPL1', semanticVersion: '1.0.0' },
+      { code: 'SPM4', semanticVersion: '2.0.0' }
     ]
     const availableArea = {
       explanations: ['explanation1', 'explanation2'],
@@ -32,7 +32,7 @@ describe('actionResultTransformer', () => {
     expect(result).toEqual({
       hasPassed: true,
       code: 'UPL1',
-      actionConfigVersion: '1.0',
+      actionConfigVersion: '1.0.0',
       availableArea: {
         explanations: ['explanation1', 'explanation2'],
         areaInHa: 1
@@ -43,7 +43,7 @@ describe('actionResultTransformer', () => {
 
   test('should handle action not found in actions array', () => {
     const action = { code: 'UNKNOWN' }
-    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const actions = [{ code: 'UPL1', semanticVersion: '1.0.0' }]
     const availableArea = {
       explanations: [],
       availableAreaSqm: 5000
@@ -63,7 +63,7 @@ describe('actionResultTransformer', () => {
     expect(result).toEqual({
       hasPassed: false,
       code: 'UNKNOWN',
-      actionConfigVersion: '',
+      actionConfigVersion: undefined,
       availableArea: {
         explanations: [],
         areaInHa: 0.5
