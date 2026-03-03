@@ -1,12 +1,17 @@
 /* eslint-disable no-console */
+import { vi } from 'vitest'
 import { ParcelsController } from '~/src/features/parcel/controllers/1.0.0/parcels.controller.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
-import { vi } from 'vitest'
+import { actions } from '../fixtures/actions.js'
 
 function getSnapshotName(testName, parcel, action) {
   return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
+
+vi.mock('~/src/features/actions/queries/getActions.query.js')
+const mockGetEnabledActions = getEnabledActions
 
 describe('Parcels Controller', () => {
   let logger, connection
@@ -23,6 +28,10 @@ describe('Parcels Controller', () => {
 
   afterAll(async () => {
     await connection.end()
+  })
+
+  beforeEach(() => {
+    mockGetEnabledActions.mockResolvedValue(actions)
   })
 
   test('should return a 200 status code when size and actions are is requested', async () => {
@@ -71,7 +80,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 35
+            ratePerUnitGbp: 20
           },
           {
             code: 'UPL2',
@@ -80,7 +89,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 89
+            ratePerUnitGbp: 53
           },
           {
             code: 'UPL3',
@@ -89,7 +98,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 111
+            ratePerUnitGbp: 66
           }
         ]
       }
@@ -154,7 +163,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 35,
+            ratePerUnitGbp: 20,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -174,7 +183,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 89,
+            ratePerUnitGbp: 53,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -194,7 +203,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 111,
+            ratePerUnitGbp: 66,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -291,7 +300,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 35,
+            ratePerUnitGbp: 20,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -321,7 +330,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 89,
+            ratePerUnitGbp: 53,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [
@@ -351,7 +360,7 @@ describe('Parcels Controller', () => {
               unit: 'ha',
               value: 0
             },
-            ratePerUnitGbp: 111,
+            ratePerUnitGbp: 66,
             results: {
               totalValidLandCoverSqm: 18905,
               stacks: [

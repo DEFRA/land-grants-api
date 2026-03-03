@@ -1,96 +1,18 @@
 /* eslint-disable no-console */
+import { vi } from 'vitest'
 import { PaymentsCalculateControllerV1 as PaymentsCalculateController } from '~/src/features/payment/controllers/1.0.0/payment-calculate.controller.js'
 import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
-import { vi } from 'vitest'
+import { actions } from '../fixtures/actions.js'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/queries/getActions.query.js')
 
 const mockValidateRequest = validateRequest
 const mockGetEnabledActions = getEnabledActions
-const landCoverClassCodes = [
-  '130',
-  '240',
-  '250',
-  '270',
-  '280',
-  '300',
-  '330',
-  '580',
-  '590',
-  '620',
-  '640',
-  '650'
-]
-
-const actions = [
-  {
-    enabled: true,
-    code: 'CMOR1',
-    payment: {
-      ratePerUnitGbp: 10.6,
-      ratePerAgreementPerYearGbp: 272
-    },
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 3,
-    landCoverClassCodes,
-    startDate: '2025-01-01',
-    version: 1
-  },
-  {
-    enabled: true,
-    code: 'UPL1',
-    payment: {
-      ratePerUnitGbp: 20
-    },
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 3,
-    landCoverClassCodes,
-    startDate: '2025-01-01',
-    version: 1
-  },
-  {
-    enabled: true,
-    code: 'UPL2',
-    payment: {
-      ratePerUnitGbp: 53
-    },
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 3,
-    landCoverClassCodes,
-    startDate: '2025-01-01',
-    version: 1
-  },
-  {
-    enabled: true,
-    code: 'UPL3',
-    payment: {
-      ratePerUnitGbp: 66
-    },
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 3,
-    landCoverClassCodes,
-    startDate: '2025-01-01',
-    version: 1
-  },
-  {
-    enabled: true,
-    code: 'CSAM1',
-    payment: {
-      ratePerUnitGbp: 6,
-      ratePerAgreementPerYearGbp: 97
-    },
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 3,
-    landCoverClassCodes,
-    startDate: '2025-01-01',
-    version: 1
-  }
-]
 
 describe('Payment Controller', () => {
   let logger, connection
