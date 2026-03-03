@@ -48,7 +48,7 @@ describe('ApplicationValidationController', () => {
   const mockActions = [
     {
       code: 'BND1',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management',
@@ -62,7 +62,7 @@ describe('ApplicationValidationController', () => {
     },
     {
       code: 'BND2',
-      version: 1,
+      version: '1.0.0',
       startDate: '2025-01-01',
       durationYears: 3,
       description: 'Boundary management 2',
@@ -101,7 +101,7 @@ describe('ApplicationValidationController', () => {
         {
           hasPassed: true,
           code: 'BND1',
-          actionConfigVersion: '1',
+          actionConfigVersion: '1.0.0',
           availableArea: {
             explanations: ['Valid area'],
             areaInHa: 1.5
@@ -202,6 +202,7 @@ describe('ApplicationValidationController', () => {
           actionCode: 'BND1',
           hasPassed: true,
           parcelId: '9238',
+          version: '1.0.0',
           rules: [
             {
               name: 'parcel-has-intersection-with-data-layer',
