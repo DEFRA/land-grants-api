@@ -21,6 +21,7 @@ import {
   validateRequestData,
   validateAllLandParcels
 } from '~/src/features/application/service/validation.service.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 
 /**
  * Save application validation results
@@ -140,7 +141,7 @@ const ApplicationValidationController = {
       })
 
       // Get enabled actions
-      const actions = await getEnabledActions(request.logger, postgresDb)
+      const actions = await getActionsByLatestVersion(request.logger, postgresDb)
 
       // Validate request data
       const validationError = await validateRequestData(request, {
