@@ -8,9 +8,12 @@ import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 
 // Mock all dependencies
-vi.mock('~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js', () => ({
-  getActionsByLatestVersion: vi.fn()
-}))
+vi.mock(
+  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js',
+  () => ({
+    getActionsByLatestVersion: vi.fn()
+  })
+)
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
