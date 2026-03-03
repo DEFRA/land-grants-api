@@ -2,6 +2,13 @@ import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/par
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
+import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+
+vi.mock(
+  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+)
+const mockGetEnabledActions = getActionsByLatestVersion
 
 describe('Parcels Controller 2.0.0', () => {
   let connection
@@ -14,6 +21,10 @@ describe('Parcels Controller 2.0.0', () => {
     await connection.end()
   })
 
+  beforeEach(() => {
+    mockGetEnabledActions.mockResolvedValue(actions)
+  })
+
   test('should return a 200 status code and valid parcel when sssiConsentRequired is requested', async () => {
     const { h, getResponse } = createResponseCapture()
 
@@ -21,7 +32,12 @@ describe('Parcels Controller 2.0.0', () => {
       {
         payload: {
           parcelIds: ['SD5649-9215'],
-          fields: ['size', 'actions', 'actions.sssiConsentRequired'],
+          fields: [
+            'size',
+            'actions',
+            'actions.sssiConsentRequired',
+            'actions.heferRequired'
+          ],
           plannedActions: []
         },
         logger,
@@ -54,6 +70,7 @@ describe('Parcels Controller 2.0.0', () => {
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             sssiConsentRequired: false,
+            heferRequired: false,
             version: '2.0.0'
           },
           {
@@ -63,9 +80,10 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 35,
+            ratePerUnitGbp: 20,
             sssiConsentRequired: true,
-            version: '3.1.0'
+            heferRequired: false,
+            version: '2.0.0'
           },
           {
             code: 'UPL2',
@@ -74,9 +92,10 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 89,
+            ratePerUnitGbp: 53,
             sssiConsentRequired: true,
-            version: '3.1.0'
+            heferRequired: false,
+            version: '2.0.0'
           },
           {
             code: 'UPL3',
@@ -85,9 +104,10 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.8977
             },
-            ratePerUnitGbp: 111,
+            ratePerUnitGbp: 66,
             sssiConsentRequired: true,
-            version: '3.1.0'
+            heferRequired: false,
+            version: '2.0.0'
           }
         ]
       }
