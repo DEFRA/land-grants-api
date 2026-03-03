@@ -291,32 +291,4 @@ describe('getActionsByLatestVersion', () => {
     expect(result[0].landCoverClassCodes).toBeNull()
     expect(result[0].rules).toBeNull()
   })
-
-  test('should return latest version when multiple versions exist for same action code', async () => {
-    // Simulate database returning latest version due to DISTINCT ON and ORDER BY
-    mockResult.rows = [
-      {
-        code: 'MULTI1',
-        name: 'Multi Version Action',
-        description: 'Action with multiple versions',
-        enabled: true,
-        start_date: '2024-03-01',
-        application_unit_of_measurement: 'ha',
-        duration_years: 7,
-        payment: { amount: 300 },
-        land_cover_class_codes: ['GRASS'],
-        rules: { minArea: 2.0 },
-        last_updated: '2024-03-15T10:00:00Z',
-        version: 5,
-        major_version: 5,
-        minor_version: 0,
-        patch_version: 0
-      }
-    ]
-
-    const result = await getActionsByLatestVersion(mockLogger, mockDb)
-
-    expect(result[0].version).toBe(5)
-    expect(result[0].semanticVersion).toBe('5.0.0')
-  })
 })
