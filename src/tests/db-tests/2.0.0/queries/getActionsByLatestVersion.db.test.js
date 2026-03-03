@@ -33,7 +33,7 @@ describe('Get Actions By Latest Version Query', () => {
 
     expect(cmor1).toEqual({
       version: 2,
-      semantic_version: "2.0.0",
+      semantic_version: '2.0.0',
       majorVersion: 2,
       minorVersion: 0,
       patchVersion: 0,
