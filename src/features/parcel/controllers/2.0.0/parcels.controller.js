@@ -20,7 +20,7 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from '../../service/2.0.0/parcel.service.js'
-import { createGroupTransformer } from '../../transformers/2.0.0/group.transformer.js'
+import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
 
 /**
  * Validate SSSI consent required
@@ -176,8 +176,8 @@ const ParcelsControllerV2 = {
       let transformedGroups
 
       if (fields.includes('groups')) {
-        // TODO: Move groups to a database table or config file actionGroups
-        const groups = [
+        // TODO: Move actionGroups to a database table or config file
+        const actionGroups = [
           { id: 1, name: 'Assess moorland' },
           { id: 2, name: 'Livestock grazing on moorland' }
         ]
@@ -190,7 +190,7 @@ const ParcelsControllerV2 = {
           { groupId: 2, code: 'UPL3' }
         ]
 
-        transformedGroups = createGroupTransformer(groups, actions)
+        transformedGroups = actionGroupsTransformer(actionGroups, actions)
       }
 
       return h

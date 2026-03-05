@@ -7,7 +7,7 @@ import {
 } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
-import { createGroupTransformer } from '~/src/features/parcel/transformers/2.0.0/group.transformer.js'
+import { actionGroupsTransformer } from '~/src/features/parcel/transformers/2.0.0/group.transformer.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
@@ -22,7 +22,7 @@ const mockGetActionsForParcelWithSSSIConsentRequired =
 const mockGetActionsForParcelWithHEFERConsentRequired =
   getActionsForParcelWithHEFERConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockCreateGroupTransformer = createGroupTransformer
+const mockActionGroupsTransformer = actionGroupsTransformer
 
 const mockParcelData = {
   sheet_id: 'SX0679',
@@ -126,7 +126,7 @@ describe('Parcels Controller 2.0.0', () => {
       return Promise.resolve(result)
     })
     mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
-    mockCreateGroupTransformer.mockReturnValue([
+    mockActionGroupsTransformer.mockReturnValue([
       { name: 'Assess moorland', actions: ['CMOR1'] },
       {
         name: 'Livestock grazing on moorland',
@@ -681,7 +681,7 @@ describe('Parcels Controller 2.0.0', () => {
           actions: ['UPL1', 'UPL2', 'UPL3']
         }
       ])
-      expect(mockCreateGroupTransformer).toHaveBeenCalled()
+      expect(mockActionGroupsTransformer).toHaveBeenCalled()
     })
 
     test('should not return groups when groups field not requested', async () => {
@@ -699,7 +699,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(200)
       expect(result.groups).toBeUndefined()
-      expect(mockCreateGroupTransformer).not.toHaveBeenCalled()
+      expect(mockActionGroupsTransformer).not.toHaveBeenCalled()
     })
 
     test('should return 404 when parcel is not found', async () => {
