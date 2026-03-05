@@ -3,20 +3,20 @@ import path from 'path'
 import { config } from './config.js'
 
 // Important: configure these values for the ingestion
-const environments = ['test'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
+const environments = ['prod'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
-  'agreements',
-  'compatibility_matrix',
-  'moorland_designations',
-  'land_parcels',
-  'land_covers',
+  // 'agreements',
+  // 'compatibility_matrix',
+  // 'moorland_designations',
+  // 'land_parcels',
+  // 'land_covers',
   'sssi',
-  'registered_battlefields',
-  'shine',
-  'scheduled_monuments',
-  'registered_parks_gardens'
+  // 'registered_battlefields',
+  // 'shine',
+  // 'scheduled_monuments',
+  // 'registered_parks_gardens'
 ]
 
 transferAllResources()
