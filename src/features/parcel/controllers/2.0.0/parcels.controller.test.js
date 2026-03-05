@@ -7,11 +7,13 @@ import {
 } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
+import { createGroupTransformer } from '~/src/features/parcel/transformers/2.0.0/group.transformer.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
+vi.mock('~/src/features/parcel/transformers/2.0.0/group.transformer.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
@@ -20,6 +22,7 @@ const mockGetActionsForParcelWithSSSIConsentRequired =
 const mockGetActionsForParcelWithHEFERConsentRequired =
   getActionsForParcelWithHEFERConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+const mockCreateGroupTransformer = createGroupTransformer
 
 const mockParcelData = {
   sheet_id: 'SX0679',
@@ -123,6 +126,13 @@ describe('Parcels Controller 2.0.0', () => {
       return Promise.resolve(result)
     })
     mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
+    mockCreateGroupTransformer.mockReturnValue([
+      { name: 'Assess moorland', actions: ['CMOR1'] },
+      {
+        name: 'Livestock grazing on moorland',
+        actions: ['UPL1', 'UPL2', 'UPL3']
+      }
+    ])
     mockGetActionsForParcelWithSSSIConsentRequired.mockImplementation(
       (parcelIds, responseParcels) => {
         return Promise.resolve(
@@ -644,6 +654,52 @@ describe('Parcels Controller 2.0.0', () => {
       expect(parcels[0].actions[0].code).toBe('BND1')
       expect(parcels[0].actions[1].code).toBe('CSAM1')
       expect(parcels[0].actions[2].code).toBe('UPL3')
+    })
+
+    test('should return 200 with groups when requesting groups field', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['groups']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, groups }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(groups).toEqual([
+        { name: 'Assess moorland', actions: ['CMOR1'] },
+        {
+          name: 'Livestock grazing on moorland',
+          actions: ['UPL1', 'UPL2', 'UPL3']
+        }
+      ])
+      expect(mockCreateGroupTransformer).toHaveBeenCalled()
+    })
+
+    test('should not return groups when groups field not requested', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(result.groups).toBeUndefined()
+      expect(mockCreateGroupTransformer).not.toHaveBeenCalled()
     })
 
     test('should return 404 when parcel is not found', async () => {

@@ -42,7 +42,8 @@ const parcelsSchema = Joi.object({
         'actions',
         'actions.results',
         'actions.sssiConsentRequired',
-        'actions.heferRequired'
+        'actions.heferRequired',
+        'groups'
       )
     )
     .required(),
@@ -57,9 +58,15 @@ const parcelsSchema = Joi.object({
     .optional()
 })
 
+const groupSchema = Joi.object({
+  name: Joi.string().required(),
+  actions: Joi.array().items(Joi.string()).required()
+})
+
 const parcelsSuccessResponseSchema = Joi.object({
   message: Joi.string().valid('success').required(),
-  parcels: Joi.array().items(parcelSchema).required()
+  parcels: Joi.array().items(parcelSchema).required(),
+  groups: Joi.array().items(groupSchema).optional()
 })
 
 export { parcelsSchema, parcelsSuccessResponseSchema }
