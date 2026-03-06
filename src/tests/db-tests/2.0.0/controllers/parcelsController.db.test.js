@@ -25,6 +25,59 @@ describe('Parcels Controller 2.0.0', () => {
     mockGetEnabledActions.mockResolvedValue(actions)
   })
 
+  test('should return a 200 status code with groups when groups field is requested', async () => {
+    const { h, getResponse } = createResponseCapture()
+
+    await ParcelsControllerV2.handler(
+      {
+        payload: {
+          parcelIds: ['SD5649-9215'],
+          fields: ['groups'],
+          plannedActions: []
+        },
+        logger,
+        server: {
+          postgresDb: connection
+        }
+      },
+      h
+    )
+
+    const { data, statusCode } = getResponse()
+    expect(statusCode).toBe(200)
+    expect(data.message).toBe('success')
+    expect(data.groups).toEqual([
+      { name: 'Assess moorland', actions: ['CMOR1'] },
+      {
+        name: 'Livestock grazing on moorland',
+        actions: ['UPL1', 'UPL2', 'UPL3']
+      }
+    ])
+  })
+
+  test('should not return groups when groups field is not requested', async () => {
+    const { h, getResponse } = createResponseCapture()
+
+    await ParcelsControllerV2.handler(
+      {
+        payload: {
+          parcelIds: ['SD5649-9215'],
+          fields: ['size'],
+          plannedActions: []
+        },
+        logger,
+        server: {
+          postgresDb: connection
+        }
+      },
+      h
+    )
+
+    const { data, statusCode } = getResponse()
+    expect(statusCode).toBe(200)
+    expect(data.groups).toBeUndefined()
+  })
+
   test('should return a 200 status code and valid parcel when sssiConsentRequired is requested', async () => {
     const { h, getResponse } = createResponseCapture()
 

@@ -20,6 +20,7 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from '../../service/2.0.0/parcel.service.js'
+import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
 
 /**
  * Validate SSSI consent required
@@ -172,10 +173,31 @@ const ParcelsControllerV2 = {
           )
       }
 
+      let transformedGroups
+
+      if (fields.includes('groups')) {
+        // TODO: Move actionGroups to a database table or config file
+        const actionGroups = [
+          { id: 1, name: 'Assess moorland' },
+          { id: 2, name: 'Livestock grazing on moorland' }
+        ]
+
+        // TODO: Add groupId to the actions or actions config table
+        const actions = [
+          { groupId: 1, code: 'CMOR1' },
+          { groupId: 2, code: 'UPL1' },
+          { groupId: 2, code: 'UPL2' },
+          { groupId: 2, code: 'UPL3' }
+        ]
+
+        transformedGroups = actionGroupsTransformer(actionGroups, actions)
+      }
+
       return h
         .response({
           message: 'success',
-          parcels: transformedResponseParcels
+          parcels: transformedResponseParcels,
+          groups: transformedGroups
         })
         .code(statusCodes.ok)
     } catch (error) {
