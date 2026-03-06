@@ -7,13 +7,11 @@ import {
 } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
-import { actionGroupsTransformer } from '~/src/features/parcel/transformers/2.0.0/group.transformer.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
-vi.mock('~/src/features/parcel/transformers/2.0.0/group.transformer.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
@@ -22,7 +20,6 @@ const mockGetActionsForParcelWithSSSIConsentRequired =
 const mockGetActionsForParcelWithHEFERConsentRequired =
   getActionsForParcelWithHEFERConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockActionGroupsTransformer = actionGroupsTransformer
 
 const mockParcelData = {
   sheet_id: 'SX0679',
@@ -33,6 +30,8 @@ const mockParcelData = {
 const mockEnabledActions = [
   {
     code: 'BND1',
+    groupId: 1,
+    groupName: 'Hedgerow management',
     description: 'Hedgerow management',
     display: true,
     payment: {
@@ -42,6 +41,8 @@ const mockEnabledActions = [
   },
   {
     code: 'BND2',
+    groupId: 2,
+    groupName: 'Hedge laying',
     description: 'Hedge laying',
     display: true,
     payment: {
@@ -126,13 +127,6 @@ describe('Parcels Controller 2.0.0', () => {
       return Promise.resolve(result)
     })
     mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
-    mockActionGroupsTransformer.mockReturnValue([
-      { name: 'Assess moorland', actions: ['CMOR1'] },
-      {
-        name: 'Livestock grazing on moorland',
-        actions: ['UPL1', 'UPL2', 'UPL3']
-      }
-    ])
     mockGetActionsForParcelWithSSSIConsentRequired.mockImplementation(
       (parcelIds, responseParcels) => {
         return Promise.resolve(
@@ -675,13 +669,9 @@ describe('Parcels Controller 2.0.0', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(groups).toEqual([
-        { name: 'Assess moorland', actions: ['CMOR1'] },
-        {
-          name: 'Livestock grazing on moorland',
-          actions: ['UPL1', 'UPL2', 'UPL3']
-        }
+        { name: 'Hedgerow management', actions: ['BND1'] },
+        { name: 'Hedge laying', actions: ['BND2'] }
       ])
-      expect(mockActionGroupsTransformer).toHaveBeenCalled()
     })
 
     test('should not return groups when groups field not requested', async () => {
@@ -699,7 +689,6 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(200)
       expect(result.groups).toBeUndefined()
-      expect(mockActionGroupsTransformer).not.toHaveBeenCalled()
     })
 
     test('should return 404 when parcel is not found', async () => {

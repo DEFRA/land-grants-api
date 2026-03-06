@@ -56,6 +56,8 @@ export const actions = [
   {
     enabled: true,
     code: 'CMOR1',
+    groupId: 1,
+    groupName: 'Assess moorland',
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -73,6 +75,8 @@ export const actions = [
   {
     enabled: true,
     code: 'UPL1',
+    groupId: 2,
+    groupName: 'Livestock grazing on moorland',
     payment: {
       ratePerUnitGbp: 20
     },
@@ -89,6 +93,8 @@ export const actions = [
   {
     enabled: true,
     code: 'UPL2',
+    groupId: 2,
+    groupName: 'Livestock grazing on moorland',
     payment: {
       ratePerUnitGbp: 53
     },
@@ -105,6 +111,8 @@ export const actions = [
   {
     enabled: true,
     code: 'UPL3',
+    groupId: 2,
+    groupName: 'Livestock grazing on moorland',
     payment: {
       ratePerUnitGbp: 66
     },
@@ -121,6 +129,8 @@ export const actions = [
   {
     enabled: true,
     code: 'CSAM1',
+    groupId: null,
+    groupName: null,
     payment: {
       ratePerUnitGbp: 6,
       ratePerAgreementPerYearGbp: 97
