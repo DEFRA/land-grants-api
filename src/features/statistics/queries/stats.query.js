@@ -24,7 +24,11 @@ async function getStats(logger, db) {
       landCoversResult,
       landParcelsResult,
       sssiResults,
-      moorlandDesignationResult
+      moorlandDesignationResult,
+      registeredParksGardensResult,
+      registeredBattlefieldsResult,
+      scheduledMonumentsResult,
+      shineResult
     ] = await Promise.all([
       client.query(`SELECT COUNT(*) FROM actions`),
       client.query(`SELECT COUNT(*) FROM actions_config`),
@@ -40,6 +44,18 @@ async function getStats(logger, db) {
       ),
       client.query(
         `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2`
+      ),
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`
+      ),
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`
+      ),
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`
+      ),
+      client.query(
+        `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
       )
     ])
 
@@ -54,6 +70,12 @@ async function getStats(logger, db) {
     const landParcelsCount = landParcelsResult.rows[0].count
     const sssiCount = sssiResults.rows[0].count
     const moorlandDesignationsCount = moorlandDesignationResult.rows[0].count
+    const registeredParksGardensCount =
+      registeredParksGardensResult.rows[0].count
+    const registeredBattlefieldsCount =
+      registeredBattlefieldsResult.rows[0].count
+    const scheduledMonumentsCount = scheduledMonumentsResult.rows[0].count
+    const shineCount = shineResult.rows[0].count
 
     logInfo(logger, {
       category: 'database',
@@ -69,7 +91,11 @@ async function getStats(logger, db) {
         landCoversCount,
         landParcelsCount,
         sssiCount,
-        moorlandDesignationsCount
+        moorlandDesignationsCount,
+        registeredParksGardensCount,
+        registeredBattlefieldsCount,
+        scheduledMonumentsCount,
+        shineCount
       }
     })
   } catch (error) {
