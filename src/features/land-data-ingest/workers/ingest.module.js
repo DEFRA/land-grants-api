@@ -56,8 +56,8 @@ const postMessage = (taskId, success, result, error) => {
 
 /**
  *
- * @param {Stream} response
- * @returns Stream
+ * @param {object} response
+ * @returns object
  */
 async function handleZipFile(response) {
   const zip = response.Body.pipe(unzipper.Parse({ forceStream: true }))
