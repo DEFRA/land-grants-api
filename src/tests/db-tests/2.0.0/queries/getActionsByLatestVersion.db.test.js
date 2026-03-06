@@ -27,10 +27,12 @@ describe('Get Actions By Latest Version Query', () => {
     const actions = await getActionsByLatestVersion(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, ...cmor1 } = actions.find(
+    const { lastUpdated, id, groupId, groupName, ...cmor1 } = actions.find(
       (a) => a.code === 'CMOR1'
     )
 
+    expect(groupId).toBe(1)
+    expect(groupName).toBe('Assess moorland')
     expect(cmor1).toEqual({
       version: 2,
       semanticVersion: '2.0.0',

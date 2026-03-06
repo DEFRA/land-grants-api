@@ -26,9 +26,12 @@ async function getActionsByLatestVersion(logger, db) {
         ac.config->'land_cover_class_codes' as land_cover_class_codes,
         ac.config->'rules' as rules,
         ac.last_updated_at as last_updated,
-        ac.semantic_version as semantic_version
+        ac.semantic_version as semantic_version,
+        ac.group_id as group_id,
+        ag.name as group_name
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
+      LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
       WHERE a.enabled = TRUE
       ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
     `

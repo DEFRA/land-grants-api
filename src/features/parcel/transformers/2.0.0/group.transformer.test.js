@@ -1,19 +1,15 @@
 import { actionGroupsTransformer } from './group.transformer.js'
 
 describe('actionGroupsTransformer', () => {
-  test('should transform groups and actions into grouped format', () => {
-    const groups = [
-      { id: 1, name: 'Assess moorland' },
-      { id: 2, name: 'Livestock grazing on moorland' }
-    ]
+  test('should transform actions into grouped format', () => {
     const actions = [
-      { groupId: 1, code: 'CMOR1' },
-      { groupId: 2, code: 'UPL1' },
-      { groupId: 2, code: 'UPL2' },
-      { groupId: 2, code: 'UPL3' }
+      { groupId: 1, groupName: 'Assess moorland', code: 'CMOR1' },
+      { groupId: 2, groupName: 'Livestock grazing on moorland', code: 'UPL1' },
+      { groupId: 2, groupName: 'Livestock grazing on moorland', code: 'UPL2' },
+      { groupId: 2, groupName: 'Livestock grazing on moorland', code: 'UPL3' }
     ]
 
-    const result = actionGroupsTransformer(groups, actions)
+    const result = actionGroupsTransformer(actions)
 
     expect(result).toEqual([
       { name: 'Assess moorland', actions: ['CMOR1'] },
@@ -25,22 +21,22 @@ describe('actionGroupsTransformer', () => {
   })
 
   test('should return single action group', () => {
-    const groups = [{ id: 1, name: 'Assess moorland' }]
-    const actions = [{ groupId: 1, code: 'CMOR1' }]
+    const actions = [
+      { groupId: 1, groupName: 'Assess moorland', code: 'CMOR1' }
+    ]
 
-    const result = actionGroupsTransformer(groups, actions)
+    const result = actionGroupsTransformer(actions)
 
     expect(result).toEqual([{ name: 'Assess moorland', actions: ['CMOR1'] }])
   })
 
   test('should return multi-action group', () => {
-    const groups = [{ id: 1, name: 'Livestock grazing on moorland' }]
     const actions = [
-      { groupId: 1, code: 'UPL1' },
-      { groupId: 1, code: 'UPL2' }
+      { groupId: 1, groupName: 'Livestock grazing on moorland', code: 'UPL1' },
+      { groupId: 1, groupName: 'Livestock grazing on moorland', code: 'UPL2' }
     ]
 
-    const result = actionGroupsTransformer(groups, actions)
+    const result = actionGroupsTransformer(actions)
 
     expect(result).toEqual([
       {
@@ -50,43 +46,26 @@ describe('actionGroupsTransformer', () => {
     ])
   })
 
-  test('should return empty array when groups is null', () => {
-    const result = actionGroupsTransformer(null, [])
-
-    expect(result).toEqual([])
-  })
-
-  test('should return empty array when groups is undefined', () => {
-    const result = actionGroupsTransformer(undefined, [])
-
-    expect(result).toEqual([])
-  })
-
-  test('should return empty array when groups is empty array', () => {
-    const result = actionGroupsTransformer([], [])
-
-    expect(result).toEqual([])
-  })
-
-  test('should return empty array when actions is null or undefined', () => {
-    const groups = [{ id: 1, name: 'Assess moorland' }]
-    expect(actionGroupsTransformer(groups, null)).toEqual([])
-    expect(actionGroupsTransformer(groups, undefined)).toEqual([])
-  })
-
-  test('should preserve group order from groups array', () => {
-    const groups = [
-      { id: 2, name: 'Group B' },
-      { id: 1, name: 'Group A' },
-      { id: 3, name: 'Group C' }
-    ]
+  test('should deduplicate groups derived from repeated groupIds', () => {
     const actions = [
-      { groupId: 1, code: 'A1' },
-      { groupId: 2, code: 'B1' },
-      { groupId: 3, code: 'C1' }
+      { groupId: 1, groupName: 'Group A', code: 'A1' },
+      { groupId: 1, groupName: 'Group A', code: 'A2' },
+      { groupId: 1, groupName: 'Group A', code: 'A3' }
     ]
 
-    const result = actionGroupsTransformer(groups, actions)
+    const result = actionGroupsTransformer(actions)
+
+    expect(result).toEqual([{ name: 'Group A', actions: ['A1', 'A2', 'A3'] }])
+  })
+
+  test('should preserve group order based on first appearance in actions', () => {
+    const actions = [
+      { groupId: 2, groupName: 'Group B', code: 'B1' },
+      { groupId: 1, groupName: 'Group A', code: 'A1' },
+      { groupId: 3, groupName: 'Group C', code: 'C1' }
+    ]
+
+    const result = actionGroupsTransformer(actions)
 
     expect(result).toEqual([
       { name: 'Group B', actions: ['B1'] },
@@ -95,27 +74,26 @@ describe('actionGroupsTransformer', () => {
     ])
   })
 
-  test('should exclude groups with no actions', () => {
-    const groups = [
-      { id: 1, name: 'Group A' },
-      { id: 2, name: 'Group B' }
+  test('should exclude actions without a groupId', () => {
+    const actions = [
+      { groupId: 1, groupName: 'Group A', code: 'A1' },
+      { code: 'ORPHAN' }
     ]
-    const actions = [{ groupId: 1, code: 'A1' }]
 
-    const result = actionGroupsTransformer(groups, actions)
+    const result = actionGroupsTransformer(actions)
 
     expect(result).toEqual([{ name: 'Group A', actions: ['A1'] }])
   })
 
-  test('should skip actions with unknown groupId', () => {
-    const groups = [{ id: 1, name: 'Group A' }]
-    const actions = [
-      { groupId: 1, code: 'A1' },
-      { groupId: 99, code: 'ORPHAN' }
-    ]
+  test('should return empty array when actions is null', () => {
+    expect(actionGroupsTransformer(null)).toEqual([])
+  })
 
-    const result = actionGroupsTransformer(groups, actions)
+  test('should return empty array when actions is undefined', () => {
+    expect(actionGroupsTransformer(undefined)).toEqual([])
+  })
 
-    expect(result).toEqual([{ name: 'Group A', actions: ['A1'] }])
+  test('should return empty array when actions is empty array', () => {
+    expect(actionGroupsTransformer([])).toEqual([])
   })
 })
