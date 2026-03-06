@@ -1,5 +1,6 @@
 import { parentPort } from 'node:worker_threads'
 import { failedBucketPath, getFile } from '../../common/s3/s3.js'
+import unzipper from 'unzipper'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import { importData } from '../service/import-land-data.service.js'
@@ -54,6 +55,23 @@ const postMessage = (taskId, success, result, error) => {
 }
 
 /**
+ *
+ * @param {Stream} response
+ * @returns Stream
+ */
+async function handleZipFile(response) {
+  const zip = response.Body.pipe(unzipper.Parse({ forceStream: true }))
+  for await (const entry of zip) {
+    if (entry.path.endsWith('.csv')) {
+      return entry
+    } else {
+      entry.autodrain()
+    }
+  }
+  throw new Error('No CSV found in the ZIP')
+}
+
+/**
  * Import land data from S3 bucket
  * @param {string} file - The file to import
  * @returns {Promise<string>} The string representation of the file
@@ -85,14 +103,24 @@ export async function importLandData(file) {
   try {
     const response = await getFile(s3Client, bucket, s3Path)
 
-    if (response.ContentType !== 'text/csv') {
+    if (
+      response.ContentType !== 'text/csv' &&
+      response.ContentType !== 'application/zip'
+    ) {
       throw new Error(`Invalid content type: ${response.ContentType}`)
     }
 
-    const bodyContents = await response.Body.transformToWebStream()
     const resource = getResourceByType(resourceType)
+
+    let stream
+    if (response.ContentType === 'application/zip') {
+      stream = await handleZipFile(response)
+    } else {
+      stream = await response.Body.transformToWebStream()
+    }
+
     await importData(
-      bodyContents,
+      stream,
       resource.name,
       ingestId,
       logger,

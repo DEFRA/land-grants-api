@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getResourceByType, resources } from './ingest.module.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
+vi.mock('unzipper', () => ({
+  default: {
+    Parse: vi.fn(() => [])
+  }
+}))
+
 vi.mock('../../common/s3/s3.js', () => ({
   getFile: vi.fn(),
   failedBucketPath: vi.fn((path) => `failed/${path}`)
@@ -72,6 +78,8 @@ describe('Ingest Module', () => {
     let importData
     let logBusinessError
 
+    let unzipper
+
     beforeEach(async () => {
       vi.clearAllMocks()
 
@@ -83,6 +91,7 @@ describe('Ingest Module', () => {
       const logHelpersModule = await import(
         '../../common/helpers/logging/log-helpers.js'
       )
+      unzipper = (await import('unzipper')).default
 
       importLandData = module.importLandData
       getFile = s3Module.getFile
@@ -117,6 +126,69 @@ describe('Ingest Module', () => {
         expect.any(Object),
         false
       )
+    })
+
+    it('should successfully import land data with ZIP file containing CSV', async () => {
+      const mockZipStream = {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        [Symbol.asyncIterator]: async function* () {
+          yield { path: 'ignore.txt', autodrain: vi.fn() }
+          yield { path: 'data.csv' }
+        }
+      }
+
+      unzipper.Parse.mockReturnValue(mockZipStream)
+
+      const mockResponse = {
+        ContentType: 'application/zip',
+        ContentLength: 4096,
+        Body: {
+          pipe: vi.fn().mockReturnValue(mockZipStream)
+        }
+      }
+
+      getFile.mockResolvedValue(mockResponse)
+      importData.mockResolvedValue(undefined)
+
+      const result = await importLandData('land_parcels/123/test.zip')
+
+      expect(result).toBe('Land data imported successfully')
+      expect(unzipper.Parse).toHaveBeenCalledWith({ forceStream: true })
+      expect(importData).toHaveBeenCalledWith(
+        { path: 'data.csv' },
+        'land_parcels',
+        '123',
+        expect.any(Object),
+        false
+      )
+    })
+
+    it('should throw error if no CSV is found in the ZIP archive', async () => {
+      const mockZipStream = {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        [Symbol.asyncIterator]: async function* () {
+          yield { path: 'ignore.txt', autodrain: vi.fn() }
+        }
+      }
+
+      unzipper.Parse.mockReturnValue(mockZipStream)
+
+      const mockResponse = {
+        ContentType: 'application/zip',
+        ContentLength: 4096,
+        Body: {
+          pipe: vi.fn().mockReturnValue(mockZipStream)
+        }
+      }
+
+      getFile.mockResolvedValue(mockResponse)
+
+      await expect(importLandData('land_parcels/123/test.zip')).rejects.toThrow(
+        'No CSV found in the ZIP'
+      )
+
+      expect(importData).not.toHaveBeenCalled()
+      expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
     })
 
     it('should throw error for invalid content type', async () => {
