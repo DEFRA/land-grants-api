@@ -22,6 +22,7 @@
  * @property {string} semanticVersion
  * @property {number} groupId
  * @property {string} groupName
+ * @property {number} displayOrder
  */
 
 /**
