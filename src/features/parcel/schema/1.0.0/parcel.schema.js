@@ -51,4 +51,9 @@ const parcelsSuccessResponseSchema = Joi.object({
   parcels: Joi.array().items(parcelSchema).required()
 })
 
-export { parcelsSchema, parcelsSuccessResponseSchema }
+export {
+  parcelsSchema,
+  parcelsSuccessResponseSchema,
+  parcelIdSchema,
+  availableAreaSchema
+}

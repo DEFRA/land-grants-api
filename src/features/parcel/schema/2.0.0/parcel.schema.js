@@ -1,11 +1,6 @@
 import Joi from 'joi'
 
-const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
-
-const availableAreaSchema = Joi.object({
-  unit: Joi.string().required(),
-  value: Joi.number().required()
-})
+import { parcelIdSchema, availableAreaSchema } from '../1.0.0/parcel.schema.js'
 
 const actionSchema = Joi.object({
   code: Joi.string().required(),
