@@ -59,7 +59,7 @@ const validateHEFERConsentRequired = (parcelIds, fields) => {
  */
 const ParcelsControllerV2 = {
   options: {
-    tags: ['api/v2'],
+    tags: ['api'],
     description: 'Get multiple land parcels with selected fields',
     notes:
       'Returns data for multiple parcels and includes the requested fields',
