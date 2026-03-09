@@ -100,11 +100,12 @@ describe('Ingest Module', () => {
     })
 
     it('should successfully import land data with valid CSV file', async () => {
+      const mockWebStream = new ReadableStream({ start: (c) => c.close() })
       const mockResponse = {
         ContentType: 'text/csv',
         ContentLength: 1024,
         Body: {
-          transformToWebStream: vi.fn().mockResolvedValue('stream-data')
+          transformToWebStream: vi.fn().mockReturnValue(mockWebStream)
         }
       }
 
@@ -120,7 +121,7 @@ describe('Ingest Module', () => {
         'land_parcels/123/test.csv'
       )
       expect(importData).toHaveBeenCalledWith(
-        'stream-data',
+        expect.any(Object),
         'land_parcels',
         '123',
         expect.any(Object),
@@ -222,10 +223,11 @@ describe('Ingest Module', () => {
     })
 
     it('should handle invalid resource type in file path', async () => {
+      const mockWebStream = new ReadableStream({ start: (c) => c.close() })
       const mockResponse = {
         ContentType: 'text/csv',
         Body: {
-          transformToWebStream: vi.fn().mockResolvedValue('stream-data')
+          transformToWebStream: vi.fn().mockReturnValue(mockWebStream)
         }
       }
 

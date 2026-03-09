@@ -19,7 +19,7 @@ export const ingestLandData = async () => {
 
     const files = fs
       .readdirSync(folder)
-      .filter((file) => file.endsWith('.csv'))
+      .filter((file) => file.endsWith('.csv') || file.endsWith('.zip'))
       .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 
     for (let i = 0; i < files.length; i += 10) {
