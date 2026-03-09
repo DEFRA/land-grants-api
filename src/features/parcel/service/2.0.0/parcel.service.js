@@ -125,11 +125,7 @@ export async function getActionsForParcel(
       request.logger
     )
 
-    const sortedParcelActions = actionsWithAvailableArea.toSorted((a, b) =>
-      a.code.localeCompare(b.code)
-    )
-
-    parcelResponse.actions = sortedParcelActions
+    parcelResponse.actions = actionsWithAvailableArea
   }
   return parcelResponse
 }

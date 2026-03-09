@@ -41,6 +41,7 @@ describe('Get Actions By Latest Version Query', () => {
       patchVersion: 0,
       enabled: true,
       display: true,
+      displayOrder: 1,
       durationYears: 1,
       startDate: '2025-01-01',
       code: 'CMOR1',
