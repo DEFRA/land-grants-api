@@ -17,7 +17,10 @@ describe('actionConfigTransformer', () => {
       major_version: 1,
       minor_version: 2,
       patch_version: 3,
-      semantic_version: '1.2.3'
+      semantic_version: '1.2.3',
+      group_id: 1,
+      group_name: 'Wetland',
+      display_order: 5
     }
 
     const result = actionConfigTransformer(action)
@@ -37,7 +40,10 @@ describe('actionConfigTransformer', () => {
       majorVersion: 1,
       minorVersion: 2,
       patchVersion: 3,
-      semanticVersion: '1.2.3'
+      semanticVersion: '1.2.3',
+      groupId: 1,
+      groupName: 'Wetland',
+      displayOrder: 5
     })
   })
 
@@ -106,7 +112,10 @@ describe('actionConfigTransformer', () => {
       last_updated: new Date('2024-01-01T00:00:00Z'),
       major_version: 1,
       minor_version: 0,
-      patch_version: 0
+      patch_version: 0,
+      group_id: 1,
+      group_name: 'Test Group',
+      display_order: 3
     }
 
     const result = actionConfigTransformer(action)
@@ -119,6 +128,48 @@ describe('actionConfigTransformer', () => {
     expect(result.major_version).toBeUndefined()
     expect(result.minor_version).toBeUndefined()
     expect(result.patch_version).toBeUndefined()
+    expect(result.group_id).toBeUndefined()
+    expect(result.group_name).toBeUndefined()
+    expect(result.display_order).toBeUndefined()
+  })
+
+  test('should transform display_order to displayOrder', () => {
+    const action = {
+      code: 'UPL1',
+      duration_years: 5,
+      application_unit_of_measurement: 'hectares',
+      land_cover_class_codes: ['LC001'],
+      start_date: '2024-01-01',
+      last_updated: new Date('2024-01-01T00:00:00Z'),
+      major_version: 1,
+      minor_version: 0,
+      patch_version: 0,
+      display_order: 7
+    }
+
+    const result = actionConfigTransformer(action)
+
+    expect(result.displayOrder).toBe(7)
+    expect(result.display_order).toBeUndefined()
+  })
+
+  test('should handle null display_order', () => {
+    const action = {
+      code: 'UPL1',
+      duration_years: 5,
+      application_unit_of_measurement: 'hectares',
+      land_cover_class_codes: ['LC001'],
+      start_date: '2024-01-01',
+      last_updated: new Date('2024-01-01T00:00:00Z'),
+      major_version: 1,
+      minor_version: 0,
+      patch_version: 0,
+      display_order: null
+    }
+
+    const result = actionConfigTransformer(action)
+
+    expect(result.displayOrder).toBeNull()
   })
 
   test('should preserve other fields in action object', () => {
