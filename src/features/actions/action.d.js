@@ -63,3 +63,9 @@
  * @property {string} actionCode - The action code
  * @property {number} areaSqm - The action area in sqm
  */
+
+/**
+ * @typedef {object} ActionCodeVersion
+ * @property {string} code - The action code
+ * @property {string} [version] - The semantic version (e.g. '3.1.0'). When omitted, the latest version is used.
+ */
