@@ -12,6 +12,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'url'
 import { S3_CONFIG } from '../../db-tests/setup/test-config.js'
 import { config } from '~/src/config/index.js'
+import { createZipFromFixture } from './zip.js'
 
 /**
  * Create S3 client for testing
@@ -46,46 +47,50 @@ export async function ensureBucketExists(s3Client, bucket = S3_CONFIG.bucket) {
 }
 
 /**
- * Upload a CSV file to S3 test bucket
+ * Upload a file to S3 test bucket
  * @param {S3Client} s3Client
  * @param {string} filename - Name of the file in S3
  * @param {string|Buffer} content - File content (string or Buffer)
  * @param {string} bucket
+ * @param {string} contentType - MIME type of the file
  */
 export async function uploadTestFile(
   s3Client,
   filename,
   content,
-  bucket = S3_CONFIG.bucket
+  bucket = S3_CONFIG.bucket,
+  contentType = 'text/csv'
 ) {
   const command = new PutObjectCommand({
     Bucket: bucket,
     Key: filename,
     Body: content,
-    ContentType: 'text/csv'
+    ContentType: contentType
   })
 
   await s3Client.send(command)
 }
 
 /**
- * Upload a CSV file from fixtures directory
+ * Upload a file from fixtures directory
  * @param {S3Client} s3Client
  * @param {string} fixtureFilename - Name of the fixture file
  * @param {string} s3Filename - Optional: different name in S3 (defaults to fixture filename)
  * @param {string} bucket
+ * @param {string} contentType - MIME type of the file
  */
 export async function uploadFixtureFile(
   s3Client,
   fixtureFilename,
   s3Filename = fixtureFilename,
-  bucket = S3_CONFIG.bucket
+  bucket = S3_CONFIG.bucket,
+  contentType = 'text/csv'
 ) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url))
   const fixturePath = path.resolve(__dirname, '../fixtures', fixtureFilename)
 
   const content = await readFile(fixturePath)
-  await uploadTestFile(s3Client, s3Filename, content, bucket)
+  await uploadTestFile(s3Client, s3Filename, content, bucket, contentType)
 }
 
 /**
@@ -176,4 +181,27 @@ export async function deleteFiles(
       }
     })
   )
+}
+
+/**
+ * Upload a fixture file to S3 as either a CSV or a zipped CSV,
+ * determined by the file extension of the destination S3 key.
+ * @param {S3Client} s3Client
+ * @param {string} csvFixtureFilename - Name of the source CSV fixture file
+ * @param {string} s3Key - Destination S3 key (determines upload type by extension)
+ * @param {string} bucket
+ * @returns {Promise<void>}
+ */
+export async function uploadLandDataFixture(
+  s3Client,
+  csvFixtureFilename,
+  s3Key,
+  bucket = S3_CONFIG.bucket
+) {
+  if (s3Key.endsWith('.zip')) {
+    const zipBuffer = await createZipFromFixture(csvFixtureFilename)
+    await uploadTestFile(s3Client, s3Key, zipBuffer, bucket, 'application/zip')
+  } else {
+    await uploadFixtureFile(s3Client, csvFixtureFilename, s3Key, bucket)
+  }
 }

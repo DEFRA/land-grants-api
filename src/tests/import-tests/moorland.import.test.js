@@ -1,6 +1,7 @@
 import {
   createTestS3Client,
   uploadFixtureFile,
+  uploadLandDataFixture,
   ensureBucketExists,
   listTestFiles,
   deleteFiles
@@ -10,6 +11,11 @@ import { importLandData } from '~/src/features/land-data-ingest/workers/ingest.m
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 import { getCsvFixtures } from '~/src/tests/import-tests/setup/csv.js'
+
+const S3_KEYS = [
+  'moorland_designations/moorland_head.csv',
+  'moorland_designations/moorland_head.zip'
+]
 
 describe('Moorland import', () => {
   let s3Client
@@ -26,45 +32,46 @@ describe('Moorland import', () => {
   afterAll(async () => {
     await connection.end()
     await deleteFiles(s3Client, [
-      'moorland/moorland_head.csv',
       'moorland_designations/moorland_head_upsert.csv'
     ])
   })
 
-  test('should import moorland data and return 200 ok', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'moorland_head.csv',
-      'moorland_designations/moorland_head.csv'
-    )
+  afterEach(async () => {
+    await deleteFiles(s3Client, S3_KEYS)
+  })
 
-    const result = await importLandData(
-      'moorland_designations/moorland_head.csv'
-    )
+  test.each(S3_KEYS.map((key) => [key]))(
+    'should import moorland data and return 200 ok (%s)',
+    async (s3Key) => {
+      await uploadLandDataFixture(s3Client, 'moorland_head.csv', s3Key)
 
-    expect(result).toBe('Land data imported successfully')
+      const result = await importLandData(s3Key)
 
-    const allMoorlandDesignations = await getRecordsByQuery(
-      connection,
-      'SELECT name, source_id, ST_AsText(geom) as geom, metadata FROM data_layer WHERE data_layer_type_id = 2',
-      []
-    )
+      expect(result).toBe('Land data imported successfully')
 
-    for (const fixture of fixtures) {
-      const moorlandResult = allMoorlandDesignations.find(
-        (m) => m.source_id === fixture.OBJECTID
+      const allMoorlandDesignations = await getRecordsByQuery(
+        connection,
+        'SELECT name, source_id, ST_AsText(geom) as geom, metadata FROM data_layer WHERE data_layer_type_id = 2',
+        []
       )
-      expect(moorlandResult.name).toEqual(fixture.NAME)
-      expect(moorlandResult.geom).toEqual(fixture.geom)
-      expect(moorlandResult.metadata).toEqual({
-        ref_code: fixture.REF_CODE,
-        lfamoorid: Number(fixture.LFAMOORID)
-      })
-    }
 
-    const files = await listTestFiles(s3Client)
-    expect(files).toContain('moorland_designations/moorland_head.csv')
-  }, 10000)
+      for (const fixture of fixtures) {
+        const moorlandResult = allMoorlandDesignations.find(
+          (m) => m.source_id === fixture.OBJECTID
+        )
+        expect(moorlandResult.name).toEqual(fixture.NAME)
+        expect(moorlandResult.geom).toEqual(fixture.geom)
+        expect(moorlandResult.metadata).toEqual({
+          ref_code: fixture.REF_CODE,
+          lfamoorid: Number(fixture.LFAMOORID)
+        })
+      }
+
+      const files = await listTestFiles(s3Client)
+      expect(files).toContain(s3Key)
+    },
+    10000
+  )
 
   test('should import moorland and upsert data', async () => {
     await uploadFixtureFile(
