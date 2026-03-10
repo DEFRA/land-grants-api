@@ -42,6 +42,44 @@ describe('Parcel Schema Validation v2', () => {
       const result = parcelsSuccessResponseSchema.validate(invalid)
       expect(result.error).toBeDefined()
     })
+
+    it('should validate with groups in response', () => {
+      const valid = {
+        ...validResponse,
+        groups: [
+          { name: 'Assess moorland', actions: ['CMOR1'] },
+          {
+            name: 'Livestock grazing on moorland',
+            actions: ['UPL1', 'UPL2', 'UPL3']
+          }
+        ]
+      }
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should validate without groups in response', () => {
+      const result = parcelsSuccessResponseSchema.validate(validResponse)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject groups with missing name', () => {
+      const invalid = {
+        ...validResponse,
+        groups: [{ actions: ['CMOR1'] }]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject groups with missing actions', () => {
+      const invalid = {
+        ...validResponse,
+        groups: [{ name: 'Assess moorland' }]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
   })
 
   describe('parcelsSchema', () => {
@@ -83,6 +121,15 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
+    it('should validate with groups field', () => {
+      const valid = {
+        ...validParcelsRequest,
+        fields: ['groups']
+      }
+      const result = parcelsSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
     it('should validate with all valid fields', () => {
       const valid = {
         ...validParcelsRequest,
@@ -91,7 +138,8 @@ describe('Parcel Schema Validation v2', () => {
           'actions',
           'actions.results',
           'actions.sssiConsentRequired',
-          'actions.heferRequired'
+          'actions.heferRequired',
+          'groups'
         ]
       }
       const result = parcelsSchema.validate(valid)

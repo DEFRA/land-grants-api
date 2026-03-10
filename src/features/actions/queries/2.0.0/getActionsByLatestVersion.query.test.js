@@ -27,7 +27,9 @@ describe('getActionsByLatestVersion', () => {
           major_version: 2,
           minor_version: 0,
           patch_version: 0,
-          semantic_version: '2.0.0'
+          semantic_version: '2.0.0',
+          group_id: 1,
+          group_name: 'Upland'
         },
         {
           code: 'CMOR1',
@@ -45,7 +47,9 @@ describe('getActionsByLatestVersion', () => {
           major_version: 3,
           minor_version: 0,
           patch_version: 0,
-          semantic_version: '3.0.0'
+          semantic_version: '3.0.0',
+          group_id: 2,
+          group_name: 'Moorland'
         }
       ]
     }
@@ -68,7 +72,9 @@ describe('getActionsByLatestVersion', () => {
         rules: { minArea: 0.5 },
         startDate: '2024-01-01',
         lastUpdated: '2024-01-15T10:00:00Z',
-        semanticVersion: '2.0.0'
+        semanticVersion: '2.0.0',
+        groupId: 1,
+        groupName: 'Upland'
       },
       {
         code: 'CMOR1',
@@ -86,7 +92,9 @@ describe('getActionsByLatestVersion', () => {
         rules: { minArea: 1.0 },
         startDate: '2024-02-01',
         lastUpdated: '2024-02-10T12:00:00Z',
-        semanticVersion: '3.0.0'
+        semanticVersion: '3.0.0',
+        groupId: 2,
+        groupName: 'Moorland'
       }
     ]
 
@@ -115,24 +123,31 @@ describe('getActionsByLatestVersion', () => {
     await getActionsByLatestVersion(mockLogger, mockDb)
 
     const expectedQuery = `
-      SELECT DISTINCT ON (a.code)
-        a.*,
-        ac.version,
-        ac.major_version,
-        ac.minor_version,
-        ac.patch_version,
-        ac.config->>'start_date' as start_date,
-        ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
-        (ac.config->>'duration_years')::numeric as duration_years,
-        ac.config->'payment' as payment,
-        ac.config->'land_cover_class_codes' as land_cover_class_codes,
-        ac.config->'rules' as rules,
-        ac.last_updated_at as last_updated,
-        ac.semantic_version as semantic_version
-      FROM actions a
-      JOIN actions_config ac ON a.code = ac.code
-      WHERE a.enabled = TRUE
-      ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
+      SELECT * FROM (
+        SELECT DISTINCT ON (a.code)
+          a.*,
+          ac.version,
+          ac.major_version,
+          ac.minor_version,
+          ac.patch_version,
+          ac.config->>'start_date' as start_date,
+          ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
+          (ac.config->>'duration_years')::numeric as duration_years,
+          ac.config->'payment' as payment,
+          ac.config->'land_cover_class_codes' as land_cover_class_codes,
+          ac.config->'rules' as rules,
+          ac.last_updated_at as last_updated,
+          ac.semantic_version as semantic_version,
+          ac.group_id as group_id,
+          ag.name as group_name,
+          ac.display_order as display_order
+        FROM actions a
+        JOIN actions_config ac ON a.code = ac.code
+        LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
+        WHERE a.enabled = TRUE
+        ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
+      ) subq
+      ORDER BY display_order ASC
     `
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery)
@@ -228,7 +243,9 @@ describe('getActionsByLatestVersion', () => {
         version: 1,
         major_version: 1,
         minor_version: 0,
-        patch_version: 0
+        patch_version: 0,
+        group_id: 1,
+        group_name: 'Test Group'
       }
     ]
 
@@ -255,7 +272,9 @@ describe('getActionsByLatestVersion', () => {
         version: 1,
         major_version: 1,
         minor_version: 0,
-        patch_version: 0
+        patch_version: 0,
+        group_id: 1,
+        group_name: 'Test Group'
       }
     ]
 
@@ -281,7 +300,9 @@ describe('getActionsByLatestVersion', () => {
         version: 1,
         major_version: 1,
         minor_version: 0,
-        patch_version: 0
+        patch_version: 0,
+        group_id: null,
+        group_name: null
       }
     ]
 
@@ -290,5 +311,7 @@ describe('getActionsByLatestVersion', () => {
     expect(result[0].payment).toBeNull()
     expect(result[0].landCoverClassCodes).toBeNull()
     expect(result[0].rules).toBeNull()
+    expect(result[0].groupId).toBeNull()
+    expect(result[0].groupName).toBeNull()
   })
 })

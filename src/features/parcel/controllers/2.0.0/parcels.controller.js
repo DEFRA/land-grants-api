@@ -20,6 +20,7 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from '../../service/2.0.0/parcel.service.js'
+import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
 
 /**
  * Validate SSSI consent required
@@ -58,7 +59,7 @@ const validateHEFERConsentRequired = (parcelIds, fields) => {
  */
 const ParcelsControllerV2 = {
   options: {
-    tags: ['api/v2'],
+    tags: ['api'],
     description: 'Get multiple land parcels with selected fields',
     notes:
       'Returns data for multiple parcels and includes the requested fields',
@@ -172,10 +173,19 @@ const ParcelsControllerV2 = {
           )
       }
 
+      let transformedGroups
+
+      if (fields.includes('groups')) {
+        transformedGroups = actionGroupsTransformer(
+          validationResponse.enabledActions
+        )
+      }
+
       return h
         .response({
           message: 'success',
-          parcels: transformedResponseParcels
+          parcels: transformedResponseParcels,
+          groups: transformedGroups
         })
         .code(statusCodes.ok)
     } catch (error) {

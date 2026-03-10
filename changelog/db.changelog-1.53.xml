@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="create-action-groups" author="system">
+      <createTable tableName="action_groups" schemaName="public">
+        <column name="id" type="INTEGER" autoIncrement="false">
+          <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="name" type="TEXT"/>
+      </createTable>
+   </changeSet>
+
+    <changeSet id="insert-action-groups" author="system">
+      <insert tableName="action_groups" schemaName="public">
+        <column name="id" value="1"/>
+        <column name="name" value="Assess moorland"/>
+      </insert>
+      <insert tableName="action_groups" schemaName="public">
+        <column name="id" value="2"/>
+        <column name="name" value="Livestock grazing on moorland"/>
+      </insert>
+      <insert tableName="action_groups" schemaName="public">
+        <column name="id" value="3"/>
+        <column name="name" value="Shepherding livestock on moorland"/>
+      </insert>
+    </changeSet>
+
+    <changeSet id="add-aunique-constraint-to-action-groups" author="system">
+      <addUniqueConstraint
+        tableName="action_groups"
+        schemaName="public"
+        columnNames="id"
+        constraintName="uk_action_groups_id"
+      />
+    </changeSet>
+
+    <changeSet id="add-group_id-to-actions" author="system">
+      <addColumn tableName="actions_config" schemaName="public">
+        <column name="group_id" type="INTEGER" />
+      </addColumn>
+      <addForeignKeyConstraint
+        baseTableName="actions_config"
+        baseColumnNames="group_id"
+        constraintName="fk_actions_config_group_id"
+        referencedTableName="action_groups"
+        referencedColumnNames="id"
+        onDelete="NO ACTION"
+      />
+    </changeSet>
+
+    <changeSet id="add-unique-constraint-to-actions-group_id" author="system">
+      <sql>
+        Update actions_config set group_id = 1 where code = 'CMOR1';
+        Update actions_config set group_id = 2 where code = 'UPL1' or code = 'UPL2' or code = 'UPL3';
+        Update actions_config set group_id = 3 where code = 'UPL8' or code = 'UPL10';
+      </sql>
+    </changeSet>
+</databaseChangeLog>

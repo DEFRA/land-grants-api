@@ -13,24 +13,31 @@ async function getActionsByLatestVersion(logger, db) {
     client = await db.connect()
 
     const query = `
-      SELECT DISTINCT ON (a.code)
-        a.*,
-        ac.version,
-        ac.major_version,
-        ac.minor_version,
-        ac.patch_version,
-        ac.config->>'start_date' as start_date,
-        ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
-        (ac.config->>'duration_years')::numeric as duration_years,
-        ac.config->'payment' as payment,
-        ac.config->'land_cover_class_codes' as land_cover_class_codes,
-        ac.config->'rules' as rules,
-        ac.last_updated_at as last_updated,
-        ac.semantic_version as semantic_version
-      FROM actions a
-      JOIN actions_config ac ON a.code = ac.code
-      WHERE a.enabled = TRUE
-      ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
+      SELECT * FROM (
+        SELECT DISTINCT ON (a.code)
+          a.*,
+          ac.version,
+          ac.major_version,
+          ac.minor_version,
+          ac.patch_version,
+          ac.config->>'start_date' as start_date,
+          ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
+          (ac.config->>'duration_years')::numeric as duration_years,
+          ac.config->'payment' as payment,
+          ac.config->'land_cover_class_codes' as land_cover_class_codes,
+          ac.config->'rules' as rules,
+          ac.last_updated_at as last_updated,
+          ac.semantic_version as semantic_version,
+          ac.group_id as group_id,
+          ag.name as group_name,
+          ac.display_order as display_order
+        FROM actions a
+        JOIN actions_config ac ON a.code = ac.code
+        LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
+        WHERE a.enabled = TRUE
+        ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
+      ) subq
+      ORDER BY display_order ASC
     `
     const result = await client.query(query)
 

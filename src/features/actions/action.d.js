@@ -20,6 +20,9 @@
  * @property {Date} lastUpdated
  * @property {string} actionConfigVersion
  * @property {string} semanticVersion
+ * @property {number} groupId
+ * @property {string} groupName
+ * @property {number} displayOrder
  */
 
 /**

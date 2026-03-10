@@ -17,6 +17,9 @@ export function actionConfigTransformer(action) {
     patch_version,
     version,
     semantic_version,
+    group_id,
+    group_name,
+    display_order,
     ...actionObj
   } = action
   return {
@@ -30,6 +33,9 @@ export function actionConfigTransformer(action) {
     majorVersion: Number(major_version),
     minorVersion: Number(minor_version),
     patchVersion: Number(patch_version),
-    semanticVersion: semantic_version
+    semanticVersion: semantic_version,
+    groupId: group_id,
+    groupName: group_name,
+    displayOrder: display_order
   }
 }

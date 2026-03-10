@@ -30,6 +30,8 @@ const mockParcelData = {
 const mockEnabledActions = [
   {
     code: 'BND1',
+    groupId: 1,
+    groupName: 'Hedgerow management',
     description: 'Hedgerow management',
     display: true,
     payment: {
@@ -39,6 +41,8 @@ const mockEnabledActions = [
   },
   {
     code: 'BND2',
+    groupId: 2,
+    groupName: 'Hedge laying',
     description: 'Hedge laying',
     display: true,
     payment: {
@@ -644,6 +648,47 @@ describe('Parcels Controller 2.0.0', () => {
       expect(parcels[0].actions[0].code).toBe('BND1')
       expect(parcels[0].actions[1].code).toBe('CSAM1')
       expect(parcels[0].actions[2].code).toBe('UPL3')
+    })
+
+    test('should return 200 with groups when requesting groups field', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['groups']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, groups }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(groups).toEqual([
+        { name: 'Hedgerow management', actions: ['BND1'] },
+        { name: 'Hedge laying', actions: ['BND2'] }
+      ])
+    })
+
+    test('should not return groups when groups field not requested', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        payload: {
+          parcelIds: ['SX0679-9238'],
+          fields: ['size']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(result.groups).toBeUndefined()
     })
 
     test('should return 404 when parcel is not found', async () => {

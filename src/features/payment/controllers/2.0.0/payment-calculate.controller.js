@@ -26,7 +26,7 @@ import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/
  */
 const PaymentsCalculateControllerV2 = {
   options: {
-    tags: ['api/v2'],
+    tags: ['api'],
     description: 'Calculate land actions payment',
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
