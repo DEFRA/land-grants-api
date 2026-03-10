@@ -26,7 +26,7 @@ function hasDBOptions(options, logger) {
 
 /**
  * Import data to the database
- * @param {ReadableStream} dataStream - The data stream
+ * @param {import('stream').Readable} dataStream - The data stream
  * @param {string} tableName - The table name
  * @param {string} ingestId - The ingest ID
  * @param {Logger} logger - The logger

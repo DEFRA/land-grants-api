@@ -145,7 +145,12 @@ module.exports = {
         beforeAll: 'readonly',
         afterAll: 'readonly'
       },
-      files: ['**/*.test.{cjs,js}', '**/__mocks__/**', '**/db-tests/**'],
+      files: [
+        '**/*.test.{cjs,js}',
+        '**/__mocks__/**',
+        '**/db-tests/**',
+        '**/import-tests/**'
+      ],
       plugins: ['vitest'],
       rules: {
         // Allow Vitest to assert on mocked unbound methods
@@ -158,7 +163,7 @@ module.exports = {
         'n/no-unpublished-import': [
           'error',
           {
-            allowModules: ['testcontainers']
+            allowModules: ['testcontainers', 'archiver']
           }
         ]
       }

@@ -18,7 +18,7 @@ export async function createTempTable(dbClient, tableName) {
  * Copy data to the temporary table
  * @param {import('pg').Client} dbClient
  * @param {string} tableName
- * @param {ReadableStream} dataStream
+ * @param {import('stream').Readable} dataStream
  */
 export async function copyDataToTempTable(dbClient, tableName, dataStream) {
   const pgStream = dbClient.query(
