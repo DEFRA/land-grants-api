@@ -3,7 +3,7 @@ import path from 'path'
 import { config } from './config.js'
 
 // Important: configure these values for the ingestion
-const environments = ['test'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
+const environments = ['dev'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
@@ -171,12 +171,15 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
     console.log(`✓ Uploading file to S3 ${uploadUrl}`)
     const fileContent = fs.readFileSync(filePath, 'utf-8')
     const fileName = path.basename(filePath)
+    const contentType = filePath.endsWith('.csv')
+      ? 'text/csv'
+      : 'application/zip'
 
     await fetch(uploadUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'content-type': 'text/csv',
+        'content-type': contentType,
         'x-filename': fileName
       },
       body: fileContent,
@@ -196,7 +199,7 @@ async function transferResource(resource, environment) {
 
   const ingestionDataDirectory = path.join(
     process.cwd(),
-    'ingestion-data/data/' + resource
+    'src/land-data-full/' + resource
   )
 
   if (!clientId || !clientSecret) {
@@ -240,9 +243,11 @@ async function transferResource(resource, environment) {
   for (const landDataFile of files) {
     console.log(`✓ Start ingesting ${landDataFile}`)
 
-    //reject files that do not contain .csv extension
-    if (!landDataFile.endsWith('.csv')) {
-      console.log(`✗ Skipping ${landDataFile} as it does not end with .csv`)
+    //reject files that do not contain .csv or .zip extension
+    if (!landDataFile.endsWith('.csv') && !landDataFile.endsWith('.zip')) {
+      console.log(
+        `✗ Skipping ${landDataFile} as it does not end with .csv or .zip`
+      )
       continue
     }
 

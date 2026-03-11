@@ -114,6 +114,10 @@ We support the ingestion of the following resources:
     - agreements
     - compatibility_matrix
     - sssi
+    - registered_battlefields
+    - shine
+    - scheduled_monuments
+    - registered_parks_gardens
 
 Run the local ingest script for each resource type:
 
@@ -145,22 +149,22 @@ npm run docker:localstack:up
 
 #### Local data
 
-There is a script to ingest data files for local development: (./src/scripts/ingest-land-data-local.js)
+There is a script to ingest data files for local development: (./scripts/ingest-land-data-local.js)
 
 You will need to run the service locally, including database and localstack.
 
 ```shell
-node ./src/scripts/ingest-land-data-local.js <resource type> <file path/directory>
+node ./scripts/ingest-land-data-local.js <resource type> <file path/directory>
 ```
 
 To ingest a parcels file:
 
 ```shell
-node ./src/scripts/ingest-land-data-local.js parcels parcels_1.csv
+node ./scripts/ingest-land-data-local.js parcels parcels_1.csv
 ```
 
 ```shell
-node ./src/scripts/ingest-land-data-local.js parcels ../data-files/parcels/
+node ./scripts/ingest-land-data-local.js parcels ../data-files/parcels/
 ```
 
 #### Start the api
