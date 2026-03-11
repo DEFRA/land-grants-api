@@ -199,7 +199,7 @@ async function transferResource(resource, environment) {
 
   const ingestionDataDirectory = path.join(
     process.cwd(),
-    'src/land-data-full/' + resource
+    'ingestion-data/data/' + resource
   )
 
   if (!clientId || !clientSecret) {
