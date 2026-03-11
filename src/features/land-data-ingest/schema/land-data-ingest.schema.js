@@ -10,7 +10,8 @@ const cdpUploaderFileSchema = Joi.object({
   s3Key: Joi.string(),
   s3Bucket: Joi.string(),
   hasError: Joi.boolean(),
-  errorMessage: Joi.string()
+  errorMessage: Joi.string(),
+  detectedContentType: Joi.string()
 })
 
 const cdpUploaderCallbackSchema = Joi.object({
