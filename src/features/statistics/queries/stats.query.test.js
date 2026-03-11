@@ -23,7 +23,11 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult(1000)) // land_covers
         .mockResolvedValueOnce(createMockResult(500)) // land_parcels
         .mockResolvedValueOnce(createMockResult(70)) // sssi
-        .mockResolvedValueOnce(createMockResult(30)), // moorland_designations
+        .mockResolvedValueOnce(createMockResult(30)) // moorland_designations
+        .mockResolvedValueOnce(createMockResult(40)) // registered_parks_gardens
+        .mockResolvedValueOnce(createMockResult(60)) // registered_battlefields
+        .mockResolvedValueOnce(createMockResult(80)) // scheduled_monuments
+        .mockResolvedValueOnce(createMockResult(90)), // shine
       release: vi.fn()
     }
 
@@ -46,7 +50,7 @@ describe('getStats', () => {
   test('should query all tables for counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(11)
+    expect(mockClient.query).toHaveBeenCalledTimes(15)
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM actions'
     )
@@ -80,6 +84,18 @@ describe('getStats', () => {
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2'
     )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
+    )
   })
 
   test('should log stats with all counts', async () => {
@@ -107,6 +123,10 @@ describe('getStats', () => {
     expect(logMessage).toContain('landParcelsCount=500')
     expect(logMessage).toContain('sssiCount=70')
     expect(logMessage).toContain('moorlandDesignationsCount=30')
+    expect(logMessage).toContain('registeredParksGardensCount=40')
+    expect(logMessage).toContain('registeredBattlefieldsCount=60')
+    expect(logMessage).toContain('scheduledMonumentsCount=80')
+    expect(logMessage).toContain('shineCount=90')
   })
 
   test('should release the client when done', async () => {
