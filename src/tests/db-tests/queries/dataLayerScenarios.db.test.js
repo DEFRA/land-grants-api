@@ -4,7 +4,7 @@ import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getDataLayerScenariosFixtures } from '~/src/tests/db-tests/setup/getDataLayerScenariosFixtures.js'
 import {
   DATA_LAYER_TYPES,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 describe('Data Layer Scenarios', () => {
@@ -28,7 +28,7 @@ describe('Data Layer Scenarios', () => {
   test.each(fixtures)(
     `%s`,
     async (_name, { sheet_id, parcel_id, overlap_percent }) => {
-      const result = await getDataLayerQueryLargest(
+      const result = await getDataLayerQueryUnion(
         sheet_id,
         parcel_id,
         DATA_LAYER_TYPES.historic_features,
