@@ -1,9 +1,9 @@
 import { vi } from 'vitest'
 import {
   accumulatedIntersectionAreaQuery,
-  largestIntersectionAreaQuery,
+  unionIntersectionAreaQuery,
   getDataLayerQueryAccumulated,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from './getDataLayer.query.js'
 
 describe('getDataLayerQuery', () => {
@@ -73,13 +73,13 @@ describe('getDataLayerQuery', () => {
     )
   })
 
-  test('should use largest query when queryType is largest', async () => {
+  test('should use union query when queryType is union', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const dataLayerTypeId = 1
     const expectedValues = [sheetId, parcelId, dataLayerTypeId]
 
-    await getDataLayerQueryLargest(
+    await getDataLayerQueryUnion(
       sheetId,
       parcelId,
       dataLayerTypeId,
@@ -88,7 +88,7 @@ describe('getDataLayerQuery', () => {
     )
 
     expect(mockClient.query).toHaveBeenCalledWith(
-      largestIntersectionAreaQuery,
+      unionIntersectionAreaQuery,
       expectedValues
     )
   })

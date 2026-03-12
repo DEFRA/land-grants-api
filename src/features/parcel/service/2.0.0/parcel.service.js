@@ -15,7 +15,7 @@ import { mergeAgreementsTransformer } from '~/src/features/agreements/transforme
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
@@ -181,7 +181,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
 ) {
   const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
 
-  const { intersectingAreaPercentage } = await getDataLayerQueryLargest(
+  const { intersectingAreaPercentage } = await getDataLayerQueryUnion(
     sheetId,
     parcelId,
     DATA_LAYER_TYPES.historic_features,

@@ -12,7 +12,7 @@ export const DATA_LAYER_TYPES = {
 
 export const DATA_LAYER_QUERY_TYPES = {
   accumulated: 'accumulated',
-  largest: 'largest'
+  union: 'union'
 }
 
 export const accumulatedIntersectionAreaQuery = `
@@ -33,22 +33,22 @@ export const accumulatedIntersectionAreaQuery = `
       p.geom
 `
 
-export const largestIntersectionAreaQuery = `
-  WITH parcel AS (
+export const unionIntersectionAreaQuery = `
+    WITH parcel AS (
     SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
   ),
-  intersections AS (
-    SELECT ST_Area(ST_Intersection(p.geom, m.geom))::float8 AS intersection_area
-    FROM parcel p
-    JOIN data_layer m
-    ON ST_Intersects(p.geom, m.geom)
-    AND m.data_layer_type_id = $3
+  data_layer_union AS (
+    SELECT ST_Union(m.geom) AS union_geom
+    FROM data_layer m
+    JOIN parcel p ON ST_Intersects(p.geom, m.geom)
+    WHERE m.data_layer_type_id = $3
   )
   SELECT
-    COALESCE((SELECT MAX(intersection_area) FROM intersections), 0) AS sqm,
-    COALESCE((SELECT MAX(intersection_area) FROM intersections), 0)
-    / NULLIF((SELECT ST_Area(geom)::float8 FROM parcel), 0) * 100 AS overlap_percent
-  FROM parcel
+    COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0) AS sqm,
+    COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0)
+      / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
+  FROM parcel p
+  LEFT JOIN data_layer_union u ON true
 `
 
 /**
@@ -78,7 +78,7 @@ export async function getDataLayerQueryAccumulated(
 }
 
 /**
- * Get the largest data layer query
+ * Get the union data layer query
  * @param {string} sheetId - The sheet id
  * @param {string} parcelId - The parcel id
  * @param {number} dataLayerTypeId - The data layer type id
@@ -86,7 +86,7 @@ export async function getDataLayerQueryAccumulated(
  * @param {object} logger - The logger
  * @returns {Promise<object>} The data layer query
  */
-export async function getDataLayerQueryLargest(
+export async function getDataLayerQueryUnion(
   sheetId,
   parcelId,
   dataLayerTypeId,
@@ -97,7 +97,7 @@ export async function getDataLayerQueryLargest(
     sheetId,
     parcelId,
     dataLayerTypeId,
-    largestIntersectionAreaQuery,
+    unionIntersectionAreaQuery,
     db,
     logger
   )

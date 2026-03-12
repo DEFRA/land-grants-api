@@ -14,7 +14,7 @@ import {
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
 
 /**
@@ -73,7 +73,7 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const historicFeaturesDataLayerData = await getDataLayerQueryLargest(
+  const historicFeaturesDataLayerData = await getDataLayerQueryUnion(
     landAction.sheetId,
     landAction.parcelId,
     DATA_LAYER_TYPES.historic_features,

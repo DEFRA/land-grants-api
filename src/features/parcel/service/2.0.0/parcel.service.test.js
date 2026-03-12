@@ -16,7 +16,7 @@ import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parc
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { vi } from 'vitest'
@@ -809,7 +809,7 @@ describe('Parcel Service 2.0.0', () => {
         }
       ]
 
-      getDataLayerQueryLargest.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryUnion.mockResolvedValue(mockDataLayerResult)
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockHeferConsentRequiredAction
       )
@@ -825,7 +825,7 @@ describe('Parcel Service 2.0.0', () => {
         mockPostgresDb
       )
 
-      expect(getDataLayerQueryLargest).toHaveBeenCalledWith(
+      expect(getDataLayerQueryUnion).toHaveBeenCalledWith(
         'SX0679',
         '9238',
         DATA_LAYER_TYPES.historic_features,
@@ -848,7 +848,7 @@ describe('Parcel Service 2.0.0', () => {
     })
 
     test('should handle zero intersecting area percentage', async () => {
-      getDataLayerQueryLargest.mockResolvedValue({
+      getDataLayerQueryUnion.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
       })
@@ -887,9 +887,9 @@ describe('Parcel Service 2.0.0', () => {
       expect(result).toEqual(mockResponseParcels)
     })
 
-    test('should propagate error from getDataLayerQueryLargest', async () => {
+    test('should propagate error from getDataLayerQueryUnion', async () => {
       const dbError = new Error('Database connection failed')
-      getDataLayerQueryLargest.mockRejectedValue(dbError)
+      getDataLayerQueryUnion.mockRejectedValue(dbError)
 
       await expect(
         getActionsForParcelWithHEFERConsentRequired(
