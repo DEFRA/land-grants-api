@@ -164,10 +164,9 @@ describe('getActionConfigsByCodeAndVersion', () => {
       ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
     `
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expectedQuery,
-      [JSON.stringify(actions)]
-    )
+    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, [
+      JSON.stringify(actions)
+    ])
   })
 
   test('should return the transformed query results', async () => {
@@ -184,10 +183,9 @@ describe('getActionConfigsByCodeAndVersion', () => {
       { code: 'CMOR1' }
     ])
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.any(String),
-      [JSON.stringify([{ code: 'CMOR1' }])]
-    )
+    expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
+      JSON.stringify([{ code: 'CMOR1' }])
+    ])
   })
 
   test('should return empty array when no matching action configs are found', async () => {
