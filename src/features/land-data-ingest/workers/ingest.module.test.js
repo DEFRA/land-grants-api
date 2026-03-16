@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getResourceByType, resources } from './ingest.module.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
+import { PassThrough } from 'node:stream'
 
 vi.mock('unzipper', () => ({
   default: {
@@ -130,21 +131,19 @@ describe('Ingest Module', () => {
     })
 
     it('should successfully import land data with ZIP file containing CSV', async () => {
-      const mockZipStream = {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        [Symbol.asyncIterator]: async function* () {
-          yield { path: 'ignore.txt', autodrain: vi.fn() }
-          yield { path: 'data.csv' }
-        }
-      }
+      const mockZipStream = new PassThrough({ objectMode: true })
+      mockZipStream.push({ path: 'ignore.txt', autodrain: vi.fn() })
+      mockZipStream.push({ path: 'data.csv' })
+      mockZipStream.push(null)
 
       unzipper.Parse.mockReturnValue(mockZipStream)
 
+      const mockWebStream = new ReadableStream({ start: (c) => c.close() })
       const mockResponse = {
         ContentType: 'application/zip',
         ContentLength: 4096,
         Body: {
-          pipe: vi.fn().mockReturnValue(mockZipStream)
+          transformToWebStream: vi.fn().mockReturnValue(mockWebStream)
         }
       }
 
@@ -165,20 +164,18 @@ describe('Ingest Module', () => {
     })
 
     it('should throw error if no CSV is found in the ZIP archive', async () => {
-      const mockZipStream = {
-        // eslint-disable-next-line @typescript-eslint/require-await
-        [Symbol.asyncIterator]: async function* () {
-          yield { path: 'ignore.txt', autodrain: vi.fn() }
-        }
-      }
+      const mockZipStream = new PassThrough({ objectMode: true })
+      mockZipStream.push({ path: 'ignore.txt', autodrain: vi.fn() })
+      mockZipStream.push(null)
 
       unzipper.Parse.mockReturnValue(mockZipStream)
 
+      const mockWebStream = new ReadableStream({ start: (c) => c.close() })
       const mockResponse = {
         ContentType: 'application/zip',
         ContentLength: 4096,
         Body: {
-          pipe: vi.fn().mockReturnValue(mockZipStream)
+          transformToWebStream: vi.fn().mockReturnValue(mockWebStream)
         }
       }
 

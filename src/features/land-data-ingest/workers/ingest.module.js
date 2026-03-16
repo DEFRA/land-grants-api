@@ -104,6 +104,7 @@ async function handleZipFile(
       }
       entry.autodrain()
     }
+    throw new Error('No CSV found in the ZIP')
   } catch (error) {
     logBusinessError(logger, {
       operation: 'error importing land data',
