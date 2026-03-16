@@ -93,15 +93,29 @@ async function handleZipFile(
   logger,
   truncateTable
 ) {
-  const zip = response.Body.pipe(unzipper.Parse({ forceStream: true }))
-  for await (const entry of zip) {
-    if (entry.path.endsWith('.csv')) {
-      await importData(entry, tableName, ingestId, logger, truncateTable)
-      return
+  try {
+    const stream = Readable.fromWeb(response.Body.transformToWebStream())
+    const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
+    for await (const entry of zip) {
+      if (entry.path.endsWith('.csv')) {
+        await importData(entry, tableName, ingestId, logger, truncateTable)
+        return
+      }
+      entry.autodrain()
     }
-    entry.autodrain()
+    throw new Error('No CSV found in the ZIP')
+  } catch (error) {
+    logBusinessError(logger, {
+      operation: 'error importing land data',
+      error,
+      context: {
+        tableName,
+        ingestId,
+        truncateTable
+      }
+    })
+    throw error
   }
-  throw new Error('No CSV found in the ZIP')
 }
 
 /**
