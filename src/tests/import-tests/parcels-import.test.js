@@ -6,11 +6,11 @@ import {
   listTestFiles,
   deleteFiles
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
-
 import { importLandData } from '~/src/features/land-data-ingest/workers/ingest.module.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 import { getCsvFixtures } from '~/src/tests/import-tests/setup/csv.js'
+import { S3_CONFIG } from '~/src/tests/db-tests/setup/test-config.js'
 
 const S3_KEYS = [
   'land_parcels/parcels_head.csv',
@@ -104,4 +104,30 @@ describe('Parcels import', () => {
       '2024-03-06T00:00:00.000Z'
     )
   }, 10000)
+
+  test('should import parcels data as zip file', async () => {
+    await uploadFixtureFile(
+      s3Client,
+      'parcels_head.csv.zip',
+      'land_parcels/parcels_head.csv.zip',
+      S3_CONFIG.bucket,
+      'application/zip'
+    )
+
+    await importLandData('land_parcels/parcels_head.csv.zip')
+
+    const parcels = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2',
+      ['TV5797', '2801']
+    )
+
+    expect(parcels).toHaveLength(1)
+    expect(parcels[0].sheet_id).toBe('TV5797')
+    expect(parcels[0].parcel_id).toBe('2801')
+    expect(parcels[0].area_sqm).toBe('192772.7700')
+    expect(parcels[0].last_updated.toISOString()).toBe(
+      '2024-03-06T00:00:00.000Z'
+    )
+  }, 100000)
 })
