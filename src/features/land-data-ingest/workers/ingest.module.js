@@ -1,6 +1,5 @@
 import { parentPort } from 'node:worker_threads'
 import { Readable } from 'node:stream'
-import zlib from 'node:zlib'
 import { failedBucketPath, getFile } from '../../common/s3/s3.js'
 import unzipper from 'unzipper'
 import { config } from '../../../config/index.js'
