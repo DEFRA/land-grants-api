@@ -59,7 +59,7 @@ async function uploadFileToS3(filepath, resourceType, ingestId) {
     }
   })
 
-  const content = fs.readFileSync(filepath, 'utf8')
+  const content = fs.readFileSync(filepath)
   const filename = path.basename(filepath)
   const s3Path = path.join(resourceType, ingestId, filename)
   const command = new PutObjectCommand({

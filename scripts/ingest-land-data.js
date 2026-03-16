@@ -169,7 +169,7 @@ async function checkUploadStatus(uploadId, accessToken, environment) {
 async function uploadFileToS3(uploadUrl, filePath, accessToken) {
   try {
     console.log(`✓ Uploading file to S3 ${uploadUrl}`)
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
+    const fileContent = fs.readFileSync(filePath)
     const fileName = path.basename(filePath)
     const contentType = filePath.endsWith('.csv')
       ? 'text/csv'
