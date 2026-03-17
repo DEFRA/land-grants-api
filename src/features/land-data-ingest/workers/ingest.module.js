@@ -1,5 +1,7 @@
 import { parentPort } from 'node:worker_threads'
+import { Readable } from 'node:stream'
 import { failedBucketPath, getFile } from '../../common/s3/s3.js'
+import unzipper from 'unzipper'
 import { config } from '../../../config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import { importData } from '../service/import-land-data.service.js'
@@ -54,6 +56,69 @@ const postMessage = (taskId, success, result, error) => {
 }
 
 /**
+ * Import a CSV response body directly into the database.
+ * @param {object} response - The S3 response object
+ * @param {string} tableName - The table name to import data into
+ * @param {string} ingestId - The ingest ID
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @param {boolean} truncateTable - Whether to truncate the table before inserting
+ * @returns {Promise<void>}
+ */
+async function handleCsvFile(
+  response,
+  tableName,
+  ingestId,
+  logger,
+  truncateTable
+) {
+  const stream = Readable.fromWeb(response.Body.transformToWebStream())
+  await importData(stream, tableName, ingestId, logger, truncateTable)
+}
+
+/**
+ * Find the first CSV entry in a zip response and import it, keeping the entry
+ * stream consumed inside the for-await loop to prevent early iterator return
+ * from destroying the underlying zip stream mid-read.
+ * @param {object} response - The S3 response object
+ * @param {string} tableName - The table name to import data into
+ * @param {string} ingestId - The ingest ID
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @param {boolean} truncateTable - Whether to truncate the table before inserting
+ * @returns {Promise<void>}
+ */
+async function handleZipFile(
+  response,
+  tableName,
+  ingestId,
+  logger,
+  truncateTable
+) {
+  try {
+    const stream = Readable.fromWeb(response.Body.transformToWebStream())
+    const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
+    for await (const entry of zip) {
+      if (entry.path.endsWith('.csv')) {
+        await importData(entry, tableName, ingestId, logger, truncateTable)
+        return
+      }
+      entry.autodrain()
+    }
+    throw new Error('No CSV found in the ZIP')
+  } catch (error) {
+    logBusinessError(logger, {
+      operation: 'error importing land data',
+      error,
+      context: {
+        tableName,
+        ingestId,
+        truncateTable
+      }
+    })
+    throw error
+  }
+}
+
+/**
  * Import land data from S3 bucket
  * @param {string} file - The file to import
  * @returns {Promise<string>} The string representation of the file
@@ -84,20 +149,27 @@ export async function importLandData(file) {
 
   try {
     const response = await getFile(s3Client, bucket, s3Path)
+    const resource = getResourceByType(resourceType)
 
-    if (response.ContentType !== 'text/csv') {
+    if (response.ContentType === 'application/zip') {
+      await handleZipFile(
+        response,
+        resource.name,
+        ingestId,
+        logger,
+        resource.truncateTable
+      )
+    } else if (response.ContentType === 'text/csv') {
+      await handleCsvFile(
+        response,
+        resource.name,
+        ingestId,
+        logger,
+        resource.truncateTable
+      )
+    } else {
       throw new Error(`Invalid content type: ${response.ContentType}`)
     }
-
-    const bodyContents = await response.Body.transformToWebStream()
-    const resource = getResourceByType(resourceType)
-    await importData(
-      bodyContents,
-      resource.name,
-      ingestId,
-      logger,
-      resource.truncateTable
-    )
 
     logInfo(logger, {
       category,

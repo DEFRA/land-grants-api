@@ -15,7 +15,7 @@ import {
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
-  getDataLayerQueryLargest
+  getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 vi.mock(
@@ -51,7 +51,7 @@ vi.mock(
     return {
       ...actual,
       getDataLayerQueryAccumulated: vi.fn(),
-      getDataLayerQueryLargest: vi.fn()
+      getDataLayerQueryUnion: vi.fn()
     }
   }
 )
@@ -70,7 +70,7 @@ const mockRuleEngineApplicationTransformer = vi.mocked(
   ruleEngineApplicationTransformer
 )
 const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
-const mockGetDataLayerQueryLargest = vi.mocked(getDataLayerQueryLargest)
+const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -158,7 +158,7 @@ describe('Action Validation Service', () => {
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
     })
-    mockGetDataLayerQueryLargest.mockResolvedValue({
+    mockGetDataLayerQueryUnion.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
     })
@@ -223,8 +223,8 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetDataLayerQueryLargest).toHaveBeenCalledTimes(1)
-      expect(mockGetDataLayerQueryLargest).toHaveBeenCalledWith(
+      expect(mockGetDataLayerQueryUnion).toHaveBeenCalledTimes(1)
+      expect(mockGetDataLayerQueryUnion).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         DATA_LAYER_TYPES.historic_features,
