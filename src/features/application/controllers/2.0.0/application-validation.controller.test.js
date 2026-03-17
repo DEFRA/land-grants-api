@@ -5,15 +5,12 @@ import { createCompatibilityMatrix } from '~/src/features/available-area/compati
 import { validateRequest } from '../../validation/application.validation.js'
 import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 
 // Mock all dependencies
-vi.mock(
-  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js',
-  () => ({
-    getActionsByLatestVersion: vi.fn()
-  })
-)
+vi.mock('~/src/features/actions/service/action.service.js', () => ({
+  getActions: vi.fn()
+}))
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
@@ -27,7 +24,7 @@ vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
 }))
 
-const mockGetEnabledActions = vi.mocked(getActionsByLatestVersion)
+const mockGetActions = vi.mocked(getActions)
 const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
 const mockValidateRequest = vi.mocked(validateRequest)
 const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
@@ -167,7 +164,7 @@ describe('ApplicationValidationController', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetEnabledActions.mockResolvedValue(mockActions)
+    mockGetActions.mockResolvedValue(mockActions)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockValidateRequest.mockResolvedValue([])
     mockValidateLandParcelActions.mockResolvedValue(
@@ -229,9 +226,11 @@ describe('ApplicationValidationController', () => {
       ])
 
       // Verify all dependencies were called correctly
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
+      expect(mockGetActions).toHaveBeenCalledWith(
+        expect.objectContaining({ logger: expect.any(Object) }),
+        mockPostgresDb,
+        mockLandActions,
+        'APP-123'
       )
       expect(mockValidateRequest).toHaveBeenCalledWith(
         mockLandActions,
@@ -318,10 +317,8 @@ describe('ApplicationValidationController', () => {
       expect(message).toBe('Some validation error')
     })
 
-    test('should return 500 when getEnabledActions fails', async () => {
-      mockGetEnabledActions.mockRejectedValue(
-        new Error('Database connection failed')
-      )
+    test('should return 500 when getActions fails', async () => {
+      mockGetActions.mockRejectedValue(new Error('Database connection failed'))
 
       const request = {
         method: 'POST',

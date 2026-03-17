@@ -1,7 +1,10 @@
-import { getActionConfigsByCodeAndVersion } from './getActionConfigsByCodeAndVersion.query.js'
+import {
+  getActionsByVersion,
+  getActionsByVersionSql
+} from './getActionsByVersion.query.js'
 import { vi } from 'vitest'
 
-describe('getActionConfigsByCodeAndVersion', () => {
+describe('getActionsByVersion', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -117,7 +120,7 @@ describe('getActionConfigsByCodeAndVersion', () => {
   })
 
   test('should connect to the database', async () => {
-    await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
     ])
 
@@ -130,47 +133,49 @@ describe('getActionConfigsByCodeAndVersion', () => {
       { code: 'CMOR1', version: '3.1.0' }
     ]
 
-    await getActionConfigsByCodeAndVersion(mockLogger, mockDb, actions)
+    await getActionsByVersion(mockLogger, mockDb, actions)
 
-    const expectedQuery = `
-      WITH requested AS (
-        SELECT
-          r->>'code' AS code,
-          r->>'version' AS version
-        FROM jsonb_array_elements($1::jsonb) AS r
-      )
-      SELECT DISTINCT ON (a.code)
-        a.*,
-        ac.version,
-        ac.major_version,
-        ac.minor_version,
-        ac.patch_version,
-        ac.config->>'start_date' AS start_date,
-        ac.config->>'application_unit_of_measurement' AS application_unit_of_measurement,
-        (ac.config->>'duration_years')::numeric AS duration_years,
-        ac.config->'payment' AS payment,
-        ac.config->'land_cover_class_codes' AS land_cover_class_codes,
-        ac.config->'rules' AS rules,
-        ac.last_updated_at AS last_updated,
-        ac.semantic_version AS semantic_version,
-        ac.group_id AS group_id,
-        ag.name AS group_name,
-        ac.display_order AS display_order
-      FROM actions a
-      JOIN actions_config ac ON a.code = ac.code
-      JOIN requested r ON r.code = a.code
-      LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
-      WHERE (r.version IS NULL OR ac.semantic_version = r.version)
-      ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
-    `
-
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, [
+    expect(mockClient.query).toHaveBeenCalledWith(getActionsByVersionSql, [
       JSON.stringify(actions)
     ])
   })
 
+  test('should return all actions including those not in the requested list', async () => {
+    mockResult.rows = [
+      ...mockResult.rows,
+      {
+        code: 'OTHER1',
+        name: 'Other Action 1',
+        description: 'An action not in the requested list',
+        enabled: true,
+        start_date: '2024-03-01',
+        application_unit_of_measurement: 'ha',
+        duration_years: 2,
+        payment: { amount: 200, unit: 'ha' },
+        land_cover_class_codes: ['ARABLE'],
+        rules: { minArea: 0.1 },
+        last_updated: '2024-03-05T09:00:00Z',
+        version: 1,
+        major_version: 1,
+        minor_version: 0,
+        patch_version: 0,
+        semantic_version: '1.0.0',
+        group_id: 3,
+        group_name: 'Other',
+        display_order: 3
+      }
+    ]
+
+    const result = await getActionsByVersion(mockLogger, mockDb, [
+      { code: 'UPL1', version: '2.0.0' }
+    ])
+
+    expect(result).toHaveLength(3)
+    expect(result.map((r) => r.code)).toEqual(['UPL1', 'CMOR1', 'OTHER1'])
+  })
+
   test('should return the transformed query results', async () => {
-    const result = await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' },
       { code: 'CMOR1', version: '3.1.0' }
     ])
@@ -179,19 +184,51 @@ describe('getActionConfigsByCodeAndVersion', () => {
   })
 
   test('should return the latest version when no version is provided for a code', async () => {
-    await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
-      { code: 'CMOR1' }
-    ])
+    await getActionsByVersion(mockLogger, mockDb, [{ code: 'CMOR1' }])
 
     expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
       JSON.stringify([{ code: 'CMOR1' }])
     ])
   })
 
+  test('should return the latest patch version when major and minor are matched', async () => {
+    mockResult.rows = [
+      {
+        code: 'UPL1',
+        name: 'Upland Action 1',
+        description: 'Test upland action',
+        enabled: true,
+        start_date: '2024-01-01',
+        application_unit_of_measurement: 'ha',
+        duration_years: 5,
+        payment: { amount: 100, unit: 'ha' },
+        land_cover_class_codes: ['GRASS', 'ARABLE'],
+        rules: { minArea: 0.5 },
+        last_updated: '2024-01-15T10:00:00Z',
+        version: 2,
+        major_version: 2,
+        minor_version: 0,
+        patch_version: 3,
+        semantic_version: '2.0.3',
+        group_id: 1,
+        group_name: 'Upland',
+        display_order: 1
+      }
+    ]
+
+    const result = await getActionsByVersion(mockLogger, mockDb, [
+      { code: 'UPL1', version: '2.0.0' }
+    ])
+
+    expect(result).toHaveLength(1)
+    expect(result[0].patchVersion).toBe(3)
+    expect(result[0].semanticVersion).toBe('2.0.3')
+  })
+
   test('should return empty array when no matching action configs are found', async () => {
     mockResult.rows = []
 
-    const result = await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UNKNOWN' }
     ])
 
@@ -199,7 +236,7 @@ describe('getActionConfigsByCodeAndVersion', () => {
   })
 
   test('should release the client when done', async () => {
-    await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
     ])
 
@@ -210,7 +247,7 @@ describe('getActionConfigsByCodeAndVersion', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
     ])
 
@@ -233,7 +270,7 @@ describe('getActionConfigsByCodeAndVersion', () => {
     const connectionError = new Error('Connection failed')
     mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
-    const result = await getActionConfigsByCodeAndVersion(mockLogger, mockDb, [
+    const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
     ])
 
