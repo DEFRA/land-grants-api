@@ -18,7 +18,7 @@ import {
   calculatePayment
 } from '~/src/features/payment/services/payment.service.js'
 import { paymentCalculationTransformerV2 } from '~/src/features/payment/transformers/2.0.0/payment.transformer.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 
 /**
  * PaymentsCalculateController
@@ -56,13 +56,14 @@ const PaymentsCalculateControllerV2 = {
 
       /** @type {PaymentCalculateRequestPayload} */
       // @ts-expect-error - payload
-      const { parcel: landActions, startDate } = request.payload
+      const { parcel: landActions, startDate, applicationId } = request.payload
 
       logInfo(request.logger, {
         category: 'payment',
         message: 'Calculating payment',
         context: {
-          landActionsCount: landActions.length
+          landActionsCount: landActions.length,
+          applicationId
         }
       })
 
@@ -75,10 +76,11 @@ const PaymentsCalculateControllerV2 = {
         return landActionsValidation
       }
 
-      // Get actions by latest version from database
-      const enabledActions = await getActionsByLatestVersion(
-        request.logger,
-        postgresDb
+      const enabledActions = await getActions(
+        request,
+        postgresDb,
+        landActions,
+        applicationId
       )
 
       // Validate request data
