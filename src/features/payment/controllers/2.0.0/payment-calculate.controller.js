@@ -60,11 +60,7 @@ const PaymentsCalculateControllerV2 = {
 
       logInfo(request.logger, {
         category: 'payment',
-        message: 'Calculating payment',
-        context: {
-          landActionsCount: landActions.length,
-          applicationId
-        }
+        message: 'Calculating payment'
       })
 
       const landActionsValidation = validateLandActionsPresent(
@@ -96,6 +92,7 @@ const PaymentsCalculateControllerV2 = {
         landActions,
         enabledActions
       )
+
       if (Boom.isBoom(totalDurationYears)) {
         return totalDurationYears
       }
