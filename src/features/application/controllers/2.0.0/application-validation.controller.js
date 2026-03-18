@@ -20,7 +20,7 @@ import {
   validateRequestData,
   validateAllLandParcels
 } from '~/src/features/application/service/validation.service.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 
 /**
  * Save application validation results
@@ -139,10 +139,11 @@ const ApplicationValidationController = {
         }
       })
 
-      // Get enabled actions
-      const actions = await getActionsByLatestVersion(
-        request.logger,
-        postgresDb
+      const actions = await getActions(
+        request,
+        postgresDb,
+        landActions,
+        applicationId
       )
 
       // Validate request data
@@ -152,6 +153,7 @@ const ApplicationValidationController = {
         applicationId,
         sbi
       })
+
       if (validationError) {
         return validationError
       }
