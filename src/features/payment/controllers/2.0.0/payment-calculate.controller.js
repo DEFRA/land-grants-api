@@ -67,7 +67,6 @@ const PaymentsCalculateControllerV2 = {
         }
       })
 
-      // Validate land actions are present
       const landActionsValidation = validateLandActionsPresent(
         request,
         landActions
@@ -83,7 +82,6 @@ const PaymentsCalculateControllerV2 = {
         applicationId
       )
 
-      // Validate request data
       const requestValidation = await validateRequestData(
         request,
         landActions,
