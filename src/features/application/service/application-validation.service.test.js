@@ -4,7 +4,7 @@ import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
@@ -12,14 +12,14 @@ vi.mock('../mutations/saveApplication.mutation.js')
 vi.mock('../transformers/application.transformer.js')
 vi.mock('./land-parcel-validation.service.js')
 vi.mock('../validation/application.validation.js')
-vi.mock('~/src/features/actions/queries/getActions.query.js')
+vi.mock('~/src/features/actions/service/action.service.js')
 
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockSaveApplication = saveApplication
 const mockApplicationDataTransformer = applicationDataTransformer
 const mockValidateLandParcelActions = validateLandParcelActions
 const mockValidateRequest = validateRequest
-const mockGetEnabledActions = getEnabledActions
+const mockGetActions = getActions
 
 describe('Application Validation Service', () => {
   const mockLogger = {
@@ -142,7 +142,7 @@ describe('Application Validation Service', () => {
   const mockApplicationValidationRunId = 'val-run-123'
 
   beforeEach(() => {
-    mockGetEnabledActions.mockResolvedValue(mockEnabledActions)
+    mockGetActions.mockResolvedValue(mockEnabledActions)
     mockValidateRequest.mockResolvedValue(null)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
     mockValidateLandParcelActions.mockResolvedValue(mockParcelResults[0])
@@ -175,9 +175,11 @@ describe('Application Validation Service', () => {
         applicationValidationRunId: mockApplicationValidationRunId
       })
 
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
+      expect(mockGetActions).toHaveBeenCalledWith(
+        mockRequest,
+        mockPostgresDb,
+        mockLandAction,
+        mockApplicationId
       )
 
       expect(mockValidateRequest).toHaveBeenCalledWith(
@@ -260,9 +262,11 @@ describe('Application Validation Service', () => {
         'Validation failed: Application validation [sbi=123456789 | crn=1234567890 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
 
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
+      expect(mockGetActions).toHaveBeenCalledWith(
+        mockRequest,
+        mockPostgresDb,
+        mockLandAction,
+        mockApplicationId
       )
 
       expect(mockValidateRequest).toHaveBeenCalledWith(
@@ -315,9 +319,9 @@ describe('Application Validation Service', () => {
       )
     })
 
-    test('should handle error when getting enabled actions fails', async () => {
+    test('should handle error when getting actions fails', async () => {
       const dbError = new Error('Database connection failed')
-      mockGetEnabledActions.mockRejectedValue(dbError)
+      mockGetActions.mockRejectedValue(dbError)
 
       await expect(
         validateApplication(
@@ -330,9 +334,11 @@ describe('Application Validation Service', () => {
         )
       ).rejects.toThrow('Database connection failed')
 
-      expect(mockGetEnabledActions).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
+      expect(mockGetActions).toHaveBeenCalledWith(
+        mockRequest,
+        mockPostgresDb,
+        mockLandAction,
+        mockApplicationId
       )
     })
 

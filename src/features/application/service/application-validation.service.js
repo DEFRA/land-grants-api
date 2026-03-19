@@ -3,7 +3,7 @@ import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getEnabledActions } from '../../actions/queries/getActions.query.js'
+import { getActions } from '../../actions/service/action.service.js'
 import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
 
 /**
@@ -24,10 +24,11 @@ export const validateApplication = async (
   requesterUsername,
   request
 ) => {
-  // Get all the enabled actions
-  const actions = await getEnabledActions(
-    request.logger,
-    request.server.postgresDb
+  const actions = await getActions(
+    request,
+    request.server.postgresDb,
+    landAction,
+    applicationId
   )
 
   // Validate the entire request
