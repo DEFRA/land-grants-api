@@ -75,6 +75,7 @@ export const paymentCalculateResponseSchemaV1 = Joi.object({
 export const paymentCalculateSchemaV1 = Joi.object({
   startDate: Joi.date().optional(),
   sbi: Joi.string().optional(),
+  applicationId: Joi.string().optional(),
   parcel: Joi.array()
     .items(
       Joi.object({

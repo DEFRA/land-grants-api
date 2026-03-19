@@ -2,16 +2,14 @@ import Hapi from '@hapi/hapi'
 import { payments } from '~/src/features/payment/index.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
-vi.mock(
-  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-)
+vi.mock('~/src/features/actions/service/action.service.js')
 
 const mockValidateRequest = validateRequest
-const mockGetActionsByLatestVersion = getActionsByLatestVersion
+const mockGetActions = getActions
 
 const mockLandActions = {
   sbi: '123456789',
@@ -109,7 +107,7 @@ describe('Payment calculate controller V2', () => {
 
     mockValidateRequest.mockResolvedValue([])
     mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
-    mockGetActionsByLatestVersion.mockResolvedValue([
+    mockGetActions.mockResolvedValue([
       {
         version: 1,
         startDate: '2025-01-01',
@@ -132,7 +130,10 @@ describe('Payment calculate controller V2', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
-        payload: mockLandActions
+        payload: {
+          ...mockLandActions,
+          applicationId: 'application-1'
+        }
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -265,7 +266,7 @@ describe('Payment calculate controller V2', () => {
       }
 
       // Mock enabledActions with no matching action codes
-      mockGetActionsByLatestVersion.mockResolvedValue([
+      mockGetActions.mockResolvedValue([
         {
           version: 1,
           startDate: '2025-01-01',
@@ -319,7 +320,7 @@ describe('Payment calculate controller V2', () => {
       }
 
       const errorMessage = 'Database connection failed'
-      mockGetActionsByLatestVersion.mockRejectedValue(new Error(errorMessage))
+      mockGetActions.mockRejectedValue(new Error(errorMessage))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
