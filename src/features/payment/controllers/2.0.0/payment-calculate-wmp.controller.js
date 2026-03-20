@@ -50,19 +50,21 @@ export const PaymentsCalculateWMPControllerV2 = {
     // get all parcels passed in
     const area = []
     for (const parcel of parcels) {
-      const landParcel = await getLandData(
+      const result = await getLandData(
         parcel.sheetId,
         parcel.parcelId,
         postgresDb,
         request.logger
       )
 
-      if (!landParcel) {
+      if (!result) {
         continue
       }
 
+      const [landParcel] = result
+
       /** @type {LandParcelDb} */
-      area.push(landParcel?.area_sqm)
+      area.push(landParcel.area)
     }
 
     // sum those areas
