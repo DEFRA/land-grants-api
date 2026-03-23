@@ -1,5 +1,4 @@
-import { heapsPermutations } from '@mgcrea/heaps-permutations'
-import * as generatorics from 'generatorics'
+import { permutation, cartesian } from 'generatorics'
 import {
   LandCover,
   Action,
@@ -7,7 +6,6 @@ import {
   LandCoversForActions,
   LandCoverOrderPerAction,
   ActionStack,
-  ActionWithPermutations,
   CompatibilityCheckFn
 } from './aac-experiment.types.ts'
 
@@ -46,112 +44,6 @@ export const landCoversForActions: LandCoversForActions = {
 }
 
 // Helper functions
-export function getLandCoverPermutationsForAction(
-  actionCode: string,
-  landCoversOnParcel: LandCover[],
-  landCoversForActions: LandCoversForActions
-): string[][] {
-  const compatibleLandCovers: string[] = landCoversForActions[actionCode]
-  const landCoverOptions: string[] = compatibleLandCovers.filter(
-    (landCover: string) =>
-      landCoversOnParcel.some((c: LandCover) => c.name === landCover)
-  )
-  console.log('landCoverOptions', landCoverOptions)
-  return heapsPermutations(landCoverOptions)
-}
-
-export function getLandCoverPermutationsForActionOptimized(
-  actionCode: string,
-  landCoversOnParcel: LandCover[],
-  landCoversForActions: LandCoversForActions,
-  targetActionCode: string
-): string[][] {
-  const compatibleLandCovers: string[] = landCoversForActions[actionCode]
-  const targetCompatibleLandCovers: string[] =
-    landCoversForActions[targetActionCode] || []
-
-  const landCoverOptions: string[] = compatibleLandCovers.filter(
-    (landCover: string) =>
-      landCoversOnParcel.some((c: LandCover) => c.name === landCover)
-  )
-
-  // Find shared land covers between current action and target action
-  const sharedLandCovers: string[] = landCoverOptions.filter(
-    (landCover: string) => targetCompatibleLandCovers.includes(landCover)
-  )
-
-  // Find non-shared land covers
-  const nonSharedLandCovers: string[] = landCoverOptions.filter(
-    (landCover: string) => !targetCompatibleLandCovers.includes(landCover)
-  )
-
-  // If no shared land covers, return standard permutations
-  if (sharedLandCovers.length === 0) {
-    return heapsPermutations(landCoverOptions)
-  }
-
-  // Generate all permutations where shared land covers are at the end
-  // Generate permutations of non-shared parts
-  const nonSharedPermutations: string[][] =
-    nonSharedLandCovers.length > 0
-      ? heapsPermutations(nonSharedLandCovers)
-      : [[]] // Empty array if no non-shared land covers
-
-  // Generate permutations of shared parts
-  const sharedPermutations: string[][] = heapsPermutations(sharedLandCovers)
-
-  // Combine them: all non-shared permutations + all shared permutations
-  const result: string[][] = []
-  for (const nonSharedPerm of nonSharedPermutations) {
-    for (const sharedPerm of sharedPermutations) {
-      result.push([...nonSharedPerm, ...sharedPerm])
-    }
-  }
-
-  return result
-}
-
-// Lazy evaluation versions using simple generator implementation
-// Helper function to generate permutations lazily
-function* simplePermutations<T>(arr: T[]): Generator<T[], void, unknown> {
-  if (arr.length <= 1) {
-    yield [...arr]
-    return
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    const current = arr[i]
-    const remaining = [...arr.slice(0, i), ...arr.slice(i + 1)]
-
-    for (const perm of simplePermutations(remaining)) {
-      yield [current, ...perm]
-    }
-  }
-}
-
-// Helper function to generate cartesian product lazily
-function* cartesianProduct<T>(...arrays: T[][]): Generator<T[], void, unknown> {
-  if (arrays.length === 0) {
-    yield []
-    return
-  }
-
-  if (arrays.length === 1) {
-    for (const item of arrays[0]) {
-      yield [item]
-    }
-    return
-  }
-
-  const [firstArray, ...restArrays] = arrays
-
-  for (const firstItem of firstArray) {
-    for (const restItems of cartesianProduct(...restArrays)) {
-      yield [firstItem, ...restItems]
-    }
-  }
-}
-
 export function* getLandCoverPermutationsForActionLazy(
   actionCode: string,
   landCoversOnParcel: LandCover[],
@@ -163,8 +55,11 @@ export function* getLandCoverPermutationsForActionLazy(
       landCoversOnParcel.some((c: LandCover) => c.name === landCover)
   )
 
-  // Use our simple permutation generator
-  yield* simplePermutations(landCoverOptions)
+  // Use generatorics for lazy permutation generation - convert each permutation to array
+  const perms = permutation(landCoverOptions)
+  for (const perm of perms) {
+    yield [...perm]
+  }
 }
 
 export function* getLandCoverPermutationsForActionOptimizedLazy(
@@ -194,21 +89,31 @@ export function* getLandCoverPermutationsForActionOptimizedLazy(
 
   // If no shared land covers, return standard permutations
   if (sharedLandCovers.length === 0) {
-    yield* simplePermutations(landCoverOptions)
+    const perms = permutation(landCoverOptions)
+    for (const perm of perms) {
+      yield [...perm]
+    }
     return
   }
 
   // Generate all permutations where shared land covers are at the end
   if (nonSharedLandCovers.length > 0) {
     // We have both non-shared and shared land covers
-    for (const nonSharedPerm of simplePermutations(nonSharedLandCovers)) {
-      for (const sharedPerm of simplePermutations(sharedLandCovers)) {
+    const nonSharedPerms = permutation(nonSharedLandCovers)
+
+    for (const nonSharedPerm of nonSharedPerms) {
+      // Create fresh generator for each iteration to avoid consumption issue
+      const sharedPerms = permutation(sharedLandCovers)
+      for (const sharedPerm of sharedPerms) {
         yield [...nonSharedPerm, ...sharedPerm]
       }
     }
   } else {
     // Only shared land covers - just generate permutations of them
-    yield* simplePermutations(sharedLandCovers)
+    const perms = permutation(sharedLandCovers)
+    for (const perm of perms) {
+      yield [...perm]
+    }
   }
 }
 
@@ -237,8 +142,9 @@ export function* createAllActionLandCoverPermutationsLazy(
     (actionWithPerms) => actionWithPerms.permutations
   )
 
-  // Use our simple cartesian product generator
-  for (const combination of cartesianProduct(...permutationArrays)) {
+  // Use generatorics cartesian product for lazy generation
+  const cartesianPerms = cartesian(...permutationArrays)
+  for (const combination of cartesianPerms) {
     const result: LandCoverOrderPerAction = {}
 
     // Map the combination back to action codes
@@ -296,44 +202,6 @@ export function getMaximumAvailableAreaForActionLazy(
 }
 
 // Main logic functions
-export function createAllActionLandCoverPermutations(
-  actions: Action[],
-  landCoversOnParcel: LandCover[],
-  landCoversForActions: LandCoversForActions
-): LandCoverOrderPerAction[] {
-  const actionLandCoverPermutations: ActionWithPermutations[] = actions.map(
-    (action: Action) => {
-      const permutationsForAction: string[][] =
-        getLandCoverPermutationsForAction(
-          action.code,
-          landCoversOnParcel,
-          landCoversForActions
-        )
-      return { code: action.code, permutations: permutationsForAction }
-    }
-  )
-
-  // Generate cartesian product of all action permutations
-  let result: LandCoverOrderPerAction[] = [{}]
-
-  for (const actionWithPerms of actionLandCoverPermutations) {
-    const newResult: LandCoverOrderPerAction[] = []
-
-    for (const existingCombination of result) {
-      for (const permutation of actionWithPerms.permutations) {
-        newResult.push({
-          ...existingCombination,
-          [actionWithPerms.code]: permutation
-        })
-      }
-    }
-
-    result = newResult
-  }
-
-  return result
-}
-
 export function calculateAvailableAreaForAction(
   actionCode: string,
   existingActions: Action[],
@@ -407,110 +275,136 @@ export function createActionStacks(
   landCoverOrderPerAction: LandCoverOrderPerAction,
   compatibilityCheckFn: CompatibilityCheckFn
 ): ActionStack[] {
-  const stacks: ActionStack[] = []
-  let stackNumber: number = 1
+  const stackState = initializeStackState(landCoversOnParcel)
 
-  // Track remaining area for each land cover
+  for (const action of existingActions) {
+    allocateAction(
+      stackState,
+      action,
+      landCoverOrderPerAction,
+      compatibilityCheckFn
+    )
+  }
+
+  return stackState.stacks
+}
+
+interface StackState {
+  stacks: ActionStack[]
+  stackNumber: number
+  remainingAreaByLandCover: Record<string, number>
+}
+
+function initializeStackState(landCoversOnParcel: LandCover[]): StackState {
   const remainingAreaByLandCover: Record<string, number> = {}
   landCoversOnParcel.forEach((landCover: LandCover) => {
     remainingAreaByLandCover[landCover.name] = landCover.areaSqm
   })
 
-  for (const action of existingActions) {
-    let remainingActionArea: number = action.areaSqm
-    const preferredLandCovers: string[] = landCoverOrderPerAction[action.code]
-
-    // Safety check: if no land cover order is defined for this action, skip it
-    if (!preferredLandCovers) {
-      continue
-    }
-
-    // Allocate action area across preferred land covers
-    for (const landCoverName of preferredLandCovers) {
-      if (remainingActionArea <= 0) break
-
-      const availableLandCover: LandCover | undefined = landCoversOnParcel.find(
-        (cover: LandCover) => cover.name === landCoverName
-      )
-      if (!availableLandCover) continue
-
-      // Check if there's an existing stack on this land cover where this action is compatible
-      const compatibleStack: ActionStack | undefined = stacks.find(
-        (stack: ActionStack) =>
-          stack.landCover === landCoverName &&
-          stack.actions.every((existingActionCode: string) =>
-            compatibilityCheckFn(action.code, existingActionCode)
-          )
-      )
-
-      if (compatibleStack) {
-        // Add action to existing compatible stack - compatible actions can share the same area
-        compatibleStack.actions.push(action.code)
-        // Compatible actions share physical space, so this action is fully accommodated
-        break
-      }
-
-      // No compatible stack found, check if we have available area for a new stack
-      const availableArea: number = remainingAreaByLandCover[landCoverName]
-      if (availableArea <= 0) continue
-
-      // Allocate as much area as possible to this land cover
-      const allocatedArea: number = Math.min(remainingActionArea, availableArea)
-
-      stacks.push({
-        stackNumber: stackNumber++,
-        areaSqm: allocatedArea,
-        actions: [action.code],
-        landCover: landCoverName
-      })
-
-      // Update remaining areas
-      remainingActionArea -= allocatedArea
-      remainingAreaByLandCover[landCoverName] -= allocatedArea
-    }
+  return {
+    stacks: [],
+    stackNumber: 1,
+    remainingAreaByLandCover
   }
-
-  return stacks
 }
 
-export function getMaximumAvailableAreaForAction(
-  actionCode: string,
-  existingActions: Action[],
-  landCoversOnParcel: LandCover[],
-  landCoversForActions: LandCoversForActions,
+function allocateAction(
+  stackState: StackState,
+  action: Action,
+  landCoverOrderPerAction: LandCoverOrderPerAction,
   compatibilityCheckFn: CompatibilityCheckFn
-): number {
-  // Generate all possible land cover order combinations for existing actions
-  const allLandCoverOrders: LandCoverOrderPerAction[] =
-    createAllActionLandCoverPermutations(
-      existingActions,
-      landCoversOnParcel,
-      landCoversForActions
-    )
+): void {
+  const preferredLandCovers = landCoverOrderPerAction[action.code]
 
-  console.log('allLandCoverOrders count', allLandCoverOrders.length)
-
-  let maxAvailableArea: number = 0
-  let numberOfPermutationsProcessed: number = 0
-
-  // Test each combination to find the maximum available area
-  for (const landCoverOrderPerAction of allLandCoverOrders) {
-    // Calculate available area for this combination
-    const availableArea: number = calculateAvailableAreaForAction(
-      actionCode,
-      existingActions,
-      landCoversOnParcel,
-      landCoversForActions,
-      landCoverOrderPerAction,
-      compatibilityCheckFn
-    )
-
-    // Track the maximum
-    maxAvailableArea = Math.max(maxAvailableArea, availableArea)
-    numberOfPermutationsProcessed++
+  if (!preferredLandCovers) {
+    return // Skip actions without land cover preferences
   }
 
-  console.log('numberOfPermutationsProcessed', numberOfPermutationsProcessed)
+  let remainingActionArea = action.areaSqm
 
-  return maxAvailableArea
+  for (const landCoverName of preferredLandCovers) {
+    if (remainingActionArea <= 0) break
+
+    remainingActionArea = tryAllocateToLandCover(
+      stackState,
+      action.code,
+      landCoverName,
+      remainingActionArea,
+      compatibilityCheckFn
+    )
+  }
+}
+
+function tryAllocateToLandCover(
+  stackState: StackState,
+  actionCode: string,
+  landCoverName: string,
+  remainingActionArea: number,
+  compatibilityCheckFn: CompatibilityCheckFn
+): number {
+  const compatibleStack = findCompatibleStack(
+    stackState.stacks,
+    landCoverName,
+    actionCode,
+    compatibilityCheckFn
+  )
+
+  if (compatibleStack) {
+    return addToExistingStack(compatibleStack, actionCode)
+  }
+
+  return createNewStackIfPossible(
+    stackState,
+    actionCode,
+    landCoverName,
+    remainingActionArea
+  )
+}
+
+function findCompatibleStack(
+  stacks: ActionStack[],
+  landCoverName: string,
+  actionCode: string,
+  compatibilityCheckFn: CompatibilityCheckFn
+): ActionStack | undefined {
+  return stacks.find(
+    (stack: ActionStack) =>
+      stack.landCover === landCoverName &&
+      stack.actions.every((existingActionCode: string) =>
+        compatibilityCheckFn(actionCode, existingActionCode)
+      )
+  )
+}
+
+function addToExistingStack(
+  compatibleStack: ActionStack,
+  actionCode: string
+): number {
+  compatibleStack.actions.push(actionCode)
+  return 0 // Compatible actions share physical space, so action is fully accommodated
+}
+
+function createNewStackIfPossible(
+  stackState: StackState,
+  actionCode: string,
+  landCoverName: string,
+  remainingActionArea: number
+): number {
+  const availableArea = stackState.remainingAreaByLandCover[landCoverName]
+
+  if (availableArea <= 0) {
+    return remainingActionArea // Cannot allocate to this land cover
+  }
+
+  const allocatedArea = Math.min(remainingActionArea, availableArea)
+
+  stackState.stacks.push({
+    stackNumber: stackState.stackNumber++,
+    areaSqm: allocatedArea,
+    actions: [actionCode],
+    landCover: landCoverName
+  })
+
+  stackState.remainingAreaByLandCover[landCoverName] -= allocatedArea
+  return remainingActionArea - allocatedArea
 }

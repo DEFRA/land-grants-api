@@ -4,14 +4,10 @@ import {
   existingActions,
   compatibilityCheckFn,
   landCoversForActions,
-  getLandCoverPermutationsForAction,
-  getLandCoverPermutationsForActionOptimized,
   getLandCoverPermutationsForActionLazy,
   getLandCoverPermutationsForActionOptimizedLazy,
-  createAllActionLandCoverPermutations,
   createAllActionLandCoverPermutationsLazy,
   calculateAvailableAreaForAction,
-  getMaximumAvailableAreaForAction,
   getMaximumAvailableAreaForActionLazy,
   createActionStacks
 } from './aac-experiment.ts'
@@ -21,7 +17,6 @@ import {
   LandCoverOrderPerAction,
   LandCoversForActions
 } from './aac-experiment.types.ts'
-import { permutation } from 'generatorics'
 
 // Test data helper function
 export function createTestData(numActions: number, numLandCovers: number) {
@@ -46,24 +41,6 @@ export function createTestData(numActions: number, numLandCovers: number) {
 }
 
 describe('lazy evaluation with generatorics', () => {
-  test('test generatorics permutations with a simple example', () => {
-    const testLetters = ['A', 'B', 'C']
-    const perms = permutation(testLetters)
-    // for (const perm of perms) {
-    //   console.log(perm)
-    // }
-
-    const results = Array.from(perms, (perm) => [...perm])
-    console.log('Permutations of [A, B, C]:', JSON.stringify(results, null, 2))
-    expect(results).toEqual([
-      ['A', 'B', 'C'],
-      ['A', 'C', 'B'],
-      ['B', 'A', 'C'],
-      ['B', 'C', 'A'],
-      ['C', 'B', 'A'],
-      ['C', 'A', 'B']
-    ])
-  })
   test('getLandCoverPermutationsForActionLazy returns a generator', () => {
     const permutationsGenerator = getLandCoverPermutationsForActionLazy(
       'AA1',
@@ -77,10 +54,12 @@ describe('lazy evaluation with generatorics', () => {
   })
 
   test('lazy permutations yield same results as original permutations', () => {
-    const originalPermutations = getLandCoverPermutationsForAction(
-      'AA1',
-      landCoversOnParcel,
-      landCoversForActions
+    const originalPermutations = Array.from(
+      getLandCoverPermutationsForActionLazy(
+        'AA1',
+        landCoversOnParcel,
+        landCoversForActions
+      )
     )
 
     const lazyPermutations = getLandCoverPermutationsForActionLazy(
@@ -104,16 +83,18 @@ describe('lazy evaluation with generatorics', () => {
   })
 
   test('lazy optimized permutations yield same results as original optimized permutations', () => {
-    const originalOptimized = getLandCoverPermutationsForActionOptimized(
-      'AA4',
-      [
-        { areaSqm: 1000, name: 'Meadow' },
-        { areaSqm: 1000, name: 'Wetland' },
-        { areaSqm: 1000, name: 'Woodland' },
-        { areaSqm: 1000, name: 'Grassland' }
-      ],
-      landCoversForActions,
-      'CMOR1'
+    const originalOptimized = Array.from(
+      getLandCoverPermutationsForActionOptimizedLazy(
+        'AA4',
+        [
+          { areaSqm: 1000, name: 'Meadow' },
+          { areaSqm: 1000, name: 'Wetland' },
+          { areaSqm: 1000, name: 'Woodland' },
+          { areaSqm: 1000, name: 'Grassland' }
+        ],
+        landCoversForActions,
+        'CMOR1'
+      )
     )
 
     const lazyOptimized = getLandCoverPermutationsForActionOptimizedLazy(
@@ -135,7 +116,7 @@ describe('lazy evaluation with generatorics', () => {
 
     // Verify all permutations end with Grassland (the optimization)
     lazyResults.forEach((permutation) => {
-      expect(permutation[permutation.length - 1]).toBe('Grassland')
+      expect(permutation.at(-1)).toBe('Grassland')
     })
 
     // Convert to sets of JSON strings for order-independent comparison
@@ -146,10 +127,12 @@ describe('lazy evaluation with generatorics', () => {
   })
 
   test('lazy cartesian product for all action land cover permutations works', () => {
-    const originalCartesian = createAllActionLandCoverPermutations(
-      existingActions,
-      landCoversOnParcel,
-      landCoversForActions
+    const originalCartesian = Array.from(
+      createAllActionLandCoverPermutationsLazy(
+        existingActions,
+        landCoversOnParcel,
+        landCoversForActions
+      )
     )
 
     const lazyCartesian = createAllActionLandCoverPermutationsLazy(
@@ -165,7 +148,10 @@ describe('lazy evaluation with generatorics', () => {
 
     // Check that all results have the same structure
     lazyResults.forEach((result) => {
-      expect(Object.keys(result).sort()).toEqual(['AA1', 'AA2'])
+      expect(Object.keys(result).sort((a, b) => a.localeCompare(b))).toEqual([
+        'AA1',
+        'AA2'
+      ])
       expect(Array.isArray(result.AA1)).toBe(true)
       expect(Array.isArray(result.AA2)).toBe(true)
     })
@@ -220,7 +206,7 @@ describe('lazy evaluation with generatorics', () => {
   })
 
   test('lazy maximum area calculation produces same result as eager version', () => {
-    const eagerResult = getMaximumAvailableAreaForAction(
+    const eagerResult = getMaximumAvailableAreaForActionLazy(
       'CMOR1',
       existingActions,
       landCoversOnParcel,
@@ -273,10 +259,12 @@ describe('lazy evaluation with generatorics', () => {
 
 describe('testing ideas for aac', () => {
   test('can make cartesian product', () => {
-    const permutations = getLandCoverPermutationsForAction(
-      'AA1',
-      landCoversOnParcel,
-      landCoversForActions
+    const permutations = Array.from(
+      getLandCoverPermutationsForActionLazy(
+        'AA1',
+        landCoversOnParcel,
+        landCoversForActions
+      )
     )
     expect(permutations).toEqual([
       ['Woodland', 'Car park'],
@@ -285,10 +273,12 @@ describe('testing ideas for aac', () => {
   })
 
   test('createAllActionLandCoverPermutations generates cartesian product', () => {
-    const result = createAllActionLandCoverPermutations(
-      existingActions,
-      landCoversOnParcel,
-      landCoversForActions
+    const result = Array.from(
+      createAllActionLandCoverPermutationsLazy(
+        existingActions,
+        landCoversOnParcel,
+        landCoversForActions
+      )
     )
 
     expect(result).toEqual([
@@ -315,10 +305,12 @@ describe('testing ideas for aac', () => {
     const { lotsOfActions, lotsOfLandCovers, landCoversForLotsOfActions } =
       createTestData(4, 4)
 
-    const result = createAllActionLandCoverPermutations(
-      lotsOfActions,
-      lotsOfLandCovers,
-      landCoversForLotsOfActions
+    const result = Array.from(
+      createAllActionLandCoverPermutationsLazy(
+        lotsOfActions,
+        lotsOfLandCovers,
+        landCoversForLotsOfActions
+      )
     )
 
     expect(result).toHaveLength(331776) // 4 actions with 4 land covers each = 4!^4 = 24^4 = 331776 combinations
@@ -336,7 +328,7 @@ describe('testing ideas for aac', () => {
     // time the function to ensure it completes within a reasonable time frame (e.g. 5 seconds)
     const startTime = Date.now()
 
-    const result = getMaximumAvailableAreaForAction(
+    const result = getMaximumAvailableAreaForActionLazy(
       'CMOR1',
       lotsOfActions,
       lotsOfLandCovers,
@@ -515,7 +507,7 @@ describe('testing ideas for aac', () => {
   })
 
   test('getMaximumAvailableAreaForAction returns 1100 sqm for CMOR1', () => {
-    const result = getMaximumAvailableAreaForAction(
+    const result = getMaximumAvailableAreaForActionLazy(
       'CMOR1',
       existingActions,
       landCoversOnParcel,
@@ -540,18 +532,22 @@ describe('testing ideas for aac', () => {
     ]
 
     // Standard permutations (current approach)
-    const standardPermutations = getLandCoverPermutationsForAction(
-      'AA2',
-      testLandCovers,
-      landCoversForActions
+    const standardPermutations = Array.from(
+      getLandCoverPermutationsForActionLazy(
+        'AA2',
+        testLandCovers,
+        landCoversForActions
+      )
     )
 
     // Optimized permutations (shared land covers at end)
-    const optimizedPermutations = getLandCoverPermutationsForActionOptimized(
-      'AA2',
-      testLandCovers,
-      landCoversForActions,
-      'CMOR1' // The action we're optimizing for
+    const optimizedPermutations = Array.from(
+      getLandCoverPermutationsForActionOptimizedLazy(
+        'AA2',
+        testLandCovers,
+        landCoversForActions,
+        'CMOR1' // The action we're optimizing for
+      )
     )
 
     // Standard permutations should include both orders
@@ -618,18 +614,22 @@ describe('testing ideas for aac', () => {
     ]
 
     // Standard permutations include all 24 permutations (4!)
-    const standardPermutations = getLandCoverPermutationsForAction(
-      'AA4',
-      testLandCovers,
-      landCoversForActions
+    const standardPermutations = Array.from(
+      getLandCoverPermutationsForActionLazy(
+        'AA4',
+        testLandCovers,
+        landCoversForActions
+      )
     )
 
     // Optimized permutations should only include those with Grassland at the end
-    const optimizedPermutations = getLandCoverPermutationsForActionOptimized(
-      'AA4',
-      testLandCovers,
-      landCoversForActions,
-      'CMOR1'
+    const optimizedPermutations = Array.from(
+      getLandCoverPermutationsForActionOptimizedLazy(
+        'AA4',
+        testLandCovers,
+        landCoversForActions,
+        'CMOR1'
+      )
     )
 
     expect(standardPermutations).toHaveLength(24) // 4! = 24 total permutations
@@ -637,7 +637,7 @@ describe('testing ideas for aac', () => {
 
     // All optimized permutations should end with 'Grassland'
     optimizedPermutations.forEach((permutation) => {
-      expect(permutation[permutation.length - 1]).toBe('Grassland')
+      expect(permutation.at(-1)).toBe('Grassland')
     })
 
     // Should contain all permutations of ['Meadow', 'Wetland', 'Woodland'] + 'Grassland'
