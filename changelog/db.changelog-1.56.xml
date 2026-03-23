@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="disable-csam1-action-config" author="system">
+      <sql>UPDATE actions_config SET is_active = false WHERE code = 'CSAM1';</sql>
+    </changeSet>
+
+    <changeSet id="patch-csam1-action-config" author="system">
+      <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('CSAM1', 1, '{
+        "rules": [],
+        "payment": {
+          "ratePerUnitGbp": 6,
+          "ratePerAgreementPerYearGbp": 97
+        },
+        "start_date": "2025-01-01",
+        "duration_years": 3,
+        "land_cover_class_codes": [
+          "110",
+          "111",
+          "112",
+          "117",
+          "118",
+          "121",
+          "130",
+          "131",
+          "140",
+          "141",
+          "142",
+          "143"
+        ],
+        "application_unit_of_measurement": "ha"
+      }', TRUE, now(), 1, 0, 1);</sql>
+    </changeSet>
+
+</databaseChangeLog>

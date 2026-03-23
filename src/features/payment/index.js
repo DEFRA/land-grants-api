@@ -1,6 +1,7 @@
 import {
   PaymentsCalculateControllerV1,
-  PaymentsCalculateControllerV2
+  PaymentsCalculateControllerV2,
+  PaymentsCalculateWMPControllerV2
 } from './controllers/index.js'
 
 /**
@@ -20,6 +21,11 @@ const payments = {
           method: 'POST',
           path: '/api/v2/payments/calculate',
           ...PaymentsCalculateControllerV2
+        },
+        {
+          method: 'POST',
+          path: '/api/v2/payments/calculate-wmp',
+          ...PaymentsCalculateWMPControllerV2
         }
       ])
     }
