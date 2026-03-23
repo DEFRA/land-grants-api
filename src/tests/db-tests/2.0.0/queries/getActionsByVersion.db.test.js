@@ -18,7 +18,7 @@ describe('Get Action Configs By Version Query', () => {
   })
 
   const expectedActions = {
-    CSAM1: '1.0.0',
+    CSAM1: '1.0.1',
     OFM3: '1.0.0',
     SAM1: '1.0.0',
     SPM4: '1.0.0',

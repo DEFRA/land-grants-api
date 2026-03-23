@@ -39,7 +39,7 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
     applicationValidationRuns?.data?.parcelLevelResults?.flatMap((parcel) =>
       parcel.actions.flatMap((action) => ({
         code: action.code,
-        version: action.actionConfigVersion
+        version: action.actionConfigVersion || undefined
       }))
     ) ?? []
 
