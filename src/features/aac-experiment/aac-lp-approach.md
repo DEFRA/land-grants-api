@@ -30,6 +30,27 @@ This is mathematically correct but has **factorial time complexity**: O((K!)ᴺ)
 
 Formulates the same problem as a **linear programme** and solves it directly. The solver simultaneously finds the optimal placement of all existing actions and the maximum area for the new action. Time complexity is polynomial — effectively constant for the problem sizes encountered in practice.
 
+
+#### Flow Network Analogy
+
+![Flow network diagram](./Min%20Cost%20Flow%20Optimization.svg)
+
+The problem maps onto a **maximum flow with lower bounds** (a variant of min-cost max-flow). The LP formulation is the most natural encoding because it handles equality constraints and maximisation directly, but the network analogy is useful for understanding the structure.
+
+| Flow concept | This problem |
+|---|---|
+| Source | One per existing action — supplies exactly `areaSqm` of flow (equality, not just a cap) |
+| Source → action edge | Lower bound = upper bound = `areaSqm` — flow must equal committed area |
+| Action → cover edge | Exists only if the action is eligible on that cover; unbounded capacity |
+| Cover node capacity | Total area of that cover type — split into `cover_in` / `cover_out` with capacity = `area[c]` |
+| New action → sink edge | Lower bound = 0, upper bound = ∞; the flow here is what we maximise |
+| Sink | Absorbs all flow |
+
+Standard max-flow algorithms (Ford-Fulkerson, Dinic's) handle upper bounds only. The equality constraints on existing actions make this **max-flow with lower bounds**, which requires the more general min-cost max-flow formulation. The LP encodes this directly without that transformation.
+
+## Consider
+Graph algorithm, https://www.npmjs.com/package/min-cost-flow
+
 ---
 
 ## The LP Formulation
@@ -233,3 +254,4 @@ npm run bench:aac
 ```
 
 It uses the simplex method internally. For the problem sizes in this codebase (typically < 10 actions, < 20 land cover types) it solves in under 10ms. No external process, no WASM, no network call.
+
