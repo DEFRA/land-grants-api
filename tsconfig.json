@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictFunctionTypes": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "allowImportingTsExtensions": true
   },
   "exclude": [
     ".cache",
@@ -29,6 +30,6 @@
     ".*.js",
     ".eslintrc.*",
     ".prettierrc.*",
-    "src/features/aac-experiment.test.ts"
+    "src/features/aac-experiment/aac-experiment.test.ts"
   ]
 }
