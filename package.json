@@ -96,7 +96,7 @@
     "@shelf/jest-mongodb": "4.3.2",
     "@types/convict": "^6.1.6",
     "@types/lodash": "^4.17.13",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.5.0",
     "@types/nunjucks": "^3.2.6",
     "@types/webpack-assets-manifest": "^5.1.4",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
