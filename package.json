@@ -75,7 +75,7 @@
     "hapi-pino": "^12.1.0",
     "hapi-pulse": "^3.0.1",
     "hapi-swagger": "^17.3.2",
-    "https-proxy-agent": "^7.0.5",
+    "https-proxy-agent": "^8.0.0",
     "joi": "^17.13.3",
     "lodash": "^4.17.21",
     "node-cron": "^4.2.1",
