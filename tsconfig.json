@@ -28,6 +28,7 @@
     ".*.cjs",
     ".*.js",
     ".eslintrc.*",
-    ".prettierrc.*"
+    ".prettierrc.*",
+    "src/features/aac-experiment.test.ts"
   ]
 }
