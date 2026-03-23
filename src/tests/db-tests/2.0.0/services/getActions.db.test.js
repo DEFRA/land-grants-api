@@ -34,7 +34,7 @@ describe('getActions Service (DB)', () => {
   })
 
   const expectedActions = {
-    CSAM1: '1.0.0',
+    CSAM1: '1.0.1',
     OFM3: '1.0.0',
     SAM1: '1.0.0',
     SPM4: '1.0.0',
@@ -179,5 +179,53 @@ describe('getActions Service (DB)', () => {
 
     expect(results.filter((r) => r.code === 'CMOR1')).toHaveLength(1)
     expect(expected).toEqual({ ...expectedActions, CMOR1: '1.0.0' })
+  })
+
+  test('should get latest version if application exists but has an empty semanticVersion in the actions data', async () => {
+    mockGetLatestApplicationRunForAppId.mockResolvedValue({
+      data: {
+        parcelLevelResults: [
+          {
+            actions: [{ code: 'CMOR1', actionConfigVersion: '' }]
+          }
+        ]
+      }
+    })
+
+    const results = await getActions(
+      mockRequest,
+      connection,
+      mockLandActions,
+      mockApplicationId
+    )
+    const expected = Object.fromEntries(
+      results.map((r) => [r.code, r.semanticVersion])
+    )
+
+    expect(expected).toEqual({ ...expectedActions, CMOR1: '2.0.0' })
+  })
+
+  test('should bump action version with a patch version 1.0.0 -> 1.0.1', async () => {
+    mockGetLatestApplicationRunForAppId.mockResolvedValue({
+      data: {
+        parcelLevelResults: [
+          {
+            actions: [{ code: 'CSAM1', actionConfigVersion: '1.0.0' }]
+          }
+        ]
+      }
+    })
+
+    const results = await getActions(
+      mockRequest,
+      connection,
+      mockLandActions,
+      mockApplicationId
+    )
+    const expected = Object.fromEntries(
+      results.map((r) => [r.code, r.semanticVersion])
+    )
+
+    expect(expected).toEqual(expectedActions)
   })
 })
