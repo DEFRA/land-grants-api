@@ -86,12 +86,10 @@ describe('Ingest Module', () => {
 
       const module = await import('./ingest.module.js')
       const s3Module = await import('../../common/s3/s3.js')
-      const importServiceModule = await import(
-        '../service/import-land-data.service.js'
-      )
-      const logHelpersModule = await import(
-        '../../common/helpers/logging/log-helpers.js'
-      )
+      const importServiceModule =
+        await import('../service/import-land-data.service.js')
+      const logHelpersModule =
+        await import('../../common/helpers/logging/log-helpers.js')
       unzipper = (await import('unzipper')).default
 
       importLandData = module.importLandData
@@ -132,9 +130,12 @@ describe('Ingest Module', () => {
 
     it('should successfully import land data with ZIP file containing CSV', async () => {
       const mockZipStream = new PassThrough({ objectMode: true })
-      mockZipStream.push({ path: 'ignore.txt', autodrain: vi.fn() })
-      mockZipStream.push({ path: 'data.csv' })
-      mockZipStream.push(null)
+      const zipEntries = [
+        { path: 'ignore.txt', autodrain: vi.fn() },
+        { path: 'data.csv' },
+        null
+      ]
+      zipEntries.forEach((entry) => mockZipStream.push(entry))
 
       unzipper.Parse.mockReturnValue(mockZipStream)
 
@@ -165,8 +166,8 @@ describe('Ingest Module', () => {
 
     it('should throw error if no CSV is found in the ZIP archive', async () => {
       const mockZipStream = new PassThrough({ objectMode: true })
-      mockZipStream.push({ path: 'ignore.txt', autodrain: vi.fn() })
-      mockZipStream.push(null)
+      const zipEntries = [{ path: 'ignore.txt', autodrain: vi.fn() }, null]
+      zipEntries.forEach((entry) => mockZipStream.push(entry))
 
       unzipper.Parse.mockReturnValue(mockZipStream)
 
