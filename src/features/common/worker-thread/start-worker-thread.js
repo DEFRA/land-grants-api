@@ -37,7 +37,7 @@ export const startWorker = (
       })
     })
 
-    worker.on('error', (error) => {
+    worker.on('error', (/** @type {Error} */ error) => {
       logBusinessError(request.logger, {
         operation: `${category}_error`,
         error,
