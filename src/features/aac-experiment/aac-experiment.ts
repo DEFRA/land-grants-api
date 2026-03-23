@@ -1,8 +1,7 @@
-import { permutation, cartesian } from 'generatorics'
+import { permutation } from 'generatorics'
 import {
   LandCover,
   Action,
-  CompatibilityMatrix,
   LandCoversForActions,
   LandCoverOrderPerAction,
   ActionStack,
@@ -10,38 +9,6 @@ import {
 } from './aac-experiment.types.ts'
 
 // Test data constants
-export const landCoversOnParcel: LandCover[] = [
-  { areaSqm: 2500, name: 'Woodland' },
-  { areaSqm: 3100, name: 'Grassland' },
-  { areaSqm: 1000, name: 'Car park' }
-]
-
-export const existingActions: Action[] = [
-  { code: 'AA1', areaSqm: 2500 },
-  { code: 'AA2', areaSqm: 3000 }
-]
-
-// no action codes are compatible
-export const compatibilityMatrix: CompatibilityMatrix = [['AA1', 'AA3']]
-
-export const compatibilityCheckFn: CompatibilityCheckFn = (
-  code1: string,
-  code2: string
-): boolean => {
-  return compatibilityMatrix.some(
-    (pair: string[]) =>
-      (pair[0] === code1 && pair[1] === code2) ||
-      (pair[0] === code2 && pair[1] === code1)
-  )
-}
-
-export const landCoversForActions: LandCoversForActions = {
-  CMOR1: ['Grassland'],
-  AA1: ['Woodland', 'Car park', 'Circus'],
-  AA2: ['Woodland', 'Grassland', 'Deep Ocean'],
-  AA3: ['Car park'],
-  AA4: ['Meadow', 'Wetland', 'Woodland', 'Grassland'] // Action with multiple shared and non-shared land covers
-}
 
 // Helper functions
 export function* getLandCoverPermutationsForActionLazy(
@@ -122,37 +89,48 @@ export function* createAllActionLandCoverPermutationsLazy(
   landCoversOnParcel: LandCover[],
   landCoversForActions: LandCoversForActions
 ): Generator<LandCoverOrderPerAction, void, unknown> {
-  // Create arrays of all permutations for each action
-  const actionPermutationArrays = actions.map((action: Action) => {
-    const permutationsForAction = Array.from(
+  const actionGenerators = actions.map((action: Action) => ({
+    code: action.code,
+    generator: () =>
       getLandCoverPermutationsForActionLazy(
         action.code,
         landCoversOnParcel,
         landCoversForActions
       )
-    )
-    return {
-      code: action.code,
-      permutations: permutationsForAction
+  }))
+
+  // Generate cartesian product lazily using recursive approach
+  yield* generateLazyCartesianProduct(actionGenerators)
+}
+
+function* generateLazyCartesianProduct(
+  actionGenerators: Array<{
+    code: string
+    generator: () => Generator<string[], void, unknown>
+  }>
+): Generator<LandCoverOrderPerAction, void, unknown> {
+  if (actionGenerators.length === 0) {
+    yield {}
+    return
+  }
+
+  if (actionGenerators.length === 1) {
+    const { code, generator } = actionGenerators[0]
+    for (const permutation of generator()) {
+      yield { [code]: permutation }
     }
-  })
+    return
+  }
 
-  // Create arrays for cartesian product
-  const permutationArrays = actionPermutationArrays.map(
-    (actionWithPerms) => actionWithPerms.permutations
-  )
+  const [first, ...rest] = actionGenerators
 
-  // Use generatorics cartesian product for lazy generation
-  const cartesianPerms = cartesian(...permutationArrays)
-  for (const combination of cartesianPerms) {
-    const result: LandCoverOrderPerAction = {}
-
-    // Map the combination back to action codes
-    actionPermutationArrays.forEach((actionWithPerms, index) => {
-      result[actionWithPerms.code] = combination[index]
-    })
-
-    yield result
+  for (const firstPermutation of first.generator()) {
+    for (const restCombination of generateLazyCartesianProduct(rest)) {
+      yield {
+        [first.code]: firstPermutation,
+        ...restCombination
+      }
+    }
   }
 }
 
