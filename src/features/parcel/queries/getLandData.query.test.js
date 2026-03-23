@@ -30,6 +30,7 @@ describe('getLandData', () => {
           id: 1,
           sheet_id: testSheetId,
           parcel_id: testParcelId,
+          area_sqm: 101,
           area: 101,
           land_use: 'agricultural'
         },
@@ -37,6 +38,7 @@ describe('getLandData', () => {
           id: 2,
           sheet_id: testSheetId,
           parcel_id: testParcelId,
+          area_sqm: 50,
           area: 50,
           land_use: 'forestry'
         }

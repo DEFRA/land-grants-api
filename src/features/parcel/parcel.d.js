@@ -10,6 +10,7 @@
  * @property {string} sheet_id
  * @property {string} parcel_id
  * @property {number} area_sqm
+ * @property {number} area
  * @property {string} geom
  * @property {Date} last_updated
  */
