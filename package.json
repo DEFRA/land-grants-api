@@ -80,7 +80,7 @@
     "lodash": "^4.17.21",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
-    "pg": "^8.16.3",
+    "pg": "^8.20.0",
     "pg-copy-streams": "^7.0.0",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
