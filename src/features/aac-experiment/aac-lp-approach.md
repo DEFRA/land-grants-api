@@ -218,7 +218,7 @@ The current output includes a detailed `explanations` array that documents each 
 
 Two options:
 
-**Option A — Drop explanations for the AAC step.** The LP result (`existingPlaced`) shows where each existing action was optimally placed, which could be used to reconstruct a summary explanation if needed.
+**Option A — Drop explanations for the AAC step.** The LP result (`existingActionsByCover`) shows where each existing action was optimally placed, which could be used to reconstruct a summary explanation if needed.
 
 **Option B — Keep the existing stacking pipeline for explanations only.** Run the LP for the actual result and the existing stacker for the explanation text. This is transitional overhead but avoids a breaking change to the explanation output.
 

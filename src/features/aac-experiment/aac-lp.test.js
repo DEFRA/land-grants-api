@@ -24,7 +24,6 @@ const incompatibleWithCMOR1 = new Set(['AA1', 'AA2'])
 
 /**
  * Mirrors createTestData from aac-experiment.test.ts for LP format.
- *
  * @param {number} numActions - Number of existing actions to create
  * @param {number} numLandCovers - Number of land covers to create
  * @returns {{ covers: Record<string, number>, existingActions: Record<string, number>, eligibility: Record<string, Set<string>>, incompatibleWith: Set<string> }}
@@ -47,7 +46,7 @@ function createTestData(numActions, numLandCovers) {
     testIncompatibleWith.add(code)
   }
 
-  testEligibility['CMOR1'] = new Set(coverNames)
+  testEligibility.CMOR1 = new Set(coverNames)
 
   return {
     covers: testCovers,
@@ -70,6 +69,8 @@ describe('maxAreaForNewAction', () => {
     // CMOR1 is only eligible for Grassland (3100 sqm)
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(3100)
+    expect(result.existingActionsByCover).toEqual({})
+    expect(result.newActionByCover).toEqual({ Grassland: 3100 })
   })
 
   test('returns 1100 sqm for CMOR1 given AA1 (2500) and AA2 (3000) — mirrors getMaximumAvailableAreaForActionLazy', () => {
@@ -86,6 +87,12 @@ describe('maxAreaForNewAction', () => {
 
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(1100)
+
+    expect(result.existingActionsByCover).toEqual({
+      AA1: { 'Car park': 1000, Woodland: 1500 },
+      AA2: { Woodland: 1000, Grassland: 2000 }
+    })
+    expect(result.newActionByCover).toEqual({ Grassland: 1100 })
   })
 
   test('optimal LP result is always at least as good as the best specific land cover ordering', () => {
@@ -124,6 +131,8 @@ describe('maxAreaForNewAction', () => {
     // A_compat (compatible) stacks with newAction: full 1000 sqm is available
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(1000)
+    expect(result.existingActionsByCover).toEqual({ A_compat: { C1: 500 } })
+    expect(result.newActionByCover).toEqual({ C1: 1000 })
   })
 
   test('incompatible existing action reduces available area for new action', () => {
@@ -144,6 +153,8 @@ describe('maxAreaForNewAction', () => {
     // A_incompat occupies 600 sqm, leaving 400 sqm for newAction
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(400)
+    expect(result.existingActionsByCover).toEqual({ A_incompat: { C1: 600 } })
+    expect(result.newActionByCover).toEqual({ C1: 400 })
   })
 
   test('returns 0 when new action has no eligible covers present in the parcel', () => {
@@ -159,6 +170,8 @@ describe('maxAreaForNewAction', () => {
     // Woodland IS in covers (2500 sqm), so AA5 gets 2500 sqm.
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(2500)
+    expect(result.existingActionsByCover).toEqual({})
+    expect(result.newActionByCover).toEqual({ Woodland: 2500 })
   })
 
   test('returns 0 when new action has no eligible covers at all in the parcel', () => {
@@ -172,6 +185,8 @@ describe('maxAreaForNewAction', () => {
     })
 
     expect(result.maxAreaSqm).toBe(0)
+    expect(result.existingActionsByCover).toEqual({})
+    expect(result.newActionByCover).toEqual({})
   })
 
   test('LP placement output identifies where existing actions are placed', () => {
@@ -185,9 +200,9 @@ describe('maxAreaForNewAction', () => {
 
     expect(result.feasible).toBe(true)
     // AA1 (2500 sqm) across Woodland (2500) and Car park (1000)
-    expect(result.existingPlaced.AA1).toBeDefined()
+    expect(result.existingActionsByCover.AA1).toBeDefined()
     // AA2 (3000 sqm) across Woodland and Grassland
-    expect(result.existingPlaced.AA2).toBeDefined()
+    expect(result.existingActionsByCover.AA2).toBeDefined()
     // New action placed on Grassland
     expect(result.newActionByCover.Grassland).toBeGreaterThan(0)
   })

@@ -97,13 +97,13 @@ export function maxAreaForNewAction({
     if (val && val > 0) newActionByCover[cover] = val
   }
 
-  const existingPlaced = {}
+  const existingActionsByCover = {}
   for (const action of Object.keys(existingActions)) {
     for (const cover of Object.keys(covers)) {
       const val = result[`x__${action}__${cover}`]
       if (val && val > 0) {
-        if (!existingPlaced[action]) existingPlaced[action] = {}
-        existingPlaced[action][cover] = val
+        if (!existingActionsByCover[action]) existingActionsByCover[action] = {}
+        existingActionsByCover[action][cover] = val
       }
     }
   }
@@ -112,6 +112,6 @@ export function maxAreaForNewAction({
     feasible: true,
     maxAreaSqm: result.result || 0,
     newActionByCover,
-    existingPlaced
+    existingActionsByCover
   }
 }
