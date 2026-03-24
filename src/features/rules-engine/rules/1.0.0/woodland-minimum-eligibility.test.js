@@ -1,16 +1,23 @@
 import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js'
 
+const ruleDescription =
+  'Is the parcel eligible for the woodland management plan action?'
+
 describe('woodlandMinimumEligibility', () => {
-  const createApplication = (woodlandAreaOver10Years) => ({
-    woodlandAreaOver10Years
+  const createApplication = (oldWoodlandArea) => ({
+    oldWoodlandArea
   })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
-    name
+    name,
+    config: {
+      minimumSize: 0.5
+    },
+    description: ruleDescription
   })
 
   test('should pass when woodland area over 10 years meets the minimum of 0.5ha exactly', () => {
-    const application = createApplication('0.5')
+    const application = createApplication(0.5)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -19,6 +26,7 @@ describe('woodlandMinimumEligibility', () => {
       passed: true,
       reason:
         'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
+      description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
@@ -40,6 +48,7 @@ describe('woodlandMinimumEligibility', () => {
       passed: true,
       reason:
         'The woodland area over 10 years old (1.2 ha) meets the minimum required area of (0.5 ha)',
+      description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
@@ -61,6 +70,7 @@ describe('woodlandMinimumEligibility', () => {
       passed: true,
       reason:
         'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
+      description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
@@ -82,6 +92,7 @@ describe('woodlandMinimumEligibility', () => {
       passed: false,
       reason:
         'The woodland area over 10 years old (0.4 ha) does not meet the minimum required area of (0.5 ha)',
+      description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
@@ -102,6 +113,7 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: false,
       reason: 'No woodland area over 10 years old has been provided',
+      description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',

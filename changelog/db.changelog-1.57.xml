@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="add-pa3-action" author="system">
+        <sql>INSERT INTO actions (code, description, enabled, display) VALUES ('PA3', 'Woodland management plan', TRUE, FALSE);</sql>
+    </changeSet>
+
+    <changeSet id="add-new-pa3-action-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('PA3', 1, '{
+      "rules": [
+        {
+          "name": "parcel-has-minimum-eligibility-for-woodland-management-plan",
+          "config": {
+            "minimumSize": 0.5
+          },
+          "description": "Is the parcel eligible for the woodland management plan action?"
+        },
+        {
+          "name": "applied-for-total-available-area-for-woodland-management-plan",
+          "description": "Has the total available area for the woodland management plan been applied for?"
+        }
+      ],
+      "payment": {
+        "payment_method": {
+          "name": "wmp-calculation",
+          "config": {
+            "young-woodland-max-percent": 20,
+            "tiers": [
+              {
+                "lower-limit-exclusive-ha": 0.5,
+                "flat-rate-gbp": 1500,
+                "rate-per-unit-gbp": 0 
+              },
+              {
+                "lower-limit-exclusive-ha": 50.9999,
+                "flat-rate-gbp": 1500,
+                "rate-per-unit-gbp": 30
+              },
+              {
+                "lower-limit-exclusive-ha": 100,
+                "flat-rate-gbp": 3000,
+                "rate-per-unit-gbp": 15 
+              }
+            ]
+          }
+        }
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 1, 0, 0);</sql>
+   </changeSet>
+
+</databaseChangeLog>

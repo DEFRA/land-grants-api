@@ -13,6 +13,7 @@ import { postgresDb } from '~/src/features/common/helpers/postgres.js'
 import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
 import { statistics } from '~/src/features/common/plugins/statistics.js'
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 
 async function createServer() {
   const server = hapi.server({
@@ -62,7 +63,8 @@ async function createServer() {
     auth,
     router,
     s3Client,
-    statistics
+    statistics,
+    woodlandManagement
   ])
 
   // Register swagger separately as it needs Inert and Vision plugins

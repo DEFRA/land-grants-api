@@ -1,5 +1,5 @@
 import { splitParcelId } from '../../service/parcel.service.js'
-import { getEnabledActions } from '../../../actions/queries/getActions.query.js'
+import { getEnabledActions } from '../../../actions/queries/getEnabledActions.query.js'
 import { getLandData } from '../../queries/getLandData.query.js'
 
 /**
