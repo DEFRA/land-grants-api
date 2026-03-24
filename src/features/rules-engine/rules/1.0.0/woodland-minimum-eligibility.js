@@ -13,8 +13,6 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
-const MINIMUM_WOODLAND_AREA_HA = 0.5
-
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
@@ -22,19 +20,20 @@ const MINIMUM_WOODLAND_AREA_HA = 0.5
  */
 export const woodlandMinimumEligibility = {
   execute: (application, rule) => {
-    const { woodlandAreaOver10Years } = application
+    const { oldWoodlandArea } = application
+    const { minimumSize } = rule.config
     const name = rule.name
 
     const explanations = [
       {
         title: 'Woodland minimum eligibility',
         lines: [
-          `The minimum required woodland area over 10 years old is (${MINIMUM_WOODLAND_AREA_HA} ha), the holding has (${Number.parseFloat(woodlandAreaOver10Years)} ha)`
+          `The minimum required woodland area over 10 years old is (${minimumSize} ha), the holding has (${Number.parseFloat(oldWoodlandArea)} ha)`
         ]
       }
     ]
 
-    if (!woodlandAreaOver10Years) {
+    if (!oldWoodlandArea) {
       return {
         name,
         passed: false,
@@ -44,12 +43,12 @@ export const woodlandMinimumEligibility = {
       }
     }
 
-    if (Number.parseFloat(woodlandAreaOver10Years) < MINIMUM_WOODLAND_AREA_HA) {
+    if (Number.parseFloat(oldWoodlandArea) < Number.parseFloat(minimumSize)) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The woodland area over 10 years old (${Number.parseFloat(woodlandAreaOver10Years)} ha) does not meet the minimum required area of (${MINIMUM_WOODLAND_AREA_HA} ha)`,
+        reason: `The woodland area over 10 years old (${Number.parseFloat(oldWoodlandArea)} ha) does not meet the minimum required area of (${minimumSize} ha)`,
         explanations
       }
     }
@@ -58,7 +57,7 @@ export const woodlandMinimumEligibility = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The woodland area over 10 years old (${Number.parseFloat(woodlandAreaOver10Years)} ha) meets the minimum required area of (${MINIMUM_WOODLAND_AREA_HA} ha)`,
+      reason: `The woodland area over 10 years old (${Number.parseFloat(oldWoodlandArea)} ha) meets the minimum required area of (${minimumSize} ha)`,
       explanations
     }
   }

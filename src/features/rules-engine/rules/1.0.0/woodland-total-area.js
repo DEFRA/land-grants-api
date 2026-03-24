@@ -21,14 +21,16 @@
  */
 export const woodlandTotalArea = {
   execute: (application, rule) => {
-    const { totalWoodlandArea, totalParcelArea } = application
+    const { oldWoodlandArea, newWoodlandArea, totalParcelArea } = application
+
+    const totalWoodlandArea = Number.parseFloat(oldWoodlandArea) + Number.parseFloat(newWoodlandArea)
 
     const name = rule.name
     const explanations = [
       {
         title: 'Woodland total area',
         lines: [
-          `The total land parcel area is (${Number.parseFloat(totalParcelArea)} ha), the total woodland area (young + old) is (${Number.parseFloat(totalWoodlandArea)} ha)`
+          `The total land parcel area is (${totalParcelArea} ha), the total woodland area (young + old) is (${totalWoodlandArea} ha)`
         ]
       }
     ]
@@ -44,13 +46,13 @@ export const woodlandTotalArea = {
     }
 
     if (
-      Number.parseFloat(totalWoodlandArea) > Number.parseFloat(totalParcelArea)
+      totalWoodlandArea > Number.parseFloat(totalParcelArea)
     ) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The total woodland area (${Number.parseFloat(totalWoodlandArea)} ha) exceeds the total land parcel area (${Number.parseFloat(totalParcelArea)} ha)`,
+        reason: `The total woodland area (${totalWoodlandArea} ha) exceeds the total land parcel area (${totalParcelArea} ha)`,
         explanations
       }
     }
@@ -59,7 +61,7 @@ export const woodlandTotalArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The total woodland area (${Number.parseFloat(totalWoodlandArea)} ha) does not exceed the total land parcel area (${Number.parseFloat(totalParcelArea)} ha)`,
+      reason: `The total woodland area (${totalWoodlandArea} ha) does not exceed the total land parcel area (${totalParcelArea} ha)`,
       explanations
     }
   }

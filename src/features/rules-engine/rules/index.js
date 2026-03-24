@@ -11,6 +11,6 @@ export const rules = {
   'applied-for-total-available-area-1.0.0': appliedForTotalAvailableArea,
   'sssi-consent-required-1.0.0': sssiConsentRequired,
   'hefer-consent-required-1.0.0': heferConsentRequired,
-  'woodland-minimum-eligibility-1.0.0': woodlandMinimumEligibility,
-  'woodland-total-area-1.0.0': woodlandTotalArea
+  'parcel-has-minimum-eligibility-for-woodland-management-plan-1.0.0': woodlandMinimumEligibility,
+  'applied-for-total-available-area-for-woodland-management-plan-1.0.0': woodlandTotalArea
 }

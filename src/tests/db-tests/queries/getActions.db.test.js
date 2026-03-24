@@ -1,4 +1,4 @@
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 

@@ -1,16 +1,19 @@
 import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js'
 
 describe('woodlandMinimumEligibility', () => {
-  const createApplication = (woodlandAreaOver10Years) => ({
-    woodlandAreaOver10Years
+  const createApplication = (oldWoodlandArea) => ({
+    oldWoodlandArea
   })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
-    name
+    name,
+    config: {
+      minimumSize: 0.5
+    }
   })
 
   test('should pass when woodland area over 10 years meets the minimum of 0.5ha exactly', () => {
-    const application = createApplication('0.5')
+    const application = createApplication(1)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 

@@ -20,7 +20,7 @@ import {
   calculatePayment
 } from '~/src/features/payment/services/payment.service.js'
 import { paymentCalculationTransformerV1 } from '../../transformers/1.0.0/payment.transformer.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 
 /**
  * PaymentsCalculateController

@@ -28,7 +28,7 @@ describe('Get Action Configs By Version Query', () => {
     UPL2: '3.1.0',
     UPL3: '3.1.0',
     UPL8: '1.0.0',
-    UPL10: '1.0.0',
+    UPL10: '1.0.0'
   }
 
   test('should return all actions', async () => {

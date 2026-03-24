@@ -29,12 +29,6 @@
 
 /**
  * @typedef {object} RuleEngineApplication
- * @property {number} areaAppliedFor
- * @property {string} actionCodeAppliedFor
- * @property {LandParcel} landParcel
- * @property {string} [sheetId]
- * @property {string} [parcelId]
- * @property {string} [actionCode]
  */
 
 /**
