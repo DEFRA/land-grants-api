@@ -4,6 +4,8 @@ import {
   getLandCoverPermutationsForActionOptimizedLazy,
   createAllActionLandCoverPermutationsLazy,
   calculateAvailableAreaForAction,
+  calculateTotalCompatibleLandCoverArea,
+  getCompatibleLandCoversWithAreas,
   getMaximumAvailableAreaForActionLazy,
   createActionStacks
 } from './aac-experiment.ts'
@@ -347,11 +349,22 @@ describe('testing ideas for aac', () => {
       AA1: ['Woodland', 'Car park'],
       AA2: ['Woodland', 'Grassland']
     }
+    const totalCompatibleArea = calculateTotalCompatibleLandCoverArea(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
+    const compatibleLandCovers = getCompatibleLandCoversWithAreas(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
     const result = calculateAvailableAreaForAction(
       'CMOR1',
+      totalCompatibleArea,
+      compatibleLandCovers,
       existingActions,
       landCoversOnParcel,
-      landCoversForActions,
       landCoverOrderPerAction,
       compatibilityCheckFn
     )
@@ -364,11 +377,22 @@ describe('testing ideas for aac', () => {
       AA1: ['Car park', 'Woodland'],
       AA2: ['Woodland', 'Grassland']
     }
+    const totalCompatibleArea = calculateTotalCompatibleLandCoverArea(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
+    const compatibleLandCovers = getCompatibleLandCoversWithAreas(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
     const result = calculateAvailableAreaForAction(
       'CMOR1',
+      totalCompatibleArea,
+      compatibleLandCovers,
       existingActions,
       landCoversOnParcel,
-      landCoversForActions,
       landCoverOrderPerAction,
       compatibilityCheckFn
     )
@@ -377,11 +401,22 @@ describe('testing ideas for aac', () => {
   })
 
   test('calculateAvailableAreaForAction adds up valid land covers for CMOR1', () => {
+    const totalCompatibleArea = calculateTotalCompatibleLandCoverArea(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
+    const compatibleLandCovers = getCompatibleLandCoversWithAreas(
+      'CMOR1',
+      landCoversOnParcel,
+      landCoversForActions
+    )
     const result = calculateAvailableAreaForAction(
       'CMOR1',
+      totalCompatibleArea,
+      compatibleLandCovers,
       [],
       landCoversOnParcel,
-      landCoversForActions,
       {},
       () => true
     )
@@ -453,20 +488,33 @@ describe('testing ideas for aac', () => {
       AA2: ['Woodland', 'Grassland'] // Grassland last (better for CMOR1)
     }
 
+    const totalCompatibleArea = calculateTotalCompatibleLandCoverArea(
+      'CMOR1',
+      testLandCovers,
+      landCoversForActions
+    )
+    const compatibleLandCovers = getCompatibleLandCoversWithAreas(
+      'CMOR1',
+      testLandCovers,
+      landCoversForActions
+    )
+
     const standardAvailableArea = calculateAvailableAreaForAction(
       'CMOR1',
+      totalCompatibleArea,
+      compatibleLandCovers,
       testActions,
       testLandCovers,
-      landCoversForActions,
       standardLandCoverOrder,
       compatibilityCheckFn
     )
 
     const optimizedAvailableArea = calculateAvailableAreaForAction(
       'CMOR1',
+      totalCompatibleArea,
+      compatibleLandCovers,
       testActions,
       testLandCovers,
-      landCoversForActions,
       optimizedLandCoverOrder,
       compatibilityCheckFn
     )

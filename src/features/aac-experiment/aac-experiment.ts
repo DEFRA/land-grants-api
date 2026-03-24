@@ -141,6 +141,19 @@ export function getMaximumAvailableAreaForActionLazy(
   landCoversForActions: LandCoversForActions,
   compatibilityCheckFn: CompatibilityCheckFn
 ): number {
+  // Pre-calculate the total valid land cover area and compatible land covers
+  const totalCompatibleArea = calculateTotalCompatibleLandCoverArea(
+    actionCode,
+    landCoversOnParcel,
+    landCoversForActions
+  )
+
+  const compatibleLandCovers = getCompatibleLandCoversWithAreas(
+    actionCode,
+    landCoversOnParcel,
+    landCoversForActions
+  )
+
   // Use lazy evaluation to process land cover order combinations
   const allLandCoverOrdersLazy = createAllActionLandCoverPermutationsLazy(
     existingActions,
@@ -156,9 +169,10 @@ export function getMaximumAvailableAreaForActionLazy(
     // Calculate available area for this combination
     const availableArea: number = calculateAvailableAreaForAction(
       actionCode,
+      totalCompatibleArea,
+      compatibleLandCovers,
       existingActions,
       landCoversOnParcel,
-      landCoversForActions,
       landCoverOrderPerAction,
       compatibilityCheckFn
     )
@@ -179,17 +193,53 @@ export function getMaximumAvailableAreaForActionLazy(
   return maxAvailableArea
 }
 
+// Helper function to calculate total compatible land cover area
+export function calculateTotalCompatibleLandCoverArea(
+  actionCode: string,
+  landCoversOnParcel: LandCover[],
+  landCoversForActions: LandCoversForActions
+): number {
+  const compatibleLandCovers: string[] = landCoversForActions[actionCode]
+  return compatibleLandCovers.reduce(
+    (totalArea: number, landCoverName: string): number => {
+      const landCover: LandCover | undefined = landCoversOnParcel.find(
+        (cover: LandCover) => cover.name === landCoverName
+      )
+      return totalArea + (landCover ? landCover.areaSqm : 0)
+    },
+    0
+  )
+}
+
+// Helper function to get compatible land covers with their areas
+export function getCompatibleLandCoversWithAreas(
+  actionCode: string,
+  landCoversOnParcel: LandCover[],
+  landCoversForActions: LandCoversForActions
+): Array<{ name: string; areaSqm: number }> {
+  const compatibleLandCovers: string[] = landCoversForActions[actionCode]
+  return compatibleLandCovers
+    .map((landCoverName: string) => {
+      const landCover: LandCover | undefined = landCoversOnParcel.find(
+        (cover: LandCover) => cover.name === landCoverName
+      )
+      return landCover
+        ? { name: landCover.name, areaSqm: landCover.areaSqm }
+        : null
+    })
+    .filter((item): item is { name: string; areaSqm: number } => item !== null)
+}
+
 // Main logic functions
 export function calculateAvailableAreaForAction(
   actionCode: string,
+  totalCompatibleArea: number,
+  compatibleLandCovers: Array<{ name: string; areaSqm: number }>,
   existingActions: Action[],
   landCoversOnParcel: LandCover[],
-  landCoversForActions: LandCoversForActions,
   landCoverOrderPerAction: LandCoverOrderPerAction,
   compatibilityCheckFn: CompatibilityCheckFn
 ): number {
-  const compatibleLandCovers: string[] = landCoversForActions[actionCode]
-
   // If we have landCoverOrderPerAction and compatibilityCheckFn, use stack-based calculation
   if (
     landCoverOrderPerAction &&
@@ -205,17 +255,12 @@ export function calculateAvailableAreaForAction(
     )
 
     return compatibleLandCovers.reduce(
-      (totalArea: number, landCoverName: string): number => {
-        const landCover: LandCover | undefined = landCoversOnParcel.find(
-          (cover: LandCover) => cover.name === landCoverName
-        )
-        if (!landCover) return totalArea
-
+      (totalArea: number, landCover): number => {
         let availableArea: number = landCover.areaSqm
 
         // Subtract area of stacks that contain incompatible actions on this land cover
         const stacksOnThisLandCover: ActionStack[] = stacks.filter(
-          (stack: ActionStack) => stack.landCover === landCoverName
+          (stack: ActionStack) => stack.landCover === landCover.name
         )
 
         for (const stack of stacksOnThisLandCover) {
@@ -235,16 +280,8 @@ export function calculateAvailableAreaForAction(
     )
   }
 
-  // Fallback to original simple calculation
-  return compatibleLandCovers.reduce(
-    (totalArea: number, landCoverName: string): number => {
-      const landCover: LandCover | undefined = landCoversOnParcel.find(
-        (cover: LandCover) => cover.name === landCoverName
-      )
-      return totalArea + (landCover ? landCover.areaSqm : 0)
-    },
-    0
-  )
+  // Fallback to simple calculation using pre-calculated total
+  return totalCompatibleArea
 }
 
 export function createActionStacks(
