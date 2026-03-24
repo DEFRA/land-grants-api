@@ -16,27 +16,66 @@ function addToConstraint(model, name, varName, coeff, def) {
 }
 
 /**
+ * Finds compatibility groups (connected components) among actions.
+ * Actions in the same group can stack (share physical space).
+ * @param {string[]} actions - Array of action codes
+ * @param {Function} compatibilityCheckFn - Function to check if two actions are compatible
+ * @returns {string[][]} Array of compatibility groups
+ */
+function findCompatibilityGroups(actions, compatibilityCheckFn) {
+  const visited = new Set()
+  const groups = []
+
+  // DFS to find connected components in compatibility graph
+  function dfs(action, currentGroup) {
+    visited.add(action)
+    currentGroup.push(action)
+
+    for (const otherAction of actions) {
+      if (
+        !visited.has(otherAction) &&
+        compatibilityCheckFn(action, otherAction)
+      ) {
+        dfs(otherAction, currentGroup)
+      }
+    }
+  }
+
+  for (const action of actions) {
+    if (!visited.has(action)) {
+      const group = []
+      dfs(action, group)
+      groups.push(group)
+    }
+  }
+
+  return groups
+}
+
+/**
  * Calculates the maximum available area for a new action given existing action
  * commitments, using linear programming to find the optimal placement of those
  * existing actions across eligible land covers.
  *
  * Compatible existing actions are treated as "stackable" — they share physical
- * space with the new action and therefore do not reduce its available area.
- * Only actions in `incompatibleWith` compete with the new action for land.
+ * space with each other and with the new action and therefore do not reduce
+ * available area. Only incompatible action combinations compete for land.
  * @param {object} params
  * @param {Record<string, number>} params.covers - Map of land cover name to total area in sqm
  * @param {Record<string, number>} params.existingActions - Map of existing action code to area in sqm
  * @param {string} params.newAction - The action code of the new action to calculate area for
  * @param {Record<string, Set<string>>} params.eligibility - Map of action code to set of eligible cover names
  * @param {Set<string>} params.incompatibleWith - Set of existing action codes incompatible with the new action
- * @returns {{ feasible: boolean, maxAreaSqm: number, newActionByCover: Record<string, number>, existingPlaced: Record<string, Record<string, number>> }}
+ * @param {function(string, string): boolean} params.compatibilityCheckFn - Function that returns true if two actions are compatible
+ * @returns {{ feasible: boolean, maxAreaSqm: number, newActionByCover: Record<string, number>, existingActionsByCover: Record<string, Record<string, number>> }}
  */
 export function maxAreaForNewAction({
   covers,
   existingActions,
   newAction,
   eligibility,
-  incompatibleWith
+  incompatibleWith,
+  compatibilityCheckFn
 }) {
   const model = {
     optimize: 'objective',
@@ -67,8 +106,10 @@ export function maxAreaForNewAction({
     for (const cover of eligible) {
       const xVar = `x__${action}__${cover}`
 
-      // Physical cap: all existing actions on this cover must not exceed its area
-      addToConstraint(model, `xcap__${cover}`, xVar, 1, { max: covers[cover] })
+      // Basic physical constraint: no action can exceed the cover's total area
+      addToConstraint(model, `pcap__${action}__${cover}`, xVar, 1, {
+        max: covers[cover]
+      })
 
       // Equality: each existing action must account for exactly its total area
       addToConstraint(model, `total__${action}`, xVar, 1, {
@@ -85,19 +126,84 @@ export function maxAreaForNewAction({
     }
   }
 
-  const result = solver.Solve(model)
+  // Add constraints for incompatible compatibility groups by cover
+  // This properly models stacking: compatible actions share physical space,
+  // incompatible groups compete for physical space
+  if (compatibilityCheckFn) {
+    const existingActionCodes = Object.keys(existingActions)
 
-  if (!result.feasible) {
-    return { feasible: false, maxAreaSqm: 0 }
+    for (const cover of Object.keys(covers)) {
+      // Find all actions eligible for this cover
+      const actionsEligibleForCover = existingActionCodes.filter((action) => {
+        const eligible = eligibility[action] ?? new Set()
+        return eligible.has(cover)
+      })
+
+      if (actionsEligibleForCover.length > 1) {
+        // Build compatibility groups (connected components)
+        const compatibilityGroups = findCompatibilityGroups(
+          actionsEligibleForCover,
+          compatibilityCheckFn
+        )
+
+        // If we have multiple groups, they compete for physical space
+        if (compatibilityGroups.length > 1) {
+          const constraintName = `group_space__${cover}`
+
+          for (
+            let groupIndex = 0;
+            groupIndex < compatibilityGroups.length;
+            groupIndex++
+          ) {
+            const group = compatibilityGroups[groupIndex]
+            const groupVar = `group_${groupIndex}__${cover}`
+
+            // Group variable represents physical space used by this compatibility group
+            if (!model.variables[groupVar]) model.variables[groupVar] = {}
+
+            // Add group space variable to the inter-group constraint
+            addToConstraint(model, constraintName, groupVar, 1, {
+              max: covers[cover]
+            })
+
+            // Link group variable to individual action variables:
+            // group_space >= each action in the group (since they stack)
+            for (const action of group) {
+              const xVar = `x__${action}__${cover}`
+              const linkConstraintName = `link_${groupVar}__${action}`
+
+              // group_var >= x__action__cover (group space ≥ any individual action)
+              addToConstraint(model, linkConstraintName, groupVar, 1, {
+                min: 0
+              })
+              addToConstraint(model, linkConstraintName, xVar, -1, { min: 0 })
+            }
+          }
+        }
+      }
+    }
   }
 
-  const newActionByCover = {}
+  const result = /** @type {any} */ (solver).Solve(model)
+  // console.log('--model--', JSON.stringify(model, null, 2))
+  // console.log('--result--', JSON.stringify(result, null, 2))
+  if (!result.feasible) {
+    return {
+      feasible: false,
+      maxAreaSqm: 0,
+      newActionByCover: {},
+      existingActionsByCover: {}
+    }
+  }
+
+  const newActionByCover = /** @type {Record<string, number>} */ ({})
   for (const cover of Object.keys(covers)) {
     const val = result[`y__${cover}`]
     if (val && val > 0) newActionByCover[cover] = val
   }
 
-  const existingActionsByCover = {}
+  const existingActionsByCover =
+    /** @type {Record<string, Record<string, number>>} */ ({})
   for (const action of Object.keys(existingActions)) {
     for (const cover of Object.keys(covers)) {
       const val = result[`x__${action}__${cover}`]

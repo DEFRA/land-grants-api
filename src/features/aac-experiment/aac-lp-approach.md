@@ -6,6 +6,12 @@ The available area calculation (AAC) determines how much land is available for a
 
 Because the answer changes depending on where we assume existing actions sit, the problem is to find the **maximum possible available area** across all valid placements of existing actions.
 
+Problem outline:
+
+- All actions have a set of eligible land covers they can be placed on.
+- A compatibility function defines which actions can share land cover (stack) and which cannot (incompatible actions consume the same area).
+- Compatibility should be considered for all actions - not just the new action vs existing, but also between existing actions themselves. Compatible existing actions can stack together without consuming additional area, while incompatible ones compete for the same land.
+
 ---
 
 ## The Three Approaches
@@ -30,25 +36,25 @@ This is mathematically correct but has **factorial time complexity**: O((K!)ᴺ)
 
 Formulates the same problem as a **linear programme** and solves it directly. The solver simultaneously finds the optimal placement of all existing actions and the maximum area for the new action. Time complexity is polynomial — effectively constant for the problem sizes encountered in practice.
 
-
 #### Flow Network Analogy
 
 ![Flow network diagram](./Min%20Cost%20Flow%20Optimization.svg)
 
 The problem maps onto a **maximum flow with lower bounds** (a variant of min-cost max-flow). The LP formulation is the most natural encoding because it handles equality constraints and maximisation directly, but the network analogy is useful for understanding the structure.
 
-| Flow concept | This problem |
-|---|---|
-| Source | One per existing action — supplies exactly `areaSqm` of flow (equality, not just a cap) |
-| Source → action edge | Lower bound = upper bound = `areaSqm` — flow must equal committed area |
-| Action → cover edge | Exists only if the action is eligible on that cover; unbounded capacity |
-| Cover node capacity | Total area of that cover type — split into `cover_in` / `cover_out` with capacity = `area[c]` |
-| New action → sink edge | Lower bound = 0, upper bound = ∞; the flow here is what we maximise |
-| Sink | Absorbs all flow |
+| Flow concept           | This problem                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| Source                 | One per existing action — supplies exactly `areaSqm` of flow (equality, not just a cap)       |
+| Source → action edge   | Lower bound = upper bound = `areaSqm` — flow must equal committed area                        |
+| Action → cover edge    | Exists only if the action is eligible on that cover; unbounded capacity                       |
+| Cover node capacity    | Total area of that cover type — split into `cover_in` / `cover_out` with capacity = `area[c]` |
+| New action → sink edge | Lower bound = 0, upper bound = ∞; the flow here is what we maximise                           |
+| Sink                   | Absorbs all flow                                                                              |
 
 Standard max-flow algorithms (Ford-Fulkerson, Dinic's) handle upper bounds only. The equality constraints on existing actions make this **max-flow with lower bounds**, which requires the more general min-cost max-flow formulation. The LP encodes this directly without that transformation.
 
 ## Consider
+
 Graph algorithm, https://www.npmjs.com/package/min-cost-flow
 
 ---
@@ -57,10 +63,11 @@ Graph algorithm, https://www.npmjs.com/package/min-cost-flow
 
 ### Variables
 
-| Variable  | Meaning                                             |
-| --------- | --------------------------------------------------- |
-| `x[a, c]` | sqm of existing action `a` placed on land cover `c` |
-| `y[c]`    | sqm of the new action placed on land cover `c`      |
+| Variable     | Meaning                                                            |
+| ------------ | ------------------------------------------------------------------ |
+| `x[a, c]`    | sqm of existing action `a` placed on land cover `c`                |
+| `y[c]`       | sqm of the new action placed on land cover `c`                     |
+| `group[i,c]` | sqm of physical space used by compatibility group `i` on cover `c` |
 
 ### Objective
 
@@ -76,19 +83,79 @@ maximise  Σ y[c]  for all c ∈ eligible covers for new action
 Σ_c  x[a, c]  =  total_area[a]    for each existing action a
 ```
 
-**2. Physical land cap — existing actions cannot exceed a cover's total area:**
+**2. Physical capacity — no action can exceed any cover's total area:**
 
 ```
-Σ_a  x[a, c]  ≤  area[c]    for each cover c
+x[a, c] ≤ area[c]    for each action a, cover c
 ```
 
-**3. Incompatibility cap — incompatible existing actions compete with the new action:**
+**3. Incompatibility with new action — incompatible existing actions compete with the new action:**
 
 ```
-Σ_{a: incompatible}  x[a, c]  +  y[c]  ≤  area[c]    for each cover c
+Σ_{a: incompatible_with_new}  x[a, c]  +  y[c]  ≤  area[c]    for each cover c
 ```
 
-Constraint 3 is kept **separate** from constraint 2. Compatible existing actions can stack with the new action (they share physical space without consuming additional area), so they must not appear in the incompatibility cap. This is the key semantic difference from a naïve single-cap formulation.
+**4. Compatibility group constraints — incompatible groups compete for physical space:**
+
+For each cover with multiple compatibility groups:
+
+```
+Σ_i  group[i, c]  ≤  area[c]    (groups compete for physical space)
+
+group[i, c] ≥ x[a, c]    for each action a in group i    (group space covers all actions in group)
+```
+
+**Key Innovation: Proper Stacking Model**
+
+The compatibility group constraints implement proper stacking semantics:
+
+- **Within groups**: Compatible actions share the same physical space, so `group[i,c] = max(actions_in_group[i])`
+- **Between groups**: Incompatible groups compete for physical space, so `Σ group[i,c] ≤ area[c]`
+- **With new action**: Only groups containing actions incompatible with the new action affect constraint 3
+
+This correctly models scenarios like:
+
+- `aa1(500) + aa2(300)` compatible → use `max(500,300) = 500` physical space
+- `aa3(200) + aa4(100)` compatible → use `max(200,100) = 200` physical space
+- Groups incompatible → total physical space = `500 + 200 = 700` sqm
+
+---
+
+## API Usage
+
+### Function Signature
+
+```js
+const outcome = maxAreaForNewAction({
+  newAction,
+  existingActions,
+  landCoverAreas,
+  compatibilityCheckFn,
+  debug: false
+})
+
+if (outcome.status !== 'ok') {
+  // LP was infeasible (no solution) - rare edge case
+}
+
+// outcome.areas = { 'cover1': area_sqm, ... }
+```
+
+### Parameters
+
+- **`newAction`**: The action to place (requires `.action` and `.covers` properties)
+- **`existingActions`**: Array of committed actions (requires `.action`, `.covers`, `.area` properties)
+- **`landCoverAreas`**: Map of cover ID to available area in sqm
+- **`compatibilityCheckFn`**: `(action1Id, action2Id) => boolean` - checks if two actions are compatible for stacking
+- **`debug`**: Optional boolean for detailed LP constraint logging
+
+### Return Value
+
+The function returns an object with:
+
+- **`status`**: `'ok'` for successful solve, `'infeasible'` if no solution exists
+- **`areas`**: Map of cover ID to allocated area in sqm for the new action
+- **`existingActionsByCover`**: Optimal placement of existing actions (debugging only)
 
 ---
 
@@ -254,4 +321,3 @@ npm run bench:aac
 ```
 
 It uses the simplex method internally. For the problem sizes in this codebase (typically < 10 actions, < 20 land cover types) it solves in under 10ms. No external process, no WASM, no network call.
-
