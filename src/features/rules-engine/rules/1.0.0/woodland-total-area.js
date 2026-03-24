@@ -23,7 +23,9 @@ export const woodlandTotalArea = {
   execute: (application, rule) => {
     const { oldWoodlandArea, newWoodlandArea, totalParcelArea } = application
 
-    const totalWoodlandArea = Number.parseFloat(oldWoodlandArea) + Number.parseFloat(newWoodlandArea || 0)
+    const totalWoodlandArea =
+      Number.parseFloat(oldWoodlandArea) +
+      Number.parseFloat(newWoodlandArea || 0)
 
     const name = rule.name
     const explanations = [
@@ -45,9 +47,7 @@ export const woodlandTotalArea = {
       }
     }
 
-    if (
-      totalWoodlandArea > Number.parseFloat(totalParcelArea)
-    ) {
+    if (totalWoodlandArea > Number.parseFloat(totalParcelArea)) {
       return {
         name,
         passed: false,

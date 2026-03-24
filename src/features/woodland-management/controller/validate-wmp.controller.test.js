@@ -7,24 +7,26 @@ vi.mock('../service/wmp-service.js')
 const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan
 
 const mockResult = {
-  "hasPassed": true,
-  "code": "PA3",
-  "actionConfigVersion": "1.0.0",
-  "rules": [
+  hasPassed: true,
+  code: 'PA3',
+  actionConfigVersion: '1.0.0',
+  rules: [
     {
-      "name": "parcel-has-minimum-eligibility-for-woodland-management-plan",
-      "passed": true,
-      "description": "Is the parcel eligible for the woodland management plan action?",
-      "reason": "The woodland area over 10 years old (1 ha) meets the minimum required area of (0.5 ha)",
-      "explanations": [
+      name: 'parcel-has-minimum-eligibility-for-woodland-management-plan',
+      passed: true,
+      description:
+        'Is the parcel eligible for the woodland management plan action?',
+      reason:
+        'The woodland area over 10 years old (1 ha) meets the minimum required area of (0.5 ha)',
+      explanations: [
         {
-          "title": "Woodland minimum eligibility",
-          "lines": [
-            "The minimum required woodland area over 10 years old is (0.5 ha), the holding has (1 ha)"
+          title: 'Woodland minimum eligibility',
+          lines: [
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (1 ha)'
           ]
         }
       ]
-    },
+    }
   ]
 }
 
@@ -88,7 +90,9 @@ describe('Validate WMP controller', () => {
         newWoodlandArea: 1
       }
     }
-    mockValidateWoodlandManagementPlan.mockRejectedValue(new Error('Something went wrong'))
+    mockValidateWoodlandManagementPlan.mockRejectedValue(
+      new Error('Something went wrong')
+    )
 
     /** @type { Hapi.ServerInjectResponse<object> } */
     const result = await server.inject(request)

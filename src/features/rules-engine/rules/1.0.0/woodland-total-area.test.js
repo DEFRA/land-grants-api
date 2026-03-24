@@ -1,9 +1,14 @@
 import { woodlandTotalArea } from './woodland-total-area.js'
 
-const ruleDescription = 'Has the total available area for the woodland management plan been applied for?';
+const ruleDescription =
+  'Has the total available area for the woodland management plan been applied for?'
 
 describe('woodlandTotalArea', () => {
-  const createApplication = (oldWoodlandArea, newWoodlandArea, totalParcelArea) => ({
+  const createApplication = (
+    oldWoodlandArea,
+    newWoodlandArea,
+    totalParcelArea
+  ) => ({
     oldWoodlandArea,
     newWoodlandArea,
     totalParcelArea

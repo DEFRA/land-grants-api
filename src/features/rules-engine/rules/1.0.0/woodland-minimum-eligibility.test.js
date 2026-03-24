@@ -1,6 +1,7 @@
 import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js'
 
-const ruleDescription = 'Is the parcel eligible for the woodland management plan action?'
+const ruleDescription =
+  'Is the parcel eligible for the woodland management plan action?'
 
 describe('woodlandMinimumEligibility', () => {
   const createApplication = (oldWoodlandArea) => ({
