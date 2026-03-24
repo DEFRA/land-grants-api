@@ -65,7 +65,6 @@ function findCompatibilityGroups(actions, compatibilityCheckFn) {
  * @param {Record<string, number>} params.existingActions - Map of existing action code to area in sqm
  * @param {string} params.newAction - The action code of the new action to calculate area for
  * @param {Record<string, Set<string>>} params.eligibility - Map of action code to set of eligible cover names
- * @param {Set<string>} params.incompatibleWith - Set of existing action codes incompatible with the new action
  * @param {function(string, string): boolean} params.compatibilityCheckFn - Function that returns true if two actions are compatible
  * @returns {{ feasible: boolean, maxAreaSqm: number, newActionByCover: Record<string, number>, existingActionsByCover: Record<string, Record<string, number>> }}
  */
@@ -74,7 +73,6 @@ export function maxAreaForNewAction({
   existingActions,
   newAction,
   eligibility,
-  incompatibleWith,
   compatibilityCheckFn
 }) {
   const model = {
@@ -117,66 +115,114 @@ export function maxAreaForNewAction({
         max: total
       })
 
-      // Incompatible actions compete directly with the new action on shared covers
-      if (incompatibleWith.has(action) && model.constraints[`icap__${cover}`]) {
-        addToConstraint(model, `icap__${cover}`, xVar, 1, {
-          max: covers[cover]
-        })
-      }
+      // Note: Incompatibility constraint is handled separately after groups are formed
     }
   }
 
   // Add constraints for incompatible compatibility groups by cover
   // This properly models stacking: compatible actions share physical space,
   // incompatible groups compete for physical space
-  if (compatibilityCheckFn) {
-    const existingActionCodes = Object.keys(existingActions)
+  const existingActionCodes = Object.keys(existingActions)
 
-    for (const cover of Object.keys(covers)) {
-      // Find all actions eligible for this cover
-      const actionsEligibleForCover = existingActionCodes.filter((action) => {
-        const eligible = eligibility[action] ?? new Set()
-        return eligible.has(cover)
-      })
+  for (const cover of Object.keys(covers)) {
+    // Find all actions eligible for this cover
+    const actionsEligibleForCover = existingActionCodes.filter((action) => {
+      const eligible = eligibility[action] ?? new Set()
+      return eligible.has(cover)
+    })
 
-      if (actionsEligibleForCover.length > 1) {
-        // Build compatibility groups (connected components)
-        const compatibilityGroups = findCompatibilityGroups(
-          actionsEligibleForCover,
-          compatibilityCheckFn
+    if (actionsEligibleForCover.length > 1) {
+      // Build compatibility groups (connected components)
+      const compatibilityGroups = findCompatibilityGroups(
+        actionsEligibleForCover,
+        compatibilityCheckFn
+      )
+
+      // If we have multiple groups, they compete for physical space
+      if (compatibilityGroups.length > 1) {
+        const constraintName = `group_space__${cover}`
+
+        for (
+          let groupIndex = 0;
+          groupIndex < compatibilityGroups.length;
+          groupIndex++
+        ) {
+          const group = compatibilityGroups[groupIndex]
+          const groupVar = `group_${groupIndex}__${cover}`
+
+          // Group variable represents physical space used by this compatibility group
+          if (!model.variables[groupVar]) model.variables[groupVar] = {}
+
+          // Add group space variable to the inter-group constraint
+          addToConstraint(model, constraintName, groupVar, 1, {
+            max: covers[cover]
+          })
+
+          // Link group variable to individual action variables:
+          // group_space >= each action in the group (since they stack)
+          for (const action of group) {
+            const xVar = `x__${action}__${cover}`
+            const linkConstraintName = `link_${groupVar}__${action}`
+
+            // group_var >= x__action__cover (group space ≥ any individual action)
+            addToConstraint(model, linkConstraintName, groupVar, 1, {
+              min: 0
+            })
+            addToConstraint(model, linkConstraintName, xVar, -1, { min: 0 })
+          }
+        }
+      }
+    }
+  }
+
+  // Add incompatibility constraints correctly considering groups
+  // Actions incompatible with the new action should contribute their group space, not individual areas
+
+  for (const cover of Object.keys(covers)) {
+    if (!eligibility[newAction]?.has(cover)) continue
+
+    // Find all actions eligible for this cover
+    const actionsEligibleForCover = existingActionCodes.filter((action) => {
+      const eligible = eligibility[action] ?? new Set()
+      return eligible.has(cover)
+    })
+
+    if (actionsEligibleForCover.length > 0) {
+      // Build compatibility groups
+      const compatibilityGroups = findCompatibilityGroups(
+        actionsEligibleForCover,
+        compatibilityCheckFn
+      )
+
+      // For the incompatibility constraint, add group contributions
+      const incompatibilityConstraint = `icap__${cover}`
+
+      for (
+        let groupIndex = 0;
+        groupIndex < compatibilityGroups.length;
+        groupIndex++
+      ) {
+        const group = compatibilityGroups[groupIndex]
+        const hasIncompatibleInGroup = group.some(
+          (action) => !compatibilityCheckFn(newAction, action)
         )
 
-        // If we have multiple groups, they compete for physical space
-        if (compatibilityGroups.length > 1) {
-          const constraintName = `group_space__${cover}`
-
-          for (
-            let groupIndex = 0;
-            groupIndex < compatibilityGroups.length;
-            groupIndex++
-          ) {
-            const group = compatibilityGroups[groupIndex]
+        if (hasIncompatibleInGroup) {
+          if (compatibilityGroups.length > 1) {
+            // Multi-group case: use group variable
             const groupVar = `group_${groupIndex}__${cover}`
-
-            // Group variable represents physical space used by this compatibility group
-            if (!model.variables[groupVar]) model.variables[groupVar] = {}
-
-            // Add group space variable to the inter-group constraint
-            addToConstraint(model, constraintName, groupVar, 1, {
+            addToConstraint(model, incompatibilityConstraint, groupVar, 1, {
               max: covers[cover]
             })
-
-            // Link group variable to individual action variables:
-            // group_space >= each action in the group (since they stack)
+          } else {
+            // Single group case: use individual action variables
             for (const action of group) {
-              const xVar = `x__${action}__${cover}`
-              const linkConstraintName = `link_${groupVar}__${action}`
-
-              // group_var >= x__action__cover (group space ≥ any individual action)
-              addToConstraint(model, linkConstraintName, groupVar, 1, {
-                min: 0
-              })
-              addToConstraint(model, linkConstraintName, xVar, -1, { min: 0 })
+              if (!compatibilityCheckFn(newAction, action)) {
+                const xVar = `x__${action}__${cover}`
+                addToConstraint(model, incompatibilityConstraint, xVar, 1, {
+                  max: covers[cover]
+                })
+              }
             }
           }
         }

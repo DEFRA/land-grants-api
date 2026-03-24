@@ -89,10 +89,18 @@ maximise  Σ y[c]  for all c ∈ eligible covers for new action
 x[a, c] ≤ area[c]    for each action a, cover c
 ```
 
-**3. Incompatibility with new action — incompatible existing actions compete with the new action:**
+**3. Incompatibility with new action — group-aware constraint:**
+
+For covers with multiple compatibility groups:
 
 ```
-Σ_{a: incompatible_with_new}  x[a, c]  +  y[c]  ≤  area[c]    for each cover c
+Σ_{i: has_incompatible_actions}  group[i, c]  +  y[c]  ≤  area[c]
+```
+
+For covers with single compatibility group:
+
+```
+Σ_{a: incompatible_with_new}  x[a, c]  +  y[c]  ≤  area[c]
 ```
 
 **4. Compatibility group constraints — incompatible groups compete for physical space:**
@@ -105,19 +113,42 @@ For each cover with multiple compatibility groups:
 group[i, c] ≥ x[a, c]    for each action a in group i    (group space covers all actions in group)
 ```
 
-**Key Innovation: Proper Stacking Model**
+**Key Innovation: Group-Aware Incompatibility**
 
-The compatibility group constraints implement proper stacking semantics:
+The constraints implement proper stacking semantics by using **group variables in incompatibility constraints**:
 
 - **Within groups**: Compatible actions share the same physical space, so `group[i,c] = max(actions_in_group[i])`
 - **Between groups**: Incompatible groups compete for physical space, so `Σ group[i,c] ≤ area[c]`
-- **With new action**: Only groups containing actions incompatible with the new action affect constraint 3
+- **With new action**: Groups containing incompatible actions contribute their **group space** (not individual areas) to the incompatibility constraint
 
 This correctly models scenarios like:
 
-- `aa1(500) + aa2(300)` compatible → use `max(500,300) = 500` physical space
-- `aa3(200) + aa4(100)` compatible → use `max(200,100) = 200` physical space
-- Groups incompatible → total physical space = `500 + 200 = 700` sqm
+- `aa1(1000) + aa2(2000)` compatible, only `aa2` incompatible with new action
+- **Wrong approach**: new action blocked by `aa1 + aa2 = 3000` sqm
+- **Correct approach**: new action blocked by `max(aa1, aa2) = 2000` sqm (group space)
+- Result: Available area = `cover_area - 2000` instead of `cover_area - 3000`
+
+## Implementation Details
+
+### Two-Phase Constraint Formation
+
+The LP solver builds constraints in two phases to properly handle group-aware incompatibility:
+
+**Phase 1: Group Formation and Inter-Group Constraints**
+
+1. Find compatibility groups using DFS on the compatibility graph
+2. Create group variables `group[i, c]` for each group on each cover
+3. Add inter-group competition constraints: `Σ group[i, c] ≤ area[c]`
+4. Link group variables to individual actions: `group[i, c] ≥ x[a, c]` for all `a` in group `i`
+
+**Phase 2: Incompatibility Constraints**
+
+1. For each cover, identify which groups contain actions incompatible with the new action
+2. **Multi-group covers**: Add group variables to incompatibility constraint
+3. **Single-group covers**: Add individual action variables to incompatibility constraint
+4. This ensures compatible actions contribute as a group, not as individual areas
+
+This approach prevents "double counting" where compatible actions would each contribute their full area to incompatibility constraints, causing the new action to lose access to shared stacking space.
 
 ---
 

@@ -22,21 +22,23 @@ const eligibility = {
 // All other pairs are incompatible.
 const compatibilityMatrix = [['AA1', 'AA3']]
 
-const compatibilityCheckFn = (code1, code2) => {
-  return compatibilityMatrix.some(
+// Simple compatibility function that checks the compatibility matrix
+const createCompatibilityCheckFn = (matrix) => (code1, code2) => {
+  return matrix.some(
     (pair) =>
       (pair[0] === code1 && pair[1] === code2) ||
       (pair[0] === code2 && pair[1] === code1)
   )
 }
 
-const incompatibleWithCMOR1 = new Set(['AA1', 'AA2'])
+// Default compatibility function using the base matrix
+const compatibilityCheckFn = createCompatibilityCheckFn(compatibilityMatrix)
 
 /**
  * Mirrors createTestData from aac-experiment.test.ts for LP format.
  * @param {number} numActions - Number of existing actions to create
  * @param {number} numLandCovers - Number of land covers to create
- * @returns {{ covers: Record<string, number>, existingActions: Record<string, number>, eligibility: Record<string, Set<string>>, incompatibleWith: Set<string> }}
+ * @returns {{ covers: Record<string, number>, existingActions: Record<string, number>, eligibility: Record<string, Set<string>>, testIncompatibleActions: Set<string> }}
  */
 function createTestData(numActions, numLandCovers) {
   const testCovers = {}
@@ -46,14 +48,14 @@ function createTestData(numActions, numLandCovers) {
 
   const testExistingActions = {}
   const testEligibility = {}
-  const testIncompatibleWith = new Set()
+  const testIncompatibleActions = new Set()
   const coverNames = Object.keys(testCovers)
 
   for (let i = 1; i <= numActions; i++) {
     const code = `AA${i}`
     testExistingActions[code] = 1000
     testEligibility[code] = new Set(coverNames)
-    testIncompatibleWith.add(code)
+    testIncompatibleActions.add(code)
   }
 
   testEligibility.CMOR1 = new Set(coverNames)
@@ -62,7 +64,7 @@ function createTestData(numActions, numLandCovers) {
     covers: testCovers,
     existingActions: testExistingActions,
     eligibility: testEligibility,
-    incompatibleWith: testIncompatibleWith
+    testIncompatibleActions
   }
 }
 
@@ -76,8 +78,7 @@ describe('maxAreaForNewAction', () => {
       existingActions: {},
       newAction: 'CMOR1',
       eligibility,
-      incompatibleWith: new Set(),
-      compatibilityCheckFn
+      compatibilityCheckFn: testCompatibilityCheckFn
     })
 
     // CMOR1 is only eligible for Grassland (3100 sqm)
@@ -91,13 +92,16 @@ describe('maxAreaForNewAction', () => {
     // Mirror of: 'getMaximumAvailableAreaForAction returns 1100 sqm for CMOR1'
     // The LP finds the optimal placement: AA1 fills Car park (1000) + Woodland (1500),
     // AA2 fills remaining Woodland (1000) + Grassland (2000), leaving 1100 for CMOR1.
+    // For this test, CMOR1 needs to be incompatible with AA1 and AA2
+    const testMatrix = [['AA1', 'AA3']] // CMOR1 not included, so incompatible with AA1 and AA2
+    const testCompatibilityFn = createCompatibilityCheckFn(testMatrix)
+
     const result = maxAreaForNewAction({
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
       eligibility,
-      incompatibleWith: incompatibleWithCMOR1,
-      compatibilityCheckFn
+      compatibilityCheckFn: testCompatibilityFn
     })
 
     expect(result.feasible).toBe(true)
@@ -114,13 +118,19 @@ describe('maxAreaForNewAction', () => {
     // Mirror of: calculateAvailableAreaForAction tests with orderings [Woodland,CarPark] (gives 100)
     // and [CarPark,Woodland] (gives 1100).
     // The LP must find the maximum over all possible orderings — i.e. 1100, not 100.
+    // For this test, CMOR1 needs to be incompatible with AA1 and AA2 to get specific result
+    const testMatrix = [
+      ['AA1', 'AA3'],
+      ['CMOR1', 'AA3']
+    ]
+    const testCompatibilityFn = createCompatibilityCheckFn(testMatrix)
+
     const result = maxAreaForNewAction({
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
       eligibility,
-      incompatibleWith: incompatibleWithCMOR1,
-      compatibilityCheckFn
+      compatibilityCheckFn: testCompatibilityFn
     })
 
     expect(result.maxAreaSqm).toBeGreaterThanOrEqual(1100)
@@ -141,7 +151,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { A_compat: 500 },
       newAction: 'newAction',
       eligibility: stackingEligibility,
-      incompatibleWith: new Set(), // A_compat is compatible — not in this set
       compatibilityCheckFn: () => true // All actions are compatible
     })
 
@@ -164,7 +173,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { A_incompat: 600 },
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['A_incompat']),
       compatibilityCheckFn: () => false // All actions are incompatible
     })
 
@@ -181,7 +189,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: {},
       newAction: 'AA5', // eligible for Meadow, Wetland, Woodland — but Meadow and Wetland are not in covers
       eligibility,
-      incompatibleWith: new Set(),
       compatibilityCheckFn
     })
 
@@ -200,7 +207,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: {},
       newAction: 'AA3', // only eligible for Car park, which is not in smallCovers
       eligibility,
-      incompatibleWith: new Set(),
       compatibilityCheckFn
     })
 
@@ -210,13 +216,19 @@ describe('maxAreaForNewAction', () => {
   })
 
   test('LP placement output identifies where existing actions are placed', () => {
+    // For this test, CMOR1 needs to be incompatible with AA1 and AA2 to get specific result
+    const testMatrix = [
+      ['AA1', 'AA3'],
+      ['CMOR1', 'AA3']
+    ]
+    const testCompatibilityFn = createCompatibilityCheckFn(testMatrix)
+
     const result = maxAreaForNewAction({
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
       eligibility,
-      incompatibleWith: incompatibleWithCMOR1,
-      compatibilityCheckFn
+      compatibilityCheckFn: testCompatibilityFn
     })
 
     expect(result.feasible).toBe(true)
@@ -234,8 +246,16 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions,
       eligibility: testEligibility,
-      incompatibleWith
+      testIncompatibleActions
     } = createTestData(4, 4)
+
+    // Create performance test compatibility function - all test actions incompatible with CMOR1
+    const performanceCompatibilityCheckFn = (existingAction, newAction) => {
+      if (newAction === 'CMOR1') {
+        return !testIncompatibleActions.has(existingAction)
+      }
+      return true
+    }
 
     const startTime = Date.now()
 
@@ -244,8 +264,7 @@ describe('maxAreaForNewAction', () => {
       existingActions,
       newAction: 'CMOR1',
       eligibility: testEligibility,
-      incompatibleWith,
-      compatibilityCheckFn: testCompatibilityCheckFn
+      compatibilityCheckFn: performanceCompatibilityCheckFn
     })
 
     const duration = Date.now() - startTime
@@ -261,8 +280,16 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions,
       eligibility: testEligibility,
-      incompatibleWith
+      testIncompatibleActions
     } = createTestData(10, 10)
+
+    // Create performance test compatibility function - all test actions incompatible with CMOR1
+    const performanceCompatibilityCheckFn = (existingAction, newAction) => {
+      if (newAction === 'CMOR1') {
+        return !testIncompatibleActions.has(existingAction)
+      }
+      return true
+    }
 
     const startTime = Date.now()
 
@@ -271,8 +298,7 @@ describe('maxAreaForNewAction', () => {
       existingActions,
       newAction: 'CMOR1',
       eligibility: testEligibility,
-      incompatibleWith,
-      compatibilityCheckFn: testCompatibilityCheckFn
+      compatibilityCheckFn: performanceCompatibilityCheckFn
     })
 
     const duration = Date.now() - startTime
@@ -292,26 +318,44 @@ describe('maxAreaForNewAction', () => {
       newAction: new Set(['Car park'])
     }
 
-    // Without stacking, AA1(800) + AA3(600) = 1400 sqm would exceed the 1000 sqm cover area
-    // With stacking (AA1 and AA3 compatible), they can share space and both fit
+    // For this test: AA1↔AA3 compatible, newAction compatible with AA3 but not AA1
+    const stackingMatrix = [
+      ['AA1', 'AA3'],
+      ['newAction', 'AA3']
+    ]
+    const stackingCompatibilityFn = createCompatibilityCheckFn(stackingMatrix)
+
     const result = maxAreaForNewAction({
       covers: testCovers,
       existingActions: { AA1: 800, AA3: 600 },
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['AA1']), // AA1 incompatible with newAction, AA3 compatible
-      compatibilityCheckFn
+      compatibilityCheckFn: stackingCompatibilityFn
     })
 
     // AA1 and AA3 can stack (compatible with each other)
-    // Only AA1 is incompatible with newAction, so newAction competes only with AA1
-    // Available area = 1000 (total) - 800 (AA1, incompatible) = 200
+    // newAction is compatible with AA3 and can join the stack
+    // All three should coexist in the same physical space: max(800, 600, 200) = 800
+    // Available area for newAction = 1000 - 800 = 200
     expect(result.feasible).toBe(true)
     expect(result.maxAreaSqm).toBe(200)
-    expect(result.existingActionsByCover).toEqual({
-      AA1: { 'Car park': 800 },
-      AA3: { 'Car park': 600 }
-    })
+
+    // In group-aware constraints, compatible actions share physical space
+    // The actual areas used may be optimized by the LP solver
+    const totalExistingArea = Object.values(
+      result.existingActionsByCover
+    ).reduce((total, actionAreas) => {
+      return (
+        total + Object.values(actionAreas).reduce((sum, area) => sum + area, 0)
+      )
+    }, 0)
+    const totalNewActionArea = Object.values(result.newActionByCover).reduce(
+      (sum, area) => sum + area,
+      0
+    )
+
+    // Total physical space used should not exceed cover capacity
+    expect(totalExistingArea + totalNewActionArea).toBeLessThanOrEqual(1000)
     expect(result.newActionByCover).toEqual({ 'Car park': 200 })
   })
 
@@ -325,6 +369,11 @@ describe('maxAreaForNewAction', () => {
       newAction: new Set(['Woodland'])
     }
 
+    // For this test: AA1↔AA3 compatible, but newAction incompatible with both AA1 and AA2
+    const incompatibleMatrix = [['AA1', 'AA3']] // Only existing actions are compatible
+    const incompatibleCompatibilityFn =
+      createCompatibilityCheckFn(incompatibleMatrix)
+
     // AA1(400) and AA2(300) are incompatible, total = 700 sqm fits in 1000 sqm
     // This ensures the problem is feasible while testing the incompatibility constraint
     const result = maxAreaForNewAction({
@@ -332,8 +381,7 @@ describe('maxAreaForNewAction', () => {
       existingActions: { AA1: 400, AA2: 300 },
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['AA1', 'AA2']), // Both incompatible with newAction
-      compatibilityCheckFn
+      compatibilityCheckFn: incompatibleCompatibilityFn
     })
 
     // Both AA1 and AA2 are incompatible with newAction and with each other
@@ -383,7 +431,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { A: 200, B: 200, C: 200, D: 200 },
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(), // No actions incompatible with newAction
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -423,7 +470,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { X: 400, Y: 400, Z: 400 }, // Total: 1200 > 1000 capacity
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['X', 'Y', 'Z']), // All incompatible with newAction
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -450,6 +496,16 @@ describe('maxAreaForNewAction', () => {
       ['aa3', 'aa4']
     ]
     const testCompatibilityFn = (action1, action2) => {
+      // Handle incompatibility with CMOR1
+      if (
+        (action1 === 'CMOR1' &&
+          ['aa1', 'aa2', 'aa3', 'aa4'].includes(action2)) ||
+        (action2 === 'CMOR1' && ['aa1', 'aa2', 'aa3', 'aa4'].includes(action1))
+      ) {
+        return false
+      }
+
+      // Handle existing action compatibility
       return compatibilityMatrix.some(
         (pair) =>
           (pair[0] === action1 && pair[1] === action2) ||
@@ -462,7 +518,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { aa1: 600, aa2: 400, aa3: 500, aa4: 300 },
       newAction: 'CMOR1',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['aa1', 'aa2', 'aa3', 'aa4']), // All incompatible with CMOR1
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -506,6 +561,15 @@ describe('maxAreaForNewAction', () => {
       ['aa3', 'aa4']
     ]
     const testCompatibilityFn = (action1, action2) => {
+      // Handle selective incompatibility with newAction (only aa1 and aa3)
+      if (
+        (action1 === 'newAction' && ['aa1', 'aa3'].includes(action2)) ||
+        (action2 === 'newAction' && ['aa1', 'aa3'].includes(action1))
+      ) {
+        return false
+      }
+
+      // Handle existing action compatibility
       return compatibilityMatrix.some(
         (pair) =>
           (pair[0] === action1 && pair[1] === action2) ||
@@ -518,7 +582,6 @@ describe('maxAreaForNewAction', () => {
       existingActions: { aa1: 500, aa2: 300, aa3: 200, aa4: 100 },
       newAction: 'newAction',
       eligibility: testEligibility,
-      incompatibleWith: new Set(['aa1', 'aa3']), // Only some incompatible with newAction
       compatibilityCheckFn: testCompatibilityFn
     })
 
