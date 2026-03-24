@@ -5,7 +5,7 @@ export const wmpResultTransformer = (
     return {
         hasPassed: ruleResult.passed,
         code: action.code,
-        actionConfigVersion: action?.semanticVersion,
+        actionConfigVersion: action.semanticVersion,
         rules: ruleResult.results
     }
 }

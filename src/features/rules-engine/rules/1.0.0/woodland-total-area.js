@@ -23,7 +23,7 @@ export const woodlandTotalArea = {
   execute: (application, rule) => {
     const { oldWoodlandArea, newWoodlandArea, totalParcelArea } = application
 
-    const totalWoodlandArea = Number.parseFloat(oldWoodlandArea) + Number.parseFloat(newWoodlandArea)
+    const totalWoodlandArea = Number.parseFloat(oldWoodlandArea) + Number.parseFloat(newWoodlandArea || 0)
 
     const name = rule.name
     const explanations = [

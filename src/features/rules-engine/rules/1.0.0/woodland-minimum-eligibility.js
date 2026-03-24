@@ -24,11 +24,14 @@ export const woodlandMinimumEligibility = {
     const { minimumSize } = rule.config
     const name = rule.name
 
+    const oldWoodlandAreaNumber = Number.parseFloat(oldWoodlandArea)
+    const minimumSizeNumber = Number.parseFloat(minimumSize)
+
     const explanations = [
       {
         title: 'Woodland minimum eligibility',
         lines: [
-          `The minimum required woodland area over 10 years old is (${minimumSize} ha), the holding has (${Number.parseFloat(oldWoodlandArea)} ha)`
+          `The minimum required woodland area over 10 years old is (${minimumSizeNumber} ha), the holding has (${oldWoodlandAreaNumber} ha)`
         ]
       }
     ]
@@ -43,12 +46,12 @@ export const woodlandMinimumEligibility = {
       }
     }
 
-    if (Number.parseFloat(oldWoodlandArea) < Number.parseFloat(minimumSize)) {
+    if (oldWoodlandAreaNumber < minimumSizeNumber) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The woodland area over 10 years old (${Number.parseFloat(oldWoodlandArea)} ha) does not meet the minimum required area of (${minimumSize} ha)`,
+        reason: `The woodland area over 10 years old (${oldWoodlandAreaNumber} ha) does not meet the minimum required area of (${minimumSizeNumber} ha)`,
         explanations
       }
     }
@@ -57,7 +60,7 @@ export const woodlandMinimumEligibility = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The woodland area over 10 years old (${Number.parseFloat(oldWoodlandArea)} ha) meets the minimum required area of (${minimumSize} ha)`,
+      reason: `The woodland area over 10 years old (${oldWoodlandAreaNumber} ha) meets the minimum required area of (${minimumSizeNumber} ha)`,
       explanations
     }
   }

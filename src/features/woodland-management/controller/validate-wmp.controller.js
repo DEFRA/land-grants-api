@@ -7,7 +7,7 @@ import { logInfo, logBusinessError } from '~/src/features/common/helpers/logging
 import {
   validateWMPSchemaV2,
   validateWMPResponseSchemaV2
-} from '../schema/validate-wmp.controller.js'
+} from '../schema/validate-wmp.schema.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 

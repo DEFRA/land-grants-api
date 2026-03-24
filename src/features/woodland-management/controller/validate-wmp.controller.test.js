@@ -65,10 +65,7 @@ describe('Validate WMP controller', () => {
         newWoodlandArea: 1
       }
     }
-    mockValidateWoodlandManagementPlan.mockResolvedValue({
-      message: 'Success',
-      result: mockResult
-    })
+    mockValidateWoodlandManagementPlan.mockResolvedValue(mockResult)
 
     /** @type { Hapi.ServerInjectResponse<object> } */
     const {
@@ -77,7 +74,26 @@ describe('Validate WMP controller', () => {
     } = await server.inject(request)
 
     expect(statusCode).toBe(200)
-    expect(message).toBe('Success')
+    expect(message).toBe('success')
     expect(result).toEqual(mockResult)
+  })
+
+  test('should handle error', async () => {
+    const request = {
+      method: 'POST',
+      url: '/validate-wmp',
+      payload: {
+        parcelIds: ['SX067-99238'],
+        oldWoodlandArea: 3,
+        newWoodlandArea: 1
+      }
+    }
+    mockValidateWoodlandManagementPlan.mockRejectedValue(new Error('Something went wrong'))
+
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const result = await server.inject(request)
+
+    expect(result.statusCode).toBe(500)
+    expect(result.result.message).toBe('An internal server error occurred')
   })
 })

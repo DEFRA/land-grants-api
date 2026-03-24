@@ -14,7 +14,6 @@ export const validateWoodlandManagementPlan = async (request) => {
     )
 
     const totalParcelArea = await getTotalLandArea(parcels, request)
-    // do we need scenario for just one area?
 
     const actions = await getEnabledActions(logger, postgresDb)
     const action = actions.find((a) => a.code === 'PA3')
