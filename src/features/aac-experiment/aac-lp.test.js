@@ -402,14 +402,10 @@ describe('maxAreaForNewAction', () => {
     // All existing actions mutually incompatible, but not with newAction
     const testCompatibilityFn = (action1, action2) => {
       // Existing actions are incompatible with each other
-      if (
+      return !(
         ['A', 'B', 'C', 'D'].includes(action1) &&
         ['A', 'B', 'C', 'D'].includes(action2)
-      ) {
-        return false // incompatible
-      }
-      // But existing actions are compatible with newAction
-      return true
+      )
     }
 
     const result = maxAreaForNewAction({
@@ -546,34 +542,60 @@ describe('maxAreaForNewAction', () => {
       ['aa1', 'aa2'],
       ['aa3', 'aa4']
     ]
-    const testCompatibilityFn = (action1, action2) => {
-      // Handle selective incompatibility with newAction (only aa1 and aa3)
-      if (
-        (action1 === 'newAction' && ['aa1', 'aa3'].includes(action2)) ||
-        (action2 === 'newAction' && ['aa1', 'aa3'].includes(action1))
-      ) {
-        return false
-      }
-
-      // Handle existing action compatibility
-      return compatibilityMatrix.some(
-        (pair) =>
-          (pair[0] === action1 && pair[1] === action2) ||
-          (pair[0] === action2 && pair[1] === action1)
-      )
-    }
 
     const result = maxAreaForNewAction({
       covers: testCovers,
       existingActions: { aa1: 500, aa2: 300, aa3: 200, aa4: 100 },
       newAction: 'newAction',
       validLandCovers: testValidLandCovers,
-      compatibilityCheckFn: testCompatibilityFn
+      compatibilityCheckFn: createCompatibilityCheckFn(compatibilityMatrix)
     })
 
     expect(result.feasible).toBe(true) // Should be feasible
     // Proper stacking: group1(500) + group2(200) + newAction ≤ 1000
     // newAction should get at least 300 sqm
     expect(result.maxAreaSqm).toBeGreaterThanOrEqual(300)
+  })
+
+  test('complex scenario requiring split stacks', () => {
+    // Test proper stacking: compatible groups share space, incompatible groups compete
+    // aa1 can split between two groups: [aa1,aa2] and [aa1,aa3]
+    // aa3 can split between two groups: [aa1,aa3] and [aa3,aa4]
+    // Expected optimal allocation:
+    // - Group [aa1,aa2]: aa1(300) + aa2(300) = 300 physical space
+    // - Group [aa1,aa3]: aa1(200) + aa3(200) = 200 physical space
+    // - Group [aa3,aa4]: aa3(0) + aa4(100) = 100 physical space
+    // Total: 300 + 200 + 100 = 600, leaving 400 for newAction
+    const testCovers = { field: 1000 }
+    const testValidLandCovers = {
+      aa1: new Set(['field']),
+      aa2: new Set(['field']),
+      aa3: new Set(['field']),
+      aa4: new Set(['field']),
+      newAction: new Set(['field'])
+    }
+
+    // aa1↔aa2 compatible, aa1↔aa3 compatible, aa3↔aa4 compatible
+    // But aa2↔aa3 NOT compatible, aa2↔aa4 NOT compatible
+    const compatibilityMatrix = [
+      ['aa1', 'aa2'],
+      ['aa3', 'aa4'],
+      ['aa1', 'aa3']
+    ]
+
+    const compatFn = createCompatibilityCheckFn(compatibilityMatrix)
+
+    const result = maxAreaForNewAction({
+      covers: testCovers,
+      existingActions: { aa1: 500, aa2: 300, aa3: 200, aa4: 100 },
+      newAction: 'newAction',
+      validLandCovers: testValidLandCovers,
+      compatibilityCheckFn: compatFn
+    })
+
+    expect(result.feasible).toBe(true) // Should be feasible
+    // With split stacks, optimal result should be significantly better than 300
+    // Expecting around 400 sqm with proper optimization
+    expect(result.maxAreaSqm).toBeGreaterThan(350)
   })
 })

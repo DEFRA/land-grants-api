@@ -63,11 +63,15 @@ Graph algorithm, https://www.npmjs.com/package/min-cost-flow
 
 ### Variables
 
-| Variable     | Meaning                                                            |
-| ------------ | ------------------------------------------------------------------ |
-| `x[a, c]`    | sqm of existing action `a` placed on land cover `c`                |
-| `y[c]`       | sqm of the new action placed on land cover `c`                     |
-| `group[i,c]` | sqm of physical space used by compatibility group `i` on cover `c` |
+| Variable     | Meaning                                                              |
+| ------------ | -------------------------------------------------------------------- |
+| `x[a_gN, c]` | sqm of existing action `a` placed on land cover `c` within group `N` |
+| `y[c]`       | sqm of the new action placed on land cover `c`                       |
+| `group[i,c]` | sqm of physical space used by compatibility group `i` on cover `c`   |
+
+**Key Change: Split Stacks Support**
+
+Actions can now belong to multiple compatibility groups simultaneously, enabling "split stacks" where an action's total area can be optimally distributed across multiple groups. This is achieved through group-specific variables `x[action_gN, cover]` instead of single variables `x[action, cover]`.
 
 ### Objective
 
@@ -80,13 +84,15 @@ maximise  Σ y[c]  for all c ∈ eligible covers for new action
 **1. Each existing action must account for exactly its committed area:**
 
 ```
-Σ_c  x[a, c]  =  total_area[a]    for each existing action a
+Σ_{g,c}  x[a_g, c]  =  total_area[a]    for each existing action a
 ```
 
-**2. Physical capacity — no action can exceed any cover's total area:**
+Where the sum is over all compatibility groups `g` that contain action `a` and all eligible land covers `c`.
+
+**2. Physical capacity — no group-specific action variable can exceed any cover's total area:**
 
 ```
-x[a, c] ≤ area[c]    for each action a, cover c
+x[a_g, c] ≤ area[c]    for each action a, group g, cover c
 ```
 
 **3. Incompatibility with new action — group-aware constraint:**
@@ -100,7 +106,7 @@ For covers with multiple compatibility groups:
 For covers with single compatibility group:
 
 ```
-Σ_{a: incompatible_with_new}  x[a, c]  +  y[c]  ≤  area[c]
+∑_{a,g: incompatible_with_new}  x[a_g, c]  +  y[c]  ≤  area[c]
 ```
 
 **4. Compatibility group constraints — incompatible groups compete for physical space:**
@@ -110,7 +116,7 @@ For each cover with multiple compatibility groups:
 ```
 Σ_i  group[i, c]  ≤  area[c]    (groups compete for physical space)
 
-group[i, c] ≥ x[a, c]    for each action a in group i    (group space covers all actions in group)
+group[i, c] ≥ x[a_gi, c]    for each action a in group i    (group space covers all actions in group)
 ```
 
 **Key Innovation: Group-Aware Incompatibility**
@@ -128,27 +134,55 @@ This correctly models scenarios like:
 - **Correct approach**: new action blocked by `max(aa1, aa2) = 2000` sqm (group space)
 - Result: Available area = `cover_area - 2000` instead of `cover_area - 3000`
 
+**Split Stacks Example:**
+
+- `aa1` compatible with both `aa2` and `aa3`, but `aa2` incompatible with `aa3`
+- **Traditional approach**: `aa1` forced into single group, suboptimal placement
+- **Split stacks approach**: `aa1` appears in both groups `[aa1,aa2]` and `[aa1,aa3]`
+- **LP optimization**: `aa1`'s area optimally distributed across both groups for maximum new action area
+
 ## Implementation Details
 
-### Two-Phase Constraint Formation
+### Split Stacks Implementation
 
-The LP solver builds constraints in two phases to properly handle group-aware incompatibility:
+The LP solver now supports **split stacks** where actions can belong to multiple compatibility groups simultaneously, enabling optimal distribution of an action's area across different groups.
 
-**Phase 1: Group Formation and Inter-Group Constraints**
+**Key Innovation: Maximal Clique Finding**
 
-1. Find compatibility groups using DFS on the compatibility graph
-2. Create group variables `group[i, c]` for each group on each cover
-3. Add inter-group competition constraints: `Σ group[i, c] ≤ area[c]`
-4. Link group variables to individual actions: `group[i, c] ≥ x[a, c]` for all `a` in group `i`
+Replaced DFS-based connected components with **maximal clique finding** for compatibility group formation:
 
-**Phase 2: Incompatibility Constraints**
+- **Previous approach**: DFS treated compatibility as transitive, incorrectly grouping incompatible actions
+- **Current approach**: Maximal cliques ensure every action in a group is compatible with every other action in that group
+- **Split stacks**: Actions can belong to multiple cliques, allowing optimal area distribution
+
+**Multi-Phase Constraint Formation**
+
+**Phase 1: Maximal Clique Formation**
+
+1. Find all maximal compatibility cliques among existing actions
+2. Actions can belong to multiple cliques if they are compatible with different sets of actions
+3. Each action gets group-specific variables `x[action_gN, cover]` for each group it belongs to
+
+**Phase 2: Group Space and Competition Constraints**
+
+1. Create group variables `group[i, c]` for each clique on each cover
+2. Add inter-group competition constraints: `Σ group[i, c] ≤ area[c]`
+3. Link group variables to group-specific action variables: `group[i, c] ≥ x[a_gi, c]`
+
+**Phase 3: Incompatibility Constraints**
 
 1. For each cover, identify which groups contain actions incompatible with the new action
 2. **Multi-group covers**: Add group variables to incompatibility constraint
-3. **Single-group covers**: Add individual action variables to incompatibility constraint
+3. **Single-group covers**: Add group-specific action variables to incompatibility constraint
 4. This ensures compatible actions contribute as a group, not as individual areas
 
-This approach prevents "double counting" where compatible actions would each contribute their full area to incompatibility constraints, causing the new action to lose access to shared stacking space.
+**Phase 4: Commitment Constraints**
+
+1. After all group-specific variables are created, add commitment constraints
+2. Each action must distribute exactly its committed area across all groups it belongs to
+3. `Σ_{groups g, covers c} x[a_g, c] = committed_area[a]`
+
+This approach enables optimal "split stacking" where actions can distribute their area optimally across multiple compatibility groups while preventing double counting in incompatibility constraints.
 
 ---
 
@@ -158,35 +192,37 @@ This approach prevents "double counting" where compatible actions would each con
 
 ```js
 const outcome = maxAreaForNewAction({
-  newAction,
+  covers,
   existingActions,
-  landCoverAreas,
-  compatibilityCheckFn,
-  debug: false
+  newAction,
+  validLandCovers,
+  compatibilityCheckFn
 })
 
-if (outcome.status !== 'ok') {
+if (!outcome.feasible) {
   // LP was infeasible (no solution) - rare edge case
 }
 
-// outcome.areas = { 'cover1': area_sqm, ... }
+// outcome.newActionByCover = { 'cover1': area_sqm, ... }
+// outcome.existingActionsByCover = { 'action1': { 'cover1': area_sqm, ... }, ... }
 ```
 
 ### Parameters
 
-- **`newAction`**: The action to place (requires `.action` and `.covers` properties)
-- **`existingActions`**: Array of committed actions (requires `.action`, `.covers`, `.area` properties)
-- **`landCoverAreas`**: Map of cover ID to available area in sqm
+- **`covers`**: Map of cover name to available area in sqm
+- **`existingActions`**: Map of existing action code to committed area in sqm
+- **`newAction`**: The action code of the new action to calculate area for
+- **`validLandCovers`**: Map of action code to Set of valid land cover names
 - **`compatibilityCheckFn`**: `(action1Id, action2Id) => boolean` - checks if two actions are compatible for stacking
-- **`debug`**: Optional boolean for detailed LP constraint logging
 
 ### Return Value
 
 The function returns an object with:
 
-- **`status`**: `'ok'` for successful solve, `'infeasible'` if no solution exists
-- **`areas`**: Map of cover ID to allocated area in sqm for the new action
-- **`existingActionsByCover`**: Optimal placement of existing actions (debugging only)
+- **`feasible`**: `true` for successful solve, `false` if no solution exists
+- **`maxAreaSqm`**: Total area available for the new action across all covers
+- **`newActionByCover`**: Map of cover ID to allocated area in sqm for the new action
+- **`existingActionsByCover`**: Optimal placement of existing actions showing split stacks
 
 ---
 
@@ -220,7 +256,28 @@ The permutation approach is capped at 4×4 in the benchmark. Any real-world parc
 
 ---
 
-## Implementation Plan
+## Implementation Status
+
+✅ **COMPLETED** - The LP approach with split stacks functionality has been fully implemented and tested.
+
+### Key Features Delivered
+
+- **Split Stacks**: Actions can belong to multiple compatibility groups with optimal area distribution
+- **Maximal Clique Algorithm**: Proper compatibility group formation using maximal cliques instead of DFS
+- **Group-Specific Variables**: LP variables named `x[action_gN, cover]` to handle overlapping group membership
+- **Performance**: All 17 tests pass in <15ms, maintaining polynomial time complexity
+
+### Test Results
+
+```bash
+✓ |unit| src/features/aac-experiment/aac-lp.test.js (17 tests) 14ms
+```
+
+All tests pass including the complex "split stacks" scenario where action `aa1` can optimally distribute its area across multiple compatibility groups `[aa1,aa2]` and `[aa1,aa3]`.
+
+---
+
+## Integration Plan
 
 ### Step 1 — Input mapping
 

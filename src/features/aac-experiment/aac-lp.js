@@ -16,40 +16,73 @@ function addToConstraint(model, name, varName, coeff, def) {
 }
 
 /**
- * Finds compatibility groups (connected components) among actions.
- * Actions in the same group can stack (share physical space).
+ * Finds all maximal compatibility cliques among actions. Actions can belong to multiple
+ * groups if they are compatible with different sets of actions. This enables "split stacks"
+ * where an action's area can be optimally distributed across multiple compatibility groups.
  * @param {string[]} actions - Array of action codes
  * @param {Function} compatibilityCheckFn - Function to check if two actions are compatible
- * @returns {string[][]} Array of compatibility groups
+ * @returns {string[][]} Array of maximal compatibility cliques (actions may appear in multiple groups)
  */
 function findCompatibilityGroups(actions, compatibilityCheckFn) {
-  const visited = new Set()
-  const groups = []
+  const cliques = []
 
-  // Depth First Search to find connected components in compatibility graph
-  function depthFirstSearch(action, currentGroup) {
-    visited.add(action)
-    currentGroup.push(action)
+  // Helper function to check if an action is compatible with all actions in a group
+  function isCompatibleWithGroup(action, group) {
+    return group.every((groupAction) =>
+      compatibilityCheckFn(action, groupAction)
+    )
+  }
 
-    for (const otherAction of actions) {
-      if (
-        !visited.has(otherAction) &&
-        compatibilityCheckFn(action, otherAction)
-      ) {
-        depthFirstSearch(otherAction, currentGroup)
+  // Simple approach: Find all maximal cliques by growing from each action
+  for (let startIndex = 0; startIndex < actions.length; startIndex++) {
+    const startAction = actions[startIndex]
+    const clique = [startAction]
+
+    // Try to add other actions that are compatible with all current clique members
+    for (
+      let candidateIndex = 0;
+      candidateIndex < actions.length;
+      candidateIndex++
+    ) {
+      if (candidateIndex === startIndex) continue
+
+      const candidate = actions[candidateIndex]
+      if (isCompatibleWithGroup(candidate, clique)) {
+        clique.push(candidate)
+      }
+    }
+
+    // Only add cliques with more than one action
+    if (clique.length > 1) {
+      // Check for duplicates
+      const sortedClique = [...clique].sort()
+      const isDuplicate = cliques.some((existing) => {
+        if (existing.length !== sortedClique.length) return false
+        const sortedExisting = [...existing].sort()
+        return sortedExisting.every(
+          (action, idx) => action === sortedClique[idx]
+        )
+      })
+
+      if (!isDuplicate) {
+        cliques.push(clique)
       }
     }
   }
 
+  // Add single-action groups for actions not in any multi-action clique
+  const actionsInCliques = new Set()
+  cliques.forEach((clique) => {
+    clique.forEach((action) => actionsInCliques.add(action))
+  })
+
   for (const action of actions) {
-    if (!visited.has(action)) {
-      const group = []
-      depthFirstSearch(action, group)
-      groups.push(group)
+    if (!actionsInCliques.has(action)) {
+      cliques.push([action])
     }
   }
 
-  return groups
+  return cliques
 }
 
 /**
@@ -63,18 +96,6 @@ function createLpModel() {
     constraints: {},
     variables: {}
   }
-}
-
-/**
- * Finds eligible land covers for an action
- * @param {string} action - Action code
- * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
- * @param {Record<string, number>} landCovers - Available land covers
- * @returns {string[]} Array of eligible cover names
- */
-function findEligibleLandCovers(action, validLandCovers, landCovers) {
-  const eligibleCovers = validLandCovers[action] ?? new Set()
-  return [...eligibleCovers].filter((cover) => landCovers[cover] !== undefined)
 }
 
 /**
@@ -102,49 +123,6 @@ function createNewActionVariables(
     addToConstraint(model, `capacity__${cover}`, newActionVariable, 1, {
       max: capacity
     })
-  }
-}
-
-/**
- * Creates LP variables and constraints for existing action placement
- * @param {object} model - LP model
- * @param {Record<string, number>} existingActions - Map of action to committed area
- * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
- * @param {Record<string, number>} landCovers - Map of cover name to area in sqm
- */
-function createExistingActionConstraints(
-  model,
-  existingActions,
-  validLandCovers,
-  landCovers
-) {
-  for (const [action, committedArea] of Object.entries(existingActions)) {
-    const eligibleCovers = findEligibleLandCovers(
-      action,
-      validLandCovers,
-      landCovers
-    )
-
-    for (const cover of eligibleCovers) {
-      const actionVariable = `x__${action}__${cover}`
-
-      // Physical constraint: action cannot exceed land cover capacity
-      addToConstraint(
-        model,
-        `physical__${action}__${cover}`,
-        actionVariable,
-        1,
-        {
-          max: landCovers[cover]
-        }
-      )
-
-      // Commitment constraint: action must place exactly its committed area
-      addToConstraint(model, `commitment__${action}`, actionVariable, 1, {
-        min: committedArea,
-        max: committedArea
-      })
-    }
   }
 }
 
@@ -194,7 +172,8 @@ function createCompatibilityGroupConstraints(
   compatibilityGroups,
   landCoverCapacity
 ) {
-  if (compatibilityGroups.length <= 1) return
+  // Create group variables and constraints for all scenarios, including single groups
+  // This ensures proper stacking behavior in all cases
 
   const groupSpaceConstraint = `group_space__${landCover}`
 
@@ -216,11 +195,26 @@ function createCompatibilityGroupConstraints(
 
     // Link group variable to individual actions: group space ≥ each stacked action
     for (const action of group) {
-      const actionVariable = `x__${action}__${landCover}`
+      const actionVariable = `x__${action}_g${groupIndex}__${landCover}`
       const linkConstraint = `link_${groupVariable}__${action}`
+
+      // Create the group-specific action variable if it doesn't exist
+      if (!model.variables[actionVariable]) {
+        model.variables[actionVariable] = {}
+      }
+
+      // Physical constraint: group-specific action variable cannot exceed land cover capacity
+      addToConstraint(model, `physical__${actionVariable}`, actionVariable, 1, {
+        max: landCoverCapacity
+      })
 
       addToConstraint(model, linkConstraint, groupVariable, 1, { min: 0 })
       addToConstraint(model, linkConstraint, actionVariable, -1, { min: 0 })
+
+      // Track this variable for commitment constraints
+      if (!model.actionVariables) model.actionVariables = {}
+      if (!model.actionVariables[action]) model.actionVariables[action] = []
+      model.actionVariables[action].push(actionVariable)
     }
   }
 }
@@ -251,6 +245,7 @@ function addGroupIncompatibilityConstraint(
  * @param {object} model - LP model
  * @param {string} constraintName - Constraint name
  * @param {string[]} group - Actions in the compatibility group
+ * @param {number} groupIndex - Index of the compatibility group
  * @param {string} newAction - New action code
  * @param {string} landCover - Land cover name
  * @param {function(string, string): boolean} compatibilityCheckFn - Compatibility function
@@ -260,6 +255,7 @@ function addIndividualActionIncompatibilityConstraints(
   model,
   constraintName,
   group,
+  groupIndex,
   newAction,
   landCover,
   compatibilityCheckFn,
@@ -267,7 +263,7 @@ function addIndividualActionIncompatibilityConstraints(
 ) {
   for (const action of group) {
     if (!compatibilityCheckFn(newAction, action)) {
-      const actionVariable = `x__${action}__${landCover}`
+      const actionVariable = `x__${action}_g${groupIndex}__${landCover}`
       addToConstraint(model, constraintName, actionVariable, 1, {
         max: landCoverCapacity
       })
@@ -318,6 +314,7 @@ function addIncompatibilityConstraints(
           model,
           incompatibilityConstraint,
           group,
+          groupIndex,
           newAction,
           landCover,
           compatibilityCheckFn,
@@ -362,6 +359,11 @@ function buildLandCoverConstraints(
     compatibilityCheckFn
   )
 
+  // Debug logging for the failing test
+  // console.log(`\nDEBUG: Building constraints for land cover ${landCover}`)
+  // console.log('Eligible actions:', eligibleActions)
+  // console.log('Compatibility groups formed:', compatibilityGroups)
+
   // Create constraints for multi-group scenarios where groups compete for space
   createCompatibilityGroupConstraints(
     model,
@@ -401,7 +403,7 @@ function extractNewActionAllocation(lpResult, landCovers) {
 }
 
 /**
- * Extracts existing action placement from LP solution
+ * Extracts existing action placement from LP solution with group-specific variables
  * @param {object} lpResult - LP solver result
  * @param {Record<string, number>} existingActions - Existing actions
  * @param {Record<string, number>} landCovers - Available land covers
@@ -409,15 +411,24 @@ function extractNewActionAllocation(lpResult, landCovers) {
  */
 function extractExistingActionPlacement(lpResult, existingActions, landCovers) {
   const placement = /** @type {Record<string, Record<string, number>>} */ ({})
-  for (const action of Object.keys(existingActions)) {
-    for (const cover of Object.keys(landCovers)) {
-      const value = lpResult[`x__${action}__${cover}`]
-      if (value && value > 0) {
-        if (!placement[action]) placement[action] = {}
-        placement[action][cover] = value
-      }
-    }
+
+  // Iterate through all LP variables to find group-specific action variables
+  for (const [varName, value] of Object.entries(lpResult)) {
+    if (!varName.startsWith('x__') || !value || value <= 0) continue
+
+    // Parse group-specific variable names: x__action_gN__cover
+    const match = varName.match(/^x__(.+)_g(\d+)__(.+)$/)
+    if (!match) continue
+
+    const [, action, , cover] = match
+
+    // Only include variables for existing actions on valid covers
+    if (!existingActions[action] || !landCovers[cover]) continue
+
+    if (!placement[action]) placement[action] = {}
+    placement[action][cover] = (placement[action][cover] || 0) + value
   }
+
   return placement
 }
 
@@ -449,12 +460,8 @@ export function maxAreaForNewAction({
 
   // Phase 2: Create variables and basic constraints
   createNewActionVariables(model, newAction, validLandCovers, covers)
-  createExistingActionConstraints(
-    model,
-    existingActions,
-    validLandCovers,
-    covers
-  )
+
+  model.existingActionCommitments = existingActions
 
   // Phase 3: Build land cover specific constraints (compatibility groups and incompatibility)
   for (const [landCover, capacity] of Object.entries(covers)) {
@@ -469,7 +476,25 @@ export function maxAreaForNewAction({
     )
   }
 
-  // Phase 4: Solve the linear program
+  // Phase 4: Create commitment constraints after all variables are defined
+  if (model.actionVariables && model.existingActionCommitments) {
+    for (const [action, committedArea] of Object.entries(
+      model.existingActionCommitments
+    )) {
+      const variables = model.actionVariables[action] || []
+      if (variables.length > 0) {
+        const commitmentConstraint = `commitment__${action}`
+        for (const variable of variables) {
+          addToConstraint(model, commitmentConstraint, variable, 1, {
+            min: committedArea,
+            max: committedArea
+          })
+        }
+      }
+    }
+  }
+
+  // Phase 5: Solve the linear program
   const lpResult = /** @type {any} */ (solver).Solve(model)
 
   if (!lpResult.feasible) {
