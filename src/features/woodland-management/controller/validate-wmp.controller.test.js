@@ -60,7 +60,7 @@ describe('Validate WMP controller', () => {
   test('should return success with validation results', async () => {
     const request = {
       method: 'POST',
-      url: '/validate-wmp',
+      url: '/wmp/validate',
       payload: {
         parcelIds: ['SX067-99238'],
         oldWoodlandArea: 3,
@@ -83,7 +83,7 @@ describe('Validate WMP controller', () => {
   test('should handle error', async () => {
     const request = {
       method: 'POST',
-      url: '/validate-wmp',
+      url: '/wmp/validate',
       payload: {
         parcelIds: ['SX067-99238'],
         oldWoodlandArea: 3,
