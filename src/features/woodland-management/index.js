@@ -10,7 +10,7 @@ export const woodlandManagement = {
       server.route([
         {
           method: 'POST',
-          path: '/validate-wmp',
+          path: '/wmp/validate',
           ...ValidateWMPController
         }
       ])
