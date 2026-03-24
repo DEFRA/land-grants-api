@@ -9,7 +9,7 @@ const covers = {
   'Car park': 1000
 }
 
-const eligibility = {
+const validLandCovers = {
   CMOR1: new Set(['Grassland']),
   AA1: new Set(['Woodland', 'Car park', 'Circus']),
   AA2: new Set(['Woodland', 'Grassland', 'Deep Ocean']),
@@ -38,7 +38,7 @@ const compatibilityCheckFn = createCompatibilityCheckFn(compatibilityMatrix)
  * Mirrors createTestData from aac-experiment.test.ts for LP format.
  * @param {number} numActions - Number of existing actions to create
  * @param {number} numLandCovers - Number of land covers to create
- * @returns {{ covers: Record<string, number>, existingActions: Record<string, number>, eligibility: Record<string, Set<string>>, testIncompatibleActions: Set<string> }}
+ * @returns {{ covers: Record<string, number>, existingActions: Record<string, number>, validLandCovers: Record<string, Set<string>>, testIncompatibleActions: Set<string> }}
  */
 function createTestData(numActions, numLandCovers) {
   const testCovers = {}
@@ -47,23 +47,23 @@ function createTestData(numActions, numLandCovers) {
   }
 
   const testExistingActions = {}
-  const testEligibility = {}
+  const testValidLandCovers = {}
   const testIncompatibleActions = new Set()
   const coverNames = Object.keys(testCovers)
 
   for (let i = 1; i <= numActions; i++) {
     const code = `AA${i}`
     testExistingActions[code] = 1000
-    testEligibility[code] = new Set(coverNames)
+    testValidLandCovers[code] = new Set(coverNames)
     testIncompatibleActions.add(code)
   }
 
-  testEligibility.CMOR1 = new Set(coverNames)
+  testValidLandCovers.CMOR1 = new Set(coverNames)
 
   return {
     covers: testCovers,
     existingActions: testExistingActions,
-    eligibility: testEligibility,
+    validLandCovers: testValidLandCovers,
     testIncompatibleActions
   }
 }
@@ -77,7 +77,7 @@ describe('maxAreaForNewAction', () => {
       covers,
       existingActions: {},
       newAction: 'CMOR1',
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn: testCompatibilityCheckFn
     })
 
@@ -100,7 +100,7 @@ describe('maxAreaForNewAction', () => {
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -129,7 +129,7 @@ describe('maxAreaForNewAction', () => {
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -141,7 +141,7 @@ describe('maxAreaForNewAction', () => {
     // In the stacking model, compatible actions share physical space, so A_compat
     // should not reduce the available area for newAction on the same cover.
     const stackingCovers = { C1: 1000 }
-    const stackingEligibility = {
+    const stackingValidLandCovers = {
       A_compat: new Set(['C1']),
       newAction: new Set(['C1'])
     }
@@ -150,7 +150,7 @@ describe('maxAreaForNewAction', () => {
       covers: stackingCovers,
       existingActions: { A_compat: 500 },
       newAction: 'newAction',
-      eligibility: stackingEligibility,
+      validLandCovers: stackingValidLandCovers,
       compatibilityCheckFn: () => true // All actions are compatible
     })
 
@@ -163,7 +163,7 @@ describe('maxAreaForNewAction', () => {
 
   test('incompatible existing action reduces available area for new action', () => {
     const testCovers = { C1: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       A_incompat: new Set(['C1']),
       newAction: new Set(['C1'])
     }
@@ -172,7 +172,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { A_incompat: 600 },
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: () => false // All actions are incompatible
     })
 
@@ -188,7 +188,7 @@ describe('maxAreaForNewAction', () => {
       covers,
       existingActions: {},
       newAction: 'AA5', // eligible for Meadow, Wetland, Woodland — but Meadow and Wetland are not in covers
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn
     })
 
@@ -206,7 +206,7 @@ describe('maxAreaForNewAction', () => {
       covers: smallCovers,
       existingActions: {},
       newAction: 'AA3', // only eligible for Car park, which is not in smallCovers
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn
     })
 
@@ -227,7 +227,7 @@ describe('maxAreaForNewAction', () => {
       covers,
       existingActions: { AA1: 2500, AA2: 3000 },
       newAction: 'CMOR1',
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -245,7 +245,7 @@ describe('maxAreaForNewAction', () => {
     const {
       covers: testCovers,
       existingActions,
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       testIncompatibleActions
     } = createTestData(4, 4)
 
@@ -263,7 +263,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions,
       newAction: 'CMOR1',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: performanceCompatibilityCheckFn
     })
 
@@ -279,7 +279,7 @@ describe('maxAreaForNewAction', () => {
     const {
       covers: testCovers,
       existingActions,
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       testIncompatibleActions
     } = createTestData(10, 10)
 
@@ -297,7 +297,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions,
       newAction: 'CMOR1',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: performanceCompatibilityCheckFn
     })
 
@@ -311,7 +311,7 @@ describe('maxAreaForNewAction', () => {
   test('compatible existing actions can stack together without consuming additional area', () => {
     // This test verifies the new functionality: cross-compatibility between existing actions
     const testCovers = { 'Car park': 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       AA1: new Set(['Car park']),
       AA3: new Set(['Car park']),
       newAction: new Set(['Car park'])
@@ -328,7 +328,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { AA1: 800, AA3: 600 },
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: stackingCompatibilityFn
     })
 
@@ -349,7 +349,7 @@ describe('maxAreaForNewAction', () => {
     // This test verifies that incompatible existing actions compete for space
     // AA1 and AA2 are incompatible (cannot stack)
     const testCovers = { Woodland: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       AA1: new Set(['Woodland']),
       AA2: new Set(['Woodland']),
       newAction: new Set(['Woodland'])
@@ -366,7 +366,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { AA1: 400, AA2: 300 },
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: incompatibleCompatibilityFn
     })
 
@@ -391,7 +391,7 @@ describe('maxAreaForNewAction', () => {
     // Total demand: 4 × 200 = 800 sqm < 1000 sqm capacity (feasible)
     // This tests that the grouped constraint properly limits incompatible actions
     const testCovers = { Forest: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       A: new Set(['Forest']),
       B: new Set(['Forest']),
       C: new Set(['Forest']),
@@ -416,7 +416,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { A: 200, B: 200, C: 200, D: 200 },
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -441,7 +441,7 @@ describe('maxAreaForNewAction', () => {
     // This test demonstrates the specific problem that grouped constraints solve:
     // Multiple incompatible actions requiring more total area than available
     const testCovers = { Prairie: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       X: new Set(['Prairie']),
       Y: new Set(['Prairie']),
       Z: new Set(['Prairie']),
@@ -455,7 +455,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { X: 400, Y: 400, Z: 400 }, // Total: 1200 > 1000 capacity
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -468,7 +468,7 @@ describe('maxAreaForNewAction', () => {
     // Scenario: aa1 & aa2 compatible (stack 1), aa3 & aa4 compatible (stack 2)
     // aa2 not compatible with aa3 (stacks compete), CMOR1 only on moorland
     const testCovers = { grassland: 2000, moorland: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       aa1: new Set(['grassland', 'moorland']),
       aa2: new Set(['grassland', 'moorland']),
       aa3: new Set(['grassland', 'moorland']),
@@ -503,7 +503,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { aa1: 600, aa2: 400, aa3: 500, aa4: 300 },
       newAction: 'CMOR1',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 
@@ -533,7 +533,7 @@ describe('maxAreaForNewAction', () => {
     // aa3(200) + aa4(100) → max(200,100) = 200 physical space (stack 2)
     // Total physical space = 500 + 200 = 700, newAction gets remainder = 300
     const testCovers = { field: 1000 }
-    const testEligibility = {
+    const testValidLandCovers = {
       aa1: new Set(['field']),
       aa2: new Set(['field']),
       aa3: new Set(['field']),
@@ -567,7 +567,7 @@ describe('maxAreaForNewAction', () => {
       covers: testCovers,
       existingActions: { aa1: 500, aa2: 300, aa3: 200, aa4: 100 },
       newAction: 'newAction',
-      eligibility: testEligibility,
+      validLandCovers: testValidLandCovers,
       compatibilityCheckFn: testCompatibilityFn
     })
 

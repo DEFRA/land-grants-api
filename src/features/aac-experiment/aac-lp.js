@@ -68,12 +68,12 @@ function createLpModel() {
 /**
  * Finds eligible land covers for an action
  * @param {string} action - Action code
- * @param {Record<string, Set<string>>} eligibility - Action eligibility map
+ * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
  * @param {Record<string, number>} landCovers - Available land covers
  * @returns {string[]} Array of eligible cover names
  */
-function findEligibleLandCovers(action, eligibility, landCovers) {
-  const eligibleCovers = eligibility[action] ?? new Set()
+function findEligibleLandCovers(action, validLandCovers, landCovers) {
+  const eligibleCovers = validLandCovers[action] ?? new Set()
   return [...eligibleCovers].filter((cover) => landCovers[cover] !== undefined)
 }
 
@@ -81,12 +81,17 @@ function findEligibleLandCovers(action, eligibility, landCovers) {
  * Creates LP variables for new action placement on eligible land covers
  * @param {object} model - LP model
  * @param {string} newAction - Action code
- * @param {Record<string, Set<string>>} eligibility - Action eligibility map
+ * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
  * @param {Record<string, number>} landCovers - Map of cover name to area in sqm
  */
-function createNewActionVariables(model, newAction, eligibility, landCovers) {
+function createNewActionVariables(
+  model,
+  newAction,
+  validLandCovers,
+  landCovers
+) {
   for (const [cover, capacity] of Object.entries(landCovers)) {
-    if (!eligibility[newAction]?.has(cover)) continue
+    if (!validLandCovers[newAction]?.has(cover)) continue
 
     const newActionVariable = `y__${cover}`
     if (!model.variables[newActionVariable])
@@ -104,19 +109,19 @@ function createNewActionVariables(model, newAction, eligibility, landCovers) {
  * Creates LP variables and constraints for existing action placement
  * @param {object} model - LP model
  * @param {Record<string, number>} existingActions - Map of action to committed area
- * @param {Record<string, Set<string>>} eligibility - Action eligibility map
+ * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
  * @param {Record<string, number>} landCovers - Map of cover name to area in sqm
  */
 function createExistingActionConstraints(
   model,
   existingActions,
-  eligibility,
+  validLandCovers,
   landCovers
 ) {
   for (const [action, committedArea] of Object.entries(existingActions)) {
     const eligibleCovers = findEligibleLandCovers(
       action,
-      eligibility,
+      validLandCovers,
       landCovers
     )
 
@@ -147,12 +152,16 @@ function createExistingActionConstraints(
  * Finds actions that are eligible for a specific land cover
  * @param {string} landCover - Land cover name
  * @param {string[]} actionCodes - Array of action codes
- * @param {Record<string, Set<string>>} eligibility - Action eligibility map
+ * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
  * @returns {string[]} Actions eligible for the land cover
  */
-function findActionsEligibleForLandCover(landCover, actionCodes, eligibility) {
+function findActionsEligibleForLandCover(
+  landCover,
+  actionCodes,
+  validLandCovers
+) {
   return actionCodes.filter((action) => {
-    const eligible = eligibility[action] ?? new Set()
+    const eligible = validLandCovers[action] ?? new Set()
     return eligible.has(landCover)
   })
 }
@@ -325,7 +334,7 @@ function addIncompatibilityConstraints(
  * @param {string} landCover - Land cover name
  * @param {Record<string, number>} existingActions - Map of action to committed area
  * @param {string} newAction - New action code
- * @param {Record<string, Set<string>>} eligibility - Action eligibility map
+ * @param {Record<string, Set<string>>} validLandCovers - Action to valid land covers mapping
  * @param {function(string, string): boolean} compatibilityCheckFn - Compatibility function
  * @param {number} landCoverCapacity - Total capacity of the land cover
  */
@@ -334,7 +343,7 @@ function buildLandCoverConstraints(
   landCover,
   existingActions,
   newAction,
-  eligibility,
+  validLandCovers,
   compatibilityCheckFn,
   landCoverCapacity
 ) {
@@ -342,7 +351,7 @@ function buildLandCoverConstraints(
   const eligibleActions = findActionsEligibleForLandCover(
     landCover,
     existingActionCodes,
-    eligibility
+    validLandCovers
   )
 
   if (eligibleActions.length === 0) return
@@ -362,7 +371,7 @@ function buildLandCoverConstraints(
   )
 
   // Add constraints for actions incompatible with new action
-  if (eligibility[newAction]?.has(landCover)) {
+  if (validLandCovers[newAction]?.has(landCover)) {
     addIncompatibilityConstraints(
       model,
       landCover,
@@ -424,7 +433,7 @@ function extractExistingActionPlacement(lpResult, existingActions, landCovers) {
  * @param {Record<string, number>} params.covers - Map of land cover name to total area in sqm
  * @param {Record<string, number>} params.existingActions - Map of existing action code to area in sqm
  * @param {string} params.newAction - The action code of the new action to calculate area for
- * @param {Record<string, Set<string>>} params.eligibility - Map of action code to set of eligible cover names
+ * @param {Record<string, Set<string>>} params.validLandCovers - Map of action code to set of valid land cover names
  * @param {function(string, string): boolean} params.compatibilityCheckFn - Function that returns true if two actions are compatible
  * @returns {{ feasible: boolean, maxAreaSqm: number, newActionByCover: Record<string, number>, existingActionsByCover: Record<string, Record<string, number>> }}
  */
@@ -432,15 +441,20 @@ export function maxAreaForNewAction({
   covers,
   existingActions,
   newAction,
-  eligibility,
+  validLandCovers,
   compatibilityCheckFn
 }) {
   // Phase 1: Build LP model structure
   const model = createLpModel()
 
   // Phase 2: Create variables and basic constraints
-  createNewActionVariables(model, newAction, eligibility, covers)
-  createExistingActionConstraints(model, existingActions, eligibility, covers)
+  createNewActionVariables(model, newAction, validLandCovers, covers)
+  createExistingActionConstraints(
+    model,
+    existingActions,
+    validLandCovers,
+    covers
+  )
 
   // Phase 3: Build land cover specific constraints (compatibility groups and incompatibility)
   for (const [landCover, capacity] of Object.entries(covers)) {
@@ -449,7 +463,7 @@ export function maxAreaForNewAction({
       landCover,
       existingActions,
       newAction,
-      eligibility,
+      validLandCovers,
       compatibilityCheckFn,
       capacity
     )
