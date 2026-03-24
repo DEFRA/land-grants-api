@@ -477,39 +477,16 @@ describe('maxAreaForNewAction', () => {
       ['aa1', 'aa2'],
       ['aa3', 'aa4']
     ]
-    const testCompatibilityFn = (action1, action2) => {
-      // Handle incompatibility with CMOR1
-      if (
-        (action1 === 'CMOR1' &&
-          ['aa1', 'aa2', 'aa3', 'aa4'].includes(action2)) ||
-        (action2 === 'CMOR1' && ['aa1', 'aa2', 'aa3', 'aa4'].includes(action1))
-      ) {
-        return false
-      }
-
-      // Handle existing action compatibility
-      return compatibilityMatrix.some(
-        (pair) =>
-          (pair[0] === action1 && pair[1] === action2) ||
-          (pair[0] === action2 && pair[1] === action1)
-      )
-    }
 
     const result = maxAreaForNewAction({
       covers: testCovers,
       existingActions: { aa1: 600, aa2: 400, aa3: 500, aa4: 300 },
       newAction: 'CMOR1',
       validLandCovers: testValidLandCovers,
-      compatibilityCheckFn: testCompatibilityFn
+      compatibilityCheckFn: createCompatibilityCheckFn(compatibilityMatrix)
     })
 
     expect(result.feasible).toBe(true)
-
-    // Stack 1 (aa1+aa2) should use max(aa1, aa2) = 600 sqm physical space
-    // Stack 2 (aa3+aa4) should use max(aa3, aa4) = 500 sqm physical space
-    // Total physical space needed: 600 + 500 = 1100 sqm
-    // Available: grassland(2000) + moorland(1000) = 3000 sqm total
-    // CMOR1 only on moorland, competing with existing actions there
 
     // Verify the solution respects stacking rules
     console.log('Multiple stacks result:', {
@@ -519,8 +496,46 @@ describe('maxAreaForNewAction', () => {
       newActionByCover: result.newActionByCover
     })
 
-    // The current implementation likely fails this test by being overly restrictive
-    expect(result.maxAreaSqm).toBeGreaterThan(0)
+    expect(result.maxAreaSqm).toEqual(1000)
+  })
+
+  test('handles multiple compatibility groups (stacks) competing for the same land cover stacks also get split by land cover', () => {
+    // Scenario: aa1 & aa2 compatible (stack 1), aa3 & aa4 compatible (stack 2)
+    // aa2 not compatible with aa3 (stacks compete), CMOR1 only on moorland
+    const testCovers = { grassland: 1000, moorland: 700 }
+    const testValidLandCovers = {
+      aa1: new Set(['grassland', 'moorland']),
+      aa2: new Set(['grassland', 'moorland']),
+      aa3: new Set(['grassland', 'moorland']),
+      aa4: new Set(['grassland', 'moorland']),
+      CMOR1: new Set(['moorland'])
+    }
+
+    // Define compatibility: aa1↔aa2 compatible, aa3↔aa4 compatible, aa2↔aa3 incompatible
+    const compatibilityMatrix = [
+      ['aa1', 'aa2'],
+      ['aa3', 'aa4']
+    ]
+
+    const result = maxAreaForNewAction({
+      covers: testCovers,
+      existingActions: { aa1: 600, aa2: 400, aa3: 1000, aa4: 300 },
+      newAction: 'CMOR1',
+      validLandCovers: testValidLandCovers,
+      compatibilityCheckFn: createCompatibilityCheckFn(compatibilityMatrix)
+    })
+
+    expect(result.feasible).toBe(true)
+
+    // Verify the solution respects stacking rules
+    console.log('Multiple stacks result:', {
+      feasible: result.feasible,
+      maxAreaSqm: result.maxAreaSqm,
+      existingActionsByCover: result.existingActionsByCover,
+      newActionByCover: result.newActionByCover
+    })
+
+    expect(result.maxAreaSqm).toEqual(100)
   })
 
   test('reveals stacking constraint issue: compatible groups should share physical space', () => {
@@ -596,6 +611,6 @@ describe('maxAreaForNewAction', () => {
     expect(result.feasible).toBe(true) // Should be feasible
     // With split stacks, optimal result should be significantly better than 300
     // Expecting around 400 sqm with proper optimization
-    expect(result.maxAreaSqm).toBeGreaterThan(350)
+    expect(result.maxAreaSqm).toEqual(400)
   })
 })
