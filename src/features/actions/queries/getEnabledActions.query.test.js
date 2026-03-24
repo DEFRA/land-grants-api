@@ -1,4 +1,4 @@
-import { getEnabledActions } from './getActions.query.js'
+import { getEnabledActions } from './getEnabledActions.query.js'
 
 describe('getEnabledActions', () => {
   let mockDb

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { vi } from 'vitest'
 import { ParcelsController } from '~/src/features/parcel/controllers/1.0.0/parcels.controller.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { actions } from '../fixtures/actions.js'
@@ -10,7 +10,7 @@ function getSnapshotName(testName, parcel, action) {
   return `${testName},${parcel.sheetId}-${parcel.parcelId} ${action.code}-explanations`
 }
 
-vi.mock('~/src/features/actions/queries/getActions.query.js')
+vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
 const mockGetEnabledActions = getEnabledActions
 
 describe('Parcels Controller', () => {
