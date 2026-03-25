@@ -1,7 +1,7 @@
-import { parse } from 'csv-parse/sync' // eslint-disable-line
-import { readFileSync } from 'fs'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { parse } from 'csv-parse/sync'
+import { readFileSync } from 'node:fs'
+import path, { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -16,7 +16,8 @@ export function getAvailableAreaFixtures() {
     delimiter: ',',
     columns: true
   })
-  // eslint-disable-next-line
+
+  // @ts-expect-error - csv input isn't typed
   return fixtures.map((fixture) => [fixture.scenarioName, fixture])
 }
 

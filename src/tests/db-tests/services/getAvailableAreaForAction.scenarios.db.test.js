@@ -41,7 +41,8 @@ describe('Available Area Calculation Service', () => {
         existingActions = JSON.parse(existingActionsStr)
       } catch (e) {
         logger.error(
-          `Error parsing existing actions in CSV file for parcelId ${parcelId}, sheetId ${sheetId}`
+          `Error parsing existing actions in CSV file for parcelId ${parcelId}, sheetId ${sheetId}`,
+          e
         )
       }
 
