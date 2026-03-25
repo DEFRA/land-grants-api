@@ -2,7 +2,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import { getAvailableAreaFixtures } from '../src/tests/db-tests/setup/getAvailableAreaFixtures.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -148,7 +148,7 @@ async function validateTestFixtures() {
 }
 
 // Run validation if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   validateTestFixtures().catch((error) => {
     console.error('❌ Fatal error:', error)
     process.exit(1)
