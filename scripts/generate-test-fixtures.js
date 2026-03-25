@@ -66,7 +66,7 @@ const loadTestData = async () => {
  */
 const buildCompatibilityMatrix = (compatibilityCheckFn, actionCodes) => {
   const compatibilityMatrix = {}
-  
+
   for (const actionA of actionCodes) {
     compatibilityMatrix[actionA] = {}
     for (const actionB of actionCodes) {
@@ -74,7 +74,7 @@ const buildCompatibilityMatrix = (compatibilityCheckFn, actionCodes) => {
       compatibilityMatrix[actionA][actionB] = isCompatible
     }
   }
-  
+
   return compatibilityMatrix
 }
 
@@ -89,7 +89,10 @@ const parseExistingActions = (scenario, scenarioName, logger) => {
   try {
     return JSON.parse(scenario.existingActions || '[]')
   } catch (e) {
-    logger.error(`Error parsing existing actions for scenario ${scenarioName}:`, e)
+    logger.error(
+      `Error parsing existing actions for scenario ${scenarioName}:`,
+      e
+    )
     return []
   }
 }
@@ -101,19 +104,37 @@ const parseExistingActions = (scenario, scenarioName, logger) => {
  * @param {Array} existingActions Parsed existing actions
  * @throws {Error} If validation fails
  */
-const validateDataRequirements = (dataRequirements, scenario, existingActions) => {
-  if (!dataRequirements.landCoversForParcel || dataRequirements.landCoversForParcel.length === 0) {
-    throw new Error(`❌ No land cover data found in database for parcel ${scenario.sheetId}-${scenario.parcelId}. Cannot generate fixtures without real database data.`)
+const validateDataRequirements = (
+  dataRequirements,
+  scenario,
+  existingActions
+) => {
+  if (
+    !dataRequirements.landCoversForParcel ||
+    dataRequirements.landCoversForParcel.length === 0
+  ) {
+    throw new Error(
+      `❌ No land cover data found in database for parcel ${scenario.sheetId}-${scenario.parcelId}. Cannot generate fixtures without real database data.`
+    )
   }
-  
-  if (!dataRequirements.landCoverCodesForAppliedForAction || dataRequirements.landCoverCodesForAppliedForAction.length === 0) {
-    throw new Error(`❌ No land cover codes found in database for action ${scenario.applyingForAction}. Cannot generate fixtures without real database data.`)
+
+  if (
+    !dataRequirements.landCoverCodesForAppliedForAction ||
+    dataRequirements.landCoverCodesForAppliedForAction.length === 0
+  ) {
+    throw new Error(
+      `❌ No land cover codes found in database for action ${scenario.applyingForAction}. Cannot generate fixtures without real database data.`
+    )
   }
-  
+
   // Validate existing actions have land cover codes
   for (const existingAction of existingActions) {
-    if (!dataRequirements.landCoversForExistingActions[existingAction.actionCode]) {
-      throw new Error(`❌ No land cover codes found in database for existing action ${existingAction.actionCode}. Cannot generate fixtures without real database data.`)
+    if (
+      !dataRequirements.landCoversForExistingActions[existingAction.actionCode]
+    ) {
+      throw new Error(
+        `❌ No land cover codes found in database for existing action ${existingAction.actionCode}. Cannot generate fixtures without real database data.`
+      )
     }
   }
 }
@@ -125,9 +146,13 @@ const validateDataRequirements = (dataRequirements, scenario, existingActions) =
  */
 const extractAllLandCoverCodes = (dataRequirements) => {
   return new Set([
-    ...dataRequirements.landCoverCodesForAppliedForAction.map((c) => c.landCoverCode),
+    ...dataRequirements.landCoverCodesForAppliedForAction.map(
+      (c) => c.landCoverCode
+    ),
     ...dataRequirements.landCoversForParcel.map((c) => c.landCoverClassCode),
-    ...Object.values(dataRequirements.landCoversForExistingActions).flatMap(codes => codes.map(c => c.landCoverCode))
+    ...Object.values(dataRequirements.landCoversForExistingActions).flatMap(
+      (codes) => codes.map((c) => c.landCoverCode)
+    )
   ])
 }
 
@@ -141,7 +166,7 @@ const extractAllLandCoverCodes = (dataRequirements) => {
  */
 const processScenario = async (scenario, scenarioName, connection, logger) => {
   const existingActions = parseExistingActions(scenario, scenarioName, logger)
-  
+
   // Pre-compute the database requirements
   const dataRequirements = await getAvailableAreaDataRequirements(
     scenario.applyingForAction,
@@ -151,13 +176,14 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
     connection,
     logger
   )
-  
+
   // Validate that we got real data from database
   validateDataRequirements(dataRequirements, scenario, existingActions)
-  
+
   // Get land cover definitions
   const allLandCoverCodes = extractAllLandCoverCodes(dataRequirements)
-  const { getLandCoverDefinitions } = await import('../src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js')
+  const { getLandCoverDefinitions } =
+    await import('../src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js')
   const landCoverDefinitions = await getLandCoverDefinitions(
     Array.from(allLandCoverCodes),
     connection,
@@ -175,9 +201,11 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
     },
     // Pre-computed database results
     dataRequirements: {
-      landCoverCodesForAppliedForAction: dataRequirements.landCoverCodesForAppliedForAction,
+      landCoverCodesForAppliedForAction:
+        dataRequirements.landCoverCodesForAppliedForAction,
       landCoversForParcel: dataRequirements.landCoversForParcel,
-      landCoversForExistingActions: dataRequirements.landCoversForExistingActions,
+      landCoversForExistingActions:
+        dataRequirements.landCoversForExistingActions,
       landCoverDefinitions: landCoverDefinitions
     }
   }
@@ -191,18 +219,27 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
  * @returns {Promise<Object>} Object mapping scenario names to computed fixtures
  */
 const processAllScenarios = async (scenarios, connection, logger) => {
-  console.log(`🔄 Pre-computing data requirements for ${scenarios.length} scenarios...`)
-  
+  console.log(
+    `🔄 Pre-computing data requirements for ${scenarios.length} scenarios...`
+  )
+
   const computedFixtures = {}
-  
+
   // Process scenarios sequentially to avoid overwhelming the database
   for (let i = 0; i < scenarios.length; i++) {
     const [scenarioName, scenario] = scenarios[i]
-    console.log(`  📦 Processing: ${scenarioName} (${i + 1}/${scenarios.length})`)
-    
-    computedFixtures[scenarioName] = await processScenario(scenario, scenarioName, connection, logger)
+    console.log(
+      `  📦 Processing: ${scenarioName} (${i + 1}/${scenarios.length})`
+    )
+
+    computedFixtures[scenarioName] = await processScenario(
+      scenario,
+      scenarioName,
+      connection,
+      logger
+    )
   }
-  
+
   return computedFixtures
 }
 
@@ -214,7 +251,12 @@ const processAllScenarios = async (scenarios, connection, logger) => {
  * @param {Array<string>} actionCodes Action codes
  * @returns {Object} Complete fixtures data structure
  */
-const buildFixturesData = (compatibilityMatrix, computedFixtures, scenarios, actionCodes) => ({
+const buildFixturesData = (
+  compatibilityMatrix,
+  computedFixtures,
+  scenarios,
+  actionCodes
+) => ({
   metadata: {
     generatedAt: new Date().toISOString(),
     actionCodes: actionCodes,
@@ -243,7 +285,9 @@ const writeFixturesToFile = (fixturesData, outputPath) => {
 const logCompletionStats = (scenarios, actionCodes) => {
   console.log('✅ Fixture generation completed successfully!')
   console.log(`📊 Generated data for ${scenarios.length} scenarios`)
-  console.log(`🔗 Compatibility matrix: ${actionCodes.length}x${actionCodes.length} combinations`)
+  console.log(
+    `🔗 Compatibility matrix: ${actionCodes.length}x${actionCodes.length} combinations`
+  )
 }
 
 /**
@@ -253,13 +297,13 @@ const logCompletionStats = (scenarios, actionCodes) => {
 async function generateAvailableAreaFixtures() {
   const logger = createLogger()
   const connection = connectToTestDatbase()
-  
+
   try {
     console.log('🔄 Starting fixture generation...')
-    
+
     // Step 0: Load test data using the same mechanism as database tests
     await loadTestData()
-    
+
     // Step 1: Generate compatibility matrix once (instead of 14 times in test)
     console.log('🔍 Generating compatibility matrix...')
     const compatibilityCheckFn = await createCompatibilityMatrix(
@@ -267,24 +311,38 @@ async function generateAvailableAreaFixtures() {
       connection,
       ACTION_CODES
     )
-    const compatibilityMatrix = buildCompatibilityMatrix(compatibilityCheckFn, ACTION_CODES)
-    
+    const compatibilityMatrix = buildCompatibilityMatrix(
+      compatibilityCheckFn,
+      ACTION_CODES
+    )
+
     // Step 2: Load test scenarios
     console.log('📋 Loading test scenarios...')
     const scenarios = getAvailableAreaFixtures()
-    
+
     // Step 3: Pre-compute database requirements for each scenario
-    const computedFixtures = await processAllScenarios(scenarios, connection, logger)
-    
+    const computedFixtures = await processAllScenarios(
+      scenarios,
+      connection,
+      logger
+    )
+
     // Step 4: Create the complete fixture file
-    const fixturesData = buildFixturesData(compatibilityMatrix, computedFixtures, scenarios, ACTION_CODES)
-    
+    const fixturesData = buildFixturesData(
+      compatibilityMatrix,
+      computedFixtures,
+      scenarios,
+      ACTION_CODES
+    )
+
     // Step 5: Write to fixture file
-    const outputPath = resolve(__dirname, '../src/tests/db-tests/fixtures/available-area-computed.json')
+    const outputPath = resolve(
+      __dirname,
+      '../src/tests/db-tests/fixtures/available-area-computed.json'
+    )
     writeFixturesToFile(fixturesData, outputPath)
-    
+
     logCompletionStats(scenarios, ACTION_CODES)
-    
   } catch (error) {
     console.error('❌ Error generating fixtures:', error)
     process.exit(1)
