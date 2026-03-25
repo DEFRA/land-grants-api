@@ -21,6 +21,8 @@ const ACTION_CODES = [
   'UPL1',
   'UPL2',
   'UPL3',
+  'UPL6',
+  'UPL7',
   'SAM1',
   'SPM4',
   'OFM1',
