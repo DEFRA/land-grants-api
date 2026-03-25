@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="update-pa3-action-config" author="system">
+        <sql>UPDATE actions_config
+        SET config = jsonb_set(
+            config,
+            '{payment_method}',
+            '{
+                "name": "wmp-calculation",
+                "config": {
+                    "young-woodland-max-percent": 20,
+                    "tiers": [
+                        {
+                            "lower-limit-exclusive-ha": 0.5,
+                            "flat-rate-gbp": 1500,
+                            "rate-per-unit-gbp": 0
+                        },
+                        {
+                            "lower-limit-exclusive-ha": 50.9999,
+                            "flat-rate-gbp": 1500,
+                            "rate-per-unit-gbp": 30
+                        },
+                        {
+                            "lower-limit-exclusive-ha": 100,
+                            "flat-rate-gbp": 3000,
+                            "rate-per-unit-gbp": 15
+                        }
+                    ]
+                }
+            }'::jsonb
+        ) - 'payment'
+        WHERE code = 'PA3'
+            AND is_active = TRUE;</sql>
+    </changeSet>
+
+   <changeSet id="add-payment-method-to-configs" author="system">
+        <sql>UPDATE actions_config
+        SET config = jsonb_set(
+            config,
+            '{payment_method}',
+            jsonb_build_object(
+                'name', 'default-calculation',
+                'config', config->'payment'
+            )
+        )
+        WHERE config ?? 'payment'
+            AND NOT config ?? 'payment_method'
+            AND code != 'PA3';</sql>
+    </changeSet>
+
+</databaseChangeLog>
