@@ -15,8 +15,11 @@ async function validateTestFixtures() {
 
   try {
     // Check if computed fixtures exist
-    const computedFixturePath = resolve(__dirname, '../src/tests/db-tests/fixtures/available-area-computed.json')
-    
+    const computedFixturePath = resolve(
+      __dirname,
+      '../src/tests/db-tests/fixtures/available-area-computed.json'
+    )
+
     if (!existsSync(computedFixturePath)) {
       console.error('❌ Computed fixtures not found!')
       console.log('💡 Run "npm run test:fixtures:generate" to create them')
@@ -29,10 +32,16 @@ async function validateTestFixtures() {
 
     // Load computed fixtures
     const computedData = JSON.parse(readFileSync(computedFixturePath, 'utf-8'))
-    console.log(`💾 Found ${Object.keys(computedData.scenarioData).length} computed scenarios`)
+    console.log(
+      `💾 Found ${Object.keys(computedData.scenarioData).length} computed scenarios`
+    )
 
     // Validate structure
-    if (!computedData.metadata || !computedData.compatibilityMatrix || !computedData.scenarioData) {
+    if (
+      !computedData.metadata ||
+      !computedData.compatibilityMatrix ||
+      !computedData.scenarioData
+    ) {
       console.error('❌ Invalid computed fixture structure!')
       process.exit(1)
     }
@@ -40,18 +49,22 @@ async function validateTestFixtures() {
     // Check version and timestamp
     const generatedAt = new Date(computedData.metadata.generatedAt)
     const age = (Date.now() - generatedAt.getTime()) / (1000 * 60 * 60 * 24) // days
-    
+
     console.log(`📅 Fixtures generated: ${computedData.metadata.generatedAt}`)
     console.log(`⏰ Age: ${age.toFixed(1)} days`)
 
     if (age > 30) {
-      console.warn('⚠️  Computed fixtures are over 30 days old - consider regenerating')
+      console.warn(
+        '⚠️  Computed fixtures are over 30 days old - consider regenerating'
+      )
     }
 
     // Check scenario count matches
     if (csvFixtures.length !== Object.keys(computedData.scenarioData).length) {
       console.error('❌ Scenario count mismatch!')
-      console.error(`CSV: ${csvFixtures.length}, Computed: ${Object.keys(computedData.scenarioData).length}`)
+      console.error(
+        `CSV: ${csvFixtures.length}, Computed: ${Object.keys(computedData.scenarioData).length}`
+      )
       process.exit(1)
     }
 
@@ -65,29 +78,31 @@ async function validateTestFixtures() {
 
     if (missingScenarios.length > 0) {
       console.error('❌ Missing computed data for scenarios:')
-      missingScenarios.forEach(name => console.error(`   - ${name}`))
-      console.log('💡 Run "npm run test:fixtures:generate" to regenerate fixtures')
+      missingScenarios.forEach((name) => console.error(`   - ${name}`))
+      console.log(
+        '💡 Run "npm run test:fixtures:generate" to regenerate fixtures'
+      )
       process.exit(1)
     }
 
     // Check for extra computed scenarios (not in CSV)
-    const extraScenarios = Object.keys(computedData.scenarioData).filter(name => 
-      !csvFixtures.find(([csvName]) => csvName === name)
+    const extraScenarios = Object.keys(computedData.scenarioData).filter(
+      (name) => !csvFixtures.find(([csvName]) => csvName === name)
     )
 
     if (extraScenarios.length > 0) {
       console.warn('⚠️  Extra computed scenarios (not in CSV):')
-      extraScenarios.forEach(name => console.warn(`   - ${name}`))
+      extraScenarios.forEach((name) => console.warn(`   - ${name}`))
       console.log('💡 Consider regenerating fixtures to remove stale data')
     }
 
     // Sample data validation
     console.log('🔍 Validating sample scenario structure...')
     const firstScenario = Object.values(computedData.scenarioData)[0]
-    
+
     const requiredFields = [
       'scenario.applyingForAction',
-      'scenario.sheetId', 
+      'scenario.sheetId',
       'scenario.parcelId',
       'scenario.existingActions',
       'scenario.expectedAvailableArea',
@@ -115,7 +130,9 @@ async function validateTestFixtures() {
 
     if (actionCount === 0 || matrixSize !== actionCount) {
       console.error('❌ Compatibility matrix size mismatch!')
-      console.error(`Expected: ${actionCount}x${actionCount}, Found: ${matrixSize}x${matrixSize}`)
+      console.error(
+        `Expected: ${actionCount}x${actionCount}, Found: ${matrixSize}x${matrixSize}`
+      )
       process.exit(1)
     }
 
@@ -123,7 +140,6 @@ async function validateTestFixtures() {
     console.log(`📊 ${csvFixtures.length} scenarios ready for testing`)
     console.log(`🎯 Compatible actions: ${actionCount}`)
     console.log(`💗 Fixtures are healthy and up to date`)
-
   } catch (error) {
     console.error('❌ Validation failed:', error.message)
     process.exit(1)
@@ -132,11 +148,10 @@ async function validateTestFixtures() {
 
 // Run validation if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  validateTestFixtures()
-    .catch(error => {
-      console.error('❌ Fatal error:', error)
-      process.exit(1)
-    })
+  validateTestFixtures().catch((error) => {
+    console.error('❌ Fatal error:', error)
+    process.exit(1)
+  })
 }
 
 export { validateTestFixtures }

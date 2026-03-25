@@ -9,14 +9,16 @@ The Available Area Calculation Service test was optimized to eliminate ~60+ data
 ## Architecture
 
 ### Before (Slow)
+
 ```
 Test Run → 14 scenarios × (5-6 DB queries each) = ~70 total DB queries
-- createCompatibilityMatrix() × 14 (same query every time) 
+- createCompatibilityMatrix() × 14 (same query every time)
 - getAvailableAreaDataRequirements() × 14 (4 DB queries each)
 - Total time: 30-60+ seconds
 ```
 
 ### After (Fast)
+
 ```
 Test Run → Load pre-computed fixtures + pure calculations
 - Fixtures loaded once from JSON
@@ -26,13 +28,13 @@ Test Run → Load pre-computed fixtures + pure calculations
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `scripts/generate-test-fixtures.js` | Generates pre-computed fixtures |
-| `scripts/validate-test-fixtures.js` | Validates fixture consistency |
-| `src/tests/db-tests/fixtures/available-area-computed.json` | Pre-computed database results |
-| `src/tests/db-tests/fixtures/availableAreaCalculationScenarios.csv` | Test scenarios (unchanged) |
-| `src/tests/db-tests/setup/getAvailableAreaFixtures.js` | Fixture loading utilities |
+| File                                                                | Purpose                         |
+| ------------------------------------------------------------------- | ------------------------------- |
+| `scripts/generate-test-fixtures.js`                                 | Generates pre-computed fixtures |
+| `scripts/validate-test-fixtures.js`                                 | Validates fixture consistency   |
+| `src/tests/db-tests/fixtures/available-area-computed.json`          | Pre-computed database results   |
+| `src/tests/db-tests/fixtures/availableAreaCalculationScenarios.csv` | Test scenarios (unchanged)      |
+| `src/tests/db-tests/setup/getAvailableAreaFixtures.js`              | Fixture loading utilities       |
 
 ## Usage
 
@@ -45,6 +47,7 @@ npm run test:fixtures:generate
 ```
 
 This will:
+
 1. Start test database with fresh land data
 2. Run all database queries once
 3. Store results in `available-area-computed.json`
@@ -59,6 +62,7 @@ npm run test:fixtures:validate
 ```
 
 This validates:
+
 - All CSV scenarios have computed data
 - Fixture structure is correct
 - No stale/extra computed scenarios
@@ -123,28 +127,32 @@ Regenerate fixtures when:
 
 ## Performance Benefits
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| DB Queries | ~70 | 0 | 100% |
-| Test Time | 30-60s | <2s | 95%+ |
-| CI Time | High | Low | Significant |
-| Dev Experience | Slow | Fast | Much better |
+| Metric         | Before | After | Improvement |
+| -------------- | ------ | ----- | ----------- |
+| DB Queries     | ~70    | 0     | 100%        |
+| Test Time      | 30-60s | <2s   | 95%+        |
+| CI Time        | High   | Low   | Significant |
+| Dev Experience | Slow   | Fast  | Much better |
 
 ## Troubleshooting
 
 **Error: "Computed fixtures not available"**
+
 - Run `npm run test:fixtures:generate`
 
-**Error: "Scenario count mismatch"**  
+**Error: "Scenario count mismatch"**
+
 - CSV scenarios changed, regenerate fixtures
 - Run `npm run test:fixtures:generate`
 
 **Test failures after fixture generation**
+
 - Check if land data or calculation logic changed
 - Compare original test results with computed fixture results
 - May indicate a genuine change requiring updated expectations
 
 **Fixtures older than 30 days**
+
 - Consider regenerating to ensure freshness
 - Run `npm run test:fixtures:validate` to check
 
@@ -153,7 +161,7 @@ Regenerate fixtures when:
 The original test file was preserved as reference. Key changes:
 
 - **No database connection**: Test is now pure calculation
-- **Pre-computed data**: All DB queries results stored in fixtures  
+- **Pre-computed data**: All DB queries results stored in fixtures
 - **Same test scenarios**: CSV scenarios unchanged for compatibility
 - **Same assertions**: Test expectations unchanged
 
