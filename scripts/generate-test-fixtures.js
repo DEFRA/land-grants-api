@@ -140,8 +140,6 @@ const validateDataRequirements = (
   }
 }
 
-
-
 /**
  * Process a single scenario to compute its data requirements
  * @param {Object} scenario Test scenario object
