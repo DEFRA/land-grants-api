@@ -126,19 +126,20 @@ async function validateTestFixtures() {
     // Compatibility matrix validation
     console.log('🔍 Validating compatibility matrix...')
     const actionCount = computedData.metadata.actionCodes?.length || 0
-    const matrixSize = Object.keys(computedData.compatibilityMatrix).length
+    const pairsCount = computedData.compatibilityMatrix?.length || 0
+    const maxPossiblePairs = actionCount * actionCount
 
-    if (actionCount === 0 || matrixSize !== actionCount) {
-      console.error('❌ Compatibility matrix size mismatch!')
+    if (actionCount === 0 || pairsCount === 0 || pairsCount > maxPossiblePairs) {
+      console.error('❌ Compatibility matrix validation failed!')
       console.error(
-        `Expected: ${actionCount}x${actionCount}, Found: ${matrixSize}x${matrixSize}`
+        `Action count: ${actionCount}, Pairs found: ${pairsCount}, Max possible: ${maxPossiblePairs}`
       )
       process.exit(1)
     }
 
     console.log('✅ All fixture validation checks passed!')
     console.log(`📊 ${csvFixtures.length} scenarios ready for testing`)
-    console.log(`🎯 Compatible actions: ${actionCount}`)
+    console.log(`🎯 Compatible action pairs: ${pairsCount}`)
     console.log(`💗 Fixtures are healthy and up to date`)
   } catch (error) {
     console.error('❌ Validation failed:', error.message)

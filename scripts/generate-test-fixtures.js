@@ -59,23 +59,24 @@ const loadTestData = async () => {
 }
 
 /**
- * Build compatibility matrix from compatibility check function and action codes
+ * Build compatibility pairs from compatibility check function and action codes
  * @param {Function} compatibilityCheckFn Function to check compatibility between actions
  * @param {Array<string>} actionCodes List of action codes
- * @returns {Object} Compatibility matrix
+ * @returns {Array<Array<string>>} Compatible action code pairs
  */
 const buildCompatibilityMatrix = (compatibilityCheckFn, actionCodes) => {
-  const compatibilityMatrix = {}
+  const compatiblePairs = []
 
   for (const actionA of actionCodes) {
-    compatibilityMatrix[actionA] = {}
     for (const actionB of actionCodes) {
       const isCompatible = compatibilityCheckFn(actionA, actionB)
-      compatibilityMatrix[actionA][actionB] = isCompatible
+      if (isCompatible) {
+        compatiblePairs.push([actionA, actionB])
+      }
     }
   }
 
-  return compatibilityMatrix
+  return compatiblePairs
 }
 
 /**
@@ -139,22 +140,7 @@ const validateDataRequirements = (
   }
 }
 
-/**
- * Extract all unique land cover codes from data requirements
- * @param {Object} dataRequirements Database requirements object
- * @returns {Set<string>} Set of unique land cover codes
- */
-const extractAllLandCoverCodes = (dataRequirements) => {
-  return new Set([
-    ...dataRequirements.landCoverCodesForAppliedForAction.map(
-      (c) => c.landCoverCode
-    ),
-    ...dataRequirements.landCoversForParcel.map((c) => c.landCoverClassCode),
-    ...Object.values(dataRequirements.landCoversForExistingActions).flatMap(
-      (codes) => codes.map((c) => c.landCoverCode)
-    )
-  ])
-}
+
 
 /**
  * Process a single scenario to compute its data requirements
@@ -180,16 +166,6 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
   // Validate that we got real data from database
   validateDataRequirements(dataRequirements, scenario, existingActions)
 
-  // Get land cover definitions
-  const allLandCoverCodes = extractAllLandCoverCodes(dataRequirements)
-  const { getLandCoverDefinitions } =
-    await import('../src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js')
-  const landCoverDefinitions = await getLandCoverDefinitions(
-    Array.from(allLandCoverCodes),
-    connection,
-    logger
-  )
-
   return {
     // Input parameters (for reference and validation)
     scenario: {
@@ -205,8 +181,7 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
         dataRequirements.landCoverCodesForAppliedForAction,
       landCoversForParcel: dataRequirements.landCoversForParcel,
       landCoversForExistingActions:
-        dataRequirements.landCoversForExistingActions,
-      landCoverDefinitions: landCoverDefinitions
+        dataRequirements.landCoversForExistingActions
     }
   }
 }
@@ -245,7 +220,7 @@ const processAllScenarios = async (scenarios, connection, logger) => {
 
 /**
  * Create the complete fixtures data structure
- * @param {Object} compatibilityMatrix Compatibility matrix
+ * @param {Array<Array<string>>} compatibilityMatrix Compatible action code pairs
  * @param {Object} computedFixtures Computed scenario fixtures
  * @param {Array} scenarios Array of scenarios
  * @param {Array<string>} actionCodes Action codes
@@ -281,12 +256,13 @@ const writeFixturesToFile = (fixturesData, outputPath) => {
  * Log completion statistics
  * @param {Array} scenarios Array of scenarios
  * @param {Array<string>} actionCodes Action codes
+ * @param {Object} fixturesData Complete fixtures data structure
  */
-const logCompletionStats = (scenarios, actionCodes) => {
+const logCompletionStats = (scenarios, actionCodes, fixturesData) => {
   console.log('✅ Fixture generation completed successfully!')
   console.log(`📊 Generated data for ${scenarios.length} scenarios`)
   console.log(
-    `🔗 Compatibility matrix: ${actionCodes.length}x${actionCodes.length} combinations`
+    `🔗 Compatible action pairs: ${fixturesData?.compatibilityMatrix?.length || 'unknown'} combinations`
   )
 }
 
@@ -304,8 +280,8 @@ async function generateAvailableAreaFixtures() {
     // Step 0: Load test data using the same mechanism as database tests
     await loadTestData()
 
-    // Step 1: Generate compatibility matrix once (instead of 14 times in test)
-    console.log('🔍 Generating compatibility matrix...')
+    // Step 1: Generate compatibility pairs once (instead of 14 times in test)
+    console.log('🔍 Generating compatibility pairs...')
     const compatibilityCheckFn = await createCompatibilityMatrix(
       logger,
       connection,
@@ -342,7 +318,7 @@ async function generateAvailableAreaFixtures() {
     )
     writeFixturesToFile(fixturesData, outputPath)
 
-    logCompletionStats(scenarios, ACTION_CODES)
+    logCompletionStats(scenarios, ACTION_CODES, fixturesData)
   } catch (error) {
     console.error('❌ Error generating fixtures:', error)
     process.exit(1)

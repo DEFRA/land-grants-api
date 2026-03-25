@@ -41,10 +41,11 @@ export function getAvailableAreaComputedFixtures() {
       throw new Error('Invalid computed fixture structure')
     }
 
-    // Create compatibility check function from serialized matrix
+    // Create compatibility check function from compatible pairs
     const compatibilityMatrix = data.compatibilityMatrix
+    const pairSet = new Set(compatibilityMatrix.map(pair => `${pair[0]}:${pair[1]}`))
     const compatibilityCheckFn = (actionA, actionB) => {
-      return compatibilityMatrix[actionA]?.[actionB] ?? false
+      return pairSet.has(`${actionA}:${actionB}`)
     }
 
     // Convert scenario data into test.each format with computed data
@@ -76,44 +77,5 @@ export function getAvailableAreaComputedFixtures() {
     throw new Error(
       'Computed fixtures not available. Please generate them first.'
     )
-  }
-}
-
-/**
- * Create a landCoverToString function from stored land cover definitions
- * @param {Array} landCoverDefinitions - Array of land cover definitions from the database
- * @returns {Function} Function to convert land cover codes to strings
- */
-export function createLandCoverToStringFromDefinitions(landCoverDefinitions) {
-  // If no definitions provided, return a basic function
-  if (!landCoverDefinitions || landCoverDefinitions.length === 0) {
-    return (code) => `Unknown land cover code: ${code}`
-  }
-
-  // Create the same lookup objects as createLandCoverCodeToString
-  const byLandCoverCode = {}
-  const byLandCoverClassCode = {}
-
-  for (const landCoverDefinition of landCoverDefinitions) {
-    byLandCoverCode[landCoverDefinition.landCoverCode] = landCoverDefinition
-    byLandCoverClassCode[landCoverDefinition.landCoverClassCode] =
-      landCoverDefinition
-  }
-
-  // Return the same function as makeLandCoverToString
-  return (landCoverCode, noWarning = false) => {
-    const landCover = byLandCoverCode[landCoverCode]
-
-    if (landCover != null) {
-      return `${landCover.landCoverDescription} (${landCover.landCoverCode})`
-    }
-
-    const landCoverClass = byLandCoverClassCode[landCoverCode]
-
-    if (landCoverClass != null) {
-      return `${landCoverClass.landCoverClassDescription} (${landCoverClass.landCoverClassCode})${noWarning ? '' : ' Warning: This is a land cover class'}`
-    }
-
-    return `Unknown land cover code: ${landCoverCode}`
   }
 }

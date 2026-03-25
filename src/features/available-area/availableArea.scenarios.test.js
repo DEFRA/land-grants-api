@@ -1,8 +1,5 @@
 import { getAvailableAreaForAction } from './availableArea.js'
-import {
-  getAvailableAreaComputedFixtures,
-  createLandCoverToStringFromDefinitions
-} from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
+import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 
 describe('Available Area Calculation Service - Scenario Tests (Optimized)', () => {
   let logger
@@ -30,19 +27,14 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
       },
       { compatibilityCheckFn, dataRequirements }
     ) => {
-      // Create landCoverToString function from stored definitions
-      const landCoverToString = createLandCoverToStringFromDefinitions(
-        dataRequirements.landCoverDefinitions
-      )
-
-      // Recreate the aacDataRequirements object with the landCoverToString function
+      // Recreate the aacDataRequirements object with the pre-computed data
       const aacDataRequirements = {
         landCoverCodesForAppliedForAction:
           dataRequirements.landCoverCodesForAppliedForAction,
         landCoversForParcel: dataRequirements.landCoversForParcel,
         landCoversForExistingActions:
           dataRequirements.landCoversForExistingActions,
-        landCoverToString
+        landCoverToString: () => 'Faked land cover'
       }
 
       // This is now a pure calculation with no database I/O
