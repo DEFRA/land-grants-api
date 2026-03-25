@@ -43,7 +43,9 @@ export function getAvailableAreaComputedFixtures() {
 
     // Create compatibility check function from compatible pairs
     const compatibilityMatrix = data.compatibilityMatrix
-    const pairSet = new Set(compatibilityMatrix.map(pair => `${pair[0]}:${pair[1]}`))
+    const pairSet = new Set(
+      compatibilityMatrix.map((pair) => `${pair[0]}:${pair[1]}`)
+    )
     const compatibilityCheckFn = (actionA, actionB) => {
       return pairSet.has(`${actionA}:${actionB}`)
     }
