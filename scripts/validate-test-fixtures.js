@@ -129,7 +129,11 @@ async function validateTestFixtures() {
     const pairsCount = computedData.compatibilityMatrix?.length || 0
     const maxPossiblePairs = actionCount * actionCount
 
-    if (actionCount === 0 || pairsCount === 0 || pairsCount > maxPossiblePairs) {
+    if (
+      actionCount === 0 ||
+      pairsCount === 0 ||
+      pairsCount > maxPossiblePairs
+    ) {
       console.error('❌ Compatibility matrix validation failed!')
       console.error(
         `Action count: ${actionCount}, Pairs found: ${pairsCount}, Max possible: ${maxPossiblePairs}`
