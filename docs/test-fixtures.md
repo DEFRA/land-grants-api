@@ -73,7 +73,9 @@ This validates:
 The test automatically uses computed fixtures:
 
 ```bash
-npm run test:db  # Includes optimized available area test
+npm run test:unit  # Includes optimized available area test
+# or
+npm run test:quick  # Runs a faster subset, including the optimized available area test
 ```
 
 ## When to Regenerate Fixtures
