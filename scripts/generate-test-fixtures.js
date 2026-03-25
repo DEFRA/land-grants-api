@@ -328,7 +328,7 @@ async function generateAvailableAreaFixtures() {
 }
 
 // Run the generator if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])) {
   try {
     await generateAvailableAreaFixtures()
   } catch (error) {
