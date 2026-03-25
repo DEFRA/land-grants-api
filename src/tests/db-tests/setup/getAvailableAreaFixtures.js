@@ -1,8 +1,7 @@
 import { parse } from 'csv-parse/sync' // eslint-disable-line
 import { readFileSync } from 'fs'
-import path from 'path'
+import path, { dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { dirname } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -31,45 +30,51 @@ export function getAvailableAreaComputedFixtures() {
     '../fixtures',
     'available-area-computed.json'
   )
-  
+
   try {
     const content = readFileSync(computedFixturePath, 'utf-8')
     const data = JSON.parse(content)
-    
+
     // Validate the fixture structure
     if (!data.metadata || !data.compatibilityMatrix || !data.scenarioData) {
       throw new Error('Invalid computed fixture structure')
     }
-    
+
     // Create compatibility check function from serialized matrix
     const compatibilityMatrix = data.compatibilityMatrix
     const compatibilityCheckFn = (actionA, actionB) => {
       return compatibilityMatrix[actionA]?.[actionB] ?? false
     }
-    
+
     // Convert scenario data into test.each format with computed data
-    const fixtures = Object.entries(data.scenarioData).map(([scenarioName, scenarioData]) => [
-      scenarioName,
-      {
-        // Original scenario properties  
-        applyingForAction: scenarioData.scenario.applyingForAction,
-        sheetId: scenarioData.scenario.sheetId,
-        parcelId: scenarioData.scenario.parcelId,
-        existingActions: scenarioData.scenario.existingActions,
-        expectedAvailableArea: scenarioData.scenario.expectedAvailableArea
-      },
-      {
-        // Pre-computed data
-        compatibilityCheckFn,
-        dataRequirements: scenarioData.dataRequirements
-      }
-    ])
-    
+    const fixtures = Object.entries(data.scenarioData).map(
+      ([scenarioName, scenarioData]) => [
+        scenarioName,
+        {
+          // Original scenario properties
+          applyingForAction: scenarioData.scenario.applyingForAction,
+          sheetId: scenarioData.scenario.sheetId,
+          parcelId: scenarioData.scenario.parcelId,
+          existingActions: scenarioData.scenario.existingActions,
+          expectedAvailableArea: scenarioData.scenario.expectedAvailableArea
+        },
+        {
+          // Pre-computed data
+          compatibilityCheckFn,
+          dataRequirements: scenarioData.dataRequirements
+        }
+      ]
+    )
+
     return fixtures
   } catch (error) {
     console.error('Failed to load computed fixtures:', error)
-    console.log('💡 Run "npm run test:fixtures:generate" to create the computed fixtures')
-    throw new Error('Computed fixtures not available. Please generate them first.')
+    console.log(
+      '💡 Run "npm run test:fixtures:generate" to create the computed fixtures'
+    )
+    throw new Error(
+      'Computed fixtures not available. Please generate them first.'
+    )
   }
 }
 
@@ -83,14 +88,15 @@ export function createLandCoverToStringFromDefinitions(landCoverDefinitions) {
   if (!landCoverDefinitions || landCoverDefinitions.length === 0) {
     return (code) => `Unknown land cover code: ${code}`
   }
-  
+
   // Create the same lookup objects as createLandCoverCodeToString
   const byLandCoverCode = {}
   const byLandCoverClassCode = {}
 
   for (const landCoverDefinition of landCoverDefinitions) {
     byLandCoverCode[landCoverDefinition.landCoverCode] = landCoverDefinition
-    byLandCoverClassCode[landCoverDefinition.landCoverClassCode] = landCoverDefinition
+    byLandCoverClassCode[landCoverDefinition.landCoverClassCode] =
+      landCoverDefinition
   }
 
   // Return the same function as makeLandCoverToString
