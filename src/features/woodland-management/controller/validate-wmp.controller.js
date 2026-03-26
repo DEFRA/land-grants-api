@@ -13,6 +13,7 @@ import {
 } from '../schema/validate-wmp.schema.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { wmpResultTransformer } from '../service/wmp.transformer.js'
 
 export const ValidateWMPController = {
   options: {
@@ -58,7 +59,7 @@ export const ValidateWMPController = {
       return h
         .response({
           message: 'success',
-          result
+          result: wmpResultTransformer(result.action, result.ruleResult)
         })
         .code(statusCodes.ok)
     } catch (error) {

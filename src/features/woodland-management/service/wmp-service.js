@@ -3,19 +3,23 @@ import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
-import { wmpResultTransformer } from './wmp.transformer.js'
 
+/**
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
+ * @returns {Promise<import('../wmp.d.js').WMPResponse>}
+ */
 export const validateWoodlandManagementPlan = async (request) => {
+  /** @type {import('../wmp.d.js').WMPRequest} */
+  // @ts-expect-error - payload
   const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } = request.payload
   const {
     logger,
+    // @ts-expect-error - postgresDb
     server: { postgresDb }
   } = request
 
   const parcels = parcelIds.map((parcelId) => splitParcelId(parcelId, logger))
-
   const totalParcelArea = await getTotalLandAreaSqm(parcels, request)
-
   const actions = await getEnabledActions(logger, postgresDb)
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
@@ -28,7 +32,7 @@ export const validateWoodlandManagementPlan = async (request) => {
     action?.rules
   )
 
-  return wmpResultTransformer(action, ruleResult)
+  return { action, ruleResult }
 }
 
 export const getTotalLandAreaSqm = async (parcels, request) => {
@@ -57,6 +61,5 @@ export const getTotalLandAreaSqm = async (parcels, request) => {
 }
 
 /**
- * @import { WMPRequest } from '../wmp.d.js'
  * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
  */

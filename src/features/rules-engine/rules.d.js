@@ -33,7 +33,7 @@
  * @property {string} [sheetId]
  * @property {string} [actionCode]
  * @property {number|string} [oldWoodlandAreaHa]
- * @property {number|string} [newWoodlandAreaHa]
+ * @property {number|string|null} [newWoodlandAreaHa]
  * @property {number|string} [totalParcelArea]
  * @property {number} [totalAvailableArea]
  * @property {number|string} [areaAppliedFor]
