@@ -7,9 +7,10 @@ import {
   paymentCalculateWMPSchemaV2,
   paymentCalculateWMPResponseSchemaV2
 } from '../schema/payment-calculate-wmp.schema.js'
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { wmpResultTransformer } from '../service/wmp.transformer.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -17,10 +18,7 @@ export const PaymentsCalculateWMPControllerV2 = {
     description: 'Calculate WMP payment',
     notes: 'Calculates payment amounts for WMP',
     validate: {
-      payload: paymentCalculateWMPSchemaV2,
-      failAction: () => {
-        throw Boom.badRequest('Invalid request payload input')
-      }
+      payload: paymentCalculateWMPSchemaV2
     },
     response: {
       status: {
@@ -36,49 +34,36 @@ export const PaymentsCalculateWMPControllerV2 = {
    * @param {import('@hapi/hapi').Request} request - Hapi request object
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
-  handler: async (request) => {
-    // @ts-expect-error - postgresDb
-    const postgresDb = request.server.postgresDb
-
+  handler: async (request, h) => {
     /** @type {paymentCalculateWMPSchemaV2} */
     // @ts-expect-error - payload
-    const { parcelIds } = request.payload
-    const parcels = parcelIds.map((parcelId) =>
-      splitParcelId(parcelId, request.logger)
-    )
+    const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
+      request.payload
 
-    // get all parcels passed in
-    const area = []
-    for (const parcel of parcels) {
-      const result = await getLandData(
-        parcel.sheetId,
-        parcel.parcelId,
-        postgresDb,
-        request.logger
-      )
-
-      if (!result) {
-        continue
-      }
-
-      const [landParcel] = result
-
-      /** @type {LandParcelDb} */
-      area.push(landParcel.area)
-    }
-
-    // sum those areas
-    const totalArea = area.reduce((acc, parcel) => acc + parcel, 0)
+    console.log('parcelIds', parcelIds)
+    console.log('oldWoodlandAreaHa', oldWoodlandAreaHa)
+    console.log('newWoodlandAreaHa', newWoodlandAreaHa)
+    console.log('startDate', startDate)
 
     logInfo(request.logger, {
-      category: 'payment',
-      message: 'Payment calculation',
+      category: 'wmp',
+      message: 'Payment Calculate WMP',
       context: {
-        totalArea
+        parcelIds,
+        oldWoodlandAreaHa,
+        newWoodlandAreaHa,
+        startDate
       }
     })
 
-    throw Boom.badRequest('Not implemented')
+    const result = await validateWoodlandManagementPlan(request)
+
+    return h
+      .response({
+        message: 'success',
+        result: wmpResultTransformer(result.action, result.ruleResult)
+      })
+      .code(statusCodes.ok)
   }
 }
 
