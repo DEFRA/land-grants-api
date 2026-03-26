@@ -1,5 +1,7 @@
 // Rule 1: woodland-minimum-eligibility
 
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+
 // There must be a minimum of 0.5ha of woodland over 10 years old on the holding. If this is not met,
 // the applicant is not eligible and the calculator should reflect this.
 
@@ -20,23 +22,27 @@
  */
 export const woodlandMinimumEligibility = {
   execute: (application, rule) => {
-    const { oldWoodlandArea } = application
-    const { minimumSize } = rule.config
+    const { oldWoodlandAreaHa = 0 } = application
+    const { minimumSize: minimumSizeHa } = rule.config
     const name = rule.name
 
-    const oldWoodlandAreaNumber = Number.parseFloat(oldWoodlandArea)
-    const minimumSizeNumber = Number.parseFloat(minimumSize)
+    const oldWoodlandAreaSqm = haToSqm(Number.parseFloat(oldWoodlandAreaHa))
+    const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
+
+    const roundedOldWoodlandAreaHa =
+      Number.parseFloat(oldWoodlandAreaHa).toFixed(4)
+    const roundedMinimumSizeHa = Number.parseFloat(minimumSizeHa).toFixed(4)
 
     const explanations = [
       {
         title: 'Woodland minimum eligibility',
         lines: [
-          `The minimum required woodland area over 10 years old is (${minimumSizeNumber} ha), the holding has (${oldWoodlandAreaNumber} ha)`
+          `The minimum required woodland area over 10 years old is (${roundedMinimumSizeHa} ha), the holding has (${roundedOldWoodlandAreaHa} ha)`
         ]
       }
     ]
 
-    if (!oldWoodlandArea) {
+    if (!oldWoodlandAreaSqm) {
       return {
         name,
         passed: false,
@@ -46,12 +52,12 @@ export const woodlandMinimumEligibility = {
       }
     }
 
-    if (oldWoodlandAreaNumber < minimumSizeNumber) {
+    if (oldWoodlandAreaSqm < minimumSizeSqm) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The woodland area over 10 years old (${oldWoodlandAreaNumber} ha) does not meet the minimum required area of (${minimumSizeNumber} ha)`,
+        reason: `The woodland area over 10 years old (${roundedOldWoodlandAreaHa} ha) does not meet the minimum required area of (${roundedMinimumSizeHa} ha)`,
         explanations
       }
     }
@@ -60,7 +66,7 @@ export const woodlandMinimumEligibility = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The woodland area over 10 years old (${oldWoodlandAreaNumber} ha) meets the minimum required area of (${minimumSizeNumber} ha)`,
+      reason: `The woodland area over 10 years old (${roundedOldWoodlandAreaHa} ha) meets the minimum required area of (${roundedMinimumSizeHa} ha)`,
       explanations
     }
   }

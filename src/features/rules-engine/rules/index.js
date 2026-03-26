@@ -13,6 +13,6 @@ export const rules = {
   'hefer-consent-required-1.0.0': heferConsentRequired,
   'parcel-has-minimum-eligibility-for-woodland-management-plan-1.0.0':
     woodlandMinimumEligibility,
-  'applied-for-total-available-area-for-woodland-management-plan-1.0.0':
+  'total-area-not-exceed-land-parcels-woodland-management-plan-1.0.0':
     woodlandTotalArea
 }
