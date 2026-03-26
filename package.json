@@ -43,6 +43,8 @@
     "test:all": "npm run test:unit && npm run test:db && npm run test:e2e && npm run merge:coverage",
     "test:import": "npm run extractsql && docker compose -p land-grants-test --profile localstack -f compose.yml -f compose.test.yml up -d && docker compose -p land-grants-test -f compose.yml -f compose.test.yml --profile migrations run --rm database-up && npx vitest run --config=vitest.import.config.js --coverage; code=$?; docker compose -p land-grants-test down --volumes --remove-orphans; exit $code",
     "test:contracts": "npx vitest run --config=vitest.contract.config.js",
+    "test:fixtures:generate": "npm run extractsql && docker compose -p land-grants-test --profile localstack -f compose.yml -f compose.test.yml up -d && docker compose -p land-grants-test -f compose.yml -f compose.test.yml --profile migrations run --rm database-up && NODE_ENV=test npx tsx scripts/generate-test-fixtures.js; code=$?; docker compose -p land-grants-test down --volumes --remove-orphans; exit $code",
+    "test:fixtures:validate": "npx tsx scripts/validate-test-fixtures.js",
     "merge:coverage": "./scripts/move-coverage && nyc merge coverage/tmp coverage/merged/coverage.json && nyc report --temp-dir coverage/merged --reporter=html --reporter=lcov --report-dir coverage/merged",
     "coverage:open": "open coverage/merged/index.html",
     "extractsql": "scripts/extract-gz-to-sql src/land-data/migration changelog/",
