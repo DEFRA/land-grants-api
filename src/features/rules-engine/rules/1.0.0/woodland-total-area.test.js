@@ -28,13 +28,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (10.5 ha) does not exceed the total land parcel area (10.5 ha)',
+        'The total woodland area (10.5000 ha) does not exceed the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (10.5 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (10.5000 ha)'
           ]
         }
       ]
@@ -50,13 +50,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (10 ha) does not exceed the total land parcel area (10.5 ha)',
+        'The total woodland area (10.0000 ha) does not exceed the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (10 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (10.0000 ha)'
           ]
         }
       ]
@@ -72,13 +72,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (8 ha) does not exceed the total land parcel area (10.5 ha)',
+        'The total woodland area (8.0000 ha) does not exceed the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (8 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (8.0000 ha)'
           ]
         }
       ]
@@ -94,13 +94,36 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (10.5 ha) does not exceed the total land parcel area (10.5 ha)',
+        'The total woodland area (10.5000 ha) does not exceed the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (10.5 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (10.5000 ha)'
+          ]
+        }
+      ]
+    })
+  })
+
+
+  test('should pass when woodland area is provided and hectares rounded to 4 decimal places', () => {
+    const application = createApplication(9.11223, 0.533233, 10.54343432)
+    const rule = createRule()
+    const result = woodlandTotalArea.execute(application, rule)
+
+    expect(result).toEqual({
+      name: 'woodland-total-area',
+      passed: true,
+      reason:
+        'The total woodland area (9.6455 ha) does not exceed the total land parcel area (10.5434 ha)',
+      description: ruleDescription,
+      explanations: [
+        {
+          title: 'Woodland total area',
+          lines: [
+            'The total land parcel area is (10.5434 ha), the total woodland area (young + old) is (9.6455 ha)'
           ]
         }
       ]
@@ -116,13 +139,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: false,
       reason:
-        'The total woodland area (12 ha) exceeds the total land parcel area (10.5 ha)',
+        'The total woodland area (12.0000 ha) exceeds the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (12 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (12.0000 ha)'
           ]
         }
       ]
@@ -138,13 +161,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (1 ha) does not exceed the total land parcel area (10.5 ha)',
+        'The total woodland area (1.0000 ha) does not exceed the total land parcel area (10.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (1 ha)'
+            'The total land parcel area is (10.5000 ha), the total woodland area (young + old) is (1.0000 ha)'
           ]
         }
       ]
