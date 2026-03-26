@@ -16,7 +16,7 @@
               '{rules, 1}',
               ' {
                   "name": "total-area-not-exceed-land-parcels-woodland-management-plan",
-                  "description": "Has the total available area for the woodland management plan been applied for?"
+                  "description": "Is the total woodland area less than or equal to the total land parcel area?"
                 }'
           )
         WHERE code = 'PA3';
