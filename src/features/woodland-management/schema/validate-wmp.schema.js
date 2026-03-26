@@ -7,6 +7,6 @@ export const validateWMPResponseSchemaV2 = Joi.object({
 
 export const validateWMPSchemaV2 = Joi.object({
   parcelIds: Joi.array().items(Joi.string()).required(),
-  oldWoodlandArea: Joi.number().positive(),
-  newWoodlandArea: Joi.number().positive()
+  oldWoodlandAreaHa: Joi.number().min(0).required(),
+  newWoodlandAreaHa: Joi.number().min(0)
 })
