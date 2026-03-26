@@ -1,4 +1,4 @@
-// Rule 2: woodland-total-area
+// Rule 2: total area not exceed land parcels
 
 // The total area of woodland (young + old) must not exceed the total area of land parcels entered into the agreement.
 
