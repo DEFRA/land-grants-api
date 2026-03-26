@@ -16,7 +16,7 @@
             '{
                 "name": "wmp-calculation",
                 "config": {
-                    "young-woodland-max-percent": 20,
+                    "new-woodland-max-percent": 20,
                     "tiers": [
                         {
                             "lower-limit-exclusive-ha": 0.5,
