@@ -107,7 +107,6 @@ describe('woodlandTotalArea', () => {
     })
   })
 
-
   test('should pass when woodland area is provided and hectares rounded to 4 decimal places', () => {
     const application = createApplication(9.11223, 0.533233, 10.54343432)
     const rule = createRule()

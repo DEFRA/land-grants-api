@@ -29,7 +29,8 @@ export const woodlandMinimumEligibility = {
     const oldWoodlandAreaSqm = haToSqm(Number.parseFloat(oldWoodlandAreaHa))
     const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
 
-    const roundedOldWoodlandAreaHa = Number.parseFloat(oldWoodlandAreaHa).toFixed(4)
+    const roundedOldWoodlandAreaHa =
+      Number.parseFloat(oldWoodlandAreaHa).toFixed(4)
     const roundedMinimumSizeHa = Number.parseFloat(minimumSizeHa).toFixed(4)
 
     const explanations = [
