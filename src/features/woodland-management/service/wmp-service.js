@@ -6,7 +6,7 @@ import { getEnabledActions } from '../../actions/queries/getEnabledActions.query
 import { wmpResultTransformer } from './wmp.transformer.js'
 
 export const validateWoodlandManagementPlan = async (request) => {
-  const { parcelIds, oldWoodlandArea, newWoodlandArea } = request.payload
+  const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } = request.payload
   const {
     logger,
     server: { postgresDb }
@@ -14,15 +14,15 @@ export const validateWoodlandManagementPlan = async (request) => {
 
   const parcels = parcelIds.map((parcelId) => splitParcelId(parcelId, logger))
 
-  const totalParcelArea = await getTotalLandArea(parcels, request)
+  const totalParcelArea = await getTotalLandAreaSqm(parcels, request)
 
   const actions = await getEnabledActions(logger, postgresDb)
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
     rules,
     {
-      oldWoodlandArea,
-      newWoodlandArea,
+      oldWoodlandAreaHa,
+      newWoodlandAreaHa,
       totalParcelArea
     },
     action?.rules
@@ -31,7 +31,7 @@ export const validateWoodlandManagementPlan = async (request) => {
   return wmpResultTransformer(action, ruleResult)
 }
 
-export const getTotalLandArea = async (parcels, request) => {
+export const getTotalLandAreaSqm = async (parcels, request) => {
   const area = []
   for (const parcel of parcels) {
     const result = await getLandData(

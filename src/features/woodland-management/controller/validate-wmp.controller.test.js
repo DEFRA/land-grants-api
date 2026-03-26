@@ -63,8 +63,8 @@ describe('Validate WMP controller', () => {
       url: '/api/v1/wmp/validate',
       payload: {
         parcelIds: ['SX067-99238'],
-        oldWoodlandArea: 3,
-        newWoodlandArea: 1
+        oldWoodlandAreaHa: 3,
+        newWoodlandAreaHa: 1
       }
     }
     mockValidateWoodlandManagementPlan.mockResolvedValue(mockResult)
@@ -86,8 +86,8 @@ describe('Validate WMP controller', () => {
       url: '/api/v1/wmp/validate',
       payload: {
         parcelIds: ['SX067-99238'],
-        oldWoodlandArea: 3,
-        newWoodlandArea: 1
+        oldWoodlandAreaHa: 3,
+        newWoodlandAreaHa: 1
       }
     }
     mockValidateWoodlandManagementPlan.mockRejectedValue(
@@ -99,5 +99,58 @@ describe('Validate WMP controller', () => {
 
     expect(result.statusCode).toBe(500)
     expect(result.result.message).toBe('An internal server error occurred')
+  })
+
+  test('should return bad request when no oldWoodlandAreaHa', async () => {
+    const request = {
+      method: 'POST',
+      url: '/api/v1/wmp/validate',
+      payload: {
+        parcelIds: ['SX067-99238'],
+        newWoodlandAreaHa: 1
+      }
+    }
+
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const result = await server.inject(request)
+
+    expect(result.statusCode).toBe(400)
+    expect(result.result.message).toBe('Invalid request payload input')
+  })
+
+  test('should return bad request when oldWoodlandAreaHa is negative', async () => {
+    const request = {
+      method: 'POST',
+      url: '/api/v1/wmp/validate',
+      payload: {
+        parcelIds: ['SX067-99238'],
+        newWoodlandAreaHa: 1,
+        oldWoodlandAreaHa: -1
+      }
+    }
+
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const result = await server.inject(request)
+
+    expect(result.statusCode).toBe(400)
+    expect(result.result.message).toBe('Invalid request payload input')
+  })
+
+  test('should return bad request when newWoodlandAreaHa is negative', async () => {
+    const request = {
+      method: 'POST',
+      url: '/api/v1/wmp/validate',
+      payload: {
+        parcelIds: ['SX067-99238'],
+        newWoodlandAreaHa: -1,
+        oldWoodlandAreaHa: 1
+      }
+    }
+
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const result = await server.inject(request)
+
+    expect(result.statusCode).toBe(400)
+    expect(result.result.message).toBe('Invalid request payload input')
   })
 })

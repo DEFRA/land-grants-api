@@ -41,8 +41,8 @@ describe('woodlandTotalArea', () => {
     })
   })
 
-  test('should pass when no new woodland area and old woodland area is less than parcel area', () => {
-    const application = createApplication(10, undefined, 10.5)
+  test('should pass when new woodland area is zero and old woodland area is less than parcel area', () => {
+    const application = createApplication(10, 0, 10.5)
     const rule = createRule()
     const result = woodlandTotalArea.execute(application, rule)
 
@@ -129,21 +129,22 @@ describe('woodlandTotalArea', () => {
     })
   })
 
-  test('should fail when no total woodland area is provided', () => {
-    const application = createApplication(undefined, undefined, '10.5')
+  test('should pass when no new woodland area is provided', () => {
+    const application = createApplication(1, undefined, '10.5')
     const rule = createRule()
     const result = woodlandTotalArea.execute(application, rule)
 
     expect(result).toEqual({
       name: 'woodland-total-area',
-      passed: false,
-      reason: 'No total woodland area has been provided',
+      passed: true,
+      reason:
+        'The total woodland area (1 ha) does not exceed the total land parcel area (10.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (NaN ha)'
+            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (1 ha)'
           ]
         }
       ]

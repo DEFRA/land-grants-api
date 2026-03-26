@@ -22,8 +22,8 @@ describe('validateWoodlandManagementPlan', () => {
     mockRequest = {
       payload: {
         parcelIds: ['parcel1', 'parcel2'],
-        oldWoodlandArea: 10,
-        newWoodlandArea: 5
+        oldWoodlandAreaHa: 10,
+        newWoodlandAreaHa: 5
       },
       logger: {
         info: vi.fn(),
@@ -72,7 +72,7 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandArea: 10, newWoodlandArea: 5, totalParcelArea: 200 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 200 },
       ['ruleA']
     )
 
@@ -100,7 +100,7 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandArea: 10, newWoodlandArea: 5, totalParcelArea: 50 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 50 },
       ['ruleA']
     )
     expect(result).toEqual({ hasPassed: true })
