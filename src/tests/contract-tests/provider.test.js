@@ -69,8 +69,7 @@ const mockAvailableAreaResult = {
   availableAreaHectares: 0.03
 }
 
-// eslint-disable-next-line
-const mockGetApplicationValidationRunResult = async (logger, db, id) => {
+const mockGetApplicationValidationRunResult = (logger, db, id) => {
   if (id === 999) {
     return null
   }
