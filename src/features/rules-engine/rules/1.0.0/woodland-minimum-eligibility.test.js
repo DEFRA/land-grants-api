@@ -4,8 +4,9 @@ const ruleDescription =
   'Is the parcel eligible for the woodland management plan action?'
 
 describe('woodlandMinimumEligibility', () => {
-  const createApplication = (oldWoodlandArea) => ({
-    oldWoodlandArea
+  const createApplication = (oldWoodlandAreaHa, newWoodlandAreaHa = 0) => ({
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa
   })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
@@ -25,13 +26,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
+        'The woodland area over 10 years old (0.5000 ha) meets the minimum required area of (0.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
+            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.5000 ha)'
           ]
         }
       ]
@@ -39,7 +40,7 @@ describe('woodlandMinimumEligibility', () => {
   })
 
   test('should pass when woodland area over 10 years exceeds the minimum of 0.5ha', () => {
-    const application = createApplication('1.2')
+    const application = createApplication(1.2)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -47,13 +48,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (1.2 ha) meets the minimum required area of (0.5 ha)',
+        'The woodland area over 10 years old (1.2000 ha) meets the minimum required area of (0.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (1.2 ha)'
+            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (1.2000 ha)'
           ]
         }
       ]
@@ -69,13 +70,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
+        'The woodland area over 10 years old (0.5000 ha) meets the minimum required area of (0.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
+            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.5000 ha)'
           ]
         }
       ]
@@ -91,13 +92,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: false,
       reason:
-        'The woodland area over 10 years old (0.4 ha) does not meet the minimum required area of (0.5 ha)',
+        'The woodland area over 10 years old (0.4000 ha) does not meet the minimum required area of (0.5000 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.4 ha)'
+            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.4000 ha)'
           ]
         }
       ]
@@ -118,7 +119,7 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (NaN ha)'
+            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.0000 ha)'
           ]
         }
       ]

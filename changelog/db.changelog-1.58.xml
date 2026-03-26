@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="update-pa3-action-rule-name" author="system">
+        <sql>
+        update actions_config
+        SET config = jsonb_set(
+              config,
+              '{rules, 1}',
+              ' {
+                  "name": "total-area-not-exceed-land-parcels-woodland-management-plan",
+                  "description": "Is the total woodland area less than or equal to the total land parcel area?"
+                }'
+          )
+        WHERE code = 'PA3';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
