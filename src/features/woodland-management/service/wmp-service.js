@@ -19,7 +19,7 @@ export const validateWoodlandManagementPlan = async (request) => {
   } = request
 
   const parcels = parcelIds.map((parcelId) => splitParcelId(parcelId, logger))
-  const totalParcelArea = await getTotalLandAreaSqm(parcels, request)
+  const totalParcelAreaSqm = await getTotalLandAreaSqm(parcels, request)
   const actions = await getEnabledActions(logger, postgresDb)
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
@@ -28,7 +28,7 @@ export const validateWoodlandManagementPlan = async (request) => {
     {
       oldWoodlandAreaHa,
       newWoodlandAreaHa,
-      totalParcelArea
+      totalParcelAreaSqm
     },
     action?.rules
   )

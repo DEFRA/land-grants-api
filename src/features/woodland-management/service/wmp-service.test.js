@@ -69,7 +69,7 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 200 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 200 },
       ['ruleA']
     )
 
@@ -94,7 +94,7 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 50 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 50 },
       ['ruleA']
     )
     expect(result).toEqual({
