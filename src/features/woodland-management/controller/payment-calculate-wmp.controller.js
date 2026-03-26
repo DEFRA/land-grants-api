@@ -6,7 +6,7 @@ import {
 import {
   paymentCalculateWMPSchemaV2,
   paymentCalculateWMPResponseSchemaV2
-} from '../../schema/2.0.0/payment-calculate-wmp.controller.js'
+} from '../schema/payment-calculate-wmp.schema.js'
 import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'

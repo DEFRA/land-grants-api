@@ -4,7 +4,6 @@ import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
-import { wmpResultTransformer } from './wmp.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 
 vi.mock('~/src/features/parcel/service/parcel.service.js')
@@ -12,7 +11,6 @@ vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))
 vi.mock('../../actions/queries/getEnabledActions.query.js')
-vi.mock('./wmp.transformer.js')
 
 describe('validateWoodlandManagementPlan', () => {
   let mockRequest
@@ -22,8 +20,8 @@ describe('validateWoodlandManagementPlan', () => {
     mockRequest = {
       payload: {
         parcelIds: ['parcel1', 'parcel2'],
-        oldWoodlandArea: 10,
-        newWoodlandArea: 5
+        oldWoodlandAreaHa: 10,
+        newWoodlandAreaHa: 5
       },
       logger: {
         info: vi.fn(),
@@ -43,7 +41,6 @@ describe('validateWoodlandManagementPlan', () => {
     getLandData.mockResolvedValue([{ area: 100 }])
     getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
     executeRules.mockReturnValue({ passed: true, results: [] })
-    wmpResultTransformer.mockReturnValue({ hasPassed: true })
 
     const result = await validateWoodlandManagementPlan(mockRequest)
 
@@ -72,16 +69,14 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandArea: 10, newWoodlandArea: 5, totalParcelArea: 200 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 200 },
       ['ruleA']
     )
 
-    expect(wmpResultTransformer).toHaveBeenCalledWith(
-      { code: 'PA3', rules: ['ruleA'] },
-      { passed: true, results: [] }
-    )
-
-    expect(result).toEqual({ hasPassed: true })
+    expect(result).toEqual({
+      action: { code: 'PA3', rules: ['ruleA'] },
+      ruleResult: { passed: true, results: [] }
+    })
   })
 
   it('should ignore parcels with no land data when calculating total area', async () => {
@@ -94,15 +89,17 @@ describe('validateWoodlandManagementPlan', () => {
       .mockResolvedValueOnce([{ area: 50 }])
     getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
     executeRules.mockReturnValue({ passed: true, results: [] })
-    wmpResultTransformer.mockReturnValue({ hasPassed: true })
 
     const result = await validateWoodlandManagementPlan(mockRequest)
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandArea: 10, newWoodlandArea: 5, totalParcelArea: 50 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 50 },
       ['ruleA']
     )
-    expect(result).toEqual({ hasPassed: true })
+    expect(result).toEqual({
+      action: { code: 'PA3', rules: ['ruleA'] },
+      ruleResult: { passed: true, results: [] }
+    })
   })
 })
