@@ -21,11 +21,12 @@
  */
 export const woodlandTotalArea = {
   execute: (application, rule) => {
-    const { oldWoodlandArea, newWoodlandArea, totalParcelArea } = application
+    const { oldWoodlandAreaHa, newWoodlandAreaHa, totalParcelArea } =
+      application
 
     const totalWoodlandArea =
-      Number.parseFloat(oldWoodlandArea) +
-      Number.parseFloat(newWoodlandArea || 0)
+      Number.parseFloat(oldWoodlandAreaHa) +
+      Number.parseFloat(newWoodlandAreaHa || 0)
 
     const roundedTotalWoodlandArea = totalWoodlandArea.toFixed(4)
     const roundedTotalParcelArea = Number.parseFloat(totalParcelArea).toFixed(4)

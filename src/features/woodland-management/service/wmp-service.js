@@ -24,6 +24,7 @@ export const validateWoodlandManagementPlan = async (request) => {
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
     rules,
+    /** @type {import('~/src/features/rules-engine/rules.d.js').RuleEngineApplication} */
     {
       oldWoodlandAreaHa,
       newWoodlandAreaHa,

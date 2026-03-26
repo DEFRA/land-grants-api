@@ -5,12 +5,12 @@ const ruleDescription =
 
 describe('woodlandTotalArea', () => {
   const createApplication = (
-    oldWoodlandArea,
-    newWoodlandArea,
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa,
     totalParcelArea
   ) => ({
-    oldWoodlandArea,
-    newWoodlandArea,
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa,
     totalParcelArea
   })
 
