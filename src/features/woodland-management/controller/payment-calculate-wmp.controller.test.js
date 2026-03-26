@@ -1,5 +1,5 @@
 import Hapi from '@hapi/hapi'
-import { payments } from '~/src/features/payment/index.js'
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
@@ -21,7 +21,7 @@ describe('Payment calculate WMP controller', () => {
       query: vi.fn()
     })
 
-    await server.register([payments])
+    await server.register([woodlandManagement])
     await server.initialize()
 
     mockGetLandData.mockResolvedValue([])
@@ -38,7 +38,7 @@ describe('Payment calculate WMP controller', () => {
   test('should throw 400 as not implemented ', async () => {
     const request = {
       method: 'POST',
-      url: '/api/v2/payments/calculate-wmp',
+      url: '/api/v1/wmp/payments/calculate',
       payload: {
         parcelIds: ['SX067-99238'],
         areaHectares: 1
@@ -50,6 +50,9 @@ describe('Payment calculate WMP controller', () => {
       statusCode,
       result: { message }
     } = await server.inject(request)
+
+    console.log('statusCode', statusCode)
+    console.log('message', message)
 
     expect(statusCode).toBe(400)
     expect(message).toBe('Not implemented')
