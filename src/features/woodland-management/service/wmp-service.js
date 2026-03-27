@@ -48,7 +48,9 @@ export const getTotalLandAreaSqm = async (parcels, request) => {
     )
 
     if (!result || result.length === 0) {
-      throw new ParcelNotFoundError(`Land parcel not found for ${parcel.sheetId}-${parcel.parcelId}`)
+      throw new ParcelNotFoundError(
+        `Land parcel not found for ${parcel.sheetId}-${parcel.parcelId}`
+      )
     }
 
     const [landParcel] = result

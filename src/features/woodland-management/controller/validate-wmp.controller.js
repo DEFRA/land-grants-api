@@ -22,7 +22,7 @@ export const ValidateWMPController = {
     description: 'Validate WMP',
     notes: 'Validates WMP',
     validate: {
-      payload: validateWMPSchemaV2,
+      payload: validateWMPSchemaV2
     },
     response: {
       status: {

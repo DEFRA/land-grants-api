@@ -85,9 +85,10 @@ describe('validateWoodlandManagementPlan', () => {
       sheetId: 'sheet',
       parcelId: id
     }))
-    getLandData
-      .mockResolvedValueOnce(null)
+    getLandData.mockResolvedValueOnce(null)
 
-    await expect(validateWoodlandManagementPlan(mockRequest)).rejects.toThrow(ParcelNotFoundError)
+    await expect(validateWoodlandManagementPlan(mockRequest)).rejects.toThrow(
+      ParcelNotFoundError
+    )
   })
 })
