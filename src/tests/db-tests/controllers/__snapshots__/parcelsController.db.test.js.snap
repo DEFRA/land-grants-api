@@ -11,7 +11,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -54,7 +54,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -169,7 +169,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -212,7 +212,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -327,7 +327,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -370,7 +370,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -485,7 +485,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -528,7 +528,7 @@ exports[`Parcels Controller > should return a 200 status code and 1 stack for 1 
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -643,7 +643,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -687,7 +687,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -850,7 +850,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -894,7 +894,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -1058,7 +1058,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -1102,7 +1102,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
@@ -1266,7 +1266,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -1310,7 +1310,7 @@ exports[`Parcels Controller > should return a 200 status code and multiple stack
   },
   {
     "content": [
-      "Permanent grassland (131) - 1.8905 ha",
+      "Permanent grassland (130) - 1.8905 ha",
       "= 1.8905 ha",
     ],
     "title": "Total valid land covers",
