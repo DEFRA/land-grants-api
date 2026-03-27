@@ -21,10 +21,7 @@ export const ValidateWMPController = {
     description: 'Validate WMP',
     notes: 'Validates WMP',
     validate: {
-      payload: validateWMPSchemaV2,
-      failAction: () => {
-        throw Boom.badRequest('Invalid request payload input')
-      }
+      payload: validateWMPSchemaV2
     },
     response: {
       status: {
