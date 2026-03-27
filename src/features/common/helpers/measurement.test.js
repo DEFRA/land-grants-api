@@ -519,5 +519,11 @@ describe('roundSqm', () => {
     test('handles more than 4 decimal places', () => {
       expect(roundTo4DecimalPlaces(12345.6789123)).toBe(12345.6789)
     })
+    test('handles as a string', () => {
+      expect(roundTo4DecimalPlaces('12345.6789123')).toBe(12345.6789)
+    })
+    test('returns 0 for non-numeric string', () => {
+      expect(roundTo4DecimalPlaces('abc')).toBe(0)
+    })
   })
 })
