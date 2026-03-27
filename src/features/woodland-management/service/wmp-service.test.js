@@ -1,17 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { validateWoodlandManagementPlan } from './wmp-service.js'
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
-import { ParcelNotFoundError } from '../errors/ParcelNotFoundError.js'
 
 vi.mock('~/src/features/parcel/service/parcel.service.js')
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))
 vi.mock('../../actions/queries/getEnabledActions.query.js')
+
+const mockParcels = [{ area_sqm: 100 }, { area_sqm: 100 }]
 
 describe('validateWoodlandManagementPlan', () => {
   let mockRequest
@@ -35,32 +34,12 @@ describe('validateWoodlandManagementPlan', () => {
   })
 
   it('should calculate total area correctly and successfully validate woodland management plan', async () => {
-    splitParcelId.mockImplementation((id) => ({
-      sheetId: 'sheet',
-      parcelId: id
-    }))
-    getLandData.mockResolvedValue([{ area: 100 }])
     getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
     executeRules.mockReturnValue({ passed: true, results: [] })
 
-    const result = await validateWoodlandManagementPlan(mockRequest)
-
-    expect(splitParcelId).toHaveBeenCalledTimes(2)
-    expect(splitParcelId).toHaveBeenCalledWith('parcel1', mockRequest.logger)
-    expect(splitParcelId).toHaveBeenCalledWith('parcel2', mockRequest.logger)
-
-    expect(getLandData).toHaveBeenCalledTimes(2)
-    expect(getLandData).toHaveBeenCalledWith(
-      'sheet',
-      'parcel1',
-      mockRequest.server.postgresDb,
-      mockRequest.logger
-    )
-    expect(getLandData).toHaveBeenCalledWith(
-      'sheet',
-      'parcel2',
-      mockRequest.server.postgresDb,
-      mockRequest.logger
+    const result = await validateWoodlandManagementPlan(
+      mockParcels,
+      mockRequest
     )
 
     expect(getEnabledActions).toHaveBeenCalledWith(
@@ -78,17 +57,5 @@ describe('validateWoodlandManagementPlan', () => {
       action: { code: 'PA3', rules: ['ruleA'] },
       ruleResult: { passed: true, results: [] }
     })
-  })
-
-  it('should throw ParcelNotFoundError if parcel not found', async () => {
-    splitParcelId.mockImplementation((id) => ({
-      sheetId: 'sheet',
-      parcelId: id
-    }))
-    getLandData.mockResolvedValueOnce(null)
-
-    await expect(validateWoodlandManagementPlan(mockRequest)).rejects.toThrow(
-      ParcelNotFoundError
-    )
   })
 })

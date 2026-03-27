@@ -1,26 +1,23 @@
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
-import { ParcelNotFoundError } from '../errors/ParcelNotFoundError.js'
 
 /**
+ * @param {LandParcelDb[]|null} parcels - The parcels
  * @param {import('@hapi/hapi').Request} request - Hapi request object
  * @returns {Promise<import('../wmp.d.js').WMPResponse>}
  */
-export const validateWoodlandManagementPlan = async (request) => {
+export const validateWoodlandManagementPlan = async (parcels, request) => {
   /** @type {import('../wmp.d.js').WMPRequest} */
   // @ts-expect-error - payload
-  const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } = request.payload
+  const { oldWoodlandAreaHa, newWoodlandAreaHa } = request.payload
   const {
     logger,
     // @ts-expect-error - postgresDb
     server: { postgresDb }
   } = request
 
-  const parcels = parcelIds.map((parcelId) => splitParcelId(parcelId, logger))
-  const totalParcelAreaSqm = await getTotalLandAreaSqm(parcels, request)
+  const totalParcelAreaSqm = await getTotalLandAreaSqm(parcels)
   const actions = await getEnabledActions(logger, postgresDb)
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
@@ -37,31 +34,12 @@ export const validateWoodlandManagementPlan = async (request) => {
   return { action, ruleResult }
 }
 
-export const getTotalLandAreaSqm = async (parcels, request) => {
-  const area = []
-  for (const parcel of parcels) {
-    const result = await getLandData(
-      parcel.sheetId,
-      parcel.parcelId,
-      request.server.postgresDb,
-      request.logger
-    )
-
-    if (!result || result.length === 0) {
-      throw new ParcelNotFoundError(
-        `Land parcel not found for ${parcel.sheetId}-${parcel.parcelId}`
-      )
-    }
-
-    const [landParcel] = result
-
-    /** @type {LandParcelDb} */
-    area.push(landParcel.area)
-  }
-
-  // sum those areas
-  const totalArea = area.reduce((acc, parcel) => acc + parcel, 0)
-  return totalArea
+/**
+ * @param {LandParcelDb[]|null} parcels - The parcels
+ * @returns {number} The total land area in square meters
+ */
+export const getTotalLandAreaSqm = (parcels) => {
+  return parcels?.reduce((acc, parcel) => acc + parcel.area_sqm, 0) ?? 0
 }
 
 /**
