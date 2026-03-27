@@ -71,12 +71,62 @@ export async function getAvailableAreaDataRequirements(
 
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
+  const generalizedLandCoversForParcel = aggregateLandCovers(
+    generalizeLandCovers(landCoversForParcel, landCoverDefinitions)
+  )
+
   return {
     landCoverCodesForAppliedForAction,
-    landCoversForParcel,
+    landCoversForParcel: generalizedLandCoversForParcel,
     landCoversForExistingActions,
     landCoverToString
   }
+}
+
+/**
+ * Maps specific land cover codes on a parcel to their broader class codes.
+ * Handles poor-quality data where a specific code (e.g. "131" Wheat) may be
+ * stored where a class code should be (e.g. "130" Arable).
+ * @param {LandCover[]} landCoversForParcel
+ * @param {LandCoverDefinition[]} landCoverDefinitions
+ * @returns {LandCover[]}
+ */
+export function generalizeLandCovers(
+  landCoversForParcel,
+  landCoverDefinitions
+) {
+  const specificToClass = new Map(
+    landCoverDefinitions.map((d) => [d.landCoverCode, d.landCoverClassCode])
+  )
+
+  return landCoversForParcel.map((landCover) => ({
+    landCoverClassCode:
+      specificToClass.get(landCover.landCoverClassCode) ??
+      landCover.landCoverClassCode,
+    areaSqm: landCover.areaSqm
+  }))
+}
+
+/**
+ * Sums land cover areas that share the same class code. A parcel may have
+ * many separate patches of the same land cover class; aggregating them
+ * reduces the number of entries the AAC needs to process.
+ * @param {LandCover[]} landCovers
+ * @returns {LandCover[]}
+ */
+export function aggregateLandCovers(landCovers) {
+  /** @type {Map<string, number>} */
+  const grouped = new Map()
+  for (const landCover of landCovers) {
+    grouped.set(
+      landCover.landCoverClassCode,
+      (grouped.get(landCover.landCoverClassCode) ?? 0) + landCover.areaSqm
+    )
+  }
+  return Array.from(grouped.entries()).map(([landCoverClassCode, areaSqm]) => ({
+    landCoverClassCode,
+    areaSqm
+  }))
 }
 
 /**
@@ -489,6 +539,6 @@ export function stackAndSubtractIncompatibleStacks(
  * @import { Pool } from '~/src/features/common/postgres.d.js'
  * @import { Logger } from '~/src/features/common/logger.d.js'
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
- * @import { LandCoverCodes } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
+ * @import { LandCoverCodes, LandCoverDefinition } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
  * @import { ExplanationSection } from '~/src/features/available-area/explanations.d.js'
  */
