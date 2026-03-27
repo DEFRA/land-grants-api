@@ -17,7 +17,7 @@ export const validateWoodlandManagementPlan = async (parcels, request) => {
     server: { postgresDb }
   } = request
 
-  const totalParcelAreaSqm = await getTotalLandAreaSqm(parcels)
+  const totalParcelAreaSqm = getTotalLandAreaSqm(parcels)
   const actions = await getEnabledActions(logger, postgresDb)
   const action = actions.find((a) => a.code === 'PA3')
   const ruleResult = executeRules(
