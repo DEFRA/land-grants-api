@@ -27,7 +27,6 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
       },
       { compatibilityCheckFn, dataRequirements }
     ) => {
-      // Recreate the aacDataRequirements object with the pre-computed data
       const aacDataRequirements = {
         landCoverCodesForAppliedForAction:
           dataRequirements.landCoverCodesForAppliedForAction,
@@ -37,7 +36,6 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         landCoverToString: () => 'Faked land cover'
       }
 
-      // This is now a pure calculation with no database I/O
       const result = getAvailableAreaForAction(
         applyingForAction,
         sheetId,
