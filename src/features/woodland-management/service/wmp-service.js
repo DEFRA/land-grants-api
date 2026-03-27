@@ -3,6 +3,7 @@ import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
+import { ParcelNotFoundError } from '../errors/ParcelNotFoundError.js'
 
 /**
  * @param {import('@hapi/hapi').Request} request - Hapi request object
@@ -46,8 +47,8 @@ export const getTotalLandAreaSqm = async (parcels, request) => {
       request.logger
     )
 
-    if (!result) {
-      continue
+    if (!result || result.length === 0) {
+      throw new ParcelNotFoundError(`Land parcel not found for ${parcel.sheetId}-${parcel.parcelId}`)
     }
 
     const [landParcel] = result

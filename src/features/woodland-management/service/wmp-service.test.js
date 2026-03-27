@@ -5,6 +5,7 @@ import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
+import { ParcelNotFoundError } from '../errors/ParcelNotFoundError.js'
 
 vi.mock('~/src/features/parcel/service/parcel.service.js')
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
@@ -79,27 +80,14 @@ describe('validateWoodlandManagementPlan', () => {
     })
   })
 
-  it('should ignore parcels with no land data when calculating total area', async () => {
+  it('should throw ParcelNotFoundError if parcel not found', async () => {
     splitParcelId.mockImplementation((id) => ({
       sheetId: 'sheet',
       parcelId: id
     }))
     getLandData
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce([{ area: 50 }])
-    getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
-    executeRules.mockReturnValue({ passed: true, results: [] })
 
-    const result = await validateWoodlandManagementPlan(mockRequest)
-
-    expect(executeRules).toHaveBeenCalledWith(
-      rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 50 },
-      ['ruleA']
-    )
-    expect(result).toEqual({
-      action: { code: 'PA3', rules: ['ruleA'] },
-      ruleResult: { passed: true, results: [] }
-    })
+    await expect(validateWoodlandManagementPlan(mockRequest)).rejects.toThrow(ParcelNotFoundError)
   })
 })
