@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-03-27T15:11:28.315Z",
+    "generatedAt": "2026-03-27T16:56:57.652Z",
     "actionCodes": [
       "CMOR1",
       "UPL1",
@@ -267,7 +267,7 @@
         "existingActions": [
           {
             "actionCode": "UPL1",
-            "areaSqm": 12.9
+            "areaSqm": 13
           }
         ],
         "expectedAvailableArea": "0.5927"
@@ -507,7 +507,7 @@
         "existingActions": [
           {
             "actionCode": "UPL1",
-            "areaSqm": 1049.9
+            "areaSqm": 1050
           }
         ],
         "expectedAvailableArea": "0.4877"
@@ -747,11 +747,11 @@
         "existingActions": [
           {
             "actionCode": "UPL6",
-            "areaSqm": 122.9
+            "areaSqm": 123
           },
           {
             "actionCode": "UPL7",
-            "areaSqm": 522.9
+            "areaSqm": 523
           }
         ],
         "expectedAvailableArea": "0.5927"
@@ -1093,11 +1093,11 @@
         "existingActions": [
           {
             "actionCode": "UPL2",
-            "areaSqm": 122.9
+            "areaSqm": 123
           },
           {
             "actionCode": "UPL3",
-            "areaSqm": 522.9
+            "areaSqm": 523
           }
         ],
         "expectedAvailableArea": "0.5281"
@@ -1439,11 +1439,11 @@
         "existingActions": [
           {
             "actionCode": "UPL2",
-            "areaSqm": 122.9
+            "areaSqm": 123
           },
           {
             "actionCode": "CMOR1",
-            "areaSqm": 522.9
+            "areaSqm": 523
           }
         ],
         "expectedAvailableArea": "0.5804"
@@ -1785,11 +1785,11 @@
         "existingActions": [
           {
             "actionCode": "SPM4",
-            "areaSqm": 122.9
+            "areaSqm": 123
           },
           {
             "actionCode": "SAM1",
-            "areaSqm": 522.9
+            "areaSqm": 523
           }
         ],
         "expectedAvailableArea": "0.5404"
@@ -2091,7 +2091,7 @@
         "existingActions": [
           {
             "actionCode": "WBD1",
-            "areaSqm": 175.07
+            "areaSqm": 175
           }
         ],
         "expectedAvailableArea": "2.4133"
@@ -2171,7 +2171,7 @@
         "existingActions": [
           {
             "actionCode": "WS1",
-            "areaSqm": 25328.2335
+            "areaSqm": 25328
           }
         ],
         "expectedAvailableArea": "3.1254"
