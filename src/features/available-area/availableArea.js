@@ -71,40 +71,14 @@ export async function getAvailableAreaDataRequirements(
 
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
-  const generalizedLandCoversForParcel = aggregateLandCovers(
-    generalizeLandCovers(landCoversForParcel, landCoverDefinitions)
-  )
+  const aggregatedLandCovers = aggregateLandCovers(landCoversForParcel)
 
   return {
     landCoverCodesForAppliedForAction,
-    landCoversForParcel: generalizedLandCoversForParcel,
+    landCoversForParcel: aggregatedLandCovers,
     landCoversForExistingActions,
     landCoverToString
   }
-}
-
-/**
- * Maps specific land cover codes on a parcel to their broader class codes.
- * Handles poor-quality data where a specific code (e.g. "131" Wheat) may be
- * stored where a class code should be (e.g. "130" Arable).
- * @param {LandCover[]} landCoversForParcel
- * @param {LandCoverDefinition[]} landCoverDefinitions
- * @returns {LandCover[]}
- */
-export function generalizeLandCovers(
-  landCoversForParcel,
-  landCoverDefinitions
-) {
-  const specificToClass = new Map(
-    landCoverDefinitions.map((d) => [d.landCoverCode, d.landCoverClassCode])
-  )
-
-  return landCoversForParcel.map((landCover) => ({
-    landCoverClassCode:
-      specificToClass.get(landCover.landCoverClassCode) ??
-      landCover.landCoverClassCode,
-    areaSqm: landCover.areaSqm
-  }))
 }
 
 /**
