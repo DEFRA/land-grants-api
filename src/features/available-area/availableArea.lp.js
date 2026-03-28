@@ -42,25 +42,51 @@ export function findMaximumAvailableArea(
     return sum
   }, 0)
 
+  const emptyExplanations = {
+    eligibility: {},
+    adjustedActions: [],
+    incompatibilityCliques: [],
+    allocations: [],
+    targetAvailability: [],
+    stacks: []
+  }
+
   // If no eligible land covers for the target, available area is 0
   if (totalValidLandCoverSqm === 0) {
     return {
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm: 0,
-      stacks: [],
-      explanations: {}
+      explanations: emptyExplanations
     }
   }
 
   // If no existing actions, available area = total valid land cover
   if (existingActions.length === 0) {
+    const targetIndices = getEligibleLandCoverIndices(
+      targetEligibleCodes,
+      landCoversForParcel
+    )
     return {
       availableAreaHectares: sqmToHaRounded(totalValidLandCoverSqm),
       availableAreaSqm: totalValidLandCoverSqm,
       totalValidLandCoverSqm,
-      stacks: [],
-      explanations: {}
+      explanations: {
+        ...emptyExplanations,
+        eligibility: {
+          [applyingForAction]: targetIndices.map((lcIdx) => ({
+            landCoverIndex: lcIdx,
+            landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
+            areaSqm: landCoversForParcel[lcIdx].areaSqm
+          }))
+        },
+        targetAvailability: targetIndices.map((lcIdx) => ({
+          landCoverIndex: lcIdx,
+          totalAreaSqm: landCoversForParcel[lcIdx].areaSqm,
+          usedByExistingSqm: 0,
+          availableSqm: landCoversForParcel[lcIdx].areaSqm
+        }))
+      }
     }
   }
 
@@ -114,8 +140,7 @@ export function findMaximumAvailableArea(
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm,
-      stacks: [],
-      explanations: {}
+      explanations: emptyExplanations
     }
   }
 
@@ -125,13 +150,16 @@ export function findMaximumAvailableArea(
     availableAreaHectares: sqmToHaRounded(availableAreaSqm),
     availableAreaSqm,
     totalValidLandCoverSqm,
-    stacks: buildStacksFromSolution(
+    explanations: buildExplanations(
       result,
+      applyingForAction,
+      existingActions,
       lpActions,
+      landCoversForParcel,
       eligibility,
+      cliques,
       compatibilityCheckFn
-    ),
-    explanations: {}
+    )
   }
 }
 
@@ -353,9 +381,107 @@ function buildLpModel(
 }
 
 /**
+ * Builds structured explanations from the LP solution to help users
+ * understand why the available area is what it is.
+ *
+ * @param {object} solution - LP solver result
+ * @param {string} targetAction
+ * @param {ActionWithArea[]} existingActions - Original existing actions (before filtering/capping)
+ * @param {ActionWithArea[]} lpActions - Filtered/capped actions used in the LP
+ * @param {LandCover[]} landCoversForParcel
+ * @param {Map<string, number[]>} eligibility
+ * @param {string[][]} cliques
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @returns {import('./available-area.d.js').AacExplanations}
+ */
+function buildExplanations(
+  solution,
+  targetAction,
+  existingActions,
+  lpActions,
+  landCoversForParcel,
+  eligibility,
+  cliques,
+  compatibilityCheckFn
+) {
+  // Eligibility: which land covers each action can use
+  const eligibilityExplanation = {}
+  for (const [actionCode, indices] of eligibility) {
+    eligibilityExplanation[actionCode] = indices.map((lcIdx) => ({
+      landCoverIndex: lcIdx,
+      landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
+      areaSqm: landCoversForParcel[lcIdx].areaSqm
+    }))
+  }
+
+  // Adjusted actions: compare original vs LP-filtered/capped
+  const lpActionMap = new Map(lpActions.map((a) => [a.actionCode, a]))
+  const adjustedActions = existingActions.map((a) => {
+    const lpAction = lpActionMap.get(a.actionCode)
+    return {
+      actionCode: a.actionCode,
+      originalAreaSqm: a.areaSqm,
+      adjustedAreaSqm: lpAction?.areaSqm ?? 0,
+      wasCapped: lpAction ? lpAction.areaSqm < a.areaSqm : false,
+      wasExcluded: !lpAction
+    }
+  })
+
+  // Incompatibility cliques (only those with 2+ members)
+  const incompatibilityCliques = cliques.filter((c) => c.length >= 2)
+
+  // Allocations: how the LP placed each existing action across land covers
+  const allocations = []
+  for (const action of lpActions) {
+    const eligibleIndices = eligibility.get(action.actionCode) ?? []
+    for (const lcIdx of eligibleIndices) {
+      const varName = `x_${action.actionCode}_${lcIdx}`
+      const value = solution[varName] || 0
+      if (value > 0.001) {
+        allocations.push({
+          actionCode: action.actionCode,
+          landCoverIndex: lcIdx,
+          areaSqm: value
+        })
+      }
+    }
+  }
+
+  // Target availability: per-land-cover breakdown
+  const targetIndices = eligibility.get(targetAction) ?? []
+  const targetAvailability = targetIndices.map((lcIdx) => {
+    const varName = `t_${lcIdx}`
+    const availableSqm = solution[varName] || 0
+    const totalAreaSqm = landCoversForParcel[lcIdx].areaSqm
+    return {
+      landCoverIndex: lcIdx,
+      totalAreaSqm,
+      usedByExistingSqm: totalAreaSqm - availableSqm,
+      availableSqm
+    }
+  })
+
+  return {
+    eligibility: eligibilityExplanation,
+    adjustedActions,
+    incompatibilityCliques,
+    allocations,
+    targetAvailability,
+    stacks: buildStacksFromSolution(
+      solution,
+      lpActions,
+      landCoversForParcel,
+      eligibility,
+      compatibilityCheckFn
+    )
+  }
+}
+
+/**
  * Derives stacks from the LP solution by examining co-located actions.
  * @param {object} solution - LP solver result
  * @param {ActionWithArea[]} existingActions
+ * @param {LandCover[]} landCoversForParcel
  * @param {Map<string, number[]>} eligibility
  * @param {CompatibilityCheckFn} compatibilityCheckFn
  * @returns {import('./available-area.d.js').Stack[]}
@@ -363,6 +489,7 @@ function buildLpModel(
 function buildStacksFromSolution(
   solution,
   existingActions,
+  landCoversForParcel,
   eligibility,
   compatibilityCheckFn
 ) {
@@ -388,7 +515,7 @@ function buildStacksFromSolution(
   const stacks = []
   let stackNumber = 1
 
-  for (const [, actions] of allocations) {
+  for (const [lcIdx, actions] of allocations) {
     // Simple greedy grouping of compatible actions
     const groups = []
     for (const action of actions) {
@@ -412,7 +539,8 @@ function buildStacksFromSolution(
       stacks.push({
         stackNumber: stackNumber++,
         actionCodes: group.map((a) => a.actionCode),
-        areaSqm: Math.max(...group.map((a) => a.areaSqm))
+        areaSqm: Math.max(...group.map((a) => a.areaSqm)),
+        landCoverIndex: lcIdx
       })
     }
   }
