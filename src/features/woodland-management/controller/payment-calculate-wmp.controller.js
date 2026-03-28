@@ -7,10 +7,16 @@ import {
   paymentCalculateWMPSchemaV2,
   paymentCalculateWMPResponseSchemaV2
 } from '../schema/payment-calculate-wmp.schema.js'
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
+import {
+  logInfo,
+  logValidationWarn
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
-import { wmpResultTransformer } from '../service/wmp.transformer.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
+import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
+import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
+import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -35,6 +41,9 @@ export const PaymentsCalculateWMPControllerV2 = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
   handler: async (request, h) => {
+    // @ts-expect-error - postgresDb
+    const postgresDb = request.server.postgresDb
+
     /** @type {paymentCalculateWMPSchemaV2} */
     // @ts-expect-error - payload
     const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
@@ -56,12 +65,63 @@ export const PaymentsCalculateWMPControllerV2 = {
       }
     })
 
-    const result = await validateWoodlandManagementPlan(request)
+    const validationResponse = await validatePaymentCalculationRequest(
+      parcelIds,
+      request
+    )
+
+    if (validationResponse.errors && validationResponse.errors.length > 0) {
+      logValidationWarn(request.logger, {
+        operation: 'Payment Calculate WMP validation',
+        errors: validationResponse.errors,
+        context: {
+          parcelIds: parcelIds.join(',')
+        }
+      })
+      return Boom.badRequest(validationResponse.errors.join(', '))
+    }
+
+    // move this to the service
+    const actions = await getEnabledActions(request.logger, postgresDb)
+    const action = actions.find((a) => a.code === 'PA3')
+
+    if (!action) {
+      return Boom.badRequest('Action not found')
+    }
+
+    const { ruleResult, totalParcelArea } =
+      executeRulesForPaymentCalculationWMP(
+        validationResponse.parcels,
+        action,
+        oldWoodlandAreaHa,
+        newWoodlandAreaHa
+      )
+
+    const paymentResult = executePaymentMethod(
+      { ...action?.paymentMethod, version: '1.0.0' }, // add version to config
+      {
+        data: {
+          totalParcelArea,
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa,
+          startDate
+        }
+      }
+    )
+
+    console.log('totalParcelArea', totalParcelArea)
+    console.log('ruleResult', ruleResult)
+    console.log('paymentResult', paymentResult)
 
     return h
       .response({
         message: 'success',
-        result: wmpResultTransformer(result.action, result.ruleResult)
+        result: wmpPaymentCalculateTransformer(
+          paymentResult,
+          totalParcelArea,
+          action,
+          startDate
+        )
       })
       .code(statusCodes.ok)
   }
