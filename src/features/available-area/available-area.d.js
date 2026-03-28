@@ -9,6 +9,7 @@
  * @property {number} stackNumber - The unique identifier for the stack
  * @property {string[]} actionCodes - The action codes associated with the stack
  * @property {number} areaSqm - The area of the stack in square meters
+ * @property {number} [landCoverIndex] - Index into landCoversForParcel identifying which land cover this stack is on
  */
 
 /**
@@ -65,9 +66,49 @@
  */
 
 /**
+ * @typedef {object} EligibilityEntry
+ * @property {number} landCoverIndex - Index into landCoversForParcel
+ * @property {string} landCoverClassCode - The land cover class code
+ * @property {number} areaSqm - Area of this land cover in square meters
+ */
+
+/**
+ * @typedef {object} AdjustedAction
+ * @property {string} actionCode - The action code
+ * @property {number} originalAreaSqm - Original area before adjustment
+ * @property {number} adjustedAreaSqm - Area after capping/exclusion
+ * @property {boolean} wasCapped - Whether demand was capped to available land cover
+ * @property {boolean} wasExcluded - Whether action was excluded (no eligible land covers)
+ */
+
+/**
+ * @typedef {object} Allocation
+ * @property {string} actionCode - The action code
+ * @property {number} landCoverIndex - Index into landCoversForParcel
+ * @property {number} areaSqm - Area allocated in square meters
+ */
+
+/**
+ * @typedef {object} TargetAvailabilityEntry
+ * @property {number} landCoverIndex - Index into landCoversForParcel
+ * @property {number} totalAreaSqm - Total area of this land cover
+ * @property {number} usedByExistingSqm - Area consumed by existing actions
+ * @property {number} availableSqm - Area available for the target action
+ */
+
+/**
+ * @typedef {object} AacExplanations
+ * @property {{[actionCode: string]: EligibilityEntry[]}} eligibility - Which land covers each action can use
+ * @property {AdjustedAction[]} adjustedActions - Actions filtered/capped for the LP
+ * @property {string[][]} incompatibilityCliques - Groups of mutually incompatible actions
+ * @property {Allocation[]} allocations - How the LP placed each existing action across land covers
+ * @property {TargetAvailabilityEntry[]} targetAvailability - Per-land-cover breakdown for the target action
+ * @property {Stack[]} stacks - Ephemeral stacks derived from the LP solution
+ */
+
+/**
  * @typedef {object} AvailableAreaForAction
- * @property {Stack[]} stacks - Stacks
- * @property {object} explanations - Explanations
+ * @property {AacExplanations} explanations - Structured explanations of the calculation
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area
  * @property {number} availableAreaHectares - The available area in hectares

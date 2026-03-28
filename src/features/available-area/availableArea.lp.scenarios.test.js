@@ -38,7 +38,10 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         compatibilityCheckFn,
         aacDataRequirements
       )
-
+      console.log(
+        `Tested scenario: ${name} - Stacks: `,
+        JSON.stringify(result.explanations.stacks, null, 2)
+      )
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
       )
