@@ -46,15 +46,46 @@ Before calculating overlaps, the AAC must filter the parcel area. An action (whe
 
 To ensure the mathematical maximum is found, the calculation must be able to break down existing commitments into the smallest possible units. This "fine-grained" approach provides the necessary flexibility to explore all valid permutations of overlapping actions.
 
-### 4. Land Cover Generalization
+### 4. Unreliable land cover data
 
-To mitigate poor-quality mapping data, a pre-processing step is required. If a specific land cover code is recorded where a class code should be, the service must map it to the broader class before calling the AAC.
+The mapping data for land covers on a parcel has some quality issues. In the field `landCoverClassCode` on the parcel's land cover, the number may actually be a land cover code. For the valid land covers for actions we have both `landCoverClassCode` and `landCoverCode` available. To avoid errors, when checking if an action may be applied to a particular land cover on the parcel we need to compare both `landCoverClassCode` and `landCoverCode`.
 
-- _Example: If an action is valid on "Arable" land (Class 110), the calculation treats any area marked with a specific "Wheat" code as valid Arable land._
+### 5. The importance of all land covers on the parcel
+
+It is important to consider the valid land covers of all actions present on the parcel. Even existing actions that have no land cover in common with the applied for action can affect the available area for it. Consider the following example:
+
+Applying for CMOR1
+
+Existing actions:
+
+- AA1 - 2.5 ha
+- AA2 - 3 ha
+
+None of the actions are compatible with each other.
+
+Land covers on parcel:
+
+- Grassland - 3.1 ha
+- Woodland - 2.5 ha
+- Arable - 1 ha
+
+Valid land covers:
+
+- CMOR1 - Grassland
+- AA1 - Woodland, Arable
+- AA2 - Woodland, Grassland
+
+If AA1 is assigned to Woodland, it consumes all of it meaning that AA2 can only be assigned to Grassland, making the Available Area for CMOR1 0.1 ha.
+
+If AA1 is assigned to Arable (1 ha), then to Woodland (1.5 ha) then there is 1 ha of woodland left for AA2 and so 1 ha more of Grassland for CMOR1 making the answer 1.1 ha.
+
+### 6. Explanations
+
+This is a very complicated calculation that has a significant effect on people's lives. To build trust in the calculation and to help inform decisions around it, explanations should be returned along with the primary result. This should include all major steps taken in working out the answer and the ephemeral 'stacks' that inform it.
 
 ---
 
 ## Outputs
 
 1.  **Primary Output:** A single numerical value representing the **Maximum Available Area** (in hectares) for the Target Action.
-2.  **Secondary Output (Transparency):** A breakdown of the ephemeral **Stacks** derived during the calculation. This data is provided to help users or administrators understand the logic used to reach the primary numerical result.
+2.  **Secondary Output (Explanations):** A breakdown of the ephemeral **Stacks** derived during the calculation along with other steps taken to achieve the answer. This data is provided to help users or administrators understand the logic used to reach the primary numerical result.
