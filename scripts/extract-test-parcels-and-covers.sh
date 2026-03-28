@@ -23,15 +23,20 @@ COVERS_OUT="$OUTPUT_DIR/land_covers/test_covers.csv"
 
 # Default pairs if no JSON provided
 DEFAULT_PAIRS='[
-  {"parcelId":"6898","sheetId":"NT8109"},
-  {"parcelId":"1023","sheetId":"NT9009"},
-  {"parcelId":"9412","sheetId":"NT8701"},
-  {"parcelId":"1755","sheetId":"NU0002"},
-  {"parcelId":"8111","sheetId":"NT8506"},
-  {"parcelId":"7349","sheetId":"ST1437"},
-  {"parcelId":"0972","sheetId":"ST1335"},
-  {"parcelId":"5025","sheetId":"ST1236"},
-  {"parcelId":"9525","sheetId":"ST1237"}
+  {"parcelId":"7268","sheetId":"SD6743"},
+  {"parcelId":"6707","sheetId":"SD6853"},
+  {"parcelId":"8058","sheetId":"SD7164"},
+  {"parcelId":"4156","sheetId":"SD7948"},
+  {"parcelId":"1509","sheetId":"SD8447"},
+  {"parcelId":"8307","sheetId":"SD4957"},
+  {"parcelId":"9243","sheetId":"SD8644"},
+  {"parcelId":"0637","sheetId":"SD5665"},
+  {"parcelId":"4622","sheetId":"SD4963"},
+  {"parcelId":"5484","sheetId":"SD5253"},
+  {"parcelId":"3264","sheetId":"SD8743"},
+  {"parcelId":"1283","sheetId":"SD6441"},
+  {"parcelId":"8851","sheetId":"SX5373"},
+  {"parcelId":"9845","sheetId":"SK9197"}
 ]'
 
 PAIRS_JSON="${1:-$DEFAULT_PAIRS}"
