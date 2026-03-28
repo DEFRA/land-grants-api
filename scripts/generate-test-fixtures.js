@@ -16,6 +16,8 @@ const ACTION_CODES = [
   'UPL1',
   'UPL2',
   'UPL3',
+  'UPL4',
+  'UPL5',
   'UPL6',
   'UPL7',
   'SAM1',
@@ -33,7 +35,13 @@ const ACTION_CODES = [
   'PRF1',
   'PRF2',
   'GRH6',
-  'GRH7'
+  'GRH7',
+  'HEF5',
+  'HEF6',
+  'HEF8',
+  'SP3',
+  'WD2',
+  'WD10'
 ]
 
 /**
