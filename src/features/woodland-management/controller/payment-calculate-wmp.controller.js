@@ -39,7 +39,7 @@ export const PaymentsCalculateWMPControllerV2 = {
    * Handler function for payment calculation
    * @param {Request} request - Hapi request object
    * @param {ResponseToolkit} h - Hapi response toolkit
-   * @returns {Promise<ResponseObject | Boom>} Payment calculation response
+   * @returns {Promise<ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
   handler: async (request, h) => {
     // @ts-expect-error - postgresDb
