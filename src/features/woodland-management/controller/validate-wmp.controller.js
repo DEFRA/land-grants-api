@@ -14,6 +14,8 @@ import {
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../service/wmp.transformer.js'
+import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
+import { splitParcelId } from '../../parcel/service/parcel.service.js'
 
 export const ValidateWMPController = {
   options: {
@@ -21,10 +23,7 @@ export const ValidateWMPController = {
     description: 'Validate WMP',
     notes: 'Validates WMP',
     validate: {
-      payload: validateWMPSchemaV2,
-      failAction: () => {
-        throw Boom.badRequest('Invalid request payload input')
-      }
+      payload: validateWMPSchemaV2
     },
     response: {
       status: {
@@ -44,7 +43,7 @@ export const ValidateWMPController = {
     try {
       /** @type {validateWMPSchemaV2} */
       // @ts-expect-error - payload
-      const { parcelIds } = request.payload
+      const { parcelIds, logger } = request.payload
 
       logInfo(request.logger, {
         category: 'wmp',
@@ -54,7 +53,22 @@ export const ValidateWMPController = {
         }
       })
 
-      const result = await validateWoodlandManagementPlan(request)
+      const parcelSheetIds = parcelIds.map((parcelId) =>
+        splitParcelId(parcelId, logger)
+      )
+      const { parcels, errors } = await getAndValidateParcels(
+        parcelSheetIds,
+        request
+      )
+
+      if (errors) {
+        return Boom.notFound(errors)
+      }
+
+      const result = await validateWoodlandManagementPlan(
+        parcels.filter((p) => p !== null),
+        request
+      )
 
       return h
         .response({

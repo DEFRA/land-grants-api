@@ -1,10 +1,13 @@
 import Hapi from '@hapi/hapi'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
+import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
 
 vi.mock('../service/wmp-service.js')
+vi.mock('../../parcel/validation/1.0.0/parcel.validation.js')
 
 const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan
+const mockGetAndValidateParcels = getAndValidateParcels
 
 const mockRuleResult = [
   {
@@ -39,6 +42,11 @@ const mockTransformedResult = {
   code: 'PA3',
   actionConfigVersion: '1.0.0',
   rules: mockRuleResult
+}
+
+const mockParcelValidationResult = {
+  parcels: [{ area_sqm: 10000 }, { area_sqm: 5000 }],
+  errors: null
 }
 
 describe('Validate WMP controller', () => {
@@ -79,6 +87,7 @@ describe('Validate WMP controller', () => {
       }
     }
     mockValidateWoodlandManagementPlan.mockResolvedValue(mockValidateResult)
+    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult)
 
     /** @type { Hapi.ServerInjectResponse<object> } */
     const {
@@ -110,6 +119,28 @@ describe('Validate WMP controller', () => {
 
     expect(result.statusCode).toBe(500)
     expect(result.result.message).toBe('An internal server error occurred')
+  })
+
+  test('should return not found when a parcel is not found', async () => {
+    const request = {
+      method: 'POST',
+      url: '/api/v1/wmp/validate',
+      payload: {
+        parcelIds: ['SX067-99238'],
+        oldWoodlandAreaHa: 3,
+        newWoodlandAreaHa: 1
+      }
+    }
+    mockGetAndValidateParcels.mockResolvedValue({
+      parcels: [],
+      errors: ['Land parcels not found: SX067-99238']
+    })
+
+    /** @type { Hapi.ServerInjectResponse<object> } */
+    const result = await server.inject(request)
+
+    expect(result.statusCode).toBe(404)
+    expect(result.result.message).toBe('Land parcels not found: SX067-99238')
   })
 
   test('should return bad request when no oldWoodlandAreaHa', async () => {
