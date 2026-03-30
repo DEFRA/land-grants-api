@@ -107,8 +107,20 @@
  */
 
 /**
+ * @typedef {object} AacContext
+ * @property {object|null} solution - Raw LP solver result (null if no LP was run)
+ * @property {string} targetLabel - The internal label used for the target action (with __target suffix)
+ * @property {ActionWithArea[]} existingActions - Original existing actions (before filtering/capping)
+ * @property {ActionWithArea[]} lpActions - Filtered/capped actions used in the LP
+ * @property {LandCover[]} landCoversForParcel - The parcel's land covers
+ * @property {Map<string, number[]>} eligibility - Action -> eligible land cover indices
+ * @property {string[][]} cliques - Maximal incompatibility cliques
+ * @property {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ */
+
+/**
  * @typedef {object} AvailableAreaForAction
- * @property {AacExplanations} explanations - Structured explanations of the calculation
+ * @property {AacContext|null} context - Context data for generating explanations
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area
  * @property {number} availableAreaHectares - The available area in hectares

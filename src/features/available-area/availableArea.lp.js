@@ -8,12 +8,11 @@ import solver from 'javascript-lp-solver'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js'
 
-const TARGET_SUFFIX = '__target'
+export const TARGET_SUFFIX = '__target'
 
 /**
  * Finds the maximum available area for a new action on a parcel using
  * a linear programming approach to optimally arrange existing actions.
- *
  * @param {string} applyingForAction - The action code being applied for
  * @param {ActionWithArea[]} existingActions - Existing actions and their areas on the parcel
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Function returning true if two action codes can coexist
@@ -44,50 +43,39 @@ export function findMaximumAvailableArea(
     return sum
   }, 0)
 
-  const emptyExplanations = {
-    eligibility: {},
-    adjustedActions: [],
-    incompatibilityCliques: [],
-    allocations: [],
-    targetAvailability: [],
-    stacks: []
-  }
-
   // If no eligible land covers for the target, available area is 0
   if (totalValidLandCoverSqm === 0) {
     return {
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm: 0,
-      explanations: emptyExplanations
+      context: null
     }
   }
 
   // If no existing actions, available area = total valid land cover
   if (existingActions.length === 0) {
-    const targetIndices = getEligibleLandCoverIndices(
-      targetEligibleCodes,
+    const targetLabel = applyingForAction + TARGET_SUFFIX
+    const eligibility = buildEligibilityMap(
+      targetLabel,
+      [],
+      landCoverCodesForAppliedForAction,
+      {},
       landCoversForParcel
     )
     return {
       availableAreaHectares: sqmToHaRounded(totalValidLandCoverSqm),
       availableAreaSqm: totalValidLandCoverSqm,
       totalValidLandCoverSqm,
-      explanations: {
-        ...emptyExplanations,
-        eligibility: {
-          [applyingForAction]: targetIndices.map((lcIdx) => ({
-            landCoverIndex: lcIdx,
-            landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
-            areaSqm: landCoversForParcel[lcIdx].areaSqm
-          }))
-        },
-        targetAvailability: targetIndices.map((lcIdx) => ({
-          landCoverIndex: lcIdx,
-          totalAreaSqm: landCoversForParcel[lcIdx].areaSqm,
-          usedByExistingSqm: 0,
-          availableSqm: landCoversForParcel[lcIdx].areaSqm
-        }))
+      context: {
+        solution: null,
+        targetLabel,
+        existingActions: [],
+        lpActions: [],
+        landCoversForParcel,
+        eligibility,
+        cliques: [],
+        compatibilityCheckFn
       }
     }
   }
@@ -122,16 +110,17 @@ export function findMaximumAvailableArea(
     })
 
   // All action codes involved (eligible existing + target)
-  const allActionCodes = [
-    targetLabel,
-    ...lpActions.map((a) => a.actionCode)
-  ]
+  const allActionCodes = [targetLabel, ...lpActions.map((a) => a.actionCode)]
 
   // Find all maximal cliques in the incompatibility graph
   // Wrap the compatibility check to map the target label back to the real code
   const wrappedCompatibilityCheck = (a, b) => {
-    const realA = a.endsWith(TARGET_SUFFIX) ? a.slice(0, -TARGET_SUFFIX.length) : a
-    const realB = b.endsWith(TARGET_SUFFIX) ? b.slice(0, -TARGET_SUFFIX.length) : b
+    const realA = a.endsWith(TARGET_SUFFIX)
+      ? a.slice(0, -TARGET_SUFFIX.length)
+      : a
+    const realB = b.endsWith(TARGET_SUFFIX)
+      ? b.slice(0, -TARGET_SUFFIX.length)
+      : b
     return compatibilityCheckFn(realA, realB)
   }
   const cliques = findMaximalCliques(allActionCodes, wrappedCompatibilityCheck)
@@ -147,12 +136,23 @@ export function findMaximumAvailableArea(
 
   const result = solver.Solve(model)
 
+  const context = {
+    solution: result.feasible ? result : null,
+    targetLabel,
+    existingActions,
+    lpActions,
+    landCoversForParcel,
+    eligibility,
+    cliques,
+    compatibilityCheckFn
+  }
+
   if (!result.feasible) {
     return {
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm,
-      explanations: emptyExplanations
+      context
     }
   }
 
@@ -162,23 +162,13 @@ export function findMaximumAvailableArea(
     availableAreaHectares: sqmToHaRounded(availableAreaSqm),
     availableAreaSqm,
     totalValidLandCoverSqm,
-    explanations: buildExplanations(
-      result,
-      targetLabel,
-      existingActions,
-      lpActions,
-      landCoversForParcel,
-      eligibility,
-      cliques,
-      compatibilityCheckFn
-    )
+    context
   }
 }
 
 /**
  * Builds a map of actionCode -> array of parcel land cover indices the action is eligible for.
  * Handles unreliable land cover data by checking both landCoverCode and landCoverClassCode.
- *
  * @param {string} applyingForAction
  * @param {ActionWithArea[]} existingActions
  * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction
@@ -238,7 +228,6 @@ function getEligibleLandCoverIndices(mergedCodes, landCoversForParcel) {
 /**
  * Finds all maximal cliques in the incompatibility graph using Bron-Kerbosch.
  * A clique here is a set of actions that are all mutually incompatible.
- *
  * @param {string[]} actionCodes
  * @param {CompatibilityCheckFn} compatibilityCheckFn
  * @returns {string[][]} Array of cliques, each clique is an array of action codes
@@ -313,7 +302,6 @@ function findMaximalCliques(actionCodes, compatibilityCheckFn) {
 
 /**
  * Builds the LP model for javascript-lp-solver.
- *
  * @param {string} targetAction
  * @param {ActionWithArea[]} existingActions
  * @param {LandCover[]} landCoversForParcel
@@ -390,185 +378,4 @@ function buildLpModel(
     constraints,
     variables
   }
-}
-
-/**
- * Builds structured explanations from the LP solution to help users
- * understand why the available area is what it is.
- *
- * @param {object} solution - LP solver result
- * @param {string} targetAction
- * @param {ActionWithArea[]} existingActions - Original existing actions (before filtering/capping)
- * @param {ActionWithArea[]} lpActions - Filtered/capped actions used in the LP
- * @param {LandCover[]} landCoversForParcel
- * @param {Map<string, number[]>} eligibility
- * @param {string[][]} cliques
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @returns {import('./available-area.d.js').AacExplanations}
- */
-function buildExplanations(
-  solution,
-  targetAction,
-  existingActions,
-  lpActions,
-  landCoversForParcel,
-  eligibility,
-  cliques,
-  compatibilityCheckFn
-) {
-  // Eligibility: which land covers each action can use
-  // Map the target label back to the real action code for user-facing output
-  const eligibilityExplanation = {}
-  for (const [actionCode, indices] of eligibility) {
-    const displayCode = actionCode.endsWith(TARGET_SUFFIX)
-      ? actionCode.slice(0, -TARGET_SUFFIX.length)
-      : actionCode
-    eligibilityExplanation[displayCode] = indices.map((lcIdx) => ({
-      landCoverIndex: lcIdx,
-      landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
-      areaSqm: landCoversForParcel[lcIdx].areaSqm
-    }))
-  }
-
-  // Adjusted actions: compare original vs LP-filtered/capped
-  const lpActionMap = new Map(lpActions.map((a) => [a.actionCode, a]))
-  const adjustedActions = existingActions.map((a) => {
-    const lpAction = lpActionMap.get(a.actionCode)
-    return {
-      actionCode: a.actionCode,
-      originalAreaSqm: a.areaSqm,
-      adjustedAreaSqm: lpAction?.areaSqm ?? 0,
-      wasCapped: lpAction ? lpAction.areaSqm < a.areaSqm : false,
-      wasExcluded: !lpAction
-    }
-  })
-
-  // Incompatibility cliques (only those with 2+ members)
-  // Strip target suffix from clique members for display
-  const incompatibilityCliques = cliques
-    .filter((c) => c.length >= 2)
-    .map((c) =>
-      c.map((code) =>
-        code.endsWith(TARGET_SUFFIX)
-          ? code.slice(0, -TARGET_SUFFIX.length)
-          : code
-      )
-    )
-
-  // Allocations: how the LP placed each existing action across land covers
-  const allocations = []
-  for (const action of lpActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
-    for (const lcIdx of eligibleIndices) {
-      const varName = `x_${action.actionCode}_${lcIdx}`
-      const value = solution[varName] || 0
-      if (value > 0.001) {
-        allocations.push({
-          actionCode: action.actionCode,
-          landCoverIndex: lcIdx,
-          areaSqm: value
-        })
-      }
-    }
-  }
-
-  // Target availability: per-land-cover breakdown
-  const targetIndices = eligibility.get(targetAction) ?? []
-  const targetAvailability = targetIndices.map((lcIdx) => {
-    const varName = `t_${lcIdx}`
-    const availableSqm = solution[varName] || 0
-    const totalAreaSqm = landCoversForParcel[lcIdx].areaSqm
-    return {
-      landCoverIndex: lcIdx,
-      totalAreaSqm,
-      usedByExistingSqm: totalAreaSqm - availableSqm,
-      availableSqm
-    }
-  })
-
-  return {
-    eligibility: eligibilityExplanation,
-    adjustedActions,
-    incompatibilityCliques,
-    allocations,
-    targetAvailability,
-    stacks: buildStacksFromSolution(
-      solution,
-      lpActions,
-      landCoversForParcel,
-      eligibility,
-      compatibilityCheckFn
-    )
-  }
-}
-
-/**
- * Derives stacks from the LP solution by examining co-located actions.
- * @param {object} solution - LP solver result
- * @param {ActionWithArea[]} existingActions
- * @param {LandCover[]} landCoversForParcel
- * @param {Map<string, number[]>} eligibility
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @returns {import('./available-area.d.js').Stack[]}
- */
-function buildStacksFromSolution(
-  solution,
-  existingActions,
-  landCoversForParcel,
-  eligibility,
-  compatibilityCheckFn
-) {
-  // Extract action allocations per land cover from solution
-  const allocations = new Map() // lcIdx -> [{actionCode, areaSqm}]
-
-  for (const action of existingActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
-    for (const lcIdx of eligibleIndices) {
-      const varName = `x_${action.actionCode}_${lcIdx}`
-      const value = solution[varName] || 0
-      if (value > 0.001) {
-        if (!allocations.has(lcIdx)) allocations.set(lcIdx, [])
-        allocations.get(lcIdx).push({
-          actionCode: action.actionCode,
-          areaSqm: value
-        })
-      }
-    }
-  }
-
-  // Group compatible actions on each land cover into stacks
-  const stacks = []
-  let stackNumber = 1
-
-  for (const [lcIdx, actions] of allocations) {
-    // Simple greedy grouping of compatible actions
-    const groups = []
-    for (const action of actions) {
-      let placed = false
-      for (const group of groups) {
-        const allCompatible = group.every((g) =>
-          compatibilityCheckFn(g.actionCode, action.actionCode)
-        )
-        if (allCompatible) {
-          group.push(action)
-          placed = true
-          break
-        }
-      }
-      if (!placed) {
-        groups.push([action])
-      }
-    }
-
-    for (const group of groups) {
-      stacks.push({
-        stackNumber: stackNumber++,
-        actionCodes: group.map((a) => a.actionCode),
-        areaSqm: Math.max(...group.map((a) => a.areaSqm)),
-        landCoverIndex: lcIdx
-      })
-    }
-  }
-
-  return stacks
 }
