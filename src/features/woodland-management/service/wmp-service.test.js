@@ -10,7 +10,7 @@ vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))
 vi.mock('../../actions/queries/getEnabledActions.query.js')
 
-const mockParcels = [{ area_sqm: 100 }, { area_sqm: 100 }]
+const mockParcels = [{ area: 100 }, { area: 100 }]
 
 describe('validateWoodlandManagementPlan', () => {
   let mockRequest
