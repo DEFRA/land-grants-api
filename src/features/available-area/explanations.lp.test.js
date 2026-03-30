@@ -117,14 +117,9 @@ describe('formatExplanationSections', () => {
     })
 
     it('includes an adjusted actions section', () => {
-      const section = sections.find(
-        (s) => s.title === 'Existing action adjustments'
-      )
+      const section = sections.find((s) => s.title === 'Existing actions')
       expect(section).toBeDefined()
-      expect(section.content).toEqual([
-        'AA1: 2.5 ha (no adjustment needed)',
-        'AA2: 3 ha (no adjustment needed)'
-      ])
+      expect(section.content).toEqual(['AA1: 2.5 ha', 'AA2: 3 ha'])
     })
 
     it('includes an incompatibility section', () => {
@@ -173,7 +168,9 @@ describe('formatExplanationSections', () => {
       const section = sections.find((s) => s.title === 'Ephemeral stacks')
       expect(section).toBeDefined()
       expect(section.content).toContainEqual(
-        expect.stringContaining('AA1 on Half Hedge Adjacent NON-EFA (110) (1 ha)')
+        expect.stringContaining(
+          'AA1 on Half Hedge Adjacent NON-EFA (110) (1 ha)'
+        )
       )
       expect(section.content).toContainEqual(
         expect.stringContaining('AA2 on Permanent grassland (130) (2 ha)')
@@ -195,7 +192,7 @@ describe('formatExplanationSections', () => {
       })
 
       expect(
-        sections.find((s) => s.title === 'Existing action adjustments')
+        sections.find((s) => s.title === 'Existing actions')
       ).toBeUndefined()
       expect(
         sections.find((s) => s.title === 'Incompatible action groups')
@@ -240,9 +237,7 @@ describe('formatExplanationSections', () => {
         }
       })
 
-      const section = sections.find(
-        (s) => s.title === 'Existing action adjustments'
-      )
+      const section = sections.find((s) => s.title === 'Existing actions')
       expect(section).toBeDefined()
       expect(section.content[0]).toBe(
         'BIG: area capped from 10 ha to 2 ha (limited by available land cover)'
@@ -368,7 +363,9 @@ describe('formatExplanationSections', () => {
       expect(stackSection).toBeDefined()
       expect(stackSection.content.length).toBeGreaterThan(0)
       // EX1 is placed on Half Hedge Adjacent NON-EFA (110)
-      expect(stackSection.content[0]).toContain('Half Hedge Adjacent NON-EFA (110)')
+      expect(stackSection.content[0]).toContain(
+        'Half Hedge Adjacent NON-EFA (110)'
+      )
     })
   })
 })
