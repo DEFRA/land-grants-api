@@ -110,8 +110,8 @@
     "nyc": "^18.0.0",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
     "vitest": "^3.2.4",
+    "typescript": "^6.0.2",
     "vitest-fetch-mock": "^0.4.5"
   }
 }
