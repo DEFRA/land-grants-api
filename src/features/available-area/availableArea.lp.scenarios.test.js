@@ -1,5 +1,7 @@
 import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
+import { landCoverToString } from './testLandCoverToString.js'
+import { formatExplanationSections } from './explanations.lp.js'
 
 describe('Available Area Calculation Service - Scenario Tests (Optimized)', () => {
   const fixtures = getAvailableAreaComputedFixtures()
@@ -18,7 +20,7 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         landCoversForParcel: dataRequirements.landCoversForParcel,
         landCoversForExistingActions:
           dataRequirements.landCoversForExistingActions,
-        landCoverToString: () => 'Faked land cover'
+        landCoverToString
       }
 
       // call available area lp function with pre-computed data
@@ -29,6 +31,14 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         aacDataRequirements
       )
       console.log(`Tested scenario: ${name}`)
+      const sections = formatExplanationSections(result.context, {
+        targetAction: applyingForAction,
+        availableAreaSqm: result.availableAreaSqm,
+        totalValidLandCoverSqm: result.totalValidLandCoverSqm,
+        landCoverToString
+      })
+
+      console.log('Explanation Sections:', JSON.stringify(sections, null, 2))
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
       )

@@ -1,15 +1,7 @@
 import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { formatExplanationSections } from './explanations.lp.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
-
-const landCoverToString = (code) => {
-  const names = {
-    130: 'Grassland (130)',
-    240: 'Woodland (240)',
-    110: 'Arable (110)'
-  }
-  return names[code] ?? `Unknown (${code})`
-}
+import { landCoverToString } from './testLandCoverToString.js'
 
 /**
  * Helper to create land cover codes entries for an action.
@@ -116,11 +108,11 @@ describe('formatExplanationSections', () => {
       expect(section).toBeDefined()
       expect(section.content).toContainEqual(expect.stringContaining('CMOR1'))
       expect(section.content).toContainEqual(
-        expect.stringContaining('Grassland (130)')
+        expect.stringContaining('Permanent grassland (130)')
       )
       expect(section.content).toContainEqual(expect.stringContaining('AA1'))
       expect(section.content).toContainEqual(
-        expect.stringContaining('Woodland (240)')
+        expect.stringContaining('Water/irrigation features (240)')
       )
     })
 
@@ -151,11 +143,11 @@ describe('formatExplanationSections', () => {
       )
       expect(section).toBeDefined()
       const aa1Line = section.content.find((l) => l.startsWith('AA1:'))
-      expect(aa1Line).toContain('Arable (110)')
-      expect(aa1Line).toContain('Woodland (240)')
+      expect(aa1Line).toContain('Half Hedge Adjacent NON-EFA (110)')
+      expect(aa1Line).toContain('Water/irrigation features (240)')
       const aa2Line = section.content.find((l) => l.startsWith('AA2:'))
-      expect(aa2Line).toContain('Woodland (240)')
-      expect(aa2Line).toContain('Grassland (130)')
+      expect(aa2Line).toContain('Water/irrigation features (240)')
+      expect(aa2Line).toContain('Permanent grassland (130)')
     })
 
     it('includes a target availability section', () => {
@@ -164,7 +156,7 @@ describe('formatExplanationSections', () => {
       )
       expect(section).toBeDefined()
       expect(section.content).toEqual([
-        'Grassland (130): 3.1 ha total, 2 ha used by existing actions, 1.1 ha available'
+        'Permanent grassland (130): 3.1 ha total, 2 ha used by existing actions, 1.1 ha available'
       ])
     })
 
@@ -181,10 +173,10 @@ describe('formatExplanationSections', () => {
       const section = sections.find((s) => s.title === 'Ephemeral stacks')
       expect(section).toBeDefined()
       expect(section.content).toContainEqual(
-        expect.stringContaining('AA1 on Arable (110) (1 ha)')
+        expect.stringContaining('AA1 on Half Hedge Adjacent NON-EFA (110) (1 ha)')
       )
       expect(section.content).toContainEqual(
-        expect.stringContaining('AA2 on Grassland (130) (2 ha)')
+        expect.stringContaining('AA2 on Permanent grassland (130) (2 ha)')
       )
     })
   })
@@ -351,7 +343,7 @@ describe('formatExplanationSections', () => {
       const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
       expect(stackSection).toBeDefined()
       for (const line of stackSection.content) {
-        expect(line).toContain('Grassland (130)')
+        expect(line).toContain('Permanent grassland (130)')
       }
     })
   })
@@ -375,8 +367,8 @@ describe('formatExplanationSections', () => {
       const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
       expect(stackSection).toBeDefined()
       expect(stackSection.content.length).toBeGreaterThan(0)
-      // EX1 is placed on Arable (110)
-      expect(stackSection.content[0]).toContain('Arable (110)')
+      // EX1 is placed on Half Hedge Adjacent NON-EFA (110)
+      expect(stackSection.content[0]).toContain('Half Hedge Adjacent NON-EFA (110)')
     })
   })
 })
