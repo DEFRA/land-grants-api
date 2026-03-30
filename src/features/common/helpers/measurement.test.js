@@ -1,4 +1,9 @@
-import { sqmToHaRounded, haToSqm, roundSqm } from './measurement.js'
+import {
+  sqmToHaRounded,
+  haToSqm,
+  roundSqm,
+  roundTo4DecimalPlaces
+} from './measurement.js'
 
 describe('sqmToHaRounded', () => {
   describe('normal conversions', () => {
@@ -501,6 +506,24 @@ describe('roundSqm', () => {
     test('handles multiplication results', () => {
       expect(roundSqm(1.1 * 100)).toBe(110)
       expect(roundSqm(0.9 * 100)).toBe(90)
+    })
+  })
+
+  describe('round to 4 decimal places', () => {
+    test('handles exactly 4 decimal places', () => {
+      expect(roundTo4DecimalPlaces(12345.6789)).toBe(12345.6789)
+    })
+    test('handles less than 4 decimal places', () => {
+      expect(roundTo4DecimalPlaces(12345.67)).toBe(12345.67)
+    })
+    test('handles more than 4 decimal places', () => {
+      expect(roundTo4DecimalPlaces(12345.6789123)).toBe(12345.6789)
+    })
+    test('handles as a string', () => {
+      expect(roundTo4DecimalPlaces('12345.6789123')).toBe(12345.6789)
+    })
+    test('returns 0 for non-numeric string', () => {
+      expect(roundTo4DecimalPlaces('abc')).toBe(0)
     })
   })
 })
