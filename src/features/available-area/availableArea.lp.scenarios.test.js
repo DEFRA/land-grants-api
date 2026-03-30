@@ -1,4 +1,4 @@
-import { getAvailableAreaForAction } from './availableArea.js'
+import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 
 describe('Available Area Calculation Service - Scenario Tests (Optimized)', () => {
@@ -18,15 +18,10 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
     `%p`,
     (
       name,
-      {
-        applyingForAction,
-        sheetId,
-        parcelId,
-        existingActions,
-        expectedAvailableArea
-      },
+      { applyingForAction, existingActions, expectedAvailableArea },
       { compatibilityCheckFn, dataRequirements }
     ) => {
+      // Recreate the aacDataRequirements object with the pre-computed data
       const aacDataRequirements = {
         landCoverCodesForAppliedForAction:
           dataRequirements.landCoverCodesForAppliedForAction,
@@ -36,16 +31,17 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         landCoverToString: () => 'Faked land cover'
       }
 
-      const result = getAvailableAreaForAction(
+      // call available area lp function with pre-computed data
+      const result = findMaximumAvailableArea(
         applyingForAction,
-        sheetId,
-        parcelId,
-        compatibilityCheckFn,
         existingActions,
-        aacDataRequirements,
-        logger
+        compatibilityCheckFn,
+        aacDataRequirements
       )
-
+      console.log(
+        `Tested scenario: ${name} - Stacks: `,
+        JSON.stringify(result.explanations.stacks, null, 2)
+      )
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
       )
