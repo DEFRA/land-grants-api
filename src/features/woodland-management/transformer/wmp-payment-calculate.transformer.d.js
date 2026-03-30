@@ -40,6 +40,6 @@
  * @property {'Single'} frequency - The payment frequency
  * @property {number} agreementTotalPence - The total agreement payment in GBP
  * @property {object} parcelItems - The parcel items
- * @property {Object.<number, WmpAgreementLevelItem>} agreementLevelItems - The agreement level items keyed by ID
+ * @property {{ [id: number]: WmpAgreementLevelItem }} agreementLevelItems - The agreement level items keyed by ID
  * @property {WmpPayment[]} payments - The payment schedule
  */

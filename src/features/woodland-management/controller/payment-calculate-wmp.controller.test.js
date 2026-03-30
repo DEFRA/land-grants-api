@@ -143,7 +143,7 @@ describe('Payment calculate WMP controller', () => {
     mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
     mockExecuteRulesForPaymentCalculationWMP.mockReturnValue({
       ruleResult: { passed: true, results: [] },
-      totalParcelArea: 8
+      totalParcelAreaSqm: 8
     })
     mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult())
     mockWmpPaymentCalculateTransformer.mockReturnValue(
@@ -208,7 +208,7 @@ describe('Payment calculate WMP controller', () => {
           passed: false,
           results: [{ name: 'rule1', passed: false }]
         },
-        totalParcelArea: 8
+        totalParcelAreaSqm: 8
       })
 
       /** @type { Hapi.ServerInjectResponse<object> } */

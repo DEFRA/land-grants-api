@@ -58,13 +58,13 @@ describe('executeRulesForPaymentCalculationWMP', () => {
       {
         oldWoodlandAreaHa: 5,
         newWoodlandAreaHa: 3,
-        totalParcelArea: 60
+        totalParcelAreaSqm: 60
       },
       createMockAction().rules
     )
   })
 
-  it('should return the ruleResult and totalParcelArea', () => {
+  it('should return the ruleResult and totalParcelAreaSqm', () => {
     const mockRuleResult = {
       passed: true,
       results: [{ name: 'rule1', passed: true }]
@@ -80,33 +80,33 @@ describe('executeRulesForPaymentCalculationWMP', () => {
 
     expect(result).toEqual({
       ruleResult: mockRuleResult,
-      totalParcelArea: 60
+      totalParcelAreaSqm: 60
     })
   })
 
-  it('should compute totalParcelArea from the parcel areas', () => {
+  it('should compute totalParcelAreaSqm from the parcel areas', () => {
     const parcels = [{ area: 15 }, { area: 25 }]
 
-    const { totalParcelArea } = executeRulesForPaymentCalculationWMP(
+    const { totalParcelAreaSqm } = executeRulesForPaymentCalculationWMP(
       parcels,
       createMockAction(),
       5,
       3
     )
 
-    expect(totalParcelArea).toBe(40)
+    expect(totalParcelAreaSqm).toBe(40)
   })
 
-  it('should handle null parcels when computing totalParcelArea', () => {
+  it('should handle null parcels when computing totalParcelAreaSqm', () => {
     const parcels = [{ area: 10 }, null, { area: 20 }]
 
-    const { totalParcelArea } = executeRulesForPaymentCalculationWMP(
+    const { totalParcelAreaSqm } = executeRulesForPaymentCalculationWMP(
       parcels,
       createMockAction(),
       5,
       3
     )
 
-    expect(totalParcelArea).toBe(30)
+    expect(totalParcelAreaSqm).toBe(30)
   })
 })

@@ -37,9 +37,9 @@ export const PaymentsCalculateWMPControllerV2 = {
 
   /**
    * Handler function for payment calculation
-   * @param {import('@hapi/hapi').Request} request - Hapi request object
-   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
-   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
+   * @param {Request} request - Hapi request object
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject | Boom>} Payment calculation response
    */
   handler: async (request, h) => {
     // @ts-expect-error - postgresDb
@@ -84,7 +84,7 @@ export const PaymentsCalculateWMPControllerV2 = {
       return Boom.badRequest('Action not found')
     }
 
-    const { ruleResult, totalParcelArea } =
+    const { ruleResult, totalParcelAreaSqm } =
       executeRulesForPaymentCalculationWMP(
         validationResponse.parcels,
         action,
@@ -100,7 +100,7 @@ export const PaymentsCalculateWMPControllerV2 = {
       { ...action?.paymentMethod },
       {
         data: {
-          totalParcelArea,
+          totalParcelArea: totalParcelAreaSqm,
           oldWoodlandAreaHa,
           newWoodlandAreaHa,
           startDate
@@ -123,5 +123,5 @@ export const PaymentsCalculateWMPControllerV2 = {
 }
 
 /**
- * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
+ * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'
  */

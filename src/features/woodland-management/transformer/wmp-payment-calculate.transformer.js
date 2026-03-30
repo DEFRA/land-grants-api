@@ -55,7 +55,7 @@ export const transformPayments = (paymentResult, agreementStartDate) => {
  * @param {string[]} parcelIds - The parcel IDs included in the agreement
  * @param {import('../../actions/action.d.js').Action} action - The action object
  * @param {WmpCalculationResult} paymentResult - The WMP calculation result
- * @returns {Object.<number, WmpAgreementLevelItem>} Agreement level items keyed by ID
+ * @returns {{ [id: number]: WmpAgreementLevelItem }} Agreement level items keyed by ID
  */
 export const transformAgreementLevelItems = (
   parcelIds,
