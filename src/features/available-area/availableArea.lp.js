@@ -301,6 +301,95 @@ function findMaximalCliques(actionCodes, compatibilityCheckFn) {
 }
 
 /**
+ * Builds demand constraints: each existing action's area must be fully placed.
+ * @param {ActionWithArea[]} existingActions
+ * @returns {{[key: string]: {equal: number}}}
+ */
+function buildDemandConstraints(existingActions) {
+  return Object.fromEntries(
+    existingActions.map((a) => [`demand_${a.actionCode}`, { equal: a.areaSqm }])
+  )
+}
+
+/**
+ * Builds variables for each (existing action, eligible land cover) pair.
+ * @param {ActionWithArea[]} existingActions
+ * @param {Map<string, number[]>} eligibility
+ * @returns {{[key: string]: object}}
+ */
+function buildExistingActionVariables(existingActions, eligibility) {
+  return Object.fromEntries(
+    existingActions.flatMap((action) =>
+      (eligibility.get(action.actionCode) ?? []).map((lcIdx) => [
+        `x_${action.actionCode}_${lcIdx}`,
+        { [`demand_${action.actionCode}`]: 1 }
+      ])
+    )
+  )
+}
+
+/**
+ * Builds target variables for each eligible land cover.
+ * @param {string} targetAction
+ * @param {Map<string, number[]>} eligibility
+ * @returns {{[key: string]: object}}
+ */
+function buildTargetVariables(targetAction, eligibility) {
+  return Object.fromEntries(
+    (eligibility.get(targetAction) ?? []).map((lcIdx) => [
+      `t_${lcIdx}`,
+      { availableArea: 1 }
+    ])
+  )
+}
+
+/**
+ * Builds clique capacity constraints and adds coefficients to variables.
+ * For each clique and each land cover, the sum of allocations for clique
+ * members eligible for that land cover must not exceed the land cover's area.
+ * @param {string} targetAction
+ * @param {LandCover[]} landCoversForParcel
+ * @param {Map<string, number[]>} eligibility
+ * @param {string[][]} cliques
+ * @param {{[key: string]: object}} variables - mutated to add constraint coefficients
+ * @returns {{[key: string]: {max: number}}}
+ */
+function buildCliqueCapacityConstraints(
+  targetAction,
+  landCoversForParcel,
+  eligibility,
+  cliques,
+  variables
+) {
+  const constraints = {}
+
+  const getVarName = (code, lcIdx) =>
+    code === targetAction ? `t_${lcIdx}` : `x_${code}_${lcIdx}`
+
+  const getEligibleMembers = (clique, lcIdx) =>
+    clique.filter((code) => (eligibility.get(code) ?? []).includes(lcIdx))
+
+  cliques.forEach((clique, cliqueIdx) => {
+    for (let lcIdx = 0; lcIdx < landCoversForParcel.length; lcIdx++) {
+      const membersOnLc = getEligibleMembers(clique, lcIdx)
+      if (membersOnLc.length === 0) continue
+
+      const constraintKey = `clique_${cliqueIdx}_lc_${lcIdx}`
+      constraints[constraintKey] = { max: landCoversForParcel[lcIdx].areaSqm }
+
+      for (const code of membersOnLc) {
+        const varName = getVarName(code, lcIdx)
+        if (variables[varName]) {
+          variables[varName][constraintKey] = 1
+        }
+      }
+    }
+  })
+
+  return constraints
+}
+
+/**
  * Builds the LP model for javascript-lp-solver.
  * @param {string} targetAction
  * @param {ActionWithArea[]} existingActions
@@ -316,60 +405,20 @@ function buildLpModel(
   eligibility,
   cliques
 ) {
-  const constraints = {}
-  const variables = {}
-
-  // 1. Demand constraints: each existing action's area must be fully placed
-  for (const action of existingActions) {
-    const demandKey = `demand_${action.actionCode}`
-    constraints[demandKey] = { equal: action.areaSqm }
+  const variables = {
+    ...buildExistingActionVariables(existingActions, eligibility),
+    ...buildTargetVariables(targetAction, eligibility)
   }
 
-  // 2. Create variables for each (existing action, eligible land cover) pair
-  for (const action of existingActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
-    for (const lcIdx of eligibleIndices) {
-      const varName = `x_${action.actionCode}_${lcIdx}`
-      variables[varName] = {
-        [`demand_${action.actionCode}`]: 1
-      }
-    }
-  }
-
-  // 3. Create target variables for each eligible land cover
-  const targetIndices = eligibility.get(targetAction) ?? []
-  for (const lcIdx of targetIndices) {
-    const varName = `t_${lcIdx}`
-    variables[varName] = {
-      availableArea: 1
-    }
-  }
-
-  // 4. Clique capacity constraints: for each clique and each land cover,
-  //    the sum of allocations for clique members eligible for that land cover <= area
-  let cliqueIdx = 0
-  for (const clique of cliques) {
-    for (let lcIdx = 0; lcIdx < landCoversForParcel.length; lcIdx++) {
-      // Check which clique members are eligible for this land cover
-      const membersOnLc = clique.filter((code) => {
-        const eligible = eligibility.get(code) ?? []
-        return eligible.includes(lcIdx)
-      })
-
-      if (membersOnLc.length === 0) continue
-
-      const constraintKey = `clique_${cliqueIdx}_lc_${lcIdx}`
-      constraints[constraintKey] = { max: landCoversForParcel[lcIdx].areaSqm }
-
-      for (const code of membersOnLc) {
-        const varName =
-          code === targetAction ? `t_${lcIdx}` : `x_${code}_${lcIdx}`
-        if (variables[varName]) {
-          variables[varName][constraintKey] = 1
-        }
-      }
-    }
-    cliqueIdx++
+  const constraints = {
+    ...buildDemandConstraints(existingActions),
+    ...buildCliqueCapacityConstraints(
+      targetAction,
+      landCoversForParcel,
+      eligibility,
+      cliques,
+      variables
+    )
   }
 
   return {
