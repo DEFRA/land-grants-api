@@ -32,10 +32,10 @@ const calculateTierPayment = (eligibleArea, tiers) => {
     if (eligibleArea <= tier.lowerLimitExclusiveHa) {
       return { tier, value: 0 }
     }
-    const aboveLimit = eligibleArea - tier.lowerLimitExclusiveHa
+    const limit = eligibleArea - tier.lowerLimitExclusiveHa
     return {
       tier,
-      value: Math.round(tier.flatRateGbp + tier.ratePerUnitGbp * aboveLimit)
+      value: Math.round(tier.flatRateGbp + tier.ratePerUnitGbp * limit)
     }
   })
 
@@ -47,7 +47,9 @@ const calculateTierPayment = (eligibleArea, tiers) => {
     (tier) => eligibleArea > tier.lowerLimitExclusiveHa
   )
 
-  if (!applicableTier) return { payment: 0, tierValues }
+  if (!applicableTier) {
+    return { payment: 0, tierValues }
+  }
 
   const aboveLimit = Math.max(
     0,

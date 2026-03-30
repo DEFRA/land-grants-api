@@ -98,7 +98,7 @@ export const wmpPaymentCalculateTransformer = (
 ) => {
   const agreementStartDate = getAgreementStartDate(startDate)
   return {
-    explanations: [], // TODO: add explanations
+    explanations: [],
     agreementStartDate,
     agreementEndDate: getAgreementEndDate(
       agreementStartDate,
