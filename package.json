@@ -110,7 +110,7 @@
     "autoprefixer": "^10.4.27",
     "babel-loader": "^10.1.1",
     "babel-plugin-transform-import-meta": "^2.3.3",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
