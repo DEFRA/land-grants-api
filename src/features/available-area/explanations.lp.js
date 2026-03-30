@@ -1,6 +1,6 @@
 /**
  * @import { AacContext, AacExplanations, ActionWithArea, CompatibilityCheckFn } from './available-area.d.js'
- * @import { CodeToString } from './available-area.d.js'
+ * @import { CodeToString, EligibilityEntry } from './available-area.d.js'
  * @import { ExplanationSection } from './explanations.d.js'
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
@@ -64,10 +64,7 @@ export function formatExplanationSections(aacContext, displayContext) {
       targetAction,
       landCoversForParcel,
       landCoverToString
-    )
-  )
-
-  sections.push(
+    ),
     buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
   )
 
@@ -98,7 +95,8 @@ function deriveExplanations(aacContext) {
   } = aacContext
 
   // Eligibility: which land covers each action can use
-  const eligibilityExplanation = {}
+  const eligibilityExplanation =
+    /** @type { Record<string, EligibilityEntry[]> } */ ({})
   for (const [actionCode, indices] of eligibility) {
     const displayCode = actionCode.endsWith(TARGET_SUFFIX)
       ? actionCode.slice(0, -TARGET_SUFFIX.length)
@@ -215,46 +213,16 @@ function buildStacksFromSolution(
   eligibility,
   compatibilityCheckFn
 ) {
-  const allocations = new Map()
-
-  for (const action of existingActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
-    for (const lcIdx of eligibleIndices) {
-      const varName = `x_${action.actionCode}_${lcIdx}`
-      const value = solution[varName] || 0
-      if (value > 0.001) {
-        if (!allocations.has(lcIdx)) allocations.set(lcIdx, [])
-        allocations.get(lcIdx).push({
-          actionCode: action.actionCode,
-          areaSqm: value
-        })
-      }
-    }
-  }
-
+  const allocationsByLc = buildAllocationsByLandCover(
+    existingActions,
+    eligibility,
+    solution
+  )
   const stacks = []
   let stackNumber = 1
 
-  for (const [lcIdx, actions] of allocations) {
-    const groups = []
-    for (const action of actions) {
-      let placed = false
-      for (const group of groups) {
-        const allCompatible = group.every((g) =>
-          compatibilityCheckFn(g.actionCode, action.actionCode)
-        )
-        if (allCompatible) {
-          group.push(action)
-          placed = true
-          break
-        }
-      }
-      if (!placed) {
-        groups.push([action])
-      }
-    }
-
-    for (const group of groups) {
+  for (const [lcIdx, actions] of allocationsByLc) {
+    for (const group of groupByCompatibility(actions, compatibilityCheckFn)) {
       stacks.push({
         stackNumber: stackNumber++,
         actionCodes: group.map((a) => a.actionCode),
@@ -265,6 +233,49 @@ function buildStacksFromSolution(
   }
 
   return stacks
+}
+
+/**
+ * @param {ActionWithArea[]} existingActions
+ * @param {Map<string, number[]>} eligibility
+ * @param {object} solution
+ * @returns {Map<number, {actionCode: string, areaSqm: number}[]>}
+ */
+function buildAllocationsByLandCover(existingActions, eligibility, solution) {
+  const allocations = new Map()
+  for (const action of existingActions) {
+    const eligibleIndices = eligibility.get(action.actionCode) ?? []
+    for (const lcIdx of eligibleIndices) {
+      const value = solution[`x_${action.actionCode}_${lcIdx}`] || 0
+      if (value > 0.001) {
+        if (!allocations.has(lcIdx)) allocations.set(lcIdx, [])
+        allocations
+          .get(lcIdx)
+          .push({ actionCode: action.actionCode, areaSqm: value })
+      }
+    }
+  }
+  return allocations
+}
+
+/**
+ * @param {{actionCode: string, areaSqm: number}[]} actions
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @returns {{actionCode: string, areaSqm: number}[][]}
+ */
+function groupByCompatibility(actions, compatibilityCheckFn) {
+  const groups = []
+  for (const action of actions) {
+    const compatibleGroup = groups.find((group) =>
+      group.every((g) => compatibilityCheckFn(g.actionCode, action.actionCode))
+    )
+    if (compatibleGroup) {
+      compatibleGroup.push(action)
+    } else {
+      groups.push([action])
+    }
+  }
+  return groups
 }
 
 /**

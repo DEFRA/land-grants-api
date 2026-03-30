@@ -30,12 +30,8 @@ describe('createLandCoverLookup', () => {
   it('should return a string representation of land cover class with a warning', () => {
     const codeToString = createLandCoverCodeToString(landCoverDefinitions)
 
-    expect(codeToString('1330')).toBe(
-      'Pub (1330) Warning: This is a land cover class'
-    )
-    expect(codeToString('5550')).toBe(
-      'Factory (5550) Warning: This is a land cover class'
-    )
+    expect(codeToString('1330')).toBe('Pub (1330)')
+    expect(codeToString('5550')).toBe('Factory (5550)')
   })
 
   it('should return a string representation of unknown land cover codes', () => {

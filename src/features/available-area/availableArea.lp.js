@@ -1,12 +1,15 @@
 /**
- * @import { CompatibilityCheckFn, ActionWithArea, AvailableAreaDataRequirements, AvailableAreaForAction } from './available-area.d.js'
+ * @import { CompatibilityCheckFn, ActionWithArea, AvailableAreaDataRequirements, AvailableAreaForActionLp } from './available-area.d.js'
  * @import { LandCoverCodes } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
 
-import solver from 'javascript-lp-solver'
+import _solver from 'javascript-lp-solver'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js'
+
+/** @type {import('javascript-lp-solver').SolverAPI} */
+const solver = /** @type {any} */ (_solver)
 
 export const TARGET_SUFFIX = '__target'
 
@@ -17,7 +20,7 @@ export const TARGET_SUFFIX = '__target'
  * @param {ActionWithArea[]} existingActions - Existing actions and their areas on the parcel
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Function returning true if two action codes can coexist
  * @param {AvailableAreaDataRequirements} dataRequirements - Pre-fetched land cover and eligibility data
- * @returns {AvailableAreaForAction}
+ * @returns {AvailableAreaForActionLp}
  */
 export function findMaximumAvailableArea(
   applyingForAction,
@@ -134,7 +137,9 @@ export function findMaximumAvailableArea(
     cliques
   )
 
-  const result = solver.Solve(model)
+  const result = /** @type {import('javascript-lp-solver').SolveResult} */ (
+    solver.Solve(model)
+  )
 
   const context = {
     solution: result.feasible ? result : null,
@@ -169,7 +174,7 @@ export function findMaximumAvailableArea(
 /**
  * Builds a map of actionCode -> array of parcel land cover indices the action is eligible for.
  * Handles unreliable land cover data by checking both landCoverCode and landCoverClassCode.
- * @param {string} applyingForAction
+ * @param {string} targetLabel
  * @param {ActionWithArea[]} existingActions
  * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction
  * @param {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
@@ -361,6 +366,7 @@ function buildCliqueCapacityConstraints(
   cliques,
   variables
 ) {
+  /** @type {{[key: string]: {max: number}}} */
   const constraints = {}
 
   const getVarName = (code, lcIdx) =>

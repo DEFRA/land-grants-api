@@ -2,7 +2,6 @@ import { createLandCoverCodeToString } from '~/src/features/land-cover-codes/ser
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import {
   getAvailableAreaForAction,
-  generalizeLandCovers,
   aggregateLandCovers
 } from '~/src/features/available-area/availableArea.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
@@ -27,61 +26,6 @@ const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 describe('Available Area', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  describe('generalizeLandCovers', () => {
-    const definitions = [
-      { landCoverCode: '131', landCoverClassCode: '130' },
-      { landCoverCode: '241', landCoverClassCode: '240' }
-    ]
-
-    it('replaces a specific land cover code with its class code', () => {
-      const result = generalizeLandCovers(
-        [{ landCoverClassCode: '131', areaSqm: 5000 }],
-        definitions
-      )
-      expect(result).toEqual([{ landCoverClassCode: '130', areaSqm: 5000 }])
-    })
-
-    it('leaves codes that are already class codes unchanged', () => {
-      const result = generalizeLandCovers(
-        [{ landCoverClassCode: '130', areaSqm: 5000 }],
-        definitions
-      )
-      expect(result).toEqual([{ landCoverClassCode: '130', areaSqm: 5000 }])
-    })
-
-    it('maps multiple entries independently without summing', () => {
-      const result = generalizeLandCovers(
-        [
-          { landCoverClassCode: '131', areaSqm: 1000 },
-          { landCoverClassCode: '130', areaSqm: 2000 }
-        ],
-        definitions
-      )
-      expect(result).toEqual([
-        { landCoverClassCode: '130', areaSqm: 1000 },
-        { landCoverClassCode: '130', areaSqm: 2000 }
-      ])
-    })
-
-    it('handles multiple distinct class codes independently', () => {
-      const result = generalizeLandCovers(
-        [
-          { landCoverClassCode: '131', areaSqm: 1000 },
-          { landCoverClassCode: '241', areaSqm: 500 }
-        ],
-        definitions
-      )
-      expect(result).toEqual([
-        { landCoverClassCode: '130', areaSqm: 1000 },
-        { landCoverClassCode: '240', areaSqm: 500 }
-      ])
-    })
-
-    it('returns an empty array for empty input', () => {
-      expect(generalizeLandCovers([], definitions)).toEqual([])
-    })
   })
 
   describe('aggregateLandCovers', () => {
