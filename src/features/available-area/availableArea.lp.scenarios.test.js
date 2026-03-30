@@ -2,17 +2,7 @@ import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 
 describe('Available Area Calculation Service - Scenario Tests (Optimized)', () => {
-  let logger
   const fixtures = getAvailableAreaComputedFixtures()
-
-  beforeAll(() => {
-    logger = {
-      log: vi.fn(),
-      warn: vi.fn(),
-      info: vi.fn(),
-      error: vi.fn()
-    }
-  })
 
   test.each(fixtures)(
     `%p`,
@@ -38,10 +28,7 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
         compatibilityCheckFn,
         aacDataRequirements
       )
-      console.log(
-        `Tested scenario: ${name} - Stacks: `,
-        JSON.stringify(result.explanations.stacks, null, 2)
-      )
+      console.log(`Tested scenario: ${name}`)
       expect(result.availableAreaHectares).toEqual(
         Number(expectedAvailableArea)
       )

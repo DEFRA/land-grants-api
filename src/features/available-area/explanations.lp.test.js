@@ -1,4 +1,6 @@
+import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { formatExplanationSections } from './explanations.lp.js'
+import { makeCompatibilityCheckFn } from './testUtils.js'
 
 const landCoverToString = (code) => {
   const names = {
@@ -9,103 +11,90 @@ const landCoverToString = (code) => {
   return names[code] ?? `Unknown (${code})`
 }
 
+/**
+ * Helper to create land cover codes entries for an action.
+ * @param {string[]} classCodes
+ * @returns {Array<{landCoverClassCode: string, landCoverCode: string}>}
+ */
+function makeLandCoverCodes(classCodes) {
+  return classCodes.map((code) => ({
+    landCoverClassCode: code,
+    landCoverCode: code
+  }))
+}
+
+/**
+ * Helper to build dataRequirements for a test scenario.
+ */
+function makeDataRequirements({
+  targetCodes,
+  parcelLandCovers,
+  existingActionCodes
+}) {
+  return {
+    landCoverCodesForAppliedForAction: makeLandCoverCodes(targetCodes),
+    landCoversForParcel: parcelLandCovers,
+    landCoversForExistingActions: Object.fromEntries(
+      Object.entries(existingActionCodes).map(([code, classCodes]) => [
+        code,
+        makeLandCoverCodes(classCodes)
+      ])
+    ),
+    landCoverToString
+  }
+}
+
+/**
+ * Helper to run findMaximumAvailableArea and formatExplanationSections end-to-end.
+ */
+function runAndFormat({
+  applyingForAction,
+  existingActions,
+  compatibilityMap,
+  targetCodes,
+  parcelLandCovers,
+  existingActionCodes
+}) {
+  const result = findMaximumAvailableArea(
+    applyingForAction,
+    existingActions,
+    makeCompatibilityCheckFn(compatibilityMap),
+    makeDataRequirements({ targetCodes, parcelLandCovers, existingActionCodes })
+  )
+
+  const sections = formatExplanationSections(result.context, {
+    targetAction: applyingForAction,
+    availableAreaSqm: result.availableAreaSqm,
+    totalValidLandCoverSqm: result.totalValidLandCoverSqm,
+    landCoverToString
+  })
+
+  return { result, sections }
+}
+
 describe('formatExplanationSections', () => {
   describe('doc example: CMOR1/AA1/AA2', () => {
-    // Grassland 3.1ha, Woodland 2.5ha, Arable 1ha
-    // AA1 → Arable(1ha) + Woodland(1.5ha), AA2 → Woodland(1ha) + Grassland(2ha)
-    // Available for CMOR1: 1.1ha on Grassland
-
-    const landCoversForParcel = [
-      { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 31000 },
-      { landCoverClassCode: '240', landCoverCode: '240', areaSqm: 25000 },
-      { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 10000 }
-    ]
-
-    const explanations = {
-      eligibility: {
-        CMOR1: [
-          { landCoverIndex: 0, landCoverClassCode: '130', areaSqm: 31000 }
-        ],
-        AA1: [
-          { landCoverIndex: 1, landCoverClassCode: '240', areaSqm: 25000 },
-          { landCoverIndex: 2, landCoverClassCode: '110', areaSqm: 10000 }
-        ],
-        AA2: [
-          { landCoverIndex: 1, landCoverClassCode: '240', areaSqm: 25000 },
-          { landCoverIndex: 0, landCoverClassCode: '130', areaSqm: 31000 }
-        ]
-      },
-      adjustedActions: [
-        {
-          actionCode: 'AA1',
-          originalAreaSqm: 25000,
-          adjustedAreaSqm: 25000,
-          wasCapped: false,
-          wasExcluded: false
-        },
-        {
-          actionCode: 'AA2',
-          originalAreaSqm: 30000,
-          adjustedAreaSqm: 30000,
-          wasCapped: false,
-          wasExcluded: false
-        }
-      ],
-      incompatibilityCliques: [['CMOR1', 'AA1', 'AA2']],
-      allocations: [
-        { actionCode: 'AA1', landCoverIndex: 2, areaSqm: 10000 },
-        { actionCode: 'AA1', landCoverIndex: 1, areaSqm: 15000 },
-        { actionCode: 'AA2', landCoverIndex: 1, areaSqm: 10000 },
-        { actionCode: 'AA2', landCoverIndex: 0, areaSqm: 20000 }
-      ],
-      targetAvailability: [
-        {
-          landCoverIndex: 0,
-          totalAreaSqm: 31000,
-          usedByExistingSqm: 20000,
-          availableSqm: 11000
-        }
-      ],
-      stacks: [
-        {
-          stackNumber: 1,
-          actionCodes: ['AA1'],
-          areaSqm: 10000,
-          landCoverIndex: 2
-        },
-        {
-          stackNumber: 2,
-          actionCodes: ['AA1'],
-          areaSqm: 15000,
-          landCoverIndex: 1
-        },
-        {
-          stackNumber: 3,
-          actionCodes: ['AA2'],
-          areaSqm: 10000,
-          landCoverIndex: 1
-        },
-        {
-          stackNumber: 4,
-          actionCodes: ['AA2'],
-          areaSqm: 20000,
-          landCoverIndex: 0
-        }
-      ]
-    }
-
-    const context = {
-      targetAction: 'CMOR1',
-      availableAreaSqm: 11000,
-      totalValidLandCoverSqm: 31000,
-      landCoversForParcel,
-      landCoverToString
-    }
-
     let sections
 
     beforeAll(() => {
-      sections = formatExplanationSections(explanations, context)
+      ;({ sections } = runAndFormat({
+        applyingForAction: 'CMOR1',
+        existingActions: [
+          { actionCode: 'AA1', areaSqm: 25000 },
+          { actionCode: 'AA2', areaSqm: 30000 }
+        ],
+        compatibilityMap: {},
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 31000 },
+          { landCoverClassCode: '240', landCoverCode: '240', areaSqm: 25000 },
+          { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 10000 }
+        ],
+        existingActionCodes: {
+          AA1: ['240', '110'],
+          AA2: ['240', '130']
+        }
+      }))
     })
 
     it('returns an array of ExplanationSection objects', () => {
@@ -161,11 +150,9 @@ describe('formatExplanationSections', () => {
         (s) => s.title === 'Optimal placement of existing actions'
       )
       expect(section).toBeDefined()
-      // AA1 placed on Arable + Woodland
       const aa1Line = section.content.find((l) => l.startsWith('AA1:'))
       expect(aa1Line).toContain('Arable (110)')
       expect(aa1Line).toContain('Woodland (240)')
-      // AA2 placed on Woodland + Grassland
       const aa2Line = section.content.find((l) => l.startsWith('AA2:'))
       expect(aa2Line).toContain('Woodland (240)')
       expect(aa2Line).toContain('Grassland (130)')
@@ -194,52 +181,27 @@ describe('formatExplanationSections', () => {
       const section = sections.find((s) => s.title === 'Ephemeral stacks')
       expect(section).toBeDefined()
       expect(section.content).toContainEqual(
-        'Stack 1: AA1 on Arable (110) (1 ha)'
+        expect.stringContaining('AA1 on Arable (110) (1 ha)')
       )
       expect(section.content).toContainEqual(
-        'Stack 4: AA2 on Grassland (130) (2 ha)'
+        expect.stringContaining('AA2 on Grassland (130) (2 ha)')
       )
     })
   })
 
   describe('no existing actions', () => {
     it('shows full area available with no allocations or stacks sections', () => {
-      const sections = formatExplanationSections(
-        {
-          eligibility: {
-            TARGET: [
-              { landCoverIndex: 0, landCoverClassCode: '130', areaSqm: 50000 }
-            ]
-          },
-          adjustedActions: [],
-          incompatibilityCliques: [],
-          allocations: [],
-          targetAvailability: [
-            {
-              landCoverIndex: 0,
-              totalAreaSqm: 50000,
-              usedByExistingSqm: 0,
-              availableSqm: 50000
-            }
-          ],
-          stacks: []
-        },
-        {
-          targetAction: 'TARGET',
-          availableAreaSqm: 50000,
-          totalValidLandCoverSqm: 50000,
-          landCoversForParcel: [
-            {
-              landCoverClassCode: '130',
-              landCoverCode: '130',
-              areaSqm: 50000
-            }
-          ],
-          landCoverToString
-        }
-      )
+      const { sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [],
+        compatibilityMap: {},
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 }
+        ],
+        existingActionCodes: {}
+      })
 
-      // Should not have adjusted actions, incompatibility, allocations, or stacks sections
       expect(
         sections.find((s) => s.title === 'Existing action adjustments')
       ).toBeUndefined()
@@ -255,7 +217,6 @@ describe('formatExplanationSections', () => {
         sections.find((s) => s.title === 'Ephemeral stacks')
       ).toBeUndefined()
 
-      // Should have eligibility, target availability, and result
       expect(
         sections.find((s) => s.title === 'Eligible land covers per action')
       ).toBeDefined()
@@ -269,55 +230,23 @@ describe('formatExplanationSections', () => {
 
   describe('capped and excluded actions', () => {
     it('shows capped and excluded actions with appropriate messages', () => {
-      const sections = formatExplanationSections(
-        {
-          eligibility: {
-            TARGET: [
-              { landCoverIndex: 0, landCoverClassCode: '130', areaSqm: 50000 }
-            ]
-          },
-          adjustedActions: [
-            {
-              actionCode: 'BIG',
-              originalAreaSqm: 100000,
-              adjustedAreaSqm: 20000,
-              wasCapped: true,
-              wasExcluded: false
-            },
-            {
-              actionCode: 'NONE',
-              originalAreaSqm: 10000,
-              adjustedAreaSqm: 0,
-              wasCapped: false,
-              wasExcluded: true
-            }
-          ],
-          incompatibilityCliques: [],
-          allocations: [],
-          targetAvailability: [
-            {
-              landCoverIndex: 0,
-              totalAreaSqm: 50000,
-              usedByExistingSqm: 0,
-              availableSqm: 50000
-            }
-          ],
-          stacks: []
-        },
-        {
-          targetAction: 'TARGET',
-          availableAreaSqm: 50000,
-          totalValidLandCoverSqm: 50000,
-          landCoversForParcel: [
-            {
-              landCoverClassCode: '130',
-              landCoverCode: '130',
-              areaSqm: 50000
-            }
-          ],
-          landCoverToString
+      const { sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [
+          { actionCode: 'BIG', areaSqm: 100000 },
+          { actionCode: 'NONE', areaSqm: 10000 }
+        ],
+        compatibilityMap: {},
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 },
+          { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 20000 }
+        ],
+        existingActionCodes: {
+          BIG: ['110'],
+          NONE: ['999']
         }
-      )
+      })
 
       const section = sections.find(
         (s) => s.title === 'Existing action adjustments'
@@ -334,60 +263,120 @@ describe('formatExplanationSections', () => {
 
   describe('multiple target land covers', () => {
     it('shows per-land-cover breakdown in target availability', () => {
-      const sections = formatExplanationSections(
-        {
-          eligibility: {
-            TARGET: [
-              { landCoverIndex: 0, landCoverClassCode: '130', areaSqm: 30000 },
-              { landCoverIndex: 1, landCoverClassCode: '110', areaSqm: 20000 }
-            ]
-          },
-          adjustedActions: [],
-          incompatibilityCliques: [],
-          allocations: [],
-          targetAvailability: [
-            {
-              landCoverIndex: 0,
-              totalAreaSqm: 30000,
-              usedByExistingSqm: 10000,
-              availableSqm: 20000
-            },
-            {
-              landCoverIndex: 1,
-              totalAreaSqm: 20000,
-              usedByExistingSqm: 5000,
-              availableSqm: 15000
-            }
-          ],
-          stacks: []
-        },
-        {
-          targetAction: 'TARGET',
-          availableAreaSqm: 35000,
-          totalValidLandCoverSqm: 50000,
-          landCoversForParcel: [
-            {
-              landCoverClassCode: '130',
-              landCoverCode: '130',
-              areaSqm: 30000
-            },
-            {
-              landCoverClassCode: '110',
-              landCoverCode: '110',
-              areaSqm: 20000
-            }
-          ],
-          landCoverToString
+      const { sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [{ actionCode: 'EX1', areaSqm: 15000 }],
+        compatibilityMap: {},
+        targetCodes: ['130', '110'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 30000 },
+          { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 20000 }
+        ],
+        existingActionCodes: {
+          EX1: ['130', '110']
         }
-      )
+      })
 
       const section = sections.find(
         (s) => s.title === 'Available land for TARGET'
       )
-      expect(section.content).toEqual([
-        'Grassland (130): 3 ha total, 1 ha used by existing actions, 2 ha available',
-        'Arable (110): 2 ha total, 0.5 ha used by existing actions, 1.5 ha available'
-      ])
+      expect(section).toBeDefined()
+      // The LP will optimally place EX1 to maximize target availability
+      // Total target availability should be 50000 - 15000 = 35000
+      const totalAvailable = section.content.reduce((sum, line) => {
+        const match = line.match(/([\d.]+) ha available/)
+        return sum + (match ? Number.parseFloat(match[1]) : 0)
+      }, 0)
+      expect(totalAvailable).toBeCloseTo(3.5, 1)
+    })
+  })
+
+  describe('null context (no eligible land covers)', () => {
+    it('returns only a result section', () => {
+      const result = findMaximumAvailableArea(
+        'TARGET',
+        [],
+        makeCompatibilityCheckFn({}),
+        makeDataRequirements({
+          targetCodes: ['999'],
+          parcelLandCovers: [
+            { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 }
+          ],
+          existingActionCodes: {}
+        })
+      )
+
+      const sections = formatExplanationSections(result.context, {
+        targetAction: 'TARGET',
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 0,
+        landCoverToString
+      })
+
+      expect(sections).toHaveLength(1)
+      expect(sections[0].title).toBe('Result')
+      expect(sections[0].content).toContainEqual(
+        'Maximum available area for TARGET: 0 ha'
+      )
+    })
+  })
+
+  describe('compatible actions stacking', () => {
+    it('shows compatible actions sharing land cover without reducing target availability', () => {
+      const { result, sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [
+          { actionCode: 'C1', areaSqm: 20000 },
+          { actionCode: 'C2', areaSqm: 15000 }
+        ],
+        compatibilityMap: {
+          TARGET: ['C1', 'C2'],
+          C1: ['C2', 'TARGET'],
+          C2: ['C1', 'TARGET']
+        },
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 }
+        ],
+        existingActionCodes: {
+          C1: ['130'],
+          C2: ['130']
+        }
+      })
+
+      // All compatible with target, so full area available
+      expect(result.availableAreaSqm).toBe(50000)
+
+      // Stacks section should exist and reference land covers
+      const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
+      expect(stackSection).toBeDefined()
+      for (const line of stackSection.content) {
+        expect(line).toContain('Grassland (130)')
+      }
+    })
+  })
+
+  describe('enhanced stacks with land cover info', () => {
+    it('includes land cover names in stack descriptions', () => {
+      const { sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [{ actionCode: 'EX1', areaSqm: 10000 }],
+        compatibilityMap: {},
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 },
+          { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 20000 }
+        ],
+        existingActionCodes: {
+          EX1: ['110']
+        }
+      })
+
+      const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
+      expect(stackSection).toBeDefined()
+      expect(stackSection.content.length).toBeGreaterThan(0)
+      // EX1 is placed on Arable (110)
+      expect(stackSection.content[0]).toContain('Arable (110)')
     })
   })
 })
