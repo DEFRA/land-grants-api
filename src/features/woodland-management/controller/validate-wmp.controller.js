@@ -14,7 +14,6 @@ import {
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../service/wmp.transformer.js'
-import { ParcelNotFoundError } from '../errors/ParcelNotFoundError.js'
 import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
 import { splitParcelId } from '../../parcel/service/parcel.service.js'
 
@@ -78,10 +77,6 @@ export const ValidateWMPController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof ParcelNotFoundError) {
-        return Boom.notFound(error.message)
-      }
-
       logBusinessError(request.logger, error)
       return Boom.internal('Failed to validate wmp')
     }
