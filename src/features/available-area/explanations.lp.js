@@ -315,13 +315,13 @@ function buildAdjustedActionsSection(explanations) {
       )
     } else {
       content.push(
-        `${adj.actionCode}: ${sqmToHaRounded(adj.originalAreaSqm)} ha (no adjustment needed)`
+        `${adj.actionCode}: ${sqmToHaRounded(adj.originalAreaSqm)} ha`
       )
     }
   }
 
   return {
-    title: 'Existing action adjustments',
+    title: 'Existing actions',
     content
   }
 }
@@ -430,8 +430,11 @@ function buildStacksSection(
   landCoverToString
 ) {
   const content = explanations.stacks.map((stack) => {
-    const lc = landCoversForParcel[stack.landCoverIndex]
-    const lcName = landCoverToString(lc.landCoverClassCode)
+    let lcName = 'Land cover unknown'
+    if (stack.landCoverIndex !== undefined) {
+      const lc = landCoversForParcel[stack.landCoverIndex]
+      lcName = landCoverToString(lc.landCoverClassCode)
+    }
     return `Stack ${stack.stackNumber}: ${stack.actionCodes.join(' + ')} on ${lcName} (${sqmToHaRounded(stack.areaSqm)} ha)`
   })
 
