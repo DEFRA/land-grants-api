@@ -26,13 +26,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (0.5000 ha) meets the minimum required area of (0.5000 ha)',
+        'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.5000 ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
           ]
         }
       ]
@@ -48,13 +48,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (1.2000 ha) meets the minimum required area of (0.5000 ha)',
+        'The woodland area over 10 years old (1.2 ha) meets the minimum required area of (0.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (1.2000 ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (1.2 ha)'
           ]
         }
       ]
@@ -70,13 +70,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The woodland area over 10 years old (0.5000 ha) meets the minimum required area of (0.5000 ha)',
+        'The woodland area over 10 years old (0.5 ha) meets the minimum required area of (0.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.5000 ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
           ]
         }
       ]
@@ -92,13 +92,13 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: false,
       reason:
-        'The woodland area over 10 years old (0.4000 ha) does not meet the minimum required area of (0.5000 ha)',
+        'The woodland area over 10 years old (0.4 ha) does not meet the minimum required area of (0.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.4000 ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.4 ha)'
           ]
         }
       ]
@@ -119,7 +119,7 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5000 ha), the holding has (0.0000 ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0 ha)'
           ]
         }
       ]
