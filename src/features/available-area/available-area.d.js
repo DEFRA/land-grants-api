@@ -128,7 +128,7 @@
 
 /**
  * @typedef {object} AvailableAreaForAction
- * @property {Stack[]} stacks - Stacks
+ * @property {Stack[]} [stacks] - Stacks (absent when using LP-based implementation)
  * @property {object} explanations - Explanations
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area

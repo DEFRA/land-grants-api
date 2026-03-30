@@ -1,7 +1,6 @@
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
@@ -64,15 +63,21 @@ export async function getParcelActionsWithAvailableArea(
       logger
     )
 
-    const availableArea = getAvailableAreaForAction(
+    const lpResult = findMaximumAvailableArea(
       action.code,
-      parcel.sheet_id,
-      parcel.parcel_id,
-      compatibilityCheckFn,
       transformedActions,
-      aacDataRequirements,
-      logger
+      compatibilityCheckFn,
+      aacDataRequirements
     )
+    const availableArea = {
+      ...lpResult,
+      explanations: formatExplanationSections(lpResult.context, {
+        targetAction: action.code,
+        availableAreaSqm: lpResult.availableAreaSqm,
+        totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
+        landCoverToString: aacDataRequirements.landCoverToString
+      })
+    }
 
     const actionWithAvailableArea = actionTransformer(
       action,
