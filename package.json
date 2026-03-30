@@ -129,7 +129,7 @@
     "prettier": "^3.8.1",
     "testcontainers": "^11.13.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vitest": "^2.1.9",
     "vitest-fetch-mock": "^0.4.5"
   }
