@@ -8,6 +8,8 @@ import solver from 'javascript-lp-solver'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js'
 
+const TARGET_SUFFIX = '__target'
+
 /**
  * Finds the maximum available area for a new action on a parcel using
  * a linear programming approach to optimally arrange existing actions.
@@ -90,9 +92,13 @@ export function findMaximumAvailableArea(
     }
   }
 
+  // Use a distinct label for the target action so it doesn't collide with
+  // an existing action that has the same code
+  const targetLabel = applyingForAction + TARGET_SUFFIX
+
   // Build eligibility map: actionCode -> set of parcel land cover class codes it can use
   const eligibility = buildEligibilityMap(
-    applyingForAction,
+    targetLabel,
     existingActions,
     landCoverCodesForAppliedForAction,
     landCoversForExistingActions,
@@ -117,16 +123,22 @@ export function findMaximumAvailableArea(
 
   // All action codes involved (eligible existing + target)
   const allActionCodes = [
-    applyingForAction,
+    targetLabel,
     ...lpActions.map((a) => a.actionCode)
   ]
 
   // Find all maximal cliques in the incompatibility graph
-  const cliques = findMaximalCliques(allActionCodes, compatibilityCheckFn)
+  // Wrap the compatibility check to map the target label back to the real code
+  const wrappedCompatibilityCheck = (a, b) => {
+    const realA = a.endsWith(TARGET_SUFFIX) ? a.slice(0, -TARGET_SUFFIX.length) : a
+    const realB = b.endsWith(TARGET_SUFFIX) ? b.slice(0, -TARGET_SUFFIX.length) : b
+    return compatibilityCheckFn(realA, realB)
+  }
+  const cliques = findMaximalCliques(allActionCodes, wrappedCompatibilityCheck)
 
   // Build and solve the LP model
   const model = buildLpModel(
-    applyingForAction,
+    targetLabel,
     lpActions,
     landCoversForParcel,
     eligibility,
@@ -152,7 +164,7 @@ export function findMaximumAvailableArea(
     totalValidLandCoverSqm,
     explanations: buildExplanations(
       result,
-      applyingForAction,
+      targetLabel,
       existingActions,
       lpActions,
       landCoversForParcel,
@@ -175,7 +187,7 @@ export function findMaximumAvailableArea(
  * @returns {Map<string, number[]>} actionCode -> array of land cover indices
  */
 function buildEligibilityMap(
-  applyingForAction,
+  targetLabel,
   existingActions,
   landCoverCodesForAppliedForAction,
   landCoversForExistingActions,
@@ -183,10 +195,10 @@ function buildEligibilityMap(
 ) {
   const eligibility = new Map()
 
-  // Build for target action
+  // Build for target action (stored under the target label to avoid collisions)
   const targetMerged = mergeLandCoverCodes(landCoverCodesForAppliedForAction)
   eligibility.set(
-    applyingForAction,
+    targetLabel,
     getEligibleLandCoverIndices(targetMerged, landCoversForParcel)
   )
 
@@ -405,9 +417,13 @@ function buildExplanations(
   compatibilityCheckFn
 ) {
   // Eligibility: which land covers each action can use
+  // Map the target label back to the real action code for user-facing output
   const eligibilityExplanation = {}
   for (const [actionCode, indices] of eligibility) {
-    eligibilityExplanation[actionCode] = indices.map((lcIdx) => ({
+    const displayCode = actionCode.endsWith(TARGET_SUFFIX)
+      ? actionCode.slice(0, -TARGET_SUFFIX.length)
+      : actionCode
+    eligibilityExplanation[displayCode] = indices.map((lcIdx) => ({
       landCoverIndex: lcIdx,
       landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
       areaSqm: landCoversForParcel[lcIdx].areaSqm
@@ -428,7 +444,16 @@ function buildExplanations(
   })
 
   // Incompatibility cliques (only those with 2+ members)
-  const incompatibilityCliques = cliques.filter((c) => c.length >= 2)
+  // Strip target suffix from clique members for display
+  const incompatibilityCliques = cliques
+    .filter((c) => c.length >= 2)
+    .map((c) =>
+      c.map((code) =>
+        code.endsWith(TARGET_SUFFIX)
+          ? code.slice(0, -TARGET_SUFFIX.length)
+          : code
+      )
+    )
 
   // Allocations: how the LP placed each existing action across land covers
   const allocations = []
