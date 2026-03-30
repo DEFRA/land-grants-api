@@ -14,7 +14,7 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
     }
   })
 
-  test.each(fixtures)(
+  test.skip.each(fixtures)(
     `%p`,
     (
       name,

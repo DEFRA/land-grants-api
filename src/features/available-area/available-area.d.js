@@ -119,8 +119,17 @@
  */
 
 /**
- * @typedef {object} AvailableAreaForAction
+ * @typedef {object} AvailableAreaForActionLp
  * @property {AacContext|null} context - Context data for generating explanations
+ * @property {number} availableAreaSqm - The available area
+ * @property {number} totalValidLandCoverSqm - The total valid land cover area
+ * @property {number} availableAreaHectares - The available area in hectares
+ */
+
+/**
+ * @typedef {object} AvailableAreaForAction
+ * @property {Stack[]} stacks - Stacks
+ * @property {object} explanations - Explanations
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area
  * @property {number} availableAreaHectares - The available area in hectares

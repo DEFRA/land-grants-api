@@ -1,7 +1,6 @@
 /**
  * Hardcoded landCoverToString for tests. Generated from land-cover-codes-data.sql
  * via scripts/generate-land-cover-to-string.js
- *
  * @type {import('~/src/features/available-area/available-area.d.js').CodeToString}
  */
 export const landCoverToString = (code) => {

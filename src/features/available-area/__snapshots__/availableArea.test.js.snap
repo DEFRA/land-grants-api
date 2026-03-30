@@ -11,7 +11,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should calculate availa
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -29,7 +29,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should calculate availa
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
       "= 1 ha",
     ],
     "title": "Total valid land covers",
@@ -81,7 +81,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "Arable (130) - 0.5 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -100,7 +100,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "Arable (130) - 0.5 ha",
       "= 0.5 ha",
     ],
     "title": "Total valid land covers",
@@ -159,7 +159,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -178,7 +178,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
       "= 1 ha",
     ],
     "title": "Total valid land covers",
@@ -240,7 +240,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1.1151 ha",
+      "Arable (130) - 1.1151 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -260,7 +260,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should handle multiple 
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1.1151 ha",
+      "Arable (130) - 1.1151 ha",
       "= 1.1151 ha",
     ],
     "title": "Total valid land covers",
@@ -335,7 +335,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should return full area
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -351,7 +351,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should return full area
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
       "= 1 ha",
     ],
     "title": "Total valid land covers",
@@ -396,7 +396,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should return zero avai
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "Arable (130) - 0.5 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -414,7 +414,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should return zero avai
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 0.5 ha",
+      "Arable (130) - 0.5 ha",
       "= 0.5 ha",
     ],
     "title": "Total valid land covers",
@@ -467,7 +467,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should subtract incompa
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
     ],
     "title": "Land Covers For Parcel",
   },
@@ -485,7 +485,7 @@ exports[`Available Area > getAvailableAreaForAction > %p should subtract incompa
   },
   {
     "content": [
-      "Arable (130) Warning: This is a land cover class - 1 ha",
+      "Arable (130) - 1 ha",
       "= 1 ha",
     ],
     "title": "Total valid land covers",
