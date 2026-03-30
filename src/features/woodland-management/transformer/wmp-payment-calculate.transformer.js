@@ -5,7 +5,7 @@ const DATE_FORMAT = 'yyyy-MM-dd'
 /**
  * Returns the agreement start date. When `startDate` is provided it is used as
  * an override; otherwise defaults to the 1st of next month.
- * @param {string | undefined} startDate - Optional start date override in YYYY-MM-DD format
+ * @param {string | Date | undefined} startDate - Optional start date override. Accepts an ISO string or a Date object (e.g. produced by Joi date() coercion)
  * @returns {string} The agreement start date in YYYY-MM-DD format
  */
 export const getAgreementStartDate = (startDate) => {
@@ -29,69 +29,70 @@ export const getAgreementEndDate = (agreementStartDate, durationYears) => {
   )
 }
 
+/**
+ * Builds the payment schedule array from a WMP calculation result.
+ * @param {WmpCalculationResult} paymentResult - The WMP calculation result
+ * @param {string} agreementStartDate - The agreement start date in YYYY-MM-DD format
+ * @returns {WmpPayment[]} The payment schedule
+ */
 export const transformPayments = (paymentResult, agreementStartDate) => {
   return [
     {
-      totalPaymentPence: paymentResult.payment, // paymentResult.payment
-      paymentDate: agreementStartDate, // agreementStartDate
+      totalPaymentPence: paymentResult.payment,
+      paymentDate: agreementStartDate,
       lineItems: [
         {
           agreementLevelItemId: 1,
-          paymentPence: paymentResult.payment // paymentResult.payment
+          paymentPence: paymentResult.payment
         }
       ]
     }
   ]
 }
 
-export const transformAgreementLevelItems = (totalParcelArea) => {
+/**
+ * Builds the agreement-level items map from a WMP calculation result.
+ * @param {string[]} parcelIds - The parcel IDs included in the agreement
+ * @param {import('../../actions/action.d.js').Action} action - The action object
+ * @param {WmpCalculationResult} paymentResult - The WMP calculation result
+ * @returns {Object.<number, WmpAgreementLevelItem>} Agreement level items keyed by ID
+ */
+export const transformAgreementLevelItems = (
+  parcelIds,
+  action,
+  paymentResult
+) => {
   return {
     1: {
-      code: 'PA3', // action.code
-      description: 'Woodland Management Plan', // action.description
-      version: '3.1.0', // action.semanticVersion
-      parcelIds: ['SD6346-3387'], // parcelIds
-      tiers: [
-        {
-          number: 1,
-          quantity: 50,
-          rateInPence: 0, // tier.rateInPence
-          flatRateInPence: 150000, // tier.flatRateInPence
-          totalInPence: 150000 // tier.totalInPence
-        },
-        {
-          number: 2,
-          quantity: 50,
-          rateInPence: 3000, // tier.rateInPence
-          flatRateInPence: 0, // tier.flatRateInPence
-          totalInPence: 150000 // tier.totalInPence
-        },
-        {
-          number: 3,
-          quantity: 50,
-          rateInPence: 1500, // tier.rateInPence
-          flatRateInPence: 0, // tier.flatRateInPence
-          totalInPence: 75000 // tier.totalInPence
-        }
-      ],
-      agreementTotalPence: 375000, // paymentResult.payment
+      code: action.code,
+      description: action.description,
+      version: action.semanticVersion,
+      parcelIds,
+      tiers: paymentResult.tierValues.map((tierValue, index) => ({
+        number: index + 1,
+        quantity: paymentResult.eligibleArea,
+        rateInPence: tierValue.tier.ratePerUnitGbp,
+        flatRateInPence: tierValue.tier.flatRateGbp,
+        totalInPence: tierValue.value
+      })),
+      agreementTotalPence: paymentResult.payment,
       unit: 'ha',
-      quantity: totalParcelArea // totalParcelArea
+      quantity: paymentResult.eligibleArea
     }
   }
 }
 
 /**
  * Transforms a WMP payment calculation result into the API response shape.
- * @param {object} paymentResult - The payment result object
- * @param {number} totalParcelArea - The total parcel area
+ * @param {string[]} parcelIds - The parcel IDs
+ * @param {WmpCalculationResult} wmpCalculationResult - The WMP calculation result object
  * @param {import('../../actions/action.d.js').Action} action - The action object
- * @param {string | undefined} startDate - Optional start date override in YYYY-MM-DD format
- * @returns {object} The transformed payment response
+ * @param {string | Date | undefined} startDate - Optional start date override. Accepts an ISO string or a Date object (e.g. produced by Joi date() coercion)
+ * @returns {WmpPaymentCalculateResponse} The transformed payment response
  */
 export const wmpPaymentCalculateTransformer = (
-  paymentResult,
-  totalParcelArea,
+  parcelIds,
+  wmpCalculationResult,
   action,
   startDate
 ) => {
@@ -104,9 +105,18 @@ export const wmpPaymentCalculateTransformer = (
       action.durationYears
     ),
     frequency: 'Single',
-    agreementTotalPence: paymentResult.payment,
+    agreementTotalPence: wmpCalculationResult.payment,
     parcelItems: {},
-    agreementLevelItems: transformAgreementLevelItems(totalParcelArea),
-    payments: transformPayments(paymentResult, agreementStartDate)
+    agreementLevelItems: transformAgreementLevelItems(
+      parcelIds,
+      action,
+      wmpCalculationResult
+    ),
+    payments: transformPayments(wmpCalculationResult, agreementStartDate)
   }
 }
+
+/**
+ * @import { WmpCalculationResult } from '~/src/features/payments-engine/payment-methods/wmp-calculation.d.js'
+ * @import { WmpPaymentCalculateResponse, WmpAgreementLevelItem, WmpPayment } from './wmp-payment-calculate.transformer.d.js'
+ */

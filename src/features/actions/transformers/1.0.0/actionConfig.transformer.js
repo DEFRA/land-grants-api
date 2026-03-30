@@ -14,7 +14,6 @@ export function actionConfigTransformer(action) {
     duration_years,
     version,
     semantic_version,
-    payment_method,
     ...actionObj
   } = action
   return {
@@ -25,7 +24,6 @@ export function actionConfigTransformer(action) {
     startDate: start_date,
     lastUpdated: last_updated,
     version: Number(version),
-    semanticVersion: semantic_version,
-    paymentMethod: payment_method
+    semanticVersion: semantic_version
   }
 }

@@ -5,7 +5,7 @@ import {
 } from '~/src/features/common/schema/index.js'
 import {
   paymentCalculateWMPSchemaV2,
-  paymentCalculateWMPResponseSchemaV2
+  paymentCalculateWMPResponseSchema
 } from '../schema/payment-calculate-wmp.schema.js'
 import {
   logInfo,
@@ -15,7 +15,7 @@ import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
-import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
+import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
@@ -28,7 +28,7 @@ export const PaymentsCalculateWMPControllerV2 = {
     },
     response: {
       status: {
-        200: paymentCalculateWMPResponseSchemaV2,
+        200: paymentCalculateWMPResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
@@ -38,6 +38,7 @@ export const PaymentsCalculateWMPControllerV2 = {
   /**
    * Handler function for payment calculation
    * @param {import('@hapi/hapi').Request} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
   handler: async (request, h) => {
@@ -48,11 +49,6 @@ export const PaymentsCalculateWMPControllerV2 = {
     // @ts-expect-error - payload
     const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
       request.payload
-
-    console.log('parcelIds', parcelIds)
-    console.log('oldWoodlandAreaHa', oldWoodlandAreaHa)
-    console.log('newWoodlandAreaHa', newWoodlandAreaHa)
-    console.log('startDate', startDate)
 
     logInfo(request.logger, {
       category: 'wmp',
@@ -81,8 +77,7 @@ export const PaymentsCalculateWMPControllerV2 = {
       return Boom.badRequest(validationResponse.errors.join(', '))
     }
 
-    // move this to the service
-    const actions = await getEnabledActions(request.logger, postgresDb)
+    const actions = await getActionsByLatestVersion(request.logger, postgresDb)
     const action = actions.find((a) => a.code === 'PA3')
 
     if (!action) {
@@ -97,8 +92,12 @@ export const PaymentsCalculateWMPControllerV2 = {
         newWoodlandAreaHa
       )
 
-    const paymentResult = executePaymentMethod(
-      { ...action?.paymentMethod, version: '1.0.0' }, // add version to config
+    if (!ruleResult.passed) {
+      return Boom.badRequest('Eligibility rules failed')
+    }
+
+    const { eligibleArea, payment, tierValues } = executePaymentMethod(
+      { ...action?.paymentMethod },
       {
         data: {
           totalParcelArea,
@@ -109,16 +108,12 @@ export const PaymentsCalculateWMPControllerV2 = {
       }
     )
 
-    console.log('totalParcelArea', totalParcelArea)
-    console.log('ruleResult', ruleResult)
-    console.log('paymentResult', paymentResult)
-
     return h
       .response({
         message: 'success',
-        result: wmpPaymentCalculateTransformer(
-          paymentResult,
-          totalParcelArea,
+        payment: wmpPaymentCalculateTransformer(
+          parcelIds,
+          { eligibleArea, payment, tierValues },
           action,
           startDate
         )

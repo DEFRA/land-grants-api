@@ -6,22 +6,22 @@ describe('wmpCalculation', () => {
     config: {
       tiers: [
         {
-          'flat-rate-gbp': 1500,
-          'rate-per-unit-gbp': 0,
-          'lower-limit-exclusive-ha': 0.5
+          flatRateGbp: 1500,
+          ratePerUnitGbp: 0,
+          lowerLimitExclusiveHa: 0.5
         },
         {
-          'flat-rate-gbp': 1500,
-          'rate-per-unit-gbp': 30,
-          'lower-limit-exclusive-ha': 50.9999
+          flatRateGbp: 1500,
+          ratePerUnitGbp: 30,
+          lowerLimitExclusiveHa: 50.9999
         },
         {
-          'flat-rate-gbp': 3000,
-          'rate-per-unit-gbp': 15,
-          'lower-limit-exclusive-ha': 100
+          flatRateGbp: 3000,
+          ratePerUnitGbp: 15,
+          lowerLimitExclusiveHa: 100
         }
       ],
-      'new-woodland-max-percent': 20
+      newWoodlandMaxPercent: 20
     }
   })
 
@@ -70,50 +70,70 @@ describe('wmpCalculation', () => {
   describe('payment calculation (tiers)', () => {
     test('should return £0 when eligible area is at or below the minimum 0.5ha', () => {
       // old=0.3ha, new=0.1ha → eligible=0.4ha (below 0.5ha threshold)
+      // all tiers are inapplicable → all tier values are 0
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(0.3, 0.1)
       )
 
       expect(result.payment).toBe(0)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([0, 0, 0])
     })
 
     test('should return flat rate £1500 for eligible area in tier 1 (0.5ha to 51ha)', () => {
-      // old=20ha, new=5ha → eligible=25ha → tier 1: flat £1500
+      // old=20ha, new=5ha → eligible=25ha → tier 1: flat £1500, tiers 2 & 3 not applicable
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(20, 5)
       )
 
       expect(result.payment).toBe(1500)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([1500, 0, 0])
     })
 
     test('should return £1500 plus £30 per ha above the tier 2 threshold for eligible area between 51ha and 100ha', () => {
-      // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50.9999) ≈ £2370
+      // old=75ha, new=5ha → eligible=80ha → tier 1: £1500, tier 2: 1500 + 30*(80-50.9999) ≈ £2370, tier 3: not applicable
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(75, 5)
       )
 
       expect(result.payment).toBe(2370)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([
+        1500, 2370, 0
+      ])
     })
 
     test('should return £3000 plus £15 per ha above 100ha for eligible area over 100ha', () => {
       // old=90ha, new=20ha, total=110ha, 20% cap=22ha → new(20) ≤ cap(22)
-      // eligible=110ha → tier 3: 3000 + 15*(110-100) = £3150
+      // eligible=110ha → tier 1: £1500, tier 2: 1500 + 30*(110-50.9999) ≈ £3270, tier 3: 3000 + 15*(110-100) = £3150
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(90, 20)
       )
 
       expect(result.payment).toBe(3150)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([
+        1500, 3270, 3150
+      ])
+    })
+  })
+
+  describe('tier values structure', () => {
+    test('should return tierValues with the original tier reference for each entry', () => {
+      const paymentMethod = createPaymentMethod()
+      const result = wmpCalculation.execute(paymentMethod, createData(75, 5))
+
+      result.tierValues.forEach(({ tier }, index) => {
+        expect(tier).toBe(paymentMethod.config.tiers[index])
+      })
     })
   })
 
   describe('combined eligible area and payment calculation', () => {
     test('should apply the young woodland cap then calculate the correct payment tier', () => {
       // old=100ha, new=50ha, total=150ha, 20% cap=30ha → new(50) > cap(30)
-      // eligible = 100 + 30 = 130ha → tier 3: 3000 + 15*(130-100) = £3450
+      // eligible = 100 + 30 = 130ha → tier 1: £1500, tier 2: 1500 + 30*(130-50.9999) ≈ £3870, tier 3: 3000 + 15*(130-100) = £3450
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(100, 50)
@@ -121,11 +141,14 @@ describe('wmpCalculation', () => {
 
       expect(result.eligibleArea).toBe(130)
       expect(result.payment).toBe(3450)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([
+        1500, 3870, 3450
+      ])
     })
 
     test('should return £0 payment when cap reduces eligible area below the minimum threshold', () => {
       // old=0.2ha, new=2ha, total=2.2ha, 20% cap=0.44ha → new(2) > cap(0.44)
-      // eligible = 0.2 + 0.44 = 0.64ha → tier 1: flat £1500
+      // eligible = 0.2 + 0.44 = 0.64ha → tier 1: flat £1500, tiers 2 & 3 not applicable
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(0.2, 2)
@@ -133,6 +156,7 @@ describe('wmpCalculation', () => {
 
       expect(result.eligibleArea).toBeCloseTo(0.64, 2)
       expect(result.payment).toBe(1500)
+      expect(result.tierValues.map(({ value }) => value)).toEqual([1500, 0, 0])
     })
   })
 })

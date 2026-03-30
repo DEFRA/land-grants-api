@@ -23,8 +23,7 @@ async function getEnabledActions(logger, db) {
         ac.config->'land_cover_class_codes' as land_cover_class_codes,
         ac.config->'rules' as rules,
         ac.last_updated_at as last_updated,
-        ac.semantic_version as semantic_version,
-        ac.config->'payment_method' as payment_method
+        ac.semantic_version as semantic_version
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE AND ac.is_active = TRUE
