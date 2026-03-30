@@ -1,9 +1,8 @@
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
@@ -48,15 +47,21 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const availableArea = getAvailableAreaForAction(
+  const lpResult = findMaximumAvailableArea(
     action.code,
-    landAction.sheetId,
-    landAction.parcelId,
-    compatibilityCheckFn,
     plannedActionsTransformer(agreements),
-    aacDataRequirements,
-    request.logger
+    compatibilityCheckFn,
+    aacDataRequirements
   )
+  const availableArea = {
+    ...lpResult,
+    explanations: formatExplanationSections(lpResult.context, {
+      targetAction: action.code,
+      availableAreaSqm: lpResult.availableAreaSqm,
+      totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
+      landCoverToString: aacDataRequirements.landCoverToString
+    })
+  }
 
   const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
     landAction.sheetId,
