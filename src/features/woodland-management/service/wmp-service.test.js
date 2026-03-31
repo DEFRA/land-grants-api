@@ -1,7 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { validateWoodlandManagementPlan } from './wmp-service.js'
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
@@ -11,6 +9,8 @@ vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))
 vi.mock('../../actions/queries/getEnabledActions.query.js')
+
+const mockParcels = [{ area: 100 }, { area: 100 }]
 
 describe('validateWoodlandManagementPlan', () => {
   let mockRequest
@@ -34,32 +34,12 @@ describe('validateWoodlandManagementPlan', () => {
   })
 
   it('should calculate total area correctly and successfully validate woodland management plan', async () => {
-    splitParcelId.mockImplementation((id) => ({
-      sheetId: 'sheet',
-      parcelId: id
-    }))
-    getLandData.mockResolvedValue([{ area: 100 }])
     getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
     executeRules.mockReturnValue({ passed: true, results: [] })
 
-    const result = await validateWoodlandManagementPlan(mockRequest)
-
-    expect(splitParcelId).toHaveBeenCalledTimes(2)
-    expect(splitParcelId).toHaveBeenCalledWith('parcel1', mockRequest.logger)
-    expect(splitParcelId).toHaveBeenCalledWith('parcel2', mockRequest.logger)
-
-    expect(getLandData).toHaveBeenCalledTimes(2)
-    expect(getLandData).toHaveBeenCalledWith(
-      'sheet',
-      'parcel1',
-      mockRequest.server.postgresDb,
-      mockRequest.logger
-    )
-    expect(getLandData).toHaveBeenCalledWith(
-      'sheet',
-      'parcel2',
-      mockRequest.server.postgresDb,
-      mockRequest.logger
+    const result = await validateWoodlandManagementPlan(
+      mockParcels,
+      mockRequest
     )
 
     expect(getEnabledActions).toHaveBeenCalledWith(
@@ -69,7 +49,7 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 200 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 200 },
       ['ruleA']
     )
 
@@ -79,24 +59,23 @@ describe('validateWoodlandManagementPlan', () => {
     })
   })
 
-  it('should ignore parcels with no land data when calculating total area', async () => {
-    splitParcelId.mockImplementation((id) => ({
-      sheetId: 'sheet',
-      parcelId: id
-    }))
-    getLandData
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce([{ area: 50 }])
+  it('should default total area to 0 when no parcels are provided', async () => {
     getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
     executeRules.mockReturnValue({ passed: true, results: [] })
 
-    const result = await validateWoodlandManagementPlan(mockRequest)
+    const result = await validateWoodlandManagementPlan(null, mockRequest)
+
+    expect(getEnabledActions).toHaveBeenCalledWith(
+      mockRequest.logger,
+      mockRequest.server.postgresDb
+    )
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelArea: 50 },
+      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 0 },
       ['ruleA']
     )
+
     expect(result).toEqual({
       action: { code: 'PA3', rules: ['ruleA'] },
       ruleResult: { passed: true, results: [] }
