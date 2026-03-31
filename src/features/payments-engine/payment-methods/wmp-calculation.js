@@ -20,15 +20,15 @@ export const calculateEligibleArea = (
 
 /**
  * Selects the applicable payment tier and calculates the payment for the given eligible area.
- * Returns payment of 0 and tierIndex of -1 if the area is at or below the first tier's lower limit.
+ * Returns payment of 0 and tierIndex of -1 if the area is below the first tier's lower limit (exclusive).
  * The first tier where `area < upperLimitHa` (or `upperLimitHa` is null) is selected.
  * Payment formula: `flatRateGbp + ratePerUnitGbp × (eligibleArea − lowerLimitHa)`
  * @param {number} eligibleArea - The eligible area in hectares
  * @param {WmpTier[]} tiers - Payment tiers ordered ascending by lowerLimitHa
- * @returns {{ payment: number, tierIndex: number }} The payment in GBP (rounded) and the 0-based index of the selected tier (-1 if none)
+ * @returns {{ payment: number, tierIndex: number }} The payment in GBP and the 0-based index of the selected tier (-1 if none)
  */
 export const calculatePayment = (eligibleArea, tiers) => {
-  if (eligibleArea <= tiers[0].lowerLimitHa) {
+  if (eligibleArea < tiers[0].lowerLimitHa) {
     return { payment: 0, tierIndex: -1 }
   }
 
@@ -41,9 +41,8 @@ export const calculatePayment = (eligibleArea, tiers) => {
   }
 
   const tier = tiers[tierIndex]
-  const payment = Math.round(
+  const payment =
     tier.flatRateGbp + tier.ratePerUnitGbp * (eligibleArea - tier.lowerLimitHa)
-  )
 
   return { payment, tierIndex }
 }

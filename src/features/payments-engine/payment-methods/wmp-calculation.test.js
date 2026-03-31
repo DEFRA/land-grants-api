@@ -45,12 +45,14 @@ describe('calculateEligibleArea', () => {
 describe('calculatePayment', () => {
   test.each([
     { area: 0.2, expected: 0 },
-    { area: 0.5, expected: 0 },
-    { area: 0.5001, expected: 1500 },
+    { area: 0.4999, expected: 0 },
+    { area: 0.5, expected: 1500 },
     { area: 50.9999, expected: 1500 },
     { area: 51, expected: 1530 },
     { area: 51.5, expected: 1545 },
     { area: 100, expected: 3000 },
+    { area: 100.0001, expected: 3000.0015 },
+    { area: 100.1, expected: 3001.5 },
     { area: 150, expected: 3750 }
   ])(
     'should return £$expected for $area ha eligible area',
@@ -76,8 +78,8 @@ describe('wmpCalculation', () => {
   })
 
   describe('execute', () => {
-    test('should return £0 and no active tier when eligible area is at or below the minimum threshold', () => {
-      // old=0.3ha, new=0ha → eligible=0.3ha (≤ 0.5) → no tier
+    test('should return £0 and no active tier when eligible area is below the minimum threshold', () => {
+      // old=0.3ha, new=0ha → eligible=0.3ha (< 0.5) → no tier
       const result = wmpCalculation.execute(
         createPaymentMethod(),
         createData(0.3, 0)
