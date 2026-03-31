@@ -194,4 +194,26 @@ describe('woodlandTotalArea', () => {
       ]
     })
   })
+
+  test('should fail when new or old area is provided and exceeds total parcel area', () => {
+    const application = createApplication(10.50001, undefined, 105000)
+    const rule = createRule()
+    const result = woodlandTotalArea.execute(application, rule)
+
+    expect(result).toEqual({
+      name: 'woodland-total-area',
+      passed: false,
+      reason:
+        'The total woodland area (10.5 ha) exceeds the total land parcel area (10.5 ha)',
+      description: ruleDescription,
+      explanations: [
+        {
+          title: 'Woodland total area',
+          lines: [
+            'The total land parcel area is (10.5 ha), the total woodland area (young + old) is (10.5 ha)'
+          ]
+        }
+      ]
+    })
+  })
 })
