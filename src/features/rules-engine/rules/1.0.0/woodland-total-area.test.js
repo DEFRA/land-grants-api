@@ -260,5 +260,4 @@ describe('woodlandTotalArea', () => {
       ]
     })
   })
-
 })
