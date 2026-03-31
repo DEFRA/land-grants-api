@@ -67,8 +67,8 @@ describe('Payment Calculate WMP Controller (DB)', () => {
   })
 
   describe('successful calculation using PA3 action from database', () => {
-    test('should return 200 with flat rate £1500 when eligible area falls in tier 1 (0.5–51ha)', async () => {
-      // old=10ha, new=2ha → eligible=12ha → tier 1: flat £1500, rate £0/ha
+    test('should return 200 with flat rate 150000p when eligible area falls in tier 1 (0.5–51ha)', async () => {
+      // old=10ha, new=2ha → eligible=12ha → tier 1: flat £1500 (150000p), rate £0/ha
       const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPControllerV2.handler(
@@ -90,20 +90,20 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       expect(statusCode).toBe(200)
       expect(data.message).toBe('success')
-      expect(data.payment.agreementTotalPence).toBe(1500)
+      expect(data.payment.agreementTotalPence).toBe(150000)
       expect(data.payment.frequency).toBe('Single')
       expect(data.payment.agreementStartDate).toBe('2025-01-01')
       expect(data.payment.agreementEndDate).toBe('2026-01-01')
-      expect(data.payment.payments[0].totalPaymentPence).toBe(1500)
+      expect(data.payment.payments[0].totalPaymentPence).toBe(150000)
       expect(data.payment.payments[0].paymentDate).toBe('2025-01-01')
       expect(item.activePaymentTier).toBe(1)
       expect(item.quantityInActiveTier).toBe(11.5)
       expect(item.activeTierRatePence).toBe(0)
-      expect(item.activeTierFlatRatePence).toBe(1500)
+      expect(item.activeTierFlatRatePence).toBe(150000)
     })
 
-    test('should return 200 with £2400 when eligible area falls in tier 2 (51–100ha)', async () => {
-      // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50) = £2400
+    test('should return 200 with 240000p when eligible area falls in tier 2 (51–100ha)', async () => {
+      // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50) = £2400 (240000p)
       // parcel area must be >= total woodland (80ha = 800000sqm)
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
@@ -130,18 +130,18 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       const item = data.payment.agreementLevelItems[1]
 
       expect(statusCode).toBe(200)
-      expect(data.payment.agreementTotalPence).toBe(2400)
+      expect(data.payment.agreementTotalPence).toBe(240000)
       expect(data.payment.agreementStartDate).toBe('2025-06-01')
       expect(data.payment.agreementEndDate).toBe('2026-06-01')
       expect(item.activePaymentTier).toBe(2)
       expect(item.quantityInActiveTier).toBe(30)
-      expect(item.activeTierRatePence).toBe(30)
-      expect(item.activeTierFlatRatePence).toBe(1500)
+      expect(item.activeTierRatePence).toBe(3000)
+      expect(item.activeTierFlatRatePence).toBe(150000)
     })
 
-    test('should return 200 with £3150 when eligible area falls in tier 3 (over 100ha)', async () => {
+    test('should return 200 with 315000p when eligible area falls in tier 3 (over 100ha)', async () => {
       // old=90ha, new=20ha, total=110ha, 20% cap=22ha → new(20)≤cap(22) → eligible=110ha
-      // tier 3: 3000 + 15*(110-100) = £3150
+      // tier 3: 3000 + 15*(110-100) = £3150 (315000p)
       // parcel area must be >= total woodland (110ha = 1100000sqm)
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
@@ -168,13 +168,13 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       const item = data.payment.agreementLevelItems[1]
 
       expect(statusCode).toBe(200)
-      expect(data.payment.agreementTotalPence).toBe(3150)
+      expect(data.payment.agreementTotalPence).toBe(315000)
       expect(data.payment.agreementStartDate).toBe('2025-03-01')
       expect(data.payment.agreementEndDate).toBe('2026-03-01')
       expect(item.activePaymentTier).toBe(3)
       expect(item.quantityInActiveTier).toBe(10)
-      expect(item.activeTierRatePence).toBe(15)
-      expect(item.activeTierFlatRatePence).toBe(3000)
+      expect(item.activeTierRatePence).toBe(1500)
+      expect(item.activeTierFlatRatePence).toBe(300000)
     })
 
     test('should return 200 and cap new woodland when it exceeds 20% of total woodland area', async () => {
@@ -205,7 +205,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       const { data, statusCode } = getResponse()
 
       expect(statusCode).toBe(200)
-      expect(data.payment.agreementTotalPence).toBe(1500)
+      expect(data.payment.agreementTotalPence).toBe(150000)
     })
   })
 

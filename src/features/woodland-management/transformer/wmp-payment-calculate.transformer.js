@@ -3,6 +3,13 @@ import { addMonths, addYears, format, parseISO, startOfMonth } from 'date-fns'
 const DATE_FORMAT = 'yyyy-MM-dd'
 
 /**
+ * Converts a GBP amount to pence.
+ * @param {number} gbp - The amount in GBP
+ * @returns {number} The amount in pence
+ */
+const gbpToPence = (gbp) => gbp * 100
+
+/**
  * Returns the agreement start date. When `startDate` is provided it is used as
  * an override; otherwise defaults to the 1st of next month.
  * @param {string | Date | undefined} startDate - Optional start date override. Accepts an ISO string or a Date object (e.g. produced by Joi date() coercion)
@@ -36,14 +43,15 @@ export const getAgreementEndDate = (agreementStartDate, durationYears) => {
  * @returns {WmpPayment[]} The payment schedule
  */
 export const transformPayments = (paymentResult, agreementStartDate) => {
+  const paymentPence = gbpToPence(paymentResult.payment)
   return [
     {
-      totalPaymentPence: paymentResult.payment,
+      totalPaymentPence: paymentPence,
       paymentDate: agreementStartDate,
       lineItems: [
         {
           agreementLevelItemId: 1,
-          paymentPence: paymentResult.payment
+          paymentPence
         }
       ]
     }
@@ -70,10 +78,12 @@ export const transformAgreementLevelItems = (
       parcelIds,
       activePaymentTier: paymentResult.activePaymentTier,
       quantityInActiveTier: paymentResult.quantityInActiveTier,
-      activeTierRatePence: paymentResult.activeTierRatePence,
-      activeTierFlatRatePence: paymentResult.activeTierFlatRatePence,
+      activeTierRatePence: gbpToPence(paymentResult.activeTierRatePence),
+      activeTierFlatRatePence: gbpToPence(
+        paymentResult.activeTierFlatRatePence
+      ),
       quantity: paymentResult.eligibleArea,
-      agreementTotalPence: paymentResult.payment,
+      agreementTotalPence: gbpToPence(paymentResult.payment),
       unit: 'ha'
     }
   }
@@ -102,7 +112,7 @@ export const wmpPaymentCalculateTransformer = (
       action.durationYears
     ),
     frequency: 'Single',
-    agreementTotalPence: wmpCalculationResult.payment,
+    agreementTotalPence: gbpToPence(wmpCalculationResult.payment),
     parcelItems: {},
     agreementLevelItems: transformAgreementLevelItems(
       parcelIds,

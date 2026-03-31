@@ -58,21 +58,21 @@ describe('getAgreementEndDate', () => {
 })
 
 describe('transformPayments', () => {
-  test('should return a single payment entry with the payment amount and date', () => {
+  test('should return a single payment entry with the payment amount converted to pence', () => {
     const result = transformPayments(createWmpCalculationResult(), '2024-01-01')
 
     expect(result).toEqual([
       {
-        totalPaymentPence: 2340,
+        totalPaymentPence: 234000,
         paymentDate: '2024-01-01',
-        lineItems: [{ agreementLevelItemId: 1, paymentPence: 2340 }]
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
       }
     ])
   })
 })
 
 describe('transformAgreementLevelItems', () => {
-  test('should map active tier values from the payment result', () => {
+  test('should map active tier values from the payment result converting GBP to pence', () => {
     const result = transformAgreementLevelItems(
       ['SX067-99238'],
       createAction(),
@@ -81,8 +81,8 @@ describe('transformAgreementLevelItems', () => {
 
     expect(result[1].activePaymentTier).toBe(2)
     expect(result[1].quantityInActiveTier).toBe(28)
-    expect(result[1].activeTierRatePence).toBe(30)
-    expect(result[1].activeTierFlatRatePence).toBe(1500)
+    expect(result[1].activeTierRatePence).toBe(3000)
+    expect(result[1].activeTierFlatRatePence).toBe(150000)
   })
 
   test('should populate action metadata and eligible area on the agreement level item', () => {
@@ -97,7 +97,7 @@ describe('transformAgreementLevelItems', () => {
       description: 'Woodland Management Plan',
       version: '1.0.0',
       parcelIds: ['SX067-99238', 'SX068-00001'],
-      agreementTotalPence: 2340,
+      agreementTotalPence: 234000,
       unit: 'ha',
       quantity: 78
     })
@@ -118,7 +118,7 @@ describe('wmpPaymentCalculateTransformer', () => {
       agreementStartDate: '2024-01-01',
       agreementEndDate: '2029-01-01',
       frequency: 'Single',
-      agreementTotalPence: 2340,
+      agreementTotalPence: 234000,
       parcelItems: {},
       agreementLevelItems: {
         1: {
@@ -128,18 +128,18 @@ describe('wmpPaymentCalculateTransformer', () => {
           parcelIds: ['SX067-99238'],
           activePaymentTier: 2,
           quantityInActiveTier: 28,
-          activeTierRatePence: 30,
-          activeTierFlatRatePence: 1500,
-          agreementTotalPence: 2340,
+          activeTierRatePence: 3000,
+          activeTierFlatRatePence: 150000,
+          agreementTotalPence: 234000,
           unit: 'ha',
           quantity: 78
         }
       },
       payments: [
         {
-          totalPaymentPence: 2340,
+          totalPaymentPence: 234000,
           paymentDate: '2024-01-01',
-          lineItems: [{ agreementLevelItemId: 1, paymentPence: 2340 }]
+          lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
         }
       ]
     })
