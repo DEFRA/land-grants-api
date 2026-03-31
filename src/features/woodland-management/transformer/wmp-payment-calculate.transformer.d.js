@@ -13,7 +13,10 @@
  * @property {string} description - The action description
  * @property {string} version - The action semantic version
  * @property {string[]} parcelIds - The parcel IDs included in this item
- * @property {WmpAgreementTier[]} tiers - The payment tiers
+ * @property {number} activePaymentTier - The active payment tier
+ * @property {number} quantityInActiveTier - The quantity in the active tier
+ * @property {number} activeTierRatePence - The rate in the active tier
+ * @property {number} activeTierFlatRatePence - The flat rate in the active tier
  * @property {number} agreementTotalPence - The total agreement payment in GBP
  * @property {string} unit - The unit of measurement
  * @property {number} quantity - The eligible area in hectares

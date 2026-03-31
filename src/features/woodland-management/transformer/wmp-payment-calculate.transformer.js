@@ -68,16 +68,13 @@ export const transformAgreementLevelItems = (
       description: action.description,
       version: action.semanticVersion,
       parcelIds,
-      tiers: paymentResult.tierValues.map((tierValue, index) => ({
-        number: index + 1,
-        quantity: paymentResult.eligibleArea,
-        rateInPence: tierValue.tier.ratePerUnitGbp,
-        flatRateInPence: tierValue.tier.flatRateGbp,
-        totalInPence: tierValue.value
-      })),
+      activePaymentTier: paymentResult.activePaymentTier,
+      quantityInActiveTier: paymentResult.quantityInActiveTier,
+      activeTierRatePence: paymentResult.activeTierRatePence,
+      activeTierFlatRatePence: paymentResult.activeTierFlatRatePence,
+      quantity: paymentResult.eligibleArea,
       agreementTotalPence: paymentResult.payment,
-      unit: 'ha',
-      quantity: paymentResult.eligibleArea
+      unit: 'ha'
     }
   }
 }

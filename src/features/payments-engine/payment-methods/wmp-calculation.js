@@ -7,7 +7,7 @@
  * @param {number} newWoodlandMaxPercent - Maximum percentage of total area that new woodland may contribute
  * @returns {number} The eligible area in hectares
  */
-const calculateEligibleArea = (
+export const calculateEligibleArea = (
   oldWoodlandAreaHa,
   newWoodlandAreaHa,
   newWoodlandMaxPercent
@@ -19,63 +19,47 @@ const calculateEligibleArea = (
 }
 
 /**
- * Determines the payment amount based on the eligible area and configured tiers.
- * Each tier defines a flat rate and a per-hectare rate above the tier's lower limit.
- * The highest applicable tier (where eligible area exceeds the lower limit) is used.
- * Also returns the calculated value for every tier, with 0 for tiers that do not apply.
+ * Selects the applicable payment tier and calculates the payment for the given eligible area.
+ * Returns payment of 0 and tierIndex of -1 if the area is at or below the first tier's lower limit.
+ * The first tier where `area < upperLimitHa` (or `upperLimitHa` is null) is selected.
+ * Payment formula: `flatRateGbp + ratePerUnitGbp × (eligibleArea − lowerLimitHa)`
  * @param {number} eligibleArea - The eligible area in hectares
- * @param {WmpPaymentTier[]} tiers - Payment tier configuration
- * @returns {{ payment: number, tierValues: WmpTierValue[] }} The payment amount in GBP and per-tier values
+ * @param {WmpTier[]} tiers - Payment tiers ordered ascending by lowerLimitHa
+ * @returns {{ payment: number, tierIndex: number }} The payment in GBP (rounded) and the 0-based index of the selected tier (-1 if none)
  */
-const calculateTierPayment = (eligibleArea, tiers) => {
-  const tierValues = tiers.map((tier) => {
-    if (eligibleArea <= tier.lowerLimitExclusiveHa) {
-      return { tier, value: 0 }
-    }
-    const limit = eligibleArea - tier.lowerLimitExclusiveHa
-    return {
-      tier,
-      value: Math.round(tier.flatRateGbp + tier.ratePerUnitGbp * limit)
-    }
-  })
-
-  const sortedTiers = [...tiers].sort(
-    (a, b) => b.lowerLimitExclusiveHa - a.lowerLimitExclusiveHa
-  )
-
-  const applicableTier = sortedTiers.find(
-    (tier) => eligibleArea > tier.lowerLimitExclusiveHa
-  )
-
-  if (!applicableTier) {
-    return { payment: 0, tierValues }
+export const calculatePayment = (eligibleArea, tiers) => {
+  if (eligibleArea <= tiers[0].lowerLimitHa) {
+    return { payment: 0, tierIndex: -1 }
   }
 
-  const aboveLimit = Math.max(
-    0,
-    eligibleArea - applicableTier.lowerLimitExclusiveHa
+  const tierIndex = tiers.findIndex(
+    (t) => t.upperLimitHa === null || eligibleArea < t.upperLimitHa
   )
 
+  if (tierIndex === -1) {
+    return { payment: 0, tierIndex: -1 }
+  }
+
+  const tier = tiers[tierIndex]
   const payment = Math.round(
-    applicableTier.flatRateGbp + applicableTier.ratePerUnitGbp * aboveLimit
+    tier.flatRateGbp + tier.ratePerUnitGbp * (eligibleArea - tier.lowerLimitHa)
   )
 
-  return { payment, tierValues }
+  return { payment, tierIndex }
 }
 
 export const wmpCalculation = {
   /**
    * Executes the WMP payment calculation.
    * Applies the young woodland cap to determine the eligible area, then
-   * selects the appropriate payment tier to calculate the total payment.
+   * selects the applicable payment tier and calculates the payment.
    * @param {WmpPaymentMethod} paymentMethod - The payment method configuration
    * @param {WmpCalculationInput} data - The application data
-   * @returns {WmpCalculationResult} The eligible area, payment amount, and per-tier values
+   * @returns {WmpCalculationResult} The eligible area and payment amount
    */
   execute: (paymentMethod, data) => {
     const { config } = paymentMethod
-    const tiers = config.tiers
-    const newWoodlandMaxPercent = config.newWoodlandMaxPercent
+    const { tiers, newWoodlandMaxPercent } = config
     const { oldWoodlandAreaHa, newWoodlandAreaHa } = data.data
 
     const eligibleArea = calculateEligibleArea(
@@ -84,12 +68,22 @@ export const wmpCalculation = {
       newWoodlandMaxPercent
     )
 
-    const { payment, tierValues } = calculateTierPayment(eligibleArea, tiers)
+    const { payment, tierIndex } = calculatePayment(eligibleArea, tiers)
+    const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null
 
-    return { eligibleArea, payment, tierValues }
+    return {
+      eligibleArea,
+      payment,
+      activePaymentTier: tierIndex + 1,
+      quantityInActiveTier: activeTier
+        ? eligibleArea - activeTier.lowerLimitHa
+        : 0,
+      activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
+      activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
+    }
   }
 }
 
 /**
- * @import { WmpPaymentMethod, WmpPaymentTier, WmpCalculationInput, WmpCalculationResult, WmpTierValue } from './wmp-calculation.d.js'
+ * @import { WmpTier, WmpPaymentMethod, WmpCalculationInput, WmpCalculationResult } from './wmp-calculation.d.js'
  */

@@ -1,14 +1,15 @@
 /**
- * @typedef {object} WmpPaymentTier
- * @property {number} flatRateGbp - The flat rate payment in GBP
- * @property {number} ratePerUnitGbp - The per-hectare rate above the tier's lower limit
- * @property {number} lowerLimitExclusiveHa - The exclusive lower limit in hectares that triggers this tier
+ * @typedef {object} WmpTier
+ * @property {number} lowerLimitHa - Exclusive lower boundary in hectares; also used as the rate calculation base
+ * @property {number | null} upperLimitHa - Exclusive upper boundary in hectares; null for the final open-ended tier
+ * @property {number} flatRateGbp - Fixed base payment in GBP for this tier
+ * @property {number} ratePerUnitGbp - Variable payment rate in GBP per hectare above lowerLimitHa
  */
 
 /**
  * @typedef {object} WmpPaymentMethodConfig
- * @property {WmpPaymentTier[]} tiers - The payment tiers, ordered by ascending lower limit
  * @property {number} newWoodlandMaxPercent - Maximum percentage of total woodland area that young woodland may contribute
+ * @property {WmpTier[]} tiers - Payment tiers ordered ascending by lowerLimitHa
  */
 
 /**
@@ -31,14 +32,11 @@
  */
 
 /**
- * @typedef {object} WmpTierValue
- * @property {WmpPaymentTier} tier - The tier configuration
- * @property {number} value - The calculated payment value for this tier in GBP, or 0 if the eligible area does not exceed the tier's lower limit
- */
-
-/**
  * @typedef {object} WmpCalculationResult
  * @property {number} eligibleArea - The eligible woodland area in hectares after applying the young woodland cap
  * @property {number} payment - The calculated payment amount in GBP
- * @property {WmpTierValue[]} tierValues - The calculated payment value for each tier
+ * @property {number} activePaymentTier - The 1-based index of the selected payment tier (0 if no tier applies)
+ * @property {number} quantityInActiveTier - The eligible area above the active tier's lower limit in hectares
+ * @property {number} activeTierRatePence - The per-hectare rate of the active tier in GBP
+ * @property {number} activeTierFlatRatePence - The flat rate of the active tier in GBP
  */

@@ -96,7 +96,7 @@ export const PaymentsCalculateWMPControllerV2 = {
       return Boom.badRequest('Eligibility rules failed')
     }
 
-    const { eligibleArea, payment, tierValues } = executePaymentMethod(
+    const paymentResult = executePaymentMethod(
       { ...action?.paymentMethod },
       {
         data: {
@@ -113,7 +113,7 @@ export const PaymentsCalculateWMPControllerV2 = {
         message: 'success',
         payment: wmpPaymentCalculateTransformer(
           parcelIds,
-          { eligibleArea, payment, tierValues },
+          paymentResult,
           action,
           startDate
         )

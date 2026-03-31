@@ -7,20 +7,13 @@ import {
   wmpPaymentCalculateTransformer
 } from './wmp-payment-calculate.transformer.js'
 
-const createTiers = () => [
-  { flatRateGbp: 1500, ratePerUnitGbp: 0, lowerLimitExclusiveHa: 0.5 },
-  { flatRateGbp: 1500, ratePerUnitGbp: 30, lowerLimitExclusiveHa: 50.9999 },
-  { flatRateGbp: 3000, ratePerUnitGbp: 15, lowerLimitExclusiveHa: 100 }
-]
-
-const createWmpCalculationResult = (tiers = createTiers()) => ({
-  eligibleArea: 80,
-  payment: 2370,
-  tierValues: [
-    { tier: tiers[0], value: 1500 },
-    { tier: tiers[1], value: 2370 },
-    { tier: tiers[2], value: 0 }
-  ]
+const createWmpCalculationResult = () => ({
+  eligibleArea: 78,
+  payment: 2340,
+  activePaymentTier: 2,
+  quantityInActiveTier: 28,
+  activeTierRatePence: 30,
+  activeTierFlatRatePence: 1500
 })
 
 const createAction = () => ({
@@ -70,49 +63,26 @@ describe('transformPayments', () => {
 
     expect(result).toEqual([
       {
-        totalPaymentPence: 2370,
+        totalPaymentPence: 2340,
         paymentDate: '2024-01-01',
-        lineItems: [{ agreementLevelItemId: 1, paymentPence: 2370 }]
+        lineItems: [{ agreementLevelItemId: 1, paymentPence: 2340 }]
       }
     ])
   })
 })
 
 describe('transformAgreementLevelItems', () => {
-  test('should map tierValues to tiers with the correct rates and values', () => {
-    const tiers = createTiers()
-    const paymentResult = createWmpCalculationResult(tiers)
-    const action = createAction()
-
+  test('should map active tier values from the payment result', () => {
     const result = transformAgreementLevelItems(
       ['SX067-99238'],
-      action,
-      paymentResult
+      createAction(),
+      createWmpCalculationResult()
     )
 
-    expect(result[1].tiers).toEqual([
-      {
-        number: 1,
-        quantity: 80,
-        rateInPence: 0,
-        flatRateInPence: 1500,
-        totalInPence: 1500
-      },
-      {
-        number: 2,
-        quantity: 80,
-        rateInPence: 30,
-        flatRateInPence: 1500,
-        totalInPence: 2370
-      },
-      {
-        number: 3,
-        quantity: 80,
-        rateInPence: 15,
-        flatRateInPence: 3000,
-        totalInPence: 0
-      }
-    ])
+    expect(result[1].activePaymentTier).toBe(2)
+    expect(result[1].quantityInActiveTier).toBe(28)
+    expect(result[1].activeTierRatePence).toBe(30)
+    expect(result[1].activeTierFlatRatePence).toBe(1500)
   })
 
   test('should populate action metadata and eligible area on the agreement level item', () => {
@@ -127,9 +97,9 @@ describe('transformAgreementLevelItems', () => {
       description: 'Woodland Management Plan',
       version: '1.0.0',
       parcelIds: ['SX067-99238', 'SX068-00001'],
-      agreementTotalPence: 2370,
+      agreementTotalPence: 2340,
       unit: 'ha',
-      quantity: 80
+      quantity: 78
     })
   })
 })
@@ -148,7 +118,7 @@ describe('wmpPaymentCalculateTransformer', () => {
       agreementStartDate: '2024-01-01',
       agreementEndDate: '2029-01-01',
       frequency: 'Single',
-      agreementTotalPence: 2370,
+      agreementTotalPence: 2340,
       parcelItems: {},
       agreementLevelItems: {
         1: {
@@ -156,39 +126,20 @@ describe('wmpPaymentCalculateTransformer', () => {
           description: 'Woodland Management Plan',
           version: '1.0.0',
           parcelIds: ['SX067-99238'],
-          tiers: [
-            {
-              number: 1,
-              quantity: 80,
-              rateInPence: 0,
-              flatRateInPence: 1500,
-              totalInPence: 1500
-            },
-            {
-              number: 2,
-              quantity: 80,
-              rateInPence: 30,
-              flatRateInPence: 1500,
-              totalInPence: 2370
-            },
-            {
-              number: 3,
-              quantity: 80,
-              rateInPence: 15,
-              flatRateInPence: 3000,
-              totalInPence: 0
-            }
-          ],
-          agreementTotalPence: 2370,
+          activePaymentTier: 2,
+          quantityInActiveTier: 28,
+          activeTierRatePence: 30,
+          activeTierFlatRatePence: 1500,
+          agreementTotalPence: 2340,
           unit: 'ha',
-          quantity: 80
+          quantity: 78
         }
       },
       payments: [
         {
-          totalPaymentPence: 2370,
+          totalPaymentPence: 2340,
           paymentDate: '2024-01-01',
-          lineItems: [{ agreementLevelItemId: 1, paymentPence: 2370 }]
+          lineItems: [{ agreementLevelItemId: 1, paymentPence: 2340 }]
         }
       ]
     })

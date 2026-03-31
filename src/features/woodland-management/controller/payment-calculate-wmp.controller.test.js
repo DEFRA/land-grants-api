@@ -42,16 +42,27 @@ const createMockAction = () => ({
     name: 'wmp-calculation',
     version: '1.0.0',
     config: {
+      newWoodlandMaxPercent: 20,
       tiers: [
-        { flatRateGbp: 1500, ratePerUnitGbp: 0, lowerLimitExclusiveHa: 0.5 },
         {
+          lowerLimitHa: 0.5,
+          upperLimitHa: 51,
           flatRateGbp: 1500,
-          ratePerUnitGbp: 30,
-          lowerLimitExclusiveHa: 50.9999
+          ratePerUnitGbp: 0
         },
-        { flatRateGbp: 3000, ratePerUnitGbp: 15, lowerLimitExclusiveHa: 100 }
-      ],
-      newWoodlandMaxPercent: 20
+        {
+          lowerLimitHa: 50,
+          upperLimitHa: 100,
+          flatRateGbp: 1500,
+          ratePerUnitGbp: 30
+        },
+        {
+          lowerLimitHa: 100,
+          upperLimitHa: null,
+          flatRateGbp: 3000,
+          ratePerUnitGbp: 15
+        }
+      ]
     }
   }
 })
@@ -59,16 +70,10 @@ const createMockAction = () => ({
 const createMockCalculationResult = () => ({
   eligibleArea: 8,
   payment: 1500,
-  tierValues: [
-    {
-      tier: {
-        flatRateGbp: 1500,
-        ratePerUnitGbp: 0,
-        lowerLimitExclusiveHa: 0.5
-      },
-      value: 1500
-    }
-  ]
+  activePaymentTier: 1,
+  quantityInActiveTier: 7.5,
+  activeTierRatePence: 0,
+  activeTierFlatRatePence: 1500
 })
 
 const createMockPaymentResponse = () => ({
@@ -84,15 +89,10 @@ const createMockPaymentResponse = () => ({
       description: 'Woodland Management Plan',
       version: '1.0.0',
       parcelIds: ['SX067-99238'],
-      tiers: [
-        {
-          number: 1,
-          quantity: 8,
-          rateInPence: 0,
-          flatRateInPence: 1500,
-          totalInPence: 1500
-        }
-      ],
+      activePaymentTier: 1,
+      quantityInActiveTier: 7.5,
+      activeTierRatePence: 0,
+      activeTierFlatRatePence: 1500,
       agreementTotalPence: 1500,
       unit: 'ha',
       quantity: 8

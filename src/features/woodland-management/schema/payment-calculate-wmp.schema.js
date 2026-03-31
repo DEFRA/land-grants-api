@@ -1,19 +1,14 @@
 import Joi from 'joi'
 
-const tierSchema = Joi.object({
-  number: Joi.number().integer().required(),
-  quantity: Joi.number().required(),
-  rateInPence: Joi.number().required(),
-  flatRateInPence: Joi.number().required(),
-  totalInPence: Joi.number().required()
-})
-
 const agreementLevelItemSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
   version: Joi.string().required(),
   parcelIds: Joi.array().items(Joi.string()).required(),
-  tiers: Joi.array().items(tierSchema).required(),
+  activePaymentTier: Joi.number().integer().required(),
+  quantityInActiveTier: Joi.number().required(),
+  activeTierRatePence: Joi.number().required(),
+  activeTierFlatRatePence: Joi.number().required(),
   agreementTotalPence: Joi.number().required(),
   unit: Joi.string().required(),
   quantity: Joi.number().required()

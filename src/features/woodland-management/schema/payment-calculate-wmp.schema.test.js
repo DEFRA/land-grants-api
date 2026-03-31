@@ -19,15 +19,10 @@ describe('paymentCalculateWMPResponseSchema', () => {
           description: 'Woodland Management Plan',
           version: '1.0.0',
           parcelIds: ['SX067-99238'],
-          tiers: [
-            {
-              number: 1,
-              quantity: 25,
-              rateInPence: 0,
-              flatRateInPence: 1500,
-              totalInPence: 1500
-            }
-          ],
+          activePaymentTier: 1,
+          quantityInActiveTier: 24.5,
+          activeTierRatePence: 0,
+          activeTierFlatRatePence: 1500,
           agreementTotalPence: 1500,
           unit: 'ha',
           quantity: 25
@@ -147,13 +142,33 @@ describe('paymentCalculateWMPResponseSchema', () => {
     )
   })
 
-  it('should reject a non-integer tier number', () => {
+  it('should reject a non-integer activePaymentTier', () => {
     const invalid = createValidResponse()
-    invalid.payment.agreementLevelItems[1].tiers[0].number = 1.5
+    invalid.payment.agreementLevelItems[1].activePaymentTier = 1.5
     const result = paymentCalculateWMPResponseSchema.validate(invalid)
     expect(result.error).toBeDefined()
     expect(result.error.message).toContain(
-      '"payment.agreementLevelItems.1.tiers[0].number" must be an integer'
+      '"payment.agreementLevelItems.1.activePaymentTier" must be an integer'
+    )
+  })
+
+  it('should reject a missing activePaymentTier', () => {
+    const invalid = createValidResponse()
+    delete invalid.payment.agreementLevelItems[1].activePaymentTier
+    const result = paymentCalculateWMPResponseSchema.validate(invalid)
+    expect(result.error).toBeDefined()
+    expect(result.error.message).toContain(
+      '"payment.agreementLevelItems.1.activePaymentTier" is required'
+    )
+  })
+
+  it('should reject a missing activeTierRatePence', () => {
+    const invalid = createValidResponse()
+    delete invalid.payment.agreementLevelItems[1].activeTierRatePence
+    const result = paymentCalculateWMPResponseSchema.validate(invalid)
+    expect(result.error).toBeDefined()
+    expect(result.error.message).toContain(
+      '"payment.agreementLevelItems.1.activeTierRatePence" is required'
     )
   })
 })
