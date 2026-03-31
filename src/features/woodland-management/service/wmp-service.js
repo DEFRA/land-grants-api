@@ -39,7 +39,7 @@ export const validateWoodlandManagementPlan = async (parcels, request) => {
  * @returns {number} The total land area in square meters
  */
 export const getTotalLandAreaSqm = (parcels) => {
-  return parcels?.reduce((acc, parcel) => acc + parcel.area_sqm, 0) ?? 0
+  return parcels?.reduce((acc, parcel) => acc + parcel.area, 0) ?? 0
 }
 
 /**
