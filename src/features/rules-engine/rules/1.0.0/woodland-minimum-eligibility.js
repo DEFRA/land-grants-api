@@ -1,6 +1,9 @@
 // Rule 1: woodland-minimum-eligibility
 
-import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import {
+  haToSqm,
+  roundTo4DecimalPlaces
+} from '~/src/features/common/helpers/measurement.js'
 
 // There must be a minimum of 0.5ha of woodland over 10 years old on the holding. If this is not met,
 // the applicant is not eligible and the calculator should reflect this.
@@ -29,9 +32,12 @@ export const woodlandMinimumEligibility = {
     const oldWoodlandAreaSqm = haToSqm(Number.parseFloat(oldWoodlandAreaHa))
     const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
 
-    const roundedOldWoodlandAreaHa =
-      Number.parseFloat(oldWoodlandAreaHa).toFixed(4)
-    const roundedMinimumSizeHa = Number.parseFloat(minimumSizeHa).toFixed(4)
+    const roundedOldWoodlandAreaHa = roundTo4DecimalPlaces(
+      Number.parseFloat(oldWoodlandAreaHa)
+    )
+    const roundedMinimumSizeHa = roundTo4DecimalPlaces(
+      Number.parseFloat(minimumSizeHa)
+    )
 
     const explanations = [
       {
