@@ -34,6 +34,7 @@ const ACTION_CODES = [
   'CHRW3',
   'PRF1',
   'PRF2',
+  'CSAM1',
   'GRH6',
   'GRH7',
   'HEF5',

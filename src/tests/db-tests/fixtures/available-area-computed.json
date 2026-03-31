@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-03-28T16:06:16.149Z",
+    "generatedAt": "2026-03-31T14:39:49.881Z",
     "actionCodes": [
       "CMOR1",
       "UPL1",
@@ -24,6 +24,7 @@
       "CHRW3",
       "PRF1",
       "PRF2",
+      "CSAM1",
       "GRH6",
       "GRH7",
       "HEF5",
@@ -33,7 +34,7 @@
       "WD2",
       "WD10"
     ],
-    "scenarioCount": 21,
+    "scenarioCount": 23,
     "version": "1.0.0"
   },
   "compatibilityMatrix": [
@@ -128,12 +129,14 @@
     ["SPM4", "OFM1"],
     ["SPM4", "OFM2"],
     ["SPM4", "OFM3"],
+    ["SPM4", "CSAM1"],
     ["SPM4", "HEF5"],
     ["SPM4", "HEF6"],
     ["OFM1", "SAM1"],
     ["OFM1", "SPM4"],
     ["OFM1", "PRF1"],
     ["OFM1", "PRF2"],
+    ["OFM1", "CSAM1"],
     ["OFM1", "GRH7"],
     ["OFM1", "HEF5"],
     ["OFM1", "HEF6"],
@@ -141,6 +144,7 @@
     ["OFM2", "SAM1"],
     ["OFM2", "SPM4"],
     ["OFM2", "PRF2"],
+    ["OFM2", "CSAM1"],
     ["OFM2", "GRH6"],
     ["OFM2", "GRH7"],
     ["OFM2", "HEF5"],
@@ -164,6 +168,7 @@
     ["WS2", "WD2"],
     ["CAHL3", "SAM1"],
     ["CAHL3", "PRF2"],
+    ["CAHL3", "CSAM1"],
     ["CHRW1", "CHRW2"],
     ["CHRW1", "CHRW3"],
     ["CHRW2", "CHRW1"],
@@ -173,22 +178,36 @@
     ["PRF1", "SAM1"],
     ["PRF1", "OFM1"],
     ["PRF1", "PRF2"],
+    ["PRF1", "CSAM1"],
     ["PRF2", "SAM1"],
     ["PRF2", "OFM1"],
     ["PRF2", "OFM2"],
     ["PRF2", "CAHL3"],
     ["PRF2", "PRF1"],
+    ["PRF2", "CSAM1"],
     ["PRF2", "GRH7"],
     ["PRF2", "HEF5"],
     ["PRF2", "HEF6"],
     ["PRF2", "HEF8"],
+    ["CSAM1", "SPM4"],
+    ["CSAM1", "OFM1"],
+    ["CSAM1", "OFM2"],
+    ["CSAM1", "CAHL3"],
+    ["CSAM1", "PRF1"],
+    ["CSAM1", "PRF2"],
+    ["CSAM1", "GRH6"],
+    ["CSAM1", "GRH7"],
+    ["CSAM1", "HEF5"],
+    ["CSAM1", "HEF6"],
     ["GRH6", "SAM1"],
     ["GRH6", "OFM2"],
+    ["GRH6", "CSAM1"],
     ["GRH6", "GRH7"],
     ["GRH7", "SAM1"],
     ["GRH7", "OFM1"],
     ["GRH7", "OFM2"],
     ["GRH7", "PRF2"],
+    ["GRH7", "CSAM1"],
     ["GRH7", "GRH6"],
     ["HEF5", "CMOR1"],
     ["HEF5", "UPL1"],
@@ -204,6 +223,7 @@
     ["HEF5", "OFM2"],
     ["HEF5", "OFM3"],
     ["HEF5", "PRF2"],
+    ["HEF5", "CSAM1"],
     ["HEF6", "CMOR1"],
     ["HEF6", "UPL4"],
     ["HEF6", "UPL5"],
@@ -213,6 +233,7 @@
     ["HEF6", "OFM1"],
     ["HEF6", "OFM2"],
     ["HEF6", "PRF2"],
+    ["HEF6", "CSAM1"],
     ["HEF8", "CMOR1"],
     ["HEF8", "PRF2"],
     ["HEF8", "WD2"],
@@ -8929,6 +8950,714 @@
             {
               "landCoverCode": "588",
               "landCoverClassCode": "580"
+            }
+          ]
+        }
+      }
+    },
+    "Take landcovers where existing actions can go into consideration - test3": {
+      "scenario": {
+        "applyingForAction": "UPL1",
+        "sheetId": "SD8447",
+        "parcelId": "1509",
+        "existingActions": [
+          {
+            "actionCode": "PRF1",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "PRF2",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "CSAM1",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "CMOR1",
+            "areaSqm": 11430
+          }
+        ],
+        "expectedAvailableArea": "1.143"
+      },
+      "dataRequirements": {
+        "landCoverCodesForAppliedForAction": [
+          {
+            "landCoverCode": "131",
+            "landCoverClassCode": "130"
+          },
+          {
+            "landCoverCode": "241",
+            "landCoverClassCode": "240"
+          },
+          {
+            "landCoverCode": "243",
+            "landCoverClassCode": "240"
+          },
+          {
+            "landCoverCode": "251",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "252",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "253",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "271",
+            "landCoverClassCode": "270"
+          },
+          {
+            "landCoverCode": "281",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "282",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "283",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "285",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "286",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "287",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "288",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "300",
+            "landCoverClassCode": "300"
+          },
+          {
+            "landCoverCode": "347",
+            "landCoverClassCode": "330"
+          },
+          {
+            "landCoverCode": "582",
+            "landCoverClassCode": "580"
+          },
+          {
+            "landCoverCode": "583",
+            "landCoverClassCode": "580"
+          },
+          {
+            "landCoverCode": "591",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "592",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "593",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "621",
+            "landCoverClassCode": "620"
+          },
+          {
+            "landCoverCode": "641",
+            "landCoverClassCode": "640"
+          },
+          {
+            "landCoverCode": "643",
+            "landCoverClassCode": "640"
+          },
+          {
+            "landCoverCode": "651",
+            "landCoverClassCode": "650"
+          }
+        ],
+        "landCoversForParcel": [
+          {
+            "landCoverClassCode": "110",
+            "areaSqm": 79890
+          },
+          {
+            "landCoverClassCode": "130",
+            "areaSqm": 31540
+          },
+          {
+            "landCoverClassCode": "551",
+            "areaSqm": 76
+          }
+        ],
+        "landCoversForExistingActions": {
+          "PRF1": [
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            }
+          ],
+          "PRF2": [
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "143",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "142",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            }
+          ],
+          "CSAM1": [
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "142",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "143",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            }
+          ],
+          "CMOR1": [
+            {
+              "landCoverCode": "347",
+              "landCoverClassCode": "330"
+            },
+            {
+              "landCoverCode": "243",
+              "landCoverClassCode": "240"
+            },
+            {
+              "landCoverCode": "252",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "592",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "300",
+              "landCoverClassCode": "300"
+            },
+            {
+              "landCoverCode": "281",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "643",
+              "landCoverClassCode": "640"
+            },
+            {
+              "landCoverCode": "593",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "641",
+              "landCoverClassCode": "640"
+            },
+            {
+              "landCoverCode": "651",
+              "landCoverClassCode": "650"
+            },
+            {
+              "landCoverCode": "591",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            },
+            {
+              "landCoverCode": "288",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "282",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "582",
+              "landCoverClassCode": "580"
+            },
+            {
+              "landCoverCode": "583",
+              "landCoverClassCode": "580"
+            },
+            {
+              "landCoverCode": "285",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "287",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "241",
+              "landCoverClassCode": "240"
+            },
+            {
+              "landCoverCode": "253",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "286",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "251",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "283",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "271",
+              "landCoverClassCode": "270"
+            },
+            {
+              "landCoverCode": "621",
+              "landCoverClassCode": "620"
+            }
+          ]
+        }
+      }
+    },
+    "Cap the area of an existing agreement to the landcovers eligible for - existing agreement has CMOR1 for 12000sqm which is more than eligible(11430sqm), This is should be capped to 11430sqm.": {
+      "scenario": {
+        "applyingForAction": "UPL1",
+        "sheetId": "SD8447",
+        "parcelId": "1509",
+        "existingActions": [
+          {
+            "actionCode": "PRF1",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "PRF2",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "CSAM1",
+            "areaSqm": 100000
+          },
+          {
+            "actionCode": "CMOR1",
+            "areaSqm": 12000
+          }
+        ],
+        "expectedAvailableArea": "1.143"
+      },
+      "dataRequirements": {
+        "landCoverCodesForAppliedForAction": [
+          {
+            "landCoverCode": "131",
+            "landCoverClassCode": "130"
+          },
+          {
+            "landCoverCode": "241",
+            "landCoverClassCode": "240"
+          },
+          {
+            "landCoverCode": "243",
+            "landCoverClassCode": "240"
+          },
+          {
+            "landCoverCode": "251",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "252",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "253",
+            "landCoverClassCode": "250"
+          },
+          {
+            "landCoverCode": "271",
+            "landCoverClassCode": "270"
+          },
+          {
+            "landCoverCode": "281",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "282",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "283",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "285",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "286",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "287",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "288",
+            "landCoverClassCode": "280"
+          },
+          {
+            "landCoverCode": "300",
+            "landCoverClassCode": "300"
+          },
+          {
+            "landCoverCode": "347",
+            "landCoverClassCode": "330"
+          },
+          {
+            "landCoverCode": "582",
+            "landCoverClassCode": "580"
+          },
+          {
+            "landCoverCode": "583",
+            "landCoverClassCode": "580"
+          },
+          {
+            "landCoverCode": "591",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "592",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "593",
+            "landCoverClassCode": "590"
+          },
+          {
+            "landCoverCode": "621",
+            "landCoverClassCode": "620"
+          },
+          {
+            "landCoverCode": "641",
+            "landCoverClassCode": "640"
+          },
+          {
+            "landCoverCode": "643",
+            "landCoverClassCode": "640"
+          },
+          {
+            "landCoverCode": "651",
+            "landCoverClassCode": "650"
+          }
+        ],
+        "landCoversForParcel": [
+          {
+            "landCoverClassCode": "110",
+            "areaSqm": 79890
+          },
+          {
+            "landCoverClassCode": "130",
+            "areaSqm": 31540
+          },
+          {
+            "landCoverClassCode": "551",
+            "areaSqm": 76
+          }
+        ],
+        "landCoversForExistingActions": {
+          "PRF1": [
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            }
+          ],
+          "PRF2": [
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "143",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "142",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            }
+          ],
+          "CSAM1": [
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "142",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "143",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            }
+          ],
+          "CMOR1": [
+            {
+              "landCoverCode": "347",
+              "landCoverClassCode": "330"
+            },
+            {
+              "landCoverCode": "243",
+              "landCoverClassCode": "240"
+            },
+            {
+              "landCoverCode": "252",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "592",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "300",
+              "landCoverClassCode": "300"
+            },
+            {
+              "landCoverCode": "281",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "643",
+              "landCoverClassCode": "640"
+            },
+            {
+              "landCoverCode": "593",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "641",
+              "landCoverClassCode": "640"
+            },
+            {
+              "landCoverCode": "651",
+              "landCoverClassCode": "650"
+            },
+            {
+              "landCoverCode": "591",
+              "landCoverClassCode": "590"
+            },
+            {
+              "landCoverCode": "131",
+              "landCoverClassCode": "130"
+            },
+            {
+              "landCoverCode": "288",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "282",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "582",
+              "landCoverClassCode": "580"
+            },
+            {
+              "landCoverCode": "583",
+              "landCoverClassCode": "580"
+            },
+            {
+              "landCoverCode": "285",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "287",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "241",
+              "landCoverClassCode": "240"
+            },
+            {
+              "landCoverCode": "253",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "286",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "251",
+              "landCoverClassCode": "250"
+            },
+            {
+              "landCoverCode": "283",
+              "landCoverClassCode": "280"
+            },
+            {
+              "landCoverCode": "271",
+              "landCoverClassCode": "270"
+            },
+            {
+              "landCoverCode": "621",
+              "landCoverClassCode": "620"
             }
           ]
         }
