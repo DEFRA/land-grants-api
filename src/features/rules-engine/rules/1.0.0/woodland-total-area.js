@@ -1,5 +1,11 @@
 // Rule 2: total area not exceed land parcels
 
+import {
+  haToSqm,
+  sqmToHaRounded,
+  roundTo4DecimalPlaces
+} from '~/src/features/common/helpers/measurement.js'
+
 // The total area of woodland (young + old) must not exceed the total area of land parcels entered into the agreement.
 
 // Test Cases:
@@ -21,41 +27,35 @@
  */
 export const woodlandTotalArea = {
   execute: (application, rule) => {
-    const { oldWoodlandArea, newWoodlandArea, totalParcelArea } = application
+    const { oldWoodlandAreaHa, newWoodlandAreaHa, totalParcelAreaSqm } =
+      application
 
-    const totalWoodlandArea =
-      Number.parseFloat(oldWoodlandArea) +
-      Number.parseFloat(newWoodlandArea || 0)
-
-    const roundedTotalWoodlandArea = totalWoodlandArea.toFixed(4)
-    const roundedTotalParcelArea = Number.parseFloat(totalParcelArea).toFixed(4)
+    const totalWoodlandAreaHa =
+      Number.parseFloat(oldWoodlandAreaHa) +
+      Number.parseFloat(newWoodlandAreaHa || 0)
+    const totalWoodlandAreaSqm = haToSqm(totalWoodlandAreaHa)
+    const roundedTotalParcelAreaHa = sqmToHaRounded(
+      Number.parseFloat(totalParcelAreaSqm)
+    )
+    const roundedTotalWoodlandAreaHa =
+      roundTo4DecimalPlaces(totalWoodlandAreaHa)
 
     const name = rule.name
     const explanations = [
       {
         title: 'Woodland total area',
         lines: [
-          `The total land parcel area is (${roundedTotalParcelArea} ha), the total woodland area (young + old) is (${roundedTotalWoodlandArea} ha)`
+          `The total land parcel area is (${roundedTotalParcelAreaHa} ha), the total woodland area (young + old) is (${roundedTotalWoodlandAreaHa} ha)`
         ]
       }
     ]
 
-    if (!totalWoodlandArea) {
+    if (totalWoodlandAreaSqm > Number.parseFloat(totalParcelAreaSqm)) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: 'No total woodland area has been provided',
-        explanations
-      }
-    }
-
-    if (totalWoodlandArea > Number.parseFloat(totalParcelArea)) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: `The total woodland area (${roundedTotalWoodlandArea} ha) exceeds the total land parcel area (${roundedTotalParcelArea} ha)`,
+        reason: `The total woodland area (${roundedTotalWoodlandAreaHa} ha) exceeds the total land parcel area (${roundedTotalParcelAreaHa} ha)`,
         explanations
       }
     }
@@ -64,7 +64,7 @@ export const woodlandTotalArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The total woodland area (${roundedTotalWoodlandArea} ha) does not exceed the total land parcel area (${roundedTotalParcelArea} ha)`,
+      reason: `The total woodland area (${roundedTotalWoodlandAreaHa} ha) does not exceed the total land parcel area (${roundedTotalParcelAreaHa} ha)`,
       explanations
     }
   }
