@@ -50,16 +50,6 @@ export const woodlandTotalArea = {
       }
     ]
 
-    if (!totalWoodlandAreaSqm) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: 'No total woodland area has been provided',
-        explanations
-      }
-    }
-
     if (totalWoodlandAreaSqm > Number.parseFloat(totalParcelAreaSqm)) {
       return {
         name,
