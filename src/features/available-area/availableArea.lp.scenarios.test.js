@@ -3,7 +3,9 @@ import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/get
 import { landCoverToString } from './testLandCoverToString.js'
 import { formatExplanationSections } from './explanations.lp.js'
 
-describe('Available Area Calculation Service - Scenario Tests (Optimized)', () => {
+// These tests use scenarios from a fixture file (available-area-computed.json). This file is generated
+// from availableAreaCalculationScenarios.csv, along with additional data retrieved from the test DB
+describe('Available Area Calculation Service - Scenario Tests', () => {
   const fixtures = getAvailableAreaComputedFixtures()
 
   test.each(fixtures)(
@@ -48,4 +50,39 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
       }
     }
   )
+})
+
+describe('infeasible result context', () => {
+  it('returns full context when existing action area exceeds eligible land cover', () => {
+    const result = findMaximumAvailableArea(
+      'TARGET',
+      [{ actionCode: 'EXISTING', areaSqm: 15000 }],
+      () => false,
+      {
+        landCoverCodesForAppliedForAction: [
+          { landCoverCode: 'A', landCoverClassCode: 'A' }
+        ],
+        landCoversForParcel: [
+          { landCoverClassCode: 'A', areaSqm: 10000 },
+          { landCoverClassCode: 'B', areaSqm: 10000 }
+        ],
+        landCoversForExistingActions: {
+          EXISTING: [{ landCoverCode: 'B', landCoverClassCode: 'B' }]
+        },
+        landCoverToString
+      }
+    )
+
+    expect(result.feasible).toBe(false)
+    expect(result.context).not.toBeNull()
+    expect(result.context.existingActions).toEqual([
+      { actionCode: 'EXISTING', areaSqm: 15000 }
+    ])
+    expect(result.context.eligibility).toBeInstanceOf(Map)
+    expect(result.context.eligibility.has('EXISTING')).toBe(true)
+    expect(result.context.eligibility.has('TARGET__target')).toBe(true)
+    expect(result.context.cliques.length).toBeGreaterThan(0)
+    expect(result.context.landCoversForParcel).toHaveLength(2)
+    expect(result.totalValidLandCoverSqm).toBe(10000)
+  })
 })
