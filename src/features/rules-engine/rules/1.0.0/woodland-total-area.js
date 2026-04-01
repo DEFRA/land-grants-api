@@ -33,7 +33,7 @@ export const woodlandTotalArea = {
     const totalWoodlandAreaHa =
       Number.parseFloat(oldWoodlandAreaHa) +
       Number.parseFloat(newWoodlandAreaHa || 0)
-    const totalWoodlandAreaSqm = haToSqm(totalWoodlandAreaHa)
+    const totalWoodlandAreaSqm = Math.round(haToSqm(totalWoodlandAreaHa))
     const roundedTotalParcelAreaHa = sqmToHaRounded(
       Number.parseFloat(totalParcelAreaSqm)
     )
