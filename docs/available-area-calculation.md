@@ -83,9 +83,22 @@ If AA1 is assigned to Arable (1 ha), then to Woodland (1.5 ha) then there is 1 h
 
 This is a very complicated calculation that has a significant effect on people's lives. To build trust in the calculation and to help inform decisions around it, explanations should be returned along with the primary result. This should include all major steps taken in working out the answer and the ephemeral 'stacks' that inform it.
 
+### 7. Immutability of existing actions
+
+The AAC must not alter the existing actions in any way - no filtering, capping etc. It can only rearrange them conceptually to find the optimal configuration for the new action. The existing actions' areas and eligibility rules remain fixed throughout the calculation.
+
+This may lead to:
+
+### 8. Error Handling
+
+The AAC may encounter an impossible set of input parameters, in this case it should raise an error giving as much information as possible as to why the calculation failed. Failure scenarios:
+
+- The areas of the existing actions can not be arranged on the land covers in a valid way.
+
 ---
 
 ## Outputs
 
 1.  **Primary Output:** A single numerical value representing the **Maximum Available Area** (in hectares) for the Target Action.
 2.  **Secondary Output (Explanations):** A breakdown of the ephemeral **Stacks** derived during the calculation along with other steps taken to achieve the answer. This data is provided to help users or administrators understand the logic used to reach the primary numerical result.
+3.  **Error Handling:** If the calculation encounters an unsolvable scenario (e.g., no compatible arrangements possible), it should return a clear error message indicating that the Available Area is effectively zero due to incompatibility or ineligibility.

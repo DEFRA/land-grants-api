@@ -42,7 +42,10 @@ const ACTION_CODES = [
   'HEF8',
   'SP3',
   'WD2',
-  'WD10'
+  'WD10',
+  'OP1',
+  'OP2',
+  'OP3'
 ]
 
 /**

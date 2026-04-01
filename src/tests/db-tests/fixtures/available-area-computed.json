@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-03-31T14:39:49.881Z",
+    "generatedAt": "2026-04-01T09:50:32.949Z",
     "actionCodes": [
       "CMOR1",
       "UPL1",
@@ -32,7 +32,10 @@
       "HEF8",
       "SP3",
       "WD2",
-      "WD10"
+      "WD10",
+      "OP1",
+      "OP2",
+      "OP3"
     ],
     "scenarioCount": 23,
     "version": "1.0.0"
@@ -53,6 +56,9 @@
     ["CMOR1", "HEF8"],
     ["CMOR1", "SP3"],
     ["CMOR1", "WD2"],
+    ["CMOR1", "OP1"],
+    ["CMOR1", "OP2"],
+    ["CMOR1", "OP3"],
     ["UPL1", "CMOR1"],
     ["UPL1", "UPL4"],
     ["UPL1", "UPL5"],
@@ -120,6 +126,9 @@
     ["SAM1", "GRH7"],
     ["SAM1", "HEF5"],
     ["SAM1", "HEF6"],
+    ["SAM1", "OP1"],
+    ["SAM1", "OP2"],
+    ["SAM1", "OP3"],
     ["SPM4", "CMOR1"],
     ["SPM4", "UPL1"],
     ["SPM4", "UPL2"],
@@ -179,6 +188,8 @@
     ["PRF1", "OFM1"],
     ["PRF1", "PRF2"],
     ["PRF1", "CSAM1"],
+    ["PRF1", "OP1"],
+    ["PRF1", "OP2"],
     ["PRF2", "SAM1"],
     ["PRF2", "OFM1"],
     ["PRF2", "OFM2"],
@@ -189,6 +200,8 @@
     ["PRF2", "HEF5"],
     ["PRF2", "HEF6"],
     ["PRF2", "HEF8"],
+    ["PRF2", "OP1"],
+    ["PRF2", "OP2"],
     ["CSAM1", "SPM4"],
     ["CSAM1", "OFM1"],
     ["CSAM1", "OFM2"],
@@ -199,6 +212,8 @@
     ["CSAM1", "GRH7"],
     ["CSAM1", "HEF5"],
     ["CSAM1", "HEF6"],
+    ["CSAM1", "OP1"],
+    ["CSAM1", "OP2"],
     ["GRH6", "SAM1"],
     ["GRH6", "OFM2"],
     ["GRH6", "CSAM1"],
@@ -247,7 +262,19 @@
     ["WD10", "OFM1"],
     ["WD10", "OFM2"],
     ["WD10", "SP1"],
-    ["WD10", "SP3"]
+    ["WD10", "SP3"],
+    ["OP1", "CMOR1"],
+    ["OP1", "SAM1"],
+    ["OP1", "PRF1"],
+    ["OP1", "PRF2"],
+    ["OP1", "CSAM1"],
+    ["OP2", "CMOR1"],
+    ["OP2", "SAM1"],
+    ["OP2", "PRF1"],
+    ["OP2", "PRF2"],
+    ["OP2", "CSAM1"],
+    ["OP3", "CMOR1"],
+    ["OP3", "SAM1"]
   ],
   "scenarioData": {
     "CMOR1 - No existing actions": {
@@ -9309,7 +9336,7 @@
         }
       }
     },
-    "Cap the area of an existing agreement to the landcovers eligible for - existing agreement has CMOR1 for 12000sqm which is more than eligible(11430sqm), This is should be capped to 11430sqm.": {
+    "Infeasible due to CMOR1 exceeding valid covers - existing agreement has CMOR1 for 12000sqm which is more than eligible(11430sqm).": {
       "scenario": {
         "applyingForAction": "UPL1",
         "sheetId": "SD8447",
@@ -9332,7 +9359,7 @@
             "areaSqm": 12000
           }
         ],
-        "expectedAvailableArea": "1.143"
+        "expectedAvailableArea": "INFEASIBLE"
       },
       "dataRequirements": {
         "landCoverCodesForAppliedForAction": [
