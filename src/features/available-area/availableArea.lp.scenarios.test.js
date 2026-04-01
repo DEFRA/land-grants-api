@@ -39,9 +39,13 @@ describe('Available Area Calculation Service - Scenario Tests (Optimized)', () =
       })
 
       console.log('Explanation Sections:', JSON.stringify(sections, null, 2))
-      expect(result.availableAreaHectares).toEqual(
-        Number(expectedAvailableArea)
-      )
+      if (expectedAvailableArea === 'INFEASIBLE') {
+        expect(result.feasible).toBe(false)
+      } else {
+        expect(result.availableAreaHectares).toEqual(
+          Number(expectedAvailableArea)
+        )
+      }
     }
   )
 })

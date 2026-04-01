@@ -75,10 +75,7 @@
 /**
  * @typedef {object} AdjustedAction
  * @property {string} actionCode - The action code
- * @property {number} originalAreaSqm - Original area before adjustment
- * @property {number} adjustedAreaSqm - Area after capping/exclusion
- * @property {boolean} wasCapped - Whether demand was capped to available land cover
- * @property {boolean} wasExcluded - Whether action was excluded (no eligible land covers)
+ * @property {number} areaSqm - Area of the action in square meters
  */
 
 /**
@@ -110,8 +107,7 @@
  * @typedef {object} AacContext
  * @property {object|null} solution - Raw LP solver result (null if no LP was run)
  * @property {string} targetLabel - The internal label used for the target action (with __target suffix)
- * @property {ActionWithArea[]} existingActions - Original existing actions (before filtering/capping)
- * @property {ActionWithArea[]} lpActions - Filtered/capped actions used in the LP
+ * @property {ActionWithArea[]} existingActions - Existing actions on the parcel with their areas
  * @property {LandCover[]} landCoversForParcel - The parcel's land covers
  * @property {Map<string, number[]>} eligibility - Action -> eligible land cover indices
  * @property {string[][]} cliques - Maximal incompatibility cliques
@@ -120,6 +116,7 @@
 
 /**
  * @typedef {object} AvailableAreaForActionLp
+ * @property {boolean} feasible - Whether the LP was feasible (false means existing actions cannot be arranged on the parcel)
  * @property {AacContext|null} context - Context data for generating explanations
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area

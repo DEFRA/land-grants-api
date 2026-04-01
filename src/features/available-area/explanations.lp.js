@@ -87,7 +87,6 @@ function deriveExplanations(aacContext) {
     solution,
     targetLabel,
     existingActions,
-    lpActions,
     landCoversForParcel,
     eligibility,
     cliques,
@@ -126,18 +125,11 @@ function deriveExplanations(aacContext) {
     }
   }
 
-  // Adjusted actions: compare original vs LP-filtered/capped
-  const lpActionMap = new Map(lpActions.map((a) => [a.actionCode, a]))
-  const adjustedActions = existingActions.map((a) => {
-    const lpAction = lpActionMap.get(a.actionCode)
-    return {
-      actionCode: a.actionCode,
-      originalAreaSqm: a.areaSqm,
-      adjustedAreaSqm: lpAction?.areaSqm ?? 0,
-      wasCapped: lpAction ? lpAction.areaSqm < a.areaSqm : false,
-      wasExcluded: !lpAction
-    }
-  })
+  // Existing actions
+  const adjustedActions = existingActions.map((a) => ({
+    actionCode: a.actionCode,
+    areaSqm: a.areaSqm
+  }))
 
   // Incompatibility cliques (only those with 2+ members)
   const incompatibilityCliques = cliques
@@ -152,7 +144,7 @@ function deriveExplanations(aacContext) {
 
   // Allocations: how the LP placed each existing action across land covers
   const allocations = []
-  for (const action of lpActions) {
+  for (const action of existingActions) {
     const eligibleIndices = eligibility.get(action.actionCode) ?? []
     for (const lcIdx of eligibleIndices) {
       const varName = `x_${action.actionCode}_${lcIdx}`
@@ -189,7 +181,7 @@ function deriveExplanations(aacContext) {
     targetAvailability,
     stacks: buildStacksFromSolution(
       solution,
-      lpActions,
+      existingActions,
       landCoversForParcel,
       eligibility,
       compatibilityCheckFn
@@ -313,23 +305,9 @@ function buildEligibilitySection(explanations, landCoverToString) {
  * @returns {ExplanationSection}
  */
 function buildAdjustedActionsSection(explanations) {
-  const content = []
-
-  for (const adj of explanations.adjustedActions) {
-    if (adj.wasExcluded) {
-      content.push(
-        `${adj.actionCode}: excluded (no eligible land covers on parcel)`
-      )
-    } else if (adj.wasCapped) {
-      content.push(
-        `${adj.actionCode}: area capped from ${sqmToHaRounded(adj.originalAreaSqm)} ha to ${sqmToHaRounded(adj.adjustedAreaSqm)} ha (limited by available land cover)`
-      )
-    } else {
-      content.push(
-        `${adj.actionCode}: ${sqmToHaRounded(adj.originalAreaSqm)} ha`
-      )
-    }
-  }
+  const content = explanations.adjustedActions.map(
+    (adj) => `${adj.actionCode}: ${sqmToHaRounded(adj.areaSqm)} ha`
+  )
 
   return {
     title: 'Existing actions',

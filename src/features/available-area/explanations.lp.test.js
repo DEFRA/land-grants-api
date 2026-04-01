@@ -217,37 +217,6 @@ describe('formatExplanationSections', () => {
     })
   })
 
-  describe('capped and excluded actions', () => {
-    it('shows capped and excluded actions with appropriate messages', () => {
-      const { sections } = runAndFormat({
-        applyingForAction: 'TARGET',
-        existingActions: [
-          { actionCode: 'BIG', areaSqm: 100000 },
-          { actionCode: 'NONE', areaSqm: 10000 }
-        ],
-        compatibilityMap: {},
-        targetCodes: ['130'],
-        parcelLandCovers: [
-          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 },
-          { landCoverClassCode: '110', landCoverCode: '110', areaSqm: 20000 }
-        ],
-        existingActionCodes: {
-          BIG: ['110'],
-          NONE: ['999']
-        }
-      })
-
-      const section = sections.find((s) => s.title === 'Existing actions')
-      expect(section).toBeDefined()
-      expect(section.content[0]).toBe(
-        'BIG: area capped from 10 ha to 2 ha (limited by available land cover)'
-      )
-      expect(section.content[1]).toBe(
-        'NONE: excluded (no eligible land covers on parcel)'
-      )
-    })
-  })
-
   describe('multiple target land covers', () => {
     it('shows per-land-cover breakdown in target availability', () => {
       const { sections } = runAndFormat({

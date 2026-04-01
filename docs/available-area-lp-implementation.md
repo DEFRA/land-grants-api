@@ -44,14 +44,7 @@ Each action has a list of `{landCoverCode, landCoverClassCode}` pairs defining w
 
 This step also handles the unreliable land cover data issue: because the parcel's `landCoverClassCode` field sometimes contains a specific land cover code rather than a class code, the merged set includes both levels so either will match.
 
-### Step 3: Filter and cap existing actions
-
-Before building the LP, two practical adjustments are made to existing actions:
-
-- **Exclude actions with no eligible land covers on the parcel.** If an existing action cannot be placed on any parcel land cover (e.g. its land cover data is empty or none of its eligible codes match the parcel), it cannot affect the available area and is removed from the problem.
-- **Cap demand at total eligible area.** Occasionally an existing action's recorded area slightly exceeds the total area of its eligible land covers on the parcel (a data quality issue). The demand is capped to prevent the LP from becoming infeasible.
-
-### Step 4: Build the incompatibility graph and find maximal cliques
+### Step 3: Build the incompatibility graph and find maximal cliques
 
 An **incompatibility graph** is constructed where each node is an action (existing + target) and an edge connects any two actions that are **not** compatible.
 
@@ -69,7 +62,7 @@ These constraints allow A = B = C = 5, giving a total of 15 sqm on 10 sqm of lan
 
 Singleton cliques (each action alone) are also added. These enforce that no single action's allocation to a land cover exceeds that land cover's area.
 
-### Step 5: Build the LP model
+### Step 4: Build the LP model
 
 The LP model is constructed in the format required by `javascript-lp-solver`:
 
@@ -85,11 +78,11 @@ The LP model is constructed in the format required by `javascript-lp-solver`:
 
 **Objective:** Maximise `availableArea`, which is the sum of all `t` variables.
 
-### Step 6: Solve and extract result
+### Step 5: Solve and extract result
 
 The model is passed to `solver.Solve()`. If the solution is feasible, the objective value is the maximum available area in square metres. This is converted to hectares (rounded to 4 decimal places) using `sqmToHaRounded`.
 
-If infeasible (existing actions cannot fit on the parcel -- should not happen after the cap in step 3), the result is 0.
+If infeasible (e.g. an existing action's area exceeds the total area of its eligible land covers, or an existing action has no eligible land covers), the result carries `feasible: false` with full context so that explanations can report why the calculation failed.
 
 ---
 
@@ -138,25 +131,20 @@ CMOR1 is eligible for Grassland only. Total valid = **3.1 ha**.
 | AA1    | [Woodland, Arable]    |
 | AA2    | [Woodland, Grassland] |
 
-### Step 3: Filter and cap
-
-Both AA1 and AA2 have eligible land covers. AA1 needs 2.5 ha, eligible total = 2.5 + 1.0 = 3.5 ha (OK). AA2 needs 3.0 ha, eligible total = 2.5 + 3.1 = 5.6 ha (OK). No capping needed.
-
-### Step 4: Incompatibility graph and cliques
+### Step 3: Incompatibility graph and cliques
 
 Since no actions are compatible, the incompatibility graph is fully connected:
 
-```
-CMOR1 --- AA1
-  |    \    |
-  |     \   |
-  |      \  |
- AA2 --- AA1
+```mermaid
+graph LR
+    CMOR1  --- AA1
+    CMOR1 --- AA2
+    AA1 --- AA2
 ```
 
 Every pair is incompatible, so the single maximal clique is `{CMOR1, AA1, AA2}`. Plus three singleton cliques: `{CMOR1}`, `{AA1}`, `{AA2}`.
 
-### Step 5: Build LP model
+### Step 4: Build LP model
 
 **Variables** (only for eligible action/land-cover pairs):
 
@@ -189,7 +177,7 @@ Singleton capacity:
 
 **Objective:** Maximise `t_Grass`
 
-### Step 6: Solve
+### Step 5: Solve
 
 The solver finds the optimal assignment:
 
@@ -221,10 +209,6 @@ This is a pure-JavaScript LP solver already included in the project's dependenci
 
 The Bron-Kerbosch algorithm with pivoting is used to find all maximal cliques. With the small number of actions in typical scenarios (1-5 existing actions + 1 target), this runs in microseconds. For the theoretical worst case, the number of maximal cliques is bounded by 3^(n/3), which for n = 10 is approximately 59.
 
-### Demand capping
+### Immutability of existing actions
 
-Real-world data occasionally has an existing action whose recorded area exceeds the total area of its eligible land covers on the parcel. Rather than returning 0 (infeasible), the demand is capped. This is a pragmatic choice: the calculation's purpose is to find maximum available area, not to validate existing allocations.
-
-### Excluding ineligible actions
-
-Actions with no eligible land covers on the parcel cannot be placed anywhere, so they have no effect on the available area. Including them would make the LP infeasible (their demand constraint could never be satisfied).
+Existing actions are passed to the LP unchanged. The AAC must not alter them (no capping, no filtering). If an existing action's area exceeds the total area of its eligible land covers, or if it has no eligible land covers at all, the LP will be infeasible. This is the correct outcome: it signals that the recorded data cannot be arranged on the parcel, and the result is returned with `feasible: false` along with full context for explanations.

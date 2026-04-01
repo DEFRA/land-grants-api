@@ -49,6 +49,7 @@ export function findMaximumAvailableArea(
   // If no eligible land covers for the target, available area is 0
   if (totalValidLandCoverSqm === 0) {
     return {
+      feasible: true,
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm: 0,
@@ -67,6 +68,7 @@ export function findMaximumAvailableArea(
       landCoversForParcel
     )
     return {
+      feasible: true,
       availableAreaHectares: sqmToHaRounded(totalValidLandCoverSqm),
       availableAreaSqm: totalValidLandCoverSqm,
       totalValidLandCoverSqm,
@@ -74,7 +76,6 @@ export function findMaximumAvailableArea(
         solution: null,
         targetLabel,
         existingActions: [],
-        lpActions: [],
         landCoversForParcel,
         eligibility,
         cliques: [],
@@ -96,24 +97,11 @@ export function findMaximumAvailableArea(
     landCoversForParcel
   )
 
-  // Filter existing actions: exclude those with no eligible land covers on the parcel
-  // and cap demand at total eligible area (handles data inconsistencies)
-  const lpActions = existingActions
-    .filter((a) => (eligibility.get(a.actionCode) ?? []).length > 0)
-    .map((a) => {
-      const eligibleIndices = eligibility.get(a.actionCode) ?? []
-      const totalEligibleArea = eligibleIndices.reduce(
-        (sum, idx) => sum + landCoversForParcel[idx].areaSqm,
-        0
-      )
-      return {
-        actionCode: a.actionCode,
-        areaSqm: Math.min(a.areaSqm, totalEligibleArea)
-      }
-    })
-
-  // All action codes involved (eligible existing + target)
-  const allActionCodes = [targetLabel, ...lpActions.map((a) => a.actionCode)]
+  // All action codes involved (existing + target)
+  const allActionCodes = [
+    targetLabel,
+    ...existingActions.map((a) => a.actionCode)
+  ]
 
   // Find all maximal cliques in the incompatibility graph
   // Wrap the compatibility check to map the target label back to the real code
@@ -131,7 +119,7 @@ export function findMaximumAvailableArea(
   // Build and solve the LP model
   const model = buildLpModel(
     targetLabel,
-    lpActions,
+    existingActions,
     landCoversForParcel,
     eligibility,
     cliques
@@ -145,7 +133,6 @@ export function findMaximumAvailableArea(
     solution: result.feasible ? result : null,
     targetLabel,
     existingActions,
-    lpActions,
     landCoversForParcel,
     eligibility,
     cliques,
@@ -154,6 +141,7 @@ export function findMaximumAvailableArea(
 
   if (!result.feasible) {
     return {
+      feasible: false,
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       totalValidLandCoverSqm,
@@ -164,6 +152,7 @@ export function findMaximumAvailableArea(
   const availableAreaSqm = Math.max(0, result.result ?? 0)
 
   return {
+    feasible: true,
     availableAreaHectares: sqmToHaRounded(availableAreaSqm),
     availableAreaSqm,
     totalValidLandCoverSqm,
