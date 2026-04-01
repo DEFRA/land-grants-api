@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-04-01T09:50:32.949Z",
+    "generatedAt": "2026-04-01T10:37:47.745Z",
     "actionCodes": [
       "CMOR1",
       "UPL1",
@@ -2269,7 +2269,7 @@
         "existingActions": [
           {
             "actionCode": "WBD1",
-            "areaSqm": 175.07
+            "areaSqm": 175
           }
         ],
         "expectedAvailableArea": "2.4133"
@@ -2556,7 +2556,7 @@
             "areaSqm": 2000
           },
           {
-            "actionCode": "OP3",
+            "actionCode": "CNUM3",
             "areaSqm": 2000
           }
         ],
@@ -2752,7 +2752,32 @@
               "landCoverClassCode": "580"
             }
           ],
-          "OP3": []
+          "CNUM3": [
+            {
+              "landCoverCode": "111",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "117",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "141",
+              "landCoverClassCode": "140"
+            },
+            {
+              "landCoverCode": "118",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "112",
+              "landCoverClassCode": "110"
+            },
+            {
+              "landCoverCode": "121",
+              "landCoverClassCode": "110"
+            }
+          ]
         }
       }
     },
