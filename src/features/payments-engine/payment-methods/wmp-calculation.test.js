@@ -47,11 +47,11 @@ describe('calculatePayment', () => {
     { area: 0.2, expected: 0 },
     { area: 0.4999, expected: 0 },
     { area: 0.5, expected: 1500 },
-    { area: 50.9999, expected: 1500 },
+    { area: 50.9999, expected: 1530 },
     { area: 51, expected: 1530 },
     { area: 51.5, expected: 1545 },
     { area: 100, expected: 3000 },
-    { area: 100.0001, expected: 3000.0015 },
+    { area: 100.0001, expected: 3000 },
     { area: 100.1, expected: 3001.5 },
     { area: 150, expected: 3750 }
   ])(

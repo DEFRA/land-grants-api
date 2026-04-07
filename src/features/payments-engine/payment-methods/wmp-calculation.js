@@ -1,3 +1,5 @@
+import { roundTo2DecimalPlaces, roundTo4DecimalPlaces } from '../../common/helpers/measurement.js'
+
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
  * Young woodland (new woodland) can contribute at most `newWoodlandMaxPercent`% of
@@ -28,12 +30,13 @@ export const calculateEligibleArea = (
  * @returns {{ payment: number, tierIndex: number }} The payment in GBP and the 0-based index of the selected tier (-1 if none)
  */
 export const calculatePayment = (eligibleArea, tiers) => {
+  const roundedEligibleArea = roundTo2DecimalPlaces(eligibleArea)
   if (eligibleArea < tiers[0].lowerLimitHa) {
     return { payment: 0, tierIndex: -1 }
   }
 
   const tierIndex = tiers.findIndex(
-    (t) => t.upperLimitHa === null || eligibleArea < t.upperLimitHa
+    (t) => t.upperLimitHa === null || roundedEligibleArea < t.upperLimitHa
   )
 
   if (tierIndex === -1) {
@@ -42,7 +45,7 @@ export const calculatePayment = (eligibleArea, tiers) => {
 
   const tier = tiers[tierIndex]
   const payment =
-    tier.flatRateGbp + tier.ratePerUnitGbp * (eligibleArea - tier.lowerLimitHa)
+    tier.flatRateGbp + tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
 
   return { payment, tierIndex }
 }
