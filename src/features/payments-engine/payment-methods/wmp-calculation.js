@@ -1,6 +1,4 @@
-import {
-  roundTo2DecimalPlaces,
-} from '../../common/helpers/measurement.js'
+import { roundTo2DecimalPlaces } from '../../common/helpers/measurement.js'
 
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
