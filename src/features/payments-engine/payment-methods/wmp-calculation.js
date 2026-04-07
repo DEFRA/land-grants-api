@@ -1,4 +1,6 @@
-import { roundTo2DecimalPlaces, roundTo4DecimalPlaces } from '../../common/helpers/measurement.js'
+import {
+  roundTo2DecimalPlaces,
+} from '../../common/helpers/measurement.js'
 
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
@@ -45,7 +47,8 @@ export const calculatePayment = (eligibleArea, tiers) => {
 
   const tier = tiers[tierIndex]
   const payment =
-    tier.flatRateGbp + tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+    tier.flatRateGbp +
+    tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
 
   return { payment, tierIndex }
 }
