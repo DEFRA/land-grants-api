@@ -217,21 +217,12 @@ describe('paymentCalculateWMPSchemaV2', () => {
     expect(result.error.message).toContain('"newWoodlandAreaHa" is required')
   })
 
-  it('should reject a non-positive oldWoodlandAreaHa', () => {
-    const invalid = { ...createValidPayload(), oldWoodlandAreaHa: 0 }
-    const result = paymentCalculateWMPSchemaV2.validate(invalid)
-    expect(result.error).toBeDefined()
-    expect(result.error.message).toContain(
-      '"oldWoodlandAreaHa" must be a positive number'
-    )
-  })
-
   it('should reject a non-positive newWoodlandAreaHa', () => {
     const invalid = { ...createValidPayload(), newWoodlandAreaHa: -5 }
     const result = paymentCalculateWMPSchemaV2.validate(invalid)
     expect(result.error).toBeDefined()
-    expect(result.error.message).toContain(
-      '"newWoodlandAreaHa" must be a positive number'
+    expect(result.error.details[0].message).toContain(
+      '"newWoodlandAreaHa" must be greater than or equal to 0'
     )
   })
 
