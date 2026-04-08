@@ -39,7 +39,8 @@ export const paymentCalculateWMPResponseSchema = Joi.object({
       agreementLevelItemSchema
     ),
     payments: Joi.array().items(paymentSchema).required()
-  }).required()
+  }),
+  result: Joi.object()
 })
 
 export const paymentCalculateWMPSchemaV2 = Joi.object({

@@ -210,7 +210,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
   })
 
   describe('eligibility rule failures', () => {
-    test('should return a Boom 400 when old woodland area is below the 0.5ha minimum', async () => {
+    test('should return a Boom 200 when old woodland area is below the 0.5ha minimum', async () => {
       const { h } = createResponseCapture()
 
       const result = await PaymentsCalculateWMPControllerV2.handler(
@@ -227,12 +227,11 @@ describe('Payment Calculate WMP Controller (DB)', () => {
         h
       )
 
-      expect(result.isBoom).toBe(true)
-      expect(result.output.statusCode).toBe(400)
-      expect(result.message).toBe('Eligibility rules failed')
+      expect(result.statusCode).toBe(200)
+      expect(result.data.message).toBe('failure')
     })
 
-    test('should return a Boom 400 when total woodland area exceeds total parcel area', async () => {
+    test('should return a 200 when total woodland area exceeds total parcel area', async () => {
       // parcel area = 50000sqm (5ha), total woodland = 10ha → exceeds parcel
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
@@ -255,9 +254,8 @@ describe('Payment Calculate WMP Controller (DB)', () => {
         h
       )
 
-      expect(result.isBoom).toBe(true)
-      expect(result.output.statusCode).toBe(400)
-      expect(result.message).toBe('Eligibility rules failed')
+      expect(result.statusCode).toBe(200)
+      expect(result.data.message).toBe('failure')
     })
   })
 

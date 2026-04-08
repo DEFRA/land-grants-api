@@ -58,12 +58,11 @@ describe('paymentCalculateWMPResponseSchema', () => {
     expect(result.error.message).toContain('"message" is required')
   })
 
-  it('should reject a missing payment object', () => {
+  it('should return a result if rules validation fails', () => {
     const invalid = { ...createValidResponse() }
     delete invalid.payment
     const result = paymentCalculateWMPResponseSchema.validate(invalid)
-    expect(result.error).toBeDefined()
-    expect(result.error.message).toContain('"payment" is required')
+    expect(result.error).toBeUndefined()
   })
 
   it('should reject a missing payment.agreementStartDate', () => {
