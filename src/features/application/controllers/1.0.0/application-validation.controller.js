@@ -13,7 +13,7 @@ import {
   errorMessagesTransformer,
   applicationDataTransformer
 } from '../../transformers/application.transformer.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 import {
   logBusinessError,

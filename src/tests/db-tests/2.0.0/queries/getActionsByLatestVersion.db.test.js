@@ -51,6 +51,14 @@ describe('Get Actions By Latest Version Query', () => {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272
       },
+      paymentMethod: {
+        name: 'default-calculation',
+        version: '1.0.0',
+        config: {
+          ratePerUnitGbp: 10.6,
+          ratePerAgreementPerYearGbp: 272
+        }
+      },
       landCoverClassCodes: [
         '130',
         '240',

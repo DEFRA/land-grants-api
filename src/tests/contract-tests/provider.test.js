@@ -16,7 +16,7 @@ import {
 } from '~/src/features/available-area/availableArea.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getActions.query.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
@@ -26,7 +26,7 @@ import { applicationValidationRunToCaseManagement } from '~/src/features/case-ma
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
-vi.mock('~/src/features/actions/queries/getActions.query.js')
+vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 )
@@ -69,8 +69,7 @@ const mockAvailableAreaResult = {
   availableAreaHectares: 0.03
 }
 
-// eslint-disable-next-line
-const mockGetApplicationValidationRunResult = async (logger, db, id) => {
+const mockGetApplicationValidationRunResult = (logger, db, id) => {
   if (id === 999) {
     return null
   }

@@ -22,7 +22,7 @@ async function getLandData(sheetId, parcelId, db, logger) {
 
     return result.rows.map((row) => ({
       ...row,
-      area: roundSqm(row.area)
+      area: roundSqm(row.area_sqm)
     }))
   } catch (error) {
     logDatabaseError(logger, {

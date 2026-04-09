@@ -29,12 +29,16 @@
 
 /**
  * @typedef {object} RuleEngineApplication
- * @property {number} areaAppliedFor
- * @property {string} actionCodeAppliedFor
- * @property {LandParcel} landParcel
- * @property {string} [sheetId]
  * @property {string} [parcelId]
+ * @property {string} [sheetId]
  * @property {string} [actionCode]
+ * @property {number|string} [oldWoodlandAreaHa]
+ * @property {number|string|null} [newWoodlandAreaHa]
+ * @property {number|string} [totalParcelAreaSqm]
+ * @property {number} [totalAvailableArea]
+ * @property {number|string} [areaAppliedFor]
+ * @property {string} [actionCodeAppliedFor]
+ * @property {LandParcel} [landParcel]
  */
 
 /**
