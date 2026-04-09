@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="update-payment-method-config" author="system">
+        <sql>
+        UPDATE actions_config
+        SET config = jsonb_set(
+            config,
+            '{payment_method,config}',
+            '{
+                "newWoodlandMaxPercent": 20,
+                "tiers": [
+                    {
+                        "lowerLimitHa": 0.5,
+                        "upperLimitHa": 51,
+                        "flatRateGbp": 1500,
+                        "ratePerUnitGbp": 0
+                    },
+                    {
+                        "lowerLimitHa": 50,
+                        "upperLimitHa": 100,
+                        "flatRateGbp": 1500,
+                        "ratePerUnitGbp": 30
+                    },
+                    {
+                        "lowerLimitHa": 100,
+                        "upperLimitHa": null,
+                        "flatRateGbp": 3000,
+                        "ratePerUnitGbp": 15
+                    }
+                ]
+            }'::jsonb
+        )
+        WHERE code = 'PA3'
+            AND is_active = TRUE;
+        </sql>
+    </changeSet>
+
+    <changeSet id="add-version-to-all-payment_method-config-in-action-config" author="system">
+        <sql>
+        UPDATE actions_config
+        SET config = jsonb_set(
+            config,
+            '{payment_method,version}',
+            '"1.0.0"'
+        )
+        WHERE is_active = TRUE
+        AND config -> 'payment_method' IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

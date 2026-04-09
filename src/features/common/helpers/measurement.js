@@ -48,3 +48,20 @@ export const roundTo4DecimalPlaces = (number) => {
     Math.pow(10, decimalPlaces)
   )
 }
+
+export const roundTo2DecimalPlaces = (number) => {
+  const decimalPlaces = 2
+
+  if (typeof number === 'string') {
+    number = Number(number)
+  }
+
+  if (typeof number !== 'number' || Number.isNaN(number)) {
+    return 0
+  }
+
+  return (
+    Math.round(number * Math.pow(10, decimalPlaces)) /
+    Math.pow(10, decimalPlaces)
+  )
+}
