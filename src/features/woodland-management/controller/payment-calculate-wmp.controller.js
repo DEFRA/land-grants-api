@@ -5,11 +5,18 @@ import {
 } from '~/src/features/common/schema/index.js'
 import {
   paymentCalculateWMPSchemaV2,
-  paymentCalculateWMPResponseSchemaV2
+  paymentCalculateWMPResponseSchema
 } from '../schema/payment-calculate-wmp.schema.js'
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import {
+  logInfo,
+  logValidationWarn
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
+import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
+import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { sumTotalLandAreaSqm } from '../service/wmp-payment-calculate.service.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -17,14 +24,11 @@ export const PaymentsCalculateWMPControllerV2 = {
     description: 'Calculate WMP payment',
     notes: 'Calculates payment amounts for WMP',
     validate: {
-      payload: paymentCalculateWMPSchemaV2,
-      failAction: () => {
-        throw Boom.badRequest('Invalid request payload input')
-      }
+      payload: paymentCalculateWMPSchemaV2
     },
     response: {
       status: {
-        200: paymentCalculateWMPResponseSchemaV2,
+        200: paymentCalculateWMPResponseSchema,
         404: errorResponseSchema,
         500: internalServerErrorResponseSchema
       }
@@ -33,55 +37,81 @@ export const PaymentsCalculateWMPControllerV2 = {
 
   /**
    * Handler function for payment calculation
-   * @param {import('@hapi/hapi').Request} request - Hapi request object
-   * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
+   * @param {Request} request - Hapi request object
+   * @param {ResponseToolkit} h - Hapi response toolkit
+   * @returns {Promise<ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
-  handler: async (request) => {
+  handler: async (request, h) => {
     // @ts-expect-error - postgresDb
     const postgresDb = request.server.postgresDb
 
     /** @type {paymentCalculateWMPSchemaV2} */
     // @ts-expect-error - payload
-    const { parcelIds } = request.payload
-    const parcels = parcelIds.map((parcelId) =>
-      splitParcelId(parcelId, request.logger)
-    )
-
-    // get all parcels passed in
-    const area = []
-    for (const parcel of parcels) {
-      const result = await getLandData(
-        parcel.sheetId,
-        parcel.parcelId,
-        postgresDb,
-        request.logger
-      )
-
-      if (!result) {
-        continue
-      }
-
-      const [landParcel] = result
-
-      /** @type {LandParcelDb} */
-      area.push(landParcel.area)
-    }
-
-    // sum those areas
-    const totalArea = area.reduce((acc, parcel) => acc + parcel, 0)
+    const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
+      request.payload
 
     logInfo(request.logger, {
-      category: 'payment',
-      message: 'Payment calculation',
+      category: 'wmp',
+      message: 'Payment Calculate WMP',
       context: {
-        totalArea
+        parcelIds,
+        oldWoodlandAreaHa,
+        newWoodlandAreaHa,
+        startDate
       }
     })
 
-    throw Boom.badRequest('Not implemented')
+    const validationResponse = await validatePaymentCalculationRequest(
+      parcelIds,
+      request
+    )
+
+    if (validationResponse.errors && validationResponse.errors.length > 0) {
+      logValidationWarn(request.logger, {
+        operation: 'Payment Calculate WMP validation',
+        errors: validationResponse.errors,
+        context: {
+          parcelIds: parcelIds.join(',')
+        }
+      })
+      return Boom.badRequest(validationResponse.errors.join(', '))
+    }
+
+    const actions = await getActionsByLatestVersion(request.logger, postgresDb)
+    const action = actions.find((a) => a.code === 'PA3')
+
+    if (!action) {
+      return Boom.badRequest('Action not found')
+    }
+
+    const totalParcelAreaSqm = sumTotalLandAreaSqm(validationResponse.parcels)
+
+    const paymentResult = executePaymentMethod(
+      { ...action?.paymentMethod },
+      {
+        data: {
+          totalParcelArea: totalParcelAreaSqm,
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa,
+          startDate
+        }
+      }
+    )
+
+    return h
+      .response({
+        message: 'success',
+        payment: wmpPaymentCalculateTransformer(
+          parcelIds,
+          paymentResult,
+          action,
+          startDate
+        )
+      })
+      .code(statusCodes.ok)
   }
 }
 
 /**
- * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
+ * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'
  */

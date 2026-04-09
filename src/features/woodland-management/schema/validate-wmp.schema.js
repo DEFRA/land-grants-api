@@ -1,8 +1,15 @@
 import Joi from 'joi'
 
+export const ruleResultsSchema = Joi.object({
+  hasPassed: Joi.boolean().required(),
+  code: Joi.string().required(),
+  actionConfigVersion: Joi.string().required(),
+  rules: Joi.array().items(Joi.object()).required()
+})
+
 export const validateWMPResponseSchemaV2 = Joi.object({
   message: Joi.string().required(),
-  result: Joi.object()
+  result: ruleResultsSchema
 })
 
 export const validateWMPSchemaV2 = Joi.object({

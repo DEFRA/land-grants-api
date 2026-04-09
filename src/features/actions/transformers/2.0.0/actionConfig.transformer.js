@@ -20,6 +20,7 @@ export function actionConfigTransformer(action) {
     group_id,
     group_name,
     display_order,
+    payment_method,
     ...actionObj
   } = action
   return {
@@ -36,6 +37,7 @@ export function actionConfigTransformer(action) {
     semanticVersion: semantic_version,
     groupId: group_id,
     groupName: group_name,
-    displayOrder: display_order
+    displayOrder: display_order,
+    paymentMethod: payment_method
   }
 }
