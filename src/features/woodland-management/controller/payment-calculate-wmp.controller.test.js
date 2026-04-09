@@ -161,7 +161,7 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('successful calculation', () => {
-    test.only('should return 200 with payment response when all inputs are valid', async () => {
+    test('should return 200 with payment response when all inputs are valid', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
