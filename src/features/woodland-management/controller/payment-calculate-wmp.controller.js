@@ -17,7 +17,6 @@ import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
 import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
-import { wmpResultTransformer } from '../service/wmp.transformer.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -94,12 +93,7 @@ export const PaymentsCalculateWMPControllerV2 = {
       )
 
     if (!ruleResult.passed) {
-      return h
-        .response({
-          message: 'failure',
-          result: wmpResultTransformer(action, ruleResult)
-        })
-        .code(statusCodes.ok)
+      return Boom.badRequest('Eligibility rules failed')
     }
 
     const paymentResult = executePaymentMethod(

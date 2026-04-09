@@ -202,7 +202,7 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('validation errors', () => {
-    test('should return 200 when eligibility rules fail with results', async () => {
+    test('should return 400 when eligibility rules fail', async () => {
       mockExecuteRulesForPaymentCalculationWMP.mockReturnValue({
         ruleResult: {
           passed: false,
@@ -221,8 +221,8 @@ describe('Payment calculate WMP controller', () => {
         payload: validPayload
       })
 
-      expect(statusCode).toBe(200)
-      expect(message).toBe('failure')
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Eligibility rules failed')
     })
 
     test('should return 400 when land parcels are not found', async () => {
