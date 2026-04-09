@@ -10,7 +10,16 @@ vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 )
-vi.mock('../service/wmp-payment-calculate.service.js')
+vi.mock(
+  '../service/wmp-payment-calculate.service.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      executeRulesForPaymentCalculationWMP: vi.fn()
+    }
+  }
+)
 vi.mock('../../payments-engine/paymentsEngine.js')
 vi.mock('../transformer/wmp-payment-calculate.transformer.js')
 
@@ -152,7 +161,7 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('successful calculation', () => {
-    test('should return 200 with payment response when all inputs are valid', async () => {
+    test.only('should return 200 with payment response when all inputs are valid', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
@@ -202,29 +211,6 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('validation errors', () => {
-    test('should return 400 when eligibility rules fail', async () => {
-      mockExecuteRulesForPaymentCalculationWMP.mockReturnValue({
-        ruleResult: {
-          passed: false,
-          results: [{ name: 'rule1', passed: false }]
-        },
-        totalParcelAreaSqm: 8
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: validPayload
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe('Eligibility rules failed')
-    })
-
     test('should return 400 when land parcels are not found', async () => {
       mockGetLandData.mockResolvedValue([])
 

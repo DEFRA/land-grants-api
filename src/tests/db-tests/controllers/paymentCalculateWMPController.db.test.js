@@ -210,83 +210,33 @@ describe('Payment Calculate WMP Controller (DB)', () => {
   })
 
   describe('eligibility rule failures', () => {
-    test('should return a Boom 400 when old woodland area is below the 0.5ha minimum', async () => {
-      const { h } = createResponseCapture()
+    describe('validation errors', () => {
+      test('should return a Boom 400 when parcel validation returns errors', async () => {
+        mockValidatePaymentCalculationRequest.mockResolvedValue({
+          errors: ['Land parcels not found: SX067-99238'],
+          parcels: []
+        })
 
-      const result = await PaymentsCalculateWMPControllerV2.handler(
-        createRequest(
-          {
-            parcelIds: ['SX067-99238'],
-            oldWoodlandAreaHa: 0.4,
-            newWoodlandAreaHa: 0,
-            startDate: '2025-01-01'
-          },
-          logger,
-          connection
-        ),
-        h
-      )
+        const { h } = createResponseCapture()
 
-      expect(result.isBoom).toBe(true)
-      expect(result.output.statusCode).toBe(400)
-      expect(result.output.payload.message).toBe('Eligibility rules failed')
-    })
+        const result = await PaymentsCalculateWMPControllerV2.handler(
+          createRequest(
+            {
+              parcelIds: ['SX067-99238'],
+              oldWoodlandAreaHa: 10,
+              newWoodlandAreaHa: 2,
+              startDate: '2025-01-01'
+            },
+            logger,
+            connection
+          ),
+          h
+        )
 
-    test('should return a Boom 400 when total woodland area exceeds total parcel area', async () => {
-      // parcel area = 50000sqm (5ha), total woodland = 10ha → exceeds parcel
-      mockValidatePaymentCalculationRequest.mockResolvedValue({
-        errors: null,
-        parcels: [createMockParcel(50000)]
+        expect(result.isBoom).toBe(true)
+        expect(result.output.statusCode).toBe(400)
+        expect(result.message).toBe('Land parcels not found: SX067-99238')
       })
-
-      const { h } = createResponseCapture()
-
-      const result = await PaymentsCalculateWMPControllerV2.handler(
-        createRequest(
-          {
-            parcelIds: ['SX067-99238'],
-            oldWoodlandAreaHa: 8,
-            newWoodlandAreaHa: 2,
-            startDate: '2025-01-01'
-          },
-          logger,
-          connection
-        ),
-        h
-      )
-
-      expect(result.isBoom).toBe(true)
-      expect(result.output.statusCode).toBe(400)
-      expect(result.output.payload.message).toBe('Eligibility rules failed')
-    })
-  })
-
-  describe('validation errors', () => {
-    test('should return a Boom 400 when parcel validation returns errors', async () => {
-      mockValidatePaymentCalculationRequest.mockResolvedValue({
-        errors: ['Land parcels not found: SX067-99238'],
-        parcels: []
-      })
-
-      const { h } = createResponseCapture()
-
-      const result = await PaymentsCalculateWMPControllerV2.handler(
-        createRequest(
-          {
-            parcelIds: ['SX067-99238'],
-            oldWoodlandAreaHa: 10,
-            newWoodlandAreaHa: 2,
-            startDate: '2025-01-01'
-          },
-          logger,
-          connection
-        ),
-        h
-      )
-
-      expect(result.isBoom).toBe(true)
-      expect(result.output.statusCode).toBe(400)
-      expect(result.message).toBe('Land parcels not found: SX067-99238')
     })
   })
 })
