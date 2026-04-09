@@ -84,7 +84,6 @@ services:
   floci:
     image: hectorvent/floci:latest
     environment:
-      FLOCI_HOSTNAME: floci
       FLOCI_DEFAULT_REGION: eu-west-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
