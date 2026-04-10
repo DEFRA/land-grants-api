@@ -47,9 +47,10 @@ export const calculatePayment = (eligibleArea, tiers) => {
   }
 
   const tier = tiers[tierIndex]
-  const payment =
+  const payment = roundTo2DecimalPlaces(
     tier.flatRateGbp +
     tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+  )
 
   return { payment, tierIndex }
 }
