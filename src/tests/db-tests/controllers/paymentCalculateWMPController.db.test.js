@@ -209,8 +209,6 @@ describe('Payment Calculate WMP Controller (DB)', () => {
     })
 
     test('should return 200 when eligible area falls in tier 3 (over 100ha) and round quantity active tier', async () => {
-      // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50) = £2400 (240000p)
-      // parcel area must be >= total woodland (80ha = 800000sqm)
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(900000)]
