@@ -236,11 +236,38 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       expect(statusCode).toBe(200)
       expect(data.payment.agreementTotalPence).toBe(300150)
       expect(data.payment.agreementStartDate).toBe('2025-06-01')
-      expect(data.payment.agreementEndDate).toBe('2026-06-01')
+      expect(data.payment.agreementEndDate).toBe('2035-05-31')
       expect(item.activePaymentTier).toBe(3)
       expect(item.quantityInActiveTier).toBe(0.1)
       expect(item.activeTierRatePence).toBe(1500)
       expect(item.activeTierFlatRatePence).toBe(300000)
+    })
+
+    test('should return 200 with correct end date and start is not sent', async () => {
+      mockValidatePaymentCalculationRequest.mockResolvedValue({
+        errors: null,
+        parcels: [createMockParcel(600000)]
+      })
+
+      const { h, getResponse } = createResponseCapture()
+
+      await PaymentsCalculateWMPControllerV2.handler(
+        createRequest(
+          {
+            parcelIds: ['SX067-99238'],
+            oldWoodlandAreaHa: 20,
+            newWoodlandAreaHa: 30
+          },
+          logger,
+          connection
+        ),
+        h
+      )
+
+      const { data, statusCode } = getResponse()
+
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementEndDate).toBe('2036-04-30')
     })
   })
 
