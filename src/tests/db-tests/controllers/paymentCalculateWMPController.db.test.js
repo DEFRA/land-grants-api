@@ -207,6 +207,43 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       expect(statusCode).toBe(200)
       expect(data.payment.agreementTotalPence).toBe(150000)
     })
+
+    test('should return 200 when eligible area falls in tier 3 (over 100ha) and round quantity active tier', async () => {
+      // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50) = £2400 (240000p)
+      // parcel area must be >= total woodland (80ha = 800000sqm)
+      mockValidatePaymentCalculationRequest.mockResolvedValue({
+        errors: null,
+        parcels: [createMockParcel(900000)]
+      })
+
+      const { h, getResponse } = createResponseCapture()
+
+      await PaymentsCalculateWMPControllerV2.handler(
+        createRequest(
+          {
+            parcelIds: ['SX067-99238'],
+            oldWoodlandAreaHa: 100.1,
+            newWoodlandAreaHa: 0,
+            startDate: '2025-06-01'
+          },
+          logger,
+          connection
+        ),
+        h
+      )
+
+      const { data, statusCode } = getResponse()
+      const item = data.payment.agreementLevelItems[1]
+
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementTotalPence).toBe(300150)
+      expect(data.payment.agreementStartDate).toBe('2025-06-01')
+      expect(data.payment.agreementEndDate).toBe('2026-06-01')
+      expect(item.activePaymentTier).toBe(3)
+      expect(item.quantityInActiveTier).toBe(0.1)
+      expect(item.activeTierRatePence).toBe(1500)
+      expect(item.activeTierFlatRatePence).toBe(300000)
+    })
   })
 
   describe('eligibility rule failures', () => {

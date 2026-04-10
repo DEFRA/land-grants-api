@@ -1,4 +1,7 @@
-import { roundTo2DecimalPlaces } from '../../common/helpers/measurement.js'
+import {
+  roundTo2DecimalPlaces,
+  roundTo4DecimalPlaces
+} from '../../common/helpers/measurement.js'
 
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
@@ -79,7 +82,7 @@ export const wmpCalculation = {
       payment,
       activePaymentTier: tierIndex + 1,
       quantityInActiveTier: activeTier
-        ? eligibleArea - activeTier.lowerLimitHa
+        ? roundTo4DecimalPlaces(eligibleArea - activeTier.lowerLimitHa)
         : 0,
       activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
       activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
