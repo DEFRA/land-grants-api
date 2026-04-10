@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="insert-action-groups" author="system">
+      <insert tableName="action_groups" schemaName="public">
+        <column name="id" value="4"/>
+        <column name="name" value="Soil health on grassland"/>
+      </insert>
+    </changeSet>
+
+   <changeSet id="add-clig-3-action" author="system">
+    <sql>INSERT INTO actions (code, description, enabled, display) VALUES ('CLIG3', 'Manage grassland with very low nutrient inputs', TRUE, TRUE);</sql>
+   </changeSet>
+
+   <changeSet id="add-new-clig-3-action-config" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id) VALUES ('CLIG3', 1, '{
+      "rules": [
+        {
+          "name": "parcel-has-no-intersection-with-data-layer",
+          "config": {
+            "layerName": "moorland"
+          },
+          "description": "Is this parcel not on the moorland?"
+        },
+        {
+          "name": "sssi-consent-required",
+          "description": "Is the site of special scientific interest?",
+          "config": {
+            "layerName": "sssi",
+            "tolerancePercent": 1,
+            "caveatDescription": "A consent is required from Natural England"
+          }
+        },
+        {
+          "name": "hefer-consent-required",
+          "description": "Does the site require a Historic Environment Farm Environment Record?",
+          "config": {
+            "layerName": "historic_features",
+            "tolerancePercent": 0,
+            "caveatDescription": "A hefer is needed from Historic England"
+          }
+        }
+      ],
+      "payment": {
+        "ratePerUnitGbp": 151
+      },
+      "payment_method": {
+        "name": "default-calculation",
+        "config": {
+          "ratePerUnitGbp": 151
+        },
+        "version": "1.0.0"
+      },
+      "start_date": "2025-01-01",
+      "duration_years": 1,
+      "land_cover_class_codes": [],
+      "application_unit_of_measurement": "ha"
+    }', TRUE, now(), 1, 0, 0, 7, 4);</sql>
+   </changeSet>
+</databaseChangeLog>
