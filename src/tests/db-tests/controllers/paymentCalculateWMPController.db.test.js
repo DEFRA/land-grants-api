@@ -95,7 +95,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       expect(data.payment.agreementStartDate).toBe('2025-01-01')
       expect(data.payment.agreementEndDate).toBe('2034-12-31')
       expect(data.payment.payments[0].totalPaymentPence).toBe(150000)
-      expect(data.payment.payments[0].paymentDate).toBe('2025-01-01')
+      expect(data.payment.payments[0].paymentDate).toBe(null)
       expect(item.activePaymentTier).toBe(1)
       expect(item.quantityInActiveTier).toBe(11.5)
       expect(item.activeTierRatePence).toBe(0)

@@ -64,7 +64,7 @@ describe('transformPayments', () => {
     expect(result).toEqual([
       {
         totalPaymentPence: 234000,
-        paymentDate: '2024-01-01',
+        paymentDate: null,
         lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
       }
     ])
@@ -138,7 +138,7 @@ describe('wmpPaymentCalculateTransformer', () => {
       payments: [
         {
           totalPaymentPence: 234000,
-          paymentDate: '2024-01-01',
+          paymentDate: null,
           lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
         }
       ]

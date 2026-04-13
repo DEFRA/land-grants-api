@@ -55,7 +55,7 @@ export const transformPayments = (paymentResult, agreementStartDate) => {
   return [
     {
       totalPaymentPence: paymentPence,
-      paymentDate: agreementStartDate,
+      paymentDate: null,
       lineItems: [
         {
           agreementLevelItemId: 1,
