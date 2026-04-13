@@ -8,9 +8,14 @@
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
-export const parcelHasNoIntersectionWithDataLayer = {
+export const parcelIntersectionDoesNotExceedMaximumForDataLayer = {
   execute: (application, rule) => {
-    const { layerName } = rule.config
+    const { layerName, tolerancePercent, maximumIntersectionPercent } =
+      rule.config
+    const configuredTolerancePercent = tolerancePercent ?? 0
+    const configuredMaximumIntersectionPercent = maximumIntersectionPercent ?? 0
+    const maximumAllowedIntersectionPercent =
+      configuredMaximumIntersectionPercent + configuredTolerancePercent
     const name = `${rule.name}-${layerName}`
     const intersection = application.landParcel.intersections?.[layerName]
 
@@ -35,17 +40,19 @@ export const parcelHasNoIntersectionWithDataLayer = {
       }
     }
 
-    const hasNoIntersection = intersection.intersectingAreaPercentage === 0
+    const isWithinMaximumAllowedIntersection =
+      intersection.intersectingAreaPercentage <=
+      maximumAllowedIntersectionPercent
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is 0%.`
+      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${maximumAllowedIntersectionPercent}%.`
     )
 
     return {
       name,
-      passed: hasNoIntersection,
-      reason: `This parcel ${hasNoIntersection ? 'has no' : 'has an'} intersection with the ${layerName} layer`,
+      passed: isWithinMaximumAllowedIntersection,
+      reason: `This parcel ${isWithinMaximumAllowedIntersection ? 'is within' : 'exceeds'} the maximum allowed intersection with the ${layerName} layer`,
       description: rule.description,
       explanations
     }
