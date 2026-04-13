@@ -27,15 +27,14 @@ export const parcelIntersectionDoesNotExceedMaximumForDataLayer = {
     ]
 
     if (intersection == null) {
-      explanations[0].lines.push(
-        // @ts-expect-error - lines
-        `An intersection with the ${layerName} layer was not provided in the application data`
-      )
+      const reason = `An intersection with the ${layerName} layer was not provided in the application data`
+      // @ts-expect-error - lines
+      explanations[0].lines.push(reason)
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `An intersection with the ${layerName} layer was not provided in the application data`,
+        reason,
         explanations
       }
     }

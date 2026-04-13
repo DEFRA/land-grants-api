@@ -29,7 +29,7 @@
              "tolerancePercent": 0,
              "maximumIntersectionPercent": 0
           },
-          "description": "Is this parcel not on the moorland?"
+          "description": "The parcel should not be on the moorland"
         },
         {
           "name": "sssi-consent-required",
