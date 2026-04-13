@@ -20,7 +20,7 @@ const createAction = () => ({
   code: 'PA3',
   description: 'Woodland Management Plan',
   semanticVersion: '1.0.0',
-  durationYears: 5
+  durationYears: 10
 })
 
 describe('getAgreementStartDate', () => {
@@ -49,11 +49,11 @@ describe('getAgreementStartDate', () => {
 
 describe('getAgreementEndDate', () => {
   test('should return the date durationYears after the agreementStartDate', () => {
-    expect(getAgreementEndDate('2024-01-01', 5)).toBe('2029-01-01')
+    expect(getAgreementEndDate('2024-01-01', 10)).toBe('2033-12-31')
   })
 
   test('should handle a 1-year duration', () => {
-    expect(getAgreementEndDate('2024-06-15', 1)).toBe('2025-06-15')
+    expect(getAgreementEndDate('2024-06-15', 1)).toBe('2025-06-14')
   })
 })
 
@@ -116,7 +116,7 @@ describe('wmpPaymentCalculateTransformer', () => {
     expect(result).toEqual({
       explanations: [],
       agreementStartDate: '2024-01-01',
-      agreementEndDate: '2029-01-01',
+      agreementEndDate: '2033-12-31',
       frequency: 'Single',
       agreementTotalPence: 234000,
       parcelItems: {},
@@ -157,7 +157,7 @@ describe('wmpPaymentCalculateTransformer', () => {
     )
 
     expect(result.agreementStartDate).toBe('2024-07-01')
-    expect(result.agreementEndDate).toBe('2029-07-01')
+    expect(result.agreementEndDate).toBe('2034-06-30')
 
     vi.useRealTimers()
   })

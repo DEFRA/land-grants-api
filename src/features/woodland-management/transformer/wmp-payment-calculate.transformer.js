@@ -1,4 +1,12 @@
-import { addMonths, addYears, format, parseISO, startOfMonth } from 'date-fns'
+import {
+  addDays,
+  addMonths,
+  addYears,
+  format,
+  parseISO,
+  startOfMonth
+} from 'date-fns'
+import { roundTo4DecimalPlaces } from '../../common/helpers/measurement.js'
 
 const DATE_FORMAT = 'yyyy-MM-dd'
 
@@ -24,14 +32,14 @@ export const getAgreementStartDate = (startDate) => {
 }
 
 /**
- * Returns the agreement end date, calculated as durationYears after the start date.
+ * Returns the agreement end date, calculated as durationYears after the start date -1 day.
  * @param {string} agreementStartDate - The agreement start date in YYYY-MM-DD format
  * @param {number} durationYears - The duration of the agreement in years
  * @returns {string} The agreement end date in YYYY-MM-DD format
  */
 export const getAgreementEndDate = (agreementStartDate, durationYears) => {
   return format(
-    addYears(parseISO(agreementStartDate), durationYears),
+    addDays(addYears(parseISO(agreementStartDate), durationYears), -1),
     DATE_FORMAT
   )
 }
@@ -77,12 +85,14 @@ export const transformAgreementLevelItems = (
       version: action.semanticVersion,
       parcelIds,
       activePaymentTier: paymentResult.activePaymentTier,
-      quantityInActiveTier: paymentResult.quantityInActiveTier,
+      quantityInActiveTier: roundTo4DecimalPlaces(
+        paymentResult.quantityInActiveTier
+      ),
       activeTierRatePence: gbpToPence(paymentResult.activeTierRatePence),
       activeTierFlatRatePence: gbpToPence(
         paymentResult.activeTierFlatRatePence
       ),
-      quantity: paymentResult.eligibleArea,
+      quantity: roundTo4DecimalPlaces(paymentResult.eligibleArea),
       agreementTotalPence: gbpToPence(paymentResult.payment),
       unit: 'ha'
     }
