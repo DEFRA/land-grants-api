@@ -41,7 +41,7 @@
             AND is_active = TRUE;</sql>
     </changeSet>
 
-   <changeSet id="add-payment-method-to-configs" author="system">
+   <changeSet id="add-payment-method-to-configs" author="system" context="@test">
         <sql>UPDATE actions_config
         SET config = jsonb_set(
             config,
