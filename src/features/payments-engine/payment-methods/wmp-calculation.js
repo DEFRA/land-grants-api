@@ -33,7 +33,7 @@ export const calculateEligibleArea = (
  * @returns {{ payment: number, tierIndex: number }} The payment in GBP and the 0-based index of the selected tier (-1 if none)
  */
 export const calculatePayment = (eligibleArea, tiers) => {
-  const roundedEligibleArea = roundTo2DecimalPlaces(eligibleArea)
+  const roundedEligibleArea = roundTo4DecimalPlaces(eligibleArea)
   if (eligibleArea < tiers[0].lowerLimitHa) {
     return { payment: 0, tierIndex: -1 }
   }
@@ -47,9 +47,10 @@ export const calculatePayment = (eligibleArea, tiers) => {
   }
 
   const tier = tiers[tierIndex]
-  const payment =
+  const payment = roundTo2DecimalPlaces(
     tier.flatRateGbp +
-    tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+      tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+  )
 
   return { payment, tierIndex }
 }

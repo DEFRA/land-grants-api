@@ -92,8 +92,7 @@ export const PaymentsCalculateWMPControllerV2 = {
         data: {
           totalParcelArea: totalParcelAreaSqm,
           oldWoodlandAreaHa,
-          newWoodlandAreaHa,
-          startDate
+          newWoodlandAreaHa
         }
       }
     )

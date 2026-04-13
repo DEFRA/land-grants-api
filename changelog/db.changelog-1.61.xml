@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="update-pa3-payment-method-config" author="system">
+        <sql>
+        UPDATE actions_config
+        SET config = jsonb_set(
+            config,
+            '{payment_method,config,tiers,0,upperLimitHa}'::text[],
+            '50'::jsonb
+        )
+        WHERE code = 'PA3'
+            AND is_active = TRUE;
+        </sql>
+    </changeSet>
+
+   <changeSet id="update-pa3-payment-duration-years" author="system">
+        <sql>
+        UPDATE actions_config
+        SET config = jsonb_set(
+            config, '{duration_years}', '10')
+         WHERE code = 'PA3'
+            AND is_active = TRUE;
+        </sql>
+    </changeSet>
+</databaseChangeLog>
