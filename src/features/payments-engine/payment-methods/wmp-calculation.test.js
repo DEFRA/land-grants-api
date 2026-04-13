@@ -7,7 +7,7 @@ import {
 const tiers = [
   {
     lowerLimitHa: 0.5,
-    upperLimitHa: 51,
+    upperLimitHa: 50,
     flatRateGbp: 1500,
     ratePerUnitGbp: 0
   },
@@ -47,6 +47,7 @@ describe('calculatePayment', () => {
     { area: 0.2, expected: 0 },
     { area: 0.4999, expected: 0 },
     { area: 0.5, expected: 1500 },
+    { area: 50.5, expected: 1515 },
     { area: 50.9999, expected: 1530 },
     { area: 51, expected: 1530 },
     { area: 51.5, expected: 1545 },

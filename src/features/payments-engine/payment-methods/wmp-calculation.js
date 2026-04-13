@@ -1,4 +1,7 @@
-import { roundTo2DecimalPlaces } from '../../common/helpers/measurement.js'
+import {
+  roundTo2DecimalPlaces,
+  roundTo4DecimalPlaces
+} from '../../common/helpers/measurement.js'
 
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
@@ -30,7 +33,7 @@ export const calculateEligibleArea = (
  * @returns {{ payment: number, tierIndex: number }} The payment in GBP and the 0-based index of the selected tier (-1 if none)
  */
 export const calculatePayment = (eligibleArea, tiers) => {
-  const roundedEligibleArea = roundTo2DecimalPlaces(eligibleArea)
+  const roundedEligibleArea = roundTo4DecimalPlaces(eligibleArea)
   if (eligibleArea < tiers[0].lowerLimitHa) {
     return { payment: 0, tierIndex: -1 }
   }
@@ -44,9 +47,10 @@ export const calculatePayment = (eligibleArea, tiers) => {
   }
 
   const tier = tiers[tierIndex]
-  const payment =
+  const payment = roundTo2DecimalPlaces(
     tier.flatRateGbp +
-    tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+      tier.ratePerUnitGbp * (roundedEligibleArea - tier.lowerLimitHa)
+  )
 
   return { payment, tierIndex }
 }
@@ -79,7 +83,7 @@ export const wmpCalculation = {
       payment,
       activePaymentTier: tierIndex + 1,
       quantityInActiveTier: activeTier
-        ? eligibleArea - activeTier.lowerLimitHa
+        ? roundTo4DecimalPlaces(eligibleArea - activeTier.lowerLimitHa)
         : 0,
       activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
       activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
