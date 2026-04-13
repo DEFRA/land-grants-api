@@ -181,8 +181,7 @@ describe('Payment calculate WMP controller', () => {
           data: {
             totalParcelArea: 8,
             oldWoodlandAreaHa: 5,
-            newWoodlandAreaHa: 3,
-            startDate: expect.any(Date)
+            newWoodlandAreaHa: 3
           }
         }
       )
