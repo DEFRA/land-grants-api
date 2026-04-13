@@ -25,7 +25,15 @@ const gbpToPence = (gbp) => gbp * 100
  */
 export const getAgreementStartDate = (startDate) => {
   if (startDate) {
-    return format(new Date(startDate), DATE_FORMAT)
+    return format(
+      startOfMonth(
+        addMonths(
+          typeof startDate === 'string' ? parseISO(startDate) : startDate,
+          1
+        )
+      ),
+      DATE_FORMAT
+    )
   }
 
   return format(startOfMonth(addMonths(new Date(), 1)), DATE_FORMAT)
@@ -47,10 +55,9 @@ export const getAgreementEndDate = (agreementStartDate, durationYears) => {
 /**
  * Builds the payment schedule array from a WMP calculation result.
  * @param {WmpCalculationResult} paymentResult - The WMP calculation result
- * @param {string} agreementStartDate - The agreement start date in YYYY-MM-DD format
  * @returns {WmpPayment[]} The payment schedule
  */
-export const transformPayments = (paymentResult, agreementStartDate) => {
+export const transformPayments = (paymentResult) => {
   const paymentPence = gbpToPence(paymentResult.payment)
   return [
     {
@@ -129,7 +136,7 @@ export const wmpPaymentCalculateTransformer = (
       action,
       wmpCalculationResult
     ),
-    payments: transformPayments(wmpCalculationResult, agreementStartDate)
+    payments: transformPayments(wmpCalculationResult)
   }
 }
 
