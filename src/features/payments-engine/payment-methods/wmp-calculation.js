@@ -77,13 +77,16 @@ export const wmpCalculation = {
 
     const { payment, tierIndex } = calculatePayment(eligibleArea, tiers)
     const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null
+    const shouldRemoveTierLimit = tierIndex > 0
 
     return {
       eligibleArea,
       payment,
       activePaymentTier: tierIndex + 1,
       quantityInActiveTier: activeTier
-        ? roundTo4DecimalPlaces(eligibleArea - activeTier.lowerLimitHa)
+        ? roundTo4DecimalPlaces(
+            eligibleArea - (shouldRemoveTierLimit ? activeTier.lowerLimitHa : 0)
+          )
         : 0,
       activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
       activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
