@@ -24,8 +24,8 @@ const createAction = () => ({
 })
 
 describe('getAgreementStartDate', () => {
-  test('should return the provided startDate formatted as YYYY-MM-DD', () => {
-    expect(getAgreementStartDate('2024-06-15')).toBe('2024-06-15')
+  test('should return the first of next month from date passed in formatted as YYYY-MM-DD', () => {
+    expect(getAgreementStartDate('2024-06-15')).toBe('2024-07-01')
   })
 
   test('should return the 1st of next month when no startDate is provided', () => {
@@ -59,12 +59,12 @@ describe('getAgreementEndDate', () => {
 
 describe('transformPayments', () => {
   test('should return a single payment entry with the payment amount converted to pence', () => {
-    const result = transformPayments(createWmpCalculationResult(), '2024-01-01')
+    const result = transformPayments(createWmpCalculationResult())
 
     expect(result).toEqual([
       {
         totalPaymentPence: 234000,
-        paymentDate: '2024-01-01',
+        paymentDate: null,
         lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
       }
     ])
@@ -115,8 +115,8 @@ describe('wmpPaymentCalculateTransformer', () => {
 
     expect(result).toEqual({
       explanations: [],
-      agreementStartDate: '2024-01-01',
-      agreementEndDate: '2033-12-31',
+      agreementStartDate: '2024-02-01',
+      agreementEndDate: '2034-01-31',
       frequency: 'Single',
       agreementTotalPence: 234000,
       parcelItems: {},
@@ -138,7 +138,7 @@ describe('wmpPaymentCalculateTransformer', () => {
       payments: [
         {
           totalPaymentPence: 234000,
-          paymentDate: '2024-01-01',
+          paymentDate: null,
           lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
         }
       ]
