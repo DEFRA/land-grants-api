@@ -17,7 +17,7 @@ export const parcelIntersectionDoesNotExceedMaximumForDataLayer = {
     const maximumAllowedIntersectionPercent =
       configuredMaximumIntersectionPercent + configuredTolerancePercent
     const name = `${rule.name}-${layerName}`
-    const intersection = application.landParcel.intersections?.[layerName]
+    const intersection = application.landParcel?.intersections?.[layerName]
 
     const explanations = [
       {
