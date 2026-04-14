@@ -102,7 +102,9 @@ describe('Postgres Helper', () => {
         connect: vi.fn(),
         end: vi.fn()
       }
-      vi.mocked(Pool).mockImplementation(() => mockPool)
+      vi.mocked(Pool).mockImplementation(function () {
+        return mockPool
+      })
     })
 
     describe('local development', () => {
@@ -186,9 +188,11 @@ describe('Postgres Helper', () => {
         vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
 
         const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token')
-        vi.mocked(Signer).mockImplementation(() => ({
-          getAuthToken: mockGetAuthToken
-        }))
+        vi.mocked(Signer).mockImplementation(function () {
+          return {
+            getAuthToken: mockGetAuthToken
+          }
+        })
 
         const options = {
           user: 'remote-user',
@@ -250,9 +254,11 @@ describe('Postgres Helper', () => {
 
         const tokenError = new Error('Failed to get auth token')
         const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError)
-        vi.mocked(Signer).mockImplementation(() => ({
-          getAuthToken: mockGetAuthToken
-        }))
+        vi.mocked(Signer).mockImplementation(function () {
+          return {
+            getAuthToken: mockGetAuthToken
+          }
+        })
 
         const options = {
           user: 'remote-user',
@@ -389,7 +395,9 @@ describe('Postgres Helper', () => {
         totalCount: 0
       }
 
-      vi.mocked(Pool).mockImplementation(() => mockPool)
+      vi.mocked(Pool).mockImplementation(function () {
+        return mockPool
+      })
 
       mockServer = {
         logger: {

@@ -6,9 +6,9 @@ import { S3Client } from '@aws-sdk/client-s3'
 import { vi } from 'vitest'
 
 vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn(() => ({
-    destroy: vi.fn()
-  }))
+  S3Client: vi.fn(function () {
+    return { destroy: vi.fn() }
+  })
 }))
 
 vi.mock('~/src/config/index.js', () => ({
