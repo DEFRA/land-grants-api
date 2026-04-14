@@ -245,7 +245,9 @@ describe('applicationDataTransformer', () => {
   const originalDate = Date
 
   beforeEach(() => {
-    global.Date = vi.fn(() => mockDate)
+    global.Date = vi.fn(function () {
+      return mockDate
+    })
     global.Date.now = originalDate.now
   })
 
