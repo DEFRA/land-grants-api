@@ -75,6 +75,7 @@
     "hapi-swagger": "^17.3.2",
     "https-proxy-agent": "^9.0.0",
     "joi": "^17.13.3",
+    "minimatch": "^3.1.5",
     "node-cron": "^4.2.1",
     "pg": "^8.20.0",
     "pg-copy-streams": "^7.0.0",
@@ -110,8 +111,8 @@
     "nyc": "^18.0.0",
     "prettier": "^3.8.2",
     "tsx": "^4.21.0",
-    "vitest": "^4.1.4",
     "typescript": "^6.0.2",
+    "vitest": "^4.1.4",
     "vitest-fetch-mock": "^0.4.5"
   }
 }
