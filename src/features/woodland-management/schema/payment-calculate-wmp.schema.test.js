@@ -131,6 +131,13 @@ describe('paymentCalculateWMPResponseSchema', () => {
     )
   })
 
+  it('should allow null paymentDate in a payments entry', () => {
+    const invalid = createValidResponse()
+    invalid.payment.payments[0].paymentDate = null
+    const result = paymentCalculateWMPResponseSchema.validate(invalid)
+    expect(result.error).toBeUndefined()
+  })
+
   it('should reject a missing lineItems in a payments entry', () => {
     const invalid = createValidResponse()
     delete invalid.payment.payments[0].lineItems

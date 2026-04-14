@@ -21,7 +21,7 @@ const lineItemSchema = Joi.object({
 
 const paymentSchema = Joi.object({
   totalPaymentPence: Joi.number().required(),
-  paymentDate: Joi.string().required(),
+  paymentDate: Joi.string().allow(null).required(),
   lineItems: Joi.array().items(lineItemSchema).required()
 })
 
