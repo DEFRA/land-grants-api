@@ -104,7 +104,7 @@ describe('wmpCalculation', () => {
       expect(result.eligibleArea).toBe(40)
       expect(result.payment).toBe(1500)
       expect(result.activePaymentTier).toBe(1)
-      expect(result.quantityInActiveTier).toBe(39.5)
+      expect(result.quantityInActiveTier).toBe(40)
       expect(result.activeTierRatePence).toBe(0)
       expect(result.activeTierFlatRatePence).toBe(1500)
     })

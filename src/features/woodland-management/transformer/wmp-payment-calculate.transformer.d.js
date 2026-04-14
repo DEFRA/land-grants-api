@@ -31,7 +31,7 @@
 /**
  * @typedef {object} WmpPayment
  * @property {number} totalPaymentPence - The total payment amount in GBP
- * @property {string} paymentDate - The payment date in YYYY-MM-DD format
+ * @property {string | null} paymentDate - The payment date in YYYY-MM-DD format
  * @property {WmpPaymentLineItem[]} lineItems - The payment line items
  */
 
