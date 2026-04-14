@@ -32,7 +32,9 @@ describe('Start Worker Thread', () => {
       })
     }
 
-    Worker.mockImplementation(() => mockWorker)
+    Worker.mockImplementation(function () {
+      return mockWorker
+    })
 
     vi.spyOn(logHelpers, 'logInfo')
     vi.spyOn(logHelpers, 'logBusinessError')
