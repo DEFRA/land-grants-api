@@ -1,4 +1,4 @@
-# applied-for-total-or-partialavailable-area
+# applied-for-total-or-partial-available-area
 
 ## What does this rule check?
 

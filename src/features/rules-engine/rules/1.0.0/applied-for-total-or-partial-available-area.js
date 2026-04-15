@@ -8,7 +8,7 @@
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
-export const appliedForTotalOrPartialavailableArea = {
+export const appliedForTotalOrPartialAvailableArea = {
   execute: (application, rule) => {
     const {
       areaAppliedFor,
@@ -17,9 +17,9 @@ export const appliedForTotalOrPartialavailableArea = {
     const { minimumAppliedHa } = rule.config
     const name = rule.name
 
-    const parsedAppliedArea = Number.parseFloat(areaAppliedFor)
-    const parsedAvailableArea = Number.parseFloat(availableArea)
-    const parsedMinimumAppliedArea = Number.parseFloat(minimumAppliedHa)
+    const parsedAppliedArea = Number.parseFloat(areaAppliedFor) || 0
+    const parsedAvailableArea = Number.parseFloat(availableArea) || 0
+    const parsedMinimumAppliedArea = Number.parseFloat(minimumAppliedHa) || 0
 
     const explanations = [
       {
@@ -31,36 +31,14 @@ export const appliedForTotalOrPartialavailableArea = {
     ]
 
     if (
-      Number.isNaN(parsedAppliedArea) ||
-      Number.isNaN(parsedAvailableArea) ||
-      Number.isNaN(parsedMinimumAppliedArea)
+      parsedAppliedArea < parsedMinimumAppliedArea ||
+      parsedAppliedArea > parsedAvailableArea
     ) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason:
-          'Area values required to validate the total or partial available area rule are missing or invalid',
-        explanations
-      }
-    }
-
-    if (parsedAppliedArea < parsedMinimumAppliedArea) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: `The applied figure (${parsedAppliedArea} ha) is below the minimum allowed area (${parsedMinimumAppliedArea} ha)`,
-        explanations
-      }
-    }
-
-    if (parsedAppliedArea > parsedAvailableArea) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: `There is not sufficient available area (${parsedAvailableArea} ha) for the applied figure (${parsedAppliedArea} ha)`,
+        reason: `The applied figure (${parsedAppliedArea} ha) must be between (${parsedMinimumAppliedArea} ha) and (${parsedAvailableArea} ha)`,
         explanations
       }
     }

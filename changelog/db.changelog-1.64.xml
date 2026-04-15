@@ -8,6 +8,13 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+    <changeSet id="insert-action-groups" author="system">
+      <insert tableName="action_groups" schemaName="public">
+        <column name="id" value="4"/>
+        <column name="name" value="Soil health on grassland"/>
+      </insert>
+    </changeSet>
+
    <changeSet id="add-csam-3-action" author="system">
     <sql>INSERT INTO actions (code, description, enabled, display) VALUES ('CSAM3', 'Herbal leys', TRUE, TRUE);</sql>
    </changeSet>
@@ -16,7 +23,7 @@
     <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id) VALUES ('CSAM3', 1, '{
       "rules": [
         {
-          "name": "applied-for-total-or-partialavailable-area",
+          "name": "applied-for-total-or-partial-available-area",
           "description": "Has the total or partial available area been applied for?",
           "config": {
             "minimumAppliedHa": 1

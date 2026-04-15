@@ -1,6 +1,6 @@
-import { appliedForTotalOrPartialavailableArea } from './applied-for-total-or-partialavailable-area.js'
+import { appliedForTotalOrPartialAvailableArea } from './applied-for-total-or-partial-available-area.js'
 
-describe('appliedForTotalOrPartialavailableArea', () => {
+describe('appliedForTotalOrPartialAvailableArea', () => {
   const createApplication = (areaAppliedFor, parcelArea) => ({
     areaAppliedFor,
     landParcel: {
@@ -9,7 +9,7 @@ describe('appliedForTotalOrPartialavailableArea', () => {
   })
 
   const createRule = (
-    name = 'applied-for-total-or-partialavailable-area',
+    name = 'applied-for-total-or-partial-available-area',
     minimumAppliedHa = 1
   ) => ({
     name,
@@ -19,13 +19,13 @@ describe('appliedForTotalOrPartialavailableArea', () => {
   test('should pass when area applied for equals the minimum allowed', () => {
     const application = createApplication('1', '10.5')
     const rule = createRule()
-    const result = appliedForTotalOrPartialavailableArea.execute(
+    const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
     )
 
     expect(result).toEqual({
-      name: 'applied-for-total-or-partialavailable-area',
+      name: 'applied-for-total-or-partial-available-area',
       passed: true,
       reason:
         'The applied figure (1 ha) is within the allowed range (1 ha to 10.5 ha)',
@@ -43,13 +43,13 @@ describe('appliedForTotalOrPartialavailableArea', () => {
   test('should pass when area applied for is between minimum and available area', () => {
     const application = createApplication(5.25, '10.5')
     const rule = createRule()
-    const result = appliedForTotalOrPartialavailableArea.execute(
+    const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
     )
 
     expect(result).toEqual({
-      name: 'applied-for-total-or-partialavailable-area',
+      name: 'applied-for-total-or-partial-available-area',
       passed: true,
       reason:
         'The applied figure (5.25 ha) is within the allowed range (1 ha to 10.5 ha)',
@@ -67,16 +67,16 @@ describe('appliedForTotalOrPartialavailableArea', () => {
   test('should fail when area applied for is below minimum allowed area', () => {
     const application = createApplication('0.5', '10.5')
     const rule = createRule()
-    const result = appliedForTotalOrPartialavailableArea.execute(
+    const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
     )
 
     expect(result).toEqual({
-      name: 'applied-for-total-or-partialavailable-area',
+      name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (0.5 ha) is below the minimum allowed area (1 ha)',
+        'The applied figure (0.5 ha) must be between (1 ha) and (10.5 ha)',
       explanations: [
         {
           title: 'Total or partial available area',
@@ -91,16 +91,15 @@ describe('appliedForTotalOrPartialavailableArea', () => {
   test('should fail when area applied for exceeds available area', () => {
     const application = createApplication('11', '10.5')
     const rule = createRule()
-    const result = appliedForTotalOrPartialavailableArea.execute(
+    const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
     )
 
     expect(result).toEqual({
-      name: 'applied-for-total-or-partialavailable-area',
+      name: 'applied-for-total-or-partial-available-area',
       passed: false,
-      reason:
-        'There is not sufficient available area (10.5 ha) for the applied figure (11 ha)',
+      reason: 'The applied figure (11 ha) must be between (1 ha) and (10.5 ha)',
       explanations: [
         {
           title: 'Total or partial available area',
@@ -112,24 +111,23 @@ describe('appliedForTotalOrPartialavailableArea', () => {
     })
   })
 
-  test('should fail when area values are invalid', () => {
+  test('should fail when area applied for is invalid and coerced to zero', () => {
     const application = createApplication(undefined, '10.5')
     const rule = createRule()
-    const result = appliedForTotalOrPartialavailableArea.execute(
+    const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
     )
 
     expect(result).toEqual({
-      name: 'applied-for-total-or-partialavailable-area',
+      name: 'applied-for-total-or-partial-available-area',
       passed: false,
-      reason:
-        'Area values required to validate the total or partial available area rule are missing or invalid',
+      reason: 'The applied figure (0 ha) must be between (1 ha) and (10.5 ha)',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (NaN ha)'
+            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (0 ha)'
           ]
         }
       ]
