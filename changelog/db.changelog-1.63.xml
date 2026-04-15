@@ -30,7 +30,7 @@
           "name": "parcel-intersection-does-not-exceed-maximum-for-data-layer",
           "config": {
             "layerName": "moorland",
-             "tolerancePercent": 0,
+             "tolerancePercent": 10,
              "maximumIntersectionPercent": 0
           },
           "description": "The parcel should not be on the moorland"
