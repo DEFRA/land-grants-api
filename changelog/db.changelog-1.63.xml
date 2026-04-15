@@ -23,6 +23,10 @@
     <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id) VALUES ('CLIG3', 1, '{
       "rules": [
         {
+          "name": "applied-for-total-available-area",
+          "description": "Has the total available area been applied for?"
+        },
+        {
           "name": "parcel-intersection-does-not-exceed-maximum-for-data-layer",
           "config": {
             "layerName": "moorland",
