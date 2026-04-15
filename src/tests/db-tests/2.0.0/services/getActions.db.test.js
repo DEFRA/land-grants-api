@@ -44,7 +44,8 @@ describe('getActions Service (DB)', () => {
     UPL3: '3.1.0',
     UPL8: '1.0.0',
     UPL10: '1.0.0',
-    PA3: '1.0.0'
+    PA3: '1.0.0',
+    CSAM3: '1.0.0'
   }
 
   const mockLandActions = [
