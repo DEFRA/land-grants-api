@@ -81,28 +81,37 @@ services:
     networks:
       - land-grants-net
 
-  localstack:
-    image: localstack/localstack:3.0.2
-    profiles: [localstack]
-    container_name: localstack
-    ports:
-      - '4566:4566' # LocalStack Gateway
-      - '4510-4559:4510-4559' # external services port range
-    env_file:
-      - 'scripts/infra/aws.env'
+  floci:
+    image: hectorvent/floci:latest
     environment:
-      DEBUG: ${DEBUG:-1}
-      LS_LOG: WARN # Localstack DEBUG Level
-      SERVICES: s3
-      LOCALSTACK_HOST: 127.0.0.1
-    volumes:
-      - '${TMPDIR:-/tmp}/localstack:/var/lib/localstack'
-      - ./scripts/infra/start-localstack.sh:/etc/localstack/init/ready.d/start-localstack.sh
+      FLOCI_DEFAULT_REGION: eu-west-2
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    tmpfs:
+      - /app/data
     healthcheck:
-      test: [ 'CMD', 'curl', 'localhost:4566' ]
+      test: ["CMD-SHELL", "curl -s --connect-timeout 3 http://localhost:4566 > /dev/null 2>&1 || exit 1"]
       interval: 5s
-      start_period: 5s
-      retries: 3
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    networks:
+      - land-grants-net
+
+  floci-init:
+    image: amazon/aws-cli
+    entrypoint: /bin/sh
+    command: /setup/init.sh
+    depends_on:
+      floci:
+        condition: service_healthy
+    environment:
+      AWS_ENDPOINT_URL: http://floci:4566
+      AWS_REGION: eu-west-2
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    volumes:
+      - ./scripts/infra/start-floci.sh:/setup/init.sh
     networks:
       - land-grants-net
 

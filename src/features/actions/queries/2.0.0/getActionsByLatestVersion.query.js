@@ -30,7 +30,8 @@ async function getActionsByLatestVersion(logger, db) {
           ac.semantic_version as semantic_version,
           ac.group_id as group_id,
           ag.name as group_name,
-          ac.display_order as display_order
+          ac.display_order as display_order,
+          ac.config->'payment_method' as payment_method
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id

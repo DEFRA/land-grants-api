@@ -29,7 +29,12 @@ describe('getActionsByLatestVersion', () => {
           patch_version: 0,
           semantic_version: '2.0.0',
           group_id: 1,
-          group_name: 'Upland'
+          group_name: 'Upland',
+          payment_method: {
+            name: 'wmp-calculation',
+            version: '1.0.0',
+            config: {}
+          }
         },
         {
           code: 'CMOR1',
@@ -49,7 +54,8 @@ describe('getActionsByLatestVersion', () => {
           patch_version: 0,
           semantic_version: '3.0.0',
           group_id: 2,
-          group_name: 'Moorland'
+          group_name: 'Moorland',
+          payment_method: null
         }
       ]
     }
@@ -74,7 +80,8 @@ describe('getActionsByLatestVersion', () => {
         lastUpdated: '2024-01-15T10:00:00Z',
         semanticVersion: '2.0.0',
         groupId: 1,
-        groupName: 'Upland'
+        groupName: 'Upland',
+        paymentMethod: { name: 'wmp-calculation', version: '1.0.0', config: {} }
       },
       {
         code: 'CMOR1',
@@ -94,7 +101,8 @@ describe('getActionsByLatestVersion', () => {
         lastUpdated: '2024-02-10T12:00:00Z',
         semanticVersion: '3.0.0',
         groupId: 2,
-        groupName: 'Moorland'
+        groupName: 'Moorland',
+        paymentMethod: null
       }
     ]
 
@@ -140,7 +148,8 @@ describe('getActionsByLatestVersion', () => {
           ac.semantic_version as semantic_version,
           ac.group_id as group_id,
           ag.name as group_name,
-          ac.display_order as display_order
+          ac.display_order as display_order,
+          ac.config->'payment_method' as payment_method
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
