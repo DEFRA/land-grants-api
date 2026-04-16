@@ -29,6 +29,7 @@ describe('Get Action Configs By Version Query', () => {
     UPL3: '3.1.0',
     UPL8: '1.0.0',
     UPL10: '1.0.0',
+    CLIG3: '1.0.0',
     CSAM3: '1.0.0'
   }
 
@@ -44,9 +45,7 @@ describe('Get Action Configs By Version Query', () => {
   test('should return actions in display order', async () => {
     const results = await getActionsByVersion(logger, connection, [])
     const resultCodes = results.map((r) => r.code)
-    console.log(resultCodes)
     const expectedOrder = Object.keys(expectedActions)
-
     expect(resultCodes).toEqual(expectedOrder)
   })
 
