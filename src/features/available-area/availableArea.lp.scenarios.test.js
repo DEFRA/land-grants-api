@@ -1,7 +1,6 @@
 import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 import { landCoverToString } from './testLandCoverToString.js'
-import { formatExplanationSections } from './explanations.lp.js'
 
 // These tests use scenarios from a fixture file (available-area-computed.json). This file is generated
 // from availableAreaCalculationScenarios.csv, along with additional data retrieved from the test DB
@@ -22,6 +21,9 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         landCoversForParcel: dataRequirements.landCoversForParcel,
         landCoversForExistingActions:
           dataRequirements.landCoversForExistingActions,
+        landCoversForParcelExcludingSssiHf:
+          dataRequirements.landCoversForParcelExcludingSssiHf,
+        sssiHfActionEligibility: dataRequirements.sssiHfActionEligibility,
         landCoverToString
       }
 
