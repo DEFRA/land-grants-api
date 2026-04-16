@@ -156,12 +156,12 @@ describe('getPaymentCalculationForParcels', () => {
       payments: [
         {
           lineItems: firstPaymentLineItems,
-          paymentDate: '2025-11-17',
+          paymentDate: '2025-11-15',
           totalPaymentPence: 9534
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-02-16',
+          paymentDate: '2026-02-15',
           totalPaymentPence: 9532
         },
         {
@@ -171,7 +171,7 @@ describe('getPaymentCalculationForParcels', () => {
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-08-17',
+          paymentDate: '2026-08-15',
           totalPaymentPence: 9532
         }
       ],
@@ -310,12 +310,12 @@ describe('getPaymentCalculationForParcels', () => {
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-08-17',
+          paymentDate: '2026-08-15',
           totalPaymentPence: 9532
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-11-16',
+          paymentDate: '2026-11-15',
           totalPaymentPence: 9532
         },
         {
