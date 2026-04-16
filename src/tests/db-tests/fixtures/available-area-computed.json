@@ -41,942 +41,240 @@
     "version": "1.0.0"
   },
   "compatibilityMatrix": [
-    [
-      "CMOR1",
-      "UPL1"
-    ],
-    [
-      "CMOR1",
-      "UPL2"
-    ],
-    [
-      "CMOR1",
-      "UPL3"
-    ],
-    [
-      "CMOR1",
-      "UPL4"
-    ],
-    [
-      "CMOR1",
-      "UPL5"
-    ],
-    [
-      "CMOR1",
-      "UPL6"
-    ],
-    [
-      "CMOR1",
-      "UPL7"
-    ],
-    [
-      "CMOR1",
-      "SPM4"
-    ],
-    [
-      "CMOR1",
-      "OFM3"
-    ],
-    [
-      "CMOR1",
-      "SP1"
-    ],
-    [
-      "CMOR1",
-      "HEF5"
-    ],
-    [
-      "CMOR1",
-      "HEF6"
-    ],
-    [
-      "CMOR1",
-      "HEF8"
-    ],
-    [
-      "CMOR1",
-      "SP3"
-    ],
-    [
-      "CMOR1",
-      "WD2"
-    ],
-    [
-      "CMOR1",
-      "OP1"
-    ],
-    [
-      "CMOR1",
-      "OP2"
-    ],
-    [
-      "CMOR1",
-      "OP3"
-    ],
-    [
-      "UPL1",
-      "CMOR1"
-    ],
-    [
-      "UPL1",
-      "UPL4"
-    ],
-    [
-      "UPL1",
-      "UPL5"
-    ],
-    [
-      "UPL1",
-      "UPL6"
-    ],
-    [
-      "UPL1",
-      "UPL7"
-    ],
-    [
-      "UPL1",
-      "SPM4"
-    ],
-    [
-      "UPL1",
-      "OFM3"
-    ],
-    [
-      "UPL1",
-      "HEF5"
-    ],
-    [
-      "UPL2",
-      "CMOR1"
-    ],
-    [
-      "UPL2",
-      "UPL4"
-    ],
-    [
-      "UPL2",
-      "UPL5"
-    ],
-    [
-      "UPL2",
-      "UPL6"
-    ],
-    [
-      "UPL2",
-      "UPL7"
-    ],
-    [
-      "UPL2",
-      "SPM4"
-    ],
-    [
-      "UPL2",
-      "OFM3"
-    ],
-    [
-      "UPL2",
-      "HEF5"
-    ],
-    [
-      "UPL3",
-      "CMOR1"
-    ],
-    [
-      "UPL3",
-      "UPL4"
-    ],
-    [
-      "UPL3",
-      "UPL5"
-    ],
-    [
-      "UPL3",
-      "UPL6"
-    ],
-    [
-      "UPL3",
-      "UPL7"
-    ],
-    [
-      "UPL3",
-      "SPM4"
-    ],
-    [
-      "UPL3",
-      "OFM3"
-    ],
-    [
-      "UPL3",
-      "HEF5"
-    ],
-    [
-      "UPL4",
-      "CMOR1"
-    ],
-    [
-      "UPL4",
-      "UPL1"
-    ],
-    [
-      "UPL4",
-      "UPL2"
-    ],
-    [
-      "UPL4",
-      "UPL3"
-    ],
-    [
-      "UPL4",
-      "UPL7"
-    ],
-    [
-      "UPL4",
-      "OFM3"
-    ],
-    [
-      "UPL4",
-      "HEF5"
-    ],
-    [
-      "UPL4",
-      "HEF6"
-    ],
-    [
-      "UPL5",
-      "CMOR1"
-    ],
-    [
-      "UPL5",
-      "UPL1"
-    ],
-    [
-      "UPL5",
-      "UPL2"
-    ],
-    [
-      "UPL5",
-      "UPL3"
-    ],
-    [
-      "UPL5",
-      "UPL7"
-    ],
-    [
-      "UPL5",
-      "OFM3"
-    ],
-    [
-      "UPL5",
-      "HEF5"
-    ],
-    [
-      "UPL5",
-      "HEF6"
-    ],
-    [
-      "UPL6",
-      "CMOR1"
-    ],
-    [
-      "UPL6",
-      "UPL1"
-    ],
-    [
-      "UPL6",
-      "UPL2"
-    ],
-    [
-      "UPL6",
-      "UPL3"
-    ],
-    [
-      "UPL6",
-      "UPL7"
-    ],
-    [
-      "UPL6",
-      "OFM3"
-    ],
-    [
-      "UPL6",
-      "HEF5"
-    ],
-    [
-      "UPL6",
-      "HEF6"
-    ],
-    [
-      "UPL7",
-      "CMOR1"
-    ],
-    [
-      "UPL7",
-      "UPL1"
-    ],
-    [
-      "UPL7",
-      "UPL2"
-    ],
-    [
-      "UPL7",
-      "UPL3"
-    ],
-    [
-      "UPL7",
-      "UPL4"
-    ],
-    [
-      "UPL7",
-      "UPL5"
-    ],
-    [
-      "UPL7",
-      "UPL6"
-    ],
-    [
-      "UPL7",
-      "SPM4"
-    ],
-    [
-      "UPL7",
-      "HEF5"
-    ],
-    [
-      "SAM1",
-      "SPM4"
-    ],
-    [
-      "SAM1",
-      "OFM1"
-    ],
-    [
-      "SAM1",
-      "OFM2"
-    ],
-    [
-      "SAM1",
-      "CAHL3"
-    ],
-    [
-      "SAM1",
-      "PRF1"
-    ],
-    [
-      "SAM1",
-      "PRF2"
-    ],
-    [
-      "SAM1",
-      "GRH6"
-    ],
-    [
-      "SAM1",
-      "GRH7"
-    ],
-    [
-      "SAM1",
-      "HEF5"
-    ],
-    [
-      "SAM1",
-      "HEF6"
-    ],
-    [
-      "SAM1",
-      "OP1"
-    ],
-    [
-      "SAM1",
-      "OP2"
-    ],
-    [
-      "SAM1",
-      "OP3"
-    ],
-    [
-      "SPM4",
-      "CMOR1"
-    ],
-    [
-      "SPM4",
-      "UPL1"
-    ],
-    [
-      "SPM4",
-      "UPL2"
-    ],
-    [
-      "SPM4",
-      "UPL3"
-    ],
-    [
-      "SPM4",
-      "UPL7"
-    ],
-    [
-      "SPM4",
-      "SAM1"
-    ],
-    [
-      "SPM4",
-      "OFM1"
-    ],
-    [
-      "SPM4",
-      "OFM2"
-    ],
-    [
-      "SPM4",
-      "OFM3"
-    ],
-    [
-      "SPM4",
-      "CSAM1"
-    ],
-    [
-      "SPM4",
-      "HEF5"
-    ],
-    [
-      "SPM4",
-      "HEF6"
-    ],
-    [
-      "OFM1",
-      "SAM1"
-    ],
-    [
-      "OFM1",
-      "SPM4"
-    ],
-    [
-      "OFM1",
-      "PRF1"
-    ],
-    [
-      "OFM1",
-      "PRF2"
-    ],
-    [
-      "OFM1",
-      "CSAM1"
-    ],
-    [
-      "OFM1",
-      "GRH7"
-    ],
-    [
-      "OFM1",
-      "HEF5"
-    ],
-    [
-      "OFM1",
-      "HEF6"
-    ],
-    [
-      "OFM1",
-      "WD10"
-    ],
-    [
-      "OFM2",
-      "SAM1"
-    ],
-    [
-      "OFM2",
-      "SPM4"
-    ],
-    [
-      "OFM2",
-      "PRF2"
-    ],
-    [
-      "OFM2",
-      "CSAM1"
-    ],
-    [
-      "OFM2",
-      "GRH6"
-    ],
-    [
-      "OFM2",
-      "GRH7"
-    ],
-    [
-      "OFM2",
-      "HEF5"
-    ],
-    [
-      "OFM2",
-      "HEF6"
-    ],
-    [
-      "OFM2",
-      "WD10"
-    ],
-    [
-      "OFM3",
-      "CMOR1"
-    ],
-    [
-      "OFM3",
-      "UPL1"
-    ],
-    [
-      "OFM3",
-      "UPL2"
-    ],
-    [
-      "OFM3",
-      "UPL3"
-    ],
-    [
-      "OFM3",
-      "UPL4"
-    ],
-    [
-      "OFM3",
-      "UPL5"
-    ],
-    [
-      "OFM3",
-      "UPL6"
-    ],
-    [
-      "OFM3",
-      "SPM4"
-    ],
-    [
-      "OFM3",
-      "HEF5"
-    ],
-    [
-      "SP1",
-      "CMOR1"
-    ],
-    [
-      "SP1",
-      "SP3"
-    ],
-    [
-      "SP1",
-      "WD10"
-    ],
-    [
-      "WS1",
-      "WS2"
-    ],
-    [
-      "WS1",
-      "WD2"
-    ],
-    [
-      "WS2",
-      "WS1"
-    ],
-    [
-      "WS2",
-      "WD2"
-    ],
-    [
-      "CAHL3",
-      "SAM1"
-    ],
-    [
-      "CAHL3",
-      "PRF2"
-    ],
-    [
-      "CAHL3",
-      "CSAM1"
-    ],
-    [
-      "CHRW1",
-      "CHRW2"
-    ],
-    [
-      "CHRW1",
-      "CHRW3"
-    ],
-    [
-      "CHRW2",
-      "CHRW1"
-    ],
-    [
-      "CHRW2",
-      "CHRW3"
-    ],
-    [
-      "CHRW3",
-      "CHRW1"
-    ],
-    [
-      "CHRW3",
-      "CHRW2"
-    ],
-    [
-      "PRF1",
-      "SAM1"
-    ],
-    [
-      "PRF1",
-      "OFM1"
-    ],
-    [
-      "PRF1",
-      "PRF2"
-    ],
-    [
-      "PRF1",
-      "CSAM1"
-    ],
-    [
-      "PRF1",
-      "OP1"
-    ],
-    [
-      "PRF1",
-      "OP2"
-    ],
-    [
-      "PRF2",
-      "SAM1"
-    ],
-    [
-      "PRF2",
-      "OFM1"
-    ],
-    [
-      "PRF2",
-      "OFM2"
-    ],
-    [
-      "PRF2",
-      "CAHL3"
-    ],
-    [
-      "PRF2",
-      "PRF1"
-    ],
-    [
-      "PRF2",
-      "CSAM1"
-    ],
-    [
-      "PRF2",
-      "GRH7"
-    ],
-    [
-      "PRF2",
-      "HEF5"
-    ],
-    [
-      "PRF2",
-      "HEF6"
-    ],
-    [
-      "PRF2",
-      "HEF8"
-    ],
-    [
-      "PRF2",
-      "OP1"
-    ],
-    [
-      "PRF2",
-      "OP2"
-    ],
-    [
-      "CSAM1",
-      "SPM4"
-    ],
-    [
-      "CSAM1",
-      "OFM1"
-    ],
-    [
-      "CSAM1",
-      "OFM2"
-    ],
-    [
-      "CSAM1",
-      "CAHL3"
-    ],
-    [
-      "CSAM1",
-      "PRF1"
-    ],
-    [
-      "CSAM1",
-      "PRF2"
-    ],
-    [
-      "CSAM1",
-      "GRH6"
-    ],
-    [
-      "CSAM1",
-      "GRH7"
-    ],
-    [
-      "CSAM1",
-      "HEF5"
-    ],
-    [
-      "CSAM1",
-      "HEF6"
-    ],
-    [
-      "CSAM1",
-      "OP1"
-    ],
-    [
-      "CSAM1",
-      "OP2"
-    ],
-    [
-      "GRH6",
-      "SAM1"
-    ],
-    [
-      "GRH6",
-      "OFM2"
-    ],
-    [
-      "GRH6",
-      "CSAM1"
-    ],
-    [
-      "GRH6",
-      "GRH7"
-    ],
-    [
-      "GRH7",
-      "SAM1"
-    ],
-    [
-      "GRH7",
-      "OFM1"
-    ],
-    [
-      "GRH7",
-      "OFM2"
-    ],
-    [
-      "GRH7",
-      "PRF2"
-    ],
-    [
-      "GRH7",
-      "CSAM1"
-    ],
-    [
-      "GRH7",
-      "GRH6"
-    ],
-    [
-      "HEF5",
-      "CMOR1"
-    ],
-    [
-      "HEF5",
-      "UPL1"
-    ],
-    [
-      "HEF5",
-      "UPL2"
-    ],
-    [
-      "HEF5",
-      "UPL3"
-    ],
-    [
-      "HEF5",
-      "UPL4"
-    ],
-    [
-      "HEF5",
-      "UPL5"
-    ],
-    [
-      "HEF5",
-      "UPL6"
-    ],
-    [
-      "HEF5",
-      "UPL7"
-    ],
-    [
-      "HEF5",
-      "SAM1"
-    ],
-    [
-      "HEF5",
-      "SPM4"
-    ],
-    [
-      "HEF5",
-      "OFM1"
-    ],
-    [
-      "HEF5",
-      "OFM2"
-    ],
-    [
-      "HEF5",
-      "OFM3"
-    ],
-    [
-      "HEF5",
-      "PRF2"
-    ],
-    [
-      "HEF5",
-      "CSAM1"
-    ],
-    [
-      "HEF6",
-      "CMOR1"
-    ],
-    [
-      "HEF6",
-      "UPL4"
-    ],
-    [
-      "HEF6",
-      "UPL5"
-    ],
-    [
-      "HEF6",
-      "UPL6"
-    ],
-    [
-      "HEF6",
-      "SAM1"
-    ],
-    [
-      "HEF6",
-      "SPM4"
-    ],
-    [
-      "HEF6",
-      "OFM1"
-    ],
-    [
-      "HEF6",
-      "OFM2"
-    ],
-    [
-      "HEF6",
-      "PRF2"
-    ],
-    [
-      "HEF6",
-      "CSAM1"
-    ],
-    [
-      "HEF8",
-      "CMOR1"
-    ],
-    [
-      "HEF8",
-      "PRF2"
-    ],
-    [
-      "HEF8",
-      "WD2"
-    ],
-    [
-      "SP3",
-      "CMOR1"
-    ],
-    [
-      "SP3",
-      "SP1"
-    ],
-    [
-      "SP3",
-      "WD10"
-    ],
-    [
-      "WD2",
-      "CMOR1"
-    ],
-    [
-      "WD2",
-      "WS1"
-    ],
-    [
-      "WD2",
-      "WS2"
-    ],
-    [
-      "WD2",
-      "HEF8"
-    ],
-    [
-      "WD10",
-      "OFM1"
-    ],
-    [
-      "WD10",
-      "OFM2"
-    ],
-    [
-      "WD10",
-      "SP1"
-    ],
-    [
-      "WD10",
-      "SP3"
-    ],
-    [
-      "OP1",
-      "CMOR1"
-    ],
-    [
-      "OP1",
-      "SAM1"
-    ],
-    [
-      "OP1",
-      "PRF1"
-    ],
-    [
-      "OP1",
-      "PRF2"
-    ],
-    [
-      "OP1",
-      "CSAM1"
-    ],
-    [
-      "OP2",
-      "CMOR1"
-    ],
-    [
-      "OP2",
-      "SAM1"
-    ],
-    [
-      "OP2",
-      "PRF1"
-    ],
-    [
-      "OP2",
-      "PRF2"
-    ],
-    [
-      "OP2",
-      "CSAM1"
-    ],
-    [
-      "OP3",
-      "CMOR1"
-    ],
-    [
-      "OP3",
-      "SAM1"
-    ]
+    ["CMOR1", "UPL1"],
+    ["CMOR1", "UPL2"],
+    ["CMOR1", "UPL3"],
+    ["CMOR1", "UPL4"],
+    ["CMOR1", "UPL5"],
+    ["CMOR1", "UPL6"],
+    ["CMOR1", "UPL7"],
+    ["CMOR1", "SPM4"],
+    ["CMOR1", "OFM3"],
+    ["CMOR1", "SP1"],
+    ["CMOR1", "HEF5"],
+    ["CMOR1", "HEF6"],
+    ["CMOR1", "HEF8"],
+    ["CMOR1", "SP3"],
+    ["CMOR1", "WD2"],
+    ["CMOR1", "OP1"],
+    ["CMOR1", "OP2"],
+    ["CMOR1", "OP3"],
+    ["UPL1", "CMOR1"],
+    ["UPL1", "UPL4"],
+    ["UPL1", "UPL5"],
+    ["UPL1", "UPL6"],
+    ["UPL1", "UPL7"],
+    ["UPL1", "SPM4"],
+    ["UPL1", "OFM3"],
+    ["UPL1", "HEF5"],
+    ["UPL2", "CMOR1"],
+    ["UPL2", "UPL4"],
+    ["UPL2", "UPL5"],
+    ["UPL2", "UPL6"],
+    ["UPL2", "UPL7"],
+    ["UPL2", "SPM4"],
+    ["UPL2", "OFM3"],
+    ["UPL2", "HEF5"],
+    ["UPL3", "CMOR1"],
+    ["UPL3", "UPL4"],
+    ["UPL3", "UPL5"],
+    ["UPL3", "UPL6"],
+    ["UPL3", "UPL7"],
+    ["UPL3", "SPM4"],
+    ["UPL3", "OFM3"],
+    ["UPL3", "HEF5"],
+    ["UPL4", "CMOR1"],
+    ["UPL4", "UPL1"],
+    ["UPL4", "UPL2"],
+    ["UPL4", "UPL3"],
+    ["UPL4", "UPL7"],
+    ["UPL4", "OFM3"],
+    ["UPL4", "HEF5"],
+    ["UPL4", "HEF6"],
+    ["UPL5", "CMOR1"],
+    ["UPL5", "UPL1"],
+    ["UPL5", "UPL2"],
+    ["UPL5", "UPL3"],
+    ["UPL5", "UPL7"],
+    ["UPL5", "OFM3"],
+    ["UPL5", "HEF5"],
+    ["UPL5", "HEF6"],
+    ["UPL6", "CMOR1"],
+    ["UPL6", "UPL1"],
+    ["UPL6", "UPL2"],
+    ["UPL6", "UPL3"],
+    ["UPL6", "UPL7"],
+    ["UPL6", "OFM3"],
+    ["UPL6", "HEF5"],
+    ["UPL6", "HEF6"],
+    ["UPL7", "CMOR1"],
+    ["UPL7", "UPL1"],
+    ["UPL7", "UPL2"],
+    ["UPL7", "UPL3"],
+    ["UPL7", "UPL4"],
+    ["UPL7", "UPL5"],
+    ["UPL7", "UPL6"],
+    ["UPL7", "SPM4"],
+    ["UPL7", "HEF5"],
+    ["SAM1", "SPM4"],
+    ["SAM1", "OFM1"],
+    ["SAM1", "OFM2"],
+    ["SAM1", "CAHL3"],
+    ["SAM1", "PRF1"],
+    ["SAM1", "PRF2"],
+    ["SAM1", "GRH6"],
+    ["SAM1", "GRH7"],
+    ["SAM1", "HEF5"],
+    ["SAM1", "HEF6"],
+    ["SAM1", "OP1"],
+    ["SAM1", "OP2"],
+    ["SAM1", "OP3"],
+    ["SPM4", "CMOR1"],
+    ["SPM4", "UPL1"],
+    ["SPM4", "UPL2"],
+    ["SPM4", "UPL3"],
+    ["SPM4", "UPL7"],
+    ["SPM4", "SAM1"],
+    ["SPM4", "OFM1"],
+    ["SPM4", "OFM2"],
+    ["SPM4", "OFM3"],
+    ["SPM4", "CSAM1"],
+    ["SPM4", "HEF5"],
+    ["SPM4", "HEF6"],
+    ["OFM1", "SAM1"],
+    ["OFM1", "SPM4"],
+    ["OFM1", "PRF1"],
+    ["OFM1", "PRF2"],
+    ["OFM1", "CSAM1"],
+    ["OFM1", "GRH7"],
+    ["OFM1", "HEF5"],
+    ["OFM1", "HEF6"],
+    ["OFM1", "WD10"],
+    ["OFM2", "SAM1"],
+    ["OFM2", "SPM4"],
+    ["OFM2", "PRF2"],
+    ["OFM2", "CSAM1"],
+    ["OFM2", "GRH6"],
+    ["OFM2", "GRH7"],
+    ["OFM2", "HEF5"],
+    ["OFM2", "HEF6"],
+    ["OFM2", "WD10"],
+    ["OFM3", "CMOR1"],
+    ["OFM3", "UPL1"],
+    ["OFM3", "UPL2"],
+    ["OFM3", "UPL3"],
+    ["OFM3", "UPL4"],
+    ["OFM3", "UPL5"],
+    ["OFM3", "UPL6"],
+    ["OFM3", "SPM4"],
+    ["OFM3", "HEF5"],
+    ["SP1", "CMOR1"],
+    ["SP1", "SP3"],
+    ["SP1", "WD10"],
+    ["WS1", "WS2"],
+    ["WS1", "WD2"],
+    ["WS2", "WS1"],
+    ["WS2", "WD2"],
+    ["CAHL3", "SAM1"],
+    ["CAHL3", "PRF2"],
+    ["CAHL3", "CSAM1"],
+    ["CHRW1", "CHRW2"],
+    ["CHRW1", "CHRW3"],
+    ["CHRW2", "CHRW1"],
+    ["CHRW2", "CHRW3"],
+    ["CHRW3", "CHRW1"],
+    ["CHRW3", "CHRW2"],
+    ["PRF1", "SAM1"],
+    ["PRF1", "OFM1"],
+    ["PRF1", "PRF2"],
+    ["PRF1", "CSAM1"],
+    ["PRF1", "OP1"],
+    ["PRF1", "OP2"],
+    ["PRF2", "SAM1"],
+    ["PRF2", "OFM1"],
+    ["PRF2", "OFM2"],
+    ["PRF2", "CAHL3"],
+    ["PRF2", "PRF1"],
+    ["PRF2", "CSAM1"],
+    ["PRF2", "GRH7"],
+    ["PRF2", "HEF5"],
+    ["PRF2", "HEF6"],
+    ["PRF2", "HEF8"],
+    ["PRF2", "OP1"],
+    ["PRF2", "OP2"],
+    ["CSAM1", "SPM4"],
+    ["CSAM1", "OFM1"],
+    ["CSAM1", "OFM2"],
+    ["CSAM1", "CAHL3"],
+    ["CSAM1", "PRF1"],
+    ["CSAM1", "PRF2"],
+    ["CSAM1", "GRH6"],
+    ["CSAM1", "GRH7"],
+    ["CSAM1", "HEF5"],
+    ["CSAM1", "HEF6"],
+    ["CSAM1", "OP1"],
+    ["CSAM1", "OP2"],
+    ["GRH6", "SAM1"],
+    ["GRH6", "OFM2"],
+    ["GRH6", "CSAM1"],
+    ["GRH6", "GRH7"],
+    ["GRH7", "SAM1"],
+    ["GRH7", "OFM1"],
+    ["GRH7", "OFM2"],
+    ["GRH7", "PRF2"],
+    ["GRH7", "CSAM1"],
+    ["GRH7", "GRH6"],
+    ["HEF5", "CMOR1"],
+    ["HEF5", "UPL1"],
+    ["HEF5", "UPL2"],
+    ["HEF5", "UPL3"],
+    ["HEF5", "UPL4"],
+    ["HEF5", "UPL5"],
+    ["HEF5", "UPL6"],
+    ["HEF5", "UPL7"],
+    ["HEF5", "SAM1"],
+    ["HEF5", "SPM4"],
+    ["HEF5", "OFM1"],
+    ["HEF5", "OFM2"],
+    ["HEF5", "OFM3"],
+    ["HEF5", "PRF2"],
+    ["HEF5", "CSAM1"],
+    ["HEF6", "CMOR1"],
+    ["HEF6", "UPL4"],
+    ["HEF6", "UPL5"],
+    ["HEF6", "UPL6"],
+    ["HEF6", "SAM1"],
+    ["HEF6", "SPM4"],
+    ["HEF6", "OFM1"],
+    ["HEF6", "OFM2"],
+    ["HEF6", "PRF2"],
+    ["HEF6", "CSAM1"],
+    ["HEF8", "CMOR1"],
+    ["HEF8", "PRF2"],
+    ["HEF8", "WD2"],
+    ["SP3", "CMOR1"],
+    ["SP3", "SP1"],
+    ["SP3", "WD10"],
+    ["WD2", "CMOR1"],
+    ["WD2", "WS1"],
+    ["WD2", "WS2"],
+    ["WD2", "HEF8"],
+    ["WD10", "OFM1"],
+    ["WD10", "OFM2"],
+    ["WD10", "SP1"],
+    ["WD10", "SP3"],
+    ["OP1", "CMOR1"],
+    ["OP1", "SAM1"],
+    ["OP1", "PRF1"],
+    ["OP1", "PRF2"],
+    ["OP1", "CSAM1"],
+    ["OP2", "CMOR1"],
+    ["OP2", "SAM1"],
+    ["OP2", "PRF1"],
+    ["OP2", "PRF2"],
+    ["OP2", "CSAM1"],
+    ["OP3", "CMOR1"],
+    ["OP3", "SAM1"]
   ],
   "scenarioData": {
     "CMOR1 - No existing actions": {

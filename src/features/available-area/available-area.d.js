@@ -41,6 +41,8 @@
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
  * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
+ * @property {LandCover[]} [landCoversForParcelExcludingSssiHf] - Land covers with SSSI/HF areas subtracted
+ * @property {{[actionCode: string]: boolean}} [sssiHfActionEligibility] - Whether each action is eligible for SSSI/HF land
  */
 
 /**

@@ -209,6 +209,57 @@ This is a pure-JavaScript LP solver already included in the project's dependenci
 
 The Bron-Kerbosch algorithm with pivoting is used to find all maximal cliques. With the small number of actions in typical scenarios (1-5 existing actions + 1 target), this runs in microseconds. For the theoretical worst case, the number of maximal cliques is bounded by 3^(n/3), which for n = 10 is approximately 59.
 
+### SSSI/HF land cover splitting
+
+When the target action is ineligible for SSSI/HF-designated land (see section 9 of `available-area-calculation.md`), the target can only use the parcel composition _excluding_ SSSI/HF, while existing actions still use the full composition. The LP handles this via a **land cover splitting** pre-processing step that runs before the eligibility map and LP model are built.
+
+For each land cover the target is eligible for, the step produces two virtual sub-covers:
+
+- **Non-SSSI/HF portion** — area from the excluding composition. The target is eligible for this portion.
+- **SSSI/HF portion** — area equal to the full cover minus the excluding cover. The target is _not_ eligible for this portion; existing eligible actions are.
+
+Land covers the target is not eligible for are passed through unchanged (there is nothing to gain from splitting them since the target has no variable there).
+
+The rest of the LP model operates on this expanded land cover array without modification. The solver naturally places existing actions on SSSI/HF portions first, because those portions do not compete with the target's variables and therefore leave the maximum area available for the target.
+
+#### Worked example
+
+**Target:** CSAM3 (ineligible for SSSI/HF) — eligible for Arable (130) and Grass (110).
+
+**Existing:** AA1 2 ha (eligible for SSSI/HF) — eligible for Grass (110) and Pond (240). AA1 is incompatible with CSAM3.
+
+**Parcel composition (full):**
+
+| Land cover | Area |
+| :--------- | :--- |
+| Arable     | 2 ha |
+| Grass      | 2 ha |
+| Pond       | 1 ha |
+
+**Parcel composition (excluding SSSI/HF):**
+
+| Land cover | Area   |
+| :--------- | :----- |
+| Arable     | 1.5 ha |
+| Grass      | 1.5 ha |
+| Pond       | 0.8 ha |
+
+After splitting, the LP sees five land cover entries:
+
+| Index | Land cover    | Area   | SSSI/HF? | Target eligible? | AA1 eligible? |
+| ----- | ------------- | ------ | -------- | ---------------- | ------------- |
+| 0     | Arable (non)  | 1.5 ha | no       | yes              | no            |
+| 1     | Arable (SSSI) | 0.5 ha | yes      | no               | no            |
+| 2     | Grass (non)   | 1.5 ha | no       | yes              | yes           |
+| 3     | Grass (SSSI)  | 0.5 ha | yes      | no               | yes           |
+| 4     | Pond          | 1 ha   | no       | no               | yes           |
+
+The solver places AA1 (2 ha): 1 ha on Pond (index 4), 0.5 ha on Grass SSSI (index 3), 0.5 ha on Grass non-SSSI (index 2).
+
+Available area = t₀ + t₂ = 1.5 + 1.0 = **2.5 ha**.
+
+Without splitting, the solver would see only three land covers and would not be able to distinguish SSSI/HF land from non-SSSI/HF land within a single cover, producing 3.0 ha (incorrect — it ignores the SSSI/HF restriction entirely).
+
 ### Immutability of existing actions
 
 Existing actions are passed to the LP unchanged. The AAC must not alter them (no capping, no filtering). If an existing action's area exceeds the total area of its eligible land covers, or if it has no eligible land covers at all, the LP will be infeasible. This is the correct outcome: it signals that the recorded data cannot be arranged on the parcel, and the result is returned with `feasible: false` along with full context for explanations.
