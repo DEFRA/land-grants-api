@@ -7,9 +7,9 @@ services:
     tmpfs:
      - /var/lib/postgresql/data
 
-  localstack:
-    environment:
-      DEBUG: 0
+  floci:
+    ports:
+      - '4566:4566'
 
 volumes:
   postgres_data: null

@@ -44,6 +44,12 @@ jobs:
           path: ./changelog
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
       - name: Create Test Coverage Reports
         run: |
           npm ci --ignore-scripts

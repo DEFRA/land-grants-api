@@ -18,17 +18,18 @@ describe('Get Action Configs By Version Query', () => {
   })
 
   const expectedActions = {
+    OFM3: '1.0.0',
+    SAM1: '1.0.0',
     SPM4: '1.0.0',
     CSAM1: '1.0.1',
-    OFM3: '1.0.0',
     PA3: '1.0.0',
-    SAM1: '1.0.0',
     CMOR1: '2.0.0',
     UPL1: '3.1.0',
     UPL2: '3.1.0',
     UPL3: '3.1.0',
     UPL8: '1.0.0',
-    UPL10: '1.0.0'
+    UPL10: '1.0.0',
+    CLIG3: '1.0.0'
   }
 
   test('should return all actions', async () => {
@@ -44,7 +45,6 @@ describe('Get Action Configs By Version Query', () => {
     const results = await getActionsByVersion(logger, connection, [])
     const resultCodes = results.map((r) => r.code)
     const expectedOrder = Object.keys(expectedActions)
-
     expect(resultCodes).toEqual(expectedOrder)
   })
 

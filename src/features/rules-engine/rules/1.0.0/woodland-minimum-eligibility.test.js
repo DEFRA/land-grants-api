@@ -4,8 +4,9 @@ const ruleDescription =
   'Is the parcel eligible for the woodland management plan action?'
 
 describe('woodlandMinimumEligibility', () => {
-  const createApplication = (oldWoodlandArea) => ({
-    oldWoodlandArea
+  const createApplication = (oldWoodlandAreaHa, newWoodlandAreaHa = 0) => ({
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa
   })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
@@ -39,7 +40,7 @@ describe('woodlandMinimumEligibility', () => {
   })
 
   test('should pass when woodland area over 10 years exceeds the minimum of 0.5ha', () => {
-    const application = createApplication('1.2')
+    const application = createApplication(1.2)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -118,7 +119,7 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (NaN ha)'
+            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0 ha)'
           ]
         }
       ]
