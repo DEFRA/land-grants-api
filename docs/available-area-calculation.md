@@ -20,13 +20,15 @@ Because certain environmental actions can coexist on the same piece of ground, t
 
 ## Input Data
 
-| Input                        | Description                                                                                               |
-| :--------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| **Target Action**            | The code for the new action the applicant is currently requesting.                                        |
-| **Existing Actions**         | A list of actions already active on the parcel, including their total area in hectares (ha).              |
-| **Action Eligibility Rules** | A mapping of action codes to the Land Cover Class Codes they are valid for (e.g., `{"CMOR1": ["130"]}`).  |
-| **Compatibility Matrix**     | A master reference defining pairs of action codes that are permitted to coexist (stack) on the same land. |
-| **Parcel Composition**       | The total area of each Land Cover Class present within the parcel.                                        |
+| Input                                      | Description                                                                                                                                                                                   |
+| :----------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Target Action**                          | The code for the new action the applicant is currently requesting.                                                                                                                            |
+| **Existing Actions**                       | A list of actions already active on the parcel, including their total area in hectares (ha).                                                                                                  |
+| **Action Eligibility Rules**               | A mapping of action codes to the Land Cover Class Codes they are valid for (e.g., `{"CMOR1": ["130"]}`).                                                                                      |
+| **Compatibility Matrix**                   | A master reference defining pairs of action codes that are permitted to coexist (stack) on the same land.                                                                                     |
+| **Parcel Composition**                     | The total area of each Land Cover Class present within the parcel.                                                                                                                            |
+| **Parcel Composition (excluding SSSI/HF)** | The area of each Land Cover Class on the parcel after subtracting intersections with SSSI and Historic Feature designations. Pre-computed and provided alongside the full parcel composition. |
+| **SSSI/HF Action Eligibility**             | A mapping indicating whether each action is eligible or ineligible for land designated as SSSI, Historic Features, or both.                                                                   |
 
 ---
 
@@ -94,6 +96,96 @@ This may lead to:
 The AAC may encounter an impossible set of input parameters, in this case it should raise an error giving as much information as possible as to why the calculation failed. Failure scenarios:
 
 - The areas of the existing actions can not be arranged on the land covers in a valid way.
+
+### 9. SSSI and Historic Feature Constraints
+
+Parts of a parcel may be designated as **Sites of Special Scientific Interest (SSSI)** or **Historic Features (HF)**. These are areas of ecological or archaeological significance that restrict which actions may be performed on them. The SSSI and HF layers may intersect with any of the land covers on a parcel.
+
+#### Eligibility
+
+Each action is either **eligible** or **ineligible** for SSSI/HF-designated land:
+
+- **Eligible** actions may be placed on designated land without restriction. For these actions, the SSSI/HF layers have no effect on the AAC.
+- **Ineligible** actions may never be placed on designated land. For example, CSAM3 (Herbal leys) is ineligible for both SSSI and HF because it could damage the ecosystem or archaeology.
+
+#### Effect on the AAC
+
+When the **target action is ineligible** for SSSI/HF, the AAC must reduce the target action's valid land covers to exclude the designated areas. Specifically:
+
+- The **target action** uses the **parcel composition excluding SSSI/HF** to determine its available land covers.
+- **Existing actions** (whether eligible or ineligible) continue to use the **full parcel composition** for their allocation. This is a simplifying assumption for the initial implementation.
+
+This means the pool of land available to the target action is smaller, but existing eligible actions can still be placed on SSSI/HF land — and the optimisation should take advantage of this.
+
+#### Extended allocation priority
+
+The existing optimisation already prefers placing existing actions on land covers not valid for the target action (see point 5). When SSSI/HF constraints apply, the allocation priority for existing actions becomes a three-tier hierarchy:
+
+1. **Covers not valid for the target action** — as before, these are the most preferred since they cannot reduce the target's available area regardless.
+2. **SSSI/HF portions of covers valid for the target action** — the target action cannot use this land anyway (it is ineligible), so placing existing actions here does not reduce the available area.
+3. **Non-SSSI/HF portions of covers valid for the target action** — this is the land the target action can actually use, so existing actions placed here directly reduce the available area. Minimise allocation to this tier.
+
+#### Worked example
+
+**Applying for:** CSAM3 (ineligible for SSSI and HF)
+
+**Existing actions:**
+
+- AA1 — 2 ha (eligible for SSSI and HF)
+
+**Action compatibility:**
+
+- AA1 is **not compatible** with CSAM3
+
+**Valid land covers:**
+
+- AA1: Arable, Pond
+- CSAM3: Grass, Arable
+
+**Parcel composition (full):**
+
+| Land Cover | Area |
+| :--------- | :--- |
+| Grass      | 2 ha |
+| Arable     | 2 ha |
+| Pond       | 1 ha |
+
+**Parcel composition (excluding SSSI/HF):**
+
+| Land Cover | Area   |
+| :--------- | :----- |
+| Grass      | 1.5 ha |
+| Arable     | 1.5 ha |
+| Pond       | 0.8 ha |
+
+The SSSI/HF intersection therefore covers 0.5 ha of Grass, 0.5 ha of Arable, and 0.2 ha of Pond.
+
+**Step 1 — Allocate AA1 on full covers, preferring non-CSAM3 covers:**
+
+AA1 (2 ha) is valid for Arable and Pond. Pond is not valid for CSAM3, so it is preferred:
+
+- 1 ha on Pond (exhausts Pond)
+- 1 ha on Arable
+
+**Step 2 — Within shared covers, assume as much of AA1 as possible sits on SSSI/HF land:**
+
+AA1 has 1 ha on Arable (a cover shared with CSAM3). The SSSI/HF intersection on Arable is 0.5 ha. Since AA1 is eligible for SSSI/HF, we assume 0.5 ha of its Arable allocation sits on the designated portion. The remaining 0.5 ha of AA1 on Arable competes with CSAM3.
+
+**Step 3 — Calculate available area:**
+
+Available area for CSAM3 = valid covers excluding SSSI/HF − incompatible existing action area on non-SSSI/HF shared covers
+
+= (Grass 1.5 ha + Arable 1.5 ha) − 0.5 ha (AA1 on non-SSSI/HF Arable)
+
+= **2.5 ha**
+
+#### Initial implementation scope
+
+The following simplifications apply to the first implementation:
+
+- **Only CSAM3** is treated as ineligible for SSSI/HF. All other actions are considered eligible and are unaffected.
+- **SSSI and HF are treated as a single combined layer** — there is no need to handle SSSI-only or HF-only ineligibility separately.
+- **Existing actions always use the full parcel composition**, even if they are themselves ineligible for SSSI/HF. This will be revisited in a future iteration.
 
 ---
 
