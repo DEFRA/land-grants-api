@@ -4,7 +4,7 @@ import { connectToTestDatbase } from '../src/tests/db-tests/setup/postgres.js'
 import { createCompatibilityMatrix } from '../src/features/available-area/compatibilityMatrix.js'
 import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableArea.js'
 import { getAvailableAreaFixtures } from '../src/tests/db-tests/setup/getAvailableAreaFixtures.js'
-import { writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 
@@ -229,23 +229,41 @@ const processAllScenarios = async (scenarios, connection, logger) => {
 }
 
 /**
+ * Load synthetic scenarios from the JSON file
+ * Synthetic scenarios provide both scenario inputs and dataRequirements directly,
+ * without needing a database to compute them.
+ * @returns {Object} Object mapping scenario names to scenario data
+ */
+const loadSyntheticScenarios = () => {
+  const syntheticPath = resolve(
+    __dirname,
+    '../src/tests/db-tests/fixtures/available-area-synthetic-scenarios.json'
+  )
+
+  if (!existsSync(syntheticPath)) {
+    return {}
+  }
+
+  const content = readFileSync(syntheticPath, 'utf-8')
+  return JSON.parse(content)
+}
+
+/**
  * Create the complete fixtures data structure
  * @param {Array<Array<string>>} compatibilityMatrix Compatible action code pairs
  * @param {Object} computedFixtures Computed scenario fixtures
- * @param {Array} scenarios Array of scenarios
  * @param {Array<string>} actionCodes Action codes
  * @returns {Object} Complete fixtures data structure
  */
 const buildFixturesData = (
   compatibilityMatrix,
   computedFixtures,
-  scenarios,
   actionCodes
 ) => ({
   metadata: {
     generatedAt: new Date().toISOString(),
     actionCodes: actionCodes,
-    scenarioCount: scenarios.length,
+    scenarioCount: Object.keys(computedFixtures).length,
     version: '1.0.0'
   },
   compatibilityMatrix,
@@ -313,15 +331,24 @@ async function generateAvailableAreaFixtures() {
       logger
     )
 
-    // Step 4: Create the complete fixture file
+    // Step 4: Load and merge synthetic scenarios
+    const syntheticScenarios = loadSyntheticScenarios()
+    const syntheticCount = Object.keys(syntheticScenarios).length
+    if (syntheticCount > 0) {
+      console.log(`🧪 Merging ${syntheticCount} synthetic scenario(s)...`)
+      Object.assign(computedFixtures, syntheticScenarios)
+    } else {
+      console.log('🧪 No synthetic scenarios found')
+    }
+
+    // Step 5: Create the complete fixture file
     const fixturesData = buildFixturesData(
       compatibilityMatrix,
       computedFixtures,
-      scenarios,
       ACTION_CODES
     )
 
-    // Step 5: Write to fixture file
+    // Step 6: Write to fixture file
     const outputPath = resolve(
       __dirname,
       '../src/tests/db-tests/fixtures/available-area-computed.json'
