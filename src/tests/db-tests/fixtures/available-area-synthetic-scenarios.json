@@ -1,0 +1,33 @@
+{
+  "SSSI/HF - Ineligible target action with one eligible incompatible existing action": {
+    "scenario": {
+      "applyingForAction": "CSAM3",
+      "sheetId": "SYNTH1",
+      "parcelId": "0001",
+      "existingActions": [{ "actionCode": "AA1", "areaSqm": 20000 }],
+      "expectedAvailableArea": "2.5000"
+    },
+    "dataRequirements": {
+      "landCoverCodesForAppliedForAction": [
+        { "landCoverCode": "130", "landCoverClassCode": "130" },
+        { "landCoverCode": "111", "landCoverClassCode": "110" }
+      ],
+      "landCoversForParcel": [
+        { "landCoverClassCode": "130", "areaSqm": 20000 },
+        { "landCoverClassCode": "110", "areaSqm": 20000 },
+        { "landCoverClassCode": "240", "areaSqm": 10000 }
+      ],
+      "landCoversForParcelExcludingSssiHf": [
+        { "landCoverClassCode": "130", "areaSqm": 15000 },
+        { "landCoverClassCode": "110", "areaSqm": 15000 },
+        { "landCoverClassCode": "240", "areaSqm": 8000 }
+      ],
+      "landCoversForExistingActions": {
+        "AA1": [
+          { "landCoverCode": "111", "landCoverClassCode": "110" },
+          { "landCoverCode": "243", "landCoverClassCode": "240" }
+        ]
+      }
+    }
+  }
+}
