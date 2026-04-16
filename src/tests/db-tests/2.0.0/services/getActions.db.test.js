@@ -34,6 +34,7 @@ describe('getActions Service (DB)', () => {
   })
 
   const expectedActions = {
+    CLIG3: '1.0.0',
     CSAM1: '1.0.1',
     OFM3: '1.0.0',
     SAM1: '1.0.0',
