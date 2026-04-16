@@ -27,6 +27,10 @@
           { "landCoverCode": "111", "landCoverClassCode": "110" },
           { "landCoverCode": "243", "landCoverClassCode": "240" }
         ]
+      },
+      "sssiHfActionEligibility": {
+        "CSAM3": false,
+        "AA1": true
       }
     }
   }

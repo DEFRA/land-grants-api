@@ -9,7 +9,7 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
   const fixtures = getAvailableAreaComputedFixtures()
 
   test.each(fixtures)(
-    `%p`,
+    `%s`,
     (
       name,
       { applyingForAction, existingActions, expectedAvailableArea },
@@ -33,14 +33,14 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         aacDataRequirements
       )
       console.log(`Tested scenario: ${name}`)
-      const sections = formatExplanationSections(result.context, {
-        targetAction: applyingForAction,
-        availableAreaSqm: result.availableAreaSqm,
-        totalValidLandCoverSqm: result.totalValidLandCoverSqm,
-        landCoverToString
-      })
+      // const sections = formatExplanationSections(result.context, {
+      //   targetAction: applyingForAction,
+      //   availableAreaSqm: result.availableAreaSqm,
+      //   totalValidLandCoverSqm: result.totalValidLandCoverSqm,
+      //   landCoverToString
+      // })
 
-      console.log('Explanation Sections:', JSON.stringify(sections, null, 2))
+      // console.log('Explanation Sections:', JSON.stringify(sections, null, 2))
       if (expectedAvailableArea === 'INFEASIBLE') {
         expect(result.feasible).toBe(false)
       } else {
