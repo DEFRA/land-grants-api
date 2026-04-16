@@ -23,6 +23,7 @@
  * @property {number} groupId
  * @property {string} groupName
  * @property {number} displayOrder
+ * @property {object} paymentMethod
  */
 
 /**

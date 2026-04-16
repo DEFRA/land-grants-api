@@ -5,7 +5,6 @@ import {
   endOfMonth,
   format,
   isBefore,
-  isWeekend,
   setDate,
   startOfMonth,
   subDays
@@ -20,18 +19,7 @@ export const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd'
  * @returns {Date} the PAYMENT_DAY_OF_MONTH of the month (or adjusted if weekend)
  */
 function getPaymentDayForDate(date) {
-  const fifthOfMonth = setDate(date, PAYMENT_DAY_OF_MONTH)
-
-  if (!isWeekend(fifthOfMonth)) {
-    return fifthOfMonth
-  }
-
-  let newDate = fifthOfMonth
-  while (isWeekend(newDate)) {
-    newDate = addDays(newDate, 1)
-  }
-
-  return newDate
+  return setDate(date, PAYMENT_DAY_OF_MONTH)
 }
 
 /**
