@@ -13,7 +13,7 @@ import {
 } from '../schema/validate-wmp.schema.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
-import { wmpResultTransformer } from '../service/wmp.transformer.js'
+import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
 import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
 import { splitParcelId } from '../../parcel/service/parcel.service.js'
 
