@@ -1,5 +1,5 @@
 /**
- * @import { CompatibilityCheckFn, ActionWithArea, AvailableAreaDataRequirements, AvailableAreaForActionLp } from './available-area.d.js'
+ * @import { CompatibilityCheckFn, ActionWithArea, AvailableAreaDataRequirements, AvailableAreaForActionLp, DesignationOverlap, DesignationZone } from './available-area.d.js'
  * @import { LandCoverCodes } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
@@ -32,46 +32,68 @@ export function findMaximumAvailableArea(
     landCoverCodesForAppliedForAction,
     landCoversForParcel,
     landCoversForExistingActions,
-    landCoversForParcelExcludingSssiHf,
-    sssiHfActionEligibility
+    sssiOverlap,
+    hfOverlap,
+    sssiAndHfOverlap,
+    sssiActionEligibility,
+    hfActionEligibility
   } = dataRequirements
 
   const targetEligibleCodes = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
   )
 
-  // Determine if the target action is ineligible for SSSI/HF designated land
-  const targetSssiHfIneligible =
-    sssiHfActionEligibility?.[applyingForAction] === false
+  // Determine if any action is ineligible for a designation,
+  // which triggers land cover splitting into designation zones
+  const hasDesignationData = sssiOverlap && hfOverlap && sssiAndHfOverlap
+  const allActionCodes = [
+    applyingForAction,
+    ...existingActions.map((a) => a.actionCode)
+  ]
+  const needsSplitting =
+    hasDesignationData &&
+    allActionCodes.some(
+      (code) =>
+        sssiActionEligibility?.[code] === false ||
+        hfActionEligibility?.[code] === false
+    )
 
-  // When the target is SSSI/HF-ineligible, split land covers into
-  // SSSI/HF and non-SSSI/HF portions so the LP can optimally place
-  // existing actions on designated land first
+  // When designation constraints apply, split land covers into
+  // designation zones so the LP can optimally place actions
   let effectiveLandCovers = landCoversForParcel
-  let isSssiHfMap
+  /** @type {DesignationZone[] | undefined} */
+  let designationZones
 
-  if (targetSssiHfIneligible && landCoversForParcelExcludingSssiHf) {
-    const split = splitLandCoversForSssiHf(
+  if (needsSplitting) {
+    const split = splitLandCoversByDesignation(
       landCoversForParcel,
-      landCoversForParcelExcludingSssiHf,
+      sssiOverlap,
+      hfOverlap,
+      sssiAndHfOverlap,
       targetEligibleCodes
     )
     effectiveLandCovers = split.effectiveLandCovers
-    isSssiHfMap = split.isSssiHfMap
+    designationZones = split.designationZones
   }
 
   // Calculate total valid land cover area for the target action
-  // When SSSI/HF-ineligible, use the excluding composition
-  const targetLandCovers =
-    targetSssiHfIneligible && landCoversForParcelExcludingSssiHf
-      ? landCoversForParcelExcludingSssiHf
-      : landCoversForParcel
+  // taking into account designation zone restrictions
+  const targetSssiEligible =
+    sssiActionEligibility?.[applyingForAction] !== false
+  const targetHfEligible = hfActionEligibility?.[applyingForAction] !== false
 
-  const totalValidLandCoverSqm = targetLandCovers.reduce((sum, lc) => {
-    if (targetEligibleCodes.includes(lc.landCoverClassCode)) {
-      return sum + lc.areaSqm
-    }
-    return sum
+  const totalValidLandCoverSqm = effectiveLandCovers.reduce((sum, lc, i) => {
+    if (!targetEligibleCodes.includes(lc.landCoverClassCode)) return sum
+    if (
+      designationZones &&
+      !isEligibleForZone(
+        designationZones[i],
+        targetSssiEligible,
+        targetHfEligible
+      )
+    )
+      return sum
+    return sum + lc.areaSqm
   }, 0)
 
   // If no eligible land covers for the target, available area is 0
@@ -94,7 +116,9 @@ export function findMaximumAvailableArea(
       landCoverCodesForAppliedForAction,
       {},
       effectiveLandCovers,
-      isSssiHfMap
+      designationZones,
+      sssiActionEligibility,
+      hfActionEligibility
     )
     return {
       feasible: true,
@@ -124,11 +148,13 @@ export function findMaximumAvailableArea(
     landCoverCodesForAppliedForAction,
     landCoversForExistingActions,
     effectiveLandCovers,
-    isSssiHfMap
+    designationZones,
+    sssiActionEligibility,
+    hfActionEligibility
   )
 
-  // All action codes involved (existing + target)
-  const allActionCodes = [
+  // All action codes involved (existing + target) — for clique detection
+  const allLabelledCodes = [
     targetLabel,
     ...existingActions.map((a) => a.actionCode)
   ]
@@ -144,7 +170,10 @@ export function findMaximumAvailableArea(
       : b
     return compatibilityCheckFn(realA, realB)
   }
-  const cliques = findMaximalCliques(allActionCodes, wrappedCompatibilityCheck)
+  const cliques = findMaximalCliques(
+    allLabelledCodes,
+    wrappedCompatibilityCheck
+  )
 
   // Build and solve the LP model
   const model = buildLpModel(
@@ -191,14 +220,59 @@ export function findMaximumAvailableArea(
 }
 
 /**
+ * Checks if an action is eligible for a given designation zone.
+ * @param {DesignationZone} zone
+ * @param {boolean} sssiEligible - Whether the action is eligible for SSSI land
+ * @param {boolean} hfEligible - Whether the action is eligible for HF land
+ * @returns {boolean}
+ */
+function isEligibleForZone(zone, sssiEligible, hfEligible) {
+  switch (zone) {
+    case 'neither':
+      return true
+    case 'sssi_only':
+      return sssiEligible
+    case 'hf_only':
+      return hfEligible
+    case 'sssi_and_hf':
+      return sssiEligible && hfEligible
+    default:
+      return true
+  }
+}
+
+/**
+ * Filters land cover indices by designation zone eligibility.
+ * @param {number[]} baseIndices
+ * @param {DesignationZone[] | undefined} designationZones
+ * @param {boolean} sssiEligible
+ * @param {boolean} hfEligible
+ * @returns {number[]}
+ */
+function filterIndicesByDesignation(
+  baseIndices,
+  designationZones,
+  sssiEligible,
+  hfEligible
+) {
+  if (!designationZones) return baseIndices
+  return baseIndices.filter((i) =>
+    isEligibleForZone(designationZones[i], sssiEligible, hfEligible)
+  )
+}
+
+/**
  * Builds a map of actionCode -> array of parcel land cover indices the action is eligible for.
  * Handles unreliable land cover data by checking both landCoverCode and landCoverClassCode.
+ * When designation zones are active, filters indices based on each action's SSSI/HF eligibility.
  * @param {string} targetLabel
  * @param {ActionWithArea[]} existingActions
  * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction
  * @param {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
  * @param {LandCover[]} landCoversForParcel
- * @param {boolean[]} [isSssiHfMap] - When present, filters SSSI/HF indices from target eligibility
+ * @param {DesignationZone[]} [designationZones] - Zone tags for each effective land cover entry
+ * @param {{[actionCode: string]: boolean}} [sssiActionEligibility]
+ * @param {{[actionCode: string]: boolean}} [hfActionEligibility]
  * @returns {Map<string, number[]>} actionCode -> array of land cover indices
  */
 function buildEligibilityMap(
@@ -207,32 +281,55 @@ function buildEligibilityMap(
   landCoverCodesForAppliedForAction,
   landCoversForExistingActions,
   landCoversForParcel,
-  isSssiHfMap
+  designationZones,
+  sssiActionEligibility,
+  hfActionEligibility
 ) {
   const eligibility = new Map()
 
+  // Resolve the real action code from the target label
+  const targetRealCode = targetLabel.endsWith(TARGET_SUFFIX)
+    ? targetLabel.slice(0, -TARGET_SUFFIX.length)
+    : targetLabel
+
   // Build for target action (stored under the target label to avoid collisions)
   const targetMerged = mergeLandCoverCodes(landCoverCodesForAppliedForAction)
-  let targetIndices = getEligibleLandCoverIndices(
+  const targetIndices = getEligibleLandCoverIndices(
     targetMerged,
     landCoversForParcel
   )
 
-  // When SSSI/HF splitting is active, the target can only use non-SSSI/HF portions
-  if (isSssiHfMap) {
-    targetIndices = targetIndices.filter((i) => !isSssiHfMap[i])
-  }
+  const targetSssiEligible = sssiActionEligibility?.[targetRealCode] !== false
+  const targetHfEligible = hfActionEligibility?.[targetRealCode] !== false
 
-  eligibility.set(targetLabel, targetIndices)
+  eligibility.set(
+    targetLabel,
+    filterIndicesByDesignation(
+      targetIndices,
+      designationZones,
+      targetSssiEligible,
+      targetHfEligible
+    )
+  )
 
   // Build for each existing action
   for (const action of existingActions) {
     const actionLandCoverCodes = landCoversForExistingActions[action.actionCode]
     if (actionLandCoverCodes) {
       const merged = mergeLandCoverCodes(actionLandCoverCodes)
+      const indices = getEligibleLandCoverIndices(merged, landCoversForParcel)
+
+      const sssiEligible = sssiActionEligibility?.[action.actionCode] !== false
+      const hfEligible = hfActionEligibility?.[action.actionCode] !== false
+
       eligibility.set(
         action.actionCode,
-        getEligibleLandCoverIndices(merged, landCoversForParcel)
+        filterIndicesByDesignation(
+          indices,
+          designationZones,
+          sssiEligible,
+          hfEligible
+        )
       )
     } else {
       eligibility.set(action.actionCode, [])
@@ -259,57 +356,71 @@ function getEligibleLandCoverIndices(mergedCodes, landCoversForParcel) {
 }
 
 /**
- * Splits land covers into SSSI/HF and non-SSSI/HF portions for land covers
- * the target action is eligible for. This allows the LP to optimally place
- * existing actions on SSSI/HF portions that the target cannot use.
+ * Splits land covers into designation zones (neither, SSSI-only, HF-only, both)
+ * for land covers the target action is eligible for. This allows the LP to
+ * optimally place actions based on their designation eligibility.
  * @param {LandCover[]} landCoversForParcel - Full parcel land covers
- * @param {LandCover[]} landCoversExcluding - Land covers with SSSI/HF areas subtracted
+ * @param {DesignationOverlap[]} sssiOverlap - SSSI intersection per land cover
+ * @param {DesignationOverlap[]} hfOverlap - HF intersection per land cover
+ * @param {DesignationOverlap[]} sssiAndHfOverlap - SSSI+HF intersection per land cover
  * @param {string[]} targetEligibleCodes - Merged land cover codes the target can use
- * @returns {{ effectiveLandCovers: LandCover[], isSssiHfMap: boolean[] }}
+ * @returns {{ effectiveLandCovers: LandCover[], designationZones: DesignationZone[] }}
  */
-function splitLandCoversForSssiHf(
+function splitLandCoversByDesignation(
   landCoversForParcel,
-  landCoversExcluding,
+  sssiOverlap,
+  hfOverlap,
+  sssiAndHfOverlap,
   targetEligibleCodes
 ) {
   /** @type {LandCover[]} */
   const effectiveLandCovers = []
-  /** @type {boolean[]} */
-  const isSssiHfMap = []
+  /** @type {DesignationZone[]} */
+  const designationZones = []
 
   for (let i = 0; i < landCoversForParcel.length; i++) {
-    const fullLc = landCoversForParcel[i]
-    const excludingLc = landCoversExcluding[i]
+    const lc = landCoversForParcel[i]
 
-    if (targetEligibleCodes.includes(fullLc.landCoverClassCode)) {
-      const nonSssiArea = excludingLc.areaSqm
-      const sssiArea = Math.max(0, fullLc.areaSqm - excludingLc.areaSqm)
-
-      if (nonSssiArea > 0) {
-        effectiveLandCovers.push({
-          landCoverClassCode: fullLc.landCoverClassCode,
-          areaSqm: nonSssiArea
-        })
-        isSssiHfMap.push(false)
-      }
-
-      if (sssiArea > 0) {
-        effectiveLandCovers.push({
-          landCoverClassCode: fullLc.landCoverClassCode,
-          areaSqm: sssiArea
-        })
-        isSssiHfMap.push(true)
-      }
-    } else {
+    if (!targetEligibleCodes.includes(lc.landCoverClassCode)) {
+      // Land cover not eligible for the target — pass through unchanged
       effectiveLandCovers.push({
-        landCoverClassCode: fullLc.landCoverClassCode,
-        areaSqm: fullLc.areaSqm
+        landCoverClassCode: lc.landCoverClassCode,
+        areaSqm: lc.areaSqm
       })
-      isSssiHfMap.push(false)
+      designationZones.push('neither')
+      continue
+    }
+
+    // Derive four zones via inclusion-exclusion
+    const sssi = sssiOverlap[i].areaSqm
+    const hf = hfOverlap[i].areaSqm
+    const both = sssiAndHfOverlap[i].areaSqm
+
+    const bothArea = Math.max(0, both)
+    const sssiOnlyArea = Math.max(0, sssi - both)
+    const hfOnlyArea = Math.max(0, hf - both)
+    const neitherArea = Math.max(0, lc.areaSqm - sssi - hf + both)
+
+    /** @type {[DesignationZone, number][]} */
+    const zones = [
+      ['neither', neitherArea],
+      ['sssi_only', sssiOnlyArea],
+      ['hf_only', hfOnlyArea],
+      ['sssi_and_hf', bothArea]
+    ]
+
+    for (const [zone, area] of zones) {
+      if (area > 0) {
+        effectiveLandCovers.push({
+          landCoverClassCode: lc.landCoverClassCode,
+          areaSqm: area
+        })
+        designationZones.push(zone)
+      }
     }
   }
 
-  return { effectiveLandCovers, isSssiHfMap }
+  return { effectiveLandCovers, designationZones }
 }
 
 /**
