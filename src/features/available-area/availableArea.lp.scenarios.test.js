@@ -21,9 +21,11 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         landCoversForParcel: dataRequirements.landCoversForParcel,
         landCoversForExistingActions:
           dataRequirements.landCoversForExistingActions,
-        landCoversForParcelExcludingSssiHf:
-          dataRequirements.landCoversForParcelExcludingSssiHf,
-        sssiHfActionEligibility: dataRequirements.sssiHfActionEligibility,
+        sssiOverlap: dataRequirements.sssiOverlap,
+        hfOverlap: dataRequirements.hfOverlap,
+        sssiAndHfOverlap: dataRequirements.sssiAndHfOverlap,
+        sssiActionEligibility: dataRequirements.sssiActionEligibility,
+        hfActionEligibility: dataRequirements.hfActionEligibility,
         landCoverToString
       }
 

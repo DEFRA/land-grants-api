@@ -36,13 +36,26 @@
  */
 
 /**
+ * @typedef {object} DesignationOverlap
+ * @property {string} landCoverClassCode - The land cover class code this overlap relates to
+ * @property {number} areaSqm - Area of a land cover that intersects this designation
+ */
+
+/**
+ * @typedef {'neither' | 'sssi_only' | 'hf_only' | 'sssi_and_hf'} DesignationZone
+ */
+
+/**
  * @typedef {object} AvailableAreaDataRequirements
  * @property {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
  * @property {LandCover[]} landCoversForParcel - The land covers for the parcel
  * @property {{[key: string]: LandCoverCodes[]}} landCoversForExistingActions
  * @property {CodeToString} landCoverToString - Function to get description of land cover or land cover class code
- * @property {LandCover[]} [landCoversForParcelExcludingSssiHf] - Land covers with SSSI/HF areas subtracted
- * @property {{[actionCode: string]: boolean}} [sssiHfActionEligibility] - Whether each action is eligible for SSSI/HF land
+ * @property {DesignationOverlap[]} [sssiOverlap] - Per land cover: area intersecting SSSI (parallel to landCoversForParcel)
+ * @property {DesignationOverlap[]} [hfOverlap] - Per land cover: area intersecting HF (parallel to landCoversForParcel)
+ * @property {DesignationOverlap[]} [sssiAndHfOverlap] - Per land cover: area intersecting both SSSI and HF (parallel to landCoversForParcel)
+ * @property {{[actionCode: string]: boolean}} [sssiActionEligibility] - Whether each action is eligible for SSSI land
+ * @property {{[actionCode: string]: boolean}} [hfActionEligibility] - Whether each action is eligible for HF land
  */
 
 /**

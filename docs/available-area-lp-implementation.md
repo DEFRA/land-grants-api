@@ -209,56 +209,65 @@ This is a pure-JavaScript LP solver already included in the project's dependenci
 
 The Bron-Kerbosch algorithm with pivoting is used to find all maximal cliques. With the small number of actions in typical scenarios (1-5 existing actions + 1 target), this runs in microseconds. For the theoretical worst case, the number of maximal cliques is bounded by 3^(n/3), which for n = 10 is approximately 59.
 
-### SSSI/HF land cover splitting
+### Designation zone splitting
 
-When the target action is ineligible for SSSI/HF-designated land (see section 9 of `available-area-calculation.md`), the target can only use the parcel composition _excluding_ SSSI/HF, while existing actions still use the full composition. The LP handles this via a **land cover splitting** pre-processing step that runs before the eligibility map and LP model are built.
+SSSI and Historic Feature (HF) designations are independent layers that may overlap. When any action (target or existing) is ineligible for at least one designation, the LP runs a **designation zone splitting** pre-processing step (see section 9 of `available-area-calculation.md`).
 
-For each land cover the target is eligible for, the step produces two virtual sub-covers:
+#### Zone derivation
 
-- **Non-SSSI/HF portion** — area from the excluding composition. The target is eligible for this portion.
-- **SSSI/HF portion** — area equal to the full cover minus the excluding cover. The target is _not_ eligible for this portion; existing eligible actions are.
+For each land cover the target is eligible for, the step derives up to four virtual sub-covers using inclusion-exclusion on the SSSI overlap, HF overlap, and SSSI-and-HF overlap areas:
 
-Land covers the target is not eligible for are passed through unchanged (there is nothing to gain from splitting them since the target has no variable there).
+- **Neither** — `total − SSSI − HF + both`
+- **SSSI only** — `SSSI − both`
+- **HF only** — `HF − both`
+- **SSSI and HF** — `both`
 
-The rest of the LP model operates on this expanded land cover array without modification. The solver naturally places existing actions on SSSI/HF portions first, because those portions do not compete with the target's variables and therefore leave the maximum area available for the target.
+Only zones with area > 0 are emitted. Land covers the target is not eligible for are passed through unchanged with zone `neither` (there is nothing to gain from splitting them since the target has no variable there).
+
+#### Zone-based eligibility filtering
+
+After splitting, each action's eligible land cover indices are filtered by its designation eligibility:
+
+- An action **eligible for both** SSSI and HF can use all zones.
+- An action **ineligible for SSSI** cannot use `sssi_only` or `sssi_and_hf` zones.
+- An action **ineligible for HF** cannot use `hf_only` or `sssi_and_hf` zones.
+- An action **ineligible for both** can only use `neither` zones.
+
+This filtering applies to **all** actions — both the target and existing actions. Actions with no eligibility entry default to eligible.
+
+The rest of the LP model operates on the expanded land cover array without modification. The solver naturally places existing eligible actions on designated zones that the target cannot use, because those zones do not compete with the target's variables and therefore leave the maximum area available for the target.
 
 #### Worked example
 
-**Target:** CSAM3 (ineligible for SSSI/HF) — eligible for Arable (130) and Grass (110).
+**Target:** CSAM3 (ineligible for SSSI, ineligible for HF) — eligible for Arable (130) and Grass (110).
 
-**Existing:** AA1 2 ha (eligible for SSSI/HF) — eligible for Grass (110) and Pond (240). AA1 is incompatible with CSAM3.
+**Existing:** AA1 2 ha (eligible for SSSI, eligible for HF) — eligible for Grass (110) and Pond (240). AA1 is incompatible with CSAM3.
 
-**Parcel composition (full):**
+**Parcel composition with designation overlaps:**
 
-| Land cover | Area |
-| :--------- | :--- |
-| Arable     | 2 ha |
-| Grass      | 2 ha |
-| Pond       | 1 ha |
+| Land cover | Total | SSSI overlap | HF overlap | SSSI-and-HF overlap |
+| :--------- | :---- | :----------- | :--------- | :------------------ |
+| Arable     | 2 ha  | 0.5 ha       | 0.5 ha     | 0.5 ha              |
+| Grass      | 2 ha  | 0.5 ha       | 0.5 ha     | 0.5 ha              |
+| Pond       | 1 ha  | 0.2 ha       | 0.2 ha     | 0.2 ha              |
 
-**Parcel composition (excluding SSSI/HF):**
+After splitting, the LP sees the following land cover entries (zero-area zones omitted):
 
-| Land cover | Area   |
-| :--------- | :----- |
-| Arable     | 1.5 ha |
-| Grass      | 1.5 ha |
-| Pond       | 0.8 ha |
+| Index | Land cover         | Area   | Zone        | CSAM3 eligible? | AA1 eligible? |
+| ----- | ------------------ | ------ | ----------- | --------------- | ------------- |
+| 0     | Arable (neither)   | 1.5 ha | neither     | yes             | no            |
+| 1     | Arable (SSSI & HF) | 0.5 ha | sssi_and_hf | no              | yes           |
+| 2     | Grass (neither)    | 1.5 ha | neither     | yes             | yes           |
+| 3     | Grass (SSSI & HF)  | 0.5 ha | sssi_and_hf | no              | yes           |
+| 4     | Pond               | 1 ha   | neither     | no              | yes           |
 
-After splitting, the LP sees five land cover entries:
+(In this example SSSI and HF fully overlap, so only `neither` and `sssi_and_hf` zones appear.)
 
-| Index | Land cover    | Area   | SSSI/HF? | Target eligible? | AA1 eligible? |
-| ----- | ------------- | ------ | -------- | ---------------- | ------------- |
-| 0     | Arable (non)  | 1.5 ha | no       | yes              | no            |
-| 1     | Arable (SSSI) | 0.5 ha | yes      | no               | no            |
-| 2     | Grass (non)   | 1.5 ha | no       | yes              | yes           |
-| 3     | Grass (SSSI)  | 0.5 ha | yes      | no               | yes           |
-| 4     | Pond          | 1 ha   | no       | no               | yes           |
-
-The solver places AA1 (2 ha): 1 ha on Pond (index 4), 0.5 ha on Grass SSSI (index 3), 0.5 ha on Grass non-SSSI (index 2).
+The solver places AA1 (2 ha): 1 ha on Pond (index 4), 0.5 ha on Grass SSSI & HF (index 3), 0.5 ha on Grass neither (index 2).
 
 Available area = t₀ + t₂ = 1.5 + 1.0 = **2.5 ha**.
 
-Without splitting, the solver would see only three land covers and would not be able to distinguish SSSI/HF land from non-SSSI/HF land within a single cover, producing 3.0 ha (incorrect — it ignores the SSSI/HF restriction entirely).
+Without splitting, the solver would see only three land covers and would not be able to distinguish designated land from non-designated land within a single cover, producing 3.0 ha (incorrect — it ignores the designation restrictions entirely).
 
 ### Immutability of existing actions
 
