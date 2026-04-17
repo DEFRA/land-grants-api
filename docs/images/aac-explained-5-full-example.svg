@@ -1,0 +1,76 @@
+<svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing the step-by-step placement of action AA1 across land covers and designation zones to maximise available area for CSAM3">
+  <style>
+    text { font-family: Arial, sans-serif; font-size: 12px; }
+    .heading { font-size: 14px; font-weight: bold; }
+    .label { font-size: 11px; }
+    .zone { font-size: 10px; }
+  </style>
+
+  <text x="10" y="18" class="heading">Final arrangement</text>
+
+  <!-- Zone legend - moved to top right, clear of annotations -->
+  <rect x="440" y="5" width="12" height="12" fill="#d4edda" stroke="#888" stroke-width="0.5"/>
+  <text x="456" y="15" class="zone">Neither</text>
+  <rect x="530" y="5" width="12" height="12" fill="#cce5ff" stroke="#888" stroke-width="0.5"/>
+  <text x="546" y="15" class="zone">SSSI only</text>
+  <rect x="440" y="22" width="12" height="12" fill="#f8d7da" stroke="#888" stroke-width="0.5"/>
+  <text x="456" y="32" class="zone">HF only</text>
+  <rect x="530" y="22" width="12" height="12" fill="#d5c5f0" stroke="#888" stroke-width="0.5"/>
+  <text x="546" y="32" class="zone">Both</text>
+  <rect x="440" y="39" width="12" height="12" fill="#b8daff" stroke="#888" stroke-width="0.5"/>
+  <text x="456" y="49" class="zone">AA1 placement</text>
+
+  <!-- GRASS -->
+  <text x="10" y="75" font-weight="bold" font-size="12">Grass (2 ha)</text>
+  <!-- Zones: Neither 1.5, SSSI 0.1, HF 0.2, Both 0.2 -->
+  <rect x="10" y="82" width="300" height="45" fill="#e8e8e8" stroke="#888" stroke-width="1"/>
+  <!-- Neither: 1.5/2 * 300 = 225 -->
+  <rect x="10" y="82" width="225" height="45" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <text x="117" y="108" text-anchor="middle" class="zone" fill="#333">Neither — 1.5 ha</text>
+  <!-- SSSI only: 0.1/2 * 300 = 15 -->
+  <rect x="235" y="82" width="15" height="45" fill="#cce5ff" stroke="#888" stroke-width="1"/>
+  <!-- HF only: 0.2/2 * 300 = 30 -->
+  <rect x="250" y="82" width="30" height="45" fill="#f8d7da" stroke="#888" stroke-width="1"/>
+  <!-- Both: 0.2/2 * 300 = 30 -->
+  <rect x="280" y="82" width="30" height="45" fill="#d5c5f0" stroke="#888" stroke-width="1"/>
+
+  <text x="320" y="100" class="label" fill="#28a745" font-weight="bold">No AA1 here</text>
+  <text x="320" y="116" class="label" fill="#555">All Grass free — CSAM3 can use the Neither zone (1.5 ha)</text>
+
+  <!-- ARABLE -->
+  <text x="10" y="155" font-weight="bold" font-size="12">Arable (2 ha)</text>
+  <!-- Zones: Neither 1.5, SSSI 0.2, HF 0.1, Both 0.2 -->
+  <rect x="10" y="162" width="300" height="45" fill="#e8e8e8" stroke="#888" stroke-width="1"/>
+  <!-- Neither: 1.5/2 * 300 = 225 -->
+  <rect x="10" y="162" width="225" height="45" fill="#fff3cd" stroke="#888" stroke-width="1"/>
+  <!-- SSSI only: 0.2/2 * 300 = 30 -->
+  <rect x="235" y="162" width="30" height="45" fill="#cce5ff" stroke="#888" stroke-width="1"/>
+  <!-- HF only: 0.1/2 * 300 = 15 -->
+  <rect x="265" y="162" width="15" height="45" fill="#f8d7da" stroke="#888" stroke-width="1"/>
+  <!-- Both: 0.2/2 * 300 = 30 -->
+  <rect x="280" y="162" width="30" height="45" fill="#d5c5f0" stroke="#888" stroke-width="1"/>
+
+  <!-- AA1 on designated zones: all of SSSI(30) + HF(15) + Both(30) = 75px = 0.5ha -->
+  <rect x="235" y="162" width="75" height="45" fill="#b8daff" stroke="#004085" stroke-width="2"/>
+  <text x="272" y="185" text-anchor="middle" fill="#004085" font-size="9" font-weight="bold">AA1</text>
+  <text x="272" y="197" text-anchor="middle" fill="#004085" font-size="8">0.5 ha</text>
+
+  <!-- AA1 on Neither zone: 0.5ha = 0.5/1.5 * 225 = 75px -->
+  <rect x="160" y="162" width="75" height="45" fill="#b8daff" stroke="#004085" stroke-width="2"/>
+  <text x="197" y="185" text-anchor="middle" fill="#004085" font-size="9" font-weight="bold">AA1</text>
+  <text x="197" y="197" text-anchor="middle" fill="#004085" font-size="8">0.5 ha</text>
+
+  <text x="320" y="182" class="label" fill="#555">AA1 fills all designated zones first,</text>
+  <text x="320" y="196" class="label" fill="#555">then 0.5 ha of the Neither zone</text>
+
+  <!-- POND -->
+  <text x="10" y="235" font-weight="bold" font-size="12">Pond (1 ha)</text>
+  <rect x="10" y="242" width="150" height="45" fill="#b8daff" stroke="#004085" stroke-width="2"/>
+  <text x="85" y="270" text-anchor="middle" fill="#004085" font-size="11">AA1 — 1 ha</text>
+  <text x="170" y="270" class="label" fill="#555">CSAM3 cannot use Pond, so this is ideal</text>
+
+  <!-- RESULT -->
+  <line x1="10" y1="298" x2="630" y2="298" stroke="#ccc" stroke-width="1"/>
+  <text x="10" y="315" font-size="13">Available area for CSAM3 = Neither zones on Grass and Arable, minus AA1 on Neither zones = (1.5 + 1.5) - 0.5 = </text>
+  <text x="597" y="315" font-size="15" font-weight="bold" fill="#28a745">2.5 ha</text>
+</svg>

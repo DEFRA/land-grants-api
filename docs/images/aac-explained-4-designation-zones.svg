@@ -1,0 +1,38 @@
+<svg viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing four designation zones created by the overlap of SSSI and Historic Feature designations">
+  <style>
+    text { font-family: Arial, sans-serif; font-size: 12px; }
+    .heading { font-size: 14px; font-weight: bold; }
+    .zone-label { font-size: 11px; font-weight: bold; }
+    .zone-desc { font-size: 10px; fill: #555; }
+  </style>
+
+  <text x="250" y="20" text-anchor="middle" class="heading">Designation Zones Within a Land Cover</text>
+
+  <!-- SSSI ellipse (cx=190, rx=150 → spans 40–340) -->
+  <ellipse cx="190" cy="145" rx="150" ry="110" fill="#cce5ff" fill-opacity="0.5" stroke="#004085" stroke-width="2"/>
+
+  <!-- HF ellipse (cx=310, rx=150 → spans 160–460) -->
+  <ellipse cx="310" cy="145" rx="150" ry="110" fill="#f8d7da" fill-opacity="0.5" stroke="#721c24" stroke-width="2"/>
+
+  <!-- Circle titles — centered in the non-overlapping portion of each ellipse -->
+  <!-- SSSI-only region center ≈ (40+160)/2 = 100 -->
+  <text x="100" y="75" text-anchor="middle" fill="#004085" font-weight="bold" font-size="13">SSSI</text>
+
+  <!-- HF-only region center ≈ (340+460)/2 = 400, nudged left to stay inside ellipse -->
+  <text x="385" y="68" text-anchor="middle" fill="#721c24" font-weight="bold" font-size="13">Historic</text>
+  <text x="385" y="84" text-anchor="middle" fill="#721c24" font-weight="bold" font-size="13">Features</text>
+
+  <!-- Zone labels — centered in each region -->
+  <!-- SSSI-only center ≈ 100 -->
+  <text x="100" y="150" text-anchor="middle" class="zone-label" fill="#004085">SSSI only</text>
+
+  <!-- Overlap center = (160+340)/2 = 250 -->
+  <text x="250" y="140" text-anchor="middle" class="zone-label" fill="#5a2d82">Both</text>
+  <text x="250" y="155" text-anchor="middle" class="zone-desc">(SSSI and HF)</text>
+
+  <!-- HF-only center ≈ 400 -->
+  <text x="400" y="150" text-anchor="middle" class="zone-label" fill="#721c24">HF only</text>
+
+  <!-- Neither zone (outside both) -->
+  <text x="250" y="275" text-anchor="middle" class="zone-label" fill="#666">Neither (no designation)</text>
+</svg>
