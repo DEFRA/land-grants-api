@@ -4,7 +4,6 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 
-vi.mock('~/src/features/parcel/service/parcel.service.js')
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))

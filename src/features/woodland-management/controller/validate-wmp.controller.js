@@ -14,8 +14,8 @@ import {
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
-import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
-import { splitParcelId } from '../../parcel/service/parcel.service.js'
+import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
+import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
 
 export const ValidateWMPController = {
   options: {
