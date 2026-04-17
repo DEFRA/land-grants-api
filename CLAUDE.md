@@ -58,7 +58,7 @@ feature/
 
 ### Key Features
 
-**Available Area Calculation (AAC)** (`src/features/available-area/`) — The most complex domain logic. Calculates maximum eligible land area for new environmental actions given existing action allocations. Uses an "ephemeral stacking" algorithm (described in `docs/available-area-calculation.md`) to logically arrange compatible actions and minimize footprint without exact geographic coordinates.
+**Available Area Calculation (AAC)** (`src/features/available-area/`) — The most complex domain logic. Calculates maximum eligible land area for new environmental actions given existing action allocations. Uses an "ephemeral stacking" algorithm (described in `docs/aac-specification.md`) to logically arrange compatible actions and minimize footprint without exact geographic coordinates.
 
 **Rules Engine** (`src/features/rules-engine/`) — Versioned business rule execution. Rules live under `rules/1.0.0/` and can be extended to new versions without breaking existing behaviour.
 

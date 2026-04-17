@@ -2,7 +2,7 @@
 
 This document explains how the Available Area Calculation (AAC) works in plain language. It is intended for readers looking for a high-level overview.
 
-For the full technical specification, see [available-area-calculation.md](./available-area-calculation.md).
+For the full technical specification, see [aac-specification.md](./aac-specification.md).
 
 ---
 

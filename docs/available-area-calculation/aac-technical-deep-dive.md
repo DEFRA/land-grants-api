@@ -2,7 +2,7 @@
 
 ## Why Linear Programming?
 
-The original AAC implementation uses a greedy heuristic: it sorts existing actions by area, then stacks them one by one into compatible groups. This approach works well in most cases but is not mathematically optimal. It can produce incorrect answers when the placement of existing actions on land covers they do not share with the target action indirectly affects the space available for it (see section 5 of `available-area-calculation.md` for a full explanation).
+The original AAC implementation uses a greedy heuristic: it sorts existing actions by area, then stacks them one by one into compatible groups. This approach works well in most cases but is not mathematically optimal. It can produce incorrect answers when the placement of existing actions on land covers they do not share with the target action indirectly affects the space available for it (see section 5 of `aac-specification.md` for a full explanation).
 
 Linear Programming (LP) solves this by formulating the problem as a mathematical optimisation. Instead of making greedy decisions one action at a time, the LP solver considers all actions, all land covers, and all compatibility relationships simultaneously to find the arrangement that provably maximises the area available for the target action.
 
@@ -88,7 +88,7 @@ If infeasible (e.g. an existing action's area exceeds the total area of its elig
 
 ## Worked example
 
-This example is from section 5 of `available-area-calculation.md`.
+This example is from section 5 of `aac-specification.md`.
 
 ### Setup
 
@@ -211,7 +211,7 @@ The Bron-Kerbosch algorithm with pivoting is used to find all maximal cliques. W
 
 ### Designation zone splitting
 
-SSSI and Historic Feature (HF) designations are independent layers that may overlap. When any action (target or existing) is ineligible for at least one designation, the LP runs a **designation zone splitting** pre-processing step (see section 9 of `available-area-calculation.md`).
+SSSI and Historic Feature (HF) designations are independent layers that may overlap. When any action (target or existing) is ineligible for at least one designation, the LP runs a **designation zone splitting** pre-processing step (see section 9 of `aac-specification.md`).
 
 #### Zone derivation
 
