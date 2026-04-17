@@ -4,8 +4,10 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
-import { paymentCalculateSchemaV1 } from '~/src/features/payment/schema/1.0.0/payment-calculate.schema.js'
-import { PaymentCalculateResponseSchemaV2 } from '~/src/features/payment/schema/2.0.0/payment-calculate.schema.js'
+import {
+  PaymentCalculateSchema,
+  PaymentCalculateResponseSchemaV2
+} from '~/src/features/payment/schema/2.0.0/payment-calculate.schema.js'
 import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 import {
   logBusinessError,
@@ -31,7 +33,7 @@ const PaymentsCalculateControllerV2 = {
     notes:
       'Calculates payment amounts for land-based actions. Used to determine annual payments based on action type and land area.',
     validate: {
-      payload: paymentCalculateSchemaV1,
+      payload: PaymentCalculateSchema,
       failAction: quantityValidationFailAction
     },
     response: {
