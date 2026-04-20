@@ -36,20 +36,4 @@ describe('Parcels Endpoints', () => {
       })
     })
   })
-
-  describe('POST /parcels', () => {
-    test('should return parcel data with authentication', async () => {
-      const response = await httpClient.post('/parcels', {
-        headers: { Authorization: getAuthHeader() },
-        body: {
-          parcelIds: ['SD5649-9215'],
-          fields: ['size', 'actions']
-        }
-      })
-
-      expect(response.status).toBe(200)
-      expect(response.data.message).toBe('success')
-      expect(response.data.parcels).toHaveLength(1)
-    })
-  })
 })

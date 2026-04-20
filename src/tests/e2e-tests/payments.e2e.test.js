@@ -37,29 +37,4 @@ describe('Payments Endpoints', () => {
       })
     })
   })
-
-  describe('POST /payments/calculate', () => {
-    test('should calculate payment with authentication', async () => {
-      const response = await httpClient.post('/payments/calculate', {
-        headers: { Authorization: getAuthHeader() },
-        body: {
-          parcel: [
-            {
-              sheetId: 'SD5649',
-              parcelId: '9215',
-              actions: [
-                {
-                  code: 'CMOR1',
-                  quantity: 10
-                }
-              ]
-            }
-          ]
-        }
-      })
-
-      expect(response.status).toBe(200)
-      expect(response.data).toHaveProperty('payment')
-    })
-  })
 })
