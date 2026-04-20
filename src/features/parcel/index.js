@@ -1,4 +1,4 @@
-import { ParcelsController, ParcelsControllerV2 } from './controllers/index.js'
+import { ParcelsControllerV2 } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -8,11 +8,6 @@ const parcel = {
     name: 'parcels',
     register: (server) => {
       server.route([
-        {
-          method: 'POST',
-          path: '/parcels',
-          ...ParcelsController
-        },
         {
           method: 'POST',
           path: '/api/v2/parcels',
