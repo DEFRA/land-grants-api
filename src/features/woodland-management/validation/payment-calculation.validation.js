@@ -1,6 +1,6 @@
-import { splitParcelId } from '~/src/features/parcel/service/parcel.service.js'
+import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 // import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { getAndValidateParcels } from '~/src/features/parcel/validation/1.0.0/parcel.validation.js'
+import { getAndValidateParcels } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'

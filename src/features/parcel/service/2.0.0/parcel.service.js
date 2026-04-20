@@ -20,7 +20,6 @@ import {
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
 import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
-import { splitParcelId } from '../parcel.service.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -29,6 +28,31 @@ import { splitParcelId } from '../parcel.service.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
+
+/**
+ * Split id into sheet id and parcel id
+ * @param {string} id - 6-character long alpha-numeric string - 4-character long numeric string
+ * @returns {object} The sheet id and parcel id
+ */
+export function splitParcelId(id, logger) {
+  try {
+    const parts = id?.split('-')
+    const sheetId = parts?.[0] || null
+    const parcelId = parts?.[1] || null
+
+    if (!sheetId || !parcelId) {
+      throw new Error(`Unable to split parcel id ${id}`)
+    }
+
+    return {
+      sheetId,
+      parcelId
+    }
+  } catch (error) {
+    logger.error(`Unable to split parcel id ${id}`, error)
+    throw error
+  }
+}
 
 /**
  * Get parcel actions with available area

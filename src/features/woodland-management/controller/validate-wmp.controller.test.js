@@ -1,10 +1,10 @@
 import Hapi from '@hapi/hapi'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
-import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
+import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
 
 vi.mock('../service/wmp-service.js')
-vi.mock('../../parcel/validation/1.0.0/parcel.validation.js')
+vi.mock('../../parcel/validation/2.0.0/parcel.validation.js')
 
 const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan
 const mockGetAndValidateParcels = getAndValidateParcels

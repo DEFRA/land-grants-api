@@ -26,6 +26,6 @@ const params = {
 }
 
 export default function () {
-  const res = http.post(`${url}/parcels`, payload, params)
+  const res = http.post(`${url}/api/v2/parcels`, payload, params)
   check(res, { 'status is 200': (r) => r.status === 200 })
 }
