@@ -142,61 +142,6 @@ describe('Application Validation Endpoints', () => {
     })
   })
 
-  describe('POST /application/validate', () => {
-    test('should validate application with authentication', async () => {
-      const response = await httpClient.post('/application/validate', {
-        headers: { Authorization: getAuthHeader() },
-        body: {
-          applicationId: 'appid-v1-1',
-          requester: 'test-user',
-          applicantCrn: '1234567890',
-          sbi: 123456789,
-          landActions: [
-            {
-              sheetId: 'SD5649',
-              parcelId: '9215',
-              actions: [
-                {
-                  code: 'CMOR1',
-                  quantity: 10
-                }
-              ]
-            }
-          ]
-        }
-      })
-
-      expect(response.status).toBe(200)
-      expect(response.data).toHaveProperty('message')
-      expect(response.data).toHaveProperty('id')
-    })
-
-    test('should return 401 without authentication', async () => {
-      const response = await httpClient.post('/application/validate', {
-        body: {
-          applicationId: 'appid-v1-2',
-          requester: 'test-user',
-          applicantCrn: '1234567890',
-          sbi: 123456789,
-          landActions: [
-            {
-              sheetId: 'SD5649',
-              parcelId: '9215',
-              actions: [
-                {
-                  code: 'CMOR1',
-                  quantity: 10
-                }
-              ]
-            }
-          ]
-        }
-      })
-
-      expect(response.status).toBe(401)
-    })
-  })
-
   describe('POST /application/validation-run/{id}', () => {
     let validationRunId
 

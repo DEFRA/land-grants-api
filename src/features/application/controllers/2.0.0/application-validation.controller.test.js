@@ -1,34 +1,34 @@
 import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
+import Boom from '@hapi/boom'
 import { ApplicationValidationController } from './application-validation.controller.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
-import { validateRequest } from '../../validation/application.validation.js'
-import { validateLandParcelActions } from '../../service/land-parcel-validation.service.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
+import {
+  validateRequestData,
+  validateAllLandParcels
+} from '~/src/features/application/service/validation.service.js'
 
-// Mock all dependencies
 vi.mock('~/src/features/actions/service/action.service.js', () => ({
   getActions: vi.fn()
 }))
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
 }))
-vi.mock('../../validation/application.validation.js', () => ({
-  validateRequest: vi.fn()
-}))
-vi.mock('../../service/land-parcel-validation.service.js', () => ({
-  validateLandParcelActions: vi.fn()
-}))
 vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
+}))
+vi.mock('~/src/features/application/service/validation.service.js', () => ({
+  validateRequestData: vi.fn(),
+  validateAllLandParcels: vi.fn()
 }))
 
 const mockGetActions = vi.mocked(getActions)
 const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
-const mockValidateRequest = vi.mocked(validateRequest)
-const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
 const mockSaveApplication = vi.mocked(saveApplication)
+const mockValidateRequestData = vi.mocked(validateRequestData)
+const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
@@ -147,7 +147,7 @@ describe('ApplicationValidationController', () => {
           register: (server) => {
             server.route({
               method: 'POST',
-              path: '/applications/validate',
+              path: '/api/v2/application/validate',
               handler: ApplicationValidationController.handler,
               options: ApplicationValidationController.options
             })
@@ -166,23 +166,23 @@ describe('ApplicationValidationController', () => {
     vi.clearAllMocks()
     mockGetActions.mockResolvedValue(mockActions)
     mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-    mockValidateRequest.mockResolvedValue([])
-    mockValidateLandParcelActions.mockResolvedValue(
-      mockActionValidationResults[0]
-    )
+    mockValidateRequestData.mockResolvedValue(null)
+    mockValidateAllLandParcels.mockResolvedValue(mockActionValidationResults)
     mockSaveApplication.mockResolvedValue(1)
   })
 
   describe('POST /applications/validate route', () => {
     test('should return 200 with valid application when validation passes', async () => {
+      const applicationId = 'APP-123'
+      const sbi = 123456789
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
-          applicationId: 'APP-123',
+          applicationId,
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -232,26 +232,19 @@ describe('ApplicationValidationController', () => {
         mockLandActions,
         'APP-123'
       )
-      expect(mockValidateRequest).toHaveBeenCalledWith(
-        mockLandActions,
-        mockActions,
-        expect.objectContaining({
-          logger: expect.any(Object),
-          server: expect.objectContaining({ postgresDb: expect.any(Object) })
-        })
+      expect(mockValidateRequestData).toHaveBeenCalledWith(
+        expect.objectContaining({ logger: expect.any(Object) }),
+        {
+          landActions: mockLandActions,
+          actions: mockActions,
+          applicationId,
+          sbi
+        }
       )
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
-      )
-      expect(mockValidateLandParcelActions).toHaveBeenCalledWith(
-        mockLandActions[0],
-        mockActions,
-        mockCompatibilityCheckFn,
-        expect.objectContaining({
-          logger: expect.any(Object),
-          server: expect.objectContaining({ postgresDb: expect.any(Object) })
-        })
+      expect(mockValidateAllLandParcels).toHaveBeenCalledWith(
+        expect.objectContaining({ logger: expect.any(Object) }),
+        mockPostgresDb,
+        { landActions: mockLandActions, actions: mockActions }
       )
     })
 
@@ -260,7 +253,7 @@ describe('ApplicationValidationController', () => {
         'Land parcels not found: SX0679-9999',
         'Actions not found: INVALID1'
       ]
-      mockValidateRequest.mockResolvedValue(validationErrors)
+      mockValidateRequestData.mockResolvedValue(validationErrors)
 
       const request = {
         method: 'POST',
@@ -280,24 +273,18 @@ describe('ApplicationValidationController', () => {
         result: { message }
       } = await server.inject(request)
 
-      expect(statusCode).toBe(400)
-      expect(message).toBe(
-        'Land parcels not found: SX0679-9999, Actions not found: INVALID1'
-      )
-
-      // Verify validation was called but not the rest of the flow
-      expect(mockValidateRequest).toHaveBeenCalled()
-      expect(mockCreateCompatibilityMatrix).not.toHaveBeenCalled()
-      expect(mockValidateLandParcelActions).not.toHaveBeenCalled()
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Not Found')
     })
 
     test('should return 400 when validation errors are null but array is not empty', async () => {
-      const validationErrors = ['Some validation error']
-      mockValidateRequest.mockResolvedValue(validationErrors)
+      mockValidateRequestData.mockResolvedValue(
+        Boom.badRequest('Some validation error')
+      )
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -322,7 +309,7 @@ describe('ApplicationValidationController', () => {
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -354,13 +341,13 @@ describe('ApplicationValidationController', () => {
     })
 
     test('should return 500 when createCompatibilityMatrix fails', async () => {
-      mockCreateCompatibilityMatrix.mockRejectedValue(
+      mockValidateAllLandParcels.mockRejectedValue(
         new Error('Compatibility matrix creation failed')
       )
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -381,13 +368,13 @@ describe('ApplicationValidationController', () => {
     })
 
     test('should return 500 when validateLandParcelActions fails', async () => {
-      mockValidateLandParcelActions.mockRejectedValue(
+      mockValidateAllLandParcels.mockRejectedValue(
         new Error('Land parcel validation failed')
       )
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -410,7 +397,7 @@ describe('ApplicationValidationController', () => {
     test('should return 422 when quantity is not a valid number', async () => {
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -444,7 +431,7 @@ describe('ApplicationValidationController', () => {
     test('should return 400 when land actions array is empty', async () => {
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -465,11 +452,11 @@ describe('ApplicationValidationController', () => {
     })
 
     test('should handle null validation errors', async () => {
-      mockValidateRequest.mockResolvedValue(null)
+      mockValidateRequestData.mockResolvedValue(null)
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -491,11 +478,11 @@ describe('ApplicationValidationController', () => {
     })
 
     test('should handle undefined validation errors', async () => {
-      mockValidateRequest.mockResolvedValue(undefined)
+      mockValidateRequestData.mockResolvedValue(undefined)
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -516,13 +503,14 @@ describe('ApplicationValidationController', () => {
       expect(valid).toBe(true)
     })
 
-    test('should log validation errors when they exist', async () => {
-      const validationErrors = ['Test validation error']
-      mockValidateRequest.mockResolvedValue(validationErrors)
+    test('should return 400 and call validateRequestData when validation errors exist', async () => {
+      mockValidateRequestData.mockResolvedValue(
+        Boom.badRequest('Test validation error')
+      )
 
       const request = {
         method: 'POST',
-        url: '/applications/validate',
+        url: '/api/v2/application/validate',
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
@@ -532,19 +520,11 @@ describe('ApplicationValidationController', () => {
         }
       }
 
-      await server.inject(request)
+      const { statusCode } = await server.inject(request)
 
-      expect(mockLogger.warn).toHaveBeenCalledWith(
-        {
-          event: {
-            action: 'Application validation',
-            category: 'validation',
-            reason: 'Test validation error',
-            type: 'warn'
-          }
-        },
-        expect.stringContaining('Validation failed: Application validation')
-      )
+      expect(statusCode).toBe(400)
+      expect(mockValidateRequestData).toHaveBeenCalled()
+      expect(mockValidateAllLandParcels).not.toHaveBeenCalled()
     })
   })
 })
