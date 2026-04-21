@@ -6,7 +6,7 @@
  */
 
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { TARGET_SUFFIX } from './availableArea.lp.js'
+import { TARGET_SUFFIX } from './availableArea.js'
 
 /**
  * Creates basic explanation section

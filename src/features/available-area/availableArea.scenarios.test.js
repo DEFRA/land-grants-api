@@ -1,7 +1,7 @@
-import { findMaximumAvailableArea } from './availableArea.lp.js'
+import { findMaximumAvailableArea } from './availableArea.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 import { landCoverToString } from './testLandCoverToString.js'
-import { formatExplanationSections } from './explanations.lp.js'
+import { formatExplanationSections } from './explanations.js'
 
 // These tests use scenarios from a fixture file (available-area-computed.json). This file is generated
 // from availableAreaCalculationScenarios.csv, along with additional data retrieved from the test DB

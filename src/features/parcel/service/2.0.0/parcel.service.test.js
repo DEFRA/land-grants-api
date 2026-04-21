@@ -4,8 +4,8 @@ import {
   getActionsForParcelWithHEFERConsentRequired
 } from './parcel.service.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
@@ -22,8 +22,8 @@ import { vi } from 'vitest'
 
 // Mock the dependencies
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
-vi.mock('~/src/features/available-area/availableArea.lp.js')
-vi.mock('~/src/features/available-area/explanations.lp.js')
+vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
 vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')

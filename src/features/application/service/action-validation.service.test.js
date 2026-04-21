@@ -3,8 +3,8 @@ import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import {
@@ -29,10 +29,10 @@ vi.mock(
     getAvailableAreaDataRequirements: vi.fn()
   })
 )
-vi.mock('~/src/features/available-area/availableArea.lp.js', () => ({
+vi.mock('~/src/features/available-area/availableArea.js', () => ({
   findMaximumAvailableArea: vi.fn()
 }))
-vi.mock('~/src/features/available-area/explanations.lp.js', () => ({
+vi.mock('~/src/features/available-area/explanations.js', () => ({
   formatExplanationSections: vi.fn()
 }))
 vi.mock('~/src/features/rules-engine/rulesEngine.js', () => ({

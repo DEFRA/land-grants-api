@@ -11,8 +11,8 @@ import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
@@ -33,8 +33,8 @@ vi.mock('~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js')
 vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
-vi.mock('~/src/features/available-area/availableArea.lp.js')
-vi.mock('~/src/features/available-area/explanations.lp.js')
+vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/explanations.js')
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )

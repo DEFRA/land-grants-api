@@ -1,5 +1,5 @@
 import { differenceInCalendarMonths } from 'date-fns'
-import { createExplanationSection } from '~/src/features/available-area/explanations.lp.js'
+import { createExplanationSection } from '~/src/features/available-area/explanations.js'
 
 /**
  * currency formatter
