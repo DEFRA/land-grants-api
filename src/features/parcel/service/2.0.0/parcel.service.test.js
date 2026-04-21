@@ -3,7 +3,7 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from './parcel.service.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import {
@@ -21,7 +21,7 @@ import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/
 import { vi } from 'vitest'
 
 // Mock the dependencies
-vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/available-area/availableArea.lp.js')
 vi.mock('~/src/features/available-area/explanations.lp.js')
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')

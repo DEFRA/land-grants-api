@@ -10,7 +10,7 @@ import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
@@ -32,7 +32,7 @@ vi.mock(
 vi.mock('~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js')
 vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
-vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/available-area/availableArea.lp.js')
 vi.mock('~/src/features/available-area/explanations.lp.js')
 vi.mock(

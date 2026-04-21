@@ -5,7 +5,7 @@ import {
   reconcilePaymentAmounts
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
-import { createExplanationSection } from '~/src/features/available-area/explanations.js'
+import { createExplanationSection } from '~/src/features/available-area/explanations.lp.js'
 
 /**
  * Returns the payment calculation for an array of parcels

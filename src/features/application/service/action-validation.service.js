@@ -1,6 +1,6 @@
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
