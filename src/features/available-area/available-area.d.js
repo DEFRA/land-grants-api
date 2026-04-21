@@ -123,10 +123,17 @@
  * @property {object|null} solution - Raw LP solver result (null if no LP was run)
  * @property {string} targetLabel - The internal label used for the target action (with __target suffix)
  * @property {ActionWithArea[]} existingActions - Existing actions on the parcel with their areas
- * @property {LandCover[]} landCoversForParcel - The parcel's land covers
+ * @property {LandCover[]} landCoversForParcel - The effective (possibly split) land covers used by the LP
  * @property {Map<string, number[]>} eligibility - Action -> eligible land cover indices
  * @property {string[][]} cliques - Maximal incompatibility cliques
  * @property {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ * @property {LandCover[]} [originalLandCovers] - The original unsplit land covers (present when designation splitting was applied)
+ * @property {DesignationZone[]} [designationZones] - Zone tag per effective land cover entry
+ * @property {DesignationOverlap[]} [sssiOverlap] - SSSI overlap per original land cover
+ * @property {DesignationOverlap[]} [hfOverlap] - HF overlap per original land cover
+ * @property {DesignationOverlap[]} [sssiAndHfOverlap] - SSSI+HF overlap per original land cover
+ * @property {{[actionCode: string]: boolean}} [sssiActionEligibility] - Whether each action is eligible for SSSI land
+ * @property {{[actionCode: string]: boolean}} [hfActionEligibility] - Whether each action is eligible for HF land
  */
 
 /**
