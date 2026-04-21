@@ -132,7 +132,16 @@ export function findMaximumAvailableArea(
         landCoversForParcel: effectiveLandCovers,
         eligibility,
         cliques: [],
-        compatibilityCheckFn
+        compatibilityCheckFn,
+        ...(needsSplitting && {
+          originalLandCovers: landCoversForParcel,
+          designationZones,
+          sssiOverlap,
+          hfOverlap,
+          sssiAndHfOverlap,
+          sssiActionEligibility,
+          hfActionEligibility
+        })
       }
     }
   }
@@ -195,7 +204,16 @@ export function findMaximumAvailableArea(
     landCoversForParcel: effectiveLandCovers,
     eligibility,
     cliques,
-    compatibilityCheckFn
+    compatibilityCheckFn,
+    ...(needsSplitting && {
+      originalLandCovers: landCoversForParcel,
+      designationZones,
+      sssiOverlap,
+      hfOverlap,
+      sssiAndHfOverlap,
+      sssiActionEligibility,
+      hfActionEligibility
+    })
   }
 
   if (!result.feasible) {

@@ -1,6 +1,7 @@
 import { findMaximumAvailableArea } from './availableArea.lp.js'
 import { getAvailableAreaComputedFixtures } from '../../tests/db-tests/setup/getAvailableAreaFixtures.js'
 import { landCoverToString } from './testLandCoverToString.js'
+import { formatExplanationSections } from './explanations.lp.js'
 
 // These tests use scenarios from a fixture file (available-area-computed.json). This file is generated
 // from availableAreaCalculationScenarios.csv, along with additional data retrieved from the test DB
@@ -37,14 +38,15 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         aacDataRequirements
       )
       console.log(`Tested scenario: ${name}`)
-      // const sections = formatExplanationSections(result.context, {
-      //   targetAction: applyingForAction,
-      //   availableAreaSqm: result.availableAreaSqm,
-      //   totalValidLandCoverSqm: result.totalValidLandCoverSqm,
-      //   landCoverToString
-      // })
+      const sections = formatExplanationSections(result.context, {
+        targetAction: applyingForAction,
+        availableAreaSqm: result.availableAreaSqm,
+        totalValidLandCoverSqm: result.totalValidLandCoverSqm,
+        landCoverToString
+      })
 
-      // console.log('Explanation Sections:', JSON.stringify(sections, null, 2))
+      expect(JSON.stringify(sections, null, 2)).toMatchSnapshot()
+
       if (expectedAvailableArea === 'INFEASIBLE') {
         expect(result.feasible).toBe(false)
       } else {
