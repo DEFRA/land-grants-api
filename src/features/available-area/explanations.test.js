@@ -165,7 +165,7 @@ describe('formatExplanationSections', () => {
     })
 
     it('includes a stacks section with land cover names', () => {
-      const section = sections.find((s) => s.title === 'Ephemeral stacks')
+      const section = sections.find((s) => s.title === 'Stacks')
       expect(section).toBeDefined()
       expect(section.content).toContainEqual(
         expect.stringContaining(
@@ -202,9 +202,7 @@ describe('formatExplanationSections', () => {
           (s) => s.title === 'Optimal placement of existing actions'
         )
       ).toBeUndefined()
-      expect(
-        sections.find((s) => s.title === 'Ephemeral stacks')
-      ).toBeUndefined()
+      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined()
 
       expect(
         sections.find((s) => s.title === 'Eligible land covers per action')
@@ -304,7 +302,7 @@ describe('formatExplanationSections', () => {
       expect(result.availableAreaSqm).toBe(50000)
 
       // Stacks section should exist and reference land covers
-      const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
+      const stackSection = sections.find((s) => s.title === 'Stacks')
       expect(stackSection).toBeDefined()
       for (const line of stackSection.content) {
         expect(line).toContain('Permanent grassland (130)')
@@ -328,7 +326,7 @@ describe('formatExplanationSections', () => {
         }
       })
 
-      const stackSection = sections.find((s) => s.title === 'Ephemeral stacks')
+      const stackSection = sections.find((s) => s.title === 'Stacks')
       expect(stackSection).toBeDefined()
       expect(stackSection.content.length).toBeGreaterThan(0)
       // EX1 is placed on Half Hedge Adjacent NON-EFA (110)
