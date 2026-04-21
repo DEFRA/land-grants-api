@@ -251,6 +251,10 @@ function deriveExplanations(aacContext) {
 
 /**
  * Derives stacks from the LP solution by examining co-located actions.
+ * Uses a "peeling" algorithm: on each land cover, repeatedly peel off the
+ * thinnest compatible layer until all area is accounted for. This produces
+ * stacks that partition the land cover — their areas sum to the total used
+ * area rather than overlapping.
  * @param {object} solution - LP solver result
  * @param {ActionWithArea[]} existingActions
  * @param {LandCover[]} landCoversForParcel
@@ -274,16 +278,75 @@ function buildStacksFromSolution(
   let stackNumber = 1
 
   for (const [lcIdx, actions] of allocationsByLc) {
-    for (const group of groupByCompatibility(actions, compatibilityCheckFn)) {
+    const lcStacks = buildStacksForLandCover(actions, compatibilityCheckFn)
+    for (const stack of lcStacks) {
       stacks.push({
         stackNumber: stackNumber++,
-        actionCodes: group.map((a) => a.actionCode),
-        areaSqm: Math.max(...group.map((a) => a.areaSqm)),
+        actionCodes: stack.actionCodes,
+        areaSqm: stack.areaSqm,
         landCoverIndex: lcIdx
       })
     }
   }
 
+  return stacks
+}
+
+/**
+ * Builds stacks for a single land cover by peeling off compatible layers.
+ * Each iteration finds the action with the smallest remaining area, groups
+ * it with all compatible actions, and peels off that area as a stack.
+ * @param {{actionCode: string, areaSqm: number}[]} actions
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
+ * @returns {{actionCodes: string[], areaSqm: number}[]}
+ */
+function buildStacksForLandCover(actions, compatibilityCheckFn) {
+  /** @type {Map<string, number>} */
+  const remaining = new Map(actions.map((a) => [a.actionCode, a.areaSqm]))
+  const stacks = []
+
+  while (remaining.size > 0) {
+    // Find the action with the smallest remaining area
+    let smallestCode = /** @type {string} */ ('')
+    let smallestArea = Infinity
+    for (const [code, area] of remaining) {
+      if (area < smallestArea) {
+        smallestArea = area
+        smallestCode = code
+      }
+    }
+
+    // Build a maximal compatible group containing the smallest action
+    const group = [smallestCode]
+    const candidates = [...remaining.keys()]
+      .filter((c) => c !== smallestCode)
+      .sort(
+        (a, b) =>
+          /** @type {number} */ (remaining.get(b)) -
+          /** @type {number} */ (remaining.get(a))
+      )
+
+    for (const candidate of candidates) {
+      if (group.every((g) => compatibilityCheckFn(g, candidate))) {
+        group.push(candidate)
+      }
+    }
+
+    stacks.push({ actionCodes: group, areaSqm: smallestArea })
+
+    // Subtract the peeled area from all group members
+    for (const code of group) {
+      const newArea = /** @type {number} */ (remaining.get(code)) - smallestArea
+      if (newArea <= 0.001) {
+        remaining.delete(code)
+      } else {
+        remaining.set(code, newArea)
+      }
+    }
+  }
+
+  // Sort by area descending so the largest stacks appear first
+  stacks.sort((a, b) => b.areaSqm - a.areaSqm)
   return stacks
 }
 
@@ -308,26 +371,6 @@ function buildAllocationsByLandCover(existingActions, eligibility, solution) {
     }
   }
   return allocations
-}
-
-/**
- * @param {{actionCode: string, areaSqm: number}[]} actions
- * @param {CompatibilityCheckFn} compatibilityCheckFn
- * @returns {{actionCode: string, areaSqm: number}[][]}
- */
-function groupByCompatibility(actions, compatibilityCheckFn) {
-  const groups = []
-  for (const action of actions) {
-    const compatibleGroup = groups.find((group) =>
-      group.every((g) => compatibilityCheckFn(g.actionCode, action.actionCode))
-    )
-    if (compatibleGroup) {
-      compatibleGroup.push(action)
-    } else {
-      groups.push([action])
-    }
-  }
-  return groups
 }
 
 const ZONE_LABELS = {
@@ -612,7 +655,7 @@ function buildStacksSection(
   })
 
   return {
-    title: 'Ephemeral stacks',
+    title: 'Stacks',
     content
   }
 }

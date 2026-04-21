@@ -39,9 +39,10 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: UPL6 + UPL7 on Permanent grassland (130) (0.0523 ha)"
+      "Stack 1: UPL7 on Permanent grassland (130) (0.04 ha)",
+      "Stack 2: UPL6 + UPL7 on Permanent grassland (130) (0.0123 ha)"
     ]
   }
 ]"
@@ -96,11 +97,13 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: CHRW1 + CHRW2 + CHRW3 on Half Hedge Adjacent NON-EFA (110) (7.989 ha)",
-      "Stack 2: CHRW1 + CHRW2 on Permanent grassland (130) (2.0034 ha)",
-      "Stack 3: CHRW1 on Hard standing (551) (0.0076 ha)"
+      "Stack 1: CHRW3 + CHRW1 + CHRW2 on Half Hedge Adjacent NON-EFA (110) (7 ha)",
+      "Stack 2: CHRW1 + CHRW2 on Half Hedge Adjacent NON-EFA (110) (0.989 ha)",
+      "Stack 3: CHRW1 on Permanent grassland (130) (1.9924 ha)",
+      "Stack 4: CHRW2 + CHRW1 on Permanent grassland (130) (0.011 ha)",
+      "Stack 5: CHRW1 on Hard standing (551) (0.0076 ha)"
     ]
   }
 ]"
@@ -167,7 +170,7 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: UPL1 on Permanent grassland (130) (0.0013 ha)"
     ]
@@ -216,7 +219,7 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: WS1 on Woodland (332) (2.5328 ha)"
     ]
@@ -265,7 +268,7 @@ exports[`Available Area Calculation Service - Scenario Tests > CSAM1 - One exist
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: WBD1 on Pond (243) (0.0175 ha)"
     ]
@@ -333,7 +336,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Existing action i
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: EX_SSSI_INELIG on Half Hedge Adjacent NON-EFA (110) [HF only] (0.2 ha)"
     ]
@@ -403,7 +406,7 @@ exports[`Available Area Calculation Service - Scenario Tests > HF only - Target 
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: EX1 on Half Hedge Adjacent NON-EFA (110) [HF only] (0.2 ha)",
       "Stack 2: EX1 on Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.1 ha)",
@@ -486,7 +489,7 @@ exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple e
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: SPM4 on Permanent grassland (130) (0.0123 ha)",
       "Stack 2: SAM1 on Permanent grassland (131) (0.0523 ha)"
@@ -539,7 +542,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: CNUM2 on Permanent grassland (130) (0.085 ha)",
       "Stack 2: CNUM2 on Permanent grassland (131) (6.8793 ha)"
@@ -590,7 +593,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: UPL1 + UPL4 + OFM3 on Permanent grassland (131) (10.4133 ha)",
       "Stack 2: UPL1 + UPL4 + OFM3 on Track - natural surface (643) (0.2479 ha)"
@@ -649,11 +652,13 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: CMOR1 + UPL2 + UPL5 on Permanent grassland (131) (4.5957 ha)",
-      "Stack 2: UPL3 on Permanent grassland (131) (1.5957 ha)",
-      "Stack 3: UPL2 on Track - natural surface (643) (0.0379 ha)"
+      "Stack 1: CMOR1 on Permanent grassland (131) (2.0379 ha)",
+      "Stack 2: UPL2 + CMOR1 + UPL5 on Permanent grassland (131) (0.9621 ha)",
+      "Stack 3: UPL3 + CMOR1 on Permanent grassland (131) (0.9621 ha)",
+      "Stack 4: UPL5 + CMOR1 + UPL3 on Permanent grassland (131) (0.6336 ha)",
+      "Stack 5: UPL2 on Track - natural surface (643) (0.0379 ha)"
     ]
   }
 ]"
@@ -711,12 +716,13 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Mutipl
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: CMOR1 + HEF6 on Permanent grassland (131) (7.1985 ha)",
-      "Stack 2: HEF8 on Permanent grassland (131) (3 ha)",
-      "Stack 3: HEF5 on Permanent grassland (131) (2 ha)",
-      "Stack 4: CMOR1 on Track - natural surface (643) (0.0379 ha)"
+      "Stack 1: HEF8 + CMOR1 on Permanent grassland (131) (3 ha)",
+      "Stack 2: HEF6 + CMOR1 on Permanent grassland (131) (2 ha)",
+      "Stack 3: HEF5 + CMOR1 on Permanent grassland (131) (2 ha)",
+      "Stack 4: CMOR1 on Permanent grassland (131) (0.1985 ha)",
+      "Stack 5: CMOR1 on Track - natural surface (643) (0.0379 ha)"
     ]
   }
 ]"
@@ -763,7 +769,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Single
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: UPL1 on Permanent grassland (130) (1.7506 ha)"
     ]
@@ -833,7 +839,7 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Targe
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: EX1 on Half Hedge Adjacent NON-EFA (110) [SSSI only] (0.2 ha)",
       "Stack 2: EX1 on Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.1 ha)",
@@ -908,7 +914,7 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: AA1 on Half Hedge Adjacent NON-EFA (110) (0.5 ha)",
       "Stack 2: AA1 on Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.5 ha)",
@@ -954,7 +960,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Single existing c
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: CMOR1 on Permanent grassland (130) (4.4251 ha)",
       "Stack 2: CMOR1 on Rivers and Streams Type 2 (582) (0.0543 ha)"
@@ -1016,10 +1022,11 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: SP1 + SP3 + WD10 on Permanent grassland (130) (4.05 ha)",
-      "Stack 2: WD2 on Woodland (332) (2.7301 ha)"
+      "Stack 1: SP1 + WD10 on Permanent grassland (130) (3.23 ha)",
+      "Stack 2: SP3 + SP1 + WD10 on Permanent grassland (130) (0.82 ha)",
+      "Stack 3: WD2 on Woodland (332) (2.7301 ha)"
     ]
   }
 ]"
@@ -1069,10 +1076,10 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: SW1 on Permanent grassland (131) (0.16 ha)",
-      "Stack 2: SW3 on Permanent grassland (131) (0.9174 ha)",
+      "Stack 1: SW3 on Permanent grassland (131) (0.9174 ha)",
+      "Stack 2: SW1 on Permanent grassland (131) (0.16 ha)",
       "Stack 3: SW3 on Half Hedge Adjacent NON-EFA (110) (2.0826 ha)"
     ]
   }
@@ -1134,7 +1141,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: PRF1 + PRF2 + CSAM1 on Half Hedge Adjacent NON-EFA (110) (7.989 ha)",
       "Stack 2: PRF1 + PRF2 + CSAM1 on Permanent grassland (130) (2.011 ha)",
@@ -1214,17 +1221,21 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: CHRW1 + CHRW2 + CHRW3 on Permanent grassland (130) (2.7159 ha)",
-      "Stack 2: PRF1 + PRF2 on Permanent grassland (130) (4 ha)",
-      "Stack 3: GRH6 + GRH7 on Permanent grassland (130) (6 ha)",
-      "Stack 4: CHRW1 + CHRW2 on Pond (243) (0.4159 ha)",
-      "Stack 5: CHRW1 + CHRW2 on Woodland (332) (2.3922 ha)",
-      "Stack 6: CHRW1 on Scrub - ungrazeable (347) (0.0234 ha)",
-      "Stack 7: CHRW1 on Hard standing (551) (0.0198 ha)",
-      "Stack 8: CHRW1 on Rivers and Streams Type 3 (583) (0.272 ha)",
-      "Stack 9: CHRW1 on Metalled track (631) (0.1608 ha)"
+      "Stack 1: GRH6 on Permanent grassland (130) (4 ha)",
+      "Stack 2: CHRW3 + CHRW1 + CHRW2 on Permanent grassland (130) (2 ha)",
+      "Stack 3: PRF1 + PRF2 on Permanent grassland (130) (2 ha)",
+      "Stack 4: PRF2 + GRH7 on Permanent grassland (130) (2 ha)",
+      "Stack 5: GRH7 + GRH6 on Permanent grassland (130) (2 ha)",
+      "Stack 6: CHRW1 + CHRW2 on Permanent grassland (130) (0.7159 ha)",
+      "Stack 7: CHRW1 + CHRW2 on Pond (243) (0.4159 ha)",
+      "Stack 8: CHRW1 on Woodland (332) (1.524 ha)",
+      "Stack 9: CHRW2 + CHRW1 on Woodland (332) (0.8682 ha)",
+      "Stack 10: CHRW1 on Scrub - ungrazeable (347) (0.0234 ha)",
+      "Stack 11: CHRW1 on Hard standing (551) (0.0198 ha)",
+      "Stack 12: CHRW1 on Rivers and Streams Type 3 (583) (0.272 ha)",
+      "Stack 13: CHRW1 on Metalled track (631) (0.1608 ha)"
     ]
   }
 ]"
@@ -1275,7 +1286,7 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: UPL2 on Permanent grassland (131) (0.0123 ha)",
       "Stack 2: CMOR1 on Permanent grassland (130) (0.0523 ha)"
@@ -1329,10 +1340,10 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: UPL2 on Permanent grassland (131) (0.0123 ha)",
-      "Stack 2: UPL3 on Permanent grassland (131) (0.0523 ha)"
+      "Stack 1: UPL3 on Permanent grassland (131) (0.0523 ha)",
+      "Stack 2: UPL2 on Permanent grassland (131) (0.0123 ha)"
     ]
   }
 ]"
@@ -1385,7 +1396,7 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: OP1 on Half Hedge Adjacent NON-EFA (110) (0.2 ha)",
       "Stack 2: OP2 on Half Hedge Adjacent NON-EFA (110) (0.2 ha)",
@@ -1461,15 +1472,17 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - Multiple c
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
-      "Stack 1: CMOR1 + UPL3 on Permanent grassland (131) (3 ha)",
-      "Stack 2: OFM1 on Permanent grassland (131) (3 ha)",
-      "Stack 3: OFM2 on Permanent grassland (131) (3 ha)",
-      "Stack 4: SP1 on Permanent grassland (131) (2 ha)",
-      "Stack 5: UPL1 on Notional - bracken (282) (2 ha)",
-      "Stack 6: UPL3 on Notional - bracken (282) (0.06 ha)",
-      "Stack 7: WS1 + WS2 on Notional - bracken (282) (4 ha)"
+      "Stack 1: OFM1 on Permanent grassland (131) (3 ha)",
+      "Stack 2: OFM2 on Permanent grassland (131) (3 ha)",
+      "Stack 3: UPL3 + CMOR1 on Permanent grassland (131) (1.94 ha)",
+      "Stack 4: CMOR1 + SP1 on Permanent grassland (131) (1.06 ha)",
+      "Stack 5: SP1 on Permanent grassland (131) (0.94 ha)",
+      "Stack 6: UPL1 on Notional - bracken (282) (2 ha)",
+      "Stack 7: WS2 + WS1 on Notional - bracken (282) (2 ha)",
+      "Stack 8: WS1 on Notional - bracken (282) (2 ha)",
+      "Stack 9: UPL3 on Notional - bracken (282) (0.06 ha)"
     ]
   }
 ]"
@@ -1517,7 +1530,7 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - One existi
     ]
   },
   {
-    "title": "Ephemeral stacks",
+    "title": "Stacks",
     "content": [
       "Stack 1: UPL1 on Permanent grassland (131) (0.105 ha)"
     ]
