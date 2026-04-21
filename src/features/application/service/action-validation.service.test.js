@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
@@ -23,9 +23,12 @@ vi.mock(
     getMoorlandInterceptPercentage: vi.fn()
   })
 )
-vi.mock('~/src/features/available-area/availableArea.js', () => ({
-  getAvailableAreaDataRequirements: vi.fn()
-}))
+vi.mock(
+  '~/src/features/available-area/availableAreaDataRequirements.js',
+  () => ({
+    getAvailableAreaDataRequirements: vi.fn()
+  })
+)
 vi.mock('~/src/features/available-area/availableArea.lp.js', () => ({
   findMaximumAvailableArea: vi.fn()
 }))

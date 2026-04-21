@@ -9,6 +9,17 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { TARGET_SUFFIX } from './availableArea.lp.js'
 
 /**
+ * Creates basic explanation section
+ * @param {string} title
+ * @param {string[]} content
+ * @returns {ExplanationSection}
+ */
+export const createExplanationSection = (title, content) => ({
+  title,
+  content
+})
+
+/**
  * Formats AAC context into human-readable explanation sections that walk
  * a user through the calculation step by step.
  * @param {AacContext|null} aacContext - Context data from findMaximumAvailableArea

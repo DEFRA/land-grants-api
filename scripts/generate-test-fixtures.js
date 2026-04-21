@@ -2,7 +2,7 @@
 
 import { connectToTestDatbase } from '../src/tests/db-tests/setup/postgres.js'
 import { createCompatibilityMatrix } from '../src/features/available-area/compatibilityMatrix.js'
-import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableAreaDataRequirements.js'
 import { getAvailableAreaFixtures } from '../src/tests/db-tests/setup/getAvailableAreaFixtures.js'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
