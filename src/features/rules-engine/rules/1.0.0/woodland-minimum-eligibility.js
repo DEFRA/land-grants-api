@@ -26,13 +26,12 @@ import {
 export const woodlandMinimumEligibility = {
   execute: (application, rule) => {
     const { oldWoodlandAreaHa = 0, newWoodlandAreaHa = 0 } = application
-    const { minimumSize: minimumSizeHa, minOldWoodlandPercent } = rule.config
+    const { minimumSize: minimumSizeHa, minOldWoodlandHa } = rule.config
     const name = rule.name
 
     const oldWoodlandAreaSqm = haToSqm(Number.parseFloat(oldWoodlandAreaHa))
     const newWoodlandAreaSqm = haToSqm(Number.parseFloat(newWoodlandAreaHa))
     const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
-    const oldWoodlandPercent = (oldWoodlandAreaSqm / totalWoodlandAreaSqm) * 100
 
     const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
     const roundedTotalWoodlandAreaHa = roundTo4DecimalPlaces(
@@ -47,7 +46,7 @@ export const woodlandMinimumEligibility = {
       {
         title: 'Woodland minimum eligibility',
         lines: [
-          `The minimum required woodland area over 10 years old is (${roundedMinimumSizeHa} ha), the holding has (${roundedTotalWoodlandAreaHa} ha)`
+          `The minimum required total woodland area is (${roundedMinimumSizeHa} ha), the holding has (${roundedTotalWoodlandAreaHa} ha)`
         ]
       }
     ]
@@ -62,12 +61,12 @@ export const woodlandMinimumEligibility = {
       }
     }
 
-    if (oldWoodlandPercent < minOldWoodlandPercent) {
+    if (oldWoodlandAreaHa < minOldWoodlandHa) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The percentage of woodland over 10 years old (${oldWoodlandPercent}%) does not meet the minimum required (${minOldWoodlandPercent}%)`,
+        reason: `The area of woodland over 10 years old (${oldWoodlandAreaHa} ha) does not meet the minimum required area of (${minOldWoodlandHa} ha)`,
         explanations
       }
     }

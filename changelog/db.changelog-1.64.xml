@@ -8,13 +8,13 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-   <changeSet id="update-payment-method-in-configs" author="system">
+   <changeSet id="update-min-old-woodland-wmp" author="system">
         <sql>UPDATE actions_config
         SET config = jsonb_set(
             config,
             '{rules,0,config}',
             COALESCE(config #> '{rules,0,config}', '{}'::jsonb) || jsonb_build_object(
-                'minOldWoodlandPercent', 80
+                'minOldWoodlandHa', 0.4
             )
         )
         WHERE code = 'PA3';</sql>

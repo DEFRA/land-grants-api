@@ -13,7 +13,7 @@ describe('woodlandMinimumEligibility', () => {
     name,
     config: {
       minimumSize: 0.5,
-      minOldWoodlandPercent: 80
+      minOldWoodlandHa: 0.4
     },
     description: ruleDescription
   })
@@ -33,7 +33,7 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (0.5 ha)'
           ]
         }
       ]
@@ -55,7 +55,7 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (1.2 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (1.2 ha)'
           ]
         }
       ]
@@ -77,15 +77,15 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (0.5 ha)'
           ]
         }
       ]
     })
   })
 
-  test('should fail when woodland area over 10 years is below the minimum of 0.5ha', () => {
-    const application = createApplication('0.4')
+  test('should fail when woodland area over 10 years is below the minimum of 0.4ha', () => {
+    const application = createApplication('0.3')
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -93,21 +93,21 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: false,
       reason:
-        'The total woodland area (0.4 ha) does not meet the minimum required area of (0.5 ha)',
+        'The area of woodland over 10 years old (0.3 ha) does not meet the minimum required area of (0.4 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.4 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (0.3 ha)'
           ]
         }
       ]
     })
   })
 
-  test('should fail when no woodland area over 10 years is provided', () => {
-    const application = createApplication(undefined)
+  test('should fail when no woodland area is provided', () => {
+    const application = createApplication(undefined, undefined)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -120,37 +120,15 @@ describe('woodlandMinimumEligibility', () => {
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (0 ha)'
           ]
         }
       ]
     })
   })
 
-  test('should fail when old woodland area less than 80 percent of total', () => {
-    const application = createApplication(3, 1)
-    const rule = createRule()
-    const result = woodlandMinimumEligibility.execute(application, rule)
-
-    expect(result).toEqual({
-      name: 'woodland-minimum-eligibility',
-      passed: false,
-      reason:
-        'The percentage of woodland over 10 years old (75%) does not meet the minimum required (80%)',
-      description: ruleDescription,
-      explanations: [
-        {
-          title: 'Woodland minimum eligibility',
-          lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (4 ha)'
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should pass when total woodland area exceeds the minimum of 0.5ha', () => {
-    const application = createApplication(0.4, 0.1)
+  test('should pass when total woodland area exceeds the minimum of 0.5ha and old woodland area is equal to minimum', () => {
+    const application = createApplication(0.4, 1)
     const rule = createRule()
     const result = woodlandMinimumEligibility.execute(application, rule)
 
@@ -158,13 +136,35 @@ describe('woodlandMinimumEligibility', () => {
       name: 'woodland-minimum-eligibility',
       passed: true,
       reason:
-        'The total woodland area (0.5 ha) meets the minimum required area of (0.5 ha)',
+        'The total woodland area (1.4 ha) meets the minimum required area of (0.5 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland minimum eligibility',
           lines: [
-            'The minimum required woodland area over 10 years old is (0.5 ha), the holding has (0.5 ha)'
+            'The minimum required total woodland area is (0.5 ha), the holding has (1.4 ha)'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should fail when woodland area over 10 years is less than the minimum', () => {
+    const application = createApplication(0.3, 1)
+    const rule = createRule()
+    const result = woodlandMinimumEligibility.execute(application, rule)
+
+    expect(result).toEqual({
+      name: 'woodland-minimum-eligibility',
+      passed: false,
+      reason:
+        'The area of woodland over 10 years old (0.3 ha) does not meet the minimum required area of (0.4 ha)',
+      description: ruleDescription,
+      explanations: [
+        {
+          title: 'Woodland minimum eligibility',
+          lines: [
+            'The minimum required total woodland area is (0.5 ha), the holding has (1.3 ha)'
           ]
         }
       ]
