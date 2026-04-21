@@ -1,6 +1,6 @@
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.lp.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.lp.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,

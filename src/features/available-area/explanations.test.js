@@ -1,5 +1,5 @@
-import { findMaximumAvailableArea } from './availableArea.lp.js'
-import { formatExplanationSections } from './explanations.lp.js'
+import { findMaximumAvailableArea } from './availableArea.js'
+import { formatExplanationSections } from './explanations.js'
 import { makeCompatibilityCheckFn } from './testUtils.js'
 import { landCoverToString } from './testLandCoverToString.js'
 
