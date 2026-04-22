@@ -98,6 +98,30 @@ const buildValidationResponse = (
   }
 }
 
+/**
+ * Handles errors thrown during application validation.
+ * @param {Error} error
+ * @param {import('@hapi/hapi').Request} request
+ * @returns {import('@hapi/boom').Boom}
+ */
+const handleValidationError = (error, request) => {
+  if (error instanceof InfeasibleAreaError) {
+    return Boom.boomify(error, { statusCode: 422 })
+  }
+  // @ts-expect-error - payload
+  const { landActions, applicationId, sbi } = request.payload
+  logBusinessError(request.logger, {
+    operation: 'Validate application',
+    error,
+    context: {
+      sbi,
+      applicationId,
+      landActionsCount: landActions?.length ?? 0
+    }
+  })
+  return Boom.internal(`Error validating application: ${error.message}`)
+}
+
 const ApplicationValidationController = {
   options: {
     tags: ['api'],
@@ -201,21 +225,7 @@ const ApplicationValidationController = {
 
       return h.response(responseData).code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof InfeasibleAreaError) {
-        return Boom.boomify(error, { statusCode: 422 })
-      }
-      // @ts-expect-error - payload
-      const { landActions, applicationId, sbi } = request.payload
-      logBusinessError(request.logger, {
-        operation: 'Validate application',
-        error,
-        context: {
-          sbi,
-          applicationId,
-          landActionsCount: landActions?.length ?? 0
-        }
-      })
-      return Boom.internal(`Error validating application: ${error.message}`)
+      return handleValidationError(error, request)
     }
   }
 }
