@@ -110,19 +110,19 @@ export function formatExplanationSections(aacContext, displayContext) {
     )
   )
 
+  if (explanations.incompatibilityCliques.length > 0) {
+    sections.push(buildIncompatibilitySection(explanations))
+  }
+
   // 7. Early return if infeasible
   if (!feasible) {
     sections.push(
       createExplanationSection('Error - AAC not possible', [
-        'It was not possible to allocate the existing actions to valid land covers'
+        'It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting.'
       ]),
       buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
     )
     return sections
-  }
-
-  if (explanations.incompatibilityCliques.length > 0) {
-    sections.push(buildIncompatibilitySection(explanations))
   }
 
   if (explanations.allocations.length > 0) {
@@ -197,24 +197,6 @@ function deriveExplanations(aacContext) {
     areaSqm: a.areaSqm
   }))
 
-  // No solution means no LP was run or LP was infeasible
-  if (!solution) {
-    const targetIndices = eligibility.get(targetLabel) ?? []
-    return {
-      eligibility: eligibilityExplanation,
-      adjustedActions,
-      incompatibilityCliques: [],
-      allocations: [],
-      targetAvailability: targetIndices.map((lcIdx) => ({
-        landCoverIndex: lcIdx,
-        totalAreaSqm: landCoversForParcel[lcIdx].areaSqm,
-        usedByExistingSqm: 0,
-        availableSqm: landCoversForParcel[lcIdx].areaSqm
-      })),
-      stacks: []
-    }
-  }
-
   // Incompatibility cliques (only those with 2+ members)
   const incompatibilityCliques = cliques
     .filter((c) => c.length >= 2)
@@ -225,6 +207,24 @@ function deriveExplanations(aacContext) {
           : code
       )
     )
+
+  // No solution means no LP was run or LP was infeasible
+  if (!solution) {
+    const targetIndices = eligibility.get(targetLabel) ?? []
+    return {
+      eligibility: eligibilityExplanation,
+      adjustedActions,
+      incompatibilityCliques,
+      allocations: [],
+      targetAvailability: targetIndices.map((lcIdx) => ({
+        landCoverIndex: lcIdx,
+        totalAreaSqm: landCoversForParcel[lcIdx].areaSqm,
+        usedByExistingSqm: 0,
+        availableSqm: landCoversForParcel[lcIdx].areaSqm
+      })),
+      stacks: []
+    }
+  }
 
   // Allocations: how the LP placed each existing action across land covers
   const allocations = []

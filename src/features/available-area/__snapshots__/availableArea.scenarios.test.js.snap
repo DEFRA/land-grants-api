@@ -554,9 +554,20 @@ exports[`Available Area Calculation Service - Scenario Tests > Infeasible due to
     ]
   },
   {
+    "title": "Incompatible action groups",
+    "content": [
+      "UPL1, PRF1 cannot share the same land",
+      "UPL1, PRF2 cannot share the same land",
+      "UPL1, CSAM1 cannot share the same land",
+      "CMOR1, PRF1 cannot share the same land",
+      "CMOR1, PRF2 cannot share the same land",
+      "CMOR1, CSAM1 cannot share the same land"
+    ]
+  },
+  {
     "title": "Error - AAC not possible",
     "content": [
-      "It was not possible to allocate the existing actions to valid land covers"
+      "It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting."
     ]
   },
   {
