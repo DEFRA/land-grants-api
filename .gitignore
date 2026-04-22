@@ -7,6 +7,7 @@ node_modules
 npm-debug.log
 coverage
 .cache
+.claude
 .eslintcache
 .env
 docs/.obsidian
@@ -22,3 +23,5 @@ changelog/*.sql
 ingestion-data
 src/land-data-full
 src/tests/load-tests/config.js
+
+CLAUDE.md

@@ -19,10 +19,26 @@ const errorResponseSchema = Joi.object({
  * @property {string} error
  * @property {string} message
  */
+/**
+ * @typedef {object} UnprocessableEntityResponseSchema
+ * @property {number} statusCode
+ * @property {string} error
+ * @property {string} message
+ */
+const unprocessableEntityResponseSchema = Joi.object({
+  statusCode: Joi.number().valid(statusCodes.unprocessableEntity).required(),
+  error: Joi.string().required(),
+  message: Joi.string().required()
+}).label('unprocessableEntityResponse')
+
 const internalServerErrorResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.internalServerError).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
 }).label('internalServerErrorResponse')
 
-export { errorResponseSchema, internalServerErrorResponseSchema }
+export {
+  errorResponseSchema,
+  unprocessableEntityResponseSchema,
+  internalServerErrorResponseSchema
+}

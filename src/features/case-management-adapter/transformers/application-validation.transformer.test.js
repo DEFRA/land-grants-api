@@ -879,9 +879,7 @@ describe('applicationValidationRunToCaseManagement', () => {
                   },
                   {
                     title: 'Land Covers For Parcel',
-                    content: [
-                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
-                    ]
+                    content: ['Permanent grassland (130) - 4.53411078 ha']
                   },
                   {
                     title: 'Existing actions',
@@ -920,7 +918,7 @@ describe('applicationValidationRunToCaseManagement', () => {
                   {
                     title: 'Total valid land covers',
                     content: [
-                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha',
+                      'Permanent grassland (130) - 4.53411078 ha',
                       '= 4.53411078 ha'
                     ]
                   },
@@ -991,9 +989,7 @@ describe('applicationValidationRunToCaseManagement', () => {
                   },
                   {
                     title: 'Land Covers For Parcel',
-                    content: [
-                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
-                    ]
+                    content: ['Permanent grassland (130) - 4.53411078 ha']
                   },
                   {
                     title: 'Existing actions',
@@ -1032,7 +1028,7 @@ describe('applicationValidationRunToCaseManagement', () => {
                   {
                     title: 'Total valid land covers',
                     content: [
-                      'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha',
+                      'Permanent grassland (130) - 4.53411078 ha',
                       '= 4.53411078 ha'
                     ]
                   },
@@ -1125,7 +1121,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                text: 'Permanent grassland (130) - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
@@ -1241,7 +1237,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                text: 'Permanent grassland (130) - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
@@ -1371,7 +1367,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                text: 'Permanent grassland (130) - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
@@ -1487,7 +1483,7 @@ describe('applicationValidationRunToCaseManagement', () => {
               },
               {
                 component: 'paragraph',
-                text: 'Permanent grassland (130) Warning: This is a land cover class - 4.53411078 ha'
+                text: 'Permanent grassland (130) - 4.53411078 ha'
               },
               {
                 component: 'paragraph',
