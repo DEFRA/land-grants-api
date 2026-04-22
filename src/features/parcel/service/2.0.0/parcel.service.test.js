@@ -1,7 +1,8 @@
 import {
   getParcelActionsWithAvailableArea,
   getActionsForParcelWithSSSIConsentRequired,
-  getActionsForParcelWithHEFERConsentRequired
+  getActionsForParcelWithHEFERConsentRequired,
+  splitParcelId
 } from './parcel.service.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -43,6 +44,28 @@ describe('Parcel Service 2.0.0', () => {
     error: vi.fn(),
     info: vi.fn()
   }
+
+  describe('splitParcelId', () => {
+    test('should split valid parcel id into sheetId and parcelId', () => {
+      const result = splitParcelId('SX0679-9238', mockLogger)
+      expect(result).toEqual({
+        sheetId: 'SX0679',
+        parcelId: '9238'
+      })
+    })
+
+    test('should throw error for invalid input', () => {
+      expect(() => splitParcelId('SX0679-', mockLogger)).toThrow(
+        'Unable to split parcel id'
+      )
+    })
+
+    test('should throw error for empty input', () => {
+      expect(() => splitParcelId(null, mockLogger)).toThrow(
+        'Unable to split parcel id'
+      )
+    })
+  })
 
   describe('getParcelActionsWithAvailableArea', () => {
     let mockParcel
