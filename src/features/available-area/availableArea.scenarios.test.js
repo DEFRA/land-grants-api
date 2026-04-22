@@ -42,7 +42,8 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         targetAction: applyingForAction,
         availableAreaSqm: result.availableAreaSqm,
         totalValidLandCoverSqm: result.totalValidLandCoverSqm,
-        landCoverToString
+        landCoverToString,
+        feasible: result.feasible
       })
 
       expect(JSON.stringify(sections, null, 2)).toMatchSnapshot()
