@@ -4,6 +4,7 @@ import { applicationValidationResponseSchemaV2 } from '~/src/features/applicatio
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
+  unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
@@ -21,6 +22,7 @@ import {
   validateAllLandParcels
 } from '~/src/features/application/service/validation.service.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
+import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 
 /**
  * Save application validation results
@@ -110,6 +112,7 @@ const ApplicationValidationController = {
       status: {
         200: applicationValidationResponseSchemaV2,
         404: errorResponseSchema,
+        422: unprocessableEntityResponseSchema,
         500: internalServerErrorResponseSchema
       }
     }
@@ -198,6 +201,9 @@ const ApplicationValidationController = {
 
       return h.response(responseData).code(statusCodes.ok)
     } catch (error) {
+      if (error instanceof InfeasibleAreaError) {
+        return Boom.boomify(error, { statusCode: 422 })
+      }
       // @ts-expect-error - payload
       const { landActions, applicationId, sbi } = request.payload
       logBusinessError(request.logger, {

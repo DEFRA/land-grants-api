@@ -13,6 +13,31 @@ const solver = /** @type {any} */ (_solver)
 
 export const TARGET_SUFFIX = '__target'
 
+export class InfeasibleAreaError extends Error {
+  /**
+   * @param {string} sheetId - The land parcel sheet ID
+   * @param {string} parcelId - The land parcel ID
+   */
+  constructor(sheetId, parcelId) {
+    super(
+      `For land parcel ${sheetId}-${parcelId}, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message.`
+    )
+    this.name = 'InfeasibleAreaError'
+  }
+}
+
+/**
+ * Throws an InfeasibleAreaError if the AAC result is infeasible.
+ * @param {AvailableAreaForActionLp} lpResult - The AAC result
+ * @param {string} sheetId - The land parcel sheet ID
+ * @param {string} parcelId - The land parcel ID
+ */
+export function throwIfInfeasible(lpResult, sheetId, parcelId) {
+  if (!lpResult.feasible) {
+    throw new InfeasibleAreaError(sheetId, parcelId)
+  }
+}
+
 /**
  * Finds the maximum available area for a new action on a parcel using
  * a linear programming approach to optimally arrange existing actions.

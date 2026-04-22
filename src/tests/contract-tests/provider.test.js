@@ -64,6 +64,7 @@ const mockApplicationValidationRunToCaseManagement =
 const mockValidateApplication = validateApplication
 
 const mockLpResult = {
+  feasible: true,
   context: null,
   totalValidLandCoverSqm: 300,
   availableAreaSqm: 300,
