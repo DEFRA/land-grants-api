@@ -34,7 +34,16 @@ vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/available-area/availableArea.js')
-vi.mock('~/src/features/available-area/explanations.js')
+vi.mock(
+  '~/src/features/available-area/explanations.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      formatExplanationSections: vi.fn()
+    }
+  }
+)
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
