@@ -98,6 +98,21 @@ describe('getMoorlandInterceptPercentage', () => {
     expect(result).toBe(0)
   })
 
+  test('should return 0 when query returns no rows', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockResult.rows = []
+
+    const result = await getMoorlandInterceptPercentage(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toBe(0)
+  })
+
   test('should release the client when done', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
