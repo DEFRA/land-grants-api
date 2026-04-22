@@ -3,11 +3,9 @@
 exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple existing compatible actions 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL6: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL7: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
@@ -15,6 +13,24 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
     "content": [
       "UPL6: 0.0123 ha",
       "UPL7: 0.0523 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130), Permanent grassland (131)",
+      "UPL6: Permanent grassland (130), Permanent grassland (131)",
+      "UPL7: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -51,12 +67,9 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
 exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple existing incompatible actions with single stack on mixed land covers 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (3.154 ha)",
-      "CHRW1: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha), Hard standing (551) (0.0076 ha)",
-      "CHRW2: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha), Hard standing (551) (0.0076 ha)",
-      "CHRW3: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha), Hard standing (551) (0.0076 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
@@ -65,6 +78,23 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
       "CHRW1: 10 ha",
       "CHRW2: 8 ha",
       "CHRW3: 7 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 7.989 ha",
+      "Permanent grassland (130): 3.154 ha",
+      "Hard standing (551): 0.0076 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130)",
+      "CHRW1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)",
+      "CHRW2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)",
+      "CHRW3: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)"
     ]
   },
   {
@@ -112,9 +142,25 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
 exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - No existing actions 1`] = `
 "[
   {
+    "title": "Application",
+    "content": [
+      "Target action: CMOR1"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "CMOR1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -137,16 +183,32 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - No existi
 exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One existing compatible action 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "UPL1: 0.0013 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130), Permanent grassland (131)",
+      "UPL1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -181,16 +243,29 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
 exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One existing incompatible action with land cover in common 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (3.1254 ha)",
-      "WS1: Woodland (332) (2.5329 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "WS1: 2.5328 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 3.1254 ha",
+      "Woodland (332): 2.5329 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130)",
+      "WS1: Woodland (332)"
     ]
   },
   {
@@ -230,16 +305,31 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
 exports[`Available Area Calculation Service - Scenario Tests > CSAM1 - One existing incompatible action with no land cover in common 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CSAM1: Permanent grassland (130) (2.4133 ha)",
-      "WBD1: Pond (243) (0.0175 ha)"
+      "Target action: CSAM1"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "WBD1: 0.0175 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 2.4133 ha",
+      "Pond (243): 0.0175 ha",
+      "Farm building (371): 0.0076 ha",
+      "Metalled track (631): 0.0263 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CSAM1: Permanent grassland (130)",
+      "WBD1: Pond (243)"
     ]
   },
   {
@@ -279,7 +369,19 @@ exports[`Available Area Calculation Service - Scenario Tests > CSAM1 - One exist
 exports[`Available Area Calculation Service - Scenario Tests > Existing action ineligible for SSSI - forced onto non-SSSI zones reducing target area 1`] = `
 "[
   {
-    "title": "Parcel land covers",
+    "title": "Application",
+    "content": [
+      "Target action: TARGET1"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "EX_SSSI_INELIG: 0.2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
     "content": [
       "Half Hedge Adjacent NON-EFA (110): 1 ha"
     ]
@@ -300,14 +402,8 @@ exports[`Available Area Calculation Service - Scenario Tests > Existing action i
   {
     "title": "Eligible land covers per action (with designation zones)",
     "content": [
-      "TARGET1: Half Hedge Adjacent NON-EFA (110) (0.3 ha)",
-      "EX_SSSI_INELIG: Half Hedge Adjacent NON-EFA (110) (0.3 ha), Half Hedge Adjacent NON-EFA (110) [HF only] (0.2 ha)"
-    ]
-  },
-  {
-    "title": "Existing actions",
-    "content": [
-      "EX_SSSI_INELIG: 0.2 ha"
+      "TARGET1: Half Hedge Adjacent NON-EFA (110)",
+      "EX_SSSI_INELIG: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [HF only]"
     ]
   },
   {
@@ -347,7 +443,19 @@ exports[`Available Area Calculation Service - Scenario Tests > Existing action i
 exports[`Available Area Calculation Service - Scenario Tests > HF only - Target ineligible for HF but eligible for SSSI 1`] = `
 "[
   {
-    "title": "Parcel land covers",
+    "title": "Application",
+    "content": [
+      "Target action: TARGET_HF_INELIG"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "EX1: 1 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
     "content": [
       "Half Hedge Adjacent NON-EFA (110): 2 ha",
       "Water/irrigation features (240): 1 ha"
@@ -369,14 +477,8 @@ exports[`Available Area Calculation Service - Scenario Tests > HF only - Target 
   {
     "title": "Eligible land covers per action (with designation zones)",
     "content": [
-      "TARGET_HF_INELIG: Half Hedge Adjacent NON-EFA (110) (1.6 ha), Half Hedge Adjacent NON-EFA (110) [SSSI only] (0.1 ha)",
-      "EX1: Half Hedge Adjacent NON-EFA (110) (1.6 ha), Half Hedge Adjacent NON-EFA (110) [SSSI only] (0.1 ha), Half Hedge Adjacent NON-EFA (110) [HF only] (0.2 ha), Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.1 ha), Water/irrigation features (240) (1 ha)"
-    ]
-  },
-  {
-    "title": "Existing actions",
-    "content": [
-      "EX1: 1 ha"
+      "TARGET_HF_INELIG: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI only]",
+      "EX1: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI only], Half Hedge Adjacent NON-EFA (110) [HF only], Half Hedge Adjacent NON-EFA (110) [SSSI and HF], Water/irrigation features (240)"
     ]
   },
   {
@@ -419,19 +521,42 @@ exports[`Available Area Calculation Service - Scenario Tests > HF only - Target 
 exports[`Available Area Calculation Service - Scenario Tests > Infeasible due to CMOR1 exceeding valid covers - existing agreement has CMOR1 for 12000sqm which is more than eligible(11430sqm). 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (3.154 ha)",
-      "PRF1: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "PRF2: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "CSAM1: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "CMOR1: Permanent grassland (130) (3.154 ha)"
+      "Target action: UPL1"
     ]
   },
   {
-    "title": "Available land for UPL1",
+    "title": "Existing actions",
     "content": [
-      "Permanent grassland (130): 3.154 ha total, 0 ha used by existing actions, 3.154 ha available"
+      "PRF1: 10 ha",
+      "PRF2: 10 ha",
+      "CSAM1: 10 ha",
+      "CMOR1: 1.2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 7.989 ha",
+      "Permanent grassland (130): 3.154 ha",
+      "Hard standing (551): 0.0076 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130)",
+      "PRF1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "PRF2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "CSAM1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "CMOR1: Permanent grassland (130)"
+    ]
+  },
+  {
+    "title": "Error - AAC not possible",
+    "content": [
+      "It was not possible to allocate the existing actions to valid land covers"
     ]
   },
   {
@@ -447,11 +572,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Infeasible due to
 exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple existing incompatible actions that are compatible between them 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "OFM3: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "SPM4: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "SAM1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: OFM3"
     ]
   },
   {
@@ -459,6 +582,24 @@ exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple e
     "content": [
       "SPM4: 0.0123 ha",
       "SAM1: 0.0523 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "OFM3: Permanent grassland (130), Permanent grassland (131)",
+      "SPM4: Permanent grassland (130), Permanent grassland (131)",
+      "SAM1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -501,16 +642,34 @@ exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple e
 exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Single existing incompatible action with remaining area available for new action  1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (0.085 ha), Permanent grassland (131) (6.8793 ha), Rivers and Streams Type 3 (583) (0.246 ha), Track - natural surface (643) (0.1272 ha)",
-      "CNUM2: Permanent grassland (130) (0.085 ha), Permanent grassland (131) (6.8793 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "CNUM2: 6.9643 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.085 ha",
+      "Permanent grassland (131): 6.8793 ha",
+      "Woodland (332): 2.407 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0133 ha",
+      "Rivers and Streams Type 3 (583): 0.246 ha",
+      "Track - natural surface (643): 0.1272 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Rivers and Streams Type 3 (583), Track - natural surface (643)",
+      "CNUM2: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -554,12 +713,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
 exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multiple existing compatible actions on same land cover with single stack  1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (131) (10.4133 ha), Track - natural surface (643) (0.2479 ha)",
-      "UPL1: Permanent grassland (131) (10.4133 ha), Track - natural surface (643) (0.2479 ha)",
-      "UPL4: Permanent grassland (131) (10.4133 ha), Track - natural surface (643) (0.2479 ha)",
-      "OFM3: Permanent grassland (131) (10.4133 ha), Track - natural surface (643) (0.2479 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
@@ -568,6 +724,22 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
       "UPL1: 10.6612 ha",
       "UPL4: 10.6612 ha",
       "OFM3: 10.6612 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (131): 10.4133 ha",
+      "Track - natural surface (643): 0.2479 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (131), Track - natural surface (643)",
+      "UPL1: Permanent grassland (131), Track - natural surface (643)",
+      "UPL4: Permanent grassland (131), Track - natural surface (643)",
+      "OFM3: Permanent grassland (131), Track - natural surface (643)"
     ]
   },
   {
@@ -605,12 +777,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
 exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multiple existing compatible and incompatible actions-applying for a same action which already exists  1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL2: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)",
-      "CMOR1: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)",
-      "UPL3: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)",
-      "UPL5: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)"
+      "Target action: UPL2"
     ]
   },
   {
@@ -620,6 +789,22 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
       "UPL2: 1 ha",
       "UPL3: 1.5957 ha",
       "UPL5: 1.5957 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (131): 7.1985 ha",
+      "Track - natural surface (643): 0.0379 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL2: Permanent grassland (131), Track - natural surface (643)",
+      "CMOR1: Permanent grassland (131), Track - natural surface (643)",
+      "UPL3: Permanent grassland (131), Track - natural surface (643)",
+      "UPL5: Permanent grassland (131), Track - natural surface (643)"
     ]
   },
   {
@@ -667,13 +852,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Multip
 exports[`Available Area Calculation Service - Scenario Tests > Parcel has Mutiple existing compatible and incompatible actions  1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)",
-      "CMOR1: Permanent grassland (131) (7.1985 ha), Track - natural surface (643) (0.0379 ha)",
-      "HEF6: Permanent grassland (131) (7.1985 ha)",
-      "HEF8: Permanent grassland (131) (7.1985 ha)",
-      "HEF5: Permanent grassland (131) (7.1985 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -683,6 +864,23 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Mutipl
       "HEF6: 2 ha",
       "HEF8: 3 ha",
       "HEF5: 2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (131): 7.1985 ha",
+      "Track - natural surface (643): 0.0379 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (131), Track - natural surface (643)",
+      "CMOR1: Permanent grassland (131), Track - natural surface (643)",
+      "HEF6: Permanent grassland (131)",
+      "HEF8: Permanent grassland (131)",
+      "HEF5: Permanent grassland (131)"
     ]
   },
   {
@@ -731,16 +929,29 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Mutipl
 exports[`Available Area Calculation Service - Scenario Tests > Parcel has Single existing incompatible action with no remaining area for new action 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL2: Permanent grassland (130) (1.7506 ha)",
-      "UPL1: Permanent grassland (130) (1.7506 ha)"
+      "Target action: UPL2"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "UPL1: 1.7506 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 2.5726 ha",
+      "Permanent grassland (130): 1.7506 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL2: Permanent grassland (130)",
+      "UPL1: Permanent grassland (130)"
     ]
   },
   {
@@ -780,7 +991,19 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Single
 exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Target ineligible for SSSI but eligible for HF 1`] = `
 "[
   {
-    "title": "Parcel land covers",
+    "title": "Application",
+    "content": [
+      "Target action: TARGET_SSSI_INELIG"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "EX1: 1 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
     "content": [
       "Half Hedge Adjacent NON-EFA (110): 2 ha",
       "Water/irrigation features (240): 1 ha"
@@ -802,14 +1025,8 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Targe
   {
     "title": "Eligible land covers per action (with designation zones)",
     "content": [
-      "TARGET_SSSI_INELIG: Half Hedge Adjacent NON-EFA (110) (1.6 ha), Half Hedge Adjacent NON-EFA (110) [HF only] (0.1 ha)",
-      "EX1: Half Hedge Adjacent NON-EFA (110) (1.6 ha), Half Hedge Adjacent NON-EFA (110) [SSSI only] (0.2 ha), Half Hedge Adjacent NON-EFA (110) [HF only] (0.1 ha), Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.1 ha), Water/irrigation features (240) (1 ha)"
-    ]
-  },
-  {
-    "title": "Existing actions",
-    "content": [
-      "EX1: 1 ha"
+      "TARGET_SSSI_INELIG: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [HF only]",
+      "EX1: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI only], Half Hedge Adjacent NON-EFA (110) [HF only], Half Hedge Adjacent NON-EFA (110) [SSSI and HF], Water/irrigation features (240)"
     ]
   },
   {
@@ -852,7 +1069,19 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Targe
 exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligible target action with one eligible incompatible existing action 1`] = `
 "[
   {
-    "title": "Parcel land covers",
+    "title": "Application",
+    "content": [
+      "Target action: CSAM3"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "AA1: 2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
     "content": [
       "Permanent grassland (130): 2 ha",
       "Half Hedge Adjacent NON-EFA (110): 2 ha",
@@ -877,14 +1106,8 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
   {
     "title": "Eligible land covers per action (with designation zones)",
     "content": [
-      "CSAM3: Permanent grassland (130) (1.5 ha), Half Hedge Adjacent NON-EFA (110) (1.5 ha)",
-      "AA1: Half Hedge Adjacent NON-EFA (110) (1.5 ha), Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.5 ha), Water/irrigation features (240) (1 ha)"
-    ]
-  },
-  {
-    "title": "Existing actions",
-    "content": [
-      "AA1: 2 ha"
+      "CSAM3: Permanent grassland (130), Half Hedge Adjacent NON-EFA (110)",
+      "AA1: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI and HF], Water/irrigation features (240)"
     ]
   },
   {
@@ -927,16 +1150,30 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
 exports[`Available Area Calculation Service - Scenario Tests > Single existing compatible action 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (4.4251 ha), Rivers and Streams Type 2 (582) (0.0543 ha)",
-      "CMOR1: Permanent grassland (130) (4.4251 ha), Rivers and Streams Type 2 (582) (0.0543 ha)"
+      "Target action: UPL1"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "CMOR1: 4.4794 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 4.4251 ha",
+      "Woodland (332): 3.8002 ha",
+      "Rivers and Streams Type 2 (582): 0.0543 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130), Rivers and Streams Type 2 (582)",
+      "CMOR1: Permanent grassland (130), Rivers and Streams Type 2 (582)"
     ]
   },
   {
@@ -972,13 +1209,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Single existing c
 exports[`Available Area Calculation Service - Scenario Tests > Take landcovers where existing actions can go into consideration - test1 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "CMOR1: Permanent grassland (130) (4.6078 ha)",
-      "SP1: Permanent grassland (130) (4.6078 ha), Woodland (332) (2.7301 ha)",
-      "SP3: Permanent grassland (130) (4.6078 ha), Woodland (332) (2.7301 ha)",
-      "WD2: Woodland (332) (2.7301 ha)",
-      "WD10: Permanent grassland (130) (4.6078 ha), Woodland (332) (2.7301 ha)"
+      "Target action: CMOR1"
     ]
   },
   {
@@ -988,6 +1221,23 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
       "SP3: 0.82 ha",
       "WD2: 2.7301 ha",
       "WD10: 4.05 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 4.6078 ha",
+      "Woodland (332): 2.7301 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130)",
+      "SP1: Permanent grassland (130), Woodland (332)",
+      "SP3: Permanent grassland (130), Woodland (332)",
+      "WD2: Woodland (332)",
+      "WD10: Permanent grassland (130), Woodland (332)"
     ]
   },
   {
@@ -1035,11 +1285,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
 exports[`Available Area Calculation Service - Scenario Tests > Take landcovers where existing actions can go into consideration - test2 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "SOH1: Half Hedge Adjacent NON-EFA (110) (10.1 ha)",
-      "SW1: Half Hedge Adjacent NON-EFA (110) (10.1 ha), Permanent grassland (131) (1.0774 ha)",
-      "SW3: Half Hedge Adjacent NON-EFA (110) (10.1 ha), Permanent grassland (131) (1.0774 ha)"
+      "Target action: SOH1"
     ]
   },
   {
@@ -1047,6 +1295,21 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
     "content": [
       "SW1: 0.16 ha",
       "SW3: 3 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 10.1 ha",
+      "Permanent grassland (131): 1.0774 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "SOH1: Half Hedge Adjacent NON-EFA (110)",
+      "SW1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (131)",
+      "SW3: Half Hedge Adjacent NON-EFA (110), Permanent grassland (131)"
     ]
   },
   {
@@ -1089,13 +1352,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
 exports[`Available Area Calculation Service - Scenario Tests > Take landcovers where existing actions can go into consideration - test3 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (3.154 ha)",
-      "PRF1: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "PRF2: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "CSAM1: Half Hedge Adjacent NON-EFA (110) (7.989 ha), Permanent grassland (130) (3.154 ha)",
-      "CMOR1: Permanent grassland (130) (3.154 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -1105,6 +1364,24 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
       "PRF2: 10 ha",
       "CSAM1: 10 ha",
       "CMOR1: 1.143 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 7.989 ha",
+      "Permanent grassland (130): 3.154 ha",
+      "Hard standing (551): 0.0076 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130)",
+      "PRF1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "PRF2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "CSAM1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
+      "CMOR1: Permanent grassland (130)"
     ]
   },
   {
@@ -1154,16 +1431,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
 exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple existing Incompatible actions with multiple stacks on mixed landcovers 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (19.6343 ha), Pond (243) (0.4159 ha), Scrub - ungrazeable (347) (0.0234 ha), Rivers and Streams Type 3 (583) (0.272 ha)",
-      "CHRW1: Permanent grassland (130) (19.6343 ha), Pond (243) (0.4159 ha), Woodland (332) (2.3922 ha), Scrub - ungrazeable (347) (0.0234 ha), Hard standing (551) (0.0198 ha), Rivers and Streams Type 3 (583) (0.272 ha), Metalled track (631) (0.1608 ha)",
-      "CHRW2: Permanent grassland (130) (19.6343 ha), Pond (243) (0.4159 ha), Woodland (332) (2.3922 ha), Scrub - ungrazeable (347) (0.0234 ha), Hard standing (551) (0.0198 ha), Rivers and Streams Type 3 (583) (0.272 ha), Metalled track (631) (0.1608 ha)",
-      "CHRW3: Permanent grassland (130) (19.6343 ha), Pond (243) (0.4159 ha), Woodland (332) (2.3922 ha), Scrub - ungrazeable (347) (0.0234 ha), Hard standing (551) (0.0198 ha), Rivers and Streams Type 3 (583) (0.272 ha), Metalled track (631) (0.1608 ha)",
-      "PRF1: Permanent grassland (130) (19.6343 ha)",
-      "PRF2: Permanent grassland (130) (19.6343 ha)",
-      "GRH6: Permanent grassland (130) (19.6343 ha)",
-      "GRH7: Permanent grassland (130) (19.6343 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -1176,6 +1446,31 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
       "PRF2: 4 ha",
       "GRH6: 6 ha",
       "GRH7: 4 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 19.6343 ha",
+      "Pond (243): 0.4159 ha",
+      "Woodland (332): 2.3922 ha",
+      "Scrub - ungrazeable (347): 0.0234 ha",
+      "Hard standing (551): 0.0198 ha",
+      "Rivers and Streams Type 3 (583): 0.272 ha",
+      "Metalled track (631): 0.1608 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130), Pond (243), Scrub - ungrazeable (347), Rivers and Streams Type 3 (583)",
+      "CHRW1: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
+      "CHRW2: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
+      "CHRW3: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
+      "PRF1: Permanent grassland (130)",
+      "PRF2: Permanent grassland (130)",
+      "GRH6: Permanent grassland (130)",
+      "GRH7: Permanent grassland (130)"
     ]
   },
   {
@@ -1244,11 +1539,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
 exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple existing compatible and incompatible actions 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL2: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "CMOR1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -1256,6 +1549,24 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     "content": [
       "UPL2: 0.0123 ha",
       "CMOR1: 0.0523 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130), Permanent grassland (131)",
+      "UPL2: Permanent grassland (130), Permanent grassland (131)",
+      "CMOR1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -1298,11 +1609,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
 exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple existing incompatible actions 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL2: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL3: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -1310,6 +1619,24 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     "content": [
       "UPL2: 0.0123 ha",
       "UPL3: 0.0523 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130), Permanent grassland (131)",
+      "UPL2: Permanent grassland (130), Permanent grassland (131)",
+      "UPL3: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {
@@ -1352,12 +1679,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
 exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple existing incompatible actions-Existing and new actions are on different land covers 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL1: Permanent grassland (130) (3.2844 ha)",
-      "OP1: Half Hedge Adjacent NON-EFA (110) (0.6133 ha)",
-      "OP2: Half Hedge Adjacent NON-EFA (110) (0.6133 ha)",
-      "CNUM3: Half Hedge Adjacent NON-EFA (110) (0.6133 ha)"
+      "Target action: UPL1"
     ]
   },
   {
@@ -1366,6 +1690,22 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
       "OP1: 0.2 ha",
       "OP2: 0.2 ha",
       "CNUM3: 0.2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Half Hedge Adjacent NON-EFA (110): 0.6133 ha",
+      "Permanent grassland (130): 3.2844 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL1: Permanent grassland (130)",
+      "OP1: Half Hedge Adjacent NON-EFA (110)",
+      "OP2: Half Hedge Adjacent NON-EFA (110)",
+      "CNUM3: Half Hedge Adjacent NON-EFA (110)"
     ]
   },
   {
@@ -1409,17 +1749,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
 exports[`Available Area Calculation Service - Scenario Tests > UPL2 - Multiple compatible and incompatible actions with multiple stacks that need splitting 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL2: Permanent grassland (131) (11.3762 ha), Notional - bracken (282) (6.06 ha)",
-      "CMOR1: Permanent grassland (131) (11.3762 ha), Notional - bracken (282) (6.06 ha)",
-      "UPL1: Permanent grassland (131) (11.3762 ha), Notional - bracken (282) (6.06 ha)",
-      "UPL3: Permanent grassland (131) (11.3762 ha), Notional - bracken (282) (6.06 ha)",
-      "OFM1: Permanent grassland (131) (11.3762 ha)",
-      "OFM2: Permanent grassland (131) (11.3762 ha)",
-      "SP1: Permanent grassland (131) (11.3762 ha), Notional - bracken (282) (6.06 ha)",
-      "WS1: Notional - bracken (282) (6.06 ha)",
-      "WS2: Notional - bracken (282) (6.06 ha)"
+      "Target action: UPL2"
     ]
   },
   {
@@ -1433,6 +1765,27 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - Multiple c
       "SP1: 2 ha",
       "WS1: 4 ha",
       "WS2: 2 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (131): 11.3762 ha",
+      "Notional - bracken (282): 6.06 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL2: Permanent grassland (131), Notional - bracken (282)",
+      "CMOR1: Permanent grassland (131), Notional - bracken (282)",
+      "UPL1: Permanent grassland (131), Notional - bracken (282)",
+      "UPL3: Permanent grassland (131), Notional - bracken (282)",
+      "OFM1: Permanent grassland (131)",
+      "OFM2: Permanent grassland (131)",
+      "SP1: Permanent grassland (131), Notional - bracken (282)",
+      "WS1: Notional - bracken (282)",
+      "WS2: Notional - bracken (282)"
     ]
   },
   {
@@ -1491,16 +1844,32 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - Multiple c
 exports[`Available Area Calculation Service - Scenario Tests > UPL2 - One existing incompatible action 1`] = `
 "[
   {
-    "title": "Eligible land covers per action",
+    "title": "Application",
     "content": [
-      "UPL2: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)",
-      "UPL1: Permanent grassland (130) (0.4202 ha), Permanent grassland (131) (0.1725 ha)"
+      "Target action: UPL2"
     ]
   },
   {
     "title": "Existing actions",
     "content": [
       "UPL1: 0.105 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 0.4202 ha",
+      "Permanent grassland (131): 0.1725 ha",
+      "Farm building (371): 0.0091 ha",
+      "Hard standing (551): 0.0292 ha",
+      "Metalled track (631): 0.0254 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "UPL2: Permanent grassland (130), Permanent grassland (131)",
+      "UPL1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
   {

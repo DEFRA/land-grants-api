@@ -28,6 +28,7 @@ export const createExplanationSection = (title, content) => ({
  * @param {number} displayContext.availableAreaSqm - The final available area result
  * @param {number} displayContext.totalValidLandCoverSqm - Total eligible land cover area
  * @param {CodeToString} displayContext.landCoverToString - Maps land cover codes to descriptions
+ * @param {boolean} displayContext.feasible - Whether the LP was feasible
  * @returns {ExplanationSection[]}
  */
 export function formatExplanationSections(aacContext, displayContext) {
@@ -35,7 +36,8 @@ export function formatExplanationSections(aacContext, displayContext) {
     targetAction,
     availableAreaSqm,
     totalValidLandCoverSqm,
-    landCoverToString
+    landCoverToString,
+    feasible
   } = displayContext
 
   if (!aacContext) {
@@ -62,10 +64,24 @@ export function formatExplanationSections(aacContext, displayContext) {
 
   const sections = []
 
-  if (hasDesignationSplitting) {
-    sections.push(
-      buildParcelLandCoversSection(originalLandCovers, landCoverToString)
+  // 1. Application
+  sections.push(buildApplicationSection(targetAction))
+
+  // 2. Existing actions (moved earlier)
+  if (explanations.adjustedActions.length > 0) {
+    sections.push(buildAdjustedActionsSection(explanations))
+  }
+
+  // 3. Land covers on the parcel
+  sections.push(
+    buildLandCoversOnParcelSection(
+      hasDesignationSplitting ? originalLandCovers : landCoversForParcel,
+      landCoverToString
     )
+  )
+
+  // 4-5. Designation sections (conditional)
+  if (hasDesignationSplitting) {
     sections.push(
       buildDesignationAreasSection(
         originalLandCovers,
@@ -85,6 +101,7 @@ export function formatExplanationSections(aacContext, displayContext) {
     )
   }
 
+  // 6. Eligible land covers per action
   sections.push(
     buildEligibilitySection(
       explanations,
@@ -93,8 +110,15 @@ export function formatExplanationSections(aacContext, displayContext) {
     )
   )
 
-  if (explanations.adjustedActions.length > 0) {
-    sections.push(buildAdjustedActionsSection(explanations))
+  // 7. Early return if infeasible
+  if (!feasible) {
+    sections.push(
+      createExplanationSection('Error - AAC not possible', [
+        'It was not possible to allocate the existing actions to valid land covers'
+      ]),
+      buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
+    )
+    return sections
   }
 
   if (explanations.incompatibilityCliques.length > 0) {
@@ -167,12 +191,18 @@ function deriveExplanations(aacContext) {
     }))
   }
 
-  // No solution means no LP was run (e.g. no existing actions)
+  // Existing actions (always derived, even without a solution)
+  const adjustedActions = existingActions.map((a) => ({
+    actionCode: a.actionCode,
+    areaSqm: a.areaSqm
+  }))
+
+  // No solution means no LP was run or LP was infeasible
   if (!solution) {
     const targetIndices = eligibility.get(targetLabel) ?? []
     return {
       eligibility: eligibilityExplanation,
-      adjustedActions: [],
+      adjustedActions,
       incompatibilityCliques: [],
       allocations: [],
       targetAvailability: targetIndices.map((lcIdx) => ({
@@ -184,12 +214,6 @@ function deriveExplanations(aacContext) {
       stacks: []
     }
   }
-
-  // Existing actions
-  const adjustedActions = existingActions.map((a) => ({
-    actionCode: a.actionCode,
-    areaSqm: a.areaSqm
-  }))
 
   // Incompatibility cliques (only those with 2+ members)
   const incompatibilityCliques = cliques
@@ -392,17 +416,26 @@ function formatLcWithZone(lcName, zone) {
 }
 
 /**
- * Builds the parcel land covers section showing the original (unsplit) land covers.
- * @param {LandCover[]} originalLandCovers
+ * Builds the Application section listing the target action code.
+ * @param {string} targetAction
+ * @returns {ExplanationSection}
+ */
+function buildApplicationSection(targetAction) {
+  return { title: 'Application', content: [`Target action: ${targetAction}`] }
+}
+
+/**
+ * Builds the land covers on the parcel section.
+ * @param {LandCover[]} landCovers
  * @param {CodeToString} landCoverToString
  * @returns {ExplanationSection}
  */
-function buildParcelLandCoversSection(originalLandCovers, landCoverToString) {
-  const content = originalLandCovers.map(
+function buildLandCoversOnParcelSection(landCovers, landCoverToString) {
+  const content = landCovers.map(
     (lc) =>
       `${landCoverToString(lc.landCoverClassCode)}: ${sqmToHaRounded(lc.areaSqm)} ha`
   )
-  return { title: 'Parcel land covers', content }
+  return { title: 'Land covers on the parcel', content }
 }
 
 /**
@@ -500,7 +533,7 @@ function buildEligibilitySection(
           const lcName = landCoverToString(e.landCoverClassCode)
           const zone = designationZones?.[e.landCoverIndex]
           const display = formatLcWithZone(lcName, zone)
-          return `${display} (${sqmToHaRounded(e.areaSqm)} ha)`
+          return display
         })
         .join(', ')
       content.push(`${actionCode}: ${landCoverList}`)

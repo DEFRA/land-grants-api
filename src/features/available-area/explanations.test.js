@@ -58,7 +58,8 @@ function runAndFormat({
     targetAction: applyingForAction,
     availableAreaSqm: result.availableAreaSqm,
     totalValidLandCoverSqm: result.totalValidLandCoverSqm,
-    landCoverToString
+    landCoverToString,
+    feasible: result.feasible
   })
 
   return { result, sections }
@@ -101,19 +102,38 @@ describe('formatExplanationSections', () => {
       }
     })
 
-    it('includes an eligibility section with land cover descriptions', () => {
+    it('includes an Application section listing the target action', () => {
+      const section = sections.find((s) => s.title === 'Application')
+      expect(section).toBeDefined()
+      expect(section.content).toEqual(['Target action: CMOR1'])
+    })
+
+    it('includes a Land covers on the parcel section', () => {
+      const section = sections.find(
+        (s) => s.title === 'Land covers on the parcel'
+      )
+      expect(section).toBeDefined()
+      expect(section.content).toEqual([
+        'Permanent grassland (130): 3.1 ha',
+        'Water/irrigation features (240): 2.5 ha',
+        'Half Hedge Adjacent NON-EFA (110): 1 ha'
+      ])
+    })
+
+    it('includes an eligibility section with land cover descriptions but no areas', () => {
       const section = sections.find(
         (s) => s.title === 'Eligible land covers per action'
       )
       expect(section).toBeDefined()
-      expect(section.content).toContainEqual(expect.stringContaining('CMOR1'))
-      expect(section.content).toContainEqual(
-        expect.stringContaining('Permanent grassland (130)')
-      )
+      expect(section.content).toContainEqual('CMOR1: Permanent grassland (130)')
       expect(section.content).toContainEqual(expect.stringContaining('AA1'))
       expect(section.content).toContainEqual(
         expect.stringContaining('Water/irrigation features (240)')
       )
+      // Areas should not be present (they are in the Land covers section)
+      for (const line of section.content) {
+        expect(line).not.toMatch(/\d+ ha/)
+      }
     })
 
     it('includes an adjusted actions section', () => {
@@ -191,6 +211,14 @@ describe('formatExplanationSections', () => {
         existingActionCodes: {}
       })
 
+      const appSection = sections.find((s) => s.title === 'Application')
+      expect(appSection).toBeDefined()
+      expect(appSection.content).toEqual(['Target action: TARGET'])
+
+      expect(
+        sections.find((s) => s.title === 'Land covers on the parcel')
+      ).toBeDefined()
+
       expect(
         sections.find((s) => s.title === 'Existing actions')
       ).toBeUndefined()
@@ -264,7 +292,8 @@ describe('formatExplanationSections', () => {
         targetAction: 'TARGET',
         availableAreaSqm: 0,
         totalValidLandCoverSqm: 0,
-        landCoverToString
+        landCoverToString,
+        feasible: result.feasible
       })
 
       expect(sections).toHaveLength(1)
@@ -333,6 +362,53 @@ describe('formatExplanationSections', () => {
       expect(stackSection.content[0]).toContain(
         'Half Hedge Adjacent NON-EFA (110)'
       )
+    })
+  })
+
+  describe('infeasible case', () => {
+    it('shows error section when existing actions exceed available land', () => {
+      const { sections } = runAndFormat({
+        applyingForAction: 'TARGET',
+        existingActions: [{ actionCode: 'EX1', areaSqm: 60000 }],
+        compatibilityMap: {},
+        targetCodes: ['130'],
+        parcelLandCovers: [
+          { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 }
+        ],
+        existingActionCodes: {
+          EX1: ['130']
+        }
+      })
+
+      expect(sections.find((s) => s.title === 'Application')).toBeDefined()
+      expect(sections.find((s) => s.title === 'Existing actions')).toBeDefined()
+      expect(
+        sections.find((s) => s.title === 'Land covers on the parcel')
+      ).toBeDefined()
+      expect(
+        sections.find((s) => s.title === 'Eligible land covers per action')
+      ).toBeDefined()
+
+      const errorSection = sections.find(
+        (s) => s.title === 'Error - AAC not possible'
+      )
+      expect(errorSection).toBeDefined()
+      expect(errorSection.content).toEqual([
+        'It was not possible to allocate the existing actions to valid land covers'
+      ])
+
+      expect(sections.find((s) => s.title === 'Result')).toBeDefined()
+
+      // Should NOT have sections that depend on a feasible solution
+      expect(
+        sections.find(
+          (s) => s.title === 'Optimal placement of existing actions'
+        )
+      ).toBeUndefined()
+      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined()
+      expect(
+        sections.find((s) => s.title === 'Available land for TARGET')
+      ).toBeUndefined()
     })
   })
 })

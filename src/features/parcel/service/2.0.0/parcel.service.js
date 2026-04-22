@@ -75,7 +75,8 @@ export async function getParcelActionsWithAvailableArea(
         targetAction: action.code,
         availableAreaSqm: lpResult.availableAreaSqm,
         totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
-        landCoverToString: aacDataRequirements.landCoverToString
+        landCoverToString: aacDataRequirements.landCoverToString,
+        feasible: lpResult.feasible
       })
     }
 
