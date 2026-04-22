@@ -394,7 +394,7 @@ describe('formatExplanationSections', () => {
       )
       expect(errorSection).toBeDefined()
       expect(errorSection.content).toEqual([
-        'It was not possible to allocate the existing actions to valid land covers'
+        'It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting.'
       ])
 
       expect(sections.find((s) => s.title === 'Result')).toBeDefined()
