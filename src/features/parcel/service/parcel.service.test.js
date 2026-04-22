@@ -13,7 +13,16 @@ import { vi } from 'vitest'
 
 // Mock the dependencies
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
-vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock(
+  '~/src/features/available-area/availableArea.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      findMaximumAvailableArea: vi.fn()
+    }
+  }
+)
 vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
 vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
@@ -109,6 +118,7 @@ describe('Parcel Service', () => {
       }
 
       const mockLpResult = {
+        feasible: true,
         availableAreaHectares: 0.5,
         availableAreaSqm: 5000,
         totalValidLandCoverSqm: 5000,
@@ -133,6 +143,7 @@ describe('Parcel Service', () => {
         mockAacDataRequirements
       )
       findMaximumAvailableArea.mockReturnValue({
+        feasible: true,
         availableAreaHectares: 0.5,
         availableAreaSqm: 5000,
         totalValidLandCoverSqm: 5000,
@@ -403,6 +414,7 @@ describe('Parcel Service', () => {
       findMaximumAvailableArea.mockImplementation((code) => {
         callOrder.push(`availArea-${code}`)
         return {
+          feasible: true,
           availableAreaHectares: 0.5,
           availableAreaSqm: 5000,
           totalValidLandCoverSqm: 5000,
@@ -434,6 +446,30 @@ describe('Parcel Service', () => {
         'availArea-UPL2',
         'transform-UPL2'
       ])
+    })
+
+    test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
+      findMaximumAvailableArea.mockReturnValue({
+        feasible: false,
+        availableAreaHectares: 0,
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 5000,
+        context: null
+      })
+
+      await expect(
+        getParcelActionsWithAvailableArea(
+          mockParcel,
+          mockActions,
+          false,
+          [mockEnabledActions[0]],
+          mockCompatibilityCheckFn,
+          mockPostgresDb,
+          mockLogger
+        )
+      ).rejects.toThrow(
+        "For land parcel SH123-PA456, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message."
+      )
     })
 
     test('should handle null actions', async () => {

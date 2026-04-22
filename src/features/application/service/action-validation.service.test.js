@@ -29,9 +29,16 @@ vi.mock(
     getAvailableAreaDataRequirements: vi.fn()
   })
 )
-vi.mock('~/src/features/available-area/availableArea.js', () => ({
-  findMaximumAvailableArea: vi.fn()
-}))
+vi.mock(
+  '~/src/features/available-area/availableArea.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      findMaximumAvailableArea: vi.fn()
+    }
+  }
+)
 vi.mock('~/src/features/available-area/explanations.js', () => ({
   formatExplanationSections: vi.fn()
 }))
@@ -126,6 +133,7 @@ describe('Action Validation Service', () => {
   }
 
   const mockLpResult = {
+    feasible: true,
     context: null,
     totalValidLandCoverSqm: 1000,
     availableAreaSqm: 1000,
@@ -259,6 +267,29 @@ describe('Action Validation Service', () => {
         mockActionConfig,
         mockAvailableAreaResult,
         mockRuleResult
+      )
+    })
+
+    test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
+      mockFindMaximumAvailableArea.mockReturnValue({
+        feasible: false,
+        availableAreaHectares: 0,
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 1000,
+        context: null
+      })
+
+      await expect(
+        validateLandAction(
+          mockAction,
+          mockActionConfig,
+          mockAgreements,
+          mockCompatibilityCheckFn,
+          mockLandAction,
+          mockRequest
+        )
+      ).rejects.toThrow(
+        "For land parcel SX0679-9238, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message."
       )
     })
 

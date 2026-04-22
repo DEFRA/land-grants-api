@@ -1,5 +1,8 @@
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import {
+  findMaximumAvailableArea,
+  throwIfInfeasible
+} from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import {
   actionTransformer,
@@ -83,6 +86,9 @@ export async function getParcelActionsWithAvailableArea(
       compatibilityCheckFn,
       aacDataRequirements
     )
+
+    throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
+
     const availableArea = {
       ...lpResult,
       explanations: formatExplanationSections(lpResult.context, {

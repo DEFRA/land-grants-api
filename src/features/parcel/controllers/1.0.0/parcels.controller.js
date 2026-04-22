@@ -2,6 +2,7 @@ import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
+  unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
 import {
@@ -16,6 +17,7 @@ import {
   logValidationWarn
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { getActionsForParcel } from '../../service/parcel.service.js'
+import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 
 /**
  * ParcelsController
@@ -35,6 +37,7 @@ const ParcelsController = {
       status: {
         200: parcelsSuccessResponseSchema,
         404: errorResponseSchema,
+        422: unprocessableEntityResponseSchema,
         500: internalServerErrorResponseSchema
       }
     }
@@ -105,6 +108,9 @@ const ParcelsController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
+      if (error instanceof InfeasibleAreaError) {
+        return Boom.boomify(error, { statusCode: 422 })
+      }
       const errorMessage = 'Error fetching parcels'
       // @ts-expect-error - payload
       const { parcelIds, fields } = request.payload
