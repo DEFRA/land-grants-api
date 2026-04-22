@@ -4,10 +4,9 @@ import {
   getActionsForParcelWithHEFERConsentRequired,
   splitParcelId
 } from './parcel.service.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
@@ -23,7 +22,18 @@ import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/
 import { vi } from 'vitest'
 
 // Mock the dependencies
-vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
+vi.mock(
+  '~/src/features/available-area/availableArea.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      findMaximumAvailableArea: vi.fn()
+    }
+  }
+)
+vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
 vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
@@ -114,13 +124,20 @@ describe('Parcel Service 2.0.0', () => {
       ]
 
       mockAacDataRequirements = {
-        parcelData: { sheet_id: 'SH123', parcel_id: 'PA456' }
+        parcelData: { sheet_id: 'SH123', parcel_id: 'PA456' },
+        landCoverToString: vi.fn()
+      }
+
+      const mockLpResult = {
+        feasible: true,
+        availableAreaHectares: 0.5,
+        availableAreaSqm: 5000,
+        totalValidLandCoverSqm: 5000,
+        context: null
       }
 
       mockAvailableArea = {
-        availableAreaHectares: 0.5,
-        totalValidLandCoverSqm: 5000,
-        stacks: [],
+        ...mockLpResult,
         explanations: []
       }
 
@@ -136,7 +153,14 @@ describe('Parcel Service 2.0.0', () => {
       getAvailableAreaDataRequirements.mockResolvedValue(
         mockAacDataRequirements
       )
-      getAvailableAreaForAction.mockReturnValue(mockAvailableArea)
+      findMaximumAvailableArea.mockReturnValue({
+        feasible: true,
+        availableAreaHectares: 0.5,
+        availableAreaSqm: 5000,
+        totalValidLandCoverSqm: 5000,
+        context: null
+      })
+      formatExplanationSections.mockReturnValue([])
       actionTransformer.mockReturnValue(mockTransformedAction)
     })
 
@@ -154,7 +178,7 @@ describe('Parcel Service 2.0.0', () => {
       // Should only process actions with display=true (UPL1 and UPL2)
       expect(result).toHaveLength(2)
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(2)
-      expect(getAvailableAreaForAction).toHaveBeenCalledTimes(2)
+      expect(findMaximumAvailableArea).toHaveBeenCalledTimes(2)
       expect(actionTransformer).toHaveBeenCalledTimes(2)
     })
 
@@ -227,7 +251,7 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
-    test('should call getAvailableAreaForAction with correct parameters', async () => {
+    test('should call findMaximumAvailableArea with correct parameters', async () => {
       await getParcelActionsWithAvailableArea(
         mockParcel,
         mockActions,
@@ -239,25 +263,19 @@ describe('Parcel Service 2.0.0', () => {
       )
 
       // Check first call for UPL1
-      expect(getAvailableAreaForAction).toHaveBeenCalledWith(
+      expect(findMaximumAvailableArea).toHaveBeenCalledWith(
         'UPL1',
-        'SH123',
-        'PA456',
-        mockCompatibilityCheckFn,
         mockTransformedActions,
-        mockAacDataRequirements,
-        mockLogger
+        mockCompatibilityCheckFn,
+        mockAacDataRequirements
       )
 
       // Check second call for UPL2
-      expect(getAvailableAreaForAction).toHaveBeenCalledWith(
+      expect(findMaximumAvailableArea).toHaveBeenCalledWith(
         'UPL2',
-        'SH123',
-        'PA456',
-        mockCompatibilityCheckFn,
         mockTransformedActions,
-        mockAacDataRequirements,
-        mockLogger
+        mockCompatibilityCheckFn,
+        mockAacDataRequirements
       )
     })
 
@@ -326,6 +344,30 @@ describe('Parcel Service 2.0.0', () => {
       expect(result).toEqual([mockTransformedAction, mockTransformedAction])
     })
 
+    test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
+      findMaximumAvailableArea.mockReturnValue({
+        feasible: false,
+        availableAreaHectares: 0,
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 5000,
+        context: null
+      })
+
+      await expect(
+        getParcelActionsWithAvailableArea(
+          mockParcel,
+          mockActions,
+          false,
+          [mockEnabledActions[0]],
+          mockCompatibilityCheckFn,
+          mockPostgresDb,
+          mockLogger
+        )
+      ).rejects.toThrow(
+        "For land parcel SH123-PA456, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message."
+      )
+    })
+
     test('should handle empty enabled actions array', async () => {
       const result = await getParcelActionsWithAvailableArea(
         mockParcel,
@@ -339,7 +381,7 @@ describe('Parcel Service 2.0.0', () => {
 
       expect(result).toEqual([])
       expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
-      expect(getAvailableAreaForAction).not.toHaveBeenCalled()
+      expect(findMaximumAvailableArea).not.toHaveBeenCalled()
       expect(actionTransformer).not.toHaveBeenCalled()
     })
 
@@ -371,7 +413,7 @@ describe('Parcel Service 2.0.0', () => {
 
       expect(result).toEqual([])
       expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
-      expect(getAvailableAreaForAction).not.toHaveBeenCalled()
+      expect(findMaximumAvailableArea).not.toHaveBeenCalled()
       expect(actionTransformer).not.toHaveBeenCalled()
     })
 
@@ -392,7 +434,7 @@ describe('Parcel Service 2.0.0', () => {
       expect(result).toEqual([mockTransformedAction])
       expect(plannedActionsTransformer).toHaveBeenCalledTimes(1)
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
-      expect(getAvailableAreaForAction).toHaveBeenCalledTimes(1)
+      expect(findMaximumAvailableArea).toHaveBeenCalledTimes(1)
       expect(actionTransformer).toHaveBeenCalledTimes(1)
     })
 
@@ -404,9 +446,15 @@ describe('Parcel Service 2.0.0', () => {
         return Promise.resolve(mockAacDataRequirements)
       })
 
-      getAvailableAreaForAction.mockImplementation((code) => {
+      findMaximumAvailableArea.mockImplementation((code) => {
         callOrder.push(`availArea-${code}`)
-        return mockAvailableArea
+        return {
+          feasible: true,
+          availableAreaHectares: 0.5,
+          availableAreaSqm: 5000,
+          totalValidLandCoverSqm: 5000,
+          context: null
+        }
       })
 
       actionTransformer.mockImplementation((action) => {
@@ -479,14 +527,11 @@ describe('Parcel Service 2.0.0', () => {
         mockLogger
       )
 
-      expect(getAvailableAreaForAction).toHaveBeenCalledWith(
+      expect(findMaximumAvailableArea).toHaveBeenCalledWith(
         'UPL1',
-        'DETAILED123',
-        'PARCEL789',
-        mockCompatibilityCheckFn,
         mockTransformedActions,
-        mockAacDataRequirements,
-        mockLogger
+        mockCompatibilityCheckFn,
+        mockAacDataRequirements
       )
     })
   })

@@ -74,6 +74,7 @@
     "hapi-pulse": "^3.0.1",
     "hapi-swagger": "^17.3.2",
     "https-proxy-agent": "^9.0.0",
+    "javascript-lp-solver": "^1.0.3",
     "joi": "^17.13.3",
     "minimatch": "^10.2.5",
     "node-cron": "^4.2.1",

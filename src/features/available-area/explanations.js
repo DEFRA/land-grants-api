@@ -1,27 +1,23 @@
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-
 /**
+ * @import { AacContext, AacExplanations } from './available-area.d.js'
+ * @import { CodeToString } from './available-area.d.js'
  * @import { ExplanationSection } from './explanations.d.js'
- * @import { CodeToString, Action } from './available-area.d.js'
- * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
- * @import { LandCoverCodes } from '~/src/features/land-cover-codes/land-cover-codes.d.js'
  */
 
-export const aacExplain = {
-  /**
-   * Generates explanation when adding an action
-   * @param {string} landCoverClassCode - Land Cover class code being added
-   * @param {number} areaSqm - Area in sqm of the land class code
-   * @param {CodeToString} landCoverToString - The land cover definitions
-   * @returns {string} Explanation message
-   */
-  landCoverClassCodeInfoAndArea: (
-    landCoverClassCode,
-    areaSqm,
-    landCoverToString
-  ) =>
-    `${landCoverToString(landCoverClassCode)} - ${sqmToHaRounded(areaSqm)} ha`
-}
+import { deriveExplanations } from './explanation-derivation.js'
+import {
+  buildApplicationSection,
+  buildAdjustedActionsSection,
+  buildLandCoversOnParcelSection,
+  buildDesignationAreasSection,
+  buildDesignationEligibilitySection,
+  buildEligibilitySection,
+  buildIncompatibilitySection,
+  buildAllocationsSection,
+  buildTargetAvailabilitySection,
+  buildResultSection,
+  buildStacksSection
+} from './explanation-sections.js'
 
 /**
  * Creates basic explanation section
@@ -35,80 +31,199 @@ export const createExplanationSection = (title, content) => ({
 })
 
 /**
- * Configuration for explanation sections - easy to modify structure here
+ * Formats AAC context into human-readable explanation sections that walk
+ * a user through the calculation step by step.
+ * @param {AacContext|null} aacContext - Context data from findMaximumAvailableArea
+ * @param {object} displayContext
+ * @param {string} displayContext.targetAction - The action code being applied for
+ * @param {number} displayContext.availableAreaSqm - The final available area result
+ * @param {number} displayContext.totalValidLandCoverSqm - Total eligible land cover area
+ * @param {CodeToString} displayContext.landCoverToString - Maps land cover codes to descriptions
+ * @param {boolean} displayContext.feasible - Whether the LP was feasible
+ * @returns {ExplanationSection[]}
  */
-const initialExplanationSections = [
-  {
-    title: 'Application Information',
-    buildContent: ({ actionCodeAppliedFor, sheetId, parcelId }) => [
-      `Action code - ${actionCodeAppliedFor}`,
-      `Parcel Id - ${sheetId} ${parcelId}`
+export function formatExplanationSections(aacContext, displayContext) {
+  const {
+    targetAction,
+    availableAreaSqm,
+    totalValidLandCoverSqm,
+    landCoverToString,
+    feasible
+  } = displayContext
+
+  if (!aacContext) {
+    return [
+      buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
     ]
-  },
-  {
-    title: 'Land Covers For Parcel',
-    buildContent: ({ landCoversForParcel, landCoverToString }) =>
-      landCoversForParcel.map((cover) =>
-        aacExplain.landCoverClassCodeInfoAndArea(
-          cover.landCoverClassCode,
-          cover.areaSqm,
-          landCoverToString
-        )
-      )
-  },
-  {
-    title: 'Existing actions',
-    buildContent: ({ existingActions }) =>
-      existingActions.map(
-        (action) =>
-          `${action.actionCode} - ${sqmToHaRounded(action.areaSqm)} ha`
-      )
-  },
-  {
-    title: ({ actionCodeAppliedFor }) =>
-      `Valid land covers for action: ${actionCodeAppliedFor}`,
-    buildContent: ({ landCoverCodesForAppliedForAction, landCoverToString }) =>
-      landCoverCodesForAppliedForAction.map(
-        (code) =>
-          `${landCoverToString(code.landCoverClassCode, true)} - ${landCoverToString(code.landCoverCode)}`
-      )
   }
-]
+
+  const explanations = deriveExplanations(aacContext)
+
+  const sections = [
+    ...buildContextSections(
+      explanations,
+      aacContext,
+      targetAction,
+      landCoverToString
+    )
+  ]
+
+  // Early return if infeasible
+  if (!feasible) {
+    sections.push(
+      createExplanationSection('Error - AAC not possible', [
+        'It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting.'
+      ]),
+      buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
+    )
+    return sections
+  }
+
+  sections.push(
+    ...buildFeasibleSolutionSections(
+      explanations,
+      aacContext,
+      targetAction,
+      availableAreaSqm,
+      totalValidLandCoverSqm,
+      landCoverToString
+    )
+  )
+
+  return sections
+}
 
 /**
- * Generates the initial explanations for the available area calculation.
- * @param {string} actionCodeAppliedFor - The action code being applied for
- * @param {string} sheetId - The sheet ID of the parcel
- * @param {string} parcelId - The parcel ID
- * @param {LandCover[]} landCoversForParcel - The land covers for the parcel
- * @param {Action[]} existingActions - The list of existing actions
- * @param {LandCoverCodes[]} landCoverCodesForAppliedForAction - The land cover codes for the action being applied for
+ * Builds the context sections: application, existing actions, land covers,
+ * designations, eligibility, and incompatibility.
+ * @param {AacExplanations} explanations
+ * @param {AacContext} aacContext
+ * @param {string} targetAction
  * @param {CodeToString} landCoverToString
- * @returns {ExplanationSection[]} - The initial explanations
+ * @returns {ExplanationSection[]}
  */
-export function getInitialExplanations(
-  actionCodeAppliedFor,
-  sheetId,
-  parcelId,
-  landCoversForParcel,
-  existingActions,
-  landCoverCodesForAppliedForAction,
+function buildContextSections(
+  explanations,
+  aacContext,
+  targetAction,
   landCoverToString
 ) {
-  const data = {
-    actionCodeAppliedFor,
-    sheetId,
-    parcelId,
+  const {
     landCoversForParcel,
-    existingActions,
-    landCoverCodesForAppliedForAction,
-    landCoverToString
+    originalLandCovers,
+    designationZones,
+    sssiOverlap,
+    hfOverlap,
+    sssiAndHfOverlap,
+    sssiActionEligibility,
+    hfActionEligibility,
+    targetLabel,
+    existingActions
+  } = aacContext
+
+  const hasDesignationSplitting = !!(originalLandCovers && designationZones)
+
+  const sections = []
+
+  sections.push(buildApplicationSection(targetAction))
+
+  if (explanations.adjustedActions.length > 0) {
+    sections.push(buildAdjustedActionsSection(explanations))
   }
 
-  return initialExplanationSections.map((section) => {
-    const title =
-      typeof section.title === 'function' ? section.title(data) : section.title
-    const content = section.buildContent(data)
-    return createExplanationSection(title, content)
-  })
+  sections.push(
+    buildLandCoversOnParcelSection(
+      hasDesignationSplitting ? originalLandCovers : landCoversForParcel,
+      landCoverToString
+    )
+  )
+
+  if (hasDesignationSplitting) {
+    sections.push(
+      buildDesignationAreasSection(
+        originalLandCovers,
+        landCoverToString,
+        sssiOverlap,
+        hfOverlap,
+        sssiAndHfOverlap
+      ),
+      buildDesignationEligibilitySection(
+        targetLabel,
+        existingActions,
+        sssiActionEligibility,
+        hfActionEligibility
+      )
+    )
+  }
+
+  sections.push(
+    buildEligibilitySection(
+      explanations,
+      landCoverToString,
+      hasDesignationSplitting ? designationZones : undefined
+    )
+  )
+
+  if (explanations.incompatibilityCliques.length > 0) {
+    sections.push(buildIncompatibilitySection(explanations))
+  }
+
+  return sections
+}
+
+/**
+ * Builds sections for a feasible LP solution (allocations, target availability, stacks).
+ * @param {AacExplanations} explanations
+ * @param {AacContext} aacContext
+ * @param {string} targetAction
+ * @param {number} availableAreaSqm
+ * @param {number} totalValidLandCoverSqm
+ * @param {CodeToString} landCoverToString
+ * @returns {ExplanationSection[]}
+ */
+function buildFeasibleSolutionSections(
+  explanations,
+  aacContext,
+  targetAction,
+  availableAreaSqm,
+  totalValidLandCoverSqm,
+  landCoverToString
+) {
+  const { landCoversForParcel, designationZones } = aacContext
+  const sections = []
+
+  if (explanations.allocations.length > 0) {
+    sections.push(
+      buildAllocationsSection(
+        explanations,
+        landCoversForParcel,
+        landCoverToString,
+        designationZones
+      )
+    )
+  }
+
+  sections.push(
+    buildTargetAvailabilitySection(
+      explanations,
+      targetAction,
+      landCoversForParcel,
+      landCoverToString,
+      designationZones
+    ),
+    buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
+  )
+
+  if (explanations.stacks.length > 0) {
+    sections.push(
+      buildStacksSection(
+        explanations,
+        landCoversForParcel,
+        landCoverToString,
+        designationZones
+      )
+    )
+  }
+
+  return sections
 }

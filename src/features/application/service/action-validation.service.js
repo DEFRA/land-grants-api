@@ -1,9 +1,11 @@
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
+  findMaximumAvailableArea,
+  throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
@@ -48,16 +50,64 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const availableArea = getAvailableAreaForAction(
+  const lpResult = findMaximumAvailableArea(
     action.code,
-    landAction.sheetId,
-    landAction.parcelId,
-    compatibilityCheckFn,
     plannedActionsTransformer(agreements),
-    aacDataRequirements,
-    request.logger
+    compatibilityCheckFn,
+    aacDataRequirements
   )
 
+  throwIfInfeasible(lpResult, landAction.sheetId, landAction.parcelId)
+
+  const availableArea = {
+    ...lpResult,
+    explanations: formatExplanationSections(lpResult.context, {
+      targetAction: action.code,
+      availableAreaSqm: lpResult.availableAreaSqm,
+      totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
+      landCoverToString: aacDataRequirements.landCoverToString,
+      feasible: lpResult.feasible
+    })
+  }
+
+  const application = await buildRuleEngineApplication(
+    action,
+    landAction,
+    availableArea,
+    agreements,
+    request
+  )
+
+  const ruleToExecute = actions.find((a) => a.code === action.code)
+  const ruleResult = executeRules(
+    rules,
+    {
+      ...application,
+      parcelId: landAction.parcelId,
+      sheetId: landAction.sheetId,
+      actionCode: action.code
+    },
+    ruleToExecute?.rules
+  )
+  return actionResultTransformer(action, actions, availableArea, ruleResult)
+}
+
+/**
+ * Fetches parcel data layers and builds the rule engine application object.
+ * @param {ActionRequest} action
+ * @param {LandAction} landAction
+ * @param {object} availableArea
+ * @param {AgreementAction[]} agreements
+ * @param {{logger: object, server: {postgresDb: object}}} request
+ * @returns {Promise<object>}
+ */
+const buildRuleEngineApplication = async (
+  action,
+  landAction,
+  availableArea,
+  agreements,
+  request
+) => {
   const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
     landAction.sheetId,
     landAction.parcelId,
@@ -81,7 +131,7 @@ export const validateLandAction = async (
     request.logger
   )
 
-  const application = ruleEngineApplicationTransformer(
+  return ruleEngineApplicationTransformer(
     action.quantity,
     action.code,
     sqmToHaRounded(availableArea.availableAreaSqm),
@@ -90,19 +140,6 @@ export const validateLandAction = async (
     historicFeaturesDataLayerData,
     agreements
   )
-
-  const ruleToExecute = actions.find((a) => a.code === action.code)
-  const ruleResult = executeRules(
-    rules,
-    {
-      ...application,
-      parcelId: landAction.parcelId,
-      sheetId: landAction.sheetId,
-      actionCode: action.code
-    },
-    ruleToExecute?.rules
-  )
-  return actionResultTransformer(action, actions, availableArea, ruleResult)
 }
 
 /**

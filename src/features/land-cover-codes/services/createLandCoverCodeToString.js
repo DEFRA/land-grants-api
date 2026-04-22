@@ -25,7 +25,7 @@ export function createLandCoverCodeToString(landCoverDefinitions) {
  * @returns {(string) => string}
  */
 function makeLandCoverToString(byLandCoverCode, byLandCoverClassCode) {
-  return (landCoverCode, noWarning = false) => {
+  return (landCoverCode) => {
     const landCover = byLandCoverCode[landCoverCode]
 
     if (landCover != null) {
@@ -35,7 +35,7 @@ function makeLandCoverToString(byLandCoverCode, byLandCoverClassCode) {
     const landCoverClass = byLandCoverClassCode[landCoverCode]
 
     if (landCoverClass != null) {
-      return `${landCoverClass.landCoverClassDescription} (${landCoverClass.landCoverClassCode})${noWarning ? '' : ' Warning: This is a land cover class'}`
+      return `${landCoverClass.landCoverClassDescription} (${landCoverClass.landCoverClassCode})`
     }
 
     return `Unknown land cover code: ${landCoverCode}`
