@@ -2,10 +2,9 @@ import { vi } from 'vitest'
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import {
@@ -24,9 +23,24 @@ vi.mock(
     getMoorlandInterceptPercentage: vi.fn()
   })
 )
-vi.mock('~/src/features/available-area/availableArea.js', () => ({
-  getAvailableAreaDataRequirements: vi.fn(),
-  getAvailableAreaForAction: vi.fn()
+vi.mock(
+  '~/src/features/available-area/availableAreaDataRequirements.js',
+  () => ({
+    getAvailableAreaDataRequirements: vi.fn()
+  })
+)
+vi.mock(
+  '~/src/features/available-area/availableArea.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      findMaximumAvailableArea: vi.fn()
+    }
+  }
+)
+vi.mock('~/src/features/available-area/explanations.js', () => ({
+  formatExplanationSections: vi.fn()
 }))
 vi.mock('~/src/features/rules-engine/rulesEngine.js', () => ({
   executeRules: vi.fn()
@@ -62,7 +76,8 @@ const mockGetMoorlandInterceptPercentage = vi.mocked(
 const mockGetAvailableAreaDataRequirements = vi.mocked(
   getAvailableAreaDataRequirements
 )
-const mockGetAvailableAreaForAction = vi.mocked(getAvailableAreaForAction)
+const mockFindMaximumAvailableArea = vi.mocked(findMaximumAvailableArea)
+const mockFormatExplanationSections = vi.mocked(formatExplanationSections)
 const mockExecuteRules = vi.mocked(executeRules)
 const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
@@ -113,15 +128,21 @@ describe('Action Validation Service', () => {
   const mockAvailableAreaDataRequirements = {
     landCoverCodesForAppliedForAction: ['130', '240'],
     landCoversForParcel: [],
-    landCoversForExistingActions: []
+    landCoversForExistingActions: [],
+    landCoverToString: vi.fn()
   }
 
-  const mockAvailableAreaResult = {
-    stacks: [],
-    explanations: ['Area calculation successful'],
+  const mockLpResult = {
+    feasible: true,
+    context: null,
     totalValidLandCoverSqm: 1000,
     availableAreaSqm: 1000,
     availableAreaHectares: 0.1
+  }
+
+  const mockAvailableAreaResult = {
+    ...mockLpResult,
+    explanations: ['Area calculation successful']
   }
 
   const mockRuleResult = {
@@ -152,7 +173,10 @@ describe('Action Validation Service', () => {
     mockGetAvailableAreaDataRequirements.mockResolvedValue(
       mockAvailableAreaDataRequirements
     )
-    mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
+    mockFindMaximumAvailableArea.mockReturnValue(mockLpResult)
+    mockFormatExplanationSections.mockReturnValue([
+      'Area calculation successful'
+    ])
     mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
     mockGetDataLayerQueryAccumulated.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
@@ -200,14 +224,11 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetAvailableAreaForAction).toHaveBeenCalledWith(
+      expect(mockFindMaximumAvailableArea).toHaveBeenCalledWith(
         mockAction.code,
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        mockCompatibilityCheckFn,
         [],
-        mockAvailableAreaDataRequirements,
-        mockLogger
+        mockCompatibilityCheckFn,
+        mockAvailableAreaDataRequirements
       )
       expect(mockGetMoorlandInterceptPercentage).toHaveBeenCalledWith(
         mockLandAction.sheetId,
@@ -246,6 +267,29 @@ describe('Action Validation Service', () => {
         mockActionConfig,
         mockAvailableAreaResult,
         mockRuleResult
+      )
+    })
+
+    test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
+      mockFindMaximumAvailableArea.mockReturnValue({
+        feasible: false,
+        availableAreaHectares: 0,
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 1000,
+        context: null
+      })
+
+      await expect(
+        validateLandAction(
+          mockAction,
+          mockActionConfig,
+          mockAgreements,
+          mockCompatibilityCheckFn,
+          mockLandAction,
+          mockRequest
+        )
+      ).rejects.toThrow(
+        "For land parcel SX0679-9238, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message."
       )
     })
 

@@ -10,10 +10,9 @@ import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
@@ -33,7 +32,18 @@ vi.mock(
 vi.mock('~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js')
 vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock(
+  '~/src/features/available-area/explanations.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      formatExplanationSections: vi.fn()
+    }
+  }
+)
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
@@ -51,7 +61,8 @@ const mockGetActionsByLatestVersion = getActionsByLatestVersion
 const mockGetEnabledActions = getEnabledActions
 const mockGetActionsByVersion = getActionsByVersion
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockGetAvailableAreaForAction = getAvailableAreaForAction
+const mockFindMaximumAvailableArea = findMaximumAvailableArea
+const mockFormatExplanationSections = formatExplanationSections
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
@@ -61,9 +72,9 @@ const mockApplicationValidationRunToCaseManagement =
   applicationValidationRunToCaseManagement
 const mockValidateApplication = validateApplication
 
-const mockAvailableAreaResult = {
-  stacks: [],
-  explanations: [],
+const mockLpResult = {
+  feasible: true,
+  context: null,
   totalValidLandCoverSqm: 300,
   availableAreaSqm: 300,
   availableAreaHectares: 0.03
@@ -174,10 +185,12 @@ const pactVerifierOptions = async () => {
       mockGetAvailableAreaDataRequirements.mockResolvedValue({
         landCoverCodesForAppliedForAction: [],
         landCoversForParcel: [],
-        landCoversForExistingActions: []
+        landCoversForExistingActions: [],
+        landCoverToString: () => ''
       })
       mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-      mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
+      mockFindMaximumAvailableArea.mockReturnValue(mockLpResult)
+      mockFormatExplanationSections.mockReturnValue([])
       mockGetAgreementsForParcel.mockResolvedValue([])
       mockSaveApplication.mockResolvedValue(251)
       mockGetApplicationValidationRun.mockImplementation(

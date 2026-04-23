@@ -1,0 +1,172 @@
+{
+  "SSSI/HF - Ineligible target action with one eligible incompatible existing action": {
+    "scenario": {
+      "applyingForAction": "CSAM3",
+      "sheetId": "SYNTH1",
+      "parcelId": "0001",
+      "existingActions": [{ "actionCode": "AA1", "areaSqm": 20000 }],
+      "expectedAvailableArea": "2.5000"
+    },
+    "dataRequirements": {
+      "landCoverCodesForAppliedForAction": [
+        { "landCoverCode": "130", "landCoverClassCode": "130" },
+        { "landCoverCode": "111", "landCoverClassCode": "110" }
+      ],
+      "landCoversForParcel": [
+        { "landCoverClassCode": "130", "areaSqm": 20000 },
+        { "landCoverClassCode": "110", "areaSqm": 20000 },
+        { "landCoverClassCode": "240", "areaSqm": 10000 }
+      ],
+      "landCoversForExistingActions": {
+        "AA1": [
+          { "landCoverCode": "111", "landCoverClassCode": "110" },
+          { "landCoverCode": "243", "landCoverClassCode": "240" }
+        ]
+      },
+      "sssiOverlap": [
+        { "landCoverClassCode": "130", "areaSqm": 5000 },
+        { "landCoverClassCode": "110", "areaSqm": 5000 },
+        { "landCoverClassCode": "240", "areaSqm": 2000 }
+      ],
+      "hfOverlap": [
+        { "landCoverClassCode": "130", "areaSqm": 5000 },
+        { "landCoverClassCode": "110", "areaSqm": 5000 },
+        { "landCoverClassCode": "240", "areaSqm": 2000 }
+      ],
+      "sssiAndHfOverlap": [
+        { "landCoverClassCode": "130", "areaSqm": 5000 },
+        { "landCoverClassCode": "110", "areaSqm": 5000 },
+        { "landCoverClassCode": "240", "areaSqm": 2000 }
+      ],
+      "sssiActionEligibility": {
+        "CSAM3": false,
+        "AA1": true
+      },
+      "hfActionEligibility": {
+        "CSAM3": false,
+        "AA1": true
+      }
+    }
+  },
+  "SSSI only - Target ineligible for SSSI but eligible for HF": {
+    "scenario": {
+      "applyingForAction": "TARGET_SSSI_INELIG",
+      "sheetId": "SYNTH2",
+      "parcelId": "0001",
+      "existingActions": [{ "actionCode": "EX1", "areaSqm": 10000 }],
+      "expectedAvailableArea": "1.7000"
+    },
+    "dataRequirements": {
+      "landCoverCodesForAppliedForAction": [
+        { "landCoverCode": "110", "landCoverClassCode": "110" }
+      ],
+      "landCoversForParcel": [
+        { "landCoverClassCode": "110", "areaSqm": 20000 },
+        { "landCoverClassCode": "240", "areaSqm": 10000 }
+      ],
+      "landCoversForExistingActions": {
+        "EX1": [
+          { "landCoverCode": "110", "landCoverClassCode": "110" },
+          { "landCoverCode": "240", "landCoverClassCode": "240" }
+        ]
+      },
+      "sssiOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 3000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "hfOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 2000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "sssiAndHfOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 1000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "sssiActionEligibility": {
+        "TARGET_SSSI_INELIG": false,
+        "EX1": true
+      },
+      "hfActionEligibility": {
+        "TARGET_SSSI_INELIG": true,
+        "EX1": true
+      }
+    }
+  },
+  "HF only - Target ineligible for HF but eligible for SSSI": {
+    "scenario": {
+      "applyingForAction": "TARGET_HF_INELIG",
+      "sheetId": "SYNTH3",
+      "parcelId": "0001",
+      "existingActions": [{ "actionCode": "EX1", "areaSqm": 10000 }],
+      "expectedAvailableArea": "1.7000"
+    },
+    "dataRequirements": {
+      "landCoverCodesForAppliedForAction": [
+        { "landCoverCode": "110", "landCoverClassCode": "110" }
+      ],
+      "landCoversForParcel": [
+        { "landCoverClassCode": "110", "areaSqm": 20000 },
+        { "landCoverClassCode": "240", "areaSqm": 10000 }
+      ],
+      "landCoversForExistingActions": {
+        "EX1": [
+          { "landCoverCode": "110", "landCoverClassCode": "110" },
+          { "landCoverCode": "240", "landCoverClassCode": "240" }
+        ]
+      },
+      "sssiOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 2000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "hfOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 3000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "sssiAndHfOverlap": [
+        { "landCoverClassCode": "110", "areaSqm": 1000 },
+        { "landCoverClassCode": "240", "areaSqm": 0 }
+      ],
+      "sssiActionEligibility": {
+        "TARGET_HF_INELIG": true,
+        "EX1": true
+      },
+      "hfActionEligibility": {
+        "TARGET_HF_INELIG": false,
+        "EX1": true
+      }
+    }
+  },
+  "Existing action ineligible for SSSI - forced onto non-SSSI zones reducing target area": {
+    "scenario": {
+      "applyingForAction": "TARGET1",
+      "sheetId": "SYNTH4",
+      "parcelId": "0001",
+      "existingActions": [{ "actionCode": "EX_SSSI_INELIG", "areaSqm": 2000 }],
+      "expectedAvailableArea": "0.3000"
+    },
+    "dataRequirements": {
+      "landCoverCodesForAppliedForAction": [
+        { "landCoverCode": "110", "landCoverClassCode": "110" }
+      ],
+      "landCoversForParcel": [
+        { "landCoverClassCode": "110", "areaSqm": 10000 }
+      ],
+      "landCoversForExistingActions": {
+        "EX_SSSI_INELIG": [
+          { "landCoverCode": "110", "landCoverClassCode": "110" }
+        ]
+      },
+      "sssiOverlap": [{ "landCoverClassCode": "110", "areaSqm": 5000 }],
+      "hfOverlap": [{ "landCoverClassCode": "110", "areaSqm": 2000 }],
+      "sssiAndHfOverlap": [{ "landCoverClassCode": "110", "areaSqm": 0 }],
+      "sssiActionEligibility": {
+        "TARGET1": false,
+        "EX_SSSI_INELIG": false
+      },
+      "hfActionEligibility": {
+        "TARGET1": false,
+        "EX_SSSI_INELIG": true
+      }
+    }
+  }
+}
