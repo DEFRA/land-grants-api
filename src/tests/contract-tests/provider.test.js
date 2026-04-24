@@ -164,7 +164,7 @@ const pactConfigLocal = () => {
 }
 
 const pactVerifierOptions = async () => {
-  const isLocal = true
+  const isLocal = false
   const latestVersion = await getLatestVersion()
   const config = isLocal ? pactConfigLocal() : pactConfigCi()
   return {
