@@ -157,7 +157,7 @@ describe('Validate WMP controller', () => {
     const result = await server.inject(request)
 
     expect(result.statusCode).toBe(400)
-    expect(result.result.message).toBe('Invalid request payload input')
+    expect(result.result.message).toBe('"oldWoodlandAreaHa" is required')
   })
 
   test('should return bad request when oldWoodlandAreaHa is negative', async () => {
@@ -175,7 +175,9 @@ describe('Validate WMP controller', () => {
     const result = await server.inject(request)
 
     expect(result.statusCode).toBe(400)
-    expect(result.result.message).toBe('Invalid request payload input')
+    expect(result.result.message).toBe(
+      '"oldWoodlandAreaHa" must be greater than or equal to 0'
+    )
   })
 
   test('should return bad request when newWoodlandAreaHa is negative', async () => {
@@ -193,6 +195,8 @@ describe('Validate WMP controller', () => {
     const result = await server.inject(request)
 
     expect(result.statusCode).toBe(400)
-    expect(result.result.message).toBe('Invalid request payload input')
+    expect(result.result.message).toBe(
+      '"newWoodlandAreaHa" must be greater than or equal to 0'
+    )
   })
 })

@@ -16,6 +16,7 @@ import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
 import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
+import { failAction } from '~/src/features/common/helpers/fail-action.js'
 
 export const ValidateWMPController = {
   options: {
@@ -23,7 +24,8 @@ export const ValidateWMPController = {
     description: 'Validate WMP',
     notes: 'Validates WMP',
     validate: {
-      payload: validateWMPSchemaV2
+      payload: validateWMPSchemaV2,
+      failAction
     },
     response: {
       status: {
@@ -77,8 +79,20 @@ export const ValidateWMPController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      logBusinessError(request.logger, error)
-      return Boom.internal('Failed to validate wmp')
+      /** @type {validateWMPSchemaV2} */
+      // @ts-expect-error - payload
+      const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } =
+        request.payload
+      logBusinessError(request.logger, {
+        operation: 'Validate WMP',
+        error,
+        context: {
+          parcelIds: parcelIds.join(','),
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa
+        }
+      })
+      return Boom.internal('Error validating WMP')
     }
   }
 }

@@ -5,10 +5,14 @@ import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import Hapi from '@hapi/hapi'
-import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
+import {
+  mockActionConfig,
+  mockWoodlandManagementActionConfig
+} from '~/src/features/actions/fixtures/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -23,6 +27,7 @@ import { getLatestVersion } from './git.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import { applicationValidationRunToCaseManagement } from '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
+import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
@@ -159,7 +164,7 @@ const pactConfigLocal = () => {
 }
 
 const pactVerifierOptions = async () => {
-  const isLocal = false
+  const isLocal = true
   const latestVersion = await getLatestVersion()
   const config = isLocal ? pactConfigLocal() : pactConfigCi()
   return {
@@ -175,13 +180,24 @@ const pactVerifierOptions = async () => {
           allParcels.push(parcel)
         })
         mockGetLandData.mockResolvedValue(allParcels)
+      },
+      'has woodland parcels': ({ parcelIds }) => {
+        const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+        const allParcels = []
+        const parcel = createParcel(sheetId, parcelId)
+        allParcels.push(parcel)
+        mockGetLandData.mockResolvedValue(allParcels)
       }
     },
 
     beforeEach: () => {
-      mockGetEnabledActions.mockResolvedValue(mockActionConfig)
-      mockGetActionsByLatestVersion.mockResolvedValue(mockActionConfig)
-      mockGetActionsByVersion.mockResolvedValue(mockActionConfig)
+      const actions = [
+        ...mockActionConfig,
+        ...mockWoodlandManagementActionConfig
+      ]
+      mockGetEnabledActions.mockResolvedValue(actions)
+      mockGetActionsByLatestVersion.mockResolvedValue(actions)
+      mockGetActionsByVersion.mockResolvedValue(actions)
       mockGetAvailableAreaDataRequirements.mockResolvedValue({
         landCoverCodesForAppliedForAction: [],
         landCoversForParcel: [],
@@ -221,7 +237,8 @@ describe('Pact Verification', () => {
       parcel,
       payments,
       application,
-      caseManagementAdapter
+      caseManagementAdapter,
+      woodlandManagement
     ])
     await server.initialize()
     await server.start()

@@ -124,7 +124,15 @@ const validPayload = {
 }
 
 describe('Payment calculate WMP controller', () => {
-  const server = Hapi.server()
+  const server = Hapi.server({
+    routes: {
+      validate: {
+        options: {
+          abortEarly: false
+        }
+      }
+    }
+  })
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -265,42 +273,82 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('schema validation', () => {
+    test('should return Joi validation details when woodland area fields are missing', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { error, message, validation }
+      } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate',
+        payload: {
+          parcelIds: ['SX067-99238'],
+          startDate: '2025-08-05'
+        }
+      })
+
+      expect(statusCode).toBe(400)
+      expect(error).toBe('Bad Request')
+      expect(message).toBe(
+        '"oldWoodlandAreaHa" is required. "newWoodlandAreaHa" is required'
+      )
+      expect(validation).toEqual({
+        source: 'payload',
+        keys: ['oldWoodlandAreaHa', 'newWoodlandAreaHa']
+      })
+    })
+
     test('should return 400 when parcelIds is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 }
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe('"parcelIds" is required')
     })
 
     test('should return 400 when parcelIds is an empty array', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: [], oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 }
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe('"parcelIds" must contain at least 1 items')
     })
 
     test('should return 400 when oldWoodlandAreaHa is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: ['SX067-99238'], newWoodlandAreaHa: 3 }
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe('"oldWoodlandAreaHa" is required')
     })
 
     test('should return 400 when oldWoodlandAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: {
@@ -311,22 +359,32 @@ describe('Payment calculate WMP controller', () => {
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe(
+        '"oldWoodlandAreaHa" must be greater than or equal to 0'
+      )
     })
 
     test('should return 400 when newWoodlandAreaHa is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: ['SX067-99238'], oldWoodlandAreaHa: 5 }
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe('"newWoodlandAreaHa" is required')
     })
 
     test('should return 400 when newWoodlandAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: {
@@ -337,6 +395,9 @@ describe('Payment calculate WMP controller', () => {
       })
 
       expect(statusCode).toBe(400)
+      expect(message).toBe(
+        '"newWoodlandAreaHa" must be greater than or equal to 0'
+      )
     })
   })
 
@@ -359,6 +420,21 @@ describe('Payment calculate WMP controller', () => {
     test('should return 500 when executePaymentMethod throws', async () => {
       mockExecutePaymentMethod.mockImplementation(() => {
         throw new Error('Calculation error')
+      })
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate',
+        payload: validPayload
+      })
+
+      expect(statusCode).toBe(500)
+    })
+
+    test('should return 500 with catch message when an unexpected error is thrown', async () => {
+      mockWmpPaymentCalculateTransformer.mockImplementation(() => {
+        throw new Error('Unexpected transformer error')
       })
 
       /** @type { Hapi.ServerInjectResponse<object> } */

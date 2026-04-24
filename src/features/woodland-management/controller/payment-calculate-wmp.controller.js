@@ -9,7 +9,8 @@ import {
 } from '../schema/payment-calculate-wmp.schema.js'
 import {
   logInfo,
-  logValidationWarn
+  logValidationWarn,
+  logBusinessError
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
@@ -17,6 +18,7 @@ import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
 import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { sumTotalLandAreaSqm } from '../service/wmp-payment-calculate.service.js'
+import { failAction } from '~/src/features/common/helpers/fail-action.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -24,7 +26,8 @@ export const PaymentsCalculateWMPControllerV2 = {
     description: 'Calculate WMP payment',
     notes: 'Calculates payment amounts for WMP',
     validate: {
-      payload: paymentCalculateWMPSchemaV2
+      payload: paymentCalculateWMPSchemaV2,
+      failAction
     },
     response: {
       status: {
@@ -42,72 +45,93 @@ export const PaymentsCalculateWMPControllerV2 = {
    * @returns {Promise<ResponseObject | import('@hapi/boom').Boom>} Payment calculation response
    */
   handler: async (request, h) => {
-    // @ts-expect-error - postgresDb
-    const postgresDb = request.server.postgresDb
+    try {
+      // @ts-expect-error - postgresDb
+      const postgresDb = request.server.postgresDb
 
-    /** @type {paymentCalculateWMPSchemaV2} */
-    // @ts-expect-error - payload
-    const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
-      request.payload
+      /** @type {paymentCalculateWMPSchemaV2} */
+      // @ts-expect-error - payload
+      const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
+        request.payload
 
-    logInfo(request.logger, {
-      category: 'wmp',
-      message: 'Payment Calculate WMP',
-      context: {
-        parcelIds,
-        oldWoodlandAreaHa,
-        newWoodlandAreaHa,
-        startDate
-      }
-    })
-
-    const validationResponse = await validatePaymentCalculationRequest(
-      parcelIds,
-      request
-    )
-
-    if (validationResponse.errors && validationResponse.errors.length > 0) {
-      logValidationWarn(request.logger, {
-        operation: 'Payment Calculate WMP validation',
-        errors: validationResponse.errors,
+      logInfo(request.logger, {
+        category: 'wmp',
+        message: 'Payment Calculate WMP',
         context: {
-          parcelIds: parcelIds.join(',')
-        }
-      })
-      return Boom.badRequest(validationResponse.errors.join(', '))
-    }
-
-    const actions = await getActionsByLatestVersion(request.logger, postgresDb)
-    const action = actions.find((a) => a.code === 'PA3')
-
-    if (!action) {
-      return Boom.badRequest('Action not found')
-    }
-
-    const totalParcelAreaSqm = sumTotalLandAreaSqm(validationResponse.parcels)
-
-    const paymentResult = executePaymentMethod(
-      { ...action?.paymentMethod },
-      {
-        data: {
-          totalParcelArea: totalParcelAreaSqm,
-          oldWoodlandAreaHa,
-          newWoodlandAreaHa
-        }
-      }
-    )
-
-    return h
-      .response({
-        message: 'success',
-        payment: wmpPaymentCalculateTransformer(
           parcelIds,
-          paymentResult,
-          action,
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa,
           startDate
-        )
+        }
       })
-      .code(statusCodes.ok)
+
+      const validationResponse = await validatePaymentCalculationRequest(
+        parcelIds,
+        request
+      )
+
+      if (validationResponse.errors && validationResponse.errors.length > 0) {
+        logValidationWarn(request.logger, {
+          operation: 'Payment Calculate WMP validation',
+          errors: validationResponse.errors,
+          context: {
+            parcelIds: parcelIds.join(',')
+          }
+        })
+        return Boom.badRequest(validationResponse.errors.join(', '))
+      }
+
+      const actions = await getActionsByLatestVersion(
+        request.logger,
+        postgresDb
+      )
+      const action = actions.find((a) => a.code === 'PA3')
+
+      if (!action) {
+        return Boom.badRequest('Action not found')
+      }
+
+      const totalParcelAreaSqm = sumTotalLandAreaSqm(validationResponse.parcels)
+
+      const paymentResult = executePaymentMethod(
+        { ...action?.paymentMethod },
+        {
+          data: {
+            totalParcelArea: totalParcelAreaSqm,
+            oldWoodlandAreaHa,
+            newWoodlandAreaHa
+          }
+        }
+      )
+
+      return h
+        .response({
+          message: 'success',
+          payment: wmpPaymentCalculateTransformer(
+            parcelIds,
+            paymentResult,
+            action,
+            startDate
+          )
+        })
+        .code(statusCodes.ok)
+    } catch (error) {
+      /** @type {paymentCalculateWMPSchemaV2} */
+      // @ts-expect-error - payload
+      const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
+        request.payload
+      logBusinessError(request.logger, {
+        operation: 'Payment calculation: calculate wmp payment',
+        error,
+        context: {
+          parcelIds: parcelIds.join(','),
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa,
+          startDate
+        }
+      })
+      return Boom.internal('Error calculating wmp payment')
+    }
   }
 }
 
