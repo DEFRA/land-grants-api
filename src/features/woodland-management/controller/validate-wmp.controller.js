@@ -21,7 +21,7 @@ import { failAction } from '~/src/features/common/helpers/fail-action.js'
 export const ValidateWMPController = {
   options: {
     tags: ['api'],
-    description: 'Validate WMP',
+    description: 'Validate WMP: validate woodland management plan',
     notes: 'Validates WMP',
     validate: {
       payload: validateWMPSchemaV2,
@@ -49,7 +49,7 @@ export const ValidateWMPController = {
 
       logInfo(request.logger, {
         category: 'wmp',
-        message: 'Validate WMP',
+        message: 'Validating WMP',
         context: {
           parcelIds
         }
@@ -84,7 +84,7 @@ export const ValidateWMPController = {
       const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } =
         request.payload
       logBusinessError(request.logger, {
-        operation: 'Validate WMP',
+        operation: 'Validation failure for WMP',
         error,
         context: {
           parcelIds: parcelIds.join(','),
