@@ -194,19 +194,36 @@ function buildStacksFromSolution(
 
 /**
  * Finds the action with the smallest remaining area in a map.
+ * When multiple actions share the same smallest area, picks the most
+ * constrained one (fewest compatible partners) so it gets stacking
+ * partners before they are consumed by other groups.
  * @param {Map<string, number>} remaining
+ * @param {CompatibilityCheckFn} compatibilityCheckFn
  * @returns {{ code: string, area: number }}
  */
-function findSmallestAction(remaining) {
-  let smallestCode = /** @type {string} */ ('')
+function findSmallestAction(remaining, compatibilityCheckFn) {
   let smallestArea = Infinity
+  for (const [, area] of remaining) {
+    if (area < smallestArea) smallestArea = area
+  }
+
+  let bestCode = /** @type {string} */ ('')
+  let fewestCompatible = Infinity
   for (const [code, area] of remaining) {
-    if (area < smallestArea) {
-      smallestArea = area
-      smallestCode = code
+    if (area - smallestArea > 0.001) continue
+    let compatibleCount = 0
+    for (const [other] of remaining) {
+      if (other !== code && compatibilityCheckFn(code, other)) {
+        compatibleCount++
+      }
+    }
+    if (compatibleCount < fewestCompatible) {
+      fewestCompatible = compatibleCount
+      bestCode = code
     }
   }
-  return { code: smallestCode, area: smallestArea }
+
+  return { code: bestCode, area: smallestArea }
 }
 
 /**
@@ -223,8 +240,10 @@ function buildStacksForLandCover(actions, compatibilityCheckFn) {
   const stacks = []
 
   while (remaining.size > 0) {
-    const { code: smallestCode, area: smallestArea } =
-      findSmallestAction(remaining)
+    const { code: smallestCode, area: smallestArea } = findSmallestAction(
+      remaining,
+      compatibilityCheckFn
+    )
 
     // Build a maximal compatible group containing the smallest action
     const group = [smallestCode]

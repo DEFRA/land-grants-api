@@ -51,6 +51,7 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
       if (expectedAvailableArea === 'INFEASIBLE') {
         expect(result.feasible).toBe(false)
       } else {
+        expect(result.feasible).toBe(true)
         expect(result.availableAreaHectares).toEqual(
           Number(expectedAvailableArea)
         )

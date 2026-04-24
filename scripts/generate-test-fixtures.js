@@ -45,7 +45,10 @@ const ACTION_CODES = [
   'WD10',
   'OP1',
   'OP2',
-  'OP3'
+  'OP3',
+  'OFC3',
+  'CIGL1',
+  'AGF2'
 ]
 
 /**
