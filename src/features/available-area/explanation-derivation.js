@@ -204,13 +204,17 @@ function buildStacksFromSolution(
 function findSmallestAction(remaining, compatibilityCheckFn) {
   let smallestArea = Infinity
   for (const [, area] of remaining) {
-    if (area < smallestArea) smallestArea = area
+    if (area < smallestArea) {
+      smallestArea = area
+    }
   }
 
   let bestCode = /** @type {string} */ ('')
   let fewestCompatible = Infinity
   for (const [code, area] of remaining) {
-    if (area - smallestArea > 0.001) continue
+    if (area - smallestArea > 0.001) {
+      continue
+    }
     let compatibleCount = 0
     for (const [other] of remaining) {
       if (other !== code && compatibilityCheckFn(code, other)) {
