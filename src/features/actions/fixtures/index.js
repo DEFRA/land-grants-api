@@ -135,4 +135,64 @@ const mockActionConfig = [
   }
 ]
 
-export { mockActionConfig }
+const mockWoodlandManagementActionConfig = [
+  {
+    id: 17,
+    enabled: true,
+    display: false,
+    code: 'PA3',
+    description: 'Woodland management plan',
+    payment: null,
+    rules: [
+      {
+        name: 'parcel-has-minimum-eligibility-for-woodland-management-plan',
+        config: {
+          minimumSize: 0.5,
+          minOldWoodlandHa: 0.4
+        },
+        description:
+          'Is the parcel eligible for the woodland management plan action?'
+      },
+      {
+        name: 'total-area-not-exceed-land-parcels-woodland-management-plan',
+        description:
+          'Is the total woodland area less than or equal to the total land parcel area?'
+      }
+    ],
+    applicationUnitOfMeasurement,
+    durationYears: 10,
+    landCoverClassCodes: [],
+    startDate: '2025-01-01',
+    version: 1,
+    semanticVersion: '1.0.0',
+    paymentMethod: {
+      name: 'wmp-calculation',
+      config: {
+        tiers: [
+          {
+            flatRateGbp: 1500,
+            lowerLimitHa: 0.5,
+            upperLimitHa: 50,
+            ratePerUnitGbp: 0
+          },
+          {
+            flatRateGbp: 1500,
+            lowerLimitHa: 50,
+            upperLimitHa: 100,
+            ratePerUnitGbp: 30
+          },
+          {
+            flatRateGbp: 3000,
+            lowerLimitHa: 100,
+            upperLimitHa: null,
+            ratePerUnitGbp: 15
+          }
+        ],
+        newWoodlandMaxPercent: 20
+      },
+      version: '1.0.0'
+    }
+  }
+]
+
+export { mockActionConfig, mockWoodlandManagementActionConfig }

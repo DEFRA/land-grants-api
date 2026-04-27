@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
-import Hapi from '@hapi/hapi'
 import { application } from '../../index.js'
 import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
+import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
@@ -13,7 +13,7 @@ vi.mock(
 const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun)
 
 describe('Application Validation Run Controller', () => {
-  const server = Hapi.server()
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
