@@ -136,12 +136,23 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
         hfOverlap.push(overlap)
       } else if (row.overlap_type === 'sssi_and_hf') {
         sssiAndHfOverlap.push(overlap)
+      } else {
+        logInfo(logger, {
+          category: 'database',
+          message: 'Unknown overlap type ignored',
+          context: {
+            parcelId,
+            sheetId,
+            overlapType: row.overlap_type,
+            landCoverClassCode: row.land_cover_class_code
+          }
+        })
       }
     }
 
     logInfo(logger, {
       category: 'database',
-      message: 'Get parcel designation intersections',
+      message: 'Get land cover intersections',
       context: {
         parcelId,
         sheetId,
