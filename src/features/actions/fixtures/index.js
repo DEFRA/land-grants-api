@@ -159,7 +159,7 @@ const mockWoodlandManagementActionConfig = [
           'Is the total woodland area less than or equal to the total land parcel area?'
       }
     ],
-    applicationUnitOfMeasurement: 'ha',
+    applicationUnitOfMeasurement,
     durationYears: 10,
     landCoverClassCodes: [],
     startDate: '2025-01-01',

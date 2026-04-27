@@ -43,7 +43,7 @@ export const ValidateWMPController = {
     try {
       /** @type {validateWMPSchemaV2} */
       // @ts-expect-error - payload
-      const { parcelIds, logger } = request.payload
+      const { parcelIds } = request.payload
 
       logInfo(request.logger, {
         category: 'wmp',
@@ -54,7 +54,7 @@ export const ValidateWMPController = {
       })
 
       const parcelSheetIds = parcelIds.map((parcelId) =>
-        splitParcelId(parcelId, logger)
+        splitParcelId(parcelId, request.logger)
       )
       const { parcels, errors } = await getAndValidateParcels(
         parcelSheetIds,
