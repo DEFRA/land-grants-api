@@ -1,4 +1,3 @@
-import Hapi from '@hapi/hapi'
 import { parcel } from '~/src/features/parcel/index.js'
 import {
   getActionsForParcel,
@@ -8,6 +7,7 @@ import {
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { vi } from 'vitest'
+import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
@@ -76,7 +76,7 @@ const mockActionsWithAvailableArea = [
 ]
 
 describe('Parcels Controller 2.0.0', () => {
-  const server = Hapi.server()
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -761,7 +761,7 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(`"parcelIds" is required`)
     })
 
     test('should return 400 with invalid payload - missing fields', async () => {
@@ -780,7 +780,7 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(`"fields" is required`)
     })
 
     test('should return 400 with invalid parcelId format', async () => {
@@ -800,7 +800,9 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(
+        `"parcelIds[0]" with value "invalid-parcel-id" fails to match the required pattern: /^[A-Za-z0-9]{6}-[0-9]{4}$/`
+      )
     })
 
     test('should return 400 with invalid field value', async () => {
@@ -820,7 +822,9 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(
+        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, groups]`
+      )
     })
 
     test('should return 400 with invalid plannedActions - missing actionCode', async () => {
@@ -846,7 +850,7 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(`"plannedActions[0].actionCode" is required`)
     })
 
     test('should return 400 with invalid plannedActions - invalid unit', async () => {
@@ -873,7 +877,7 @@ describe('Parcels Controller 2.0.0', () => {
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
+      expect(message).toBe(`"plannedActions[0].unit" must be one of [ha, sqm]`)
     })
 
     test('should return 500 when createCompatibilityMatrix throws error', async () => {
