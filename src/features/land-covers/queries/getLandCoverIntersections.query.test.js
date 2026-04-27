@@ -105,6 +105,48 @@ describe('getLandCoverIntersections', () => {
     })
   })
 
+  test('should ignore unknown overlap types', async () => {
+    mockClient.query.mockResolvedValue({
+      rows: [
+        {
+          land_cover_class_code: '999',
+          overlap_type: 'unknown_type',
+          area_sqm: 123
+        }
+      ]
+    })
+
+    const result = await getLandCoverIntersections(
+      'TQ4432',
+      '6044',
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toStrictEqual({
+      sssiOverlap: [],
+      hfOverlap: [],
+      sssiAndHfOverlap: []
+    })
+  })
+
+  test('should handle missing rows safely', async () => {
+    mockClient.query.mockResolvedValue({})
+
+    const result = await getLandCoverIntersections(
+      'TQ4432',
+      '6044',
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toStrictEqual({
+      sssiOverlap: [],
+      hfOverlap: [],
+      sssiAndHfOverlap: []
+    })
+  })
+
   test('should release the client when done', async () => {
     await getLandCoverIntersections('TQ4432', '6044', mockDb, mockLogger)
 
@@ -140,5 +182,24 @@ describe('getLandCoverIntersections', () => {
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
+
+  test('should handle connection errors and not release client', async () => {
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+
+    const result = await getLandCoverIntersections(
+      'TQ4432',
+      '6044',
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toStrictEqual({
+      sssiOverlap: [],
+      hfOverlap: [],
+      sssiAndHfOverlap: []
+    })
+    expect(mockClient.release).not.toHaveBeenCalled()
+    expect(mockLogger.error).toHaveBeenCalled()
   })
 })
