@@ -128,6 +128,15 @@ describe('getLandCoverIntersections', () => {
       hfOverlap: [],
       sssiAndHfOverlap: []
     })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: expect.objectContaining({
+          category: 'database',
+          type: 'info'
+        })
+      }),
+      expect.stringContaining('Unknown overlap type ignored')
+    )
   })
 
   test('should handle missing rows safely', async () => {
