@@ -1,7 +1,7 @@
-import Hapi from '@hapi/hapi'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
+import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock('../service/wmp-service.js')
 vi.mock('../../parcel/validation/2.0.0/parcel.validation.js')
@@ -50,7 +50,7 @@ const mockParcelValidationResult = {
 }
 
 describe('Validate WMP controller', () => {
-  const server = Hapi.server()
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {

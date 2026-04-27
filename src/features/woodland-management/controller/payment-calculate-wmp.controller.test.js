@@ -1,10 +1,10 @@
-import Hapi from '@hapi/hapi'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock(
@@ -124,15 +124,7 @@ const validPayload = {
 }
 
 describe('Payment calculate WMP controller', () => {
-  const server = Hapi.server({
-    routes: {
-      validate: {
-        options: {
-          abortEarly: false
-        }
-      }
-    }
-  })
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {

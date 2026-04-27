@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
-import Hapi from '@hapi/hapi'
 import {
   mockActionConfig,
   mockWoodlandManagementActionConfig
@@ -28,6 +27,7 @@ import { getApplicationValidationRun } from '~/src/features/application/queries/
 import { applicationValidationRunToCaseManagement } from '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
 import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import createTestServer from '../test-server.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
@@ -164,7 +164,7 @@ const pactConfigLocal = () => {
 }
 
 const pactVerifierOptions = async () => {
-  const isLocal = false
+  const isLocal = true
   const latestVersion = await getLatestVersion()
   const config = isLocal ? pactConfigLocal() : pactConfigCi()
   return {
@@ -225,7 +225,7 @@ const pactVerifierOptions = async () => {
 }
 
 describe('Pact Verification', () => {
-  const server = Hapi.server({ port: 3001, host: 'localhost' })
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', logger)

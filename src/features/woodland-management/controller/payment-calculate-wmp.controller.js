@@ -18,7 +18,6 @@ import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
 import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { sumTotalLandAreaSqm } from '../service/wmp-payment-calculate.service.js'
-import { failAction } from '~/src/features/common/helpers/fail-action.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -26,8 +25,7 @@ export const PaymentsCalculateWMPControllerV2 = {
     description: 'Calculate WMP payment',
     notes: 'Calculates payment amounts for WMP',
     validate: {
-      payload: paymentCalculateWMPSchemaV2,
-      failAction
+      payload: paymentCalculateWMPSchemaV2
     },
     response: {
       status: {
