@@ -70,19 +70,19 @@ describe('getLandCoverIntersections', () => {
       sssiOverlap: [
         {
           landCoverClassCode: '130',
-          areaSqm: 266033.82654810767
+          areaSqm: 266034
         }
       ],
       hfOverlap: [
         {
           landCoverClassCode: '332',
-          areaSqm: 0.00889780191629952
+          areaSqm: 0
         }
       ],
       sssiAndHfOverlap: [
         {
           landCoverClassCode: '651',
-          areaSqm: 485.8957049338928
+          areaSqm: 486
         }
       ]
     })

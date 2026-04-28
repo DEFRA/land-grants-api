@@ -2,6 +2,7 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
 export const getIntersectionsExclusiveQuery = `
   WITH target_parcel AS (
@@ -127,7 +128,7 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
     for (const row of result.rows ?? []) {
       const overlap = {
         landCoverClassCode: row.land_cover_class_code,
-        areaSqm: Number(row.area_sqm)
+        areaSqm: roundSqm(row.area_sqm)
       }
 
       if (row.overlap_type === 'sssi_only') {
