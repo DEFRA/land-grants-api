@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet id="add-land-cover-and-data-layer-indexes" author="system">
+    <sql>CREATE INDEX IF NOT EXISTS idx_land_covers_sheet_parcel ON land_covers (sheet_id, parcel_id);</sql>
+    <sql>CREATE INDEX IF NOT EXISTS idx_data_layer_type_id ON data_layer (data_layer_type_id);</sql>
+    <sql>CREATE INDEX IF NOT EXISTS idx_data_layer_type_metadata_type ON data_layer (data_layer_type_id, (metadata-&gt;&gt;'type'));</sql>
+    <rollback>
+      DROP INDEX IF EXISTS idx_land_covers_sheet_parcel;
+      DROP INDEX IF EXISTS idx_data_layer_type_id;
+      DROP INDEX IF EXISTS idx_data_layer_type_metadata_type;
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>
