@@ -999,6 +999,70 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has Single
 ]"
 `;
 
+exports[`Available Area Calculation Service - Scenario Tests > Parcel with duplicate existing action code 1`] = `
+"[
+  {
+    "title": "Application",
+    "content": [
+      "Target action: CMOR1"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "CMOR1: 2 ha",
+      "CSAM1: 1 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 4.5341 ha"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action",
+    "content": [
+      "CMOR1: Permanent grassland (130)",
+      "CSAM1: Permanent grassland (130)"
+    ]
+  },
+  {
+    "title": "Incompatible action groups",
+    "content": [
+      "CMOR1, CMOR1, CSAM1 cannot share the same land"
+    ]
+  },
+  {
+    "title": "Optimal placement of existing actions",
+    "content": [
+      "CMOR1: 2 ha on Permanent grassland (130)",
+      "CSAM1: 1 ha on Permanent grassland (130)"
+    ]
+  },
+  {
+    "title": "Available land for CMOR1",
+    "content": [
+      "Permanent grassland (130): 4.5341 ha total, 3 ha used by existing actions, 1.5341 ha available"
+    ]
+  },
+  {
+    "title": "Result",
+    "content": [
+      "Total eligible land cover for CMOR1: 4.5341 ha",
+      "Maximum available area for CMOR1: 1.5341 ha"
+    ]
+  },
+  {
+    "title": "Stacks",
+    "content": [
+      "Stack 1: CMOR1 on Permanent grassland (130) (2 ha)",
+      "Stack 2: CSAM1 on Permanent grassland (130) (1 ha)"
+    ]
+  }
+]"
+`;
+
 exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Target ineligible for SSSI but eligible for HF 1`] = `
 "[
   {
