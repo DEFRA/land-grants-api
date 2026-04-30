@@ -41,13 +41,6 @@ describe('Action SSSI HF mapping import', () => {
 
       expect(result).toBe('Land data imported successfully')
 
-      // const actions = await getRecordsByQuery(
-      //   connection,
-      //   'SELECT * FROM actions',
-      //   []
-      // )
-      // expect(actionSSSIHFMapping).toHaveLength(5)
-
       const actions = await getRecordsByQuery(
         connection,
         'SELECT * FROM actions WHERE sssi_eligible IS NOT TRUE OR hf_eligible IS NOT TRUE'
@@ -65,6 +58,8 @@ describe('Action SSSI HF mapping import', () => {
       expect(actions.find((a) => a.code === 'UPL3').sssi_eligible).toBe(false)
       expect(actions.find((a) => a.code === 'UPL4').hf_eligible).toBe(false)
       expect(actions.find((a) => a.code === 'UPL4').sssi_eligible).toBe(false)
+      expect(actions[0].ingest_id).toBeDefined()
+      expect(actions[0].last_updated).toBeDefined()
     },
     10000
   )
