@@ -1,6 +1,6 @@
 action_code,has_sssi,has_hf
 CMOR1,1,1
-UPL1,1,1
-UPL2,1,1
-UPL3,1,1
+UPL1,0,1
+UPL2,1,0
+UPL3,0,0
 UPL4,0,0

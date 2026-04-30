@@ -23,7 +23,7 @@ export const resources = [
   { name: 'shine', truncateTable: false },
   { name: 'scheduled_monuments', truncateTable: false },
   { name: 'registered_parks_gardens', truncateTable: false },
-  { name: 'action_sssi_hf_mapping', truncateTable: true }
+  { name: 'action_sssi_hf_mapping', truncateTable: false }
 ]
 
 /**

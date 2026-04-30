@@ -1,3 +1,10 @@
-INSERT INTO action_sssi_hf_mapping (action_code, has_sssi, has_hf, last_updated, ingest_id)
-SELECT action_code, has_sssi, has_hf, now(), $1
-FROM action_sssi_hf_mapping_tmp;
+UPDATE actions 
+SET 
+    sssi_eligible = tmp.sssi_eligible,
+    hf_eligible = tmp.hf_eligible,
+    last_updated = now(),
+    ingest_id = $1
+FROM action_sssi_hf_mapping_tmp tmp
+WHERE
+    actions.code = tmp.action_code;
+    

@@ -41,23 +41,30 @@ describe('Action SSSI HF mapping import', () => {
 
       expect(result).toBe('Land data imported successfully')
 
-      const actionSSSIHFMapping = await getRecordsByQuery(
-        connection,
-        'SELECT * FROM action_sssi_hf_mapping',
-        []
-      )
-      expect(actionSSSIHFMapping).toHaveLength(5)
+      // const actions = await getRecordsByQuery(
+      //   connection,
+      //   'SELECT * FROM actions',
+      //   []
+      // )
+      // expect(actionSSSIHFMapping).toHaveLength(5)
 
-      const sssi = await getRecordsByQuery(
+      const actions = await getRecordsByQuery(
         connection,
-        'SELECT * FROM action_sssi_hf_mapping WHERE action_code = $1',
-        ['CMOR1']
+        'SELECT * FROM actions WHERE sssi_eligible IS NOT TRUE OR hf_eligible IS NOT TRUE'
       )
-      expect(sssi).toHaveLength(1)
-      expect(sssi[0].action_code).toBe('CMOR1')
-      expect(sssi[0].has_sssi).toEqual(true)
-      expect(sssi[0].has_hf).toEqual(true)
-      expect(sssi[0].last_updated).toBeDefined()
+      expect(actions).toHaveLength(4)
+      expect(actions.map((a) => a.code)).to.include(
+        'UPL3',
+        'UPL4',
+        'UPL1',
+        'UPL2'
+      )
+      expect(actions.find((a) => a.code === 'UPL1').sssi_eligible).toBe(false)
+      expect(actions.find((a) => a.code === 'UPL2').hf_eligible).toBe(false)
+      expect(actions.find((a) => a.code === 'UPL3').hf_eligible).toBe(false)
+      expect(actions.find((a) => a.code === 'UPL3').sssi_eligible).toBe(false)
+      expect(actions.find((a) => a.code === 'UPL4').hf_eligible).toBe(false)
+      expect(actions.find((a) => a.code === 'UPL4').sssi_eligible).toBe(false)
     },
     10000
   )
