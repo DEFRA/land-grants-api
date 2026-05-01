@@ -1,1 +1,1 @@
-See [Available Area Calculation](../../docs/available-area-calculation.md)
+See [Available Area Calculation](../../docs/aac-specification.md)

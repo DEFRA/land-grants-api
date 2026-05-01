@@ -4,16 +4,18 @@ import dotenv from 'dotenv'
 import { Verifier } from '@pact-foundation/pact'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
-import Hapi from '@hapi/hapi'
-import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
+import {
+  mockActionConfig,
+  mockWoodlandManagementActionConfig
+} from '~/src/features/actions/fixtures/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
-import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
-} from '~/src/features/available-area/availableArea.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
@@ -24,6 +26,8 @@ import { getLatestVersion } from './git.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import { applicationValidationRunToCaseManagement } from '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
+import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import createTestServer from '../test-server.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
@@ -33,7 +37,18 @@ vi.mock(
 vi.mock('~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js')
 vi.mock('~/src/features/application/mutations/saveApplication.mutation.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock(
+  '~/src/features/available-area/explanations.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      formatExplanationSections: vi.fn()
+    }
+  }
+)
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
@@ -51,7 +66,8 @@ const mockGetActionsByLatestVersion = getActionsByLatestVersion
 const mockGetEnabledActions = getEnabledActions
 const mockGetActionsByVersion = getActionsByVersion
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-const mockGetAvailableAreaForAction = getAvailableAreaForAction
+const mockFindMaximumAvailableArea = findMaximumAvailableArea
+const mockFormatExplanationSections = formatExplanationSections
 const mockGetAgreementsForParcel = getAgreementsForParcel
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
@@ -61,9 +77,9 @@ const mockApplicationValidationRunToCaseManagement =
   applicationValidationRunToCaseManagement
 const mockValidateApplication = validateApplication
 
-const mockAvailableAreaResult = {
-  stacks: [],
-  explanations: [],
+const mockLpResult = {
+  feasible: true,
+  context: null,
   totalValidLandCoverSqm: 300,
   availableAreaSqm: 300,
   availableAreaHectares: 0.03
@@ -164,20 +180,33 @@ const pactVerifierOptions = async () => {
           allParcels.push(parcel)
         })
         mockGetLandData.mockResolvedValue(allParcels)
+      },
+      'has woodland parcels': ({ parcelIds }) => {
+        const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+        const allParcels = []
+        const parcel = createParcel(sheetId, parcelId)
+        allParcels.push(parcel)
+        mockGetLandData.mockResolvedValue(allParcels)
       }
     },
 
     beforeEach: () => {
-      mockGetEnabledActions.mockResolvedValue(mockActionConfig)
-      mockGetActionsByLatestVersion.mockResolvedValue(mockActionConfig)
-      mockGetActionsByVersion.mockResolvedValue(mockActionConfig)
+      const actions = [
+        ...mockActionConfig,
+        ...mockWoodlandManagementActionConfig
+      ]
+      mockGetEnabledActions.mockResolvedValue(actions)
+      mockGetActionsByLatestVersion.mockResolvedValue(actions)
+      mockGetActionsByVersion.mockResolvedValue(actions)
       mockGetAvailableAreaDataRequirements.mockResolvedValue({
         landCoverCodesForAppliedForAction: [],
         landCoversForParcel: [],
-        landCoversForExistingActions: []
+        landCoversForExistingActions: [],
+        landCoverToString: () => ''
       })
       mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
-      mockGetAvailableAreaForAction.mockReturnValue(mockAvailableAreaResult)
+      mockFindMaximumAvailableArea.mockReturnValue(mockLpResult)
+      mockFormatExplanationSections.mockReturnValue([])
       mockGetAgreementsForParcel.mockResolvedValue([])
       mockSaveApplication.mockResolvedValue(251)
       mockGetApplicationValidationRun.mockImplementation(
@@ -196,7 +225,7 @@ const pactVerifierOptions = async () => {
 }
 
 describe('Pact Verification', () => {
-  const server = Hapi.server({ port: 3001, host: 'localhost' })
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', logger)
@@ -208,7 +237,8 @@ describe('Pact Verification', () => {
       parcel,
       payments,
       application,
-      caseManagementAdapter
+      caseManagementAdapter,
+      woodlandManagement
     ])
     await server.initialize()
     await server.start()

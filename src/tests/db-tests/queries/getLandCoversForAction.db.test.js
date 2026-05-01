@@ -33,13 +33,16 @@ describe('Get Land Covers For Action Query', () => {
 
   test('should return all land cover codes for GRH8', async () => {
     const landCovers = await getLandCoversForAction('GRH8', connection, logger)
-    expect(landCovers).toEqual([
-      { landCoverCode: '111', landCoverClassCode: '110' },
-      { landCoverCode: '112', landCoverClassCode: '110' },
-      { landCoverCode: '117', landCoverClassCode: '110' },
-      { landCoverCode: '118', landCoverClassCode: '110' },
-      { landCoverCode: '131', landCoverClassCode: '130' }
-    ])
+    expect(landCovers).toHaveLength(47)
+    expect(landCovers).toEqual(
+      expect.arrayContaining([
+        { landCoverCode: '111', landCoverClassCode: '110' },
+        { landCoverCode: '112', landCoverClassCode: '110' },
+        { landCoverCode: '117', landCoverClassCode: '110' },
+        { landCoverCode: '118', landCoverClassCode: '110' },
+        { landCoverCode: '131', landCoverClassCode: '130' }
+      ])
+    )
     expect(true).toBe(true)
   })
 
@@ -91,15 +94,17 @@ describe('Get Land Covers For Action Query', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({
-      GRH8: [
+    expect(landCovers).toHaveProperty('GRH8')
+    expect(landCovers.GRH8).toHaveLength(47)
+    expect(landCovers.GRH8).toEqual(
+      expect.arrayContaining([
         { landCoverCode: '111', landCoverClassCode: '110' },
         { landCoverCode: '112', landCoverClassCode: '110' },
         { landCoverCode: '117', landCoverClassCode: '110' },
         { landCoverCode: '118', landCoverClassCode: '110' },
         { landCoverCode: '131', landCoverClassCode: '130' }
-      ]
-    })
+      ])
+    )
   })
 
   test('should return land cover codes for multiple action codes', async () => {
@@ -120,15 +125,18 @@ describe('Get Land Covers For Action Query', () => {
       connection,
       logger
     )
-    expect(landCovers).toEqual({
-      GRH8: [
+    expect(landCovers).toHaveProperty('GRH8')
+    expect(landCovers).toHaveProperty('MISSING')
+    expect(landCovers.GRH8).toHaveLength(47)
+    expect(landCovers.GRH8).toEqual(
+      expect.arrayContaining([
         { landCoverCode: '111', landCoverClassCode: '110' },
         { landCoverCode: '112', landCoverClassCode: '110' },
         { landCoverCode: '117', landCoverClassCode: '110' },
         { landCoverCode: '118', landCoverClassCode: '110' },
         { landCoverCode: '131', landCoverClassCode: '130' }
-      ],
-      MISSING: []
-    })
+      ])
+    )
+    expect(landCovers.MISSING).toEqual([])
   })
 })

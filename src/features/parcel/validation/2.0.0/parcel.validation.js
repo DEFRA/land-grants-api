@@ -1,10 +1,45 @@
-import { splitParcelId } from '../../service/parcel.service.js'
+import { splitParcelId } from '../../service/2.0.0/parcel.service.js'
 import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { getAndValidateParcels } from '../1.0.0/parcel.validation.js'
+import { getLandData } from '../../queries/getLandData.query.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
  */
+
+/**
+ * Get and validate land parcels request.
+ * @param {{sheetId: string, parcelId: string}[]} sheetParcelIds - The sheet and parcel identifiers.
+ * @param {object} request - The hapi request object.
+ * @returns {Promise<{ errors: string | null, parcels: Array<LandParcelDb | null> }>} Parcel lookup and validation result.
+ */
+export const getAndValidateParcels = async (sheetParcelIds, request) => {
+  const parcels = await Promise.all(
+    sheetParcelIds.map(async (sheetParcelId) => {
+      const parcel = await getLandData(
+        sheetParcelId.sheetId,
+        sheetParcelId.parcelId,
+        request.server.postgresDb,
+        request.logger
+      )
+
+      return {
+        parcel: parcel?.[0] ?? null,
+        sheetId: sheetParcelId.sheetId,
+        parcelId: sheetParcelId.parcelId
+      }
+    })
+  )
+
+  const errors = parcels
+    .map((p) => {
+      return p.parcel ? null : `${p.sheetId}-${p.parcelId}`
+    })
+    .filter((error) => error !== null)
+
+  return errors && errors.length > 0
+    ? { errors: `Land parcels not found: ${errors.join(', ')}`, parcels: [] }
+    : { errors: null, parcels: parcels.map((p) => p.parcel) }
+}
 
 /**
  * Get data and validate request

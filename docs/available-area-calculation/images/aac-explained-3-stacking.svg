@@ -1,0 +1,45 @@
+<svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram comparing incompatible actions needing separate space versus compatible actions sharing space through stacking">
+  <style>
+    text { font-family: Arial, sans-serif; font-size: 12px; }
+    .heading { font-size: 14px; font-weight: bold; }
+    .label { font-size: 11px; }
+  </style>
+
+  <!-- NOT COMPATIBLE -->
+  <text x="10" y="20" class="heading">Not compatible — separate space needed</text>
+
+  <rect x="10" y="35" width="600" height="50" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <text x="605" y="65" class="label" text-anchor="end" fill="#666">Grassland (6 ha)</text>
+
+  <!-- Action X: 2ha = 200px -->
+  <rect x="10" y="35" width="200" height="50" fill="#b8daff" stroke="#004085" stroke-width="1.5"/>
+  <text x="110" y="65" text-anchor="middle" fill="#004085" font-size="11">Action X — 2 ha</text>
+
+  <!-- Action Y: 2ha = 200px -->
+  <rect x="210" y="35" width="200" height="50" fill="#f5c6cb" stroke="#dc3545" stroke-width="1.5"/>
+  <text x="310" y="65" text-anchor="middle" fill="#721c24" font-size="11">Action Y — 2 ha</text>
+
+  <!-- Free -->
+  <rect x="410" y="35" width="200" height="50" fill="#d4edda" stroke="#28a745" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="510" y="65" text-anchor="middle" fill="#28a745" font-weight="bold">2 ha free</text>
+
+  <text x="10" y="110" class="label" fill="#888">Total footprint: 4 ha (2 + 2). Free space: 2 ha.</text>
+
+  <!-- COMPATIBLE -->
+  <text x="10" y="140" class="heading">Compatible — actions share the same ground (stacked)</text>
+
+  <rect x="10" y="155" width="600" height="50" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <text x="605" y="185" class="label" text-anchor="end" fill="#666">Grassland (6 ha)</text>
+
+  <!-- Stacked: 2ha = 200px, both on same area -->
+  <rect x="10" y="155" width="200" height="25" fill="#b8daff" stroke="#004085" stroke-width="1.5"/>
+  <text x="110" y="174" text-anchor="middle" fill="#004085" font-size="10">Action X — 2 ha</text>
+  <rect x="10" y="180" width="200" height="25" fill="#f5c6cb" stroke="#dc3545" stroke-width="1.5"/>
+  <text x="110" y="199" text-anchor="middle" fill="#721c24" font-size="10">Action Y — 2 ha</text>
+
+  <!-- Free -->
+  <rect x="210" y="155" width="400" height="50" fill="#d4edda" stroke="#28a745" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="410" y="185" text-anchor="middle" fill="#28a745" font-weight="bold">4 ha free</text>
+
+  <text x="10" y="225" class="label" fill="#888">Total footprint: 2 ha (shared). Free space: 4 ha.</text>
+</svg>

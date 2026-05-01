@@ -14,13 +14,13 @@ import {
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
-import { getAndValidateParcels } from '../../parcel/validation/1.0.0/parcel.validation.js'
-import { splitParcelId } from '../../parcel/service/parcel.service.js'
+import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
+import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
 
 export const ValidateWMPController = {
   options: {
     tags: ['api'],
-    description: 'Validate WMP',
+    description: 'Validate WMP: validate woodland management plan',
     notes: 'Validates WMP',
     validate: {
       payload: validateWMPSchemaV2
@@ -43,18 +43,18 @@ export const ValidateWMPController = {
     try {
       /** @type {validateWMPSchemaV2} */
       // @ts-expect-error - payload
-      const { parcelIds, logger } = request.payload
+      const { parcelIds } = request.payload
 
       logInfo(request.logger, {
         category: 'wmp',
-        message: 'Validate WMP',
+        message: 'Validating WMP',
         context: {
           parcelIds
         }
       })
 
       const parcelSheetIds = parcelIds.map((parcelId) =>
-        splitParcelId(parcelId, logger)
+        splitParcelId(parcelId, request.logger)
       )
       const { parcels, errors } = await getAndValidateParcels(
         parcelSheetIds,
@@ -77,8 +77,20 @@ export const ValidateWMPController = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      logBusinessError(request.logger, error)
-      return Boom.internal('Failed to validate wmp')
+      /** @type {validateWMPSchemaV2} */
+      // @ts-expect-error - payload
+      const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } =
+        request.payload
+      logBusinessError(request.logger, {
+        operation: 'Validation failure for WMP',
+        error,
+        context: {
+          parcelIds: parcelIds.join(','),
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa
+        }
+      })
+      return Boom.internal('Error validating WMP')
     }
   }
 }

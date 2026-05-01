@@ -1,7 +1,9 @@
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
-  getAvailableAreaDataRequirements,
-  getAvailableAreaForAction
+  findMaximumAvailableArea,
+  throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
@@ -20,7 +22,6 @@ import {
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
 import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
-import { splitParcelId } from '../parcel.service.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -29,6 +30,31 @@ import { splitParcelId } from '../parcel.service.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
+
+/**
+ * Split id into sheet id and parcel id
+ * @param {string} id - 6-character long alpha-numeric string - 4-character long numeric string
+ * @returns {object} The sheet id and parcel id
+ */
+export function splitParcelId(id, logger) {
+  try {
+    const parts = id?.split('-')
+    const sheetId = parts?.[0] || null
+    const parcelId = parts?.[1] || null
+
+    if (!sheetId || !parcelId) {
+      throw new Error(`Unable to split parcel id ${id}`)
+    }
+
+    return {
+      sheetId,
+      parcelId
+    }
+  } catch (error) {
+    logger.error(`Unable to split parcel id ${id}`, error)
+    throw error
+  }
+}
 
 /**
  * Get parcel actions with available area
@@ -64,15 +90,25 @@ export async function getParcelActionsWithAvailableArea(
       logger
     )
 
-    const availableArea = getAvailableAreaForAction(
+    const lpResult = findMaximumAvailableArea(
       action.code,
-      parcel.sheet_id,
-      parcel.parcel_id,
-      compatibilityCheckFn,
       transformedActions,
-      aacDataRequirements,
-      logger
+      compatibilityCheckFn,
+      aacDataRequirements
     )
+
+    throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
+
+    const availableArea = {
+      ...lpResult,
+      explanations: formatExplanationSections(lpResult.context, {
+        targetAction: action.code,
+        availableAreaSqm: lpResult.availableAreaSqm,
+        totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
+        landCoverToString: aacDataRequirements.landCoverToString,
+        feasible: lpResult.feasible
+      })
+    }
 
     const actionWithAvailableArea = actionTransformer(
       action,

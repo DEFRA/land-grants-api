@@ -16,6 +16,8 @@ updates:
           - 'babel-loader'
           - 'babel-plugin-transform-import-meta'
           - 'tsx'
+          - '*vitest*'
+          - '@aws-sdk/*'
 
       lint:
         patterns:

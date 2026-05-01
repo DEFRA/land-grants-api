@@ -1,9 +1,10 @@
-import Hapi from '@hapi/hapi'
 import { payments } from '~/src/features/payment/index.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import { vi } from 'vitest'
+import createTestServer from '~/src/tests/test-server.js'
+import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/service/action.service.js')
@@ -80,7 +81,7 @@ const validResponse = {
 }
 
 describe('Payment calculate controller V2', () => {
-  const server = Hapi.server()
+  const server = createTestServer(quantityValidationFailAction)
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {

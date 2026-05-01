@@ -1,0 +1,80 @@
+<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram comparing a poor arrangement with an optimised arrangement of actions on a land parcel">
+  <style>
+    text { font-family: Arial, sans-serif; font-size: 12px; }
+    .heading { font-size: 14px; font-weight: bold; }
+    .label { font-size: 11px; }
+    .result { font-size: 13px; font-weight: bold; }
+  </style>
+
+  <!-- Scale: 1 ha = 90px. Grassland 3.1=279, Woodland 2.5=225, Arable 1=90. Gaps of 10px. -->
+
+  <!-- Legend -->
+  <rect x="10" y="5" width="16" height="12" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <text x="30" y="15" class="label">Grassland (3.1 ha)</text>
+  <rect x="160" y="5" width="16" height="12" fill="#c9b8e8" stroke="#888" stroke-width="1"/>
+  <text x="180" y="15" class="label">Woodland (2.5 ha)</text>
+  <rect x="310" y="5" width="16" height="12" fill="#fff3cd" stroke="#888" stroke-width="1"/>
+  <text x="330" y="15" class="label">Arable (1 ha)</text>
+  <rect x="450" y="5" width="16" height="12" fill="#b8daff" stroke="#888" stroke-width="1"/>
+  <text x="470" y="15" class="label">AA1</text>
+  <rect x="510" y="5" width="16" height="12" fill="#f5c6cb" stroke="#888" stroke-width="1"/>
+  <text x="530" y="15" class="label">AA2</text>
+
+  <!-- POOR ARRANGEMENT -->
+  <text x="10" y="50" class="heading">Poor arrangement</text>
+
+  <!-- Grassland 3.1 ha = 279px -->
+  <rect x="10" y="60" width="279" height="50" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <!-- AA2 on grassland: 3ha = 270px -->
+  <rect x="10" y="60" width="270" height="50" fill="#f5c6cb" stroke="#dc3545" stroke-width="1.5"/>
+  <text x="145" y="90" text-anchor="middle" fill="#721c24" font-size="11">AA2 — 3 ha</text>
+
+  <!-- Woodland 2.5 ha = 225px -->
+  <rect x="299" y="60" width="225" height="50" fill="#c9b8e8" stroke="#888" stroke-width="1"/>
+  <!-- AA1 on woodland: 2.5ha = 225px -->
+  <rect x="299" y="60" width="225" height="50" fill="#b8daff" stroke="#004085" stroke-width="1.5"/>
+  <text x="411" y="90" text-anchor="middle" fill="#004085" font-size="11">AA1 — 2.5 ha</text>
+
+  <!-- Arable 1 ha = 90px -->
+  <rect x="534" y="60" width="90" height="50" fill="#fff3cd" stroke="#888" stroke-width="1"/>
+  <text x="579" y="90" text-anchor="middle" class="label" fill="#666">Arable</text>
+
+  <!-- Result -->
+  <text x="10" y="135" class="label" fill="#888">CMOR1 eligible for Grassland only. Remaining Grassland:</text>
+  <text x="385" y="135" class="result" fill="#dc3545">0.1 ha</text>
+
+  <!-- OPTIMISED ARRANGEMENT -->
+  <text x="10" y="175" class="heading">Optimised arrangement</text>
+
+  <!-- Grassland 3.1 ha = 279px -->
+  <rect x="10" y="185" width="279" height="50" fill="#d4edda" stroke="#888" stroke-width="1"/>
+  <!-- AA2 on grassland: 2ha = 180px -->
+  <rect x="10" y="185" width="180" height="50" fill="#f5c6cb" stroke="#dc3545" stroke-width="1.5"/>
+  <text x="100" y="215" text-anchor="middle" fill="#721c24" font-size="11">AA2 — 2 ha</text>
+  <!-- Free grassland: 1.1ha = 99px -->
+  <rect x="190" y="185" width="99" height="50" fill="#d4edda" stroke="#28a745" stroke-width="2.5" stroke-dasharray="5,3"/>
+  <text x="239" y="215" text-anchor="middle" fill="#28a745" font-weight="bold" font-size="12">1.1 ha free</text>
+
+  <!-- Woodland 2.5 ha = 225px -->
+  <rect x="299" y="185" width="225" height="50" fill="#c9b8e8" stroke="#888" stroke-width="1"/>
+  <!-- AA1 on woodland: 1.5ha = 135px -->
+  <rect x="299" y="185" width="135" height="50" fill="#b8daff" stroke="#004085" stroke-width="1.5"/>
+  <text x="366" y="215" text-anchor="middle" fill="#004085" font-size="11">AA1 — 1.5 ha</text>
+  <!-- AA2 on woodland: 1ha = 90px -->
+  <rect x="434" y="185" width="90" height="50" fill="#f5c6cb" stroke="#dc3545" stroke-width="1.5"/>
+  <text x="479" y="215" text-anchor="middle" fill="#721c24" font-size="11">AA2 — 1 ha</text>
+
+  <!-- Arable 1 ha = 90px -->
+  <rect x="534" y="185" width="90" height="50" fill="#fff3cd" stroke="#888" stroke-width="1"/>
+  <!-- AA1 on arable: 1ha = 90px -->
+  <rect x="534" y="185" width="90" height="50" fill="#b8daff" stroke="#004085" stroke-width="1.5"/>
+  <text x="579" y="215" text-anchor="middle" fill="#004085" font-size="11">AA1 — 1 ha</text>
+
+  <!-- Result -->
+  <text x="10" y="260" class="label" fill="#888">CMOR1 eligible for Grassland only. Remaining Grassland:</text>
+  <text x="385" y="260" class="result" fill="#28a745">1.1 ha</text>
+
+  <!-- Explanation -->
+  <text x="10" y="290" class="label" fill="#555">Key insight: by placing AA1 on Arable first (land CMOR1 cannot use),</text>
+  <text x="10" y="305" class="label" fill="#555">Woodland is freed up for AA2, leaving more Grassland for CMOR1.</text>
+</svg>
