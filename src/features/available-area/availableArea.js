@@ -64,6 +64,9 @@ export function findMaximumAvailableArea(
     hfActionEligibility
   } = dataRequirements
 
+  // Consolidate duplicate action codes by summing their areas
+  existingActions = consolidateActions(existingActions)
+
   const targetEligibleCodes = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
   )
@@ -260,6 +263,25 @@ export function findMaximumAvailableArea(
     totalValidLandCoverSqm,
     context
   }
+}
+
+/**
+ * Consolidates existing actions that share the same action code by summing their areas.
+ * @param {ActionWithArea[]} existingActions
+ * @returns {ActionWithArea[]}
+ */
+function consolidateActions(existingActions) {
+  const grouped = new Map()
+  for (const action of existingActions) {
+    grouped.set(
+      action.actionCode,
+      (grouped.get(action.actionCode) ?? 0) + action.areaSqm
+    )
+  }
+  return Array.from(grouped.entries()).map(([actionCode, areaSqm]) => ({
+    actionCode,
+    areaSqm
+  }))
 }
 
 /**
