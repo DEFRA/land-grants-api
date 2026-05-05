@@ -27,18 +27,16 @@ describe('Get Action Eligibility Query', () => {
     const actions = await getActionEligibilty(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, ...cmor1 } = actions.find(
-      (a) => a.code === 'CMOR1'
-    )
+    const cmor1 = actions.find((a) => a.code === 'CMOR1')
 
-    expect(cmor1).toEqual({
-      id: 1,
-      code: 'CMOR1',
-      description: 'Assess moorland and produce a written record',
-      sssi_eligible: true,
-      hefer_eligible: true,
-      ingest_id: null,
-      last_updated: null
-    })
+    expect(cmor1.id).toBe(1)
+    expect(cmor1.code).toBe('CMOR1')
+    expect(cmor1.description).toBe(
+      'Assess moorland and produce a written record'
+    )
+    expect(cmor1.sssi_eligible).toBe(true)
+    expect(cmor1.hf_eligible).toBe(true)
+    expect(cmor1.ingest_id).not.toBeNull()
+    expect(cmor1.last_updated).not.toBeNull()
   })
 })

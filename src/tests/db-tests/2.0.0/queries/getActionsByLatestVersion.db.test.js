@@ -27,9 +27,16 @@ describe('Get Actions By Latest Version Query', () => {
     const actions = await getActionsByLatestVersion(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, groupId, groupName, ...cmor1 } = actions.find(
-      (a) => a.code === 'CMOR1'
-    )
+    const {
+      lastUpdated,
+      id,
+      groupId,
+      groupName,
+      sssi_eligible,
+      hf_eligible,
+      ingest_id,
+      ...cmor1
+    } = actions.find((a) => a.code === 'CMOR1')
 
     expect(groupId).toBe(1)
     expect(groupName).toBe('Assess moorland')
@@ -103,6 +110,9 @@ describe('Get Actions By Latest Version Query', () => {
     })
     expect(id).toBeGreaterThan(0)
     expect(lastUpdated).not.toBeNull()
+    expect(sssi_eligible).toBe(true)
+    expect(hf_eligible).toBe(true)
+    expect(ingest_id).not.toBeNull()
   })
 
   test('should not return UPL4', async () => {
