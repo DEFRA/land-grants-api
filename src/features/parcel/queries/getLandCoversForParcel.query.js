@@ -40,7 +40,7 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
 
     const landCovers = result.rows.map((row) => ({
       landCoverClassCode: row.land_cover_class_code,
-      areaSqm: roundSqm(row.area_sqm)
+      areaSqm: row.area_sqm
     }))
 
     return landCovers
