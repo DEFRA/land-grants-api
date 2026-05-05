@@ -2,7 +2,6 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * Get available area of a land parcel excluding specified land cover classes.
@@ -40,7 +39,7 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
 
     const landCovers = result.rows.map((row) => ({
       landCoverClassCode: row.land_cover_class_code,
-      areaSqm: roundSqm(row.area_sqm)
+      areaSqm: row.area_sqm
     }))
 
     return landCovers
