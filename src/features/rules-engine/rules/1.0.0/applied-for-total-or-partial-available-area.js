@@ -3,6 +3,9 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+// This rule allows applying for a partial or total area, with an optional
+// tolerance over the available area (configured as a percentage).
+
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
@@ -14,31 +17,33 @@ export const appliedForTotalOrPartialAvailableArea = {
       areaAppliedFor,
       landParcel: { area: availableArea }
     } = application
-    const { minimumAppliedHa } = rule.config
+    const { tolerancePercent } = rule.config
     const name = rule.name
 
     const parsedAppliedArea = Number.parseFloat(areaAppliedFor) || 0
     const parsedAvailableArea = Number.parseFloat(availableArea) || 0
-    const parsedMinimumAppliedArea = Number.parseFloat(minimumAppliedHa) || 0
+    const parsedTolerancePercent = Number.parseFloat(tolerancePercent) || 0
+    const maximumAllowedAppliedArea =
+      parsedAvailableArea * (1 + parsedTolerancePercent / 100)
 
     const explanations = [
       {
         title: 'Total or partial available area',
         lines: [
-          `The minimum allowed applied area is (${parsedMinimumAppliedArea} ha), the available area is (${parsedAvailableArea} ha), the applicant applied for (${parsedAppliedArea} ha)`
+          `The available area is (${parsedAvailableArea} ha), the tolerance is (${parsedTolerancePercent}%), and the applicant applied for (${parsedAppliedArea} ha).`
         ]
       }
     ]
 
     if (
-      parsedAppliedArea < parsedMinimumAppliedArea ||
-      parsedAppliedArea > parsedAvailableArea
+      parsedAppliedArea <= 0 ||
+      parsedAppliedArea > maximumAllowedAppliedArea
     ) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The applied figure (${parsedAppliedArea} ha) must be between (${parsedMinimumAppliedArea} ha) and (${parsedAvailableArea} ha)`,
+        reason: `The applied figure (${parsedAppliedArea} ha) must be greater than 0 ha and no more than (${maximumAllowedAppliedArea} ha), based on (${parsedAvailableArea} ha) with (${parsedTolerancePercent}%) tolerance`,
         explanations
       }
     }
@@ -47,7 +52,7 @@ export const appliedForTotalOrPartialAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The applied figure (${parsedAppliedArea} ha) is within the allowed range (${parsedMinimumAppliedArea} ha to ${parsedAvailableArea} ha)`,
+      reason: `The applied figure (${parsedAppliedArea} ha) is within the allowed range (greater than 0 ha and up to ${maximumAllowedAppliedArea} ha)`,
       explanations
     }
   }

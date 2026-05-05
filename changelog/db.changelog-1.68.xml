@@ -19,17 +19,17 @@
           "name": "applied-for-total-or-partial-available-area",
           "description": "Has the total or partial available area been applied for?",
           "config": {
-            "minimumAppliedHa": 1
+            "tolerancePercent": 10
           }
         }
       ],
       "payment": {
-        "ratePerUnitGbp": 382
+        "ratePerUnitGbp": 224
       },
       "payment_method": {
         "name": "default-calculation",
         "config": {
-          "ratePerUnitGbp": 382
+          "ratePerUnitGbp": 224
         },
         "version": "1.0.0"
       },

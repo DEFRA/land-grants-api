@@ -10,13 +10,13 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
 
   const createRule = (
     name = 'applied-for-total-or-partial-available-area',
-    minimumAppliedHa = 1
+    tolerancePercent = 10
   ) => ({
     name,
-    config: { minimumAppliedHa }
+    config: { tolerancePercent }
   })
 
-  test('should pass when area applied for equals the minimum allowed', () => {
+  test('should pass when area applied for is greater than 0 and within available area', () => {
     const application = createApplication('1', '10.5')
     const rule = createRule()
     const result = appliedForTotalOrPartialAvailableArea.execute(
@@ -28,19 +28,19 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: true,
       reason:
-        'The applied figure (1 ha) is within the allowed range (1 ha to 10.5 ha)',
+        'The applied figure (1 ha) is within the allowed range (greater than 0 ha and up to 11.55 ha)',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (1 ha)'
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (1 ha).'
           ]
         }
       ]
     })
   })
 
-  test('should pass when area applied for is between minimum and available area', () => {
+  test('should pass when area applied for is between zero and tolerance-adjusted maximum', () => {
     const application = createApplication(5.25, '10.5')
     const rule = createRule()
     const result = appliedForTotalOrPartialAvailableArea.execute(
@@ -52,20 +52,20 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: true,
       reason:
-        'The applied figure (5.25 ha) is within the allowed range (1 ha to 10.5 ha)',
+        'The applied figure (5.25 ha) is within the allowed range (greater than 0 ha and up to 11.55 ha)',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (5.25 ha)'
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (5.25 ha).'
           ]
         }
       ]
     })
   })
 
-  test('should fail when area applied for is below minimum allowed area', () => {
-    const application = createApplication('0.5', '10.5')
+  test('should fail when area applied for is zero', () => {
+    const application = createApplication('0', '10.5')
     const rule = createRule()
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
@@ -76,12 +76,12 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (0.5 ha) must be between (1 ha) and (10.5 ha)',
+        'The applied figure (0 ha) must be greater than 0 ha and no more than (11.55 ha), based on (10.5 ha) with (10%) tolerance',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (0.5 ha)'
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (0 ha).'
           ]
         }
       ]
@@ -89,7 +89,7 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
   })
 
   test('should fail when area applied for exceeds available area', () => {
-    const application = createApplication('11', '10.5')
+    const application = createApplication('11.6', '10.5')
     const rule = createRule()
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
@@ -99,12 +99,13 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
-      reason: 'The applied figure (11 ha) must be between (1 ha) and (10.5 ha)',
+      reason:
+        'The applied figure (11.6 ha) must be greater than 0 ha and no more than (11.55 ha), based on (10.5 ha) with (10%) tolerance',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (11 ha)'
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (11.6 ha).'
           ]
         }
       ]
@@ -122,12 +123,88 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
-      reason: 'The applied figure (0 ha) must be between (1 ha) and (10.5 ha)',
+      reason:
+        'The applied figure (0 ha) must be greater than 0 ha and no more than (11.55 ha), based on (10.5 ha) with (10%) tolerance',
       explanations: [
         {
           title: 'Total or partial available area',
           lines: [
-            'The minimum allowed applied area is (1 ha), the available area is (10.5 ha), the applicant applied for (0 ha)'
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (0 ha).'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should pass when area applied for is above available area but within tolerance', () => {
+    const application = createApplication('11.5', '10.5')
+    const rule = createRule()
+    const result = appliedForTotalOrPartialAvailableArea.execute(
+      application,
+      rule
+    )
+
+    expect(result).toEqual({
+      name: 'applied-for-total-or-partial-available-area',
+      passed: true,
+      reason:
+        'The applied figure (11.5 ha) is within the allowed range (greater than 0 ha and up to 11.55 ha)',
+      explanations: [
+        {
+          title: 'Total or partial available area',
+          lines: [
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (11.5 ha).'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should pass when area applied for equals the tolerance-adjusted maximum', () => {
+    const application = createApplication('11.55', '10.5')
+    const rule = createRule()
+    const result = appliedForTotalOrPartialAvailableArea.execute(
+      application,
+      rule
+    )
+
+    expect(result).toEqual({
+      name: 'applied-for-total-or-partial-available-area',
+      passed: true,
+      reason:
+        'The applied figure (11.55 ha) is within the allowed range (greater than 0 ha and up to 11.55 ha)',
+      explanations: [
+        {
+          title: 'Total or partial available area',
+          lines: [
+            'The available area is (10.5 ha), the tolerance is (10%), and the applicant applied for (11.55 ha).'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should use zero tolerance when tolerance is missing', () => {
+    const application = createApplication('10.6', '10.5')
+    const rule = {
+      name: 'applied-for-total-or-partial-available-area',
+      config: {}
+    }
+    const result = appliedForTotalOrPartialAvailableArea.execute(
+      application,
+      rule
+    )
+
+    expect(result).toEqual({
+      name: 'applied-for-total-or-partial-available-area',
+      passed: false,
+      reason:
+        'The applied figure (10.6 ha) must be greater than 0 ha and no more than (10.5 ha), based on (10.5 ha) with (0%) tolerance',
+      explanations: [
+        {
+          title: 'Total or partial available area',
+          lines: [
+            'The available area is (10.5 ha), the tolerance is (0%), and the applicant applied for (10.6 ha).'
           ]
         }
       ]
