@@ -64,6 +64,9 @@ export function findMaximumAvailableArea(
     hfActionEligibility
   } = dataRequirements
 
+  // Consolidate duplicate action codes by summing their areas
+  existingActions = consolidateActions(existingActions)
+
   const targetEligibleCodes = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
   )
@@ -263,6 +266,25 @@ export function findMaximumAvailableArea(
 }
 
 /**
+ * Consolidates existing actions that share the same action code by summing their areas.
+ * @param {ActionWithArea[]} existingActions
+ * @returns {ActionWithArea[]}
+ */
+function consolidateActions(existingActions) {
+  const grouped = new Map()
+  for (const action of existingActions) {
+    grouped.set(
+      action.actionCode,
+      (grouped.get(action.actionCode) ?? 0) + action.areaSqm
+    )
+  }
+  return Array.from(grouped.entries()).map(([actionCode, areaSqm]) => ({
+    actionCode,
+    areaSqm
+  }))
+}
+
+/**
  * Checks if an action is eligible for a given designation zone.
  * @param {DesignationZone} zone
  * @param {boolean} sssiEligible - Whether the action is eligible for SSSI land
@@ -421,9 +443,7 @@ function splitLandCoversByDesignation(
   /** @type {DesignationZone[]} */
   const designationZones = []
 
-  for (let i = 0; i < landCoversForParcel.length; i++) {
-    const lc = landCoversForParcel[i]
-
+  for (const lc of landCoversForParcel) {
     if (!targetEligibleCodes.includes(lc.landCoverClassCode)) {
       // Land cover not eligible for the target — pass through unchanged
       effectiveLandCovers.push({
@@ -435,9 +455,19 @@ function splitLandCoversByDesignation(
     }
 
     // Derive four zones via inclusion-exclusion
-    const sssi = sssiOverlap[i].areaSqm
-    const hf = hfOverlap[i].areaSqm
-    const both = sssiAndHfOverlap[i].areaSqm
+    const sssi =
+      sssiOverlap.find(
+        (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
+      )?.areaSqm ?? 0
+
+    const hf =
+      hfOverlap.find((lcl) => lcl.landCoverClassCode === lc.landCoverClassCode)
+        ?.areaSqm ?? 0
+
+    const both =
+      sssiAndHfOverlap.find(
+        (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
+      )?.areaSqm ?? 0
 
     const bothArea = Math.max(0, both)
     const sssiOnlyArea = Math.max(0, sssi - both)

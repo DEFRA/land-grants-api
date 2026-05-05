@@ -118,7 +118,7 @@ describe('Parcels Controller 2.0.0', () => {
             description: 'Assess moorland and produce a written record',
             availableArea: {
               unit: 'ha',
-              value: 762.8977
+              value: 762.9068
             },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
@@ -131,7 +131,7 @@ describe('Parcels Controller 2.0.0', () => {
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 762.8977
+              value: 0.0616
             },
             ratePerUnitGbp: 20,
             sssiConsentRequired: true,
@@ -143,7 +143,7 @@ describe('Parcels Controller 2.0.0', () => {
             description: 'Low livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 762.8977
+              value: 762.9068
             },
             ratePerUnitGbp: 53,
             sssiConsentRequired: true,
@@ -155,7 +155,7 @@ describe('Parcels Controller 2.0.0', () => {
             description: 'Limited livestock grazing on moorland',
             availableArea: {
               unit: 'ha',
-              value: 762.8977
+              value: 0.0616
             },
             ratePerUnitGbp: 66,
             sssiConsentRequired: true,
