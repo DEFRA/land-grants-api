@@ -70,3 +70,14 @@
  * @property {string} code - The action code
  * @property {string} [version] - The semantic version (e.g. '3.1.0'). When omitted, the latest version is used.
  */
+
+/**
+ * @typedef {object} ActionEligibility
+ * @property {number} id
+ * @property {string} code
+ * @property {string} description
+ * @property {boolean} sssi_eligible
+ * @property {boolean} hf_eligible
+ * @property {string} ingest_id
+ * @property {Date} last_updated
+ */

@@ -12,5 +12,4 @@
     <sqlFile path="land-cover-codes-v2.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
     <sqlFile path="land-cover-codes-actions-v2.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
   </changeSet>
-
 </databaseChangeLog>

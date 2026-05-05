@@ -41,6 +41,8 @@ const createRequest = (payload, logger, connection) => ({
   }
 })
 
+const mockDate = new Date(2026, 4, 1)
+
 describe('Payment Calculate WMP Controller (DB)', () => {
   let logger, connection
 
@@ -52,10 +54,12 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       debug: vi.fn()
     }
     connection = connectToTestDatbase()
+    vi.setSystemTime(mockDate)
   })
 
   afterAll(async () => {
     await connection.end()
+    vi.useRealTimers()
   })
 
   beforeEach(() => {
@@ -267,7 +271,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       const { data, statusCode } = getResponse()
 
       expect(statusCode).toBe(200)
-      expect(data.payment.agreementEndDate).toBe('2036-04-30')
+      expect(data.payment.agreementEndDate).toBe('2036-05-31')
     })
   })
 
