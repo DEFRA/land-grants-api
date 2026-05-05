@@ -6,7 +6,6 @@
 
 import _solver from 'javascript-lp-solver'
 import {
-  roundSqm,
   sqmToHaRounded
 } from '~/src/features/common/helpers/measurement.js'
 import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js'

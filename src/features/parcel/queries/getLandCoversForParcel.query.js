@@ -2,7 +2,6 @@ import {
   logDatabaseError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * Get available area of a land parcel excluding specified land cover classes.
