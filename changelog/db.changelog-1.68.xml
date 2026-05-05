@@ -9,7 +9,7 @@
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
    <changeSet id="add-csam-3-action" author="system">
-    <sql>INSERT INTO actions (code, description, enabled, display) VALUES ('CSAM3', 'Herbal leys', TRUE, TRUE);</sql>
+    <sql>INSERT INTO actions (code, description, enabled, display, sssi_eligible, hf_eligible, ingest_id, last_updated) VALUES ('CSAM3', 'Herbal leys', TRUE, TRUE, TRUE, TRUE, null, now());</sql>
    </changeSet>
 
    <changeSet id="add-new-csam-3-action-config" author="system">
