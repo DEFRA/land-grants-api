@@ -78,15 +78,15 @@ export async function getAvailableAreaDataRequirements(
 
   const actionEligibilty = await getActionEligibilty(logger, postgresDb)
 
-  const sssiActionEligibility = actionEligibilty.reduce((acc, curr) => {
-    acc[curr.code] = curr.sssi_eligible
-    return acc
-  }, {})
+  const sssiActionEligibility = createActionEligibilityMap(
+    actionEligibilty,
+    'sssi_eligible'
+  )
 
-  const hfActionEligibility = actionEligibilty.reduce((acc, curr) => {
-    acc[curr.code] = curr.hf_eligible
-    return acc
-  }, {})
+  const hfActionEligibility = createActionEligibilityMap(
+    actionEligibilty,
+    'hf_eligible'
+  )
 
   return {
     landCoverCodesForAppliedForAction,
@@ -121,4 +121,17 @@ export function aggregateLandCovers(landCovers) {
     landCoverClassCode,
     areaSqm
   }))
+}
+
+/**
+ * Builds an eligibility lookup keyed by action code.
+ * @param {{ code: string, [key: string]: unknown }[]} actionEligibility
+ * @param {string} eligibilityKey
+ * @returns {Record<string, boolean>}
+ */
+function createActionEligibilityMap(actionEligibility, eligibilityKey) {
+  return actionEligibility.reduce((acc, curr) => {
+    acc[curr.code] = Boolean(curr[eligibilityKey])
+    return acc
+  }, {})
 }
