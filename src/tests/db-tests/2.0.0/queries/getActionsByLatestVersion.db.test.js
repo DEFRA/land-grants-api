@@ -32,8 +32,11 @@ describe('Get Actions By Latest Version Query', () => {
       id,
       groupId,
       groupName,
+      // eslint-disable-next-line
       sssi_eligible,
+      // eslint-disable-next-line
       hf_eligible,
+      // eslint-disable-next-line
       ingest_id,
       ...cmor1
     } = actions.find((a) => a.code === 'CMOR1')
