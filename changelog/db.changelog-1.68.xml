@@ -17,10 +17,7 @@
       "rules": [
         {
           "name": "applied-for-total-or-partial-available-area",
-          "description": "Has the total or partial available area been applied for?",
-          "config": {
-            "tolerancePercent": 10
-          }
+          "description": "Has the total or partial available area been applied for?"
         },
         {
           "name": "parcel-intersection-does-not-exceed-maximum-for-data-layer",
