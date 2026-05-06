@@ -42,6 +42,8 @@ const createRequest = (payload, logger, connection) => ({
 })
 const mockDate = new Date(2026, 4, 1)
 
+const mockDate = new Date(2026, 4, 1)
+
 describe('Payment Calculate WMP Controller (DB)', () => {
   let logger, connection
 

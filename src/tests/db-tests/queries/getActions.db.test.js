@@ -27,9 +27,8 @@ describe('Get Actions Query', () => {
     const actions = await getEnabledActions(logger, connection)
 
     // eslint-disable-next-line
-    const { lastUpdated, id, ...cmor1 } = actions.find(
-      (a) => a.code === 'CMOR1'
-    )
+    const { lastUpdated, id, sssi_eligible, hf_eligible, ingest_id, ...cmor1 } =
+      actions.find((a) => a.code === 'CMOR1')
 
     expect(cmor1).toEqual({
       version: 2,
@@ -89,6 +88,9 @@ describe('Get Actions Query', () => {
     })
     expect(id).toBeGreaterThan(0)
     expect(lastUpdated).not.toBeNull()
+    expect(sssi_eligible).toBe(true)
+    expect(hf_eligible).toBe(true)
+    expect(ingest_id).not.toBeNull()
   })
 
   test('should not return UPL4', async () => {
