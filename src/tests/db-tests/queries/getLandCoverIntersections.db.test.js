@@ -63,12 +63,16 @@ describe('Get Land Cover Intersections Query', () => {
 
     expect(result).toEqual({
       sssiOverlap: [
-        { landCoverClassCode: '130', areaSqm: 3 },
-        { landCoverClassCode: '332', areaSqm: 0 }
+        { landCoverClassCode: '130', areaSqm: 342491 },
+        { landCoverClassCode: '243', areaSqm: 32 },
+        { landCoverClassCode: '332', areaSqm: 13981 },
+        { landCoverClassCode: '371', areaSqm: 11 }
       ],
       hfOverlap: [
-        { landCoverClassCode: '130', areaSqm: 2 },
-        { landCoverClassCode: '332', areaSqm: 0 }
+        { landCoverClassCode: '130', areaSqm: 342491 },
+        { landCoverClassCode: '243', areaSqm: 32 },
+        { landCoverClassCode: '332', areaSqm: 13981 },
+        { landCoverClassCode: '371', areaSqm: 11 }
       ],
       sssiAndHfOverlap: [
         { landCoverClassCode: '130', areaSqm: 342488 },
