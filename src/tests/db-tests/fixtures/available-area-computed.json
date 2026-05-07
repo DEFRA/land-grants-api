@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-07T10:36:17.897Z",
+    "generatedAt": "2026-05-07T11:57:34.147Z",
     "actionCodes": [
       "AA1",
       "AGF2",
@@ -12525,7 +12525,7 @@
           },
           {
             "actionCode": "CMOR1",
-            "areaSqm": 1.1506
+            "areaSqm": 11430
           }
         ],
         "expectedAvailableArea": "1.1506"
