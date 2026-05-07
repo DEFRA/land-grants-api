@@ -28,9 +28,9 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130), Permanent grassland (131)",
-      "UPL6: Permanent grassland (130), Permanent grassland (131)",
-      "UPL7: Permanent grassland (130), Permanent grassland (131)"
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL6: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL7: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
@@ -44,14 +44,16 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
     "title": "Available land for CMOR1",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0292 ha total, 0 ha used by existing actions, 0.0292 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 0.5927 ha",
-      "Maximum available area for CMOR1: 0.5927 ha"
+      "Total eligible land cover for CMOR1: 0.631 ha",
+      "Maximum available area for CMOR1: 0.631 ha"
     ]
   },
   {
@@ -91,7 +93,7 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130)",
+      "CMOR1: Permanent grassland (130), Hard standing (551)",
       "CHRW1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)",
       "CHRW2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)",
       "CHRW3: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130), Hard standing (551)"
@@ -116,13 +118,14 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - Multiple 
   {
     "title": "Available land for CMOR1",
     "content": [
-      "Permanent grassland (130): 3.154 ha total, 2.0034 ha used by existing actions, 1.1506 ha available"
+      "Permanent grassland (130): 3.154 ha total, 2.0034 ha used by existing actions, 1.1506 ha available",
+      "Hard standing (551): 0.0076 ha total, 0.0076 ha used by existing actions, 0 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 3.154 ha",
+      "Total eligible land cover for CMOR1: 3.1616 ha",
       "Maximum available area for CMOR1: 1.1506 ha"
     ]
   },
@@ -160,21 +163,23 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - No existi
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130), Permanent grassland (131)"
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
     "title": "Available land for CMOR1",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0292 ha total, 0 ha used by existing actions, 0.0292 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 0.5927 ha",
-      "Maximum available area for CMOR1: 0.5927 ha"
+      "Total eligible land cover for CMOR1: 0.631 ha",
+      "Maximum available area for CMOR1: 0.631 ha"
     ]
   }
 ]"
@@ -207,8 +212,8 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130), Permanent grassland (131)",
-      "UPL1: Permanent grassland (130), Permanent grassland (131)"
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
@@ -221,14 +226,16 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
     "title": "Available land for CMOR1",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0292 ha total, 0 ha used by existing actions, 0.0292 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 0.5927 ha",
-      "Maximum available area for CMOR1: 0.5927 ha"
+      "Total eligible land cover for CMOR1: 0.631 ha",
+      "Maximum available area for CMOR1: 0.631 ha"
     ]
   },
   {
@@ -264,7 +271,7 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130)",
+      "CMOR1: Permanent grassland (130), Woodland (332)",
       "WS1: Woodland (332)"
     ]
   },
@@ -283,14 +290,15 @@ exports[`Available Area Calculation Service - Scenario Tests > CMOR1 - One exist
   {
     "title": "Available land for CMOR1",
     "content": [
-      "Permanent grassland (130): 3.1254 ha total, 0 ha used by existing actions, 3.1254 ha available"
+      "Permanent grassland (130): 3.1254 ha total, 0 ha used by existing actions, 3.1254 ha available",
+      "Woodland (332): 2.5329 ha total, 2.5328 ha used by existing actions, 0.0001 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 3.1254 ha",
-      "Maximum available area for CMOR1: 3.1254 ha"
+      "Total eligible land cover for CMOR1: 5.6583 ha",
+      "Maximum available area for CMOR1: 3.1255 ha"
     ]
   },
   {
@@ -546,11 +554,11 @@ exports[`Available Area Calculation Service - Scenario Tests > Infeasible due to
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130)",
+      "UPL1: Permanent grassland (130), Hard standing (551)",
       "PRF1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
       "PRF2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
       "CSAM1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
-      "CMOR1: Permanent grassland (130)"
+      "CMOR1: Permanent grassland (130), Hard standing (551)"
     ]
   },
   {
@@ -573,7 +581,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Infeasible due to
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 3.154 ha",
+      "Total eligible land cover for UPL1: 3.1616 ha",
       "Maximum available area for UPL1: 0 ha"
     ]
   }
@@ -608,8 +616,8 @@ exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple e
   {
     "title": "Eligible land covers per action",
     "content": [
-      "OFM3: Permanent grassland (130), Permanent grassland (131)",
-      "SPM4: Permanent grassland (130), Permanent grassland (131)",
+      "OFM3: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "SPM4: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
       "SAM1: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
@@ -630,14 +638,16 @@ exports[`Available Area Calculation Service - Scenario Tests > OFM3 - Multiple e
     "title": "Available land for OFM3",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0.0523 ha used by existing actions, 0.1202 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0.0523 ha used by existing actions, 0.1202 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0292 ha total, 0 ha used by existing actions, 0.0292 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for OFM3: 0.5927 ha",
-      "Maximum available area for OFM3: 0.5404 ha"
+      "Total eligible land cover for OFM3: 0.631 ha",
+      "Maximum available area for OFM3: 0.5787 ha"
     ]
   },
   {
@@ -679,7 +689,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130), Permanent grassland (131), Rivers and Streams Type 3 (583), Track - natural surface (643)",
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Woodland (332), Farm building (371), Hard standing (551), Rivers and Streams Type 3 (583), Track - natural surface (643)",
       "CNUM2: Permanent grassland (130), Permanent grassland (131)"
     ]
   },
@@ -700,6 +710,9 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
     "content": [
       "Permanent grassland (130): 0.085 ha total, 0.085 ha used by existing actions, 0 ha available",
       "Permanent grassland (131): 6.8793 ha total, 6.8793 ha used by existing actions, 0 ha available",
+      "Woodland (332): 2.407 ha total, 0 ha used by existing actions, 2.407 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0133 ha total, 0 ha used by existing actions, 0.0133 ha available",
       "Rivers and Streams Type 3 (583): 0.246 ha total, 0 ha used by existing actions, 0.246 ha available",
       "Track - natural surface (643): 0.1272 ha total, 0 ha used by existing actions, 0.1272 ha available"
     ]
@@ -707,8 +720,8 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 7.3375 ha",
-      "Maximum available area for CMOR1: 0.3732 ha"
+      "Total eligible land cover for CMOR1: 9.7669 ha",
+      "Maximum available area for CMOR1: 2.8026 ha"
     ]
   },
   {
@@ -1247,35 +1260,36 @@ exports[`Available Area Calculation Service - Scenario Tests > Single existing c
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130), Rivers and Streams Type 2 (582)",
-      "CMOR1: Permanent grassland (130), Rivers and Streams Type 2 (582)"
+      "UPL1: Permanent grassland (130), Woodland (332), Rivers and Streams Type 2 (582)",
+      "CMOR1: Permanent grassland (130), Woodland (332), Rivers and Streams Type 2 (582)"
     ]
   },
   {
     "title": "Optimal placement of existing actions",
     "content": [
-      "CMOR1: 4.4251 ha on Permanent grassland (130), 0.0543 ha on Rivers and Streams Type 2 (582)"
+      "CMOR1: 4.4251 ha on Permanent grassland (130), 0.0543 ha on Woodland (332)"
     ]
   },
   {
     "title": "Available land for UPL1",
     "content": [
       "Permanent grassland (130): 4.4251 ha total, 0 ha used by existing actions, 4.4251 ha available",
+      "Woodland (332): 3.8002 ha total, 0 ha used by existing actions, 3.8002 ha available",
       "Rivers and Streams Type 2 (582): 0.0543 ha total, 0 ha used by existing actions, 0.0543 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 4.4794 ha",
-      "Maximum available area for UPL1: 4.4794 ha"
+      "Total eligible land cover for UPL1: 8.2796 ha",
+      "Maximum available area for UPL1: 8.2796 ha"
     ]
   },
   {
     "title": "Stacks",
     "content": [
       "Stack 1: CMOR1 on Permanent grassland (130) (4.4251 ha)",
-      "Stack 2: CMOR1 on Rivers and Streams Type 2 (582) (0.0543 ha)"
+      "Stack 2: CMOR1 on Woodland (332) (0.0543 ha)"
     ]
   }
 ]"
@@ -1308,7 +1322,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
   {
     "title": "Eligible land covers per action",
     "content": [
-      "CMOR1: Permanent grassland (130)",
+      "CMOR1: Permanent grassland (130), Woodland (332)",
       "SP1: Permanent grassland (130), Woodland (332)",
       "SP3: Permanent grassland (130), Woodland (332)",
       "WD2: Woodland (332)",
@@ -1336,14 +1350,15 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
   {
     "title": "Available land for CMOR1",
     "content": [
-      "Permanent grassland (130): 4.6078 ha total, 4.05 ha used by existing actions, 0.5578 ha available"
+      "Permanent grassland (130): 4.6078 ha total, 4.05 ha used by existing actions, 0.5578 ha available",
+      "Woodland (332): 2.7301 ha total, 0 ha used by existing actions, 2.7301 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for CMOR1: 4.6078 ha",
-      "Maximum available area for CMOR1: 0.5578 ha"
+      "Total eligible land cover for CMOR1: 7.3379 ha",
+      "Maximum available area for CMOR1: 3.2879 ha"
     ]
   },
   {
@@ -1438,7 +1453,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
       "PRF1: 10 ha",
       "PRF2: 10 ha",
       "CSAM1: 10 ha",
-      "CMOR1: 1.143 ha"
+      "CMOR1: 0.0001 ha"
     ]
   },
   {
@@ -1452,11 +1467,11 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130)",
+      "UPL1: Permanent grassland (130), Hard standing (551)",
       "PRF1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
       "PRF2: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
       "CSAM1: Half Hedge Adjacent NON-EFA (110), Permanent grassland (130)",
-      "CMOR1: Permanent grassland (130)"
+      "CMOR1: Permanent grassland (130), Hard standing (551)"
     ]
   },
   {
@@ -1476,20 +1491,21 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
       "PRF1: 7.989 ha on Half Hedge Adjacent NON-EFA (110), 2.011 ha on Permanent grassland (130)",
       "PRF2: 7.989 ha on Half Hedge Adjacent NON-EFA (110), 2.011 ha on Permanent grassland (130)",
       "CSAM1: 7.989 ha on Half Hedge Adjacent NON-EFA (110), 2.011 ha on Permanent grassland (130)",
-      "CMOR1: 1.143 ha on Permanent grassland (130)"
+      "CMOR1: 0.0001 ha on Permanent grassland (130)"
     ]
   },
   {
     "title": "Available land for UPL1",
     "content": [
-      "Permanent grassland (130): 3.154 ha total, 2.011 ha used by existing actions, 1.143 ha available"
+      "Permanent grassland (130): 3.154 ha total, 2.011 ha used by existing actions, 1.143 ha available",
+      "Hard standing (551): 0.0076 ha total, 0 ha used by existing actions, 0.0076 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 3.154 ha",
-      "Maximum available area for UPL1: 1.143 ha"
+      "Total eligible land cover for UPL1: 3.1616 ha",
+      "Maximum available area for UPL1: 1.1506 ha"
     ]
   },
   {
@@ -1497,7 +1513,7 @@ exports[`Available Area Calculation Service - Scenario Tests > Take landcovers w
     "content": [
       "Stack 1: PRF1 + PRF2 + CSAM1 on Half Hedge Adjacent NON-EFA (110) (7.989 ha)",
       "Stack 2: PRF1 + PRF2 + CSAM1 on Permanent grassland (130) (2.011 ha)",
-      "Stack 3: CMOR1 on Permanent grassland (130) (1.143 ha)"
+      "Stack 3: CMOR1 on Permanent grassland (130) (0.0001 ha)"
     ]
   }
 ]"
@@ -1538,9 +1554,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130), Pond (243), Scrub - ungrazeable (347), Rivers and Streams Type 3 (583)",
+      "UPL1: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583)",
       "OFC3: Permanent grassland (130)",
-      "GRH7: Permanent grassland (130)",
+      "GRH7: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583)",
       "PRF2: Permanent grassland (130)",
       "PRF1: Permanent grassland (130)",
       "CIGL1: Permanent grassland (130)",
@@ -1576,15 +1592,17 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     "content": [
       "Permanent grassland (130): 19.6343 ha total, 14 ha used by existing actions, 5.6343 ha available",
       "Pond (243): 0.4159 ha total, 0 ha used by existing actions, 0.4159 ha available",
+      "Woodland (332): 2.3922 ha total, 0 ha used by existing actions, 2.3922 ha available",
       "Scrub - ungrazeable (347): 0.0234 ha total, 0 ha used by existing actions, 0.0234 ha available",
+      "Hard standing (551): 0.0198 ha total, 0 ha used by existing actions, 0.0198 ha available",
       "Rivers and Streams Type 3 (583): 0.272 ha total, 0 ha used by existing actions, 0.272 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 20.3456 ha",
-      "Maximum available area for UPL1: 6.3456 ha"
+      "Total eligible land cover for UPL1: 22.7576 ha",
+      "Maximum available area for UPL1: 8.7576 ha"
     ]
   },
   {
@@ -1635,14 +1653,14 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130), Pond (243), Scrub - ungrazeable (347), Rivers and Streams Type 3 (583)",
+      "UPL1: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583)",
       "CHRW1: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
       "CHRW2: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
       "CHRW3: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583), Metalled track (631)",
       "PRF1: Permanent grassland (130)",
       "PRF2: Permanent grassland (130)",
       "GRH6: Permanent grassland (130)",
-      "GRH7: Permanent grassland (130)"
+      "GRH7: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583)"
     ]
   },
   {
@@ -1676,14 +1694,16 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     "content": [
       "Permanent grassland (130): 19.6343 ha total, 12.7159 ha used by existing actions, 6.9184 ha available",
       "Pond (243): 0.4159 ha total, 0.4159 ha used by existing actions, 0 ha available",
+      "Woodland (332): 2.3922 ha total, 2.3922 ha used by existing actions, 0 ha available",
       "Scrub - ungrazeable (347): 0.0234 ha total, 0.0234 ha used by existing actions, 0 ha available",
+      "Hard standing (551): 0.0198 ha total, 0.0198 ha used by existing actions, 0 ha available",
       "Rivers and Streams Type 3 (583): 0.272 ha total, 0.272 ha used by existing actions, 0 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 20.3456 ha",
+      "Total eligible land cover for UPL1: 22.7576 ha",
       "Maximum available area for UPL1: 6.9184 ha"
     ]
   },
@@ -1736,9 +1756,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130), Permanent grassland (131)",
-      "UPL2: Permanent grassland (130), Permanent grassland (131)",
-      "CMOR1: Permanent grassland (130), Permanent grassland (131)"
+      "UPL1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL2: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "CMOR1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
@@ -1750,7 +1770,7 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Optimal placement of existing actions",
     "content": [
-      "UPL2: 0.0123 ha on Permanent grassland (131)",
+      "UPL2: 0.0123 ha on Hard standing (551)",
       "CMOR1: 0.0523 ha on Permanent grassland (130)"
     ]
   },
@@ -1758,20 +1778,22 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     "title": "Available land for UPL1",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0.0123 ha used by existing actions, 0.1602 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0 ha used by existing actions, 0.1725 ha available",
+      "Farm building (371): 0.0091 ha total, 0 ha used by existing actions, 0.0091 ha available",
+      "Hard standing (551): 0.0292 ha total, 0.0123 ha used by existing actions, 0.0169 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 0.5927 ha",
-      "Maximum available area for UPL1: 0.5804 ha"
+      "Total eligible land cover for UPL1: 0.631 ha",
+      "Maximum available area for UPL1: 0.6187 ha"
     ]
   },
   {
     "title": "Stacks",
     "content": [
-      "Stack 1: UPL2 on Permanent grassland (131) (0.0123 ha)",
+      "Stack 1: UPL2 on Hard standing (551) (0.0123 ha)",
       "Stack 2: CMOR1 on Permanent grassland (130) (0.0523 ha)"
     ]
   }
@@ -1806,9 +1828,9 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL1: Permanent grassland (130), Permanent grassland (131)",
-      "UPL2: Permanent grassland (130), Permanent grassland (131)",
-      "UPL3: Permanent grassland (130), Permanent grassland (131)"
+      "UPL1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL2: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL3: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
@@ -1820,29 +1842,33 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
   {
     "title": "Optimal placement of existing actions",
     "content": [
-      "UPL2: 0.0123 ha on Permanent grassland (131)",
-      "UPL3: 0.0523 ha on Permanent grassland (131)"
+      "UPL2: 0.0123 ha on Hard standing (551)",
+      "UPL3: 0.0263 ha on Permanent grassland (131), 0.0091 ha on Farm building (371), 0.0169 ha on Hard standing (551)"
     ]
   },
   {
     "title": "Available land for UPL1",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0.0646 ha used by existing actions, 0.1079 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0.0263 ha used by existing actions, 0.1462 ha available",
+      "Farm building (371): 0.0091 ha total, 0.0091 ha used by existing actions, 0 ha available",
+      "Hard standing (551): 0.0292 ha total, 0.0292 ha used by existing actions, 0 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL1: 0.5927 ha",
-      "Maximum available area for UPL1: 0.5281 ha"
+      "Total eligible land cover for UPL1: 0.631 ha",
+      "Maximum available area for UPL1: 0.5664 ha"
     ]
   },
   {
     "title": "Stacks",
     "content": [
-      "Stack 1: UPL3 on Permanent grassland (131) (0.0523 ha)",
-      "Stack 2: UPL2 on Permanent grassland (131) (0.0123 ha)"
+      "Stack 1: UPL3 on Hard standing (551) (0.0169 ha)",
+      "Stack 2: UPL2 on Hard standing (551) (0.0123 ha)",
+      "Stack 3: UPL3 on Permanent grassland (131) (0.0263 ha)",
+      "Stack 4: UPL3 on Farm building (371) (0.0091 ha)"
     ]
   }
 ]"
@@ -2040,8 +2066,8 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - One existi
   {
     "title": "Eligible land covers per action",
     "content": [
-      "UPL2: Permanent grassland (130), Permanent grassland (131)",
-      "UPL1: Permanent grassland (130), Permanent grassland (131)"
+      "UPL2: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)",
+      "UPL1: Permanent grassland (130), Permanent grassland (131), Farm building (371), Hard standing (551)"
     ]
   },
   {
@@ -2053,27 +2079,31 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL2 - One existi
   {
     "title": "Optimal placement of existing actions",
     "content": [
-      "UPL1: 0.105 ha on Permanent grassland (131)"
+      "UPL1: 0.0667 ha on Permanent grassland (131), 0.0091 ha on Farm building (371), 0.0292 ha on Hard standing (551)"
     ]
   },
   {
     "title": "Available land for UPL2",
     "content": [
       "Permanent grassland (130): 0.4202 ha total, 0 ha used by existing actions, 0.4202 ha available",
-      "Permanent grassland (131): 0.1725 ha total, 0.105 ha used by existing actions, 0.0675 ha available"
+      "Permanent grassland (131): 0.1725 ha total, 0.0667 ha used by existing actions, 0.1058 ha available",
+      "Farm building (371): 0.0091 ha total, 0.0091 ha used by existing actions, 0 ha available",
+      "Hard standing (551): 0.0292 ha total, 0.0292 ha used by existing actions, 0 ha available"
     ]
   },
   {
     "title": "Result",
     "content": [
-      "Total eligible land cover for UPL2: 0.5927 ha",
-      "Maximum available area for UPL2: 0.4877 ha"
+      "Total eligible land cover for UPL2: 0.631 ha",
+      "Maximum available area for UPL2: 0.526 ha"
     ]
   },
   {
     "title": "Stacks",
     "content": [
-      "Stack 1: UPL1 on Permanent grassland (131) (0.105 ha)"
+      "Stack 1: UPL1 on Permanent grassland (131) (0.0667 ha)",
+      "Stack 2: UPL1 on Farm building (371) (0.0091 ha)",
+      "Stack 3: UPL1 on Hard standing (551) (0.0292 ha)"
     ]
   }
 ]"
