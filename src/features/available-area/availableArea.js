@@ -443,9 +443,7 @@ function splitLandCoversByDesignation(
   /** @type {DesignationZone[]} */
   const designationZones = []
 
-  for (let i = 0; i < landCoversForParcel.length; i++) {
-    const lc = landCoversForParcel[i]
-
+  for (const lc of landCoversForParcel) {
     if (!targetEligibleCodes.includes(lc.landCoverClassCode)) {
       // Land cover not eligible for the target — pass through unchanged
       effectiveLandCovers.push({
@@ -457,9 +455,19 @@ function splitLandCoversByDesignation(
     }
 
     // Derive four zones via inclusion-exclusion
-    const sssi = sssiOverlap[i].areaSqm
-    const hf = hfOverlap[i].areaSqm
-    const both = sssiAndHfOverlap[i].areaSqm
+    const sssi =
+      sssiOverlap.find(
+        (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
+      )?.areaSqm ?? 0
+
+    const hf =
+      hfOverlap.find((lcl) => lcl.landCoverClassCode === lc.landCoverClassCode)
+        ?.areaSqm ?? 0
+
+    const both =
+      sssiAndHfOverlap.find(
+        (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
+      )?.areaSqm ?? 0
 
     const bothArea = Math.max(0, both)
     const sssiOnlyArea = Math.max(0, sssi - both)

@@ -43,26 +43,16 @@ export const getIntersectionsExclusiveQuery = `
         WHEN s.geom IS NOT NULL AND h.geom IS NOT NULL
           THEN ST_Intersection(s.geom, h.geom)
         ELSE NULL
-      END AS both_geom,
-      CASE
-        WHEN s.geom IS NOT NULL AND h.geom IS NOT NULL
-          THEN ST_Difference(s.geom, h.geom)
-        ELSE s.geom
-      END AS sssi_only_geom,
-      CASE
-        WHEN s.geom IS NOT NULL AND h.geom IS NOT NULL
-          THEN ST_Difference(h.geom, s.geom)
-        ELSE h.geom
-      END AS hf_only_geom
+      END AS both_geom
     FROM sssi_union s
     CROSS JOIN hf_union h
   ),
   overlap_rows AS (
     SELECT
       plc.land_cover_class_code,
-      'sssi_only' AS overlap_type,
+      'sssi' AS overlap_type,
       COALESCE(
-        ST_Area(ST_Intersection(plc.geom, dg.sssi_only_geom))::float8,
+        ST_Area(ST_Intersection(plc.geom, dg.sssi_geom))::float8,
         0
       ) AS area_sqm
     FROM parcel_land_covers plc
@@ -72,9 +62,9 @@ export const getIntersectionsExclusiveQuery = `
 
     SELECT
       plc.land_cover_class_code,
-      'hf_only' AS overlap_type,
+      'hf' AS overlap_type,
       COALESCE(
-        ST_Area(ST_Intersection(plc.geom, dg.hf_only_geom))::float8,
+        ST_Area(ST_Intersection(plc.geom, dg.hf_geom))::float8,
         0
       ) AS area_sqm
     FROM parcel_land_covers plc
@@ -131,9 +121,9 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
         areaSqm: roundSqm(row.area_sqm)
       }
 
-      if (row.overlap_type === 'sssi_only') {
+      if (row.overlap_type === 'sssi') {
         sssiOverlap.push(overlap)
-      } else if (row.overlap_type === 'hf_only') {
+      } else if (row.overlap_type === 'hf') {
         hfOverlap.push(overlap)
       } else if (row.overlap_type === 'sssi_and_hf') {
         sssiAndHfOverlap.push(overlap)

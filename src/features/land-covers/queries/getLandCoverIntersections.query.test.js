@@ -15,12 +15,12 @@ describe('getLandCoverIntersections', () => {
         rows: [
           {
             land_cover_class_code: '130',
-            overlap_type: 'sssi_only',
+            overlap_type: 'sssi',
             area_sqm: 266033.82654810767
           },
           {
             land_cover_class_code: '332',
-            overlap_type: 'hf_only',
+            overlap_type: 'hf',
             area_sqm: 0.00889780191629952
           },
           {
