@@ -156,22 +156,22 @@ describe('getPaymentCalculationForParcels', () => {
       payments: [
         {
           lineItems: firstPaymentLineItems,
-          paymentDate: '2025-11-15',
+          paymentDate: '2025-11-05',
           totalPaymentPence: 9534
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-02-15',
+          paymentDate: '2026-02-05',
           totalPaymentPence: 9532
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-05-15',
+          paymentDate: '2026-05-05',
           totalPaymentPence: 9532
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-08-15',
+          paymentDate: '2026-08-05',
           totalPaymentPence: 9532
         }
       ],
@@ -305,22 +305,22 @@ describe('getPaymentCalculationForParcels', () => {
       payments: [
         {
           lineItems: firstPaymentLineItems,
-          paymentDate: '2026-05-15',
+          paymentDate: '2026-05-05',
           totalPaymentPence: 9534
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-08-15',
+          paymentDate: '2026-08-05',
           totalPaymentPence: 9532
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2026-11-15',
+          paymentDate: '2026-11-05',
           totalPaymentPence: 9532
         },
         {
           lineItems: otherPaymentLineItems,
-          paymentDate: '2027-02-15',
+          paymentDate: '2027-02-05',
           totalPaymentPence: 9532
         }
       ],
