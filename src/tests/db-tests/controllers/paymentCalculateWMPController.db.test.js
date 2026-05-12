@@ -40,6 +40,7 @@ const createRequest = (payload, logger, connection) => ({
     postgresDb: connection
   }
 })
+const mockDate = new Date(2026, 4, 1)
 
 const mockDate = new Date(2026, 4, 1)
 
