@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="add-new-actions" author="system">
+    <sql>INSERT INTO actions (enabled, display, code, description)
+      VALUES (false, false, 'SAM3', ''),
+      (false, false, 'AGF1', ''),
+      (false, false, 'AGF2', ''),
+      (false, false, 'AHW12', ''),
+      (false, false, 'AHW3', ''),
+      (false, false, 'AHW5', ''),
+      (false, false, 'BFS2', ''),
+      (false, false, 'BFS3', ''),
+      (false, false, 'BFS6', ''),
+      (false, false, 'CIGL1', ''),
+      (false, false, 'CNUM2', ''),
+      (false, false, 'IGL1', ''),
+      (false, false, 'NUM2', ''),
+      (false, false, 'SCR1', ''),
+      (false, false, 'SCR2', ''),
+      (false, false, 'WBD1', ''),
+      (false, false, 'WBD2', '');</sql>
+   </changeSet>
+</databaseChangeLog>

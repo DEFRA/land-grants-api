@@ -1,12 +1,12 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
- * Get enabled action eligibilty
+ * Get enabled action eligibility
  * @param {Logger} logger - The logger
  * @param {Pool} db - The postgres instance
  * @returns {Promise<ActionEligibility[]>} The action eligibilty
  */
-export async function getActionEligibilty(logger, db) {
+export async function getActionEligibility(logger, db) {
   let client
   try {
     client = await db.connect()

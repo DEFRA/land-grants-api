@@ -1,12 +1,12 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest'
-import { getActionEligibilty } from './getActionEligibilty.query.js'
+import { getActionEligibility } from './getActionEligibility.query.js'
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 vi.mock('~/src/features/common/helpers/logging/log-helpers.js', () => ({
   logDatabaseError: vi.fn()
 }))
 
-describe('getActionEligibilty', () => {
+describe('getActionEligibility', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -45,13 +45,13 @@ describe('getActionEligibilty', () => {
   })
 
   test('should connect to the database', async () => {
-    await getActionEligibilty(mockLogger, mockDb)
+    await getActionEligibility(mockLogger, mockDb)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
   test('should query with the correct SQL', async () => {
-    await getActionEligibilty(mockLogger, mockDb)
+    await getActionEligibility(mockLogger, mockDb)
 
     const expectedQuery = `
           SELECT
@@ -69,7 +69,7 @@ describe('getActionEligibilty', () => {
   })
 
   test('should return the query results', async () => {
-    const result = await getActionEligibilty(mockLogger, mockDb)
+    const result = await getActionEligibility(mockLogger, mockDb)
 
     expect(result).toEqual(mockResult.rows)
   })
@@ -77,13 +77,13 @@ describe('getActionEligibilty', () => {
   test('should return empty array when no eligibility data found', async () => {
     mockResult.rows = []
 
-    const result = await getActionEligibilty(mockLogger, mockDb)
+    const result = await getActionEligibility(mockLogger, mockDb)
 
     expect(result).toEqual([])
   })
 
   test('should release the client when done', async () => {
-    await getActionEligibilty(mockLogger, mockDb)
+    await getActionEligibility(mockLogger, mockDb)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -92,7 +92,7 @@ describe('getActionEligibilty', () => {
     const error = new Error('Database query error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getActionEligibilty(mockLogger, mockDb)
+    const result = await getActionEligibility(mockLogger, mockDb)
 
     expect(result).toEqual([])
     expect(logDatabaseError).toHaveBeenCalledWith(mockLogger, {
@@ -106,7 +106,7 @@ describe('getActionEligibilty', () => {
     const connectionError = new Error('Connection failed')
     mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
-    const result = await getActionEligibilty(mockLogger, mockDb)
+    const result = await getActionEligibility(mockLogger, mockDb)
 
     expect(result).toEqual([])
     expect(logDatabaseError).toHaveBeenCalledWith(mockLogger, {
@@ -119,7 +119,7 @@ describe('getActionEligibilty', () => {
   test('should handle client release if client is not defined', async () => {
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getActionEligibilty(mockLogger, mockDb)
+    const result = await getActionEligibility(mockLogger, mockDb)
 
     expect(result).toEqual([])
     expect(logDatabaseError).toHaveBeenCalled()
