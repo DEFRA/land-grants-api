@@ -11,7 +11,12 @@ const vectorTiles = {
         {
           method: 'POST',
           path: '/api/v1/parcel-tiles/{z}/{x}/{y}',
-          ...ParcelTilesController
+          handler: ParcelTilesController.handler,
+          options: {
+            ...ParcelTilesController.options,
+            // TODO: temporary — re-enable auth before this leaves the spike
+            auth: false
+          }
         }
       ])
     }
