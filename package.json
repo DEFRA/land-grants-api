@@ -11,7 +11,7 @@
     "build": "npm run build:server",
     "build:server": "NODE_ENV=production babel --delete-dir-on-start --ignore \"**/*.test.js\" --ignore \"**/__fixtures__\" --ignore \"**/test-helpers\" --copy-files --no-copy-ignored --out-dir ./.server ./src",
     "docker:dev": "NODE_ENV=development npm run server:watch",
-    "dev": "NODE_ENV=local npm run server:watch",
+    "dev": "sh ./scripts/infra/fetch-config-broker.sh && docker compose up -d floci && docker compose run --rm floci-init && NODE_ENV=local npm run server:watch",
     "dev:setup": "npm run setup:husky && npm run extractsql && docker compose up land-grants-backend-postgres -d && npm run docker:migrate:up && npm run dev:ingest",
     "dev:debug": "npm run server:debug",
     "dev:ingest": "NODE_ENV='test' node scripts/local-ingest",

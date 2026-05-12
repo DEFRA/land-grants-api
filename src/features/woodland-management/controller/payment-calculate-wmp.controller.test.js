@@ -1,32 +1,14 @@
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
-vi.mock(
-  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-)
-vi.mock(
-  '../service/wmp-payment-calculate.service.js',
-  async (importOriginal) => {
-    const actual = await importOriginal()
-    return {
-      ...actual,
-      executeRulesForPaymentCalculationWMP: vi.fn()
-    }
-  }
-)
 vi.mock('../../payments-engine/paymentsEngine.js')
 vi.mock('../transformer/wmp-payment-calculate.transformer.js')
 
 const mockGetLandData = getLandData
-const mockGetActionsByLatestVersion = getActionsByLatestVersion
-const mockExecuteRulesForPaymentCalculationWMP =
-  executeRulesForPaymentCalculationWMP
 const mockExecutePaymentMethod = executePaymentMethod
 const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
 
@@ -148,12 +130,8 @@ describe('Payment calculate WMP controller', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    server.app.configBrokerCache = [createMockAction()]
     mockGetLandData.mockResolvedValue([createMockParcel()])
-    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
-    mockExecuteRulesForPaymentCalculationWMP.mockReturnValue({
-      ruleResult: { passed: true, results: [] },
-      totalParcelAreaSqm: 8
-    })
     mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult())
     mockWmpPaymentCalculateTransformer.mockReturnValue(
       createMockPaymentResponse()
@@ -176,7 +154,7 @@ describe('Payment calculate WMP controller', () => {
       expect(message).toBe('success')
       expect(payment).toEqual(createMockPaymentResponse())
       expect(mockExecutePaymentMethod).toHaveBeenCalledWith(
-        createMockAction().paymentMethod,
+        { ...createMockAction().paymentMethod },
         {
           data: {
             totalParcelArea: 8,
@@ -227,27 +205,8 @@ describe('Payment calculate WMP controller', () => {
       expect(message).toBe('Land parcels not found: SX067-99238')
     })
 
-    test('should return 400 when no PA3 action exists', async () => {
-      mockGetActionsByLatestVersion.mockResolvedValue([])
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: validPayload
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe('Action not found')
-    })
-
-    test('should return 400 when actions do not include PA3', async () => {
-      mockGetActionsByLatestVersion.mockResolvedValue([
-        { ...createMockAction(), code: 'PA1' }
-      ])
+    test('should return 400 when config broker cache has no action', async () => {
+      server.app.configBrokerCache = []
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -394,10 +353,8 @@ describe('Payment calculate WMP controller', () => {
   })
 
   describe('error handling', () => {
-    test('should return 500 when getActionsByLatestVersion throws', async () => {
-      mockGetActionsByLatestVersion.mockRejectedValue(
-        new Error('Database error')
-      )
+    test('should return 500 when getLandData throws', async () => {
+      mockGetLandData.mockRejectedValue(new Error('Database error'))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({

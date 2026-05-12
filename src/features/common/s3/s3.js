@@ -35,6 +35,44 @@ export async function getFiles(s3Client, bucket) {
 }
 
 /**
+ * Get all files from an S3 bucket recursively (including nested paths).
+ * @param {object} s3Client - S3 client instance
+ * @param {string} bucket - S3 bucket name
+ * @returns {Promise<object[]>} Array of all file objects in the bucket
+ */
+export async function getAllFiles(s3Client, bucket) {
+  const items = []
+  let continuationToken
+
+  try {
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: bucket,
+        ContinuationToken: continuationToken
+      })
+
+      const response = await s3Client.send(command)
+
+      if (response.Contents?.length) {
+        items.push(
+          ...response.Contents.filter((item) => item.Key !== undefined)
+        )
+      }
+
+      continuationToken = response.IsTruncated
+        ? response.NextContinuationToken
+        : undefined
+    } while (continuationToken)
+
+    return items
+  } catch (error) {
+    throw new Error(
+      `Failed to list all files from S3 bucket "${bucket}": ${error.message}`
+    )
+  }
+}
+
+/**
  * Get a file from S3 bucket
  * @param {object} s3Client - S3 client instance
  * @param {string} bucket - S3 bucket name

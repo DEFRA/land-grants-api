@@ -11,6 +11,7 @@ import { router } from '~/src/routes/router.js'
 import { config } from '~/src/config/index.js'
 import { postgresDb } from '~/src/features/common/helpers/postgres.js'
 import { auth } from '~/src/features/common/plugins/auth.js'
+import { configBrokerCache } from '~/src/features/common/plugins/config-broker-cache.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
 import { statistics } from '~/src/features/common/plugins/statistics.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
@@ -61,8 +62,9 @@ async function createServer() {
     pulse,
     postgresDb,
     auth,
-    router,
     s3Client,
+    configBrokerCache,
+    router,
     statistics,
     woodlandManagement
   ])

@@ -83,6 +83,12 @@ const config = convict({
     }
   },
   s3: {
+    configBrokerBucket: {
+      doc: 'S3 Config Broker bucket',
+      format: String,
+      default: 'dev-grants-config-c63f2',
+      env: 'CONFIG_BROKER_BUCKET'
+    },
     region: {
       doc: 'S3 Land Data DB region',
       format: String,

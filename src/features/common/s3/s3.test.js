@@ -1,5 +1,6 @@
 import {
   getFiles,
+  getAllFiles,
   getFile,
   moveFile,
   failedBucketPath,
@@ -186,6 +187,90 @@ describe('S3 Buckets', () => {
           'Failed to list files from S3 bucket "test-bucket": '
         )
       })
+    })
+  })
+
+  describe('Get all files recursively from s3 bucket', () => {
+    let mockS3Client
+
+    beforeEach(() => {
+      mockS3Client = {
+        send: vi.fn()
+      }
+    })
+
+    afterEach(() => {
+      vi.clearAllMocks()
+    })
+
+    test('should return all files from a single response', async () => {
+      mockS3Client.send.mockResolvedValue({
+        Contents: [{ Key: 'a.json' }, { Key: 'folder/b.json' }],
+        IsTruncated: false
+      })
+
+      const result = await getAllFiles(mockS3Client, 'test-bucket')
+
+      expect(result).toEqual([{ Key: 'a.json' }, { Key: 'folder/b.json' }])
+      expect(mockS3Client.send).toHaveBeenCalledTimes(1)
+      expect(mockS3Client.send.mock.calls[0][0]).toMatchObject({
+        input: {
+          Bucket: 'test-bucket'
+        }
+      })
+    })
+
+    test('should paginate when response is truncated', async () => {
+      mockS3Client.send
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'a.json' }],
+          IsTruncated: true,
+          NextContinuationToken: 'token-1'
+        })
+        .mockResolvedValueOnce({
+          Contents: [{ Key: 'folder/b.json' }],
+          IsTruncated: false
+        })
+
+      const result = await getAllFiles(mockS3Client, 'test-bucket')
+
+      expect(result).toEqual([{ Key: 'a.json' }, { Key: 'folder/b.json' }])
+      expect(mockS3Client.send).toHaveBeenCalledTimes(2)
+      expect(mockS3Client.send.mock.calls[1][0]).toMatchObject({
+        input: {
+          Bucket: 'test-bucket',
+          ContinuationToken: 'token-1'
+        }
+      })
+    })
+
+    test('should filter out undefined keys', async () => {
+      mockS3Client.send.mockResolvedValue({
+        Contents: [{ Key: 'a.json' }, { Key: undefined }],
+        IsTruncated: false
+      })
+
+      const result = await getAllFiles(mockS3Client, 'test-bucket')
+
+      expect(result).toEqual([{ Key: 'a.json' }])
+    })
+
+    test('should return empty array when no contents exist', async () => {
+      mockS3Client.send.mockResolvedValue({
+        IsTruncated: false
+      })
+
+      const result = await getAllFiles(mockS3Client, 'test-bucket')
+
+      expect(result).toEqual([])
+    })
+
+    test('should throw an error when S3 call fails', async () => {
+      mockS3Client.send.mockRejectedValue(new Error('Access Denied'))
+
+      await expect(getAllFiles(mockS3Client, 'test-bucket')).rejects.toThrow(
+        'Failed to list all files from S3 bucket "test-bucket": Access Denied'
+      )
     })
   })
 

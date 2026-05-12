@@ -27,17 +27,65 @@ const createMockParcel = (areaSqm = 200000) => ({
 })
 
 /**
+ * PA3 action shape as loaded into `server.app.configBrokerCache` (config broker),
+ * matching payment tiers used for WMP integration expectations.
+ * @returns {object} Action object for `configBrokerCache[0]`
+ */
+const createPa3ActionForConfigBroker = () => ({
+  id: 1,
+  code: 'PA3',
+  description: 'Woodland Management Plan',
+  semanticVersion: '1.0.0',
+  durationYears: 10,
+  rules: [],
+  paymentMethod: {
+    name: 'wmp-calculation',
+    version: '1.0.0',
+    config: {
+      newWoodlandMaxPercent: 20,
+      tiers: [
+        {
+          lowerLimitHa: 0.5,
+          upperLimitHa: 51,
+          flatRateGbp: 1500,
+          ratePerUnitGbp: 0
+        },
+        {
+          lowerLimitHa: 50,
+          upperLimitHa: 100,
+          flatRateGbp: 1500,
+          ratePerUnitGbp: 30
+        },
+        {
+          lowerLimitHa: 100,
+          upperLimitHa: null,
+          flatRateGbp: 3000,
+          ratePerUnitGbp: 15
+        }
+      ]
+    }
+  }
+})
+
+/**
  * Builds the handler request object with the given payload.
  * @param {object} payload - The request payload
  * @param {object} logger - The logger instance
  * @param {object} connection - The database connection pool
+ * @param {object} [options] - Optional overrides
+ * @param {unknown[]} [options.configBrokerCache] - Overrides `server.app.configBrokerCache` (default: one PA3 action)
  * @returns {object} The handler request object
  */
-const createRequest = (payload, logger, connection) => ({
+const createRequest = (payload, logger, connection, options = {}) => ({
   payload,
   logger,
   server: {
-    postgresDb: connection
+    postgresDb: connection,
+    app: {
+      configBrokerCache: options.configBrokerCache ?? [
+        createPa3ActionForConfigBroker()
+      ]
+    }
   }
 })
 
@@ -70,7 +118,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
     })
   })
 
-  describe('successful calculation using PA3 action from database', () => {
+  describe('successful calculation using PA3 action from config broker cache', () => {
     test('should return 200 with flat rate 150000p when eligible area falls in tier 1 (0.5–51ha)', async () => {
       // old=10ha, new=2ha → eligible=12ha → tier 1: flat £1500 (150000p), rate £0/ha
       const { h, getResponse } = createResponseCapture()
@@ -277,6 +325,29 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
   describe('eligibility rule failures', () => {
     describe('validation errors', () => {
+      test('should return a Boom 400 when config broker cache has no action', async () => {
+        const { h } = createResponseCapture()
+
+        const result = await PaymentsCalculateWMPControllerV2.handler(
+          createRequest(
+            {
+              parcelIds: ['SX067-99238'],
+              oldWoodlandAreaHa: 10,
+              newWoodlandAreaHa: 2,
+              startDate: '2025-01-01'
+            },
+            logger,
+            connection,
+            { configBrokerCache: [] }
+          ),
+          h
+        )
+
+        expect(result.isBoom).toBe(true)
+        expect(result.output.statusCode).toBe(400)
+        expect(result.message).toBe('Action not found')
+      })
+
       test('should return a Boom 400 when parcel validation returns errors', async () => {
         mockValidatePaymentCalculationRequest.mockResolvedValue({
           errors: ['Land parcels not found: SX067-99238'],

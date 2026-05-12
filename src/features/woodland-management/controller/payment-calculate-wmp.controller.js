@@ -16,7 +16,6 @@ import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
-import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { sumTotalLandAreaSqm } from '../service/wmp-payment-calculate.service.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
@@ -45,7 +44,11 @@ export const PaymentsCalculateWMPControllerV2 = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb
+      const action = request.server.app.configBrokerCache[0]
+
+      if (!action) {
+        return Boom.badRequest('Action not found')
+      }
 
       /** @type {paymentCalculateWMPSchemaV2} */
       // @ts-expect-error - payload
@@ -77,16 +80,6 @@ export const PaymentsCalculateWMPControllerV2 = {
           }
         })
         return Boom.badRequest(validationResponse.errors.join(', '))
-      }
-
-      const actions = await getActionsByLatestVersion(
-        request.logger,
-        postgresDb
-      )
-      const action = actions.find((a) => a.code === 'PA3')
-
-      if (!action) {
-        return Boom.badRequest('Action not found')
       }
 
       const totalParcelAreaSqm = sumTotalLandAreaSqm(validationResponse.parcels)

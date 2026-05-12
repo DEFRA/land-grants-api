@@ -87,6 +87,8 @@ services:
       FLOCI_DEFAULT_REGION: eu-west-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - 4566:4566
     tmpfs:
       - /app/data
     healthcheck:
@@ -112,6 +114,7 @@ services:
       AWS_SECRET_ACCESS_KEY: test
     volumes:
       - ./scripts/infra/start-floci.sh:/setup/init.sh
+      - ./scripts/infra/floci-config:/setup/config-broker
     networks:
       - land-grants-net
 
