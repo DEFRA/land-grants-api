@@ -12,19 +12,29 @@ WITH tile AS (
 keys AS (
   SELECT * FROM unnest($1::text[], $2::text[]) AS t(sheet_id, parcel_id)
 ),
+-- ~3% of parcels have geom SRID=0 although the coords are BNG. Force the
+-- expected SRID so ST_Transform works for them too. Repairing the data is
+-- a separate piece of work — tracked outside this spike.
+source_geom AS (
+  SELECT
+    p.sheet_id,
+    p.parcel_id,
+    ST_SetSRID(p.geom, ${SOURCE_SRID}) AS geom
+  FROM land_parcels p
+  JOIN keys k ON p.sheet_id = k.sheet_id AND p.parcel_id = k.parcel_id
+),
 mvtgeom AS (
   SELECT
     ST_AsMVTGeom(
-      ST_Transform(p.geom, ${TILE_SRID}),
+      ST_Transform(s.geom, ${TILE_SRID}),
       tile.env_3857,
       ${MVT_EXTENT}, ${MVT_BUFFER}, true
     ) AS geom,
-    p.sheet_id,
-    p.parcel_id
-  FROM land_parcels p
-  JOIN keys k ON p.sheet_id = k.sheet_id AND p.parcel_id = k.parcel_id
+    s.sheet_id,
+    s.parcel_id
+  FROM source_geom s
   CROSS JOIN tile
-  WHERE p.geom && ST_Transform(tile.env_3857, ${SOURCE_SRID})
+  WHERE s.geom && ST_Transform(tile.env_3857, ${SOURCE_SRID})
 )
 SELECT COALESCE(ST_AsMVT(mvtgeom.*, 'parcels', ${MVT_EXTENT}, 'geom'), ''::bytea) AS tile
 FROM mvtgeom
