@@ -25,3 +25,5 @@ src/land-data-full
 src/tests/load-tests/config.js
 
 CLAUDE.md
+
+scripts/infra/floci-config/**
