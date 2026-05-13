@@ -15,12 +15,19 @@ const parcelTilesParamsSchema = Joi.object({
   return value
 })
 
+const parcelIdsSchema = Joi.array()
+  .items(Joi.string().pattern(/^[A-Za-z0-9]+-[0-9]+$/))
+  .min(1)
+  .max(MAX_PARCEL_IDS)
+  .required()
+
 const parcelTilesPayloadSchema = Joi.object({
-  parcelIds: Joi.array()
-    .items(Joi.string().pattern(/^[A-Za-z0-9]+-[0-9]+$/))
-    .min(1)
-    .max(MAX_PARCEL_IDS)
-    .required()
+  parcelIds: parcelIdsSchema
 })
 
-export { parcelTilesParamsSchema, parcelTilesPayloadSchema }
+export {
+  MAX_ZOOM,
+  parcelIdsSchema,
+  parcelTilesParamsSchema,
+  parcelTilesPayloadSchema
+}
