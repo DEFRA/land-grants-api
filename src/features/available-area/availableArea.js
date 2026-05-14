@@ -97,8 +97,7 @@ export function findMaximumAvailableArea(
       landCoversForParcel,
       sssiOverlap,
       hfOverlap,
-      sssiAndHfOverlap,
-      targetEligibleCodes
+      sssiAndHfOverlap
     )
     effectiveLandCovers = split.effectiveLandCovers
     designationZones = split.designationZones
@@ -421,22 +420,21 @@ function getEligibleLandCoverIndices(mergedCodes, landCoversForParcel) {
 }
 
 /**
- * Splits land covers into designation zones (neither, SSSI-only, HF-only, both)
- * for land covers the target action is eligible for. This allows the LP to
- * optimally place actions based on their designation eligibility.
+ * Splits every parcel land cover into designation zones
+ * (neither, SSSI-only, HF-only, both) via inclusion-exclusion. The LP needs
+ * zones for every cover an action might occupy — not just covers the target
+ * is eligible for — because existing actions can also be designation-ineligible.
  * @param {LandCover[]} landCoversForParcel - Full parcel land covers
  * @param {DesignationOverlap[]} sssiOverlap - SSSI intersection per land cover
  * @param {DesignationOverlap[]} hfOverlap - HF intersection per land cover
  * @param {DesignationOverlap[]} sssiAndHfOverlap - SSSI+HF intersection per land cover
- * @param {string[]} targetEligibleCodes - Merged land cover codes the target can use
  * @returns {{ effectiveLandCovers: LandCover[], designationZones: DesignationZone[] }}
  */
 function splitLandCoversByDesignation(
   landCoversForParcel,
   sssiOverlap,
   hfOverlap,
-  sssiAndHfOverlap,
-  targetEligibleCodes
+  sssiAndHfOverlap
 ) {
   /** @type {LandCover[]} */
   const effectiveLandCovers = []
@@ -444,16 +442,6 @@ function splitLandCoversByDesignation(
   const designationZones = []
 
   for (const lc of landCoversForParcel) {
-    if (!targetEligibleCodes.includes(lc.landCoverClassCode)) {
-      // Land cover not eligible for the target — pass through unchanged
-      effectiveLandCovers.push({
-        landCoverClassCode: lc.landCoverClassCode,
-        areaSqm: lc.areaSqm
-      })
-      designationZones.push('neither')
-      continue
-    }
-
     // Derive four zones via inclusion-exclusion
     const sssi =
       sssiOverlap.find(
