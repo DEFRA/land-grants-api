@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-05-14T10:27:12.910Z",
+    "generatedAt": "2026-05-14T15:12:48.126Z",
     "actionCodes": [
       "AA1",
       "AGF2",
@@ -13908,16 +13908,7 @@
             }
           ]
         },
-        "sssiOverlap": [
-          {
-            "landCoverClassCode": "130",
-            "areaSqm": 46078
-          },
-          {
-            "landCoverClassCode": "332",
-            "areaSqm": 27301
-          }
-        ],
+        "sssiOverlap": [],
         "hfOverlap": [],
         "sssiAndHfOverlap": [],
         "sssiActionEligibility": {
@@ -16176,8 +16167,12 @@
         ],
         "hfOverlap": [
           {
+            "landCoverClassCode": "130",
+            "areaSqm": 1942
+          },
+          {
             "landCoverClassCode": "332",
-            "areaSqm": 198680
+            "areaSqm": 225968
           },
           {
             "landCoverClassCode": "525",
@@ -16189,13 +16184,17 @@
           },
           {
             "landCoverClassCode": "583",
-            "areaSqm": 1118
+            "areaSqm": 1204
           }
         ],
         "sssiAndHfOverlap": [
           {
+            "landCoverClassCode": "130",
+            "areaSqm": 1942
+          },
+          {
             "landCoverClassCode": "332",
-            "areaSqm": 15197
+            "areaSqm": 15894
           },
           {
             "landCoverClassCode": "525",
@@ -16654,8 +16653,12 @@
         ],
         "hfOverlap": [
           {
+            "landCoverClassCode": "130",
+            "areaSqm": 1942
+          },
+          {
             "landCoverClassCode": "332",
-            "areaSqm": 198680
+            "areaSqm": 225968
           },
           {
             "landCoverClassCode": "525",
@@ -16667,13 +16670,17 @@
           },
           {
             "landCoverClassCode": "583",
-            "areaSqm": 1118
+            "areaSqm": 1204
           }
         ],
         "sssiAndHfOverlap": [
           {
+            "landCoverClassCode": "130",
+            "areaSqm": 1942
+          },
+          {
             "landCoverClassCode": "332",
-            "areaSqm": 15197
+            "areaSqm": 15894
           },
           {
             "landCoverClassCode": "525",
