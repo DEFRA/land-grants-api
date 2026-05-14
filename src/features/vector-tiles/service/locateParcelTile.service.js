@@ -5,6 +5,19 @@ const PADDING_RATIO = 0.05
 const MIN_EXTENT_METRES = 1
 
 /**
+ * Convert Web Mercator (EPSG:3857) metres to WGS84 lng/lat degrees.
+ * @param {number} mx
+ * @param {number} my
+ * @returns {{ lng: number, lat: number }}
+ */
+export function webMercatorToLngLat(mx, my) {
+  const lng = (mx / WORLD_HALF) * 180
+  const lat =
+    (Math.atan(Math.exp((my / WORLD_HALF) * Math.PI)) * 360) / Math.PI - 90
+  return { lng, lat }
+}
+
+/**
  * @typedef {object} Bbox
  * @property {number} xmin
  * @property {number} ymin

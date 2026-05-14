@@ -68,10 +68,11 @@ describe('ParcelTilesLocateController', () => {
     expect(response.statusCode).toBe(200)
     const body = JSON.parse(response.payload)
     expect(body.message).toBe('success')
-    expect(body.tile).toEqual({
-      z: expect.any(Number),
-      x: expect.any(Number),
-      y: expect.any(Number)
+    expect(body.bbox).toEqual({
+      minLng: expect.any(Number),
+      minLat: expect.any(Number),
+      maxLng: expect.any(Number),
+      maxLat: expect.any(Number)
     })
     expect(mockGetParcelExtent).toHaveBeenCalledWith(
       { sheetIds: ['SD7547'], parcelKeys: ['4115'] },

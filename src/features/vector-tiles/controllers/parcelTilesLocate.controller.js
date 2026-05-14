@@ -6,7 +6,7 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { parcelTilesLocatePayloadSchema } from '~/src/features/vector-tiles/schema/parcelTilesLocate.schema.js'
 import { parseParcelIds } from '~/src/features/vector-tiles/service/parcelTiles.service.js'
-import { locateParcelTile } from '~/src/features/vector-tiles/service/locateParcelTile.service.js'
+import { webMercatorToLngLat } from '~/src/features/vector-tiles/service/locateParcelTile.service.js'
 import { getParcelExtent } from '~/src/features/vector-tiles/queries/getParcelExtent.query.js'
 
 /**
@@ -23,7 +23,7 @@ const ParcelTilesLocateController = {
     description:
       'Locate the XYZ tile that frames the given land parcels with padding',
     notes:
-      'Returns { message, tile: { z, x, y } } for the smallest Web Mercator tile that contains the union extent of the requested parcels.',
+      'Returns { message, bbox: { minLng, minLat, maxLng, maxLat } } for the WGS84 bounding box of the union extent of the requested parcels.',
     validate: {
       payload: parcelTilesLocatePayloadSchema
     }
@@ -59,9 +59,21 @@ const ParcelTilesLocateController = {
         return Boom.notFound('No matching parcels found')
       }
 
-      const tile = locateParcelTile(bbox)
+      const { lng: minLng, lat: minLat } = webMercatorToLngLat(
+        bbox.xmin,
+        bbox.ymin
+      )
+      const { lng: maxLng, lat: maxLat } = webMercatorToLngLat(
+        bbox.xmax,
+        bbox.ymax
+      )
 
-      return h.response({ message: 'success', tile }).code(statusCodes.ok)
+      return h
+        .response({
+          message: 'success',
+          bbox: { minLng, minLat, maxLng, maxLat }
+        })
+        .code(statusCodes.ok)
     } catch (error) {
       logBusinessError(request.logger, {
         operation: 'Locate parcel tile',
