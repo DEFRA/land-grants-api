@@ -179,7 +179,12 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
         dataRequirements.landCoverCodesForAppliedForAction,
       landCoversForParcel: dataRequirements.landCoversForParcel,
       landCoversForExistingActions:
-        dataRequirements.landCoversForExistingActions
+        dataRequirements.landCoversForExistingActions,
+      sssiOverlap: dataRequirements.sssiOverlap,
+      hfOverlap: dataRequirements.hfOverlap,
+      sssiAndHfOverlap: dataRequirements.sssiAndHfOverlap,
+      sssiActionEligibility: dataRequirements.sssiActionEligibility,
+      hfActionEligibility: dataRequirements.hfActionEligibility
     }
   }
 }
