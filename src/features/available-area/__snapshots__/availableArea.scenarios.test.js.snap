@@ -1134,14 +1134,14 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI designation 
   {
     "title": "Designation areas",
     "content": [
-      "Permanent grassland (130): 23.9686 ha SSSI, 0 ha HF",
+      "Permanent grassland (130): 23.9686 ha SSSI, 0.1942 ha HF, 0.1942 ha SSSI and HF overlap",
       "Scree (251): 2.9807 ha SSSI, 0 ha HF",
       "Rocky outcrop (253): 0.0308 ha SSSI, 0 ha HF",
-      "Woodland (332): 24.5554 ha SSSI, 19.868 ha HF, 1.5197 ha SSSI and HF overlap",
+      "Woodland (332): 24.5554 ha SSSI, 22.5968 ha HF, 1.5894 ha SSSI and HF overlap",
       "Structure (525): 0.0019 ha SSSI, 0.0019 ha HF, 0.0019 ha SSSI and HF overlap",
       "Hard standing (551): 0.3144 ha SSSI, 0 ha HF",
       "Rivers and Streams Type 2 (582): 0.0298 ha SSSI, 0.0247 ha HF, 0.0247 ha SSSI and HF overlap",
-      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1118 ha HF",
+      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1204 ha HF",
       "Metalled track (631): 0.0602 ha SSSI, 0 ha HF"
     ]
   },
@@ -1207,14 +1207,14 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI designation 
   {
     "title": "Designation areas",
     "content": [
-      "Permanent grassland (130): 23.9686 ha SSSI, 0 ha HF",
+      "Permanent grassland (130): 23.9686 ha SSSI, 0.1942 ha HF, 0.1942 ha SSSI and HF overlap",
       "Scree (251): 2.9807 ha SSSI, 0 ha HF",
       "Rocky outcrop (253): 0.0308 ha SSSI, 0 ha HF",
-      "Woodland (332): 24.5554 ha SSSI, 19.868 ha HF, 1.5197 ha SSSI and HF overlap",
+      "Woodland (332): 24.5554 ha SSSI, 22.5968 ha HF, 1.5894 ha SSSI and HF overlap",
       "Structure (525): 0.0019 ha SSSI, 0.0019 ha HF, 0.0019 ha SSSI and HF overlap",
       "Hard standing (551): 0.3144 ha SSSI, 0 ha HF",
       "Rivers and Streams Type 2 (582): 0.0298 ha SSSI, 0.0247 ha HF, 0.0247 ha SSSI and HF overlap",
-      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1118 ha HF",
+      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1204 ha HF",
       "Metalled track (631): 0.0602 ha SSSI, 0 ha HF"
     ]
   },
@@ -1235,12 +1235,12 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI designation 
     "content": [
       "Permanent grassland (130): 2.9402 ha total, 0 ha used by existing actions, 2.9402 ha available",
       "Scree (251): 0.0324 ha total, 0 ha used by existing actions, 0.0324 ha available",
-      "Woodland (332): 234.527 ha total, 0 ha used by existing actions, 234.527 ha available",
-      "Woodland (332) [HF only]: 18.3483 ha total, 0 ha used by existing actions, 18.3483 ha available",
+      "Woodland (332): 231.8679 ha total, 0 ha used by existing actions, 231.8679 ha available",
+      "Woodland (332) [HF only]: 21.0074 ha total, 0 ha used by existing actions, 21.0074 ha available",
       "Farm building (371): 0.0065 ha total, 0 ha used by existing actions, 0.0065 ha available",
       "Hard standing (551): 0.3973 ha total, 0 ha used by existing actions, 0.3973 ha available",
-      "Rivers and Streams Type 3 (583): 0.238 ha total, 0 ha used by existing actions, 0.238 ha available",
-      "Rivers and Streams Type 3 (583) [HF only]: 0.1118 ha total, 0 ha used by existing actions, 0.1118 ha available",
+      "Rivers and Streams Type 3 (583): 0.2294 ha total, 0 ha used by existing actions, 0.2294 ha available",
+      "Rivers and Streams Type 3 (583) [HF only]: 0.1204 ha total, 0 ha used by existing actions, 0.1204 ha available",
       "Metalled track (631): 0.1359 ha total, 0 ha used by existing actions, 0.1359 ha available"
     ]
   },
