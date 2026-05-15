@@ -75,7 +75,7 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (0 ha) must be greater than 0 ha and no more than (10.5 ha), based on (10.5 ha)',
+        'The amount of land must be the same as or less than the available area',
       explanations: [
         {
           title: 'Total or partial available area',
@@ -99,7 +99,7 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (11.6 ha) must be greater than 0 ha and no more than (10.5 ha), based on (10.5 ha)',
+        'The amount of land must be the same as or less than the available area',
       explanations: [
         {
           title: 'Total or partial available area',
@@ -123,7 +123,7 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (0 ha) must be greater than 0 ha and no more than (10.5 ha), based on (10.5 ha)',
+        'The amount of land must be the same as or less than the available area',
       explanations: [
         {
           title: 'Total or partial available area',
@@ -147,7 +147,7 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
       name: 'applied-for-total-or-partial-available-area',
       passed: false,
       reason:
-        'The applied figure (11.5 ha) must be greater than 0 ha and no more than (10.5 ha), based on (10.5 ha)',
+        'The amount of land must be the same as or less than the available area',
       explanations: [
         {
           title: 'Total or partial available area',
