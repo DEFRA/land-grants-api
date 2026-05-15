@@ -334,7 +334,20 @@ exports[`Available Area Calculation Service - Scenario Tests > CSAM1 - One exist
     ]
   },
   {
-    "title": "Eligible land covers per action",
+    "title": "Designation areas",
+    "content": [
+      "No SSSI or HF designations on this parcel"
+    ]
+  },
+  {
+    "title": "Designation eligibility per action",
+    "content": [
+      "CSAM1: SSSI eligible, HF eligible",
+      "WBD1: SSSI ineligible, HF eligible"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action (with designation zones)",
     "content": [
       "CSAM1: Permanent grassland (130)",
       "WBD1: Pond (243)"
@@ -687,7 +700,20 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel has  Singl
     ]
   },
   {
-    "title": "Eligible land covers per action",
+    "title": "Designation areas",
+    "content": [
+      "No SSSI or HF designations on this parcel"
+    ]
+  },
+  {
+    "title": "Designation eligibility per action",
+    "content": [
+      "CMOR1: SSSI eligible, HF eligible",
+      "CNUM2: SSSI eligible, HF ineligible"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action (with designation zones)",
     "content": [
       "CMOR1: Permanent grassland (130), Permanent grassland (131), Woodland (332), Farm building (371), Hard standing (551), Rivers and Streams Type 3 (583), Track - natural surface (643)",
       "CNUM2: Permanent grassland (130), Permanent grassland (131)"
@@ -1076,6 +1102,158 @@ exports[`Available Area Calculation Service - Scenario Tests > Parcel with dupli
 ]"
 `;
 
+exports[`Available Area Calculation Service - Scenario Tests > SSSI designation detailed test - take 6 sqm more than available means infeasible 1`] = `
+"[
+  {
+    "title": "Application",
+    "content": [
+      "Target action: CSAM3"
+    ]
+  },
+  {
+    "title": "Existing actions",
+    "content": [
+      "WBD2: 256.738 ha"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 26.9088 ha",
+      "Scree (251): 3.0131 ha",
+      "Rocky outcrop (253): 0.0308 ha",
+      "Woodland (332): 277.4307 ha",
+      "Farm building (371): 0.0065 ha",
+      "Structure (525): 0.0019 ha",
+      "Hard standing (551): 0.7117 ha",
+      "Rivers and Streams Type 2 (582): 0.0298 ha",
+      "Rivers and Streams Type 3 (583): 0.3498 ha",
+      "Metalled track (631): 0.1961 ha"
+    ]
+  },
+  {
+    "title": "Designation areas",
+    "content": [
+      "Permanent grassland (130): 23.9686 ha SSSI, 0.1942 ha HF, 0.1942 ha SSSI and HF overlap",
+      "Scree (251): 2.9807 ha SSSI, 0 ha HF",
+      "Rocky outcrop (253): 0.0308 ha SSSI, 0 ha HF",
+      "Woodland (332): 24.5554 ha SSSI, 22.5968 ha HF, 1.5894 ha SSSI and HF overlap",
+      "Structure (525): 0.0019 ha SSSI, 0.0019 ha HF, 0.0019 ha SSSI and HF overlap",
+      "Hard standing (551): 0.3144 ha SSSI, 0 ha HF",
+      "Rivers and Streams Type 2 (582): 0.0298 ha SSSI, 0.0247 ha HF, 0.0247 ha SSSI and HF overlap",
+      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1204 ha HF",
+      "Metalled track (631): 0.0602 ha SSSI, 0 ha HF"
+    ]
+  },
+  {
+    "title": "Designation eligibility per action",
+    "content": [
+      "CSAM3: SSSI ineligible, HF ineligible",
+      "WBD2: SSSI ineligible, HF eligible"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action (with designation zones)",
+    "content": [
+      "CSAM3: Permanent grassland (130)",
+      "WBD2: Permanent grassland (130), Scree (251), Woodland (332), Woodland (332) [HF only], Farm building (371), Hard standing (551), Rivers and Streams Type 3 (583), Rivers and Streams Type 3 (583) [HF only], Metalled track (631)"
+    ]
+  },
+  {
+    "title": "Incompatible action groups",
+    "content": [
+      "CSAM3, WBD2 cannot share the same land"
+    ]
+  },
+  {
+    "title": "Error - AAC not possible",
+    "content": [
+      "It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting."
+    ]
+  },
+  {
+    "title": "Result",
+    "content": [
+      "Total eligible land cover for CSAM3: 2.9402 ha",
+      "Maximum available area for CSAM3: 0 ha"
+    ]
+  }
+]"
+`;
+
+exports[`Available Area Calculation Service - Scenario Tests > SSSI designation detailed test 1`] = `
+"[
+  {
+    "title": "Application",
+    "content": [
+      "Target action: WBD2"
+    ]
+  },
+  {
+    "title": "Land covers on the parcel",
+    "content": [
+      "Permanent grassland (130): 26.9088 ha",
+      "Scree (251): 3.0131 ha",
+      "Rocky outcrop (253): 0.0308 ha",
+      "Woodland (332): 277.4307 ha",
+      "Farm building (371): 0.0065 ha",
+      "Structure (525): 0.0019 ha",
+      "Hard standing (551): 0.7117 ha",
+      "Rivers and Streams Type 2 (582): 0.0298 ha",
+      "Rivers and Streams Type 3 (583): 0.3498 ha",
+      "Metalled track (631): 0.1961 ha"
+    ]
+  },
+  {
+    "title": "Designation areas",
+    "content": [
+      "Permanent grassland (130): 23.9686 ha SSSI, 0.1942 ha HF, 0.1942 ha SSSI and HF overlap",
+      "Scree (251): 2.9807 ha SSSI, 0 ha HF",
+      "Rocky outcrop (253): 0.0308 ha SSSI, 0 ha HF",
+      "Woodland (332): 24.5554 ha SSSI, 22.5968 ha HF, 1.5894 ha SSSI and HF overlap",
+      "Structure (525): 0.0019 ha SSSI, 0.0019 ha HF, 0.0019 ha SSSI and HF overlap",
+      "Hard standing (551): 0.3144 ha SSSI, 0 ha HF",
+      "Rivers and Streams Type 2 (582): 0.0298 ha SSSI, 0.0247 ha HF, 0.0247 ha SSSI and HF overlap",
+      "Rivers and Streams Type 3 (583): 0 ha SSSI, 0.1204 ha HF",
+      "Metalled track (631): 0.0602 ha SSSI, 0 ha HF"
+    ]
+  },
+  {
+    "title": "Designation eligibility per action",
+    "content": [
+      "WBD2: SSSI ineligible, HF eligible"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action (with designation zones)",
+    "content": [
+      "WBD2: Permanent grassland (130), Scree (251), Woodland (332), Woodland (332) [HF only], Farm building (371), Hard standing (551), Rivers and Streams Type 3 (583), Rivers and Streams Type 3 (583) [HF only], Metalled track (631)"
+    ]
+  },
+  {
+    "title": "Available land for WBD2",
+    "content": [
+      "Permanent grassland (130): 2.9402 ha total, 0 ha used by existing actions, 2.9402 ha available",
+      "Scree (251): 0.0324 ha total, 0 ha used by existing actions, 0.0324 ha available",
+      "Woodland (332): 231.8679 ha total, 0 ha used by existing actions, 231.8679 ha available",
+      "Woodland (332) [HF only]: 21.0074 ha total, 0 ha used by existing actions, 21.0074 ha available",
+      "Farm building (371): 0.0065 ha total, 0 ha used by existing actions, 0.0065 ha available",
+      "Hard standing (551): 0.3973 ha total, 0 ha used by existing actions, 0.3973 ha available",
+      "Rivers and Streams Type 3 (583): 0.2294 ha total, 0 ha used by existing actions, 0.2294 ha available",
+      "Rivers and Streams Type 3 (583) [HF only]: 0.1204 ha total, 0 ha used by existing actions, 0.1204 ha available",
+      "Metalled track (631): 0.1359 ha total, 0 ha used by existing actions, 0.1359 ha available"
+    ]
+  },
+  {
+    "title": "Result",
+    "content": [
+      "Total eligible land cover for WBD2: 256.7374 ha",
+      "Maximum available area for WBD2: 256.7374 ha"
+    ]
+  }
+]"
+`;
+
 exports[`Available Area Calculation Service - Scenario Tests > SSSI only - Target ineligible for SSSI but eligible for HF 1`] = `
 "[
   {
@@ -1195,7 +1373,7 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
     "title": "Eligible land covers per action (with designation zones)",
     "content": [
       "CSAM3: Permanent grassland (130), Half Hedge Adjacent NON-EFA (110)",
-      "AA1: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI and HF], Water/irrigation features (240)"
+      "AA1: Half Hedge Adjacent NON-EFA (110), Half Hedge Adjacent NON-EFA (110) [SSSI and HF], Water/irrigation features (240), Water/irrigation features (240) [SSSI and HF]"
     ]
   },
   {
@@ -1207,7 +1385,7 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
   {
     "title": "Optimal placement of existing actions",
     "content": [
-      "AA1: 0.5 ha on Half Hedge Adjacent NON-EFA (110), 0.5 ha on Half Hedge Adjacent NON-EFA (110) [SSSI and HF], 1 ha on Water/irrigation features (240)"
+      "AA1: 0.5 ha on Half Hedge Adjacent NON-EFA (110), 0.5 ha on Half Hedge Adjacent NON-EFA (110) [SSSI and HF], 0.8 ha on Water/irrigation features (240), 0.2 ha on Water/irrigation features (240) [SSSI and HF]"
     ]
   },
   {
@@ -1229,7 +1407,8 @@ exports[`Available Area Calculation Service - Scenario Tests > SSSI/HF - Ineligi
     "content": [
       "Stack 1: AA1 on Half Hedge Adjacent NON-EFA (110) (0.5 ha)",
       "Stack 2: AA1 on Half Hedge Adjacent NON-EFA (110) [SSSI and HF] (0.5 ha)",
-      "Stack 3: AA1 on Water/irrigation features (240) (1 ha)"
+      "Stack 3: AA1 on Water/irrigation features (240) (0.8 ha)",
+      "Stack 4: AA1 on Water/irrigation features (240) [SSSI and HF] (0.2 ha)"
     ]
   }
 ]"
@@ -1552,7 +1731,26 @@ exports[`Available Area Calculation Service - Scenario Tests > UPL1 - Multiple e
     ]
   },
   {
-    "title": "Eligible land covers per action",
+    "title": "Designation areas",
+    "content": [
+      "No SSSI or HF designations on this parcel"
+    ]
+  },
+  {
+    "title": "Designation eligibility per action",
+    "content": [
+      "UPL1: SSSI eligible, HF eligible",
+      "OFC3: SSSI eligible, HF eligible",
+      "GRH7: SSSI eligible, HF eligible",
+      "PRF2: SSSI eligible, HF eligible",
+      "PRF1: SSSI eligible, HF eligible",
+      "CIGL1: SSSI eligible, HF ineligible",
+      "AGF2: SSSI ineligible, HF ineligible",
+      "GRH6: SSSI eligible, HF eligible"
+    ]
+  },
+  {
+    "title": "Eligible land covers per action (with designation zones)",
     "content": [
       "UPL1: Permanent grassland (130), Pond (243), Woodland (332), Scrub - ungrazeable (347), Hard standing (551), Rivers and Streams Type 3 (583)",
       "OFC3: Permanent grassland (130)",
