@@ -32,7 +32,7 @@ const mockValidateResult = {
   action: {
     code: 'PA3',
     rules: ['ruleA'],
-    semanticVersion: '1.0.0'
+    semanticVersion: '1.1.0'
   },
   ruleResult: { results: mockRuleResult, passed: true }
 }
@@ -40,7 +40,7 @@ const mockValidateResult = {
 const mockTransformedResult = {
   hasPassed: true,
   code: 'PA3',
-  actionConfigVersion: '1.0.0',
+  actionConfigVersion: '1.1.0',
   rules: mockRuleResult
 }
 

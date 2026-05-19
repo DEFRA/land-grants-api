@@ -44,7 +44,7 @@ const createMockAction = () => ({
   id: 1,
   code: 'PA3',
   description: 'Woodland Management Plan',
-  semanticVersion: '1.0.0',
+  semanticVersion: '1.1.0',
   durationYears: 5,
   rules: [],
   paymentMethod: {
@@ -96,7 +96,7 @@ const createMockPaymentResponse = () => ({
     1: {
       code: 'PA3',
       description: 'Woodland Management Plan',
-      version: '1.0.0',
+      version: '1.1.0',
       parcelIds: ['SX067-99238'],
       activePaymentTier: 1,
       quantityInActiveTier: 7.5,

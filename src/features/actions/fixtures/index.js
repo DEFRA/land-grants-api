@@ -160,11 +160,11 @@ const mockWoodlandManagementActionConfig = [
       }
     ],
     applicationUnitOfMeasurement,
-    durationYears: 10,
+    durationYears: 3,
     landCoverClassCodes: [],
     startDate: '2025-01-01',
-    version: 1,
-    semanticVersion: '1.0.0',
+    version: 2,
+    semanticVersion: '1.1.0',
     paymentMethod: {
       name: 'wmp-calculation',
       config: {

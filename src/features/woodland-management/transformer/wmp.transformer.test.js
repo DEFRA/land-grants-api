@@ -4,7 +4,7 @@ describe('wmpResultTransformer', () => {
   it('should transform result correctly', () => {
     const action = {
       code: 'PA3',
-      semanticVersion: '1.0.0'
+      semanticVersion: '1.1.0'
     }
     const ruleResult = {
       passed: true,
@@ -16,7 +16,7 @@ describe('wmpResultTransformer', () => {
     expect(result).toEqual({
       hasPassed: true,
       code: 'PA3',
-      actionConfigVersion: '1.0.0',
+      actionConfigVersion: '1.1.0',
       rules: [{ ruleId: 'rule1', passed: true }]
     })
   })
