@@ -160,7 +160,7 @@ const mockWoodlandManagementActionConfig = [
       }
     ],
     applicationUnitOfMeasurement,
-    durationYears: 10,
+    durationYears: 3,
     landCoverClassCodes: [],
     startDate: '2025-01-01',
     version: 1,
