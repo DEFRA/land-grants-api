@@ -22,7 +22,7 @@ describe('Get Action Configs By Version Query', () => {
     CSAM1: '1.0.1',
     SPM4: '1.0.0',
     OFM3: '1.0.0',
-    PA3: '1.0.0',
+    PA3: '1.1.0',
     CMOR1: '2.0.0',
     UPL1: '3.1.0',
     UPL2: '3.1.0',

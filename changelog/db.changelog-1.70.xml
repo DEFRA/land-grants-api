@@ -8,12 +8,60 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-   <changeSet id="update-pa3-duration-years" author="system">
-        <sql>
-        UPDATE actions_config
-        SET config = jsonb_set(
-            config, '{duration_years}', '3')
-         WHERE code = 'PA3'
-        </sql>
-    </changeSet>
+   <changeSet id="disable-pa3-action-config-v1" author="system">
+    <sql>UPDATE actions_config
+        SET is_active = false,
+            config = jsonb_set(config, '{duration_years}', '10')
+        WHERE code = 'PA3' AND version = '1';</sql>
+   </changeSet>
+
+   <changeSet id="add-new-pa3-actions-config-v1-1-0" author="system">
+    <sql>INSERT INTO actions_config (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version) VALUES ('PA3', 2, '{
+  "rules": [
+    {
+      "name": "parcel-has-minimum-eligibility-for-woodland-management-plan",
+      "config": {
+        "minimumSize": 0.5,
+        "minOldWoodlandHa": 0.4
+      },
+      "description": "Is the parcel eligible for the woodland management plan action?"
+    },
+    {
+      "name": "total-area-not-exceed-land-parcels-woodland-management-plan",
+      "description": "Is the total woodland area less than or equal to the total land parcel area?"
+    }
+  ],
+  "payment_method": {
+    "name": "wmp-calculation",
+    "version": "1.0.0",
+    "config": {
+      "newWoodlandMaxPercent": 20,
+      "tiers": [
+        {
+          "lowerLimitHa": 0.5,
+          "upperLimitHa": 50,
+          "flatRateGbp": 1500,
+          "ratePerUnitGbp": 0
+        },
+        {
+          "lowerLimitHa": 50,
+          "upperLimitHa": 100,
+          "flatRateGbp": 1500,
+          "ratePerUnitGbp": 30
+        },
+        {
+          "lowerLimitHa": 100,
+          "upperLimitHa": null,
+          "flatRateGbp": 3000,
+          "ratePerUnitGbp": 15
+        }
+      ]
+    }
+  },
+  "start_date": "2025-01-01",
+  "duration_years": 3,
+  "land_cover_class_codes": [],
+  "application_unit_of_measurement": "ha"
+}', TRUE, now(), 1, 1, 0);</sql>
+   </changeSet>
 </databaseChangeLog>

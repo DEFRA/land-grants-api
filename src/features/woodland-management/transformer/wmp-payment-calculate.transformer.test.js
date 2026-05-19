@@ -19,7 +19,7 @@ const createWmpCalculationResult = () => ({
 const createAction = () => ({
   code: 'PA3',
   description: 'Woodland Management Plan',
-  semanticVersion: '1.0.0',
+  semanticVersion: '1.1.0',
   durationYears: 3
 })
 
@@ -95,7 +95,7 @@ describe('transformAgreementLevelItems', () => {
     expect(result[1]).toMatchObject({
       code: 'PA3',
       description: 'Woodland Management Plan',
-      version: '1.0.0',
+      version: '1.1.0',
       parcelIds: ['SX067-99238', 'SX068-00001'],
       agreementTotalPence: 234000,
       unit: 'ha',
@@ -124,7 +124,7 @@ describe('wmpPaymentCalculateTransformer', () => {
         1: {
           code: 'PA3',
           description: 'Woodland Management Plan',
-          version: '1.0.0',
+          version: '1.1.0',
           parcelIds: ['SX067-99238'],
           activePaymentTier: 2,
           quantityInActiveTier: 28,
