@@ -66,12 +66,18 @@ export function buildDesignationAreasSection(
   hfOverlap,
   sssiAndHfOverlap
 ) {
+  const areaByClass = (overlaps) =>
+    new Map((overlaps ?? []).map((o) => [o.landCoverClassCode, o.areaSqm]))
+  const sssiByClass = areaByClass(sssiOverlap)
+  const hfByClass = areaByClass(hfOverlap)
+  const bothByClass = areaByClass(sssiAndHfOverlap)
+
   const content = []
-  for (let i = 0; i < originalLandCovers.length; i++) {
-    const lcName = landCoverToString(originalLandCovers[i].landCoverClassCode)
-    const sssi = sssiOverlap?.[i]?.areaSqm ?? 0
-    const hf = hfOverlap?.[i]?.areaSqm ?? 0
-    const both = sssiAndHfOverlap?.[i]?.areaSqm ?? 0
+  for (const lc of originalLandCovers) {
+    const lcName = landCoverToString(lc.landCoverClassCode)
+    const sssi = sssiByClass.get(lc.landCoverClassCode) ?? 0
+    const hf = hfByClass.get(lc.landCoverClassCode) ?? 0
+    const both = bothByClass.get(lc.landCoverClassCode) ?? 0
     if (sssi > 0 || hf > 0) {
       const parts = []
       parts.push(`${sqmToHaRounded(sssi)} ha SSSI`)

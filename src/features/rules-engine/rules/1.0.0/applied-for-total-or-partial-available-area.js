@@ -39,7 +39,7 @@ export const appliedForTotalOrPartialAvailableArea = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The applied figure (${parsedAppliedArea} ha) must be greater than 0 ha and no more than (${maximumAllowedAppliedArea} ha), based on (${parsedAvailableArea} ha)`,
+        reason: `The amount of land must be the same as or less than the available area`,
         explanations
       }
     }
