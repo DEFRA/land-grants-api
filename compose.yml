@@ -10,11 +10,10 @@ x-common-postgres: &common-postgres
   POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
 
 services:
-
   database-up:
     image: liquibase/liquibase:4.31-alpine
     profiles: [migrations]
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -31,7 +30,7 @@ services:
   database-down:
     image: liquibase/liquibase:4.31-alpine
     profiles: [migrations]
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -52,7 +51,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -65,7 +64,7 @@ services:
     build:
       context: .
       target: development
-    command: ["npm", "run", "dev"]
+    command: ['npm', 'run', 'dev']
     environment:
       <<: *common-postgres
       PORT: 3001
@@ -95,7 +94,11 @@ services:
     tmpfs:
       - /app/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -s --connect-timeout 3 http://localhost:4566 > /dev/null 2>&1 || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'curl -s --connect-timeout 3 http://localhost:4566 > /dev/null 2>&1 || exit 1'
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
