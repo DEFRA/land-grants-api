@@ -10,10 +10,9 @@ x-common-postgres: &common-postgres
   POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
 
 services:
-
   database-up:
     image: liquibase/liquibase:4.31-alpine
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -26,7 +25,7 @@ services:
 
   database-down:
     image: liquibase/liquibase:4.31-alpine
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -41,4 +40,3 @@ networks:
   grants-ui-net:
     name: grants-ui-net
     external: true
-
