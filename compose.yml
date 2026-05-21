@@ -70,6 +70,9 @@ services:
       <<: *common-postgres
       PORT: 3001
       POSTGRES_HOST: land-grants-backend-postgres
+      GRANTS_CONFIG_QUEUE_URL: http://floci:4566/000000000000/grants_config_broker_update
+      GRANTS_CONFIG_BUCKET: configs-bucket
+      SQS_ENDPOINT: http://floci:4566
     volumes:
       - ./src:/home/node/src
       - node_deps:/home/node/node_modules
@@ -87,6 +90,8 @@ services:
       FLOCI_DEFAULT_REGION: eu-west-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - 4566:4566
     tmpfs:
       - /app/data
     healthcheck:
