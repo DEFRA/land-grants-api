@@ -124,7 +124,7 @@ describe('Ingest Module', () => {
         'land_parcels',
         '123',
         expect.any(Object),
-        false
+        true
       )
     })
 
@@ -160,7 +160,7 @@ describe('Ingest Module', () => {
         'land_parcels',
         '123',
         expect.any(Object),
-        false
+        true
       )
     })
 

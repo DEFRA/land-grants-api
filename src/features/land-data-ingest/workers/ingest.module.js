@@ -13,9 +13,9 @@ import {
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
 export const resources = [
-  { name: 'land_parcels', truncateTable: false },
+  { name: 'land_parcels', truncateTable: true },
   { name: 'moorland_designations', truncateTable: false },
-  { name: 'land_covers', truncateTable: false },
+  { name: 'land_covers', truncateTable: true },
   { name: 'compatibility_matrix', truncateTable: true },
   { name: 'agreements', truncateTable: true },
   { name: 'sssi', truncateTable: false },

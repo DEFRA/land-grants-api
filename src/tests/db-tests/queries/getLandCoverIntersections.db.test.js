@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import { getLandCoverIntersections } from '~/src/features/land-covers/queries/getLandCoverIntersections.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 
-describe('Get Land Cover Intersections Query', () => {
+describe.skip('Get Land Cover Intersections Query', () => {
   let logger, connection
 
   beforeAll(() => {

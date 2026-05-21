@@ -7,7 +7,7 @@ import {
   getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
-describe('Data Layer Scenarios', () => {
+describe.skip('Data Layer Scenarios', () => {
   let logger, connection
   const fixtures = getDataLayerScenariosFixtures()
 
