@@ -72,8 +72,8 @@ describe('getLandCoversForParcel', () => {
     expect(result).toEqual([
       { areaSqm: 123, landCoverClassCode: 'Grass321' },
       { areaSqm: 456, landCoverClassCode: 'Trees543' },
-      { areaSqm: 450, landCoverClassCode: 'Trees543' },
-      { areaSqm: 451, landCoverClassCode: 'Trees543' }
+      { areaSqm: 450.44, landCoverClassCode: 'Trees543' },
+      { areaSqm: 450.54, landCoverClassCode: 'Trees543' }
     ])
   })
 
