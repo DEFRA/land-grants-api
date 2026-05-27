@@ -19,8 +19,8 @@ const createWmpCalculationResult = () => ({
 const createAction = () => ({
   code: 'PA3',
   description: 'Woodland Management Plan',
-  semanticVersion: '1.0.0',
-  durationYears: 10
+  semanticVersion: '1.1.0',
+  durationYears: 3
 })
 
 describe('getAgreementStartDate', () => {
@@ -49,7 +49,7 @@ describe('getAgreementStartDate', () => {
 
 describe('getAgreementEndDate', () => {
   test('should return the date durationYears after the agreementStartDate', () => {
-    expect(getAgreementEndDate('2024-01-01', 10)).toBe('2033-12-31')
+    expect(getAgreementEndDate('2024-01-01', 3)).toBe('2026-12-31')
   })
 
   test('should handle a 1-year duration', () => {
@@ -95,7 +95,7 @@ describe('transformAgreementLevelItems', () => {
     expect(result[1]).toMatchObject({
       code: 'PA3',
       description: 'Woodland Management Plan',
-      version: '1.0.0',
+      version: '1.1.0',
       parcelIds: ['SX067-99238', 'SX068-00001'],
       agreementTotalPence: 234000,
       unit: 'ha',
@@ -116,7 +116,7 @@ describe('wmpPaymentCalculateTransformer', () => {
     expect(result).toEqual({
       explanations: [],
       agreementStartDate: '2024-02-01',
-      agreementEndDate: '2034-01-31',
+      agreementEndDate: '2027-01-31',
       frequency: 'Single',
       agreementTotalPence: 234000,
       parcelItems: {},
@@ -124,7 +124,7 @@ describe('wmpPaymentCalculateTransformer', () => {
         1: {
           code: 'PA3',
           description: 'Woodland Management Plan',
-          version: '1.0.0',
+          version: '1.1.0',
           parcelIds: ['SX067-99238'],
           activePaymentTier: 2,
           quantityInActiveTier: 28,
@@ -157,7 +157,7 @@ describe('wmpPaymentCalculateTransformer', () => {
     )
 
     expect(result.agreementStartDate).toBe('2024-07-01')
-    expect(result.agreementEndDate).toBe('2034-06-30')
+    expect(result.agreementEndDate).toBe('2027-06-30')
 
     vi.useRealTimers()
   })
