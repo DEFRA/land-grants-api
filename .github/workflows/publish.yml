@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: main-serial
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: write
