@@ -31,6 +31,15 @@ const runStatsQuery = async (client) => {
     ),
     client.query(
       `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
+    ),
+    client.query(
+      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels`
+    ),
+    client.query(
+      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers`
+    ),
+    client.query(
+      `SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)`
     )
   ])
 }
@@ -61,7 +70,10 @@ async function getStats(logger, db) {
       registeredParksGardensResult,
       registeredBattlefieldsResult,
       scheduledMonumentsResult,
-      shineResult
+      shineResult,
+      uniqueParcelsResult,
+      uniqueCoversResult,
+      duplicateCoversResult
     ] = await runStatsQuery(client)
 
     const actionsCount = actionsResult.rows[0].count
@@ -81,6 +93,9 @@ async function getStats(logger, db) {
       registeredBattlefieldsResult.rows[0].count
     const scheduledMonumentsCount = scheduledMonumentsResult.rows[0].count
     const shineCount = shineResult.rows[0].count
+    const uniqueParcelsCount = uniqueParcelsResult.rows[0].count
+    const uniqueCoversCount = uniqueCoversResult.rows[0].count
+    const duplicateCoversCount = duplicateCoversResult.rows[0].count
 
     logInfo(logger, {
       category: 'database',
@@ -100,7 +115,10 @@ async function getStats(logger, db) {
         registeredParksGardensCount,
         registeredBattlefieldsCount,
         scheduledMonumentsCount,
-        shineCount
+        shineCount,
+        uniqueParcelsCount,
+        uniqueCoversCount,
+        duplicateCoversCount
       }
     })
   } catch (error) {
