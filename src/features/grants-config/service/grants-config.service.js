@@ -21,6 +21,12 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
   const { code, semanticVersion, major, minor, patch, displayOrder, config } =
     transformActionConfig(json)
 
+  if (!semanticVersion) {
+    throw new Error(
+      `Action config file is missing a valid semanticVersion: ${s3Key}`
+    )
+  }
+
   const exists = await getActionConfigByVersion(
     logger,
     db,
