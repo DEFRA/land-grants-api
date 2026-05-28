@@ -154,4 +154,15 @@ describe('processActionConfigFile', () => {
       processActionConfigFile(mockLogger, mockS3Client, mockDb, s3Key, bucket)
     ).rejects.toThrow('S3 unavailable')
   })
+
+  test('throws with the s3Key when transform returns a falsy semanticVersion', async () => {
+    transformActionConfig.mockReturnValueOnce({
+      ...transformedConfig,
+      semanticVersion: undefined
+    })
+
+    await expect(
+      processActionConfigFile(mockLogger, mockS3Client, mockDb, s3Key, bucket)
+    ).rejects.toThrow(s3Key)
+  })
 })

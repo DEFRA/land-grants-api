@@ -98,21 +98,38 @@ describe('transformActionConfig', () => {
     expect(result.config.rules).toEqual([])
   })
 
-  test('defaults major/minor/patch to 1/0/0 when semanticVersion is missing', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      semanticVersion: undefined
-    })
-    expect(result.major).toBe(1)
-    expect(result.minor).toBe(0)
-    expect(result.patch).toBe(0)
+  test('throws when semanticVersion is missing', () => {
+    expect(() =>
+      transformActionConfig({ ...pa3Json, semanticVersion: undefined })
+    ).toThrow('semanticVersion is required')
   })
 
-  test('defaults minor/patch to 0 when semanticVersion has fewer than 3 parts', () => {
+  test('throws when semanticVersion is null', () => {
+    expect(() =>
+      transformActionConfig({ ...pa3Json, semanticVersion: null })
+    ).toThrow('semanticVersion is required')
+  })
+
+  test('throws when semanticVersion contains non-numeric parts', () => {
+    expect(() =>
+      transformActionConfig({ ...pa3Json, semanticVersion: '1.x.0' })
+    ).toThrow('Invalid semanticVersion "1.x.0"')
+  })
+
+  test('normalises partial version to canonical major.minor.patch form', () => {
     const result = transformActionConfig({ ...pa3Json, semanticVersion: '2' })
     expect(result.major).toBe(2)
     expect(result.minor).toBe(0)
     expect(result.patch).toBe(0)
+    expect(result.semanticVersion).toBe('2.0.0')
+  })
+
+  test('normalises semanticVersion to canonical form from parsed parts', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      semanticVersion: '3.1.4'
+    })
+    expect(result.semanticVersion).toBe('3.1.4')
   })
 
   test('config does not include top-level action metadata fields', () => {

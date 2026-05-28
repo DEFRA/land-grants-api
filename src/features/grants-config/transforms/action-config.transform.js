@@ -21,7 +21,7 @@ export function transformActionConfig(actionJson) {
 
   return {
     code: actionJson.code,
-    semanticVersion: actionJson.semanticVersion,
+    semanticVersion: `${major}.${minor}.${patch}`,
     major,
     minor,
     patch,
@@ -35,10 +35,24 @@ export function transformActionConfig(actionJson) {
  * @returns {{ major: number, minor: number, patch: number }}
  */
 function parseSemanticVersion(semanticVersion) {
-  const parts = (semanticVersion ?? '').split('.')
-  return {
-    major: Number.parseInt(parts[0] || '1', 10),
-    minor: Number.parseInt(parts[1] || '0', 10),
-    patch: Number.parseInt(parts[2] || '0', 10)
+  if (!semanticVersion) {
+    throw new Error('semanticVersion is required')
   }
+
+  const parts = semanticVersion.split('.')
+  const major = Number.parseInt(parts[0] || '0', 10)
+  const minor = Number.parseInt(parts[1] || '0', 10)
+  const patch = Number.parseInt(parts[2] || '0', 10)
+
+  if (
+    !Number.isFinite(major) ||
+    !Number.isFinite(minor) ||
+    !Number.isFinite(patch)
+  ) {
+    throw new Error(
+      `Invalid semanticVersion "${semanticVersion}": all parts must be integers`
+    )
+  }
+
+  return { major, minor, patch }
 }
