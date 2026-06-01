@@ -101,13 +101,13 @@ describe('transformActionConfig', () => {
   test('throws when semanticVersion is missing', () => {
     expect(() =>
       transformActionConfig({ ...pa3Json, semanticVersion: undefined })
-    ).toThrow('semanticVersion is required')
+    ).toThrow('Invalid action config')
   })
 
   test('throws when semanticVersion is null', () => {
     expect(() =>
       transformActionConfig({ ...pa3Json, semanticVersion: null })
-    ).toThrow('semanticVersion is required')
+    ).toThrow('Invalid action config')
   })
 
   test('throws when semanticVersion contains non-numeric parts', () => {
@@ -130,6 +130,46 @@ describe('transformActionConfig', () => {
       semanticVersion: '3.1.4'
     })
     expect(result.semanticVersion).toBe('3.1.4')
+  })
+
+  describe('schema validation', () => {
+    test('throws when code is missing', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, code: undefined })
+      ).toThrow('"code" is required')
+    })
+
+    test('collects multiple errors when both required fields are absent', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          code: undefined,
+          semanticVersion: undefined
+        })
+      ).toThrow('Invalid action config')
+    })
+
+    test('throws when displayOrder is not a number', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, displayOrder: 'first' })
+      ).toThrow('Invalid action config')
+    })
+
+    test('does not throw for unknown top-level fields', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          description: 'extra',
+          enabled: true
+        })
+      ).not.toThrow()
+    })
+
+    test('does not throw when payment is null', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, payment: null })
+      ).not.toThrow()
+    })
   })
 
   test('config does not include top-level action metadata fields', () => {

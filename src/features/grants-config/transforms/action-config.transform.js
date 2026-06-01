@@ -1,3 +1,5 @@
+import { actionConfigInputSchema } from '../schema/action-config.schema.js'
+
 /**
  * Transform an action config JSON (camelCase from land-grants-config repo)
  * into the shape stored in the actions_config DB table.
@@ -5,6 +7,13 @@
  * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, config: object }}
  */
 export function transformActionConfig(actionJson) {
+  const { error } = actionConfigInputSchema.validate(actionJson)
+  if (error) {
+    throw new TypeError(
+      `Invalid action config: ${error.details.map((d) => d.message).join('; ')}`
+    )
+  }
+
   const { major, minor, patch } = parseSemanticVersion(
     actionJson.semanticVersion
   )
@@ -35,10 +44,6 @@ export function transformActionConfig(actionJson) {
  * @returns {{ major: number, minor: number, patch: number }}
  */
 function parseSemanticVersion(semanticVersion) {
-  if (!semanticVersion) {
-    throw new Error('semanticVersion is required')
-  }
-
   const parts = semanticVersion.split('.')
   const major = Number.parseInt(parts[0] || '0', 10)
   const minor = Number.parseInt(parts[1] || '0', 10)
@@ -49,7 +54,7 @@ function parseSemanticVersion(semanticVersion) {
     !Number.isFinite(minor) ||
     !Number.isFinite(patch)
   ) {
-    throw new Error(
+    throw new TypeError(
       `Invalid semanticVersion "${semanticVersion}": all parts must be integers`
     )
   }
