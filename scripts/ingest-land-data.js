@@ -8,16 +8,16 @@ const environments = ['dev'] //, 'test', 'perf-test', 'ext-test'] // dev, test, 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
   'agreements',
-  'compatibility_matrix',
-  'moorland_designations',
-  'land_parcels',
-  'land_covers',
-  'sssi',
-  'registered_battlefields',
-  'shine',
-  'scheduled_monuments',
-  'registered_parks_gardens',
-  'action_sssi_hf_mapping'
+  // 'compatibility_matrix',
+  // 'moorland_designations',
+  // 'land_parcels',
+  // 'land_covers',
+  // 'sssi',
+  // 'registered_battlefields',
+  // 'shine',
+  // 'scheduled_monuments',
+  // 'registered_parks_gardens',
+  // 'action_sssi_hf_mapping'
 ]
 
 transferAllResources()
