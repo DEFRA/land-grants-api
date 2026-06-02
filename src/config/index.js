@@ -102,6 +102,34 @@ const config = convict({
       env: 'INGEST_BUCKET'
     }
   },
+  sqs: {
+    region: {
+      doc: 'SQS region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    },
+    endpoint: {
+      doc: 'SQS endpoint (LocalStack in local/test environments)',
+      format: String,
+      default: 'http://localhost:4566',
+      env: 'SQS_ENDPOINT'
+    },
+    queueUrl: {
+      doc: 'Grants config broker update SQS queue URL',
+      format: String,
+      default: 'http://localhost:4566/000000000000/grants_config_broker_update',
+      env: 'GRANTS_CONFIG_QUEUE_URL'
+    }
+  },
+  grantsConfig: {
+    s3Bucket: {
+      doc: 'S3 bucket containing grants config files (locally: configs-bucket, remotely: grants-config)',
+      format: String,
+      default: 'configs-bucket',
+      env: 'GRANTS_CONFIG_BUCKET'
+    }
+  },
   ingest: {
     endpoint: {
       doc: 'Ingest endpoint',
