@@ -5,7 +5,7 @@ services:
   land-grants-backend-postgres:
     volumes: !reset []
     tmpfs:
-     - /var/lib/postgresql/data
+      - /var/lib/postgresql/data
 
   floci:
     ports:

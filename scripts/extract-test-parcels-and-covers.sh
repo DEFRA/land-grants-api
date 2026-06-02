@@ -36,7 +36,8 @@ DEFAULT_PAIRS='[
   {"parcelId":"3264","sheetId":"SD8743"},
   {"parcelId":"1283","sheetId":"SD6441"},
   {"parcelId":"8851","sheetId":"SX5373"},
-  {"parcelId":"9845","sheetId":"SK9197"}
+  {"parcelId":"9845","sheetId":"SK9197"},
+  {"parcelId":"1016","sheetId":"NY1215"}
 ]'
 
 PAIRS_JSON="${1:-$DEFAULT_PAIRS}"

@@ -31,8 +31,77 @@ const runStatsQuery = async (client) => {
     ),
     client.query(
       `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
+    ),
+    client.query(
+      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels`
+    ),
+    client.query(
+      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers`
+    ),
+    client.query(
+      `SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)`
     )
   ])
+}
+
+/**
+ * Extract a count value from a SQL query result.
+ * @param {{ rows: Array<{ count: string | number }> }} result - Query result containing a count in the first row.
+ * @returns {string | number} The count value from the query result.
+ */
+const getCountFromResult = (result) => result.rows[0].count
+
+/**
+ * Build a stats object from the stats query results.
+ * @param {Array<{ rows: Array<{ count: string | number }> }>} results - Ordered query results from runStatsQuery.
+ * @returns {Record<string, string | number>} Named stats values for logging.
+ */
+const mapStatsResults = (results) => {
+  const [
+    actionsResult,
+    actionsConfigResult,
+    agreementsResult,
+    applicationResultsResult,
+    compatibilityMatrixResult,
+    landCoverCodesResult,
+    landCoverCodesActionsResult,
+    landCoversResult,
+    landParcelsResult,
+    sssiResults,
+    moorlandDesignationResult,
+    registeredParksGardensResult,
+    registeredBattlefieldsResult,
+    scheduledMonumentsResult,
+    shineResult,
+    uniqueParcelsResult,
+    uniqueCoversResult,
+    duplicateCoversResult
+  ] = results
+
+  return {
+    actionsCount: getCountFromResult(actionsResult),
+    actionsConfigCount: getCountFromResult(actionsConfigResult),
+    agreementsCount: getCountFromResult(agreementsResult),
+    applicationResultsCount: getCountFromResult(applicationResultsResult),
+    compatibilityMatrixCount: getCountFromResult(compatibilityMatrixResult),
+    landCoverCodesCount: getCountFromResult(landCoverCodesResult),
+    landCoverCodesActionsCount: getCountFromResult(landCoverCodesActionsResult),
+    landCoversCount: getCountFromResult(landCoversResult),
+    landParcelsCount: getCountFromResult(landParcelsResult),
+    sssiCount: getCountFromResult(sssiResults),
+    moorlandDesignationsCount: getCountFromResult(moorlandDesignationResult),
+    registeredParksGardensCount: getCountFromResult(
+      registeredParksGardensResult
+    ),
+    registeredBattlefieldsCount: getCountFromResult(
+      registeredBattlefieldsResult
+    ),
+    scheduledMonumentsCount: getCountFromResult(scheduledMonumentsResult),
+    shineCount: getCountFromResult(shineResult),
+    uniqueParcelsCount: getCountFromResult(uniqueParcelsResult),
+    uniqueCoversCount: getCountFromResult(uniqueCoversResult),
+    duplicateCoversCount: getCountFromResult(duplicateCoversResult)
+  }
 }
 
 /**
@@ -45,63 +114,12 @@ async function getStats(logger, db) {
   let client
   try {
     client = await db.connect()
-
-    const [
-      actionsResult,
-      actionsConfigResult,
-      agreementsResult,
-      applicationResultsResult,
-      compatibilityMatrixResult,
-      landCoverCodesResult,
-      landCoverCodesActionsResult,
-      landCoversResult,
-      landParcelsResult,
-      sssiResults,
-      moorlandDesignationResult,
-      registeredParksGardensResult,
-      registeredBattlefieldsResult,
-      scheduledMonumentsResult,
-      shineResult
-    ] = await runStatsQuery(client)
-
-    const actionsCount = actionsResult.rows[0].count
-    const actionsConfigCount = actionsConfigResult.rows[0].count
-    const agreementsCount = agreementsResult.rows[0].count
-    const applicationResultsCount = applicationResultsResult.rows[0].count
-    const compatibilityMatrixCount = compatibilityMatrixResult.rows[0].count
-    const landCoverCodesCount = landCoverCodesResult.rows[0].count
-    const landCoverCodesActionsCount = landCoverCodesActionsResult.rows[0].count
-    const landCoversCount = landCoversResult.rows[0].count
-    const landParcelsCount = landParcelsResult.rows[0].count
-    const sssiCount = sssiResults.rows[0].count
-    const moorlandDesignationsCount = moorlandDesignationResult.rows[0].count
-    const registeredParksGardensCount =
-      registeredParksGardensResult.rows[0].count
-    const registeredBattlefieldsCount =
-      registeredBattlefieldsResult.rows[0].count
-    const scheduledMonumentsCount = scheduledMonumentsResult.rows[0].count
-    const shineCount = shineResult.rows[0].count
+    const stats = mapStatsResults(await runStatsQuery(client))
 
     logInfo(logger, {
       category: 'database',
       message: 'Get stats',
-      context: {
-        actionsCount,
-        actionsConfigCount,
-        agreementsCount,
-        applicationResultsCount,
-        compatibilityMatrixCount,
-        landCoverCodesCount,
-        landCoverCodesActionsCount,
-        landCoversCount,
-        landParcelsCount,
-        sssiCount,
-        moorlandDesignationsCount,
-        registeredParksGardensCount,
-        registeredBattlefieldsCount,
-        scheduledMonumentsCount,
-        shineCount
-      }
+      context: stats
     })
   } catch (error) {
     logDatabaseError(logger, {

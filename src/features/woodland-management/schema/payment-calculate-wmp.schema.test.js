@@ -17,7 +17,7 @@ describe('paymentCalculateWMPResponseSchema', () => {
         1: {
           code: 'PA3',
           description: 'Woodland Management Plan',
-          version: '1.0.0',
+          version: '1.1.0',
           parcelIds: ['SX067-99238'],
           activePaymentTier: 1,
           quantityInActiveTier: 24.5,

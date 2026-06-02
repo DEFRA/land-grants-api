@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: main-serial
+  cancel-in-progress: false
+
 permissions:
   id-token: write
   contents: write
@@ -35,8 +39,7 @@ jobs:
         run: chmod +x ./scripts/extract-gz-to-sql
 
       - name: Extract seed files
-        run:
-          ./scripts/extract-gz-to-sql src/land-data/migration changelog/
+        run: ./scripts/extract-gz-to-sql src/land-data/migration changelog/
 
       - name: Publish Database Schema
         uses: DEFRA/cdp-build-action/publish-db-migrations@main

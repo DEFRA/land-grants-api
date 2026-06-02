@@ -13,7 +13,7 @@ import {
 import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
 import { createLandCoverCodeToString } from '~/src/features/land-cover-codes/services/createLandCoverCodeToString.js'
 import { getLandCoverIntersections } from '~/src/features/land-covers/queries/getLandCoverIntersections.query.js'
-import { getActionEligibilty } from '~/src/features/actions/queries/getActionEligibilty.query.js'
+import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -76,15 +76,15 @@ export async function getAvailableAreaDataRequirements(
   const { sssiOverlap, hfOverlap, sssiAndHfOverlap } =
     await getLandCoverIntersections(sheetId, parcelId, postgresDb, logger)
 
-  const actionEligibilty = await getActionEligibilty(logger, postgresDb)
+  const actionEligibility = await getActionEligibility(logger, postgresDb)
 
   const sssiActionEligibility = createActionEligibilityMap(
-    actionEligibilty,
+    actionEligibility,
     'sssi_eligible'
   )
 
   const hfActionEligibility = createActionEligibilityMap(
-    actionEligibilty,
+    actionEligibility,
     'hf_eligible'
   )
 

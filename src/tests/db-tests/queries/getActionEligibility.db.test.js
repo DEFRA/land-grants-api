@@ -1,4 +1,4 @@
-import { getActionEligibilty } from '~/src/features/actions/queries/getActionEligibilty.query.js'
+import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 
@@ -18,13 +18,13 @@ describe('Get Action Eligibility Query', () => {
   })
 
   test('should return all enabled actions', async () => {
-    const actions = await getActionEligibilty(logger, connection)
+    const actions = await getActionEligibility(logger, connection)
 
     expect(actions.length).toBeGreaterThan(0)
   })
 
   test('should return CMOR1', async () => {
-    const actions = await getActionEligibilty(logger, connection)
+    const actions = await getActionEligibility(logger, connection)
 
     // eslint-disable-next-line
     const cmor1 = actions.find((a) => a.code === 'CMOR1')
