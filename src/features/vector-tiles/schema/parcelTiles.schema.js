@@ -16,7 +16,7 @@ const parcelTilesParamsSchema = Joi.object({
 })
 
 const parcelIdsSchema = Joi.array()
-  .items(Joi.string().pattern(/^[A-Za-z0-9]+-[0-9]+$/))
+  .items(Joi.string().pattern(/^[A-Za-z\d]+-\d+$/))
   .min(1)
   .max(MAX_PARCEL_IDS)
   .required()
