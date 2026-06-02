@@ -3,6 +3,9 @@ const WORLD_SIZE = WORLD_HALF * 2
 const MAX_ZOOM = 22
 const PADDING_RATIO = 0.05
 const MIN_EXTENT_METRES = 1
+const DEGREES_HALF_CIRCLE = 180
+const DEGREES_FULL_CIRCLE = 360
+const DEGREES_QUARTER_CIRCLE = 90
 
 /**
  * Convert Web Mercator (EPSG:3857) metres to WGS84 lng/lat degrees.
@@ -11,9 +14,11 @@ const MIN_EXTENT_METRES = 1
  * @returns {{ lng: number, lat: number }}
  */
 export function webMercatorToLngLat(mx, my) {
-  const lng = (mx / WORLD_HALF) * 180
+  const lng = (mx / WORLD_HALF) * DEGREES_HALF_CIRCLE
   const lat =
-    (Math.atan(Math.exp((my / WORLD_HALF) * Math.PI)) * 360) / Math.PI - 90
+    (Math.atan(Math.exp((my / WORLD_HALF) * Math.PI)) * DEGREES_FULL_CIRCLE) /
+      Math.PI -
+    DEGREES_QUARTER_CIRCLE
   return { lng, lat }
 }
 
