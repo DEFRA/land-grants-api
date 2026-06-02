@@ -14,6 +14,7 @@ import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
 import { statistics } from '~/src/features/common/plugins/statistics.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
+import { grantsConfigConsumer } from '~/src/features/grants-config/index.js'
 
 async function createServer() {
   const server = hapi.server({
@@ -45,15 +46,16 @@ async function createServer() {
   })
 
   // Hapi Plugins:
-  // requestLogger  - automatically logs incoming requests
-  // requestTracing - trace header logging and propagation
-  // secureContext  - loads CA certificates from environment config
-  // pulse          - provides shutdown handlers
-  // auth           - provides service-to-service authentication
-  // router         - routes used in the app
-  // s3Client       - S3 client
-  // statistics     - statistics cron job
-  // swagger        - swagger documentation
+  // requestLogger       - automatically logs incoming requests
+  // requestTracing      - trace header logging and propagation
+  // secureContext       - loads CA certificates from environment config
+  // pulse               - provides shutdown handlers
+  // auth                - provides service-to-service authentication
+  // router              - routes used in the app
+  // s3Client            - S3 client
+  // statistics          - statistics cron job
+  // grantsConfig        - SQS consumer for grants-config-broker updates
+  // swagger             - swagger documentation
   await server.register([
     requestLogger,
     requestTracing,
@@ -64,7 +66,8 @@ async function createServer() {
     router,
     s3Client,
     statistics,
-    woodlandManagement
+    woodlandManagement,
+    grantsConfigConsumer
   ])
 
   // Register swagger separately as it needs Inert and Vision plugins
