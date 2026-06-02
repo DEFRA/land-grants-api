@@ -2,6 +2,7 @@
 set -e
 
 INGEST_BUCKET="s3://land-data"
+GRANTS_CONFIG_BROKER_BUCKET="s3://configs-bucket"
 
 AWS_REGION=${AWS_REGION:-eu-west-2}
 
@@ -14,6 +15,10 @@ done
 echo "Creating S3 bucket"
 aws s3 mb ${INGEST_BUCKET}
 echo "Created S3 bucket: ${INGEST_BUCKET}"
+
+echo "Creating grants-config-broker S3 bucket"
+aws s3 mb ${GRANTS_CONFIG_BROKER_BUCKET}
+echo "Created grants-config-broker S3 bucket: ${GRANTS_CONFIG_BROKER_BUCKET}"
 
 echo "Creating grants-config-broker SQS queue"
 aws sqs create-queue --queue-name grants_config_broker_update
