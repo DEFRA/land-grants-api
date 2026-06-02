@@ -14,9 +14,7 @@ const vectorTiles = {
           path: '/api/v1/parcel-tiles/{z}/{x}/{y}',
           handler: ParcelTilesController.handler,
           options: {
-            ...ParcelTilesController.options,
-            // TODO: temporary — re-enable auth before this leaves the spike
-            auth: false
+            ...ParcelTilesController.options
           }
         },
         {
@@ -24,9 +22,7 @@ const vectorTiles = {
           path: '/api/v1/parcel-tiles/locate',
           handler: ParcelTilesLocateController.handler,
           options: {
-            ...ParcelTilesLocateController.options,
-            // TODO: temporary — re-enable auth before this leaves the spike
-            auth: false
+            ...ParcelTilesLocateController.options
           }
         }
       ])
