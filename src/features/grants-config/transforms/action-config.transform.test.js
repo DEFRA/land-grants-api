@@ -55,6 +55,26 @@ describe('transformActionConfig', () => {
     expect(result.displayOrder).toBe(0)
   })
 
+  test('extracts sssiEligible and hfEligible when present', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      sssiEligible: false,
+      hfEligible: false
+    })
+    expect(result.sssiEligible).toBe(false)
+    expect(result.hfEligible).toBe(false)
+  })
+
+  test('defaults sssiEligible to true when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.sssiEligible).toBe(true)
+  })
+
+  test('defaults hfEligible to true when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.hfEligible).toBe(true)
+  })
+
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({

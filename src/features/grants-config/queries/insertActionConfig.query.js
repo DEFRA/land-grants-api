@@ -6,15 +6,33 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * then inserts the new row with is_active=TRUE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, sssiEligible: boolean, hfEligible: boolean }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
-  const { code, config, major, minor, patch, displayOrder } = params
+  const {
+    code,
+    config,
+    major,
+    minor,
+    patch,
+    displayOrder,
+    sssiEligible,
+    hfEligible
+  } = params
   let client
   try {
     client = await db.connect()
     await client.query('BEGIN')
+
+    await client.query(
+      `INSERT INTO actions (code, enabled, display, sssi_eligible, hf_eligible)
+       VALUES ($1, TRUE, TRUE, $2, $3)
+       ON CONFLICT (code) DO UPDATE SET
+         sssi_eligible = EXCLUDED.sssi_eligible,
+         hf_eligible = EXCLUDED.hf_eligible`,
+      [code, sssiEligible, hfEligible]
+    )
 
     await client.query(
       'UPDATE actions_config SET is_active = FALSE WHERE code = $1 AND is_active = TRUE',

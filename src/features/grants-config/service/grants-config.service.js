@@ -18,8 +18,17 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
   const response = await getFile(s3Client, bucket, s3Key)
   const json = JSON.parse(await response.Body.transformToString())
 
-  const { code, semanticVersion, major, minor, patch, displayOrder, config } =
-    transformActionConfig(json)
+  const {
+    code,
+    semanticVersion,
+    major,
+    minor,
+    patch,
+    displayOrder,
+    sssiEligible,
+    hfEligible,
+    config
+  } = transformActionConfig(json)
 
   if (!semanticVersion) {
     throw new Error(
@@ -51,7 +60,9 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     major,
     minor,
     patch,
-    displayOrder
+    displayOrder,
+    sssiEligible,
+    hfEligible
   })
 
   if (!inserted) {
