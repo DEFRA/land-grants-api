@@ -10,5 +10,7 @@ export const actionConfigInputSchema = Joi.object({
   payment: Joi.object().allow(null).optional(),
   paymentMethod: Joi.object().optional(),
   landCoverClassCodes: Joi.array().items(Joi.string()).optional(),
-  rules: Joi.array().items(Joi.object()).optional()
+  rules: Joi.array().items(Joi.object()).optional(),
+  sssiEligible: Joi.boolean().optional(),
+  hfEligible: Joi.boolean().optional()
 }).options({ allowUnknown: true })
