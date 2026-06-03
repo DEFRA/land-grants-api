@@ -166,71 +166,28 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 ##### 1. Start the land-grants-api stack
 
 ```bash
-# Start postgres and floci (LocalStack emulator) — port 4566 is exposed to the host
-docker compose up floci floci-init land-grants-backend-postgres -d
 
-# Run DB migrations
-npm run docker:migrate:up
+# Run the setup script
+npm run dev:setup
 
 # Start the API
 npm run dev
 ```
 
-`floci-init` automatically creates the SQS queue (`grants_config_broker_update`), the SNS topic (`gfr__sns___config_update`), and the subscription between them.
+##### 2. Start the grants-config-broker and its mongodb
 
-##### 2. Prepare the grants-config-broker config directory
-
-The broker reads its release manifest and config files from a `config/` directory relative to its working directory. This directory is git-ignored and must be created manually.
-
-```bash
-cd ../grants-config-broker
-
-# Create the release manifest
-mkdir -p config
-cat > config/release.yml << 'EOF'
-name: land-grants
-version: 0.0.2
-notes: Local test
-environments:
-  - name: dev
-    status: active
-EOF
-
-# Copy action config files from land-grants-config
-mkdir -p "config/land-grants@0.0.2/actions/PA3"
-cp ../land-grants-config/land-grants/actions/PA3/pa3-1.0.0.json \
-   "config/land-grants@0.0.2/actions/PA3/pa3-1.0.0.json"
-```
+The script below will also prepare the grants-config-broker config directory
 
 **Note:**
 The idempotency check will skip versions already present in the DB.
-To exercise the insert path, bump the `semanticVersion` field.
-
-##### 3. Start the grants-config-broker and its mongodb
+To exercise the insert path, bump the land_grants_config_version and `land_action_semantic_version` parameters.
 
 ```bash
-cd ../grants-config-broker
+./scripts/start-config-broker.sh {land_grants_config_version} {land_action_semantic_version}
 
-docker compose -f ../grants-config-broker/compose.yml up mongodb -d
-
-PORT=3002 \
-AWS_ENDPOINT_URL=http://localhost:4566 \
-ENVIRONMENT=dev \
-CONFIG_BUCKET_NAME=configs-bucket \
-MONGO_URI=mongodb://127.0.0.1:27017/ \
-SERVICE_VERSION="local-$(date +%s)" \
-npm run dev
-
+Example:
+./scripts/start-config-broker.sh 0.0.6 1.4.0
 ```
-
-`SERVICE_VERSION` uses a timestamp so repeated restarts are not blocked by MongoDB's duplicate-key guard (the broker records each deployed version and skips re-runs).
-
-On startup the broker will:
-
-1. Upload config files to `configs-bucket` in LocalStack
-2. Publish an SNS message to `gfr__sns___config_update`
-3. SNS fan-out delivers it to `grants_config_broker_update`
-4. The land-grants-api SQS consumer picks it up, checks if the version exists in the DB, and inserts it if not
 
 ##### Useful AWS CLI commands
 
