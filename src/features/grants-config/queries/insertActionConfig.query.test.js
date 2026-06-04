@@ -12,6 +12,7 @@ describe('insertActionConfig', () => {
     minor: 0,
     patch: 0,
     displayOrder: 0,
+    description: 'Woodland management plan',
     sssiEligible: true,
     hfEligible: true,
     groupId: null
@@ -44,12 +45,35 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with sssiEligible and hfEligible from params', async () => {
+  test('upserts action with description, sssiEligible and hfEligible from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true]
+      ['PA3', 'Woodland management plan', true, true]
+    )
+  })
+
+  test('passes null description when absent', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      description: null
+    })
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO actions'),
+      ['PA3', null, true, true]
+    )
+  })
+
+  test('uses COALESCE so null description does not overwrite existing', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+    )
+    expect(upsertCall[0]).toContain(
+      'COALESCE(EXCLUDED.description, actions.description)'
     )
   })
 
@@ -62,7 +86,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', false, false]
+      ['PA3', 'Woodland management plan', false, false]
     )
   })
 

@@ -55,6 +55,16 @@ describe('transformActionConfig', () => {
     expect(result.displayOrder).toBe(0)
   })
 
+  test('extracts description when present', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.description).toBe('Woodland management plan')
+  })
+
+  test('defaults description to null when absent', () => {
+    const result = transformActionConfig({ ...pa3Json, description: undefined })
+    expect(result.description).toBeNull()
+  })
+
   test('extracts sssiEligible and hfEligible when present', () => {
     const result = transformActionConfig({
       ...pa3Json,
