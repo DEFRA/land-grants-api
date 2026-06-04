@@ -75,6 +75,16 @@ describe('transformActionConfig', () => {
     expect(result.hfEligible).toBe(true)
   })
 
+  test('extracts groupId when present', () => {
+    const result = transformActionConfig({ ...pa3Json, groupId: 2 })
+    expect(result.groupId).toBe(2)
+  })
+
+  test('defaults groupId to null when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.groupId).toBeNull()
+  })
+
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({

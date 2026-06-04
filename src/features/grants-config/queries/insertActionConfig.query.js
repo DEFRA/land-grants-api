@@ -6,7 +6,7 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * then inserts the new row with is_active=TRUE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, sssiEligible: boolean, hfEligible: boolean }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, sssiEligible: boolean, hfEligible: boolean, groupId: number|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
@@ -18,7 +18,8 @@ async function insertActionConfig(logger, db, params) {
     patch,
     displayOrder,
     sssiEligible,
-    hfEligible
+    hfEligible,
+    groupId
   } = params
   let client
   try {
@@ -41,13 +42,13 @@ async function insertActionConfig(logger, db, params) {
 
     await client.query(
       `INSERT INTO actions_config
-         (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order)
+         (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id)
        VALUES (
          $1,
          (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
-         $2, TRUE, NOW(), $3, $4, $5, $6
+         $2, TRUE, NOW(), $3, $4, $5, $6, $7
        )`,
-      [code, JSON.stringify(config), major, minor, patch, displayOrder]
+      [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
     )
 
     await client.query('COMMIT')

@@ -13,7 +13,8 @@ describe('insertActionConfig', () => {
     patch: 0,
     displayOrder: 0,
     sssiEligible: true,
-    hfEligible: true
+    hfEligible: true,
+    groupId: null
   }
 
   beforeEach(() => {
@@ -65,6 +66,16 @@ describe('insertActionConfig', () => {
     )
   })
 
+  test('passes groupId to actions_config insert', async () => {
+    await insertActionConfig(mockLogger, mockDb, { ...params, groupId: 3 })
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
+    )
+    expect(insertCall[1][6]).toBe(3)
+  })
+
   test('updates sssi_eligible and hf_eligible on conflict', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
@@ -100,6 +111,7 @@ describe('insertActionConfig', () => {
     expect(insertParams[3]).toBe(0) // minor
     expect(insertParams[4]).toBe(0) // patch
     expect(insertParams[5]).toBe(0) // displayOrder
+    expect(insertParams[6]).toBeNull() // groupId
   })
 
   test('returns true on success', async () => {
