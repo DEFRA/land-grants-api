@@ -27,7 +27,10 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult(40)) // registered_parks_gardens
         .mockResolvedValueOnce(createMockResult(60)) // registered_battlefields
         .mockResolvedValueOnce(createMockResult(80)) // scheduled_monuments
-        .mockResolvedValueOnce(createMockResult(90)), // shine
+        .mockResolvedValueOnce(createMockResult(90)) // shine
+        .mockResolvedValueOnce(createMockResult(450)) // unique parcels
+        .mockResolvedValueOnce(createMockResult(900)) // unique covers
+        .mockResolvedValueOnce(createMockResult(15)), // duplicate covers
       release: vi.fn()
     }
 
@@ -50,7 +53,7 @@ describe('getStats', () => {
   test('should query all tables for counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(15)
+    expect(mockClient.query).toHaveBeenCalledTimes(18)
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM actions'
     )
@@ -96,6 +99,15 @@ describe('getStats', () => {
     expect(mockClient.query).toHaveBeenCalledWith(
       `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
     )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels'
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers'
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)'
+    )
   })
 
   test('should log stats with all counts', async () => {
@@ -127,6 +139,9 @@ describe('getStats', () => {
     expect(logMessage).toContain('registeredBattlefieldsCount=60')
     expect(logMessage).toContain('scheduledMonumentsCount=80')
     expect(logMessage).toContain('shineCount=90')
+    expect(logMessage).toContain('uniqueParcelsCount=450')
+    expect(logMessage).toContain('uniqueCoversCount=900')
+    expect(logMessage).toContain('duplicateCoversCount=15')
   })
 
   test('should release the client when done', async () => {

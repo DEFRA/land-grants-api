@@ -10,11 +10,10 @@ x-common-postgres: &common-postgres
   POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
 
 services:
-
   database-up:
     image: liquibase/liquibase:4.31-alpine
     profiles: [migrations]
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -31,7 +30,7 @@ services:
   database-down:
     image: liquibase/liquibase:4.31-alpine
     profiles: [migrations]
-    restart: "no"
+    restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
     entrypoint: >
@@ -52,7 +51,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -65,11 +64,14 @@ services:
     build:
       context: .
       target: development
-    command: ["npm", "run", "dev"]
+    command: ['npm', 'run', 'dev']
     environment:
       <<: *common-postgres
       PORT: 3001
       POSTGRES_HOST: land-grants-backend-postgres
+      GRANTS_CONFIG_QUEUE_URL: http://floci:4566/000000000000/grants_config_broker_update
+      GRANTS_CONFIG_BUCKET: configs-bucket
+      SQS_ENDPOINT: http://floci:4566
     volumes:
       - ./src:/home/node/src
       - node_deps:/home/node/node_modules
@@ -87,10 +89,16 @@ services:
       FLOCI_DEFAULT_REGION: eu-west-2
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - 4566:4566
     tmpfs:
       - /app/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -s --connect-timeout 3 http://localhost:4566 > /dev/null 2>&1 || exit 1"]
+      test:
+        [
+          'CMD-SHELL',
+          'curl -s --connect-timeout 3 http://localhost:4566 > /dev/null 2>&1 || exit 1'
+        ]
       interval: 5s
       timeout: 5s
       retries: 20

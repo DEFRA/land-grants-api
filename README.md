@@ -147,6 +147,99 @@ If you would like to run the ingestion process end to end using AWS S3, you can 
 npm run docker:localstack:up
 ```
 
+#### Testing the grants-config-broker SQS integration
+
+Section on how to locally test the end-to-end flow:
+`grants-config-broker` → SNS → SQS → `land-grants-api`
+
+##### Prerequisites
+
+AWS CLI must be installed. Set these env vars once per terminal session to avoid passing credentials on every command:
+
+```bash
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_REGION=eu-west-2
+export AWS_ENDPOINT_URL=http://localhost:4566
+```
+
+##### 1. Start the land-grants-api stack
+
+```bash
+
+# Run the setup script
+npm run dev:setup
+
+# Start the API
+npm run dev
+```
+
+##### 2. Start the grants-config-broker and its mongodb
+
+The script below will also prepare the grants-config-broker config directory
+
+**Note:**
+The idempotency check will skip versions already present in the DB.
+To exercise the insert path, bump the land_grants_config_version and `land_action_semantic_version` parameters.
+
+```bash
+./scripts/start-config-broker.sh {land_grants_config_version} {land_action_semantic_version}
+
+Example:
+./scripts/start-config-broker.sh 0.0.6 1.4.0
+```
+
+##### Useful AWS CLI commands
+
+**List SQS queues:**
+
+```bash
+aws sqs list-queues
+```
+
+**Peek at messages in the queue without consuming them:**
+
+```bash
+aws sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/grants_config_broker_update \
+  --attribute-names All \
+  --message-attribute-names All
+```
+
+**List all files in configs-bucket:**
+
+```bash
+aws s3 ls s3://configs-bucket --recursive
+```
+
+**Inspect a config file directly from S3:**
+
+```bash
+aws s3 cp s3://configs-bucket/land-grants/0.0.3/actions/PA3/pa3-1.0.1.json -
+```
+
+**Manually publish an SNS message** (useful when re-testing without restarting the broker — the broker will not re-deploy a version it has already recorded in MongoDB):
+
+```bash
+aws sns publish \
+  --topic-arn arn:aws:sns:eu-west-2:000000000000:gfr__sns___config_update \
+  --message '["land-grants/0.0.3/actions/PA3/pa3-1.0.1.json","land-grants/0.0.3/metadata.json"]' \
+  --message-attributes '{
+    "grant":   {"DataType":"String","StringValue":"land-grants"},
+    "version": {"DataType":"String","StringValue":"0.0.3"},
+    "status":  {"DataType":"String","StringValue":"active"},
+    "path":    {"DataType":"String","StringValue":"s3://configs-bucket"}
+  }'
+```
+
+**Verify the DB row was inserted or updated:**
+
+```bash
+docker exec -it land-grants-api-land-grants-backend-postgres-1 psql \
+  -U land_grants_api -d land_grants_api \
+  -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code = 'PA3' ORDER BY id;"
+```
+
 #### Local data
 
 There is a script to ingest data files for local development: (./scripts/ingest-land-data-local.js)
