@@ -6,7 +6,7 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * then inserts the new row with is_active=TRUE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, sssiEligible: boolean, hfEligible: boolean, groupId: number|null }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
@@ -17,6 +17,7 @@ async function insertActionConfig(logger, db, params) {
     minor,
     patch,
     displayOrder,
+    description,
     sssiEligible,
     hfEligible,
     groupId
@@ -27,12 +28,13 @@ async function insertActionConfig(logger, db, params) {
     await client.query('BEGIN')
 
     await client.query(
-      `INSERT INTO actions (code, enabled, display, sssi_eligible, hf_eligible)
-       VALUES ($1, TRUE, TRUE, $2, $3)
+      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible)
+       VALUES ($1, TRUE, TRUE, $2, $3, $4)
        ON CONFLICT (code) DO UPDATE SET
+         description = COALESCE(EXCLUDED.description, actions.description),
          sssi_eligible = EXCLUDED.sssi_eligible,
          hf_eligible = EXCLUDED.hf_eligible`,
-      [code, sssiEligible, hfEligible]
+      [code, description, sssiEligible, hfEligible]
     )
 
     await client.query(

@@ -25,6 +25,7 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     minor,
     patch,
     displayOrder,
+    description,
     sssiEligible,
     hfEligible,
     groupId,
@@ -62,6 +63,7 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     minor,
     patch,
     displayOrder,
+    description,
     sssiEligible,
     hfEligible,
     groupId
