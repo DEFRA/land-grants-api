@@ -210,6 +210,12 @@ describe('transformActionConfig', () => {
         transformActionConfig({ ...pa3Json, payment: null })
       ).not.toThrow()
     })
+
+    test('does not throw when groupId is null', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, groupId: null })
+      ).not.toThrow()
+    })
   })
 
   test('config does not include top-level action metadata fields', () => {
