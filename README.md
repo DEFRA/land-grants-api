@@ -149,47 +149,63 @@ npm run docker:localstack:up
 
 #### Testing the grants-config-broker SQS integration
 
-Section on how to locally test the end-to-end flow:
-`grants-config-broker` → SNS → SQS → `land-grants-api`
+End-to-end local test flow: `grants-config-broker` → SNS → SQS → `land-grants-api`
 
 ##### Prerequisites
 
-AWS CLI must be installed. Set these env vars once per terminal session to avoid passing credentials on every command:
-
-```bash
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_REGION=eu-west-2
-export AWS_ENDPOINT_URL=http://localhost:4566
-```
+- AWS CLI installed
+- `../grants-config-broker` and `../land-grants-config` checked out as siblings of this repo
 
 ##### 1. Start the land-grants-api stack
 
 ```bash
-
-# Run the setup script
 npm run dev:setup
-
-# Start the API
 npm run dev
 ```
 
-##### 2. Start the grants-config-broker and its mongodb
+##### 2. Run the config-broker helper script
 
-The script below will also prepare the grants-config-broker config directory
-
-**Note:**
-The idempotency check will skip versions already present in the DB.
-To exercise the insert path, bump the land_grants_config_version and `land_action_semantic_version` parameters.
+`scripts/start-config-broker.sh` manages the broker's config directory and starts the service. Run with `--help` to see all options:
 
 ```bash
-./scripts/start-config-broker.sh {land_grants_config_version} {land_action_semantic_version}
+./scripts/start-config-broker.sh --help
+```
 
-Example:
-./scripts/start-config-broker.sh 0.0.6 1.4.0
+###### Subcommands
+
+| Subcommand                   | Description                                                                          |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| _(no args)_                  | Start the broker with no config changes (useful for a restart)                       |
+| `add <version> <sem-ver>`    | Create a synthetic **TEST01** action config and start the broker                     |
+| `update <version> <sem-ver>` | Copy PA3 from `land-grants-config`, set a new semantic version, and start the broker |
+| `inspect`                    | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit       |
+
+> **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
+
+###### Examples
+
+```bash
+# Publish a brand-new action code (TEST01) and start the broker
+./scripts/start-config-broker.sh add 0.0.5 1.0.0
+
+# Republish PA3 with a new semantic version and start the broker
+./scripts/start-config-broker.sh update 0.0.6 2.0.0
+
+# Restart the broker without touching config (previous run's files still in place)
+./scripts/start-config-broker.sh
+
+# Check what landed in LocalStack and the DB
+./scripts/start-config-broker.sh inspect
 ```
 
 ##### Useful AWS CLI commands
+
+> The script exports LocalStack credentials automatically. If you run these commands in a separate terminal, set them first:
+>
+> ```bash
+> export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+>        AWS_REGION=eu-west-2 AWS_ENDPOINT_URL=http://localhost:4566
+> ```
 
 **List SQS queues:**
 
@@ -215,7 +231,7 @@ aws s3 ls s3://configs-bucket --recursive
 **Inspect a config file directly from S3:**
 
 ```bash
-aws s3 cp s3://configs-bucket/land-grants/0.0.3/actions/PA3/pa3-1.0.1.json -
+aws s3 cp s3://configs-bucket/land-grants/0.0.5/actions/PA3/pa3-2.0.0.json -
 ```
 
 **Manually publish an SNS message** (useful when re-testing without restarting the broker — the broker will not re-deploy a version it has already recorded in MongoDB):
@@ -223,21 +239,21 @@ aws s3 cp s3://configs-bucket/land-grants/0.0.3/actions/PA3/pa3-1.0.1.json -
 ```bash
 aws sns publish \
   --topic-arn arn:aws:sns:eu-west-2:000000000000:gfr__sns___config_update \
-  --message '["land-grants/0.0.3/actions/PA3/pa3-1.0.1.json","land-grants/0.0.3/metadata.json"]' \
+  --message '["land-grants/0.0.5/actions/PA3/pa3-2.0.0.json","land-grants/0.0.5/metadata.json"]' \
   --message-attributes '{
     "grant":   {"DataType":"String","StringValue":"land-grants"},
-    "version": {"DataType":"String","StringValue":"0.0.3"},
+    "version": {"DataType":"String","StringValue":"0.0.5"},
     "status":  {"DataType":"String","StringValue":"active"},
     "path":    {"DataType":"String","StringValue":"s3://configs-bucket"}
   }'
 ```
 
-**Verify the DB row was inserted or updated:**
+**Verify DB rows were inserted or updated:**
 
 ```bash
 docker exec -it land-grants-api-land-grants-backend-postgres-1 psql \
   -U land_grants_api -d land_grants_api \
-  -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code = 'PA3' ORDER BY id;"
+  -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code IN ('PA3','TEST01') ORDER BY code, id;"
 ```
 
 #### Local data
