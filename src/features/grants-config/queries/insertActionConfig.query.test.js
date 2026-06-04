@@ -40,7 +40,7 @@ describe('insertActionConfig', () => {
     )
     expect(calls[0]).toBe('BEGIN')
     expect(calls[1]).toContain('INSERT INTO actions')
-    expect(calls[2]).toContain('UPDATE actions_config SET is_active = FALSE')
+    expect(calls[2]).toContain('UPDATE actions_config')
     expect(calls[3]).toContain('INSERT INTO actions_config')
     expect(calls[4]).toBe('COMMIT')
   })
@@ -111,12 +111,29 @@ describe('insertActionConfig', () => {
     expect(upsertCall[0]).toContain('hf_eligible = EXCLUDED.hf_eligible')
   })
 
-  test('deactivates existing active config for the same code', async () => {
+  test('deactivates existing active config only when new version is higher', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'UPDATE actions_config SET is_active = FALSE WHERE code = $1 AND is_active = TRUE',
-      ['PA3']
+    const updateCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('UPDATE actions_config')
+    )
+    expect(updateCall).toBeDefined()
+    // WHERE clause guards on major/minor/patch so a lower version never deactivates the active row
+    expect(updateCall[0]).toContain('major_version')
+    expect(updateCall[0]).toContain('minor_version')
+    expect(updateCall[0]).toContain('patch_version')
+    expect(updateCall[1]).toEqual(['PA3', 1, 0, 0])
+  })
+
+  test('inserts new row with is_active derived from NOT EXISTS subquery', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
+    )
+    expect(insertCall[0]).toContain(
+      'NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE)'
     )
   })
 
