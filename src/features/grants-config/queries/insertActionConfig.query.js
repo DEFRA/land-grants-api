@@ -2,8 +2,9 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
 
 /**
  * Insert a new action config version into the DB.
- * Wraps in a transaction: deactivates the existing active row first,
- * then inserts the new row with is_active=TRUE.
+ * Wraps in a transaction: deactivates the existing active row only when the
+ * new semantic version is strictly higher, then inserts the new row.
+ * is_active on the new row is TRUE only if no active row remains after the UPDATE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
  * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null }} params
@@ -38,8 +39,16 @@ async function insertActionConfig(logger, db, params) {
     )
 
     await client.query(
-      'UPDATE actions_config SET is_active = FALSE WHERE code = $1 AND is_active = TRUE',
-      [code]
+      `UPDATE actions_config
+       SET is_active = FALSE
+       WHERE code = $1
+         AND is_active = TRUE
+         AND (
+           $2 > major_version
+           OR ($2 = major_version AND $3 > minor_version)
+           OR ($2 = major_version AND $3 = minor_version AND $4 > patch_version)
+         )`,
+      [code, major, minor, patch]
     )
 
     await client.query(
@@ -48,7 +57,9 @@ async function insertActionConfig(logger, db, params) {
        VALUES (
          $1,
          (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
-         $2, TRUE, NOW(), $3, $4, $5, $6, $7
+         $2,
+         NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE),
+         NOW(), $3, $4, $5, $6, $7
        )`,
       [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
     )
