@@ -55,6 +55,46 @@ describe('transformActionConfig', () => {
     expect(result.displayOrder).toBe(0)
   })
 
+  test('extracts description when present', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.description).toBe('Woodland management plan')
+  })
+
+  test('defaults description to null when absent', () => {
+    const result = transformActionConfig({ ...pa3Json, description: undefined })
+    expect(result.description).toBeNull()
+  })
+
+  test('extracts sssiEligible and hfEligible when present', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      sssiEligible: false,
+      hfEligible: false
+    })
+    expect(result.sssiEligible).toBe(false)
+    expect(result.hfEligible).toBe(false)
+  })
+
+  test('defaults sssiEligible to true when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.sssiEligible).toBe(true)
+  })
+
+  test('defaults hfEligible to true when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.hfEligible).toBe(true)
+  })
+
+  test('extracts groupId when present', () => {
+    const result = transformActionConfig({ ...pa3Json, groupId: 2 })
+    expect(result.groupId).toBe(2)
+  })
+
+  test('defaults groupId to null when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.groupId).toBeNull()
+  })
+
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({
