@@ -29,6 +29,8 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     sssiEligible,
     hfEligible,
     groupId,
+    enabled,
+    display,
     config
   } = transformActionConfig(json)
 
@@ -66,7 +68,9 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     description,
     sssiEligible,
     hfEligible,
-    groupId
+    groupId,
+    enabled,
+    display
   })
 
   if (!inserted) {

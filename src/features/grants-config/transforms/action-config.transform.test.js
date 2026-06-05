@@ -95,6 +95,26 @@ describe('transformActionConfig', () => {
     expect(result.groupId).toBeNull()
   })
 
+  test('extracts enabled from input', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.enabled).toBe(true)
+  })
+
+  test('extracts display from input, including false', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.display).toBe(false)
+  })
+
+  test('defaults enabled to true when absent', () => {
+    const result = transformActionConfig({ ...pa3Json, enabled: undefined })
+    expect(result.enabled).toBe(true)
+  })
+
+  test('defaults display to true when absent', () => {
+    const result = transformActionConfig({ ...pa3Json, display: undefined })
+    expect(result.display).toBe(true)
+  })
+
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({
