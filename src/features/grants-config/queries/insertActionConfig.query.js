@@ -29,12 +29,13 @@ async function insertActionConfig(logger, db, params) {
     await client.query('BEGIN')
 
     await client.query(
-      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible)
-       VALUES ($1, TRUE, TRUE, $2, $3, $4)
+      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, last_updated)
+       VALUES ($1, TRUE, TRUE, $2, $3, $4, NOW())
        ON CONFLICT (code) DO UPDATE SET
          description = COALESCE(EXCLUDED.description, actions.description),
          enabled = EXCLUDED.enabled,
-         display = EXCLUDED.display`,
+         display = EXCLUDED.display,
+         last_updated = NOW()`,
       [code, description, sssiEligible, hfEligible]
     )
 

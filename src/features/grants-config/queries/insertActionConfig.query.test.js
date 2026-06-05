@@ -123,6 +123,17 @@ describe('insertActionConfig', () => {
     expect(upsertCall[0]).toContain('display = EXCLUDED.display')
   })
 
+  test('sets last_updated to NOW() on insert and updates it on conflict', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+    )
+    expect(upsertCall[0]).toContain('last_updated')
+    expect(upsertCall[0]).toContain('NOW()')
+    expect(upsertCall[0]).toContain('last_updated = NOW()')
+  })
+
   test('deactivates existing active config only when new version is higher', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
