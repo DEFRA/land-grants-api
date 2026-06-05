@@ -32,9 +32,7 @@ async function insertActionConfig(logger, db, params) {
       `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible)
        VALUES ($1, TRUE, TRUE, $2, $3, $4)
        ON CONFLICT (code) DO UPDATE SET
-         description = COALESCE(EXCLUDED.description, actions.description),
-         sssi_eligible = EXCLUDED.sssi_eligible,
-         hf_eligible = EXCLUDED.hf_eligible`,
+         description = COALESCE(EXCLUDED.description, actions.description)`,
       [code, description, sssiEligible, hfEligible]
     )
 

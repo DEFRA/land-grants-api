@@ -100,15 +100,17 @@ describe('insertActionConfig', () => {
     expect(insertCall[1][6]).toBe(3)
   })
 
-  test('updates sssi_eligible and hf_eligible on conflict', async () => {
+  test('does not update sssi_eligible or hf_eligible on conflict', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     const upsertCall = mockClient.query.mock.calls.find(
       (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
     )
     expect(upsertCall[0]).toContain('ON CONFLICT')
-    expect(upsertCall[0]).toContain('sssi_eligible = EXCLUDED.sssi_eligible')
-    expect(upsertCall[0]).toContain('hf_eligible = EXCLUDED.hf_eligible')
+    expect(upsertCall[0]).not.toContain(
+      'sssi_eligible = EXCLUDED.sssi_eligible'
+    )
+    expect(upsertCall[0]).not.toContain('hf_eligible = EXCLUDED.hf_eligible')
   })
 
   test('deactivates existing active config only when new version is higher', async () => {
