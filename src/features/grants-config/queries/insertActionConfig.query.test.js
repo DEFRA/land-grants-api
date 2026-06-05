@@ -15,7 +15,9 @@ describe('insertActionConfig', () => {
     description: 'Woodland management plan',
     sssiEligible: true,
     hfEligible: true,
-    groupId: null
+    groupId: null,
+    enabled: true,
+    display: true
   }
 
   beforeEach(() => {
@@ -45,12 +47,12 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with description, sssiEligible and hfEligible from params', async () => {
+  test('upserts action with enabled, display, description, sssiEligible and hfEligible from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', 'Woodland management plan', true, true]
+      ['PA3', true, true, 'Woodland management plan', true, true]
     )
   })
 
@@ -62,7 +64,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', null, true, true]
+      ['PA3', true, true, null, true, true]
     )
   })
 
@@ -86,7 +88,20 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', 'Woodland management plan', false, false]
+      ['PA3', true, true, 'Woodland management plan', false, false]
+    )
+  })
+
+  test('passes enabled and display from params, not hardcoded TRUE', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      enabled: false,
+      display: false
+    })
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO actions'),
+      ['PA3', false, false, 'Woodland management plan', true, true]
     )
   })
 
