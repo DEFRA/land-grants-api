@@ -14,5 +14,7 @@ export const actionConfigInputSchema = Joi.object({
   description: Joi.string().optional(),
   sssiEligible: Joi.boolean().optional(),
   hfEligible: Joi.boolean().optional(),
-  groupId: Joi.number().integer().allow(null).optional()
+  groupId: Joi.number().integer().allow(null).optional(),
+  enabled: Joi.boolean().optional(),
+  display: Joi.boolean().optional()
 }).options({ allowUnknown: true })
