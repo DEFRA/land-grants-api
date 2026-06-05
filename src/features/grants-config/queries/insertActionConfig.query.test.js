@@ -113,6 +113,16 @@ describe('insertActionConfig', () => {
     expect(upsertCall[0]).not.toContain('hf_eligible = EXCLUDED.hf_eligible')
   })
 
+  test('updates enabled and display on conflict', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+    )
+    expect(upsertCall[0]).toContain('enabled = EXCLUDED.enabled')
+    expect(upsertCall[0]).toContain('display = EXCLUDED.display')
+  })
+
   test('deactivates existing active config only when new version is higher', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
