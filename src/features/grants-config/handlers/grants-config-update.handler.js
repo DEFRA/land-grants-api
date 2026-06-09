@@ -2,7 +2,8 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 
 /**
  * Process a single SQS message from the grants_config_broker_update queue.
- * Handles both SNS-wrapped messages (production) and raw messages (local testing).
+ * Messages are always SNS-wrapped (Type=Notification) with the manifest in body.Message
+ * and grant/status in body.MessageAttributes.
  * @param {import('@aws-sdk/client-sqs').Message} message - SQS message
  * @param {import('@aws-sdk/client-s3').S3Client} s3Client
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
@@ -18,20 +19,9 @@ async function processMessage(message, s3Client, db, logger, options) {
   }
 
   const body = JSON.parse(message.Body)
-
-  let manifest
-  let status
-  let grant
-
-  if (body.Type === 'Notification' && body.Message) {
-    manifest = JSON.parse(body.Message)
-    status = body.MessageAttributes?.status?.Value
-    grant = body.MessageAttributes?.grant?.Value
-  } else {
-    manifest = body.manifest ?? []
-    status = body.status
-    grant = body.grant
-  }
+  const manifest = JSON.parse(body.Message)
+  const status = body.MessageAttributes?.status?.Value
+  const grant = body.MessageAttributes?.grant?.Value
 
   if (grant !== 'land-grants') {
     logger.info(

@@ -151,7 +151,6 @@ case "${1:-}" in
   "applicationUnitOfMeasurement": "ha",
   "durationYears": 3,
   "payment": null,
-  "paymentMethod": null,
   "landCoverClassCodes": [],
   "rules": [],
   "sssiEligible": true,
