@@ -13,21 +13,22 @@
       <column name="id" type="SERIAL" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
-      <column name="metadata" type="JSONB"/>
-      <column name="start_date" type="DATE"/>
+      <column name="entity" type="TEXT"/>
+      <column name="status" type="TEXT"/>
+      <column name="start_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
       <column name="completed_date" type="DATE"/>
     </createTable>
    </changeSet>
 
-      <changeSet id="create-ingest-files-table" author="system">
+   <changeSet id="create-ingest-files-table" author="system">
      <createTable tableName="ingest_files" schemaName="public">
       <column name="id" type="SERIAL" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="ingest_id" type="INT"/>
-      <column name="resource_type" type="TEXT"/>
-      <column name="file_name" type="TEXT"/>
-      <column name="expected_rows" INT="NUMERIC"/>
+      <column name="filename" type="TEXT"/>
+      <column name="total_rows" type="NUMERIC"/>
+      <column name="status" type="TEXT"/>
     </createTable>
    </changeSet>
 
