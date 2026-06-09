@@ -130,8 +130,8 @@ describe('start ingest service', () => {
       const entity = 'test_entity'
       const data = {
         files: [
-          { filename: 'test_file_1', row_count: 123 },
-          { filename: 'test_file_2', row_count: 456 }
+          { filename: 'test_file_1', rows: 123 },
+          { filename: 'test_file_2', rows: 456 }
         ]
       }
       // UPDATE ingest (cancel in progress)

@@ -41,8 +41,8 @@ describe('StartIngestController', () => {
   describe('POST /ingest/{entity}/start', () => {
     const validPayload = {
       files: [
-        { filename: 'test_file_1.csv', row_count: 123 },
-        { filename: 'test_file_2.csv', row_count: 456 }
+        { filename: 'test_file_1.csv', rows: 123 },
+        { filename: 'test_file_2.csv', rows: 456 }
       ]
     }
 
@@ -58,7 +58,7 @@ describe('StartIngestController', () => {
       const { statusCode, result } = await server.inject(request)
 
       expect(statusCode).toBe(200)
-      expect(result).toEqual({ ingest_id: 999 })
+      expect(result).toEqual({ ingestId: 999 })
       expect(saveIngestStart).toHaveBeenCalledWith(
         validPayload,
         'agreements',
@@ -98,7 +98,7 @@ describe('StartIngestController', () => {
         method: 'POST',
         url: '/ingest/agreements/start',
         payload: {
-          files: [{ row_count: 123 }]
+          files: [{ rows: 123 }]
         }
       }
 
@@ -108,7 +108,7 @@ describe('StartIngestController', () => {
       expect(saveIngestStart).not.toHaveBeenCalled()
     })
 
-    test('should return 400 when row_count in payload is missing', async () => {
+    test('should return 400 when rows in payload is missing', async () => {
       const request = {
         method: 'POST',
         url: '/ingest/agreements/start',
