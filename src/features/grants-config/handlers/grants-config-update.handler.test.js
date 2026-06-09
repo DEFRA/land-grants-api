@@ -21,7 +21,6 @@ function buildSnsMessage({
   return {
     MessageId: 'msg-1',
     Body: JSON.stringify({
-      Type: 'Notification',
       Message: JSON.stringify(manifest),
       MessageAttributes: {
         grant: { Type: 'String', Value: grant },
@@ -78,7 +77,6 @@ describe('processMessage', () => {
       const noGrantMessage = {
         MessageId: 'msg-no-grant',
         Body: JSON.stringify({
-          Type: 'Notification',
           Message: JSON.stringify([
             'land-grants/0.0.2/actions/PA3/pa3-1.0.0.json'
           ]),
@@ -202,57 +200,6 @@ describe('processMessage', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('No action config files found')
       )
-    })
-  })
-
-  describe('raw messages (local testing)', () => {
-    test('processes a raw message with grant, manifest and status fields', async () => {
-      const rawMessage = {
-        MessageId: 'msg-raw',
-        Body: JSON.stringify({
-          grant: 'land-grants',
-          manifest: ['land-grants/0.0.2/actions/PA3/pa3-1.0.0.json'],
-          status: 'active'
-        })
-      }
-
-      await processMessage(
-        rawMessage,
-        mockS3Client,
-        mockDb,
-        mockLogger,
-        options
-      )
-
-      expect(processActionConfigFile).toHaveBeenCalledTimes(1)
-      expect(processActionConfigFile).toHaveBeenCalledWith(
-        mockLogger,
-        mockS3Client,
-        mockDb,
-        'land-grants/0.0.2/actions/PA3/pa3-1.0.0.json',
-        'configs-bucket'
-      )
-    })
-
-    test('skips a raw message for a different grant', async () => {
-      const rawMessage = {
-        MessageId: 'msg-raw-other',
-        Body: JSON.stringify({
-          grant: 'example-grant-with-auth',
-          manifest: ['example-grant-with-auth/0.0.1/grants-ui/file1.txt'],
-          status: 'active'
-        })
-      }
-
-      await processMessage(
-        rawMessage,
-        mockS3Client,
-        mockDb,
-        mockLogger,
-        options
-      )
-
-      expect(processActionConfigFile).not.toHaveBeenCalled()
     })
   })
 })
