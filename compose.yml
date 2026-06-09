@@ -72,6 +72,7 @@ services:
       GRANTS_CONFIG_QUEUE_URL: http://floci:4566/000000000000/grants_config_broker_update
       GRANTS_CONFIG_BUCKET: configs-bucket
       SQS_ENDPOINT: http://floci:4566
+      S3_ENDPOINT: http://floci:4566
     volumes:
       - ./src:/home/node/src
       - node_deps:/home/node/node_modules
