@@ -202,5 +202,4 @@ describe('processMessage', () => {
       )
     })
   })
-
 })
