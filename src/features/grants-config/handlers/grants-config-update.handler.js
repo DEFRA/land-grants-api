@@ -2,9 +2,7 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 
 /**
  * Process a single SQS message from the grants_config_broker_update queue.
- * Supports two delivery formats:
- *  - SNS-wrapped (standard delivery): body is a notification envelope with Message + MessageAttributes
- *  - Raw delivery: body is the manifest array directly; attributes are on message.MessageAttributes
+ * Messages arrive via SNS raw delivery: body is the manifest array, attributes on message.MessageAttributes.
  * @param {import('@aws-sdk/client-sqs').Message} message - SQS message
  * @param {import('@aws-sdk/client-s3').S3Client} s3Client
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
@@ -23,23 +21,10 @@ async function processMessage(message, s3Client, db, logger, options) {
     throw new Error(`SQS message ${message.MessageId} has no body`)
   }
 
-  const body = JSON.parse(message.Body)
-
-  let manifest, grant, status, version
-
-  if (Array.isArray(body)) {
-    // Raw delivery: body is the manifest array; attributes are on the SQS message envelope
-    manifest = body
-    grant = message.MessageAttributes?.grant?.StringValue
-    status = message.MessageAttributes?.status?.StringValue
-    version = message.MessageAttributes?.version?.StringValue
-  } else {
-    // SNS-wrapped delivery: body is the notification envelope
-    manifest = JSON.parse(body.Message)
-    grant = body.MessageAttributes?.grant?.Value
-    status = body.MessageAttributes?.status?.Value
-    version = body.MessageAttributes?.version?.Value
-  }
+  const manifest = JSON.parse(message.Body)
+  const grant = message.MessageAttributes?.grant?.StringValue
+  const status = message.MessageAttributes?.status?.StringValue
+  const version = message.MessageAttributes?.version?.StringValue
 
   if (grant !== 'land-grants') {
     logger.info(

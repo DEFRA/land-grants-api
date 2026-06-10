@@ -28,9 +28,10 @@ echo "Creating grants-config-broker SNS topic"
 aws sns create-topic --name gfr__sns___config_update
 echo "Created SNS topic: gfr__sns___config_update"
 
-echo "Subscribing SQS queue to SNS topic"
+echo "Subscribing SQS queue to SNS topic (raw delivery)"
 aws sns subscribe \
   --topic-arn arn:aws:sns:${AWS_REGION}:000000000000:gfr__sns___config_update \
   --protocol sqs \
+  --attributes RawMessageDelivery=true \
   --notification-endpoint arn:aws:sqs:${AWS_REGION}:000000000000:grants_config_broker_update
 echo "Subscribed grants_config_broker_update to gfr__sns___config_update"
