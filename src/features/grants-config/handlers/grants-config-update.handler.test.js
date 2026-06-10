@@ -5,8 +5,8 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 vi.mock('~/src/features/grants-config/service/grants-config.service.js')
 
 /**
- * Builds an SNS-wrapped SQS message body matching the shape produced by
- * grants-config-broker's publishMessage(manifest, { grant, path, version, status }).
+ * Builds an SNS-wrapped SQS message (standard SNS delivery, no RawMessageDelivery).
+ * Body is the SNS notification envelope; attributes use { Type, Value } shape.
  */
 function buildSnsMessage({
   grant = 'land-grants',
@@ -29,6 +29,32 @@ function buildSnsMessage({
         path: { Type: 'String', Value: path }
       }
     })
+  }
+}
+
+/**
+ * Builds a raw-delivery SQS message (RawMessageDelivery=true on the SNS subscription).
+ * Body is the manifest array directly; attributes are on the SQS envelope with { DataType, StringValue }.
+ */
+function buildDirectMessage({
+  grant = 'land-grants',
+  version = '1.2.3',
+  status = 'active',
+  path = 'cdp-grants-config-broker-dev',
+  manifest = [
+    'land-grants/1.2.3/actions/PA3/pa3-2.0.0.json',
+    'land-grants/1.2.3/metadata.json'
+  ]
+} = {}) {
+  return {
+    MessageId: 'msg-direct-1',
+    Body: JSON.stringify(manifest),
+    MessageAttributes: {
+      grant: { DataType: 'String', StringValue: grant },
+      version: { DataType: 'String', StringValue: version },
+      status: { DataType: 'String', StringValue: status },
+      path: { DataType: 'String', StringValue: path }
+    }
   }
 }
 
@@ -201,5 +227,97 @@ describe('processMessage', () => {
         expect.stringContaining('No action config files found')
       )
     })
+  })
+})
+
+describe('processMessage — raw SQS delivery (RawMessageDelivery=true)', () => {
+  let mockLogger
+  let mockS3Client
+  let mockDb
+  const options = { grantsConfigBucket: 'configs-bucket' }
+
+  beforeEach(() => {
+    mockLogger = { info: vi.fn(), error: vi.fn() }
+    mockS3Client = {}
+    mockDb = {}
+    processActionConfigFile.mockResolvedValue(undefined)
+  })
+
+  test('processes an action file from a direct message', async () => {
+    await processMessage(
+      buildDirectMessage(),
+      mockS3Client,
+      mockDb,
+      mockLogger,
+      options
+    )
+
+    expect(processActionConfigFile).toHaveBeenCalledTimes(1)
+    expect(processActionConfigFile).toHaveBeenCalledWith(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      'land-grants/1.2.3/actions/PA3/pa3-2.0.0.json',
+      'configs-bucket'
+    )
+  })
+
+  test('logs the version from message attributes', async () => {
+    await processMessage(
+      buildDirectMessage({ version: '1.2.3' }),
+      mockS3Client,
+      mockDb,
+      mockLogger,
+      options
+    )
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.stringContaining('version="1.2.3"')
+    )
+  })
+
+  test('skips a message for a different grant', async () => {
+    await processMessage(
+      buildDirectMessage({ grant: 'other-grant' }),
+      mockS3Client,
+      mockDb,
+      mockLogger,
+      options
+    )
+
+    expect(processActionConfigFile).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.stringContaining('grant="other-grant"')
+    )
+  })
+
+  test('skips a message with status "draft"', async () => {
+    await processMessage(
+      buildDirectMessage({ status: 'draft' }),
+      mockS3Client,
+      mockDb,
+      mockLogger,
+      options
+    )
+
+    expect(processActionConfigFile).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.stringContaining('status="draft"')
+    )
+  })
+
+  test('does nothing when the manifest has no action files', async () => {
+    await processMessage(
+      buildDirectMessage({ manifest: ['land-grants/1.2.3/metadata.json'] }),
+      mockS3Client,
+      mockDb,
+      mockLogger,
+      options
+    )
+
+    expect(processActionConfigFile).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.stringContaining('No action config files found')
+    )
   })
 })

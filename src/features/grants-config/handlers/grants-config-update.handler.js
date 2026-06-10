@@ -2,8 +2,9 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 
 /**
  * Process a single SQS message from the grants_config_broker_update queue.
- * Messages are always SNS-wrapped (Type=Notification) with the manifest in body.Message
- * and grant/status in body.MessageAttributes.
+ * Supports two delivery formats:
+ *  - SNS-wrapped (standard delivery): body is a notification envelope with Message + MessageAttributes
+ *  - Raw delivery: body is the manifest array directly; attributes are on message.MessageAttributes
  * @param {import('@aws-sdk/client-sqs').Message} message - SQS message
  * @param {import('@aws-sdk/client-s3').S3Client} s3Client
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
@@ -14,30 +15,42 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 async function processMessage(message, s3Client, db, logger, options) {
   const { grantsConfigBucket } = options
 
-  logger.info({
-    msg: 'Received SQS grants-config-broker message',
-    message: JSON.parse(JSON.stringify(message, null, 2))
-  })
+  logger.info(
+    `Received SQS grants-config-broker message: ${JSON.stringify(message, null, 2)}`
+  )
 
   if (!message.Body) {
     throw new Error(`SQS message ${message.MessageId} has no body`)
   }
 
   const body = JSON.parse(message.Body)
-  const manifest = JSON.parse(body.Message)
-  const status = body.MessageAttributes?.status?.Value
-  const grant = body.MessageAttributes?.grant?.Value
+
+  let manifest, grant, status, version
+
+  if (Array.isArray(body)) {
+    // Raw delivery: body is the manifest array; attributes are on the SQS message envelope
+    manifest = body
+    grant = message.MessageAttributes?.grant?.StringValue
+    status = message.MessageAttributes?.status?.StringValue
+    version = message.MessageAttributes?.version?.StringValue
+  } else {
+    // SNS-wrapped delivery: body is the notification envelope
+    manifest = JSON.parse(body.Message)
+    grant = body.MessageAttributes?.grant?.Value
+    status = body.MessageAttributes?.status?.Value
+    version = body.MessageAttributes?.version?.Value
+  }
 
   if (grant !== 'land-grants') {
     logger.info(
-      `Skipping grants-config message for grant="${grant}" (only "land-grants" is processed)`
+      `Skipping grants-config message for grant="${grant}" version="${version}" (only "land-grants" is processed)`
     )
     return
   }
 
   if (status !== 'active') {
     logger.info(
-      `Skipping grants-config message with status="${status}" (only "active" is processed)`
+      `Skipping grants-config message with status="${status}" grant="${grant}" version="${version}" (only "active" is processed)`
     )
     return
   }
@@ -45,9 +58,15 @@ async function processMessage(message, s3Client, db, logger, options) {
   const actionKeys = manifest.filter((key) => key.includes('/actions/'))
 
   if (actionKeys.length === 0) {
-    logger.info('No action config files found in manifest — nothing to process')
+    logger.info(
+      `No action config files found in manifest for grant="${grant}" version="${version}" — nothing to process`
+    )
     return
   }
+
+  logger.info(
+    `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s))`
+  )
 
   for (const key of actionKeys) {
     await processActionConfigFile(logger, s3Client, db, key, grantsConfigBucket)
