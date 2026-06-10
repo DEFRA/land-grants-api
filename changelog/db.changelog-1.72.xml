@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+   <changeSet id="create-ingest-table" author="system">
+     <createTable tableName="ingest" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="entity" type="TEXT"/>
+      <column name="status" type="TEXT"/>
+      <column name="start_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="completed_date" type="DATE"/>
+    </createTable>
+   </changeSet>
+
+   <changeSet id="create-ingest-files-table" author="system">
+     <createTable tableName="ingest_files" schemaName="public">
+      <column name="id" type="SERIAL" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="ingest_id" type="INT"/>
+      <column name="filename" type="TEXT"/>
+      <column name="total_rows" type="NUMERIC"/>
+      <column name="status" type="TEXT"/>
+    </createTable>
+   </changeSet>
+
+</databaseChangeLog>
