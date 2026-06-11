@@ -154,7 +154,7 @@ End-to-end local test flow: `grants-config-broker` → SNS → SQS → `land-gra
 ##### Prerequisites
 
 - AWS CLI installed
-- `../grants-config-broker` and `../land-grants-config` checked out as siblings of this repo
+- `../grants-config-broker` and `../grants-config-land-grants` checked out as siblings of this repo
 
 ##### 1. Start the land-grants-api stack
 
@@ -173,12 +173,12 @@ npm run dev
 
 ###### Subcommands
 
-| Subcommand                   | Description                                                                          |
-| ---------------------------- | ------------------------------------------------------------------------------------ |
-| _(no args)_                  | Start the broker with no config changes (useful for a restart)                       |
-| `add <version> <sem-ver>`    | Create a synthetic **TEST01** action config and start the broker                     |
-| `update <version> <sem-ver>` | Copy PA3 from `land-grants-config`, set a new semantic version, and start the broker |
-| `inspect`                    | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit       |
+| Subcommand                   | Description                                                                                 |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| _(no args)_                  | Start the broker with no config changes (useful for a restart)                              |
+| `add <version> <sem-ver>`    | Create a synthetic **TEST01** action config and start the broker                            |
+| `update <version> <sem-ver>` | Copy PA3 from `grants-config-land-grants`, set a new semantic version, and start the broker |
+| `inspect`                    | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit              |
 
 > **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
 
