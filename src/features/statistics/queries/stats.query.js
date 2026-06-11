@@ -1,7 +1,4 @@
-import {
-  logDatabaseError,
-  logInfo
-} from '../../common/helpers/logging/log-helpers.js'
+import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 
 const runStatsQuery = async (client) => {
   return await Promise.all([
@@ -122,24 +119,19 @@ const mapStatsResults = (results) => {
  * Get stats
  * @param {Logger} logger - The logger
  * @param {Pool} db - The postgres instance
- * @returns {Promise<void>} The action configs
+ * @returns {Promise<Record<string, string | number> | undefined>} The stats
  */
 async function getStats(logger, db) {
   let client
   try {
     client = await db.connect()
-    const stats = mapStatsResults(await runStatsQuery(client))
-
-    logInfo(logger, {
-      category: 'database',
-      message: 'Get stats',
-      context: stats
-    })
+    return mapStatsResults(await runStatsQuery(client))
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get stats failed',
       error
     })
+    return undefined
   } finally {
     if (client) {
       client.release()
