@@ -12,10 +12,13 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    include: ['**/*.test.js'],
     coverage: {
       provider: 'v8',
-      reporter: ['html', 'lcov', 'json'],
-      reportsDirectory: 'coverage/merged'
+      reporter: ['text', 'html', 'lcov', 'json'],
+      reportsDirectory: 'coverage/merged',
+      include: ['src/**/*.js'],
+      exclude: ['**/*.test.js', '**/__tests__/**', 'node_modules/']
     }
   }
 })
