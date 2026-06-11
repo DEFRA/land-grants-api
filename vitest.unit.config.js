@@ -14,7 +14,8 @@ export default defineConfig({
       '**/src/features/**/*.test.js',
       '**/src/rules-engine/**/*.test.js',
       '**/src/features/available-area/**/*.test.js',
-      '**/src/payment-calculation/**/*.test.js'
+      '**/src/payment-calculation/**/*.test.js',
+      '**/src/routes/**/*.test.js'
     ],
     exclude: ['.server'],
     globals: true,
@@ -30,7 +31,8 @@ export default defineConfig({
         'src/features/**/*.js',
         'src/rules-engine/**/*.js',
         'src/features/available-area/**/*.js',
-        'src/payment-calculation/**/*.js'
+        'src/payment-calculation/**/*.js',
+        'src/routes/**/*.js'
       ],
       exclude: [
         'src/**/*.test.js',
