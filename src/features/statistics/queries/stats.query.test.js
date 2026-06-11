@@ -30,7 +30,9 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult(90)) // shine
         .mockResolvedValueOnce(createMockResult(450)) // unique parcels
         .mockResolvedValueOnce(createMockResult(900)) // unique covers
-        .mockResolvedValueOnce(createMockResult(15)), // duplicate covers
+        .mockResolvedValueOnce(createMockResult(15)) // duplicate covers
+        .mockResolvedValueOnce(createMockResult(3)) // unlinked parcels
+        .mockResolvedValueOnce(createMockResult(1)), // unlinked covers
       release: vi.fn()
     }
 
@@ -53,7 +55,7 @@ describe('getStats', () => {
   test('should query all tables for counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(18)
+    expect(mockClient.query).toHaveBeenCalledTimes(20)
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM actions'
     )
@@ -108,6 +110,16 @@ describe('getStats', () => {
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)'
     )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*)
+        FROM land_parcels p
+        WHERE NOT EXISTS(select 1 from land_covers c where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
+    )
+    expect(mockClient.query).toHaveBeenCalledWith(
+      `SELECT COUNT(*)
+        FROM land_covers c
+        WHERE NOT EXISTS(select 1 from land_parcels p where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
+    )
   })
 
   test('should log stats with all counts', async () => {
@@ -142,6 +154,8 @@ describe('getStats', () => {
     expect(logMessage).toContain('uniqueParcelsCount=450')
     expect(logMessage).toContain('uniqueCoversCount=900')
     expect(logMessage).toContain('duplicateCoversCount=15')
+    expect(logMessage).toContain('unlinkedParcelsCount=3')
+    expect(logMessage).toContain('unlinkedCoversCount=1')
   })
 
   test('should release the client when done', async () => {
