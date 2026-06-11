@@ -13,7 +13,7 @@ export AWS_ENDPOINT_URL=http://localhost:4566
 BROKER_DIR="../grants-config-broker"
 COMPOSE_FILE="$BROKER_DIR/compose.yml"
 GRANT_NAME="land-grants"
-GRANT_CONFIG_SOURCE="../land-grants-config/$GRANT_NAME"
+GRANT_CONFIG_SOURCE="../grants-config-land-grants"
 
 # ---------------------------------------------------------------------------
 # Splash / help
