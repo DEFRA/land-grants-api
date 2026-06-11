@@ -40,6 +40,16 @@ const runStatsQuery = async (client) => {
     ),
     client.query(
       `SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)`
+    ),
+    client.query(
+      `SELECT COUNT(*)
+        FROM land_parcels p
+        WHERE NOT EXISTS(select 1 from land_covers c where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
+    ),
+    client.query(
+      `SELECT COUNT(*)
+        FROM land_covers c
+        WHERE NOT EXISTS(select 1 from land_parcels p where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
     )
   ])
 }
@@ -75,7 +85,9 @@ const mapStatsResults = (results) => {
     shineResult,
     uniqueParcelsResult,
     uniqueCoversResult,
-    duplicateCoversResult
+    duplicateCoversResult,
+    unlinkedParcelsResult,
+    unlinkedCoversResult
   ] = results
 
   return {
@@ -100,7 +112,9 @@ const mapStatsResults = (results) => {
     shineCount: getCountFromResult(shineResult),
     uniqueParcelsCount: getCountFromResult(uniqueParcelsResult),
     uniqueCoversCount: getCountFromResult(uniqueCoversResult),
-    duplicateCoversCount: getCountFromResult(duplicateCoversResult)
+    duplicateCoversCount: getCountFromResult(duplicateCoversResult),
+    unlinkedParcelsCount: getCountFromResult(unlinkedParcelsResult),
+    unlinkedCoversCount: getCountFromResult(unlinkedCoversResult)
   }
 }
 
