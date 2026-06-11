@@ -1,9 +1,11 @@
+import { config } from '~/src/config/index.js'
 import { health } from '~/src/features/health/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { landDataIngest } from '~/src/features/land-data-ingest/index.js'
+import { testEndpoints } from '~/src/features/test-endpoints/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -21,6 +23,14 @@ const router = {
       await server.register([application])
       await server.register([caseManagementAdapter])
       await server.register([landDataIngest])
+
+      if (config.get('featureFlags.testEndpoints') === true) {
+        server.logger.warn(
+          'Test endpoints are enabled. These should not be used in production.'
+        )
+
+        await server.register([testEndpoints])
+      }
     }
   }
 }
