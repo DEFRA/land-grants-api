@@ -76,4 +76,33 @@ describe('#statistics', () => {
       'Statistics cron job completed successfully'
     )
   })
+
+  test('should log stats with all counts', async () => {
+    statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+    mockGetStats.mockResolvedValue({
+      actionsCount: 10,
+      unlinkedParcelsCount: 3,
+      unlinkedCoversCount: 1
+    })
+
+    await cronCallback()
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: expect.objectContaining({
+          category: 'database',
+          type: 'info'
+        })
+      }),
+      expect.stringContaining('Get stats')
+    )
+
+    const logMessage = mockLogger.info.mock.calls[1][1]
+
+    expect(logMessage).toContain('actionsCount=10')
+    expect(logMessage).toContain('unlinkedParcelsCount=3')
+    expect(logMessage).toContain('unlinkedCoversCount=1')
+  })
 })

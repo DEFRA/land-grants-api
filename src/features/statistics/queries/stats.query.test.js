@@ -123,39 +123,32 @@ describe('getStats', () => {
   })
 
   test('should log stats with all counts', async () => {
-    await getStats(mockLogger, mockDb)
+    const stats = await getStats(mockLogger, mockDb)
 
-    expect(mockLogger.info).toHaveBeenCalledWith(
+    expect(stats).toEqual(
       expect.objectContaining({
-        event: expect.objectContaining({
-          category: 'database',
-          type: 'info'
-        })
-      }),
-      expect.stringContaining('Get stats')
+        actionsCount: '10',
+        actionsConfigCount: '15',
+        agreementsCount: '5',
+        applicationResultsCount: '20',
+        compatibilityMatrixCount: '100',
+        landCoverCodesCount: '25',
+        landCoverCodesActionsCount: '50',
+        landCoversCount: '1000',
+        landParcelsCount: '500',
+        sssiCount: '70',
+        moorlandDesignationsCount: '30',
+        registeredParksGardensCount: '40',
+        registeredBattlefieldsCount: '60',
+        scheduledMonumentsCount: '80',
+        shineCount: '90',
+        uniqueParcelsCount: '450',
+        uniqueCoversCount: '900',
+        duplicateCoversCount: '15',
+        unlinkedParcelsCount: '3',
+        unlinkedCoversCount: '1'
+      })
     )
-
-    const logMessage = mockLogger.info.mock.calls[0][1]
-    expect(logMessage).toContain('actionsCount=10')
-    expect(logMessage).toContain('actionsConfigCount=15')
-    expect(logMessage).toContain('agreementsCount=5')
-    expect(logMessage).toContain('applicationResultsCount=20')
-    expect(logMessage).toContain('compatibilityMatrixCount=100')
-    expect(logMessage).toContain('landCoverCodesCount=25')
-    expect(logMessage).toContain('landCoverCodesActionsCount=50')
-    expect(logMessage).toContain('landCoversCount=1000')
-    expect(logMessage).toContain('landParcelsCount=500')
-    expect(logMessage).toContain('sssiCount=70')
-    expect(logMessage).toContain('moorlandDesignationsCount=30')
-    expect(logMessage).toContain('registeredParksGardensCount=40')
-    expect(logMessage).toContain('registeredBattlefieldsCount=60')
-    expect(logMessage).toContain('scheduledMonumentsCount=80')
-    expect(logMessage).toContain('shineCount=90')
-    expect(logMessage).toContain('uniqueParcelsCount=450')
-    expect(logMessage).toContain('uniqueCoversCount=900')
-    expect(logMessage).toContain('duplicateCoversCount=15')
-    expect(logMessage).toContain('unlinkedParcelsCount=3')
-    expect(logMessage).toContain('unlinkedCoversCount=1')
   })
 
   test('should release the client when done', async () => {

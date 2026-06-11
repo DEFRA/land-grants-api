@@ -12,3 +12,6 @@ fi
 if [ -f "coverage/e2e/coverage-final.json" ]; then
   cp coverage/e2e/coverage-final.json coverage/tmp/coverage-final-e2e.json
 fi
+if [ -f "coverage/import/coverage-final.json" ]; then
+  cp coverage/import/coverage-final.json coverage/tmp/coverage-final-import.json
+fi
