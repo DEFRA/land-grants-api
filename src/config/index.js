@@ -258,6 +258,14 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  featureFlags: {
+    testEndpoints: {
+      doc: 'Enable test endpoints',
+      format: 'Boolean',
+      default: false,
+      env: 'ENABLE_TEST_ENDPOINTS'
+    }
   }
 })
 

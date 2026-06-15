@@ -52,6 +52,7 @@ jobs:
           LAND_GRANTS_ENCRYPTION_KEY: ${{ secrets.LAND_GRANTS_ENCRYPTION_KEY }}
         run: |
           npm run test:e2e
+          npm run merge:coverage
 
       - name: Test Docker Image Build
         run: |
