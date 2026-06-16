@@ -37,7 +37,8 @@ const PaymentCalculateSchema = Joi.object({
           .items(
             Joi.object({
               code: Joi.string().required(),
-              quantity: Joi.number().positive().required()
+              quantity: Joi.number().positive().required(),
+              version: Joi.string().optional()
             })
           )
           .required()

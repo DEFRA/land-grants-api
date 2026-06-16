@@ -17,7 +17,8 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
   const flattenedLandActions =
     landActions?.flatMap((landAction) =>
       landAction.actions.map((action) => ({
-        code: action.code
+        code: action.code,
+        version: action.version
       }))
     ) ?? []
 
@@ -49,14 +50,16 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
     context: { previousRunActions }
   })
 
-  // merge actions, deduplicating by code and preferring versioned entries from previous runs
+  // merge actions: caller-supplied version > prior-run version > latest
   const actionMap = new Map(
     flattenedLandActions.map((action) => [action.code, action])
   )
 
-  // deduplicate the actions by code
   for (const action of previousRunActions) {
-    actionMap.set(action.code, action)
+    const existing = actionMap.get(action.code)
+    if (existing && !existing.version) {
+      actionMap.set(action.code, action)
+    }
   }
   const mergedActions = [...actionMap.values()]
 
