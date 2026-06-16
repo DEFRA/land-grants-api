@@ -2,7 +2,7 @@ import { Client } from '@hapi/catbox'
 import { Engine } from '@hapi/catbox-memory'
 
 /**
- * @typedef {Object} MemoryCacheOptions
+ * @typedef {object} MemoryCacheOptions
  * @property {string} partition - Catbox partition name used to isolate cached items.
  * @property {string} segment - Cache segment name.
  * @property {string} id - Cache item id within the segment.
@@ -11,14 +11,14 @@ import { Engine } from '@hapi/catbox-memory'
  */
 
 /**
- * @typedef {Object} MemoryCache
+ * @typedef {object} MemoryCache
  * @property {{ segment: string, id: string }} key
  * @property {number} ttlMs
- * @property {() => Promise<Client<unknown>>} start
- * @property {() => Promise<void>} stop
- * @property {() => Promise<unknown | null>} get
- * @property {(value: unknown) => Promise<unknown>} set
- * @property {(refreshFn: () => Promise<unknown | undefined>) => Promise<unknown | undefined>} refresh
+ * @property {function(): Promise<Client<unknown>>} start
+ * @property {function(): Promise<void>} stop
+ * @property {function(): Promise<unknown | null>} get
+ * @property {function(unknown): Promise<unknown>} set
+ * @property {function(function(): Promise<unknown | undefined>): Promise<unknown | undefined>} refresh
  */
 
 /**
