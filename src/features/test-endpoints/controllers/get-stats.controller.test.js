@@ -2,7 +2,7 @@ import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import { config } from '~/src/config/index.js'
 import { router } from '~/src/routes/router.js'
-import { getStats } from '~/src/features/statistics/queries/stats.query.js'
+import { getCachedStats } from '~/src/features/statistics/stats-cache.js'
 
 vi.mock('~/src/config/index.js', () => ({
   config: {
@@ -10,12 +10,12 @@ vi.mock('~/src/config/index.js', () => ({
   }
 }))
 
-vi.mock('~/src/features/statistics/queries/stats.query.js', () => ({
-  getStats: vi.fn()
+vi.mock('~/src/features/statistics/stats-cache.js', () => ({
+  getCachedStats: vi.fn()
 }))
 
 const mockConfig = vi.mocked(config)
-const mockGetStats = vi.mocked(getStats)
+const mockGetCachedStats = vi.mocked(getCachedStats)
 
 describe('test-endpoints', () => {
   const server = Hapi.server()
@@ -27,15 +27,11 @@ describe('test-endpoints', () => {
     warn: vi.fn()
   }
 
-  const mockPostgresDb = {
-    connect: vi.fn(),
-    query: vi.fn()
-  }
-
   const mockStats = {
     actionsCount: 100,
     unlinkedParcelsCount: 10,
-    unlinkedCoversCount: 8
+    unlinkedCoversCount: 8,
+    lastUpdated: '2026-06-16T12:00:00.000Z'
   }
 
   beforeAll(async () => {
@@ -48,7 +44,6 @@ describe('test-endpoints', () => {
 
     server.decorate('request', 'logger', mockLogger)
     server.decorate('server', 'logger', mockLogger)
-    server.decorate('server', 'postgresDb', mockPostgresDb)
     await server.register([router])
     await server.initialize()
   })
@@ -59,11 +54,11 @@ describe('test-endpoints', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockGetStats.mockResolvedValue(mockStats)
+    mockGetCachedStats.mockResolvedValue(mockStats)
   })
 
   describe('GET /test/stats route', () => {
-    test('should return 200 with stats when testEndpoints feature flag is enabled', async () => {
+    test('should return 200 with cached stats when testEndpoints feature flag is enabled', async () => {
       const request = {
         method: 'GET',
         url: '/test/stats'
@@ -74,11 +69,26 @@ describe('test-endpoints', () => {
 
       expect(statusCode).toBe(200)
       expect(result).toEqual(mockStats)
-      expect(mockGetStats).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
+      expect(mockGetCachedStats).toHaveBeenCalledTimes(1)
     })
 
-    test('should return 500 when getStats fails', async () => {
-      mockGetStats.mockRejectedValue(new Error('Database connection failed'))
+    test('should return 503 when cached stats are not available', async () => {
+      mockGetCachedStats.mockResolvedValue(null)
+
+      const request = {
+        method: 'GET',
+        url: '/test/stats'
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(503)
+      expect(result.message).toBe('Stats are not available yet')
+    })
+
+    test('should return 500 when getCachedStats fails', async () => {
+      mockGetCachedStats.mockRejectedValue(new Error('Cache read failed'))
 
       const request = {
         method: 'GET',
