@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import { logBusinessError } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
-import { getStats } from '~/src/features/statistics/queries/stats.query.js'
+import { getCachedStats } from '~/src/features/statistics/stats-cache.js'
 
 /**
  * getStatsController
@@ -16,12 +16,13 @@ const getStatsController = {
   },
   handler: async (request, res) => {
     try {
-      return (
-        res
-          // @ts-expect-error - postgresDb
-          .response(await getStats(request.logger, request.server.postgresDb))
-          .code(statusCodes.ok)
-      )
+      const stats = await getCachedStats()
+
+      if (!stats) {
+        return Boom.serverUnavailable('Stats are not available yet')
+      }
+
+      return res.response(stats).code(statusCodes.ok)
     } catch (error) {
       const errorMessage = 'Fetching stats information'
       logBusinessError(request.logger, {
