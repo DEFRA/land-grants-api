@@ -67,7 +67,6 @@ export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
     })
   }
 
-  // insert new ingest
   const {
     rows: [ingest]
   } = await dbClient.query(
