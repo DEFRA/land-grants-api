@@ -5,7 +5,10 @@ import {
   createTempTable,
   copyDataToTempTable,
   insertData,
-  truncateTableAndInsertData
+  truncateTableAndInsertData,
+  createStagingTable,
+  isIngestComplete,
+  promoteStagingTable
 } from './data-helpers.js'
 import { vi } from 'vitest'
 
@@ -64,6 +67,11 @@ describe('Data helpers', () => {
     expect(pipeline).toHaveBeenCalledTimes(1)
     expect(pipeline.mock.calls[0][0]).toBe(dataStream)
     expect(pipeline.mock.calls[0][1]).toBeInstanceOf(WritableStream)
+
+    // pipeline is mocked, so the streams are never consumed; close them so the
+    // open WritableStream does not leak pending work into later tests.
+    await mockWritableStream.close()
+    await dataStream.cancel()
   })
 
   test('should insert data into the table', async () => {
@@ -104,6 +112,120 @@ describe('Data helpers', () => {
       expect(dbClient.query).toHaveBeenCalledTimes(2)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe('ROLLBACK')
+    })
+  })
+
+  describe('createStagingTable', () => {
+    beforeEach(() => {
+      dbClient.escapeIdentifier = vi.fn((id) => `"${id}"`)
+    })
+
+    test('should return early when the staging table already exists', async () => {
+      dbClient.query.mockResolvedValueOnce({ rows: [{ exists: true }] })
+
+      await createStagingTable(dbClient, 'land_parcels')
+
+      expect(dbClient.query).toHaveBeenCalledTimes(1)
+      expect(dbClient.query.mock.calls[0][1]).toEqual(['land_parcels_staging'])
+      expect(dbClient.escapeIdentifier).not.toHaveBeenCalled()
+    })
+
+    test('should create the staging table and its foreign key constraints when it does not exist', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ exists: false }] })
+        .mockResolvedValueOnce({ rowCount: 0 })
+        .mockResolvedValueOnce({
+          rows: [
+            {
+              fk_query:
+                'ALTER TABLE "land_parcels_staging" ADD CONSTRAINT fk_a FOREIGN KEY (id) REFERENCES other(id);'
+            }
+          ]
+        })
+        .mockResolvedValue({ rowCount: 1 })
+
+      await createStagingTable(dbClient, 'land_parcels')
+
+      expect(dbClient.query).toHaveBeenCalledTimes(4)
+      expect(dbClient.query.mock.calls[1][0]).toBe(
+        'CREATE TABLE "land_parcels_staging" (LIKE "land_parcels" INCLUDING ALL);'
+      )
+      expect(dbClient.query.mock.calls[2][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'ALTER TABLE "land_parcels_staging" ADD CONSTRAINT fk_a FOREIGN KEY (id) REFERENCES other(id);'
+      )
+    })
+
+    test('should create the staging table without running constraint queries when there are no foreign keys', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ exists: false }] })
+        .mockResolvedValueOnce({ rowCount: 0 })
+        .mockResolvedValueOnce({ rows: [] })
+
+      await createStagingTable(dbClient, 'land_covers')
+
+      expect(dbClient.query).toHaveBeenCalledTimes(3)
+      expect(dbClient.query.mock.calls[1][0]).toBe(
+        'CREATE TABLE "land_covers_staging" (LIKE "land_covers" INCLUDING ALL);'
+      )
+    })
+  })
+
+  describe('isIngestComplete', () => {
+    test('should return isComplete true when staging count matches the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '9' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({ isComplete: true, totalCount: 9 })
+      expect(dbClient.query.mock.calls[0][0]).toBe(
+        'SELECT count(*) as count FROM land_parcels_staging'
+      )
+      expect(dbClient.query.mock.calls[1][1]).toEqual([123])
+    })
+
+    test('should return isComplete false when staging count does not match the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '4' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({ isComplete: false, totalCount: 4 })
+    })
+  })
+
+  describe('promoteStagingTable', () => {
+    test('should swap the staging table into the live table within a transaction', async () => {
+      await promoteStagingTable('land_parcels', dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(dbClient.query.mock.calls[1][0]).toBe(
+        'ALTER TABLE land_parcels RENAME TO land_parcels_retiring'
+      )
+      expect(dbClient.query.mock.calls[2][0]).toBe(
+        'ALTER TABLE land_parcels_staging RENAME TO land_parcels'
+      )
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'DROP TABLE IF EXISTS land_parcels_retiring'
+      )
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+    })
+
+    test('should roll back and rethrow when promotion fails', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
+        .mockRejectedValueOnce(new Error('rename failed'))
+
+      await expect(promoteStagingTable('land_parcels', dbClient)).rejects.toThrow(
+        'rename failed'
+      )
+
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
   })
 })
