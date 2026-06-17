@@ -11,10 +11,14 @@ import {
   insertData,
   truncateTableAndInsertData,
   isIngestComplete,
-  promoteStagingTable,
+  promoteStagingTable
 } from './data-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
-import { setFileCompleted, setFileFailed, setFileInProgress } from './start-ingest.service.js'
+import {
+  setFileCompleted,
+  setFileFailed,
+  setFileInProgress
+} from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
 
@@ -40,7 +44,7 @@ export async function importData(
   entityType,
   ingestId,
   filename,
-  logger,
+  logger
 ) {
   if (entityType.ingest === true) {
     await importDataValidate(dataStream, entityType, ingestId, filename, logger)
@@ -56,12 +60,7 @@ export async function importData(
  * @param {string | number} ingestId - The ingest ID
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  */
-export async function importDataAsIs(
-  dataStream,
-  entityType,
-  ingestId,
-  logger,
-) {
+export async function importDataAsIs(dataStream, entityType, ingestId, logger) {
   const startTime = performance.now()
 
   const { name: entityName, truncateTable } = entityType
@@ -101,8 +100,10 @@ export async function importDataAsIs(
       message: `${entityName} file imported successfully in ${duration}ms`,
       context: { rowCount: result?.rowCount, duration }
     })
-    await metricsCounter(`${entityName}_file_ingest_completed`, result?.rowCount)
-
+    await metricsCounter(
+      `${entityName}_file_ingest_completed`,
+      result?.rowCount
+    )
   } catch (error) {
     logBusinessError(logger, {
       operation: `${entityName}_import_failed`,
@@ -130,7 +131,7 @@ export async function importDataValidate(
   entityType,
   ingestId,
   filename,
-  logger,
+  logger
 ) {
   const startTime = performance.now()
 
@@ -161,7 +162,11 @@ export async function importDataValidate(
     // @ts-expect-error filename
     await setFileCompleted(filename, ingestId, dbClient)
 
-    const { isComplete, totalCount } = await isIngestComplete(entityName, ingestId, dbClient)
+    const { isComplete, totalCount } = await isIngestComplete(
+      entityName,
+      ingestId,
+      dbClient
+    )
     if (isComplete) {
       await promoteStagingTable(entityName, dbClient)
 
@@ -183,7 +188,6 @@ export async function importDataValidate(
       context: { rowCount, duration }
     })
     await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
-
   } catch (error) {
     logBusinessError(logger, {
       operation: `${entityName}_import_failed`,

@@ -46,7 +46,7 @@ export const IngestController = {
       const filtered = filterFilesByDate(files, minutesToIgnore)
 
       for (const file of filtered) {
-        await processFile(file.Key, request, category, title, taskId)
+        await processFile(file.Key, request, { category, title, taskId })
       }
 
       if (filtered.length > 0) {

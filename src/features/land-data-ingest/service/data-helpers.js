@@ -67,24 +67,30 @@ export async function truncateTableAndInsertData(
   }
 }
 
-
 /**
  * create staging table and fk if not exists
- * @param {*} dbClient 
- * @param {*} tableName 
- * @returns 
+ * @param {*} dbClient
+ * @param {*} tableName
+ * @returns
  */
 export async function createStagingTable(dbClient, tableName) {
-  const { rows: [{ exists }] } = await dbClient.query(`SELECT EXISTS (
+  const {
+    rows: [{ exists }]
+  } = await dbClient.query(
+    `SELECT EXISTS (
         SELECT FROM pg_tables
         WHERE schemaname = 'public' AND tablename = $1
-      );`, [tableName + '_staging'])
+      );`,
+    [tableName + '_staging']
+  )
 
   if (exists) {
     return
   }
 
-  await dbClient.query(`CREATE TABLE ${dbClient.escapeIdentifier(tableName + '_staging')} (LIKE ${dbClient.escapeIdentifier(tableName)} INCLUDING ALL);`)
+  await dbClient.query(
+    `CREATE TABLE ${dbClient.escapeIdentifier(tableName + '_staging')} (LIKE ${dbClient.escapeIdentifier(tableName)} INCLUDING ALL);`
+  )
 
   const { rows: fks } = await dbClient.query(
     `SELECT
@@ -94,54 +100,69 @@ export async function createStagingTable(dbClient, tableName) {
       || pg_get_constraintdef(oid) || ';'
     FROM pg_constraint
     WHERE conrelid = $1::regclass
-      AND contype = 'f';`, [tableName]
+      AND contype = 'f';`,
+    [tableName]
   )
   for (const fk of fks) {
     await dbClient.query(fk.fk_query)
   }
-
 }
 
 /**
  * check ingested rows matched expected count
- * @param {*} tableName 
- * @param {*} ingestId 
- * @param {*} dbClient 
+ * @param {*} tableName
+ * @param {*} ingestId
+ * @param {*} dbClient
  * @returns {Promise<{isComplete: boolean, totalCount: number}>}
  */
 export async function isIngestComplete(tableName, ingestId, dbClient) {
   // count rows in stagin table
-  const { rows: [{ count }] } = await dbClient.query(`SELECT count(*) as count FROM ${tableName + '_staging'}`)
+  const {
+    rows: [{ count }]
+  } = await dbClient.query(
+    `SELECT count(*) as count FROM ${tableName + '_staging'}`
+  )
 
   // sum up file count
-  const { rows: [{ total_rows }] } = await dbClient.query(`SELECT
+  const {
+    rows: [{ total_rows: totalRows }]
+  } = await dbClient.query(
+    `SELECT
         SUM(f.total_rows) as total_rows
     FROM
         ingest i
         INNER JOIN ingest_files f ON i.id = f.ingest_id
     WHERE
-        i.id = $1`, [ingestId])
+        i.id = $1`,
+    [ingestId]
+  )
 
-  return { isComplete: Number(count) === Number(total_rows), totalCount: Number(count) }
+  return {
+    isComplete: Number(count) === Number(totalRows),
+    totalCount: Number(count)
+  }
 }
 
 /**
  * promote staging table to live
- * @param {*} tableName 
- * @param {*} dbClient 
+ * @param {*} tableName
+ * @param {*} dbClient
  */
 export async function promoteStagingTable(tableName, dbClient) {
   try {
     await dbClient.query('BEGIN')
 
-    await dbClient.query(`ALTER TABLE ${tableName} RENAME TO ${tableName}_retiring`) // must have no invalid constraints
-    await dbClient.query(`ALTER TABLE ${tableName}_staging RENAME TO ${tableName}`)
+    await dbClient.query(
+      `ALTER TABLE ${tableName} RENAME TO ${tableName}_retiring`
+    ) // must have no invalid constraints
+    await dbClient.query(
+      `ALTER TABLE ${tableName}_staging RENAME TO ${tableName}`
+    )
     await dbClient.query(`DROP TABLE IF EXISTS ${tableName}_retiring`)
 
-    await dbClient.query("COMMIT")
+    await dbClient.query('COMMIT')
   } catch (error) {
-    await dbClient.query("ROLLBACK")
+    await dbClient.query('ROLLBACK')
     throw error
   }
 }
-
