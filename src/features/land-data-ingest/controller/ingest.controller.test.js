@@ -114,17 +114,21 @@ describe('Ingest Controller', () => {
         1,
         'parcels/file1.csv',
         expect.objectContaining({ logger: mockLogger }),
-        'land_data_ingest',
-        'Land data ingest',
-        mockTaskInfo.taskId
+        {
+          category: 'land_data_ingest',
+          title: 'Land data ingest',
+          taskId: mockTaskInfo.taskId
+        }
       )
       expect(mockProcessFile).toHaveBeenNthCalledWith(
         2,
         'parcels/file2.csv',
         expect.objectContaining({ logger: mockLogger }),
-        'land_data_ingest',
-        'Land data ingest',
-        mockTaskInfo.taskId
+        {
+          category: 'land_data_ingest',
+          title: 'Land data ingest',
+          taskId: mockTaskInfo.taskId
+        }
       )
 
       // Verify logging was called correctly
