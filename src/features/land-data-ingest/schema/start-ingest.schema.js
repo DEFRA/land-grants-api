@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { entityTypes } from '../../common/constants/entity_types.js'
+import { ENTITY_TYPES } from '../../common/constants/entity_types.js'
 
 const ingestFileSchema = Joi.object({
   filename: Joi.string().required(),
@@ -12,7 +12,7 @@ export const startIngestRequestSchema = Joi.object({
 
 export const startIngestParamsSchema = Joi.object({
   entity: Joi.string()
-    .valid(...entityTypes)
+    .valid(...ENTITY_TYPES.map((e) => e.name))
     .required()
 })
 

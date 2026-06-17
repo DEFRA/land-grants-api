@@ -1,4 +1,5 @@
 import Hapi from '@hapi/hapi'
+import { vi } from 'vitest'
 import { LandDataIngestController } from './land-data-ingest.controller.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
@@ -9,7 +10,7 @@ import {
 import { config } from '~/src/config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import { processFile, createTaskInfo } from '../service/ingest.service.js'
-import { vi } from 'vitest'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
 
 // Mock dependencies
 vi.mock('~/src/features/common/helpers/logging/log-helpers.js')
@@ -20,6 +21,10 @@ vi.mock('../service/ingest.service.js', async () => ({
   ...(await vi.importActual('../service/ingest.service.js')),
   processFile: vi.fn(),
   createTaskInfo: vi.fn()
+}))
+vi.mock('../service/start-ingest.service.js', async () => ({
+  ...(await vi.importActual('../service/start-ingest.service.js')),
+  isValidIngestFile: vi.fn()
 }))
 
 const mockProcessFile = processFile
@@ -46,6 +51,9 @@ describe('LandDataIngestController', () => {
   }
 
   const mockBucket = 'land-grants-bucket'
+  const mockPostgresDb = {
+    query: vi.fn()
+  }
 
   const validPayload = {
     uploadStatus: 'ready',
@@ -70,6 +78,7 @@ describe('LandDataIngestController', () => {
 
   beforeAll(async () => {
     server.decorate('request', 'logger', mockLogger)
+    server.decorate('server', 'postgresDb', mockPostgresDb)
     await server.register([
       {
         plugin: {
@@ -143,11 +152,13 @@ describe('LandDataIngestController', () => {
 
       // Verify processFile was called with the correct parameters
       expect(mockProcessFile).toHaveBeenCalledWith(
-        validPayload.form.file.s3Key,
+        {
+          s3key: validPayload.form.file.s3Key,
+          ingestId: undefined,
+          filename: undefined
+        },
         expect.any(Object),
-        'land-data-ingest',
-        expect.any(String), // title
-        expect.any(Number) // taskId
+        expect.any(Object)
       )
 
       // Verify logging was called with correct parameters
@@ -164,6 +175,61 @@ describe('LandDataIngestController', () => {
         message: 'Land data moved to processing',
         context: {
           payload: JSON.stringify(validPayload),
+          s3Key: validPayload.form.file.s3Key,
+          s3Bucket: mockBucket
+        }
+      })
+    })
+
+    test('should return 200 with success message when payload includes ingestId and filename and file is valid', async () => {
+      const payload = {
+        ...validPayload,
+        metadata: {
+          ingestId: 'ingest-123',
+          filename: 'land-data.csv'
+        }
+      }
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload
+      }
+      isValidIngestFile.mockResolvedValue(true)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('Message received')
+
+      // Verify processFile was called with the correct parameters
+      expect(mockProcessFile).toHaveBeenCalledWith(
+        {
+          s3key: validPayload.form.file.s3Key,
+          ingestId: 'ingest-123',
+          filename: 'land-data.csv'
+        },
+        expect.any(Object),
+        expect.any(Object)
+      )
+
+      // Verify logging was called with correct parameters
+      expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
+        category: 'land-data-ingest',
+        message: 'Processing land data',
+        context: {
+          payload: JSON.stringify(payload)
+        }
+      })
+
+      expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
+        category: 'land-data-ingest',
+        message: 'Land data moved to processing',
+        context: {
+          payload: JSON.stringify(payload),
           s3Key: validPayload.form.file.s3Key,
           s3Bucket: mockBucket
         }

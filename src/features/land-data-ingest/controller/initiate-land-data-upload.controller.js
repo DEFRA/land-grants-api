@@ -11,6 +11,7 @@ import {
   initiateLandDataUploadRequestSchema,
   initiateLandDataUploadSuccessResponseSchema
 } from '../schema/ingest.schema.js'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
 
 export const InitiateLandDataUploadController = {
   options: {
@@ -36,7 +37,7 @@ export const InitiateLandDataUploadController = {
     const category = 'initiate-land-data-upload'
     const { logger, payload } = request
     // @ts-expect-error - payload is validated by the schema
-    const { resource } = payload
+    const { resource, ingestId, filename } = payload
 
     try {
       logInfo(logger, {
@@ -51,6 +52,21 @@ export const InitiateLandDataUploadController = {
           frontendUrl: process.env.FRONTEND_URL
         }
       })
+
+      if (ingestId && filename) {
+        // @ts-expect-error
+        const isValid = await isValidIngestFile(ingestId, filename, request.server.postgresDb)
+        if (!isValid) {
+          logBusinessError(request.logger, {
+            operation: `${category}_error`,
+            error: new Error('Invalid ingest file'),
+            context: {
+              payload
+            }
+          })
+          return Boom.badRequest('Invalid ingest file')
+        }
+      }
 
       const data = await initiateLandDataUpload(
         config.get('ingest.endpoint'),
