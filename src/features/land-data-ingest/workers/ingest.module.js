@@ -52,13 +52,7 @@ const postMessage = (taskId, success, result, error) => {
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  * @returns {Promise<void>}
  */
-async function handleCsvFile(
-  response,
-  entityType,
-  ingestId,
-  filename,
-  logger,
-) {
+async function handleCsvFile(response, entityType, ingestId, filename, logger) {
   const stream = Readable.fromWeb(response.Body.transformToWebStream())
   await importData(stream, entityType, ingestId, filename, logger)
 }
@@ -74,13 +68,7 @@ async function handleCsvFile(
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  * @returns {Promise<void>}
  */
-async function handleZipFile(
-  response,
-  entityType,
-  ingestId,
-  filename,
-  logger,
-) {
+async function handleZipFile(response, entityType, ingestId, filename, logger) {
   try {
     const stream = Readable.fromWeb(response.Body.transformToWebStream())
     const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
@@ -112,18 +100,14 @@ async function handleZipFile(
  * @returns {Promise<string>} The string representation of the file
  */
 export async function importLandData(data) {
-  const {
-    s3key,
-    filename: originalFilename
-  } = data
-
+  const { s3key, filename: originalFilename } = data
 
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
   const bucket = config.get('s3.bucket')
   const [resourceType, ...rest] = s3key.split('/')
-  const ingestId = data?.ingestId || rest?.[0] || ''
+  const ingestId = data?.ingestId ?? rest?.[0] ?? ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
 
@@ -151,7 +135,7 @@ export async function importLandData(data) {
         resource,
         ingestId,
         originalFilename,
-        logger,
+        logger
       )
     } else if (response.ContentType === 'text/csv') {
       await handleCsvFile(
@@ -159,7 +143,7 @@ export async function importLandData(data) {
         resource,
         ingestId,
         originalFilename,
-        logger,
+        logger
       )
     } else {
       throw new Error(`Invalid content type: ${response.ContentType}`)

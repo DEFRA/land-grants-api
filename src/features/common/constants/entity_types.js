@@ -1,4 +1,3 @@
-
 export const ENTITY_TYPES = [
   { name: 'land_parcels', truncateTable: false, ingest: true },
   { name: 'moorland_designations', truncateTable: false },
@@ -7,9 +6,9 @@ export const ENTITY_TYPES = [
   { name: 'agreements', truncateTable: true },
   { name: 'sssi', truncateTable: false },
   { name: 'registered_battlefields', truncateTable: false },
-  { name: 'shine', truncateTable: false, },
-  { name: 'scheduled_monuments', truncateTable: false, },
-  { name: 'registered_parks_gardens', truncateTable: false, },
+  { name: 'shine', truncateTable: false },
+  { name: 'scheduled_monuments', truncateTable: false },
+  { name: 'registered_parks_gardens', truncateTable: false },
   { name: 'action_sssi_hf_mapping', truncateTable: false }
 ]
 
