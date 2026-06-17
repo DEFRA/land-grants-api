@@ -109,7 +109,11 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
       importData.mockResolvedValue(undefined)
 
-      const result = await importLandData({ s3key: 'land_parcels/123/test.csv', filename: 'test.csv', ingestId: '123' })
+      const result = await importLandData({
+        s3key: 'land_parcels/123/test.csv',
+        filename: 'test.csv',
+        ingestId: '123'
+      })
 
       expect(result).toBe('Land data imported successfully')
       expect(getFile).toHaveBeenCalledWith(
@@ -122,7 +126,7 @@ describe('Ingest Module', () => {
         { name: 'land_parcels', truncateTable: false, ingest: true },
         '123',
         'test.csv',
-        expect.any(Object),
+        expect.any(Object)
       )
     })
 
@@ -149,7 +153,9 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
       importData.mockResolvedValue(undefined)
 
-      const result = await importLandData({ s3key: 'land_parcels/123/test.zip' })
+      const result = await importLandData({
+        s3key: 'land_parcels/123/test.zip'
+      })
 
       expect(result).toBe('Land data imported successfully')
       expect(unzipper.Parse).toHaveBeenCalledWith({ forceStream: true })
@@ -158,7 +164,7 @@ describe('Ingest Module', () => {
         { name: 'land_parcels', truncateTable: false, ingest: true },
         '123',
         undefined,
-        expect.any(Object),
+        expect.any(Object)
       )
     })
 
@@ -180,9 +186,9 @@ describe('Ingest Module', () => {
 
       getFile.mockResolvedValue(mockResponse)
 
-      await expect(importLandData({ s3key: 'land_parcels/123/test.zip' })).rejects.toThrow(
-        'No CSV found in the ZIP'
-      )
+      await expect(
+        importLandData({ s3key: 'land_parcels/123/test.zip' })
+      ).rejects.toThrow('No CSV found in the ZIP')
 
       expect(importData).not.toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
@@ -210,9 +216,9 @@ describe('Ingest Module', () => {
       const s3Error = new Error('S3 connection failed')
       getFile.mockRejectedValue(s3Error)
 
-      await expect(importLandData({ s3key: 'land_parcels/123/test.csv' })).rejects.toThrow(
-        'S3 connection failed'
-      )
+      await expect(
+        importLandData({ s3key: 'land_parcels/123/test.csv' })
+      ).rejects.toThrow('S3 connection failed')
 
       expect(logBusinessError).toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)

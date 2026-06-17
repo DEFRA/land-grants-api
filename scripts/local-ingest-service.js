@@ -8,7 +8,10 @@ import { parse } from 'csv-parse/sync'
 import { importData } from '../src/features/land-data-ingest/service/import-land-data.service.js'
 import { ENTITY_TYPES } from '../src/features/common/constants/entity_types.js'
 import { saveIngestStart } from '../src/features/land-data-ingest/service/start-ingest.service.js'
-import { getDBOptions, createDBPool } from '../src/features/common/helpers/postgres.js'
+import {
+  getDBOptions,
+  createDBPool
+} from '../src/features/common/helpers/postgres.js'
 import { createSecureContext } from '../src/features/common/helpers/secure-context/secure-context.js'
 
 const logger = {
@@ -18,7 +21,6 @@ const logger = {
 
 export const ingestLandData = async () => {
   for (const resource of ENTITY_TYPES) {
-
     // create db connection
     const dbOptions = getDBOptions()
     const connection = createDBPool(dbOptions, {
@@ -39,7 +41,7 @@ export const ingestLandData = async () => {
     let ingestId = crypto.randomUUID()
 
     if (resource.ingest) {
-      let filesWithCount = [];
+      let filesWithCount = []
       for (const file of files) {
         const fileContent = fs.readFileSync(path.join(folder, file), 'utf8')
         const data = parse(fileContent, {
@@ -52,9 +54,10 @@ export const ingestLandData = async () => {
         })
       }
 
-      ingestId = await saveIngestStart({
-        files: filesWithCount
-      },
+      ingestId = await saveIngestStart(
+        {
+          files: filesWithCount
+        },
         resource.name,
         client,
         logger
@@ -70,13 +73,7 @@ export const ingestLandData = async () => {
         batch.map((file) => {
           console.log(`Importing ${resource.name} - ${file}`)
           const bodyContents = createReadStream(path.join(folder, file))
-          return importData(
-            bodyContents,
-            resource,
-            ingestId,
-            file,
-            logger,
-          )
+          return importData(bodyContents, resource, ingestId, file, logger)
         })
       )
     }
