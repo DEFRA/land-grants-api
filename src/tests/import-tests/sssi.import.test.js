@@ -31,10 +31,10 @@ describe('SSSI import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import sssi data and return 200 ok (%s)',
-    async (s3Key) => {
-      await uploadLandDataFixture(s3Client, 'sssi_head.csv', s3Key)
+    async (s3key) => {
+      await uploadLandDataFixture(s3Client, 'sssi_head.csv', s3key)
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 

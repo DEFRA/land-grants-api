@@ -35,10 +35,10 @@ describe('Agreements import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import agreements data and return 200 ok (%s)',
-    async (s3Key) => {
-      await uploadLandDataFixture(s3Client, 'agreements_head.csv', s3Key)
+    async (s3key) => {
+      await uploadLandDataFixture(s3Client, 'agreements_head.csv', s3key)
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -68,7 +68,7 @@ describe('Agreements import', () => {
       expect(action2.endDate).toBe('2027-12-31T00:00:00+00:00')
 
       const files = await listTestFiles(s3Client)
-      expect(files).toContain(s3Key)
+      expect(files).toContain(s3key)
     },
     10000
   )

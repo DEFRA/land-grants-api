@@ -34,14 +34,14 @@ describe('Registered battlefields import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import registered battlefields data and return 200 ok (%s)',
-    async (s3Key) => {
+    async (s3key) => {
       await uploadLandDataFixture(
         s3Client,
         'registered_battlefields_head.csv',
-        s3Key
+        s3key
       )
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 
