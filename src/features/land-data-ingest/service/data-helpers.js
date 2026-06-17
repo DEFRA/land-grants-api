@@ -91,21 +91,6 @@ export async function createStagingTable(dbClient, tableName) {
   await dbClient.query(
     `CREATE TABLE ${dbClient.escapeIdentifier(tableName + '_staging')} (LIKE ${dbClient.escapeIdentifier(tableName)} INCLUDING ALL);`
   )
-
-  const { rows: fks } = await dbClient.query(
-    `SELECT
-      'ALTER TABLE ' || quote_ident($1 || '_staging')
-       || ' ADD CONSTRAINT '
-      || conname || ' '
-      || pg_get_constraintdef(oid) || ';'
-    FROM pg_constraint
-    WHERE conrelid = $1::regclass
-      AND contype = 'f';`,
-    [tableName]
-  )
-  for (const fk of fks) {
-    await dbClient.query(fk.fk_query)
-  }
 }
 
 /**
