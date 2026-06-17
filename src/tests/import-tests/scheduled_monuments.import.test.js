@@ -34,14 +34,14 @@ describe('Scheduled monuments import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import scheduled monuments data and return 200 ok (%s)',
-    async (s3Key) => {
+    async (s3key) => {
       await uploadLandDataFixture(
         s3Client,
         'scheduled_monuments_head.csv',
-        s3Key
+        s3key
       )
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 
