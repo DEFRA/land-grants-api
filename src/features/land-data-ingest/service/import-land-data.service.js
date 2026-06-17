@@ -43,9 +43,9 @@ export async function importData(
   logger,
 ) {
   if (entityType.ingest === true) {
-    return importDataValidate(dataStream, entityType, ingestId, filename, logger)
+    await importDataValidate(dataStream, entityType, ingestId, filename, logger)
   } else {
-    return importDataAsIs(dataStream, entityType, ingestId, logger)
+    await importDataAsIs(dataStream, entityType, ingestId, logger)
   }
 }
 

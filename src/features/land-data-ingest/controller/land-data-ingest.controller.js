@@ -44,7 +44,8 @@ export const LandDataIngestController = {
     /** @type { CDPUploaderRequest } */
     // @ts-expect-error
     const payload = request.payload
-    const { ingestId, filename } = payload.metadata
+    const ingestId = payload?.metadata?.ingestId
+    const filename = payload?.metadata?.filename
 
     try {
       logInfo(logger, {
