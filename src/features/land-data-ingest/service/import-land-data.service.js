@@ -9,9 +9,12 @@ import {
   copyDataToTempTable,
   createTempTable,
   insertData,
-  truncateTableAndInsertData
+  truncateTableAndInsertData,
+  isIngestComplete,
+  promoteStagingTable,
 } from './data-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
+import { setFileCompleted, setFileFailed, setFileInProgress } from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
 
@@ -27,24 +30,46 @@ function hasDBOptions(options, logger) {
 /**
  * Import data to the database
  * @param {import('stream').Readable} dataStream - The data stream
- * @param {string} tableName - The table name
- * @param {string} ingestId - The ingest ID
- * @param {Logger} logger - The logger
- * @param {boolean} truncateTable - Whether to truncate the table
+ * @param {import('../../common/common.d.js').EntityType} entityType - The table name
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
  */
 export async function importData(
   dataStream,
-  tableName,
+  entityType,
+  ingestId,
+  filename,
+  logger,
+) {
+  if (entityType.ingest === true) {
+    return importDataValidate(dataStream, entityType, ingestId, filename, logger)
+  } else {
+    return importDataAsIs(dataStream, entityType, ingestId, logger)
+  }
+}
+
+/**
+ * ingests data files as is
+ * @param {import('stream').Readable} dataStream - The data stream
+ * @param {import('../../common/common.d.js').EntityType} entityType - The table name
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ */
+export async function importDataAsIs(
+  dataStream,
+  entityType,
   ingestId,
   logger,
-  truncateTable = false
 ) {
   const startTime = performance.now()
+
+  const { name: entityName, truncateTable } = entityType
   logInfo(logger, {
     category: logCategory,
-    operation: `${tableName}_import_started`,
-    message: `${tableName} import started`,
-    context: { ingestId }
+    operation: `${entityName}_import_started`,
+    message: `${entityName} import started`,
+    context: { ingestId, truncateTable }
   })
 
   const dbOptions = getDBOptions()
@@ -58,36 +83,120 @@ export async function importData(
   const client = await connection.connect()
 
   try {
-    await createTempTable(client, tableName)
-    await copyDataToTempTable(client, tableName, dataStream)
+    await createTempTable(client, entityName)
+    await copyDataToTempTable(client, entityName, dataStream)
 
     let result
     if (truncateTable) {
-      result = await truncateTableAndInsertData(client, tableName, ingestId)
+      result = await truncateTableAndInsertData(client, entityName, ingestId)
     } else {
-      result = await insertData(client, tableName, ingestId)
+      result = await insertData(client, entityName, ingestId)
     }
 
     const endTime = performance.now()
     const duration = endTime - startTime
     logInfo(logger, {
       category: logCategory,
-      operation: `${tableName}_import_completed`,
-      message: `${tableName} imported successfully in ${duration}ms`,
+      operation: `${entityName}_file_import_completed`,
+      message: `${entityName} file imported successfully in ${duration}ms`,
       context: { rowCount: result?.rowCount, duration }
     })
-    await metricsCounter(`${tableName}_data_ingest_completed`, result?.rowCount)
+    await metricsCounter(`${entityName}_file_ingest_completed`, result?.rowCount)
+
   } catch (error) {
     logBusinessError(logger, {
-      operation: `${tableName}_import_failed`,
+      operation: `${entityName}_import_failed`,
       error,
-      context: { tableName }
+      context: { entityName }
     })
-    await metricsCounter(`${tableName}_data_ingest_failed`, 1)
+    await metricsCounter(`${entityName}_data_ingest_failed`, 1)
     throw error
   } finally {
-    await client?.query(`DROP TABLE IF EXISTS ${tableName}_tmp`)
+    await client?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`)
     await client?.end()
+  }
+}
+
+/**
+ * ingests data and checks all rows are present before promoting table
+ * @param {import('stream').Readable} dataStream - The data stream
+ * @param {import('../../common/common.d.js').EntityType} entityType - The table name
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ */
+export async function importDataValidate(
+  dataStream,
+  entityType,
+  ingestId,
+  filename,
+  logger,
+) {
+  const startTime = performance.now()
+
+  const { name: entityName, truncateTable } = entityType
+  logInfo(logger, {
+    category: logCategory,
+    operation: `${entityName}_import_started`,
+    message: `${entityName} import started`,
+    context: { ingestId, truncateTable, filename }
+  })
+
+  const dbOptions = getDBOptions()
+  if (!hasDBOptions(dbOptions, logger)) {
+    throw new Error('Database options are not set')
+  }
+  const connection = createDBPool(dbOptions, {
+    secureContext: createSecureContext(logger),
+    logger
+  })
+  const dbClient = await connection.connect()
+
+  try {
+    // @ts-expect-error filename
+    await setFileInProgress(filename, ingestId, dbClient)
+    await createTempTable(dbClient, entityName)
+    await copyDataToTempTable(dbClient, entityName, dataStream)
+    const { rowCount } = await insertData(dbClient, entityName, ingestId)
+    // @ts-expect-error filename
+    await setFileCompleted(filename, ingestId, dbClient)
+
+    const { isComplete, totalCount } = await isIngestComplete(entityName, ingestId, dbClient)
+    if (isComplete) {
+      await promoteStagingTable(entityName, dbClient)
+
+      logInfo(logger, {
+        category: logCategory,
+        operation: `${entityName}_import_completed`,
+        message: `${entityName} imported successfully`,
+        context: { totalCount }
+      })
+      await metricsCounter(`${entityName}_data_ingest_completed`, totalCount)
+    }
+
+    const endTime = performance.now()
+    const duration = endTime - startTime
+    logInfo(logger, {
+      category: logCategory,
+      operation: `${entityName}_file_import_completed`,
+      message: `${entityName} file imported successfully in ${duration}ms`,
+      context: { rowCount, duration }
+    })
+    await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
+
+  } catch (error) {
+    logBusinessError(logger, {
+      operation: `${entityName}_import_failed`,
+      error,
+      context: { entityName, filename }
+    })
+    // @ts-expect-error filename
+    await setFileFailed(filename, ingestId, dbClient)
+    await metricsCounter(`${entityName}_data_ingest_failed`, 1)
+    throw error
+  } finally {
+    await dbClient?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`)
+    await dbClient?.end()
   }
 }
 

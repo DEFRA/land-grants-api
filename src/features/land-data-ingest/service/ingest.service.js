@@ -10,29 +10,25 @@ import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Process a file
- * @param {string} filepath - The path to the file
+ * @param {{s3key: string, filename?: string, ingestId?: number}} data
  * @param {object} request - The request object
- * @param {string} category - The category of the worker
- * @param {string} title - The title of the worker
- * @param {number} taskId - The task ID
+ * @param {{title: string, category: string, taskId: number}} metadata
  * @returns {Promise<void>} Promise that resolves when the file is processed
  */
 export const processFile = async (
-  filepath,
+  data,
   request,
-  category,
-  title,
-  taskId
+  { category, title, taskId }
 ) => {
   logInfo(request.logger, {
     category,
     operation: `${category}_process_file_started`,
     message: `${category} process file started`,
-    context: { filepath }
+    context: { filepath: data.s3key }
   })
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const workerPath = join(__dirname, '../workers/ingest.worker.js')
-  return startWorker(request, workerPath, title, category, taskId, filepath)
+  return startWorker(request, workerPath, data, { title, category, taskId })
 }
 
 /**

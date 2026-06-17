@@ -5,6 +5,8 @@
  * @property {object} metadata
  * @property {string} metadata.customerId
  * @property {string} metadata.accountId
+ * @property {number} metadata.ingestId
+ * @property {string} metadata.filename
  * @property {object} form
  * @property {object} form.file
  * @property {string} form.file.fileId
