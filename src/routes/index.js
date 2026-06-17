@@ -70,7 +70,7 @@ async function createServer() {
     s3Client,
     statistics,
     woodlandManagement,
-    grantsConfigConsumer
+    // grantsConfigConsumer
   ])
 
   // Register swagger separately as it needs Inert and Vision plugins

@@ -2,6 +2,7 @@ import {
   logBusinessError,
   logInfo
 } from '../../common/helpers/logging/log-helpers.js'
+import { INGEST_STATUS } from './ingest-status.js'
 
 /**
  * Saves the ingest start data to the database
@@ -21,7 +22,7 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
 
       await dbClient.query(
         `INSERT INTO ingest_files (ingest_id, filename, total_rows, status) VALUES ($1, $2, $3, $4)`,
-        [ingestId, filename, rows, 'pending']
+        [ingestId, filename, rows, INGEST_STATUS.PENDING]
       )
     }
 
@@ -51,8 +52,8 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
 export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
   // set in progress ingests to cancelled
   const { rows } = await dbClient.query(
-    `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = 'in_progress' RETURNING id`,
-    [entity]
+    `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
+    [entity, INGEST_STATUS.IN_PROGRESS]
   )
 
   if (rows.length > 0) {
@@ -71,7 +72,7 @@ export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
     rows: [ingest]
   } = await dbClient.query(
     `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-    [entity, 'in_progress']
+    [entity, INGEST_STATUS.IN_PROGRESS]
   )
 
   return ingest.id
@@ -103,5 +104,104 @@ export const dropAndCreateNewStagingTable = async (
     })
   }
 
-  await dbClient.query(`CREATE TABLE ${entity}_staging (LIKE ${entity})`)
+  await dbClient.query(`CREATE TABLE ${entity + '_staging'} (LIKE ${entity} INCLUDING ALL);`)
+
+  // find foreign keys
+  const { rows: fks } = await dbClient.query(
+    `SELECT
+      'ALTER TABLE ' || quote_ident($1 || '_staging')
+       || ' ADD CONSTRAINT '
+      || conname || ' '
+      || pg_get_constraintdef(oid) || ';' AS fk_query
+    FROM pg_constraint
+    WHERE conrelid = $1::regclass
+      AND contype = 'f';`, [entity]
+  )
+  // create foreign keys if any
+  for (const fk of fks) {
+    await dbClient.query(fk.fk_query)
+  }
+}
+
+/**
+ * Gets active ingest for the given entity
+ * @param {string} entity - The entity to get active ingest for
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<import('../ingest.d.js').Ingest|null>} The active ingest data
+ */
+export const getActiveIngestForEntity = async (entity, dbClient) => {
+  const { rows } = await dbClient.query(
+    `SELECT * FROM ingest WHERE entity = $1 AND status = $2 LIMIT 1`,
+    [entity, INGEST_STATUS.IN_PROGRESS]
+  )
+
+  return rows?.[0]
+}
+
+/**
+ * Sets the status of a file
+ * @param {string} status - The status to set
+ * @param {string} filename - The filename to set the status of
+ * @param {number | string} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>} Promise that resolves when the file status is set
+ */
+const setFileStatus = async (status, filename, ingestId, dbClient) => {
+  await dbClient.query(
+    `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+    [status, ingestId, filename]
+  )
+}
+
+/**
+ * Sets the status of a file to in progress
+ * @param {string} filename - The filename to set the status of
+ * @param {number | string} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>} Promise that resolves when the file status is set
+ */
+export const setFileInProgress = async (filename, ingestId, dbClient) => {
+  await setFileStatus(INGEST_STATUS.IN_PROGRESS, filename, ingestId, dbClient)
+}
+
+/**
+ * Sets the status of a file to completed
+ * @param {string} filename - The filename to set the status of
+ * @param {number | string} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>} Promise that resolves when the file status is set
+ */
+export const setFileCompleted = async (filename, ingestId, dbClient) => {
+  await setFileStatus(INGEST_STATUS.COMPLETED, filename, ingestId, dbClient)
+}
+
+/**
+ * Sets the status of a file to completed
+ * @param {string} filename - The filename to set the status of
+ * @param {number| string} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>} Promise that resolves when the file status is set
+ */
+export const setFileFailed = async (filename, ingestId, dbClient) => {
+  await setFileStatus(INGEST_STATUS.FAILED, filename, ingestId, dbClient)
+}
+
+/**
+ * Validates that the file is part of the ingest and is in a pending state
+ * @param {string | number} ingestId 
+ * @param {string} filename 
+ * @param {import('pg').Client} dbClient 
+ * @returns {Promise<boolean>} True if the file is valid, false otherwise
+ */
+export const isValidIngestFile = async (ingestId, filename, dbClient) => {
+  const { rows } = await dbClient.query(
+    `SELECT 
+      1 
+    FROM 
+      ingest_files 
+    WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
+    [ingestId, filename, INGEST_STATUS.PENDING]
+  )
+
+  return rows.length > 0
 }
