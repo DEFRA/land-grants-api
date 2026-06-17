@@ -109,7 +109,7 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
       importData.mockResolvedValue(undefined)
 
-      const result = await importLandData({ s3key: 'land_parcels/123/test.csv' })
+      const result = await importLandData({ s3key: 'land_parcels/123/test.csv', filename: 'test.csv', ingestId: '123' })
 
       expect(result).toBe('Land data imported successfully')
       expect(getFile).toHaveBeenCalledWith(
@@ -119,9 +119,9 @@ describe('Ingest Module', () => {
       )
       expect(importData).toHaveBeenCalledWith(
         expect.any(Object),
-        'land_parcels',
+        { name: 'land_parcels', truncateTable: false, ingest: true },
         '123',
-        undefined,
+        'test.csv',
         expect.any(Object),
       )
     })
