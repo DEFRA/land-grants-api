@@ -12,6 +12,7 @@ import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { config } from '../../../config/index.js'
 import { createTaskInfo, processFile } from '../service/ingest.service.js'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
 
 export const LandDataIngestController = {
   options: {
@@ -35,11 +36,15 @@ export const LandDataIngestController = {
    */
   handler: async (request, h) => {
     const category = 'land-data-ingest'
-    const { logger } = request
-
+    const {
+      logger,
+      // @ts-expect-error - postgresDb, payload
+      server: { postgresDb }
+    } = request
     /** @type { CDPUploaderRequest } */
-    // @ts-expect-error - payload is validated by the schema
+    // @ts-expect-error
     const payload = request.payload
+    const { ingestId, filename } = payload.metadata
 
     try {
       logInfo(logger, {
@@ -60,12 +65,33 @@ export const LandDataIngestController = {
 
       const { title, taskId } = createTaskInfo(Date.now(), category)
 
+      if (ingestId && filename) {
+        // @ts-expect-error
+        const isValid = await isValidIngestFile(ingestId, filename, request.server.postgresDb)
+        if (!isValid) {
+          logBusinessError(request.logger, {
+            operation: `${category}_error`,
+            error: new Error('Invalid ingest file'),
+            context: {
+              payload
+            }
+          })
+          return Boom.badRequest('Invalid ingest file')
+        }
+      }
+
       processFile(
-        payload.form.file.s3Key,
+        {
+          s3key: payload.form.file.s3Key,
+          filename,
+          ingestId
+        },
         request,
-        category,
-        title,
-        taskId
+        {
+          category,
+          title,
+          taskId
+        }
       ).catch((error) => {
         logBusinessError(request.logger, {
           operation: `${category}_process_file_error`,

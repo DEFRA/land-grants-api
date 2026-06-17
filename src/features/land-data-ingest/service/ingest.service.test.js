@@ -47,33 +47,37 @@ describe('Ingest Service', () => {
 
     it('should call startWorker with correct parameters', async () => {
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
 
-      const [request, workerPath, title, category, taskId, filepath] =
+      const [request, workerPath, data, { title, category, taskId }] =
         workerThread.startWorker.mock.calls[0]
 
       expect(request).toBe(mockRequest)
       expect(workerPath).toContain('ingest.worker.js')
+      expect(data.s3key).toBe(mockFilepath)
       expect(title).toBe(mockTitle)
       expect(category).toBe(mockCategory)
       expect(taskId).toBe(mockTaskId)
-      expect(filepath).toBe(mockFilepath)
     })
 
     it('should construct worker path relative to service file location', async () => {
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       const workerPath = workerThread.startWorker.mock.calls[0][1]
@@ -85,11 +89,13 @@ describe('Ingest Service', () => {
       workerThread.startWorker.mockResolvedValue({ success: true })
 
       const result = await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       expect(result).toEqual({ success: true })
@@ -101,11 +107,13 @@ describe('Ingest Service', () => {
 
       await expect(
         processFile(
-          mockFilepath,
+          { s3key: mockFilepath },
           mockRequest,
-          mockCategory,
-          mockTitle,
-          mockTaskId
+          {
+            category: mockCategory,
+            title: mockTitle,
+            taskId: mockTaskId
+          }
         )
       ).rejects.toThrow('Worker processing failed')
     })
@@ -114,29 +122,33 @@ describe('Ingest Service', () => {
       const differentPath = '/var/data/uploads/file.csv'
 
       await processFile(
-        differentPath,
+        { s3key: differentPath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
-      const filepath = workerThread.startWorker.mock.calls[0][5]
-      expect(filepath).toBe(differentPath)
+      const data = workerThread.startWorker.mock.calls[0][2]
+      expect(data.s3key).toBe(differentPath)
     })
 
     it('should handle different categories', async () => {
       const differentCategory = 'land_covers'
 
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        differentCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: differentCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
-      const category = workerThread.startWorker.mock.calls[0][3]
+      const { category } = workerThread.startWorker.mock.calls[0][3]
       expect(category).toBe(differentCategory)
     })
 
@@ -144,14 +156,16 @@ describe('Ingest Service', () => {
       const differentTaskId = 99999
 
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        differentTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: differentTaskId
+        }
       )
 
-      const taskId = workerThread.startWorker.mock.calls[0][4]
+      const { taskId } = workerThread.startWorker.mock.calls[0][3]
       expect(taskId).toBe(differentTaskId)
     })
 
@@ -159,14 +173,16 @@ describe('Ingest Service', () => {
       const differentTitle = 'Land Covers Processing'
 
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        differentTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: differentTitle,
+          taskId: mockTaskId
+        }
       )
 
-      const title = workerThread.startWorker.mock.calls[0][2]
+      const { title } = workerThread.startWorker.mock.calls[0][3]
       expect(title).toBe(differentTitle)
     })
 
@@ -177,11 +193,13 @@ describe('Ingest Service', () => {
       }
 
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         differentRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       const request = workerThread.startWorker.mock.calls[0][0]
@@ -194,11 +212,13 @@ describe('Ingest Service', () => {
 
       await expect(
         processFile(
-          mockFilepath,
+          { s3key: mockFilepath },
           mockRequest,
-          mockCategory,
-          mockTitle,
-          mockTaskId
+          {
+            category: mockCategory,
+            title: mockTitle,
+            taskId: mockTaskId
+          }
         )
       ).rejects.toThrow('Worker timeout')
     })
@@ -209,22 +229,26 @@ describe('Ingest Service', () => {
 
       await expect(
         processFile(
-          mockFilepath,
+          { s3key: mockFilepath },
           mockRequest,
-          mockCategory,
-          mockTitle,
-          mockTaskId
+          {
+            category: mockCategory,
+            title: mockTitle,
+            taskId: mockTaskId
+          }
         )
       ).rejects.toThrow('Invalid file format')
     })
 
     it('should call startWorker only once per invocation', async () => {
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       expect(workerThread.startWorker).toHaveBeenCalledTimes(1)
@@ -238,11 +262,13 @@ describe('Ingest Service', () => {
       })
 
       await processFile(
-        mockFilepath,
+        { s3key: mockFilepath },
         mockRequest,
-        mockCategory,
-        mockTitle,
-        mockTaskId
+        {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        }
       )
 
       expect(workerCompleted).toBe(true)
