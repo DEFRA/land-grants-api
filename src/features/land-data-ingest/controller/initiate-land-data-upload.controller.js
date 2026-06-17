@@ -54,8 +54,12 @@ export const InitiateLandDataUploadController = {
       })
 
       if (ingestId && filename) {
-        // @ts-expect-error
-        const isValid = await isValidIngestFile(ingestId, filename, request.server.postgresDb)
+        const isValid = await isValidIngestFile(
+          ingestId,
+          filename,
+          // @ts-expect-error - postgresDb
+          request.server.postgresDb
+        )
         if (!isValid) {
           logBusinessError(request.logger, {
             operation: `${category}_error`,
