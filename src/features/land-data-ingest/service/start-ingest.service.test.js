@@ -1,12 +1,16 @@
 import {
   dropAndCreateNewStagingTable,
   cancelAndCreateNewIngest,
-  saveIngestStart
+  saveIngestStart,
+  setFileInProgress,
+  setFileCompleted,
+  setFileFailed
 } from './start-ingest.service.js'
 import {
   logBusinessError,
   logInfo
 } from '../../common/helpers/logging/log-helpers.js'
+import { INGEST_STATUS } from '../service/ingest-status.js'
 
 vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
   logBusinessError: vi.fn(),
@@ -19,7 +23,7 @@ describe('start ingest service', () => {
 
   beforeEach(() => {
     dbClient = {
-      query: vi.fn()
+      query: vi.fn().mockResolvedValue({ rows: [] })
     }
     logger = {
       info: vi.fn(),
@@ -45,12 +49,12 @@ describe('start ingest service', () => {
 
       expect(result).toEqual(123)
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = 'in_progress' RETURNING id`,
-        [entity]
+        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
+        [entity, INGEST_STATUS.IN_PROGRESS]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, 'in_progress']
+        [entity, INGEST_STATUS.IN_PROGRESS]
       )
     })
 
@@ -75,12 +79,12 @@ describe('start ingest service', () => {
         }
       })
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = 'in_progress' RETURNING id`,
-        [entity]
+        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
+        [entity, INGEST_STATUS.IN_PROGRESS]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, 'in_progress']
+        [entity, INGEST_STATUS.IN_PROGRESS]
       )
     })
   })
@@ -98,7 +102,7 @@ describe('start ingest service', () => {
         [`${entity}_staging`]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
+        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
       )
     })
 
@@ -115,7 +119,7 @@ describe('start ingest service', () => {
         `DROP TABLE ${entity}_staging`
       )
       expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
+        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
       )
       expect(logBusinessError).toHaveBeenCalledWith(logger, {
         operation: 'start_ingest',
@@ -185,7 +189,45 @@ describe('start ingest service', () => {
         `DROP TABLE ${entity}_staging`
       )
       expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
+        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
+      )
+    })
+  })
+
+  describe('set file status', () => {
+    test('setFileInProgress should set file status to in progress', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileInProgress(filename, ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.IN_PROGRESS, ingestId, filename]
+      )
+    })
+
+    test('setFileCompleted should set file status to completed', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileCompleted(filename, ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.COMPLETED, ingestId, filename]
+      )
+    })
+
+    test('setFileFailed should set file status to failed', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileFailed(filename, ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.FAILED, ingestId, filename]
       )
     })
   })
