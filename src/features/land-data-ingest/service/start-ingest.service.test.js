@@ -4,7 +4,8 @@ import {
   saveIngestStart,
   setFileInProgress,
   setFileCompleted,
-  setFileFailed
+  setFileFailed,
+  isValidIngestFile
 } from './start-ingest.service.js'
 import {
   logBusinessError,
@@ -228,6 +229,25 @@ describe('start ingest service', () => {
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
         [INGEST_STATUS.FAILED, ingestId, filename]
+      )
+    })
+  })
+
+  describe('is valid ingest file', () => {
+    test('makes correct db call', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: []
+      })
+      const result = await isValidIngestFile('filename', 123, dbClient)
+
+      expect(result).toBe(false)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `SELECT 
+      1 
+    FROM 
+      ingest_files 
+    WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
+        ['filename', 123, INGEST_STATUS.PENDING]
       )
     })
   })
