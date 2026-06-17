@@ -117,12 +117,13 @@ export async function importLandData(data) {
     filename: originalFilename
   } = data
 
+
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
   const bucket = config.get('s3.bucket')
   const [resourceType, ...rest] = s3key.split('/')
-  const ingestId = data.ingestId || rest?.[0] || ''
+  const ingestId = data?.ingestId || rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
 
@@ -155,7 +156,7 @@ export async function importLandData(data) {
     } else if (response.ContentType === 'text/csv') {
       await handleCsvFile(
         response,
-        resource.name,
+        resource,
         ingestId,
         originalFilename,
         logger,

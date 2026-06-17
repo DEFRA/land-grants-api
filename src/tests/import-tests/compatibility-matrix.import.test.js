@@ -35,14 +35,14 @@ describe('Compatibility matrix import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import compatibility matrix data and return 200 ok (%s)',
-    async (s3Key) => {
+    async (s3key) => {
       await uploadLandDataFixture(
         s3Client,
         'compatibility_matrix_head.csv',
-        s3Key
+        s3key
       )
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -59,7 +59,7 @@ describe('Compatibility matrix import', () => {
       expect(compatibilityMatrix[0].ingest_date).toBeDefined()
 
       const files = await listTestFiles(s3Client)
-      expect(files).toContain(s3Key)
+      expect(files).toContain(s3key)
     },
     10000
   )
