@@ -42,7 +42,7 @@ export const LandDataIngestController = {
       server: { postgresDb }
     } = request
     /** @type { CDPUploaderRequest } */
-    // @ts-expect-error
+    // @ts-expect-error - payload
     const payload = request.payload
     const ingestId = payload?.metadata?.ingestId
     const filename = payload?.metadata?.filename
@@ -67,8 +67,7 @@ export const LandDataIngestController = {
       const { title, taskId } = createTaskInfo(Date.now(), category)
 
       if (ingestId && filename) {
-        // @ts-expect-error
-        const isValid = await isValidIngestFile(ingestId, filename, request.server.postgresDb)
+        const isValid = await isValidIngestFile(ingestId, filename, postgresDb)
         if (!isValid) {
           logBusinessError(request.logger, {
             operation: `${category}_error`,

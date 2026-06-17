@@ -23,11 +23,11 @@ describe('Parcels import', () => {
   let connection
   let fixtures
   let ingestId
-  let logger = {
-    info: () => { },
-    error: () => { },
-    warn: () => { },
-    debug: () => { }
+  const logger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
   }
 
   beforeAll(async () => {
@@ -43,11 +43,15 @@ describe('Parcels import', () => {
   })
 
   beforeEach(async () => {
-    ingestId = await saveIngestStart({
-      files: [{
-        filename: 'parcels_head.csv', 'rows': 9
-      }]
-    },
+    ingestId = await saveIngestStart(
+      {
+        files: [
+          {
+            filename: 'parcels_head.csv',
+            rows: 9
+          }
+        ]
+      },
       'land_parcels',
       connection,
       logger
@@ -63,7 +67,11 @@ describe('Parcels import', () => {
     async (s3key) => {
       await uploadLandDataFixture(s3Client, 'parcels_head.csv', s3key)
 
-      const result = await importLandData({ s3key, filename: 'parcels_head.csv', ingestId })
+      const result = await importLandData({
+        s3key,
+        filename: 'parcels_head.csv',
+        ingestId
+      })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -104,7 +112,11 @@ describe('Parcels import', () => {
       'application/zip'
     )
 
-    await importLandData({ s3key: 'land_parcels/parcels_head.csv.zip', filename: 'parcels_head.csv', ingestId })
+    await importLandData({
+      s3key: 'land_parcels/parcels_head.csv.zip',
+      filename: 'parcels_head.csv',
+      ingestId
+    })
 
     const parcels = await getRecordsByQuery(
       connection,
