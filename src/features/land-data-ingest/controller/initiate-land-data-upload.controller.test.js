@@ -146,7 +146,11 @@ describe('InitiateLandDataUploadController', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('Land data upload initiated')
       expect(uploadUrl).toBe(`${mockGrantsUiHost}${mockUploadUrl}`)
-      expect(mockIsValidIngestFile).toHaveBeenCalledWith(ingestId, filename, undefined)
+      expect(mockIsValidIngestFile).toHaveBeenCalledWith(
+        ingestId,
+        filename,
+        undefined
+      )
 
       // Verify service was called with correct parameters
       // Parameters: endpoint, callback, s3Bucket, s3Path (resource), metadata (payload)
@@ -187,7 +191,7 @@ describe('InitiateLandDataUploadController', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
-        result: { message, uploadUrl }
+        result: { message }
       } = await server.inject(request)
 
       expect(statusCode).toBe(400)
