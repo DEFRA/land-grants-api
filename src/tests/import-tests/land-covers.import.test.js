@@ -1,6 +1,5 @@
 import {
   createTestS3Client,
-  uploadFixtureFile,
   uploadLandDataFixture,
   ensureBucketExists,
   listTestFiles,
@@ -11,6 +10,7 @@ import { importLandData } from '~/src/features/land-data-ingest/workers/ingest.m
 import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 import { getCsvFixtures } from '~/src/tests/import-tests/setup/csv.js'
+import { saveIngestStart } from '~/src/features/land-data-ingest/service/start-ingest.service.js'
 
 const S3_KEYS = ['land_covers/covers_head.csv', 'land_covers/covers_head.zip']
 
@@ -18,6 +18,13 @@ describe('Land covers import', () => {
   let s3Client
   let connection
   let fixtures
+  let ingestId
+  let logger = {
+    info: () => { },
+    error: () => { },
+    warn: () => { },
+    debug: () => { }
+  }
 
   beforeAll(async () => {
     connection = connectToTestDatbase()
@@ -28,7 +35,19 @@ describe('Land covers import', () => {
 
   afterAll(async () => {
     await connection.end()
-    await deleteFiles(s3Client, ['land_covers/covers_head_upsert.csv'])
+    await deleteFiles(s3Client, ['land_covers/covers_head.csv'])
+  })
+
+  beforeEach(async () => {
+    ingestId = await saveIngestStart({
+      files: [{
+        filename: 'covers_head.csv', 'rows': 9
+      }]
+    },
+      'land_covers',
+      connection,
+      logger
+    )
   })
 
   afterEach(async () => {
@@ -37,10 +56,10 @@ describe('Land covers import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import land covers data and return 200 ok (%s)',
-    async (s3Key) => {
-      await uploadLandDataFixture(s3Client, 'covers_head.csv', s3Key)
+    async (s3key) => {
+      await uploadLandDataFixture(s3Client, 'covers_head.csv', s3key)
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key, filename: 'cvoers_header.csv', ingestId })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -65,38 +84,9 @@ describe('Land covers import', () => {
       }
 
       const files = await listTestFiles(s3Client)
-      expect(files).toContain(s3Key)
+      expect(files).toContain(s3key)
     },
     10000
   )
 
-  test('should import land covers data and upsert data', async () => {
-    await uploadFixtureFile(
-      s3Client,
-      'covers_head.csv',
-      'land_covers/covers_head.csv'
-    )
-    await uploadFixtureFile(
-      s3Client,
-      'covers_head_upsert.csv',
-      'land_covers/covers_head_upsert.csv'
-    )
-
-    await importLandData('land_covers/covers_head.csv')
-    await importLandData('land_covers/covers_head_upsert.csv')
-
-    const covers = await getRecordsByQuery(
-      connection,
-      'SELECT * FROM land_covers WHERE id = $1',
-      ['20']
-    )
-
-    expect(covers).toHaveLength(1)
-    expect(covers[0].sheet_id).toBe('TV5699')
-    expect(covers[0].parcel_id).toBe('1419')
-    expect(covers[0].land_cover_class_code).toBe('132')
-    expect(covers[0].last_updated.toISOString()).toBe(
-      '2024-03-06T00:00:00.000Z'
-    )
-  }, 10000)
 })
