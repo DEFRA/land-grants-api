@@ -21,3 +21,10 @@
  * @property {string} actionConfigVersion
  * @property {Explanation[]} explanations
  */
+
+/**
+ * @typedef {object} EntityType
+ * @property {string} name
+ * @property {boolean} truncateTable
+ * @property {boolean} [ingest]
+ */
