@@ -130,7 +130,7 @@ describe('Data helpers', () => {
       expect(dbClient.escapeIdentifier).not.toHaveBeenCalled()
     })
 
-    test('should create the staging table and its foreign key constraints when it does not exist', async () => {
+    test('should create the staging table when it does not exist', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rows: [{ exists: false }] })
         .mockResolvedValueOnce({ rowCount: 0 })
@@ -146,13 +146,9 @@ describe('Data helpers', () => {
 
       await createStagingTable(dbClient, 'land_parcels')
 
-      expect(dbClient.query).toHaveBeenCalledTimes(4)
+      expect(dbClient.query).toHaveBeenCalledTimes(2)
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'CREATE TABLE "land_parcels_staging" (LIKE "land_parcels" INCLUDING ALL);'
-      )
-      expect(dbClient.query.mock.calls[2][1]).toEqual(['land_parcels'])
-      expect(dbClient.query.mock.calls[3][0]).toBe(
-        'ALTER TABLE "land_parcels_staging" ADD CONSTRAINT fk_a FOREIGN KEY (id) REFERENCES other(id);'
       )
     })
 
@@ -164,7 +160,7 @@ describe('Data helpers', () => {
 
       await createStagingTable(dbClient, 'land_covers')
 
-      expect(dbClient.query).toHaveBeenCalledTimes(3)
+      expect(dbClient.query).toHaveBeenCalledTimes(2)
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'CREATE TABLE "land_covers_staging" (LIKE "land_covers" INCLUDING ALL);'
       )
