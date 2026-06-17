@@ -216,9 +216,9 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
         .mockRejectedValueOnce(new Error('rename failed'))
 
-      await expect(promoteStagingTable('land_parcels', dbClient)).rejects.toThrow(
-        'rename failed'
-      )
+      await expect(
+        promoteStagingTable('land_parcels', dbClient)
+      ).rejects.toThrow('rename failed')
 
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
