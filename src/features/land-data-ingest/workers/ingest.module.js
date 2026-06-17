@@ -11,32 +11,19 @@ import {
   logBusinessError
 } from '../../common/helpers/logging/log-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
-
-export const resources = [
-  { name: 'land_parcels', truncateTable: false },
-  { name: 'moorland_designations', truncateTable: false },
-  { name: 'land_covers', truncateTable: false },
-  { name: 'compatibility_matrix', truncateTable: true },
-  { name: 'agreements', truncateTable: true },
-  { name: 'sssi', truncateTable: false },
-  { name: 'registered_battlefields', truncateTable: false },
-  { name: 'shine', truncateTable: false },
-  { name: 'scheduled_monuments', truncateTable: false },
-  { name: 'registered_parks_gardens', truncateTable: false },
-  { name: 'action_sssi_hf_mapping', truncateTable: false }
-]
+import { getEntityByName } from '~/src/features/common/constants/entity_types.js'
 
 /**
  * Get resource by type
- * @param {string} resourceType - The resource type
+ * @param {string} entityName - The entity name
  * @returns {object} The resource
  */
-export const getResourceByType = (resourceType) => {
-  const resource = resources.find((r) => r.name === resourceType)
-  if (!resource) {
-    throw new Error(`Resource type ${resourceType} not found`)
+export const getEntityType = (entityName) => {
+  const entityType = getEntityByName(entityName)
+  if (!entityType) {
+    throw new Error(`Entity type ${entityName} not found`)
   }
-  return resource
+  return entityType
 }
 
 /**
@@ -59,21 +46,21 @@ const postMessage = (taskId, success, result, error) => {
 /**
  * Import a CSV response body directly into the database.
  * @param {object} response - The S3 response object
- * @param {string} tableName - The table name to import data into
- * @param {string} ingestId - The ingest ID
+ * @param {EntityType} entityType - The table name to import data into
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
- * @param {boolean} truncateTable - Whether to truncate the table before inserting
  * @returns {Promise<void>}
  */
 async function handleCsvFile(
   response,
-  tableName,
+  entityType,
   ingestId,
+  filename,
   logger,
-  truncateTable
 ) {
   const stream = Readable.fromWeb(response.Body.transformToWebStream())
-  await importData(stream, tableName, ingestId, logger, truncateTable)
+  await importData(stream, entityType, ingestId, filename, logger)
 }
 
 /**
@@ -81,25 +68,25 @@ async function handleCsvFile(
  * stream consumed inside the for-await loop to prevent early iterator return
  * from destroying the underlying zip stream mid-read.
  * @param {object} response - The S3 response object
- * @param {string} tableName - The table name to import data into
- * @param {string} ingestId - The ingest ID
+ * @param {EntityType} entityType - The table name to import data into
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
- * @param {boolean} truncateTable - Whether to truncate the table before inserting
  * @returns {Promise<void>}
  */
 async function handleZipFile(
   response,
-  tableName,
+  entityType,
   ingestId,
+  filename,
   logger,
-  truncateTable
 ) {
   try {
     const stream = Readable.fromWeb(response.Body.transformToWebStream())
     const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
     for await (const entry of zip) {
       if (entry.path.endsWith('.csv')) {
-        await importData(entry, tableName, ingestId, logger, truncateTable)
+        await importData(entry, entityType, ingestId, filename, logger)
         return
       }
       entry.autodrain()
@@ -110,9 +97,9 @@ async function handleZipFile(
       operation: 'error importing land data',
       error,
       context: {
-        tableName,
+        entityName: entityType.name,
         ingestId,
-        truncateTable
+        truncateTable: entityType.truncateTable
       }
     })
     throw error
@@ -121,16 +108,21 @@ async function handleZipFile(
 
 /**
  * Import land data from S3 bucket
- * @param {string} file - The file to import
+ * @param {{s3key: string, filename?: string, ingestId?: number}} data
  * @returns {Promise<string>} The string representation of the file
  */
-export async function importLandData(file) {
+export async function importLandData(data) {
+  const {
+    s3key,
+    filename: originalFilename
+  } = data
+
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
   const bucket = config.get('s3.bucket')
-  const [resourceType, ...rest] = file.split('/')
-  const ingestId = rest?.[0] || ''
+  const [resourceType, ...rest] = s3key.split('/')
+  const ingestId = data.ingestId || rest?.[0] || ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
 
@@ -140,7 +132,7 @@ export async function importLandData(file) {
     message: `${resourceType} import started`,
     context: {
       ingestId,
-      file,
+      file: s3key,
       resourceType,
       filename,
       s3Path,
@@ -150,23 +142,23 @@ export async function importLandData(file) {
 
   try {
     const response = await getFile(s3Client, bucket, s3Path)
-    const resource = getResourceByType(resourceType)
+    const resource = getEntityType(resourceType)
 
     if (response.ContentType === 'application/zip') {
       await handleZipFile(
         response,
-        resource.name,
+        resource,
         ingestId,
+        originalFilename,
         logger,
-        resource.truncateTable
       )
     } else if (response.ContentType === 'text/csv') {
       await handleCsvFile(
         response,
         resource.name,
         ingestId,
+        originalFilename,
         logger,
-        resource.truncateTable
       )
     } else {
       throw new Error(`Invalid content type: ${response.ContentType}`)
@@ -201,7 +193,7 @@ export async function importLandData(file) {
 }
 
 /**
- * @param {object} landData - The data to ingest
+ * @param {{taskId: string, data: {s3key: string, filename?: string, ingestId?: number}}} landData - The data to ingest
  * @returns {Promise<void>}
  */
 export async function ingestLandData(landData) {
@@ -213,3 +205,7 @@ export async function ingestLandData(landData) {
     throw error
   }
 }
+
+/**
+ * @import { EntityType } from '../../common/common.d.js'
+ */
