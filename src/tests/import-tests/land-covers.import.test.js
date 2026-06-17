@@ -19,11 +19,11 @@ describe('Land covers import', () => {
   let connection
   let fixtures
   let ingestId
-  let logger = {
-    info: () => { },
-    error: () => { },
-    warn: () => { },
-    debug: () => { }
+  const logger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
   }
 
   beforeAll(async () => {
@@ -39,11 +39,15 @@ describe('Land covers import', () => {
   })
 
   beforeEach(async () => {
-    ingestId = await saveIngestStart({
-      files: [{
-        filename: 'covers_head.csv', 'rows': 9
-      }]
-    },
+    ingestId = await saveIngestStart(
+      {
+        files: [
+          {
+            filename: 'covers_head.csv',
+            rows: 9
+          }
+        ]
+      },
       'land_covers',
       connection,
       logger
@@ -59,7 +63,11 @@ describe('Land covers import', () => {
     async (s3key) => {
       await uploadLandDataFixture(s3Client, 'covers_head.csv', s3key)
 
-      const result = await importLandData({ s3key, filename: 'cvoers_header.csv', ingestId })
+      const result = await importLandData({
+        s3key,
+        filename: 'cvoers_header.csv',
+        ingestId
+      })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -88,5 +96,4 @@ describe('Land covers import', () => {
     },
     10000
   )
-
 })

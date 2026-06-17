@@ -86,7 +86,9 @@ describe('Moorland import', () => {
     )
 
     await importLandData({ s3key: 'moorland_designations/moorland_head.csv' })
-    await importLandData({ s3key: 'moorland_designations/moorland_head_upsert.csv' })
+    await importLandData({
+      s3key: 'moorland_designations/moorland_head_upsert.csv'
+    })
 
     const [moorland] = await getRecordsByQuery(
       connection,

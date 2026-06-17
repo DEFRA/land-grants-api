@@ -103,7 +103,9 @@ export const dropAndCreateNewStagingTable = async (
     })
   }
 
-  await dbClient.query(`CREATE TABLE ${entity + '_staging'} (LIKE ${entity} INCLUDING ALL);`)
+  await dbClient.query(
+    `CREATE TABLE ${entity + '_staging'} (LIKE ${entity} INCLUDING ALL);`
+  )
 
   // find foreign keys
   const { rows: fks } = await dbClient.query(
@@ -114,7 +116,8 @@ export const dropAndCreateNewStagingTable = async (
       || pg_get_constraintdef(oid) || ';' AS fk_query
     FROM pg_constraint
     WHERE conrelid = $1::regclass
-      AND contype = 'f';`, [entity]
+      AND contype = 'f';`,
+    [entity]
   )
   // create foreign keys if any
   for (const fk of fks) {
@@ -187,9 +190,9 @@ export const setFileFailed = async (filename, ingestId, dbClient) => {
 
 /**
  * Validates that the file is part of the ingest and is in a pending state
- * @param {string | number} ingestId 
- * @param {string} filename 
- * @param {import('pg').Client} dbClient 
+ * @param {string | number} ingestId
+ * @param {string} filename
+ * @param {import('pg').Client} dbClient
  * @returns {Promise<boolean>} True if the file is valid, false otherwise
  */
 export const isValidIngestFile = async (ingestId, filename, dbClient) => {

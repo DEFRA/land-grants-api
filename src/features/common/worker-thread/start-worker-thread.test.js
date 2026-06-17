@@ -50,16 +50,11 @@ describe('Start Worker Thread', () => {
       const taskId = 999
       const data = { s3key: 'test' }
 
-      const workerPromise = startWorker(
-        mockRequest,
-        workerPath,
-        data,
-        {
-          title: 'Data Processor',
-          category: 'data_processing',
-          taskId
-        }
-      )
+      const workerPromise = startWorker(mockRequest, workerPath, data, {
+        title: 'Data Processor',
+        category: 'data_processing',
+        taskId
+      })
 
       messageHandler({ success: true, processed: 2 })
       expect(logHelpers.logInfo).toHaveBeenCalledWith(mockLogger, {
