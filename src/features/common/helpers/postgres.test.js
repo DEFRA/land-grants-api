@@ -4,7 +4,6 @@ import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
 import { getDBOptions, createDBPool, postgresDb } from './postgres.js'
-import { getStats } from '../../statistics/queries/stats.query.js'
 
 vi.mock('@aws-sdk/credential-providers', () => ({
   fromNodeProviderChain: vi.fn()
@@ -22,10 +21,6 @@ vi.mock('../../../config/index.js', () => ({
   config: {
     get: vi.fn()
   }
-}))
-
-vi.mock('../../statistics/queries/stats.query.js', () => ({
-  getStats: vi.fn().mockResolvedValue()
 }))
 
 describe('Postgres Helper', () => {
@@ -433,7 +428,7 @@ describe('Postgres Helper', () => {
     })
 
     describe('plugin registration', () => {
-      test('should successfully register and connect to postgres', async () => {
+      test('should successfully register and connect to postgres', () => {
         const options = {
           user: 'test-user',
           database: 'test-db',
@@ -442,20 +437,17 @@ describe('Postgres Helper', () => {
           region: 'eu-west-2'
         }
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Setting up postgres'
-        )
-        expect(vi.mocked(getStats)).toHaveBeenCalledWith(
-          mockServer.logger,
-          mockPool
         )
         expect(mockServer.decorate).toHaveBeenCalledWith(
           'server',
           'postgresDb',
           mockPool
         )
+        expect(mockPool.on).toHaveBeenCalledWith('error', expect.any(Function))
         expect(mockPool.on).toHaveBeenCalledWith(
           'connect',
           expect.any(Function)
@@ -467,7 +459,7 @@ describe('Postgres Helper', () => {
         expect(mockPool.on).toHaveBeenCalledWith('remove', expect.any(Function))
       })
 
-      test('should register stop event handler', async () => {
+      test('should register stop event handler', () => {
         const options = {
           user: 'test-user',
           database: 'test-db',
@@ -476,15 +468,11 @@ describe('Postgres Helper', () => {
           region: 'eu-west-2'
         }
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         expect(mockServer.events.on).toHaveBeenCalledWith(
           'stop',
           expect.any(Function)
-        )
-        expect(vi.mocked(getStats)).toHaveBeenCalledWith(
-          mockServer.logger,
-          mockPool
         )
       })
 
@@ -497,7 +485,7 @@ describe('Postgres Helper', () => {
           region: 'eu-west-2'
         }
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         // Get the stop event handler
         const stopHandler = vi
@@ -513,9 +501,8 @@ describe('Postgres Helper', () => {
         expect(mockPool.end).toHaveBeenCalled()
       })
 
-      test('should handle connection failure', async () => {
-        const connectionError = new Error('Connection refused')
-        vi.mocked(getStats).mockRejectedValue(connectionError)
+      test('should not block startup when the database is unavailable', () => {
+        mockPool.connect.mockRejectedValue(new Error('Connection refused'))
 
         const options = {
           user: 'test-user',
@@ -525,18 +512,69 @@ describe('Postgres Helper', () => {
           region: 'eu-west-2'
         }
 
-        await expect(
+        expect(() =>
           postgresDb.plugin.register(mockServer, options)
-        ).rejects.toThrow('Connection refused')
+        ).not.toThrow()
 
-        expect(mockServer.logger.error).toHaveBeenCalledWith(
-          { err: connectionError },
-          'Failed to connect to Postgres'
+        expect(mockServer.decorate).toHaveBeenCalledWith(
+          'server',
+          'postgresDb',
+          mockPool
         )
-        expect(mockServer.decorate).not.toHaveBeenCalled()
       })
 
-      test('should invoke connect event handler', async () => {
+      test('should swallow keep-alive query failures', async () => {
+        vi.useFakeTimers()
+
+        const keepAliveError = new Error('Connection refused')
+        mockPool.query.mockRejectedValue(keepAliveError)
+
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        postgresDb.plugin.register(mockServer, options)
+
+        await expect(vi.advanceTimersByTimeAsync(60000)).resolves.not.toThrow()
+
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
+          { err: keepAliveError },
+          'Postgres keep-alive query failed'
+        )
+
+        vi.useRealTimers()
+      })
+
+      test('should clear the keep-alive interval on server stop', async () => {
+        const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval')
+
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          isLocal: true,
+          region: 'eu-west-2'
+        }
+
+        postgresDb.plugin.register(mockServer, options)
+
+        const stopHandler = vi
+          .mocked(mockServer.events.on)
+          .mock.calls.find((call) => call[0] === 'stop')[1]
+
+        await stopHandler()
+
+        expect(clearIntervalSpy).toHaveBeenCalled()
+        expect(mockPool.end).toHaveBeenCalled()
+
+        clearIntervalSpy.mockRestore()
+      })
+
+      test('should invoke connect event handler', () => {
         const options = {
           user: 'test-user',
           database: 'test-db',
@@ -552,7 +590,7 @@ describe('Postgres Helper', () => {
           }
         })
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         connectHandler()
 
@@ -561,7 +599,7 @@ describe('Postgres Helper', () => {
         )
       })
 
-      test('should invoke acquire event handler', async () => {
+      test('should invoke acquire event handler', () => {
         const options = {
           user: 'test-user',
           database: 'test-db',
@@ -577,7 +615,7 @@ describe('Postgres Helper', () => {
           }
         })
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         acquireHandler()
 
@@ -586,7 +624,7 @@ describe('Postgres Helper', () => {
         )
       })
 
-      test('should invoke remove event handler', async () => {
+      test('should invoke remove event handler', () => {
         const options = {
           user: 'test-user',
           database: 'test-db',
@@ -602,7 +640,7 @@ describe('Postgres Helper', () => {
           }
         })
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         removeHandler()
 
@@ -622,7 +660,7 @@ describe('Postgres Helper', () => {
           region: 'eu-west-2'
         }
 
-        await postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options)
 
         // Clear previous calls
         mockPool.query.mockClear()

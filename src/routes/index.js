@@ -9,6 +9,7 @@ import { secureContext } from '~/src/features/common/helpers/secure-context/inde
 import { swagger } from '~/src/features/common/plugins/swagger.js'
 import { router } from '~/src/routes/router.js'
 import { config } from '~/src/config/index.js'
+import { health } from '~/src/features/health/index.js'
 import { postgresDb } from '~/src/features/common/helpers/postgres.js'
 import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
@@ -50,6 +51,7 @@ async function createServer() {
   // requestTracing      - trace header logging and propagation
   // secureContext       - loads CA certificates from environment config
   // pulse               - provides shutdown handlers
+  // health              - platform health-check route
   // auth                - provides service-to-service authentication
   // router              - routes used in the app
   // s3Client            - S3 client
@@ -61,6 +63,7 @@ async function createServer() {
     requestTracing,
     secureContext,
     pulse,
+    health,
     postgresDb,
     auth,
     router,
