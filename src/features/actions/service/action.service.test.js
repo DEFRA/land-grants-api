@@ -255,7 +255,7 @@ describe('Action Service', () => {
       })
     })
 
-    test('should use caller-supplied version over prior-run version', async () => {
+    test('should ignore caller-supplied version in favour of the version pinned to applicationId', async () => {
       mockGetLatestApplicationRunForAppId.mockResolvedValue({
         data: {
           parcelLevelResults: [
@@ -284,7 +284,7 @@ describe('Action Service', () => {
       const calledWith = mockGetActionsByVersion.mock.calls[0][2]
       expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
         code: 'CMOR1',
-        version: '3.0.0'
+        version: '1.0.0'
       })
     })
 
@@ -321,7 +321,7 @@ describe('Action Service', () => {
       })
     })
 
-    test('should apply caller versions and prior-run versions independently per action', async () => {
+    test('should apply pinned and caller versions independently per action', async () => {
       mockGetLatestApplicationRunForAppId.mockResolvedValue({
         data: {
           parcelLevelResults: [
@@ -355,14 +355,17 @@ describe('Action Service', () => {
       )
 
       const calledWith = mockGetActionsByVersion.mock.calls[0][2]
+      // CMOR1: pinned to applicationId, so the caller-supplied version is ignored
       expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
         code: 'CMOR1',
-        version: '3.0.0'
+        version: '1.0.0'
       })
+      // CMOR2: pinned to applicationId, caller supplied no version
       expect(calledWith.find((a) => a.code === 'CMOR2')).toMatchObject({
         code: 'CMOR2',
         version: '1.5.0'
       })
+      // CMOR3: not pinned, caller-supplied version applies
       expect(calledWith.find((a) => a.code === 'CMOR3')).toMatchObject({
         code: 'CMOR3',
         version: '2.0.0'

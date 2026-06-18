@@ -4,8 +4,9 @@ import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getAct
 
 /**
  * Get all action configs for the given land actions, pinning versions from any previous validation run.
- * Actions present in a prior run are fetched at their previously-used version; new actions are fetched
- * at their latest version.
+ * Actions present in a prior run are fetched at their previously-used version, taking priority over any
+ * caller-supplied version for that action; actions not present in a prior run use the caller-supplied
+ * version if given, otherwise the latest version.
  * @param {import('@hapi/hapi').Request} request - Hapi request object
  * @param {object} postgresDb - The postgres database instance
  * @param {Array} landActions - The land actions from the request payload
@@ -50,16 +51,13 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
     context: { previousRunActions }
   })
 
-  // merge actions: caller-supplied version > prior-run version > latest
+  // merge actions: prior-run version (pinned to applicationId) > caller-supplied version > latest
   const actionMap = new Map(
     flattenedLandActions.map((action) => [action.code, action])
   )
 
   for (const action of previousRunActions) {
-    const existing = actionMap.get(action.code)
-    if (existing && !existing.version) {
-      actionMap.set(action.code, action)
-    }
+    actionMap.set(action.code, action)
   }
   const mergedActions = [...actionMap.values()]
 
