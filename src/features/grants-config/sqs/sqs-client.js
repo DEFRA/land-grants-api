@@ -31,6 +31,8 @@ export const grantsConfigSqsPlugin = {
             server.logger.info(
               `Successfully processed grants-config-broker message: ${message.MessageId}`
             )
+
+            return message
           } catch (err) {
             server.logger.error(
               err,
