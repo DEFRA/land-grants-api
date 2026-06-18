@@ -2,7 +2,6 @@ import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool } from 'pg'
 import { config } from '../../../config/index.js'
-import { getStats } from '../../statistics/queries/stats.query.js'
 
 const DEFAULT_PORT = 5432
 const keepAliveInterval = 60000
@@ -98,7 +97,7 @@ export function createDBPool(options, server = {}) {
     max: 10, // Maximum number of connections the pool can create, we keep this at 10, as we use aurora, which scales number of connections automatically
     keepAlive: true, // Enable OS-level TCP keepalive probes, detects dead connections early (no SELECT 1 needed)
     keepAliveInitialDelayMillis: 10000, // Wait 10s after a connection becomes idle before sending first probe, balances early detection vs unnecessary network traffic
-    idleTimeoutMillis: 0, // Prevent pg from closing idle connections, Aurora networks handle idle sockets better with keepalive
+    idleTimeoutMillis: 30000, // Release idle connections after 30s so a previous version hands back connections during a rolling deploy
     connectionTimeoutMillis: 10000, // How long to wait for a free connection before failing, prevents requests from hanging under load
     allowExitOnIdle: false, // Keep Node.js process alive even when pool is idle, required for servers / APIs
     ...(!options.isLocal &&
@@ -121,26 +120,34 @@ export const postgresDb = {
      *
      * @param { import('@hapi/hapi').Server } server
      * @param {{user: string, host: string, database: string, isLocal: boolean, region: string, passwordForLocalDev?: string}} options
-     * @returns {Promise<void>}
      */
-    register: async function (server, options) {
+    register: function (server, options) {
       server.logger.info('Setting up postgres')
 
       const pool = createDBPool(options, server)
 
-      try {
-        await getStats(server.logger, pool)
-        setInterval(() => pool.query('SELECT 1'), keepAliveInterval)
-        server.decorate('server', 'postgresDb', pool)
-      } catch (err) {
-        server.logger.error({ err }, 'Failed to connect to Postgres')
-        throw err
-      }
+      server.decorate('server', 'postgresDb', pool)
+
+      pool.on('error', (err) => {
+        server.logger.error({ err }, 'Unexpected idle Postgres client error')
+      })
+
+      const keepAlive = setInterval(() => {
+        pool.query('SELECT 1').catch((err) => {
+          server.logger.debug({ err }, 'Postgres keep-alive query failed')
+        })
+      }, keepAliveInterval)
+      keepAlive.unref()
 
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
       server.events.on('stop', async () => {
         server.logger.info('Closing Postgres pool')
-        await pool.end()
+        clearInterval(keepAlive)
+        try {
+          await pool.end()
+        } catch (err) {
+          server.logger.error({ err }, 'Error closing Postgres pool')
+        }
       })
 
       pool.on('connect', () => {
