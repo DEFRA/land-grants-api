@@ -1,7 +1,6 @@
 import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 import { router } from '~/src/routes/router.js'
-import { health } from '~/src/features/health/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
@@ -37,14 +36,13 @@ describe('router', () => {
       await router.plugin.register(mockServer)
 
       // Verify all controllers were registered
-      expect(mockRegister).toHaveBeenCalledTimes(7)
-      expect(mockRegister).toHaveBeenNthCalledWith(1, [health])
-      expect(mockRegister).toHaveBeenNthCalledWith(2, [parcel])
-      expect(mockRegister).toHaveBeenNthCalledWith(3, [payments])
-      expect(mockRegister).toHaveBeenNthCalledWith(4, [application])
-      expect(mockRegister).toHaveBeenNthCalledWith(5, [caseManagementAdapter])
-      expect(mockRegister).toHaveBeenNthCalledWith(6, [landDataIngest])
-      expect(mockRegister).toHaveBeenNthCalledWith(7, [testEndpoints])
+      expect(mockRegister).toHaveBeenCalledTimes(6)
+      expect(mockRegister).toHaveBeenNthCalledWith(1, [parcel])
+      expect(mockRegister).toHaveBeenNthCalledWith(2, [payments])
+      expect(mockRegister).toHaveBeenNthCalledWith(3, [application])
+      expect(mockRegister).toHaveBeenNthCalledWith(4, [caseManagementAdapter])
+      expect(mockRegister).toHaveBeenNthCalledWith(5, [landDataIngest])
+      expect(mockRegister).toHaveBeenNthCalledWith(6, [testEndpoints])
 
       // Verify logger warning was called
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -72,13 +70,12 @@ describe('router', () => {
       await router.plugin.register(mockServer)
 
       // Verify all controllers except testEndpoints were registered
-      expect(mockRegister).toHaveBeenCalledTimes(6)
-      expect(mockRegister).toHaveBeenNthCalledWith(1, [health])
-      expect(mockRegister).toHaveBeenNthCalledWith(2, [parcel])
-      expect(mockRegister).toHaveBeenNthCalledWith(3, [payments])
-      expect(mockRegister).toHaveBeenNthCalledWith(4, [application])
-      expect(mockRegister).toHaveBeenNthCalledWith(5, [caseManagementAdapter])
-      expect(mockRegister).toHaveBeenNthCalledWith(6, [landDataIngest])
+      expect(mockRegister).toHaveBeenCalledTimes(5)
+      expect(mockRegister).toHaveBeenNthCalledWith(1, [parcel])
+      expect(mockRegister).toHaveBeenNthCalledWith(2, [payments])
+      expect(mockRegister).toHaveBeenNthCalledWith(3, [application])
+      expect(mockRegister).toHaveBeenNthCalledWith(4, [caseManagementAdapter])
+      expect(mockRegister).toHaveBeenNthCalledWith(5, [landDataIngest])
 
       // Verify testEndpoints was not registered
       expect(mockRegister).not.toHaveBeenCalledWith([testEndpoints])
