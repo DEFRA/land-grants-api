@@ -140,6 +140,55 @@ describe('Application Validation Schema', () => {
       const { error } = applicationValidationSchema.validate(data)
       expect(error).toBeUndefined()
     })
+
+    it('should accept an action with an optional version string', () => {
+      const data = {
+        ...validData,
+        landActions: [
+          {
+            sheetId: 'sheet-1',
+            parcelId: 'parcel-1',
+            actions: [{ code: 'ACTION1', quantity: 10, version: '2.1.0' }]
+          }
+        ]
+      }
+      const { error } = applicationValidationSchema.validate(data)
+      expect(error).toBeUndefined()
+    })
+
+    it('should accept actions where some have version and some do not', () => {
+      const data = {
+        ...validData,
+        landActions: [
+          {
+            sheetId: 'sheet-1',
+            parcelId: 'parcel-1',
+            actions: [
+              { code: 'ACTION1', quantity: 10, version: '2.1.0' },
+              { code: 'ACTION2', quantity: 5 }
+            ]
+          }
+        ]
+      }
+      const { error } = applicationValidationSchema.validate(data)
+      expect(error).toBeUndefined()
+    })
+
+    it('should reject a non-string action version', () => {
+      const data = {
+        ...validData,
+        landActions: [
+          {
+            sheetId: 'sheet-1',
+            parcelId: 'parcel-1',
+            actions: [{ code: 'ACTION1', quantity: 10, version: 123 }]
+          }
+        ]
+      }
+      const { error } = applicationValidationSchema.validate(data)
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('version')
+    })
   })
 
   describe('applicationValidationRunSchema', () => {

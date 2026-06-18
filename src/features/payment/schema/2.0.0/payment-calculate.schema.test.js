@@ -1,4 +1,106 @@
-import { PaymentCalculateResponseSchemaV2 } from './payment-calculate.schema.js'
+import {
+  PaymentCalculateSchema,
+  PaymentCalculateResponseSchemaV2
+} from './payment-calculate.schema.js'
+
+describe('PaymentCalculateSchema (request)', () => {
+  const validRequest = {
+    parcel: [
+      {
+        sheetId: 'SD2324',
+        parcelId: '1253',
+        actions: [{ code: 'CSAM1', quantity: 10.5 }]
+      }
+    ]
+  }
+
+  it('should accept a valid request', () => {
+    const { error } = PaymentCalculateSchema.validate(validRequest)
+    expect(error).toBeUndefined()
+  })
+
+  it('should accept an action with an optional version string', () => {
+    const data = {
+      parcel: [
+        {
+          sheetId: 'SD2324',
+          parcelId: '1253',
+          actions: [{ code: 'CSAM1', quantity: 10.5, version: '2.1.0' }]
+        }
+      ]
+    }
+    const { error } = PaymentCalculateSchema.validate(data)
+    expect(error).toBeUndefined()
+  })
+
+  it('should accept actions where some have version and some do not', () => {
+    const data = {
+      parcel: [
+        {
+          sheetId: 'SD2324',
+          parcelId: '1253',
+          actions: [
+            { code: 'CSAM1', quantity: 10.5, version: '2.1.0' },
+            { code: 'CMOR1', quantity: 5 }
+          ]
+        }
+      ]
+    }
+    const { error } = PaymentCalculateSchema.validate(data)
+    expect(error).toBeUndefined()
+  })
+
+  it('should reject a non-string action version', () => {
+    const data = {
+      parcel: [
+        {
+          sheetId: 'SD2324',
+          parcelId: '1253',
+          actions: [{ code: 'CSAM1', quantity: 10.5, version: 123 }]
+        }
+      ]
+    }
+    const { error } = PaymentCalculateSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('version')
+  })
+
+  it('should require parcel array', () => {
+    const { error } = PaymentCalculateSchema.validate({})
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('parcel')
+  })
+
+  it('should require action code', () => {
+    const data = {
+      parcel: [
+        {
+          sheetId: 'SD2324',
+          parcelId: '1253',
+          actions: [{ quantity: 10.5 }]
+        }
+      ]
+    }
+    const { error } = PaymentCalculateSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('code')
+  })
+
+  it('should require positive action quantity', () => {
+    const data = {
+      parcel: [
+        {
+          sheetId: 'SD2324',
+          parcelId: '1253',
+          actions: [{ code: 'CSAM1', quantity: -1 }]
+        }
+      ]
+    }
+    const { error } = PaymentCalculateSchema.validate(data)
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('quantity')
+  })
+})
 
 describe('Payment Calculate Schema Validation V2', () => {
   describe('PaymentCalculateResponseSchemaV2', () => {
