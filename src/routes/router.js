@@ -1,5 +1,4 @@
 import { config } from '~/src/config/index.js'
-import { health } from '~/src/features/health/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
@@ -14,9 +13,6 @@ const router = {
   plugin: {
     name: 'Router',
     register: async (server) => {
-      // Health-check route. Used by platform to check if service is running, do not remove!
-      await server.register([health])
-
       // Application specific routes
       await server.register([parcel])
       await server.register([payments])
