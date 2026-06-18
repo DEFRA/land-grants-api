@@ -28,7 +28,6 @@ describe('Get Land Covers For Action Query', () => {
       logger
     )
     expect(landCovers).toEqual([])
-    expect(true).toBe(true)
   })
 
   test('should return all land cover codes for GRH8', async () => {
@@ -43,7 +42,6 @@ describe('Get Land Covers For Action Query', () => {
         { landCoverCode: '131', landCoverClassCode: '130' }
       ])
     )
-    expect(true).toBe(true)
   })
 
   test('should return empty object for empty action codes array', async () => {
