@@ -226,5 +226,150 @@ describe('Action Service', () => {
 
       expect(result).toEqual([])
     })
+
+    test('should use caller-supplied version when no prior run exists', async () => {
+      mockGetLatestApplicationRunForAppId.mockResolvedValue(null)
+
+      const landActionsWithVersions = [
+        {
+          sheetId: 'SX0679',
+          parcelId: '9238',
+          actions: [
+            { code: 'CMOR1', quantity: 5, version: '2.1.0' },
+            { code: 'CMOR2', quantity: 3 }
+          ]
+        }
+      ]
+
+      await getActions(
+        mockRequest,
+        mockPostgresDb,
+        landActionsWithVersions,
+        mockApplicationId
+      )
+
+      const calledWith = mockGetActionsByVersion.mock.calls[0][2]
+      expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
+        code: 'CMOR1',
+        version: '2.1.0'
+      })
+    })
+
+    test('should ignore caller-supplied version in favour of the version pinned to applicationId', async () => {
+      mockGetLatestApplicationRunForAppId.mockResolvedValue({
+        data: {
+          parcelLevelResults: [
+            {
+              actions: [{ code: 'CMOR1', actionConfigVersion: '1.0.0' }]
+            }
+          ]
+        }
+      })
+
+      const landActionsWithCallerVersion = [
+        {
+          sheetId: 'SX0679',
+          parcelId: '9238',
+          actions: [{ code: 'CMOR1', quantity: 5, version: '3.0.0' }]
+        }
+      ]
+
+      await getActions(
+        mockRequest,
+        mockPostgresDb,
+        landActionsWithCallerVersion,
+        mockApplicationId
+      )
+
+      const calledWith = mockGetActionsByVersion.mock.calls[0][2]
+      expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
+        code: 'CMOR1',
+        version: '1.0.0'
+      })
+    })
+
+    test('should fall back to prior-run version when caller omits version', async () => {
+      mockGetLatestApplicationRunForAppId.mockResolvedValue({
+        data: {
+          parcelLevelResults: [
+            {
+              actions: [{ code: 'CMOR1', actionConfigVersion: '1.5.0' }]
+            }
+          ]
+        }
+      })
+
+      const landActionsWithoutVersion = [
+        {
+          sheetId: 'SX0679',
+          parcelId: '9238',
+          actions: [{ code: 'CMOR1', quantity: 5 }]
+        }
+      ]
+
+      await getActions(
+        mockRequest,
+        mockPostgresDb,
+        landActionsWithoutVersion,
+        mockApplicationId
+      )
+
+      const calledWith = mockGetActionsByVersion.mock.calls[0][2]
+      expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
+        code: 'CMOR1',
+        version: '1.5.0'
+      })
+    })
+
+    test('should apply pinned and caller versions independently per action', async () => {
+      mockGetLatestApplicationRunForAppId.mockResolvedValue({
+        data: {
+          parcelLevelResults: [
+            {
+              actions: [
+                { code: 'CMOR1', actionConfigVersion: '1.0.0' },
+                { code: 'CMOR2', actionConfigVersion: '1.5.0' }
+              ]
+            }
+          ]
+        }
+      })
+
+      const landActionsWithMixedVersions = [
+        {
+          sheetId: 'SX0679',
+          parcelId: '9238',
+          actions: [
+            { code: 'CMOR1', quantity: 5, version: '3.0.0' },
+            { code: 'CMOR2', quantity: 3 },
+            { code: 'CMOR3', quantity: 2, version: '2.0.0' }
+          ]
+        }
+      ]
+
+      await getActions(
+        mockRequest,
+        mockPostgresDb,
+        landActionsWithMixedVersions,
+        mockApplicationId
+      )
+
+      const calledWith = mockGetActionsByVersion.mock.calls[0][2]
+      // CMOR1: pinned to applicationId, so the caller-supplied version is ignored
+      expect(calledWith.find((a) => a.code === 'CMOR1')).toMatchObject({
+        code: 'CMOR1',
+        version: '1.0.0'
+      })
+      // CMOR2: pinned to applicationId, caller supplied no version
+      expect(calledWith.find((a) => a.code === 'CMOR2')).toMatchObject({
+        code: 'CMOR2',
+        version: '1.5.0'
+      })
+      // CMOR3: not pinned, caller-supplied version applies
+      expect(calledWith.find((a) => a.code === 'CMOR3')).toMatchObject({
+        code: 'CMOR3',
+        version: '2.0.0'
+      })
+    })
   })
 })
