@@ -11,13 +11,12 @@ updates:
       build:
         patterns:
           - '@babel/*'
+          - 'babel*'
           - 'autoprefixer'
-          - 'babel-plugin-module-resolver'
-          - 'babel-loader'
-          - 'babel-plugin-transform-import-meta'
           - 'tsx'
           - '*vitest*'
           - '@aws-sdk/*'
+          - 'aws*'
 
       lint:
         patterns:
@@ -37,6 +36,7 @@ updates:
       tools:
         patterns:
           - 'babel-jest'
+          - 'convict'
           - 'husky'
           - 'jest'
           - 'nodemon'
@@ -57,6 +57,10 @@ updates:
       time: '10:30'
       timezone: 'Europe/London'
 
+    # Delay a PR for a package update by 5 days
+    cooldown:
+      default-days: 5
+
     versioning-strategy: increase
 
     allow:
@@ -72,3 +76,7 @@ updates:
       interval: weekly
       time: '10:30'
       timezone: 'Europe/London'
+
+    # Delay a PR for an action update by 5 days
+    cooldown:
+      default-days: 5
