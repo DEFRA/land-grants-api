@@ -183,6 +183,14 @@ describe('grantsConfigSqsPlugin', () => {
       )
     })
 
+    test('returns the message after successful processing', async () => {
+      const message = { MessageId: 'msg-1', Body: '{}' }
+
+      const result = await handleMessage(message)
+
+      expect(result).toBe(message)
+    })
+
     test('logs error and rethrows when processMessage throws', async () => {
       const { processMessage } =
         await import('~/src/features/grants-config/handlers/grants-config-update.handler.js')
@@ -196,6 +204,19 @@ describe('grantsConfigSqsPlugin', () => {
         error,
         expect.stringContaining('Failed to process')
       )
+    })
+
+    test('does not return message when processMessage throws', async () => {
+      const { processMessage } =
+        await import('~/src/features/grants-config/handlers/grants-config-update.handler.js')
+      const error = new Error('processing failed')
+      processMessage.mockRejectedValueOnce(error)
+      const message = { MessageId: 'msg-err', Body: '{}' }
+
+      const result = await handleMessage(message).catch(() => 'caught')
+
+      expect(result).toBe('caught')
+      expect(result).not.toBe(message)
     })
   })
 
