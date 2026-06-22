@@ -10,6 +10,58 @@ import { ingestSuccessResponseSchema } from '../schema/ingest.schema.js'
 import { filterFilesByDate, getFiles } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 
+/**
+ * Processes each filtered file in turn
+ * @param {Array<{Key: string}>} files - The S3 files to process
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
+ * @param {{category: string, title: string, taskId: number}} taskInfo - Task metadata
+ * @returns {Promise<void>}
+ */
+const processFiles = async (files, request, taskInfo) => {
+  for (const file of files) {
+    await processFile({ s3key: file.Key }, request, taskInfo)
+  }
+}
+
+/**
+ * Logs the outcome of a land data ingest run
+ * @param {object} logger - Logger instance
+ * @param {string} category - Logging category
+ * @param {Array<object>} filtered - The filtered files found
+ * @param {string} bucket - The S3 bucket name
+ * @param {number} taskId - The task ID
+ */
+const logIngestResult = (logger, category, filtered, bucket, taskId) => {
+  const found = filtered.length > 0
+
+  logInfo(logger, {
+    category,
+    operation: found ? `${category}_new_files` : `${category}_no_new_files`,
+    message: found
+      ? `New files found in ${bucket} bucket`
+      : `No new files found in ${bucket} bucket`,
+    context: { bucket, taskId }
+  })
+}
+
+/**
+ * Builds the success response for a land data ingest run
+ * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+ * @param {Array<object>} filtered - The filtered files found
+ * @param {string} bucket - The S3 bucket name
+ * @param {string} title - The task title
+ * @param {number} taskId - The task ID
+ * @returns {import('@hapi/hapi').ResponseObject} The response
+ */
+const buildIngestResponse = (h, filtered, bucket, title, taskId) => {
+  const message =
+    filtered.length > 0
+      ? `${title} started`
+      : `No new files found in ${bucket} bucket`
+
+  return h.response({ message, taskId }).code(statusCodes.ok)
+}
+
 export const IngestController = {
   options: {
     tags: ['api'],
@@ -45,36 +97,11 @@ export const IngestController = {
       const files = await getFiles(s3Client, bucket)
       const filtered = filterFilesByDate(files, minutesToIgnore)
 
-      for (const file of filtered) {
-        await processFile(file.Key, request, { category, title, taskId })
-      }
+      await processFiles(filtered, request, { category, title, taskId })
 
-      if (filtered.length > 0) {
-        logInfo(request.logger, {
-          category,
-          operation: `${category}_new_files`,
-          message: `New files found in ${bucket} bucket`,
-          context: { bucket, taskId }
-        })
+      logIngestResult(request.logger, category, filtered, bucket, taskId)
 
-        return h
-          .response({ message: `${title} started`, taskId })
-          .code(statusCodes.ok)
-      } else {
-        logInfo(request.logger, {
-          category,
-          operation: `${category}_no_new_files`,
-          message: `No new files found in ${bucket} bucket`,
-          context: { bucket, taskId }
-        })
-
-        return h
-          .response({
-            message: `No new files found in ${bucket} bucket`,
-            taskId
-          })
-          .code(statusCodes.ok)
-      }
+      return buildIngestResponse(h, filtered, bucket, title, taskId)
     } catch (error) {
       logBusinessError(request.logger, {
         operation: `${category}_error`,
