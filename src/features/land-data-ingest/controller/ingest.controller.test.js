@@ -112,7 +112,7 @@ describe('Ingest Controller', () => {
       expect(mockProcessFile).toHaveBeenCalledTimes(2)
       expect(mockProcessFile).toHaveBeenNthCalledWith(
         1,
-        'parcels/file1.csv',
+        { s3key: 'parcels/file1.csv' },
         expect.objectContaining({ logger: mockLogger }),
         {
           category: 'land_data_ingest',
@@ -122,7 +122,7 @@ describe('Ingest Controller', () => {
       )
       expect(mockProcessFile).toHaveBeenNthCalledWith(
         2,
-        'parcels/file2.csv',
+        { s3key: 'parcels/file2.csv' },
         expect.objectContaining({ logger: mockLogger }),
         {
           category: 'land_data_ingest',
