@@ -61,7 +61,11 @@ describe('Import Land Data Service', () => {
     copyDataToTempTable.mockResolvedValue()
     insertData.mockResolvedValue({ rowCount: 1 })
     truncateTableAndInsertData.mockResolvedValue({ rowCount: 1 })
-    isIngestComplete.mockResolvedValue({ isComplete: true, totalCount: 1 })
+    isIngestComplete.mockResolvedValue({
+      isComplete: true,
+      isOverCount: false,
+      totalCount: 1
+    })
     promoteStagingTable.mockResolvedValue()
     setFileInProgress.mockResolvedValue()
     setFileCompleted.mockResolvedValue()
@@ -108,7 +112,11 @@ describe('Import Land Data Service', () => {
     })
 
     it(`should not promote ${entity.name} when ingest is incomplete`, async () => {
-      isIngestComplete.mockResolvedValue({ isComplete: false, totalCount: 0 })
+      isIngestComplete.mockResolvedValue({
+        isComplete: false,
+        isOverCount: false,
+        totalCount: 0
+      })
 
       await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
 
@@ -119,6 +127,28 @@ describe('Import Land Data Service', () => {
       )
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
+        1
+      )
+    })
+
+    it(`should fail ${entity.name} and not promote when ingest row count exceeds expected total`, async () => {
+      isIngestComplete.mockResolvedValue({
+        isComplete: false,
+        isOverCount: true,
+        totalCount: 99
+      })
+
+      await expect(
+        importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      ).rejects.toThrow(
+        `Ingest row count exceeds expected total for ${entity.name}`
+      )
+
+      expect(promoteStagingTable).toHaveBeenCalledTimes(0)
+      expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(mockLogger.error).toHaveBeenCalledTimes(2)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_failed`,
         1
       )
     })
