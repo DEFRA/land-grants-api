@@ -1,6 +1,7 @@
 import { readFile } from '../../common/helpers/read-file.js'
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Create a temporary table to store the data
@@ -130,6 +131,40 @@ export async function isIngestComplete(tableName, ingestId, dbClient) {
     isOverCount: totalCount > expectedCount,
     totalCount
   }
+}
+
+/**
+ * Counts duplicate rows in a temp table for the given dedupe columns and logs the result
+ * @param {import('pg').Client} dbClient
+ * @param {string} tableName
+ * @param {string[]} dedupeColumns
+ * @param {object} logger
+ * @returns {Promise<number>} The number of duplicate rows found
+ */
+export async function logDuplicateRows(
+  dbClient,
+  tableName,
+  dedupeColumns,
+  logger
+) {
+  const columns = dedupeColumns.join(', ')
+
+  const {
+    rows: [{ duplicate_count: duplicateCount }]
+  } = await dbClient.query(
+    `SELECT COUNT(*) - COUNT(DISTINCT (${columns})) AS duplicate_count FROM ${tableName}_tmp`
+  )
+
+  const count = Number(duplicateCount)
+
+  logInfo(logger, {
+    category: 'land-data-ingest',
+    operation: `${tableName}_duplicate_check`,
+    message: `${count} duplicate rows found in ${tableName}_tmp on (${columns})`,
+    context: { tableName, dedupeColumns, duplicateCount: count }
+  })
+
+  return count
 }
 
 /**
