@@ -158,15 +158,29 @@ export async function importDataValidate(
     await setFileInProgress(filename, ingestId, dbClient)
     await createTempTable(dbClient, entityName)
     await copyDataToTempTable(dbClient, entityName, dataStream)
+
     const { rowCount } = await insertData(dbClient, entityName, ingestId)
     // @ts-expect-error filename
     await setFileCompleted(filename, ingestId, dbClient)
 
-    const { isComplete, totalCount } = await isIngestComplete(
+    const { isComplete, isOverCount, totalCount } = await isIngestComplete(
       entityName,
       ingestId,
       dbClient
     )
+
+    if (isOverCount) {
+      const overCountError = new Error(
+        `Ingest row count exceeds expected total for ${entityName}`
+      )
+      logBusinessError(logger, {
+        operation: `${entityName}_import_over_count`,
+        error: overCountError,
+        context: { entityName, ingestId, totalCount }
+      })
+      throw overCountError
+    }
+
     if (isComplete) {
       await promoteStagingTable(entityName, dbClient)
 
