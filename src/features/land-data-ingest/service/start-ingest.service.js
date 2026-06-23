@@ -141,6 +141,21 @@ export const getActiveIngestForEntity = async (entity, dbClient) => {
 }
 
 /**
+ * Gets the entity name associated with an ingest
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<string | undefined>} The entity name, if found
+ */
+export const getEntityNameForIngest = async (ingestId, dbClient) => {
+  const { rows } = await dbClient.query(
+    `SELECT entity FROM ingest WHERE id = $1`,
+    [ingestId]
+  )
+
+  return rows?.[0]?.entity
+}
+
+/**
  * Sets the status of a file
  * @param {string} status - The status to set
  * @param {string} filename - The filename to set the status of
