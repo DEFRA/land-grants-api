@@ -11,7 +11,8 @@ import {
   insertData,
   truncateTableAndInsertData,
   isIngestComplete,
-  promoteStagingTable
+  promoteStagingTable,
+  logDuplicateRows
 } from './data-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 import {
@@ -22,6 +23,10 @@ import {
 
 const logCategory = 'land-data-ingest'
 
+const DEDUPE_COLUMNS_BY_ENTITY = {
+  land_parcels: ['SHEET_ID', 'PARCEL_ID']
+}
+
 function hasDBOptions(options, logger) {
   logInfo(logger, {
     category: logCategory,
@@ -29,6 +34,87 @@ function hasDBOptions(options, logger) {
     message: 'Checking database options'
   })
   return options.user && options.database && options.host
+}
+
+/**
+ * Opens a database connection for an import run
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<import('pg').PoolClient>} The connected client
+ */
+async function connectToDb(logger) {
+  const dbOptions = getDBOptions()
+  if (!hasDBOptions(dbOptions, logger)) {
+    throw new Error('Database options are not set')
+  }
+  const connection = createDBPool(dbOptions, {
+    secureContext: createSecureContext(logger),
+    logger
+  })
+  return await connection.connect()
+}
+
+/**
+ * Logs duplicate rows for entities that require deduping, if any
+ * @param {import('pg').Client} dbClient - Database connection
+ * @param {string} entityName - The entity name
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ */
+async function dedupeIfNeeded(dbClient, entityName, logger) {
+  const dedupeColumns = DEDUPE_COLUMNS_BY_ENTITY[entityName]
+  if (dedupeColumns) {
+    await logDuplicateRows(dbClient, entityName, dedupeColumns, logger)
+  }
+}
+
+/**
+ * Logs an alert and throws when the staging table has more rows than expected
+ * @param {{isOverCount: boolean, entityName: string, ingestId: string | number, totalCount: number, logger: object}} params
+ */
+function assertWithinExpectedCount({
+  isOverCount,
+  entityName,
+  ingestId,
+  totalCount,
+  logger
+}) {
+  if (!isOverCount) {
+    return
+  }
+
+  const overCountError = new Error(
+    `Ingest row count exceeds expected total for ${entityName}`
+  )
+  logBusinessError(logger, {
+    operation: `${entityName}_import_over_count`,
+    error: overCountError,
+    context: { entityName, ingestId, totalCount }
+  })
+  throw overCountError
+}
+
+/**
+ * Promotes the staging table to live when the ingest is complete
+ * @param {{isComplete: boolean, entityName: string, dbClient: object, totalCount: number, logger: object}} params
+ */
+async function promoteIfComplete({
+  isComplete,
+  entityName,
+  dbClient,
+  totalCount,
+  logger
+}) {
+  if (!isComplete) {
+    return
+  }
+
+  await promoteStagingTable(entityName, dbClient)
+  logInfo(logger, {
+    category: logCategory,
+    operation: `${entityName}_import_completed`,
+    message: `${entityName} imported successfully`,
+    context: { totalCount }
+  })
+  await metricsCounter(`${entityName}_data_ingest_completed`, totalCount)
 }
 
 /**
@@ -71,15 +157,7 @@ export async function importDataAsIs(dataStream, entityType, ingestId, logger) {
     context: { ingestId, truncateTable }
   })
 
-  const dbOptions = getDBOptions()
-  if (!hasDBOptions(dbOptions, logger)) {
-    throw new Error('Database options are not set')
-  }
-  const connection = createDBPool(dbOptions, {
-    secureContext: createSecureContext(logger),
-    logger
-  })
-  const client = await connection.connect()
+  const client = await connectToDb(logger)
 
   try {
     await createTempTable(client, entityName)
@@ -143,21 +221,14 @@ export async function importDataValidate(
     context: { ingestId, truncateTable, filename }
   })
 
-  const dbOptions = getDBOptions()
-  if (!hasDBOptions(dbOptions, logger)) {
-    throw new Error('Database options are not set')
-  }
-  const connection = createDBPool(dbOptions, {
-    secureContext: createSecureContext(logger),
-    logger
-  })
-  const dbClient = await connection.connect()
+  const dbClient = await connectToDb(logger)
 
   try {
     // @ts-expect-error filename
     await setFileInProgress(filename, ingestId, dbClient)
     await createTempTable(dbClient, entityName)
     await copyDataToTempTable(dbClient, entityName, dataStream)
+    await dedupeIfNeeded(dbClient, entityName, logger)
 
     const { rowCount } = await insertData(dbClient, entityName, ingestId)
     // @ts-expect-error filename
@@ -169,29 +240,20 @@ export async function importDataValidate(
       dbClient
     )
 
-    if (isOverCount) {
-      const overCountError = new Error(
-        `Ingest row count exceeds expected total for ${entityName}`
-      )
-      logBusinessError(logger, {
-        operation: `${entityName}_import_over_count`,
-        error: overCountError,
-        context: { entityName, ingestId, totalCount }
-      })
-      throw overCountError
-    }
-
-    if (isComplete) {
-      await promoteStagingTable(entityName, dbClient)
-
-      logInfo(logger, {
-        category: logCategory,
-        operation: `${entityName}_import_completed`,
-        message: `${entityName} imported successfully`,
-        context: { totalCount }
-      })
-      await metricsCounter(`${entityName}_data_ingest_completed`, totalCount)
-    }
+    assertWithinExpectedCount({
+      isOverCount,
+      entityName,
+      ingestId,
+      totalCount,
+      logger
+    })
+    await promoteIfComplete({
+      isComplete,
+      entityName,
+      dbClient,
+      totalCount,
+      logger
+    })
 
     const endTime = performance.now()
     const duration = endTime - startTime
