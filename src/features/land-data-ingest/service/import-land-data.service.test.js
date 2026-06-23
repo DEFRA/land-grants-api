@@ -7,7 +7,8 @@ import {
   insertData,
   truncateTableAndInsertData,
   isIngestComplete,
-  promoteStagingTable
+  promoteStagingTable,
+  logDuplicateRows
 } from './data-helpers.js'
 import {
   setFileInProgress,
@@ -71,6 +72,7 @@ describe('Import Land Data Service', () => {
     setFileCompleted.mockResolvedValue()
     setFileFailed.mockResolvedValue()
     metricsCounter.mockResolvedValue()
+    logDuplicateRows.mockResolvedValue(0)
   })
 
   afterEach(() => {
@@ -109,6 +111,17 @@ describe('Import Land Data Service', () => {
         `${entity.name}_file_ingest_completed`,
         1
       )
+
+      if (entity.name === 'land_parcels') {
+        expect(logDuplicateRows).toHaveBeenCalledWith(
+          mockClient,
+          'land_parcels',
+          ['SHEET_ID', 'PARCEL_ID'],
+          mockLogger
+        )
+      } else {
+        expect(logDuplicateRows).not.toHaveBeenCalled()
+      }
     })
 
     it(`should not promote ${entity.name} when ingest is incomplete`, async () => {
