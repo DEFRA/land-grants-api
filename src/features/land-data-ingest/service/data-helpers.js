@@ -98,7 +98,7 @@ export async function createStagingTable(dbClient, tableName) {
  * @param {*} tableName
  * @param {*} ingestId
  * @param {*} dbClient
- * @returns {Promise<{isComplete: boolean, totalCount: number}>}
+ * @returns {Promise<{isComplete: boolean, isOverCount: boolean, totalCount: number}>}
  */
 export async function isIngestComplete(tableName, ingestId, dbClient) {
   // count rows in stagin table
@@ -122,9 +122,13 @@ export async function isIngestComplete(tableName, ingestId, dbClient) {
     [ingestId]
   )
 
+  const totalCount = Number(count)
+  const expectedCount = Number(totalRows)
+
   return {
-    isComplete: Number(count) === Number(totalRows),
-    totalCount: Number(count)
+    isComplete: totalCount === expectedCount,
+    isOverCount: totalCount > expectedCount,
+    totalCount
   }
 }
 
