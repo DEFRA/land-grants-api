@@ -12,6 +12,9 @@ import {
 } from '../../common/helpers/logging/log-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 import { getEntityByName } from '~/src/features/common/constants/entity_types.js'
+import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
+import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
+import { getEntityNameForIngest } from '../service/start-ingest.service.js'
 
 /**
  * Get resource by type
@@ -24,6 +27,31 @@ export const getEntityType = (entityName) => {
     throw new Error(`Entity type ${entityName} not found`)
   }
   return entityType
+}
+
+/**
+ * Resolve the entity type for an ingest by looking up its entity in the database
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<object>} The resolved entity type
+ */
+export const getEntityTypeForIngest = async (ingestId, logger) => {
+  const dbOptions = getDBOptions()
+  const connection = createDBPool(dbOptions, {
+    secureContext: createSecureContext(logger),
+    logger
+  })
+  const client = await connection.connect()
+
+  try {
+    const entityName = await getEntityNameForIngest(ingestId, client)
+    if (!entityName) {
+      throw new Error(`Ingest ${ingestId} not found`)
+    }
+    return getEntityType(entityName)
+  } finally {
+    await client.end()
+  }
 }
 
 /**
@@ -100,14 +128,14 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
  * @returns {Promise<string>} The string representation of the file
  */
 export async function importLandData(data) {
-  const { s3key, filename: originalFilename } = data
+  const { s3key, filename: originalFilename, ingestId: providedIngestId } = data
 
   const category = 'import-land-data'
   const logger = createLogger()
   const s3Client = createS3Client()
   const bucket = config.get('s3.bucket')
   const [resourceType, ...rest] = s3key.split('/')
-  const ingestId = data?.ingestId ?? rest?.[0] ?? ''
+  const ingestId = providedIngestId ?? rest?.[0] ?? ''
   const filename = rest.join('/')
   const s3Path = `${resourceType}/${filename}`
 
@@ -127,7 +155,9 @@ export async function importLandData(data) {
 
   try {
     const response = await getFile(s3Client, bucket, s3Path)
-    const resource = getEntityType(resourceType)
+    const resource = providedIngestId
+      ? await getEntityTypeForIngest(providedIngestId, logger)
+      : getEntityType(resourceType)
 
     if (response.ContentType === 'application/zip') {
       await handleZipFile(
