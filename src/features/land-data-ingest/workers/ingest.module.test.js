@@ -42,6 +42,17 @@ vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
 }))
 vi.mock('../../common/helpers/metrics.js')
 
+vi.mock('../../common/helpers/postgres.js', () => ({
+  getDBOptions: vi.fn(() => ({})),
+  createDBPool: vi.fn()
+}))
+vi.mock('../../common/helpers/secure-context/secure-context.js', () => ({
+  createSecureContext: vi.fn()
+}))
+vi.mock('../service/start-ingest.service.js', () => ({
+  getEntityNameForIngest: vi.fn()
+}))
+
 describe('Ingest Module', () => {
   describe('getEntityType', () => {
     it('should return correct resource for all valid resource types', () => {
@@ -76,6 +87,8 @@ describe('Ingest Module', () => {
     let getFile
     let importData
     let logBusinessError
+    let createDBPool
+    let getEntityNameForIngest
 
     let unzipper
 
@@ -88,12 +101,23 @@ describe('Ingest Module', () => {
         await import('../service/import-land-data.service.js')
       const logHelpersModule =
         await import('../../common/helpers/logging/log-helpers.js')
+      const postgresModule = await import('../../common/helpers/postgres.js')
+      const startIngestModule =
+        await import('../service/start-ingest.service.js')
       unzipper = (await import('unzipper')).default
 
       importLandData = module.importLandData
       getFile = s3Module.getFile
       importData = importServiceModule.importData
       logBusinessError = logHelpersModule.logBusinessError
+      createDBPool = postgresModule.createDBPool
+      getEntityNameForIngest = startIngestModule.getEntityNameForIngest
+
+      const mockClient = { end: vi.fn() }
+      createDBPool.mockReturnValue({
+        connect: vi.fn().mockResolvedValue(mockClient)
+      })
+      getEntityNameForIngest.mockResolvedValue('land_parcels')
     })
 
     it('should successfully import land data with valid CSV file', async () => {
@@ -128,6 +152,33 @@ describe('Ingest Module', () => {
         'test.csv',
         expect.any(Object)
       )
+
+      // entity type resolved via DB lookup using the provided ingestId
+      expect(getEntityNameForIngest).toHaveBeenCalledWith(
+        '123',
+        expect.any(Object)
+      )
+      expect(createDBPool).toHaveBeenCalledTimes(1)
+    })
+
+    it('should throw a clear error when the ingest record or its entity cannot be found', async () => {
+      getEntityNameForIngest.mockResolvedValue(undefined)
+
+      const mockResponse = {
+        ContentType: 'text/csv',
+        Body: { transformToWebStream: vi.fn() }
+      }
+      getFile.mockResolvedValue(mockResponse)
+
+      await expect(
+        importLandData({
+          s3key: 'land_parcels/123/test.csv',
+          filename: 'test.csv',
+          ingestId: '123'
+        })
+      ).rejects.toThrow('Ingest 123 not found')
+
+      expect(importData).not.toHaveBeenCalled()
     })
 
     it('should successfully import land data with ZIP file containing CSV', async () => {
@@ -166,6 +217,10 @@ describe('Ingest Module', () => {
         undefined,
         expect.any(Object)
       )
+
+      // no ingestId provided, so entity type is derived from the s3 key, not the DB
+      expect(getEntityNameForIngest).not.toHaveBeenCalled()
+      expect(createDBPool).not.toHaveBeenCalled()
     })
 
     it('should throw error if no CSV is found in the ZIP archive', async () => {
