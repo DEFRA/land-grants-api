@@ -8,7 +8,8 @@ import {
   truncateTableAndInsertData,
   createStagingTable,
   isIngestComplete,
-  promoteStagingTable
+  promoteStagingTable,
+  logDuplicateRows
 } from './data-helpers.js'
 import { vi } from 'vitest'
 
@@ -212,6 +213,45 @@ describe('Data helpers', () => {
         isOverCount: true,
         totalCount: 12
       })
+    })
+  })
+
+  describe('logDuplicateRows', () => {
+    test('logs and returns the number of duplicate rows found', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: [{ duplicate_count: '3' }]
+      })
+      const logger = { info: vi.fn() }
+
+      const result = await logDuplicateRows(
+        dbClient,
+        'land_parcels',
+        ['SHEET_ID', 'PARCEL_ID'],
+        logger
+      )
+
+      expect(result).toBe(3)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        'SELECT COUNT(*) - COUNT(DISTINCT (SHEET_ID, PARCEL_ID)) AS duplicate_count FROM land_parcels_tmp'
+      )
+      expect(logger.info).toHaveBeenCalled()
+    })
+
+    test('logs zero when there are no duplicates', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: [{ duplicate_count: '0' }]
+      })
+      const logger = { info: vi.fn() }
+
+      const result = await logDuplicateRows(
+        dbClient,
+        'land_parcels',
+        ['SHEET_ID', 'PARCEL_ID'],
+        logger
+      )
+
+      expect(result).toBe(0)
+      expect(logger.info).toHaveBeenCalled()
     })
   })
 
