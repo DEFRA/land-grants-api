@@ -175,7 +175,11 @@ describe('Data helpers', () => {
 
       const result = await isIngestComplete('land_parcels', 123, dbClient)
 
-      expect(result).toEqual({ isComplete: true, totalCount: 9 })
+      expect(result).toEqual({
+        isComplete: true,
+        isOverCount: false,
+        totalCount: 9
+      })
       expect(dbClient.query.mock.calls[0][0]).toBe(
         'SELECT count(*) as count FROM land_parcels_staging'
       )
@@ -189,7 +193,25 @@ describe('Data helpers', () => {
 
       const result = await isIngestComplete('land_parcels', 123, dbClient)
 
-      expect(result).toEqual({ isComplete: false, totalCount: 4 })
+      expect(result).toEqual({
+        isComplete: false,
+        isOverCount: false,
+        totalCount: 4
+      })
+    })
+
+    test('should return isOverCount true when staging count exceeds the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '12' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({
+        isComplete: false,
+        isOverCount: true,
+        totalCount: 12
+      })
     })
   })
 
