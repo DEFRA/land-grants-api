@@ -168,22 +168,20 @@ export async function logDuplicateRows(
 }
 
 /**
- * promote staging table to live
- * @param {*} tableName
- * @param {*} dbClient
+ * Promotes the staging table to live within a transaction.
+ * Uses TRUNCATE + INSERT instead of ALTER TABLE RENAME because land_grants_api
+ * holds TRUNCATE/INSERT privileges on the live table but does not own it.
+ * @param {string} tableName
+ * @param {import('pg').Client} dbClient
  */
 export async function promoteStagingTable(tableName, dbClient) {
   try {
     await dbClient.query('BEGIN')
-
+    await dbClient.query(`TRUNCATE TABLE ${tableName}`)
     await dbClient.query(
-      `ALTER TABLE ${tableName} RENAME TO ${tableName}_retiring`
-    ) // must have no invalid constraints
-    await dbClient.query(
-      `ALTER TABLE ${tableName}_staging RENAME TO ${tableName}`
+      `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
     )
-    await dbClient.query(`DROP TABLE IF EXISTS ${tableName}_retiring`)
-
+    await dbClient.query(`DROP TABLE ${tableName}_staging`)
     await dbClient.query('COMMIT')
   } catch (error) {
     await dbClient.query('ROLLBACK')
