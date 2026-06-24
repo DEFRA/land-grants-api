@@ -7,6 +7,7 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { getFiles, filterFilesByDate } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import { filterFilesByEntityType } from './ingest.controller.js'
 import { vi } from 'vitest'
 
 vi.mock('../service/ingest.service.js')
@@ -74,8 +75,8 @@ describe('Ingest Controller', () => {
       }
 
       const mockFiles = [
-        { Key: 'parcels/file1.csv' },
-        { Key: 'parcels/file2.csv' }
+        { Key: 'land_parcels/file1.csv' },
+        { Key: 'land_covers/file2.csv' }
       ]
 
       mockCreateTaskInfo.mockReturnValue(mockTaskInfo)
@@ -112,7 +113,7 @@ describe('Ingest Controller', () => {
       expect(mockProcessFile).toHaveBeenCalledTimes(2)
       expect(mockProcessFile).toHaveBeenNthCalledWith(
         1,
-        { s3key: 'parcels/file1.csv' },
+        { s3key: 'land_parcels/file1.csv' },
         expect.objectContaining({ logger: mockLogger }),
         {
           category: 'land_data_ingest',
@@ -122,7 +123,7 @@ describe('Ingest Controller', () => {
       )
       expect(mockProcessFile).toHaveBeenNthCalledWith(
         2,
-        { s3key: 'parcels/file2.csv' },
+        { s3key: 'land_covers/file2.csv' },
         expect.objectContaining({ logger: mockLogger }),
         {
           category: 'land_data_ingest',
@@ -203,6 +204,47 @@ describe('Ingest Controller', () => {
       })
     })
 
+    it('should filter out files that do not belong to ingest entity types', async () => {
+      const mockTaskInfo = {
+        category: 'land_data_ingest',
+        title: 'Land data ingest',
+        taskId: 1729692000000,
+        bucket: 'test-bucket'
+      }
+
+      const allFiles = [
+        { Key: 'land_parcels/file1.csv' },
+        { Key: 'land_covers/file2.csv' },
+        { Key: 'moorland_designations/file3.csv' },
+        { Key: 'sssi/file4.csv' }
+      ]
+
+      mockCreateTaskInfo.mockReturnValue(mockTaskInfo)
+      mockGetFiles.mockResolvedValue(allFiles)
+      mockFilterFilesByDate.mockReturnValue(allFiles)
+      mockProcessFile.mockResolvedValue(undefined)
+
+      const request = {
+        method: 'GET',
+        url: '/ingest-land-data-schedule'
+      }
+
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(mockProcessFile).toHaveBeenCalledTimes(2)
+      expect(mockProcessFile).toHaveBeenCalledWith(
+        { s3key: 'land_parcels/file1.csv' },
+        expect.anything(),
+        expect.anything()
+      )
+      expect(mockProcessFile).toHaveBeenCalledWith(
+        { s3key: 'land_covers/file2.csv' },
+        expect.anything(),
+        expect.anything()
+      )
+    })
+
     it('should return 500 when getFiles fails', async () => {
       const mockTaskInfo = {
         category: 'land_data_ingest',
@@ -241,5 +283,40 @@ describe('Ingest Controller', () => {
         }
       })
     })
+  })
+})
+
+describe('filterFilesByEntityType', () => {
+  it('should keep only land_parcels and land_covers files', () => {
+    const files = [
+      { Key: 'land_parcels/123/file.csv' },
+      { Key: 'land_covers/456/file.csv' },
+      { Key: 'moorland_designations/789/file.csv' },
+      { Key: 'sssi/file.csv' },
+      { Key: 'agreements/file.csv' }
+    ]
+
+    expect(filterFilesByEntityType(files)).toEqual([
+      { Key: 'land_parcels/123/file.csv' },
+      { Key: 'land_covers/456/file.csv' }
+    ])
+  })
+
+  it('should return empty array when no files match ingest entity types', () => {
+    const files = [
+      { Key: 'moorland_designations/file.csv' },
+      { Key: 'sssi/file.csv' }
+    ]
+
+    expect(filterFilesByEntityType(files)).toEqual([])
+  })
+
+  it('should return all files when all match ingest entity types', () => {
+    const files = [
+      { Key: 'land_parcels/file1.csv' },
+      { Key: 'land_covers/file2.csv' }
+    ]
+
+    expect(filterFilesByEntityType(files)).toEqual(files)
   })
 })
