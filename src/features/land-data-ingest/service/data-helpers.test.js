@@ -6,7 +6,7 @@ import {
   copyDataToTempTable,
   insertData,
   truncateTableAndInsertData,
-  createStagingTable,
+  truncateStagingTable,
   isIngestComplete,
   promoteStagingTable,
   logDuplicateRows
@@ -116,54 +116,13 @@ describe('Data helpers', () => {
     })
   })
 
-  describe('createStagingTable', () => {
-    beforeEach(() => {
-      dbClient.escapeIdentifier = vi.fn((id) => `"${id}"`)
-    })
-
-    test('should return early when the staging table already exists', async () => {
-      dbClient.query.mockResolvedValueOnce({ rows: [{ exists: true }] })
-
-      await createStagingTable(dbClient, 'land_parcels')
+  describe('truncateStagingTable', () => {
+    test('should truncate the pre-existing staging table', async () => {
+      await truncateStagingTable(dbClient, 'land_parcels')
 
       expect(dbClient.query).toHaveBeenCalledTimes(1)
-      expect(dbClient.query.mock.calls[0][1]).toEqual(['land_parcels_staging'])
-      expect(dbClient.escapeIdentifier).not.toHaveBeenCalled()
-    })
-
-    test('should create the staging table when it does not exist', async () => {
-      dbClient.query
-        .mockResolvedValueOnce({ rows: [{ exists: false }] })
-        .mockResolvedValueOnce({ rowCount: 0 })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              fk_query:
-                'ALTER TABLE "land_parcels_staging" ADD CONSTRAINT fk_a FOREIGN KEY (id) REFERENCES other(id);'
-            }
-          ]
-        })
-        .mockResolvedValue({ rowCount: 1 })
-
-      await createStagingTable(dbClient, 'land_parcels')
-
-      expect(dbClient.query).toHaveBeenCalledTimes(2)
-      expect(dbClient.query.mock.calls[1][0]).toBe(
-        'CREATE TABLE "land_parcels_staging" (LIKE "land_parcels" INCLUDING ALL);'
-      )
-    })
-
-    test('should create the staging table without running constraint queries when there are no foreign keys', async () => {
-      dbClient.query
-        .mockResolvedValueOnce({ rows: [{ exists: false }] })
-        .mockResolvedValueOnce({ rowCount: 0 })
-        .mockResolvedValueOnce({ rows: [] })
-
-      await createStagingTable(dbClient, 'land_covers')
-
-      expect(dbClient.query).toHaveBeenCalledTimes(2)
-      expect(dbClient.query.mock.calls[1][0]).toBe(
-        'CREATE TABLE "land_covers_staging" (LIKE "land_covers" INCLUDING ALL);'
+      expect(dbClient.query.mock.calls[0][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging'
       )
     })
   })
@@ -256,10 +215,10 @@ describe('Data helpers', () => {
   })
 
   describe('promoteStagingTable', () => {
-    test('should truncate live table, copy from staging and drop staging within a transaction', async () => {
+    test('should truncate live table and copy from staging within a transaction', async () => {
       await promoteStagingTable('land_parcels', dbClient)
 
-      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query).toHaveBeenCalledTimes(4)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'TRUNCATE TABLE land_parcels'
@@ -267,10 +226,7 @@ describe('Data helpers', () => {
       expect(dbClient.query.mock.calls[2][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[3][0]).toBe(
-        'DROP TABLE land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT')
     })
 
     test('should roll back and rethrow when promotion fails', async () => {

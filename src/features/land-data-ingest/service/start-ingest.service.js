@@ -26,7 +26,7 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
       )
     }
 
-    await dropAndCreateNewStagingTable(entity, dbClient, logger)
+    await truncateStagingTable(entity, dbClient)
 
     return ingestId
   } catch (error) {
@@ -78,51 +78,13 @@ export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
 }
 
 /**
- * Drops stagin table and creates a new staging table for the given entity
- * @param {string} entity - The entity to create a staging table for
+ * Truncates the pre-existing staging table for the given entity
+ * @param {string} entity - The entity name
  * @param {import('pg').Client} dbClient - Database connection
- * @param {object} logger - Logger instance
- * @returns {Promise<void>} Promise that resolves when the staging table is created
+ * @returns {Promise<void>}
  */
-export const dropAndCreateNewStagingTable = async (
-  entity,
-  dbClient,
-  logger
-) => {
-  const tblResult = await dbClient.query(
-    `SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1`,
-    [`${entity}_staging`]
-  )
-
-  if (tblResult.rows.length > 0) {
-    await dbClient.query(`DROP TABLE ${entity}_staging`)
-    logBusinessError(logger, {
-      operation: 'start_ingest',
-      context: `${entity}_staging`,
-      error: new Error('Staging table already exists')
-    })
-  }
-
-  await dbClient.query(
-    `CREATE TABLE ${entity + '_staging'} (LIKE ${entity} INCLUDING ALL);`
-  )
-
-  // find foreign keys
-  const { rows: fks } = await dbClient.query(
-    `SELECT
-      'ALTER TABLE ' || quote_ident($1 || '_staging')
-       || ' ADD CONSTRAINT '
-      || conname || ' '
-      || pg_get_constraintdef(oid) || ';' AS fk_query
-    FROM pg_constraint
-    WHERE conrelid = $1::regclass
-      AND contype = 'f';`,
-    [entity]
-  )
-  // create foreign keys if any
-  for (const fk of fks) {
-    await dbClient.query(fk.fk_query)
-  }
+export const truncateStagingTable = async (entity, dbClient) => {
+  await dbClient.query(`TRUNCATE TABLE ${entity}_staging`)
 }
 
 /**
@@ -212,10 +174,10 @@ export const setFileFailed = async (filename, ingestId, dbClient) => {
  */
 export const isValidIngestFile = async (ingestId, filename, dbClient) => {
   const { rows } = await dbClient.query(
-    `SELECT 
-      1 
-    FROM 
-      ingest_files 
+    `SELECT
+      1
+    FROM
+      ingest_files
     WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
     [ingestId, filename, INGEST_STATUS.PENDING]
   )

@@ -69,29 +69,12 @@ export async function truncateTableAndInsertData(
 }
 
 /**
- * create staging table and fk if not exists
- * @param {*} dbClient
- * @param {*} tableName
- * @returns
+ * Truncates the pre-existing staging table for the given entity
+ * @param {import('pg').Client} dbClient
+ * @param {string} tableName
  */
-export async function createStagingTable(dbClient, tableName) {
-  const {
-    rows: [{ exists }]
-  } = await dbClient.query(
-    `SELECT EXISTS (
-        SELECT FROM pg_tables
-        WHERE schemaname = 'public' AND tablename = $1
-      );`,
-    [tableName + '_staging']
-  )
-
-  if (exists) {
-    return
-  }
-
-  await dbClient.query(
-    `CREATE TABLE ${dbClient.escapeIdentifier(tableName + '_staging')} (LIKE ${dbClient.escapeIdentifier(tableName)} INCLUDING ALL);`
-  )
+export async function truncateStagingTable(dbClient, tableName) {
+  await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
 }
 
 /**
@@ -169,8 +152,9 @@ export async function logDuplicateRows(
 
 /**
  * Promotes the staging table to live within a transaction.
- * Uses TRUNCATE + INSERT instead of ALTER TABLE RENAME because land_grants_api
- * holds TRUNCATE/INSERT privileges on the live table but does not own it.
+ * Uses TRUNCATE + INSERT because land_grants_api holds TRUNCATE/INSERT
+ * privileges on the live table but does not own it (ownership required for ALTER TABLE RENAME).
+ * The staging table is permanent (pre-created by Liquibase) so it is not dropped.
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
  */
@@ -181,7 +165,6 @@ export async function promoteStagingTable(tableName, dbClient) {
     await dbClient.query(
       `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
     )
-    await dbClient.query(`DROP TABLE ${tableName}_staging`)
     await dbClient.query('COMMIT')
   } catch (error) {
     await dbClient.query('ROLLBACK')

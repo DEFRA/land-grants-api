@@ -1,5 +1,5 @@
 import {
-  dropAndCreateNewStagingTable,
+  truncateStagingTable,
   cancelAndCreateNewIngest,
   saveIngestStart,
   setFileInProgress,
@@ -7,10 +7,7 @@ import {
   setFileFailed,
   isValidIngestFile
 } from './start-ingest.service.js'
-import {
-  logBusinessError,
-  logInfo
-} from '../../common/helpers/logging/log-helpers.js'
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
 
 vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
@@ -90,43 +87,15 @@ describe('start ingest service', () => {
     })
   })
 
-  describe('dropAndCreateNewStagingTable', () => {
-    test('should create a new staging table', async () => {
-      const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      await dropAndCreateNewStagingTable(entity, dbClient, logger)
-
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1`,
-        [`${entity}_staging`]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
-      )
-    })
-
-    test('should drop the staging table if it exists', async () => {
+  describe('truncateStagingTable', () => {
+    test('should truncate the pre-existing staging table', async () => {
       const entity = 'test_entity'
 
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ tablename: `${entity}_staging` }]
-      })
-
-      await dropAndCreateNewStagingTable(entity, dbClient, logger)
+      await truncateStagingTable(entity, dbClient)
 
       expect(dbClient.query).toHaveBeenCalledWith(
-        `DROP TABLE ${entity}_staging`
+        `TRUNCATE TABLE ${entity}_staging`
       )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
-      )
-      expect(logBusinessError).toHaveBeenCalledWith(logger, {
-        operation: 'start_ingest',
-        context: `${entity}_staging`,
-        error: new Error('Staging table already exists')
-      })
     })
   })
 
@@ -155,15 +124,7 @@ describe('start ingest service', () => {
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
-      // SELECT pg_tables (staging table exists)
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ tablename: `${entity}_staging` }]
-      })
-      // DROP TABLE staging
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      // CREATE TABLE staging
+      // TRUNCATE staging
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
@@ -183,14 +144,7 @@ describe('start ingest service', () => {
         [456, 'test_file_2', 456, 'pending']
       )
       expect(dbClient.query).toHaveBeenCalledWith(
-        `SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1`,
-        [`${entity}_staging`]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `DROP TABLE ${entity}_staging`
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity} INCLUDING ALL);`
+        `TRUNCATE TABLE ${entity}_staging`
       )
     })
   })
@@ -242,10 +196,10 @@ describe('start ingest service', () => {
 
       expect(result).toBe(false)
       expect(dbClient.query).toHaveBeenCalledWith(
-        `SELECT 
-      1 
-    FROM 
-      ingest_files 
+        `SELECT
+      1
+    FROM
+      ingest_files
     WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
         ['filename', 123, INGEST_STATUS.PENDING]
       )
