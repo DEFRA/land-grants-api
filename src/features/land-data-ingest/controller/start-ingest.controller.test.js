@@ -51,7 +51,7 @@ describe('StartIngestController', () => {
 
       const request = {
         method: 'POST',
-        url: '/ingest/agreements/start',
+        url: '/ingest/land_parcels/start',
         payload: validPayload
       }
 
@@ -61,13 +61,13 @@ describe('StartIngestController', () => {
       expect(result).toEqual({ ingestId: 999 })
       expect(saveIngestStart).toHaveBeenCalledWith(
         validPayload,
-        'agreements',
+        'land_parcels',
         server.postgresDb,
         mockLogger
       )
     })
 
-    test('should return 400 when entity path param is invalid', async () => {
+    test('should return 400 when entity path param is not a known entity type', async () => {
       const request = {
         method: 'POST',
         url: '/ingest/invalid_entity_type/start',
@@ -80,10 +80,23 @@ describe('StartIngestController', () => {
       expect(saveIngestStart).not.toHaveBeenCalled()
     })
 
-    test('should return 400 when payload is missing required fields', async () => {
+    test('should return 400 when entity path param is a non-ingest entity type', async () => {
       const request = {
         method: 'POST',
         url: '/ingest/agreements/start',
+        payload: validPayload
+      }
+
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(saveIngestStart).not.toHaveBeenCalled()
+    })
+
+    test('should return 400 when payload is missing required fields', async () => {
+      const request = {
+        method: 'POST',
+        url: '/ingest/land_parcels/start',
         payload: {}
       }
 
@@ -96,7 +109,7 @@ describe('StartIngestController', () => {
     test('should return 400 when filename in payload is missing', async () => {
       const request = {
         method: 'POST',
-        url: '/ingest/agreements/start',
+        url: '/ingest/land_parcels/start',
         payload: {
           files: [{ rows: 123 }]
         }
@@ -111,7 +124,7 @@ describe('StartIngestController', () => {
     test('should return 400 when rows in payload is missing', async () => {
       const request = {
         method: 'POST',
-        url: '/ingest/agreements/start',
+        url: '/ingest/land_parcels/start',
         payload: {
           files: [{ filename: 'file.csv' }]
         }
@@ -128,7 +141,7 @@ describe('StartIngestController', () => {
 
       const request = {
         method: 'POST',
-        url: '/ingest/agreements/start',
+        url: '/ingest/land_parcels/start',
         payload: validPayload
       }
 

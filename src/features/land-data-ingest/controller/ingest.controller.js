@@ -9,6 +9,19 @@ import { internalServerErrorResponseSchema } from '~/src/features/common/schema/
 import { ingestSuccessResponseSchema } from '../schema/ingest.schema.js'
 import { filterFilesByDate, getFiles } from '../../common/s3/s3.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
+import { ENTITY_TYPES } from '~/src/features/common/constants/entity_types.js'
+
+const ingestEntityNames = new Set(
+  ENTITY_TYPES.filter((e) => e.ingest).map((e) => e.name)
+)
+
+/**
+ * Filters files to only include those belonging to ingest entity types
+ * @param {Array<{Key: string}>} files
+ * @returns {Array<{Key: string}>}
+ */
+export const filterFilesByEntityType = (files) =>
+  files.filter((f) => ingestEntityNames.has(f.Key.split('/')[0]))
 
 /**
  * Processes each filtered file in turn
@@ -95,7 +108,8 @@ export const IngestController = {
       })
 
       const files = await getFiles(s3Client, bucket)
-      const filtered = filterFilesByDate(files, minutesToIgnore)
+      const dateFiltered = filterFilesByDate(files, minutesToIgnore)
+      const filtered = filterFilesByEntityType(dateFiltered)
 
       await processFiles(filtered, request, { category, title, taskId })
 

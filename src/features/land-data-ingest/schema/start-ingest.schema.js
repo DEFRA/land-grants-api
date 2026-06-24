@@ -12,7 +12,7 @@ export const startIngestRequestSchema = Joi.object({
 
 export const startIngestParamsSchema = Joi.object({
   entity: Joi.string()
-    .valid(...ENTITY_TYPES.map((e) => e.name))
+    .valid(...ENTITY_TYPES.filter((e) => e.ingest).map((e) => e.name))
     .required()
 })
 
