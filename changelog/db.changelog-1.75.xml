@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+  
+  <changeSet id="grant-create-on-schema-public-v2" author="system">
+    <sql>GRANT CREATE ON SCHEMA public TO land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-truncate-for-land-parcels" author="system">
+    <sql>GRANT truncate on land_parcels to land_grants_api;</sql>
+  </changeSet>
+
+  <changeSet id="grant-truncate-for-land-covers" author="system">
+    <sql>GRANT truncate on land_covers to land_grants_api;</sql>
+  </changeSet>
+
+</databaseChangeLog>
