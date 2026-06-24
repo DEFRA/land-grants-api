@@ -256,19 +256,19 @@ describe('Data helpers', () => {
   })
 
   describe('promoteStagingTable', () => {
-    test('should swap the staging table into the live table within a transaction', async () => {
+    test('should truncate live table, copy from staging and drop staging within a transaction', async () => {
       await promoteStagingTable('land_parcels', dbClient)
 
       expect(dbClient.query).toHaveBeenCalledTimes(5)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
-        'ALTER TABLE land_parcels RENAME TO land_parcels_retiring'
+        'TRUNCATE TABLE land_parcels'
       )
       expect(dbClient.query.mock.calls[2][0]).toBe(
-        'ALTER TABLE land_parcels_staging RENAME TO land_parcels'
+        'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
       )
       expect(dbClient.query.mock.calls[3][0]).toBe(
-        'DROP TABLE IF EXISTS land_parcels_retiring'
+        'DROP TABLE land_parcels_staging'
       )
       expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
     })
@@ -276,11 +276,11 @@ describe('Data helpers', () => {
     test('should roll back and rethrow when promotion fails', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
-        .mockRejectedValueOnce(new Error('rename failed'))
+        .mockRejectedValueOnce(new Error('truncate failed'))
 
       await expect(
         promoteStagingTable('land_parcels', dbClient)
-      ).rejects.toThrow('rename failed')
+      ).rejects.toThrow('truncate failed')
 
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
