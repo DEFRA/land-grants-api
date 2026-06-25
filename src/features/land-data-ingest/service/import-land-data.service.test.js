@@ -16,6 +16,7 @@ import {
   setFileCompleted,
   setFileFailed,
   setIngestCompleted,
+  setIngestFailed,
   getFileExpectedRowCount
 } from './start-ingest.service.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
@@ -75,6 +76,7 @@ describe('Import Land Data Service', () => {
     setFileCompleted.mockResolvedValue()
     setFileFailed.mockResolvedValue()
     setIngestCompleted.mockResolvedValue()
+    setIngestFailed.mockResolvedValue()
     getFileExpectedRowCount.mockResolvedValue(1)
     getTableRowCount.mockResolvedValue(1)
     metricsCounter.mockResolvedValue()
@@ -165,6 +167,7 @@ describe('Import Land Data Service', () => {
       expect(promoteStagingTable).not.toHaveBeenCalled()
       expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
@@ -187,6 +190,7 @@ describe('Import Land Data Service', () => {
       expect(promoteStagingTable).toHaveBeenCalledTimes(0)
       expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(mockLogger.error).toHaveBeenCalledTimes(2)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
@@ -205,6 +209,7 @@ describe('Import Land Data Service', () => {
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
