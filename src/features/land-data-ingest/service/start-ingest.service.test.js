@@ -5,6 +5,7 @@ import {
   setFileInProgress,
   setFileCompleted,
   setFileFailed,
+  setIngestCompleted,
   isValidIngestFile
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
@@ -183,6 +184,19 @@ describe('start ingest service', () => {
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
         [INGEST_STATUS.FAILED, ingestId, filename]
+      )
+    })
+  })
+
+  describe('setIngestCompleted', () => {
+    test('should set ingest status to completed and record the completion date', async () => {
+      const ingestId = 'ingestId'
+
+      await setIngestCompleted(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
+        [INGEST_STATUS.COMPLETED, ingestId]
       )
     })
   })

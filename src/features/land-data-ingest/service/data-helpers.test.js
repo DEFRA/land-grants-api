@@ -215,10 +215,10 @@ describe('Data helpers', () => {
   })
 
   describe('promoteStagingTable', () => {
-    test('should truncate live table and copy from staging within a transaction', async () => {
+    test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
       await promoteStagingTable('land_parcels', dbClient)
 
-      expect(dbClient.query).toHaveBeenCalledTimes(4)
+      expect(dbClient.query).toHaveBeenCalledTimes(5)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'TRUNCATE TABLE land_parcels'
@@ -226,7 +226,10 @@ describe('Data helpers', () => {
       expect(dbClient.query.mock.calls[2][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging'
+      )
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
     })
 
     test('should roll back and rethrow when promotion fails', async () => {
