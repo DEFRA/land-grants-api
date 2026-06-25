@@ -4,6 +4,7 @@ import { createDBPool, getDBOptions } from '../../common/helpers/postgres.js'
 import {
   createTempTable,
   copyDataToTempTable,
+  getTableRowCount,
   insertData,
   truncateTableAndInsertData,
   isIngestComplete,
@@ -14,7 +15,8 @@ import {
   setFileInProgress,
   setFileCompleted,
   setFileFailed,
-  setIngestCompleted
+  setIngestCompleted,
+  getFileExpectedRowCount
 } from './start-ingest.service.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
@@ -73,6 +75,8 @@ describe('Import Land Data Service', () => {
     setFileCompleted.mockResolvedValue()
     setFileFailed.mockResolvedValue()
     setIngestCompleted.mockResolvedValue()
+    getFileExpectedRowCount.mockResolvedValue(1)
+    getTableRowCount.mockResolvedValue(1)
     metricsCounter.mockResolvedValue()
     logDuplicateRows.mockResolvedValue(0)
   })
@@ -148,6 +152,25 @@ describe('Import Land Data Service', () => {
       )
     })
 
+    it(`should fail ${entity.name} and not promote when per-file row count does not match`, async () => {
+      getTableRowCount.mockResolvedValue(5)
+      getFileExpectedRowCount.mockResolvedValue(3)
+
+      await expect(
+        importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      ).rejects.toThrow(
+        `File row count mismatch for file.csv: expected 3, got 5`
+      )
+
+      expect(promoteStagingTable).not.toHaveBeenCalled()
+      expect(setIngestCompleted).not.toHaveBeenCalled()
+      expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_failed`,
+        1
+      )
+    })
+
     it(`should fail ${entity.name} and not promote when ingest row count exceeds expected total`, async () => {
       isIngestComplete.mockResolvedValue({
         isComplete: false,
@@ -158,7 +181,7 @@ describe('Import Land Data Service', () => {
       await expect(
         importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
       ).rejects.toThrow(
-        `Ingest row count exceeds expected total for ${entity.name}`
+        `Ingest row count does not match expected total for ${entity.name}`
       )
 
       expect(promoteStagingTable).toHaveBeenCalledTimes(0)

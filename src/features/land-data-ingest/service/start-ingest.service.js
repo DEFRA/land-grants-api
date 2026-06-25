@@ -186,6 +186,21 @@ export const setIngestCompleted = async (ingestId, dbClient) => {
 }
 
 /**
+ * Returns the expected row count for a specific file in an ingest
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string} filename - The filename
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<number>} The expected row count
+ */
+export const getFileExpectedRowCount = async (ingestId, filename, dbClient) => {
+  const { rows } = await dbClient.query(
+    `SELECT total_rows FROM ingest_files WHERE ingest_id = $1 AND filename = $2`,
+    [ingestId, filename]
+  )
+  return Number(rows[0]?.total_rows)
+}
+
+/**
  * Validates that the file is part of the ingest and is in a pending state
  * @param {string | number} ingestId
  * @param {string} filename
