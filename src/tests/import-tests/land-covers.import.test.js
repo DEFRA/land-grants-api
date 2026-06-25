@@ -65,7 +65,7 @@ describe('Land covers import', () => {
 
       const result = await importLandData({
         s3key,
-        filename: 'cvoers_header.csv',
+        filename: 'covers_head.csv',
         ingestId
       })
 
