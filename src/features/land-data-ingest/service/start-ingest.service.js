@@ -52,19 +52,26 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
 export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
   // set in progress ingests to cancelled
   const { rows } = await dbClient.query(
-    `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
-    [entity, INGEST_STATUS.IN_PROGRESS]
+    `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
+    [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
   )
 
   if (rows.length > 0) {
+    const cancelledIds = rows.map((row) => row.id)
+
     logInfo(logger, {
       category: 'ingest',
-      message: `Ingest tasks cancelled: ${rows.map((row) => row.id).join()}`,
+      message: `Ingest tasks cancelled: ${cancelledIds.join()}`,
       context: {
-        ids: rows.map((row) => row.id),
+        ids: cancelledIds,
         entity
       }
     })
+
+    await dbClient.query(
+      `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
+      [INGEST_STATUS.CANCELLED, cancelledIds, INGEST_STATUS.PENDING]
+    )
   }
 
   const {
