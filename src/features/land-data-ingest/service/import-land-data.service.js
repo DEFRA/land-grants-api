@@ -21,6 +21,7 @@ import {
   setFileFailed,
   setFileInProgress,
   setIngestCompleted,
+  setIngestFailed,
   getFileExpectedRowCount
 } from './start-ingest.service.js'
 
@@ -317,6 +318,7 @@ export async function importDataValidate(
     })
     // @ts-expect-error filename
     await setFileFailed(filename, ingestId, dbClient)
+    await setIngestFailed(ingestId, dbClient)
     await metricsCounter(`${entityName}_data_ingest_failed`, 1)
     throw error
   } finally {

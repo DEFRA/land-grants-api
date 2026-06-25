@@ -6,6 +6,7 @@ import {
   setFileCompleted,
   setFileFailed,
   setIngestCompleted,
+  setIngestFailed,
   getFileExpectedRowCount,
   isValidIngestFile
 } from './start-ingest.service.js'
@@ -204,6 +205,19 @@ describe('start ingest service', () => {
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
         [INGEST_STATUS.COMPLETED, ingestId]
+      )
+    })
+  })
+
+  describe('setIngestFailed', () => {
+    test('should set ingest status to failed', async () => {
+      const ingestId = 'ingestId'
+
+      await setIngestFailed(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest SET status = $1 WHERE id = $2`,
+        [INGEST_STATUS.FAILED, ingestId]
       )
     })
   })

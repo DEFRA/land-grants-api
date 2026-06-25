@@ -186,6 +186,19 @@ export const setIngestCompleted = async (ingestId, dbClient) => {
 }
 
 /**
+ * Marks an ingest as failed
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>}
+ */
+export const setIngestFailed = async (ingestId, dbClient) => {
+  await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
+    INGEST_STATUS.FAILED,
+    ingestId
+  ])
+}
+
+/**
  * Returns the expected row count for a specific file in an ingest
  * @param {string | number} ingestId - The ingest ID
  * @param {string} filename - The filename
