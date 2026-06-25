@@ -212,9 +212,10 @@ export const isValidIngestFile = async (ingestId, filename, dbClient) => {
     `SELECT
       1
     FROM
-      ingest_files
-    WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
-    [ingestId, filename, INGEST_STATUS.PENDING]
+      ingest_files f
+      INNER JOIN ingest i ON i.id = f.ingest_id
+    WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
+    [ingestId, filename, INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
   )
 
   return rows.length > 0
