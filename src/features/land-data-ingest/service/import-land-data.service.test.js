@@ -13,7 +13,8 @@ import {
 import {
   setFileInProgress,
   setFileCompleted,
-  setFileFailed
+  setFileFailed,
+  setIngestCompleted
 } from './start-ingest.service.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
@@ -71,6 +72,7 @@ describe('Import Land Data Service', () => {
     setFileInProgress.mockResolvedValue()
     setFileCompleted.mockResolvedValue()
     setFileFailed.mockResolvedValue()
+    setIngestCompleted.mockResolvedValue()
     metricsCounter.mockResolvedValue()
     logDuplicateRows.mockResolvedValue(0)
   })
@@ -102,6 +104,7 @@ describe('Import Land Data Service', () => {
       expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
       expect(isIngestComplete).toHaveBeenCalledTimes(1)
       expect(promoteStagingTable).toHaveBeenCalledTimes(1)
+      expect(setIngestCompleted).toHaveBeenCalledWith(ingestId, mockClient)
 
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
@@ -134,6 +137,7 @@ describe('Import Land Data Service', () => {
       await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
 
       expect(promoteStagingTable).toHaveBeenCalledTimes(0)
+      expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(metricsCounter).not.toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
         expect.anything()
@@ -158,6 +162,7 @@ describe('Import Land Data Service', () => {
       )
 
       expect(promoteStagingTable).toHaveBeenCalledTimes(0)
+      expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(mockLogger.error).toHaveBeenCalledTimes(2)
       expect(metricsCounter).toHaveBeenCalledWith(

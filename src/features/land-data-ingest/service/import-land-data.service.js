@@ -18,7 +18,8 @@ import { metricsCounter } from '../../common/helpers/metrics.js'
 import {
   setFileCompleted,
   setFileFailed,
-  setFileInProgress
+  setFileInProgress,
+  setIngestCompleted
 } from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
@@ -254,6 +255,10 @@ export async function importDataValidate(
       totalCount,
       logger
     })
+
+    if (isComplete) {
+      await setIngestCompleted(ingestId, dbClient)
+    }
 
     const endTime = performance.now()
     const duration = endTime - startTime

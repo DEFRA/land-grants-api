@@ -166,6 +166,19 @@ export const setFileFailed = async (filename, ingestId, dbClient) => {
 }
 
 /**
+ * Marks an ingest as completed and records the completion timestamp
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>}
+ */
+export const setIngestCompleted = async (ingestId, dbClient) => {
+  await dbClient.query(
+    `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
+    [INGEST_STATUS.COMPLETED, ingestId]
+  )
+}
+
+/**
  * Validates that the file is part of the ingest and is in a pending state
  * @param {string | number} ingestId
  * @param {string} filename

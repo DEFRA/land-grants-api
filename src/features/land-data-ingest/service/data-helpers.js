@@ -165,6 +165,7 @@ export async function promoteStagingTable(tableName, dbClient) {
     await dbClient.query(
       `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
     )
+    await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
     await dbClient.query('COMMIT')
   } catch (error) {
     await dbClient.query('ROLLBACK')
