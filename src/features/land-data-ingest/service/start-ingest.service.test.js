@@ -231,16 +231,17 @@ describe('start ingest service', () => {
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
-      const result = await isValidIngestFile('filename', 123, dbClient)
+      const result = await isValidIngestFile(123, 'filename', dbClient)
 
       expect(result).toBe(false)
       expect(dbClient.query).toHaveBeenCalledWith(
         `SELECT
       1
     FROM
-      ingest_files
-    WHERE ingest_id = $1 AND filename = $2 AND status = $3`,
-        ['filename', 123, INGEST_STATUS.PENDING]
+      ingest_files f
+      INNER JOIN ingest i ON i.id = f.ingest_id
+    WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
+        [123, 'filename', INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
       )
     })
   })
