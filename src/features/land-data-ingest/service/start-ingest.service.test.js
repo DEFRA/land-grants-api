@@ -35,36 +35,34 @@ describe('start ingest service', () => {
   })
 
   describe('cancelAndCreateNewIngest', () => {
-    test('should create new ingest', async () => {
+    test('should create new ingest when no prior ingest is in progress', async () => {
       const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 123 }]
-      })
+      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest (nothing to cancel)
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // INSERT ingest
 
       const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
 
       expect(result).toEqual(123)
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
-        [entity, INGEST_STATUS.IN_PROGRESS]
+        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
+        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
         [entity, INGEST_STATUS.IN_PROGRESS]
       )
+      // No pending ingest_files to cancel
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
+        expect.anything()
+      )
     })
 
-    test('should cancel in progress ingests and create new ingest', async () => {
+    test('should cancel in progress ingests, cancel their pending files, and create new ingest', async () => {
       const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 123 }]
-      })
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 456 }]
-      })
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // UPDATE ingest
+      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest_files
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 456 }] }) // INSERT ingest
 
       const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
 
@@ -78,8 +76,12 @@ describe('start ingest service', () => {
         }
       })
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = $2 RETURNING id`,
-        [entity, INGEST_STATUS.IN_PROGRESS]
+        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
+        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
+      )
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
+        [INGEST_STATUS.CANCELLED, [123], INGEST_STATUS.PENDING]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
@@ -112,6 +114,10 @@ describe('start ingest service', () => {
       // UPDATE ingest (cancel in progress)
       dbClient.query.mockResolvedValueOnce({
         rows: [{ id: 123 }]
+      })
+      // UPDATE ingest_files (cancel pending files of cancelled ingest)
+      dbClient.query.mockResolvedValueOnce({
+        rows: []
       })
       // INSERT ingest
       dbClient.query.mockResolvedValueOnce({
