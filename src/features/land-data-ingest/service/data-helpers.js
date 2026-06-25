@@ -4,6 +4,19 @@ import { pipeline } from 'node:stream/promises'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
+ * Returns the number of rows in a table
+ * @param {import('pg').Client} dbClient
+ * @param {string} tableName
+ * @returns {Promise<number>}
+ */
+export async function getTableRowCount(dbClient, tableName) {
+  const {
+    rows: [{ count }]
+  } = await dbClient.query(`SELECT COUNT(*) as count FROM ${tableName}`)
+  return Number(count)
+}
+
+/**
  * Create a temporary table to store the data
  * @param {import('pg').Client} dbClient
  * @param {string} tableName

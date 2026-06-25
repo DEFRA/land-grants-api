@@ -4,6 +4,7 @@ import { pipeline } from 'node:stream/promises'
 import {
   createTempTable,
   copyDataToTempTable,
+  getTableRowCount,
   insertData,
   truncateTableAndInsertData,
   truncateStagingTable,
@@ -35,6 +36,17 @@ describe('Data helpers', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+  })
+
+  test('getTableRowCount should return number of rows in a table', async () => {
+    dbClient.query.mockResolvedValueOnce({ rows: [{ count: '42' }] })
+
+    const result = await getTableRowCount(dbClient, 'land_parcels_tmp')
+
+    expect(result).toBe(42)
+    expect(dbClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(*) as count FROM land_parcels_tmp'
+    )
   })
 
   test('should create a temporary table', async () => {

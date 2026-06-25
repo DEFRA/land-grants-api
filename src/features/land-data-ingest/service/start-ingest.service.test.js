@@ -6,6 +6,7 @@ import {
   setFileCompleted,
   setFileFailed,
   setIngestCompleted,
+  getFileExpectedRowCount,
   isValidIngestFile
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
@@ -203,6 +204,24 @@ describe('start ingest service', () => {
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
         [INGEST_STATUS.COMPLETED, ingestId]
+      )
+    })
+  })
+
+  describe('getFileExpectedRowCount', () => {
+    test('returns the expected row count for a file', async () => {
+      dbClient.query.mockResolvedValueOnce({ rows: [{ total_rows: '123' }] })
+
+      const result = await getFileExpectedRowCount(
+        'ingestId',
+        'file.csv',
+        dbClient
+      )
+
+      expect(result).toBe(123)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `SELECT total_rows FROM ingest_files WHERE ingest_id = $1 AND filename = $2`,
+        ['ingestId', 'file.csv']
       )
     })
   })

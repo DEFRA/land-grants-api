@@ -8,6 +8,7 @@ import { createSecureContext } from '../../common/helpers/secure-context/secure-
 import {
   copyDataToTempTable,
   createTempTable,
+  getTableRowCount,
   insertData,
   truncateTableAndInsertData,
   isIngestComplete,
@@ -19,7 +20,8 @@ import {
   setFileCompleted,
   setFileFailed,
   setFileInProgress,
-  setIngestCompleted
+  setIngestCompleted,
+  getFileExpectedRowCount
 } from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
@@ -68,10 +70,10 @@ async function dedupeIfNeeded(dbClient, entityName, logger) {
 }
 
 /**
- * Logs an alert and throws when the staging table has more rows than expected
+ * Logs and throws when the overall staging row count does not match the expected total
  * @param {{isOverCount: boolean, entityName: string, ingestId: string | number, totalCount: number, logger: object}} params
  */
-function assertWithinExpectedCount({
+function assertExpectedCount({
   isOverCount,
   entityName,
   ingestId,
@@ -82,15 +84,50 @@ function assertWithinExpectedCount({
     return
   }
 
-  const overCountError = new Error(
-    `Ingest row count exceeds expected total for ${entityName}`
+  const error = new Error(
+    `Ingest row count does not match expected total for ${entityName}`
   )
   logBusinessError(logger, {
     operation: `${entityName}_import_over_count`,
-    error: overCountError,
+    error,
     context: { entityName, ingestId, totalCount }
   })
-  throw overCountError
+  throw error
+}
+
+/**
+ * Logs and throws when the file's actual row count (temp table) does not match what the payload declared
+ * @param {string} filename
+ * @param {string | number} ingestId
+ * @param {string} entityName
+ * @param {import('pg').Client} dbClient
+ * @param {import('../../common/logger.d.js').Logger} logger
+ */
+async function assertFileRowCount(
+  filename,
+  ingestId,
+  entityName,
+  dbClient,
+  logger
+) {
+  const actualCount = await getTableRowCount(dbClient, `${entityName}_tmp`)
+  const expectedCount = await getFileExpectedRowCount(
+    ingestId,
+    filename,
+    dbClient
+  )
+
+  if (actualCount !== expectedCount) {
+    const error = new Error(
+      `File row count mismatch for ${filename}: expected ${expectedCount}, got ${actualCount}`
+    )
+    logBusinessError(logger, {
+      operation: `${entityName}_file_row_count_mismatch`,
+      error,
+      context: { entityName, filename, ingestId, expectedCount, actualCount }
+    })
+    throw error
+  }
 }
 
 /**
@@ -231,6 +268,9 @@ export async function importDataValidate(
     await copyDataToTempTable(dbClient, entityName, dataStream)
     await dedupeIfNeeded(dbClient, entityName, logger)
 
+    // @ts-expect-error filename
+    await assertFileRowCount(filename, ingestId, entityName, dbClient, logger)
+
     const { rowCount } = await insertData(dbClient, entityName, ingestId)
     // @ts-expect-error filename
     await setFileCompleted(filename, ingestId, dbClient)
@@ -241,7 +281,7 @@ export async function importDataValidate(
       dbClient
     )
 
-    assertWithinExpectedCount({
+    assertExpectedCount({
       isOverCount,
       entityName,
       ingestId,
