@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks'
 import { readFile } from '../../common/helpers/read-file.js'
 import { from } from 'pg-copy-streams'
 import { pipeline } from 'node:stream/promises'
@@ -171,7 +172,9 @@ export async function logDuplicateRows(
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
  */
-export async function promoteStagingTable(tableName, dbClient) {
+export async function promoteStagingTable(tableName, dbClient, logger) {
+  const startTime = performance.now()
+
   try {
     await dbClient.query('BEGIN')
     await dbClient.query(`TRUNCATE TABLE ${tableName}`)
@@ -180,6 +183,14 @@ export async function promoteStagingTable(tableName, dbClient) {
     )
     await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
     await dbClient.query('COMMIT')
+
+    const duration = performance.now() - startTime
+    logInfo(logger, {
+      category: 'land-data-ingest',
+      operation: `${tableName}_staging_promoted`,
+      message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
+      context: { tableName, duration }
+    })
   } catch (error) {
     await dbClient.query('ROLLBACK')
     throw error

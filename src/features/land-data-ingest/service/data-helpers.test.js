@@ -227,8 +227,10 @@ describe('Data helpers', () => {
   })
 
   describe('promoteStagingTable', () => {
+    const logger = { info: vi.fn() }
+
     test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
-      await promoteStagingTable('land_parcels', dbClient)
+      await promoteStagingTable('land_parcels', dbClient, logger)
 
       expect(dbClient.query).toHaveBeenCalledTimes(5)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
@@ -242,6 +244,7 @@ describe('Data helpers', () => {
         'TRUNCATE TABLE land_parcels_staging'
       )
       expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
     test('should roll back and rethrow when promotion fails', async () => {
@@ -250,7 +253,7 @@ describe('Data helpers', () => {
         .mockRejectedValueOnce(new Error('truncate failed'))
 
       await expect(
-        promoteStagingTable('land_parcels', dbClient)
+        promoteStagingTable('land_parcels', dbClient, logger)
       ).rejects.toThrow('truncate failed')
 
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
