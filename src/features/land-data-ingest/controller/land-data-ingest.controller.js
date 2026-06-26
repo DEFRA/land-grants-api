@@ -12,6 +12,83 @@ import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 import { config } from '../../../config/index.js'
 import { createTaskInfo, processFile } from '../service/ingest.service.js'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
+
+/**
+ * Validates that the uploaded file has no errors and is complete
+ * @param {object} payload - The CDP uploader callback payload
+ * @returns {import('@hapi/boom').Boom | null} A Boom error if invalid, otherwise null
+ */
+const validateFileStatus = (payload) => {
+  if (payload.form.file?.hasError) {
+    return Boom.badRequest(payload.form.file.errorMessage)
+  }
+
+  if (payload.form.file?.fileStatus !== 'complete') {
+    return Boom.badRequest('File is not ready')
+  }
+
+  return null
+}
+
+/**
+ * Validates that the file belongs to the given ingest, if an ingest is referenced
+ * @param {{ingestId: number, filename: string, postgresDb: object, logger: object, category: string, payload: object}} params
+ * @returns {Promise<import('@hapi/boom').Boom | null>} A Boom error if invalid, otherwise null
+ */
+const validateIngestFile = async ({
+  ingestId,
+  filename,
+  postgresDb,
+  logger,
+  category,
+  payload
+}) => {
+  if (!ingestId || !filename) {
+    return null
+  }
+
+  const isValid = await isValidIngestFile(ingestId, filename, postgresDb)
+  if (isValid) {
+    return null
+  }
+
+  logBusinessError(logger, {
+    operation: `${category}_error`,
+    error: new Error('Invalid ingest file'),
+    context: { payload }
+  })
+
+  return Boom.badRequest('Invalid ingest file')
+}
+
+/**
+ * Starts background processing of the uploaded file, logging any failure
+ * @param {object} payload - The CDP uploader callback payload
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
+ * @param {{category: string, title: string, taskId: number, filename: string, ingestId: number}} params
+ */
+const startFileProcessing = (
+  payload,
+  request,
+  { category, title, taskId, filename, ingestId }
+) => {
+  processFile({ s3key: payload.form.file.s3Key, filename, ingestId }, request, {
+    category,
+    title,
+    taskId
+  }).catch((error) => {
+    logBusinessError(request.logger, {
+      operation: `${category}_process_file_error`,
+      error,
+      context: {
+        payload: JSON.stringify(payload ?? {}),
+        s3Key: payload.form.file.s3Key,
+        s3Bucket: config.get('s3.bucket')
+      }
+    })
+  })
+}
 
 export const LandDataIngestController = {
   options: {
@@ -35,11 +112,16 @@ export const LandDataIngestController = {
    */
   handler: async (request, h) => {
     const category = 'land-data-ingest'
-    const { logger } = request
-
+    const {
+      logger,
+      // @ts-expect-error - postgresDb, payload
+      server: { postgresDb }
+    } = request
     /** @type { CDPUploaderRequest } */
-    // @ts-expect-error - payload is validated by the schema
+    // @ts-expect-error - payload
     const payload = request.payload
+    const ingestId = payload?.metadata?.ingestId
+    const filename = payload?.metadata?.filename
 
     try {
       logInfo(logger, {
@@ -50,32 +132,31 @@ export const LandDataIngestController = {
         }
       })
 
-      if (payload.form.file?.hasError) {
-        return Boom.badRequest(payload.form.file.errorMessage)
+      const statusError = validateFileStatus(payload)
+      if (statusError) {
+        return statusError
       }
 
-      if (payload.form.file?.fileStatus !== 'complete') {
-        return Boom.badRequest('File is not ready')
+      const ingestError = await validateIngestFile({
+        ingestId,
+        filename,
+        postgresDb,
+        logger,
+        category,
+        payload
+      })
+      if (ingestError) {
+        return ingestError
       }
 
       const { title, taskId } = createTaskInfo(Date.now(), category)
 
-      processFile(
-        payload.form.file.s3Key,
-        request,
+      startFileProcessing(payload, request, {
         category,
         title,
-        taskId
-      ).catch((error) => {
-        logBusinessError(request.logger, {
-          operation: `${category}_process_file_error`,
-          error,
-          context: {
-            payload: JSON.stringify(payload ?? {}),
-            s3Key: payload.form.file.s3Key,
-            s3Bucket: config.get('s3.bucket')
-          }
-        })
+        taskId,
+        filename,
+        ingestId
       })
 
       logInfo(logger, {

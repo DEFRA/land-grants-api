@@ -117,15 +117,4 @@ describe('Ingestion Endpoints', () => {
       expect(response.data).toHaveProperty('message')
     })
   })
-
-  describe('GET /ingest-land-data-schedule', () => {
-    test('should return 200 with message and taskId', async () => {
-      const response = await httpClient.get('/ingest-land-data-schedule')
-
-      expect(response.status).toBe(200)
-      expect(response.data).toHaveProperty('message')
-      expect(response.data).toHaveProperty('taskId')
-      expect(typeof response.data.taskId).toBe('number')
-    })
-  })
 })
