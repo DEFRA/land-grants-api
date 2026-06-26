@@ -146,7 +146,7 @@ async function promoteIfComplete({
     return
   }
 
-  await promoteStagingTable(entityName, dbClient)
+  await promoteStagingTable(entityName, dbClient, logger)
   logInfo(logger, {
     category: logCategory,
     operation: `${entityName}_import_completed`,
