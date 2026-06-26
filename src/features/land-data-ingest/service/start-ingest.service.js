@@ -199,6 +199,19 @@ export const setIngestFailed = async (ingestId, dbClient) => {
 }
 
 /**
+ * Cancels all pending files for a given ingest
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<void>}
+ */
+export const cancelPendingFiles = async (ingestId, dbClient) => {
+  await dbClient.query(
+    `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND status = $3`,
+    [INGEST_STATUS.CANCELLED, ingestId, INGEST_STATUS.PENDING]
+  )
+}
+
+/**
  * Returns the expected row count for a specific file in an ingest
  * @param {string | number} ingestId - The ingest ID
  * @param {string} filename - The filename

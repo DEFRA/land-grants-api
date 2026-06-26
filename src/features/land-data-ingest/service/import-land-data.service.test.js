@@ -12,6 +12,7 @@ import {
   logDuplicateRows
 } from './data-helpers.js'
 import {
+  cancelPendingFiles,
   setFileInProgress,
   setFileCompleted,
   setFileFailed,
@@ -77,6 +78,7 @@ describe('Import Land Data Service', () => {
     setFileFailed.mockResolvedValue()
     setIngestCompleted.mockResolvedValue()
     setIngestFailed.mockResolvedValue()
+    cancelPendingFiles.mockResolvedValue()
     getFileExpectedRowCount.mockResolvedValue(1)
     getTableRowCount.mockResolvedValue(1)
     metricsCounter.mockResolvedValue()
@@ -168,6 +170,7 @@ describe('Import Land Data Service', () => {
       expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
@@ -191,6 +194,7 @@ describe('Import Land Data Service', () => {
       expect(setIngestCompleted).not.toHaveBeenCalled()
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
       expect(mockLogger.error).toHaveBeenCalledTimes(2)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
@@ -210,6 +214,7 @@ describe('Import Land Data Service', () => {
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
