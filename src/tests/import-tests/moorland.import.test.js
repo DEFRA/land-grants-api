@@ -42,10 +42,10 @@ describe('Moorland import', () => {
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import moorland data and return 200 ok (%s)',
-    async (s3Key) => {
-      await uploadLandDataFixture(s3Client, 'moorland_head.csv', s3Key)
+    async (s3key) => {
+      await uploadLandDataFixture(s3Client, 'moorland_head.csv', s3key)
 
-      const result = await importLandData(s3Key)
+      const result = await importLandData({ s3key })
 
       expect(result).toBe('Land data imported successfully')
 
@@ -68,7 +68,7 @@ describe('Moorland import', () => {
       }
 
       const files = await listTestFiles(s3Client)
-      expect(files).toContain(s3Key)
+      expect(files).toContain(s3key)
     },
     10000
   )
@@ -85,8 +85,10 @@ describe('Moorland import', () => {
       'moorland_designations/moorland_head_upsert.csv'
     )
 
-    await importLandData('moorland_designations/moorland_head.csv')
-    await importLandData('moorland_designations/moorland_head_upsert.csv')
+    await importLandData({ s3key: 'moorland_designations/moorland_head.csv' })
+    await importLandData({
+      s3key: 'moorland_designations/moorland_head_upsert.csv'
+    })
 
     const [moorland] = await getRecordsByQuery(
       connection,

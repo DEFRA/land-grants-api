@@ -1,18 +1,21 @@
 import Hapi from '@hapi/hapi'
+import { vi } from 'vitest'
 import { InitiateLandDataUploadController } from './initiate-land-data-upload.controller.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { initiateLandDataUpload } from '../service/ingest.service.js'
 import { config } from '~/src/config/index.js'
-import { vi } from 'vitest'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
 
 // Mock dependencies
 vi.mock('~/src/features/common/helpers/logging/log-helpers.js')
 vi.mock('../service/ingest.service.js')
 vi.mock('~/src/config/index.js')
+vi.mock('../service/start-ingest.service.js')
 
 const mockLogInfo = logInfo
 const mockInitiateLandDataUpload = initiateLandDataUpload
 const mockConfig = config
+const mockIsValidIngestFile = isValidIngestFile
 
 describe('InitiateLandDataUploadController', () => {
   const server = Hapi.server()
@@ -121,6 +124,78 @@ describe('InitiateLandDataUploadController', () => {
           frontendUrl: process.env.FRONTEND_URL
         }
       })
+    })
+
+    test('should return 200 and check file is valid when ingestId and filename are provided', async () => {
+      const ingestId = 123
+      const filename = 'test_parcels.csv'
+      const payload = { ...validPayload, ingestId, filename }
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload
+      }
+      mockIsValidIngestFile.mockResolvedValue(true)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, uploadUrl }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('Land data upload initiated')
+      expect(uploadUrl).toBe(`${mockGrantsUiHost}${mockUploadUrl}`)
+      expect(mockIsValidIngestFile).toHaveBeenCalledWith(
+        ingestId,
+        filename,
+        undefined
+      )
+
+      // Verify service was called with correct parameters
+      // Parameters: endpoint, callback, s3Bucket, s3Path (resource), metadata (payload)
+      expect(mockInitiateLandDataUpload).toHaveBeenCalledWith(
+        mockEndpoint,
+        mockCallback,
+        mockBucket,
+        'land_parcels', // s3Path (the resource type)
+        payload // metadata
+      )
+
+      // Verify logging was called
+      expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
+        category: 'initiate-land-data-upload',
+        message: 'Initiating land data upload',
+        context: {
+          payload: JSON.stringify(payload),
+          s3Bucket: mockBucket,
+          endpoint: mockEndpoint,
+          callback: mockCallback,
+          grantsUiHost: mockGrantsUiHost,
+          frontendUrl: process.env.FRONTEND_URL
+        }
+      })
+    })
+
+    test('should return bad request when file is invalid', async () => {
+      const ingestId = 123
+      const filename = 'test_parcels.csv'
+      const payload = { ...validPayload, ingestId, filename }
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/initiate',
+        payload
+      }
+      mockIsValidIngestFile.mockResolvedValue(false)
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid ingest file')
     })
 
     test('should use FRONTEND_URL when grantsUiHost is not configured', async () => {

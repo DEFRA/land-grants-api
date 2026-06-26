@@ -48,23 +48,20 @@ describe('Start Worker Thread', () => {
     it('should handle a complete successful worker lifecycle', async () => {
       const workerPath = '/path/to/worker.js'
       const taskId = 999
-      const data = [{ id: 1 }, { id: 2 }]
+      const data = { s3key: 'test' }
 
-      const workerPromise = startWorker(
-        mockRequest,
-        workerPath,
-        'Data Processor',
-        'data_processing',
-        taskId,
-        data
-      )
+      const workerPromise = startWorker(mockRequest, workerPath, data, {
+        title: 'Data Processor',
+        category: 'data_processing',
+        taskId
+      })
 
       messageHandler({ success: true, processed: 2 })
       expect(logHelpers.logInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'data_processing',
         operation: 'data_processing_completed',
         message: 'Data Processor completed successfully',
-        context: { result: true, file: data }
+        context: { result: true, file: data.s3key }
       })
 
       exitHandler(0)
@@ -74,7 +71,7 @@ describe('Start Worker Thread', () => {
         category: 'data_processing',
         operation: 'data_processing_exit',
         message: 'Data Processor exited successfully',
-        context: { taskId, code: 0, file: data }
+        context: { taskId, code: 0, file: data.s3key }
       })
 
       expect(logHelpers.logBusinessError).not.toHaveBeenCalled()
@@ -86,10 +83,12 @@ describe('Start Worker Thread', () => {
       const workerPromise = startWorker(
         mockRequest,
         '/path/to/worker.js',
-        'Error Prone Worker',
-        'error_category',
-        taskId,
-        []
+        { s3key: 'test' },
+        {
+          title: 'Error Prone Worker',
+          category: 'error_category',
+          taskId
+        }
       )
 
       messageHandler({ success: false, errors: ['Error 1'] })
@@ -97,7 +96,7 @@ describe('Start Worker Thread', () => {
         category: 'error_category',
         operation: 'error_category_completed',
         message: 'Error Prone Worker completed with errors',
-        context: { result: false, file: [] }
+        context: { result: false, file: 'test' }
       })
 
       exitHandler(1)
@@ -109,7 +108,7 @@ describe('Start Worker Thread', () => {
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'error_category_exit',
         error: new Error('Error Prone Worker stopped with exit code 1'),
-        context: { taskId, code: 1, file: [] }
+        context: { taskId, code: 1, file: 'test' }
       })
     })
 
@@ -119,10 +118,12 @@ describe('Start Worker Thread', () => {
       const workerPromise = startWorker(
         mockRequest,
         '/path/to/worker.js',
-        'Crashing Worker',
-        'crash_category',
-        taskId,
-        []
+        { s3key: 'test' },
+        {
+          title: 'Crashing Worker',
+          category: 'crash_category',
+          taskId
+        }
       )
 
       const error = new Error('Unexpected crash')
@@ -133,7 +134,7 @@ describe('Start Worker Thread', () => {
       expect(logHelpers.logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'crash_category_error',
         error,
-        context: { taskId, file: [] }
+        context: { taskId, file: 'test' }
       })
     })
   })

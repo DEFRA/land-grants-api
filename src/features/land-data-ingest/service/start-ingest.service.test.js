@@ -1,12 +1,18 @@
 import {
-  dropAndCreateNewStagingTable,
+  truncateStagingTable,
   cancelAndCreateNewIngest,
-  saveIngestStart
+  cancelPendingFiles,
+  saveIngestStart,
+  setFileInProgress,
+  setFileCompleted,
+  setFileFailed,
+  setIngestCompleted,
+  setIngestFailed,
+  getFileExpectedRowCount,
+  isValidIngestFile
 } from './start-ingest.service.js'
-import {
-  logBusinessError,
-  logInfo
-} from '../../common/helpers/logging/log-helpers.js'
+import { logInfo } from '../../common/helpers/logging/log-helpers.js'
+import { INGEST_STATUS } from '../service/ingest-status.js'
 
 vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
   logBusinessError: vi.fn(),
@@ -19,7 +25,7 @@ describe('start ingest service', () => {
 
   beforeEach(() => {
     dbClient = {
-      query: vi.fn()
+      query: vi.fn().mockResolvedValue({ rows: [] })
     }
     logger = {
       info: vi.fn(),
@@ -32,36 +38,34 @@ describe('start ingest service', () => {
   })
 
   describe('cancelAndCreateNewIngest', () => {
-    test('should create new ingest', async () => {
+    test('should create new ingest when no prior ingest is in progress', async () => {
       const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 123 }]
-      })
+      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest (nothing to cancel)
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // INSERT ingest
 
       const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
 
       expect(result).toEqual(123)
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = 'in_progress' RETURNING id`,
-        [entity]
+        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
+        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, 'in_progress']
+        [entity, INGEST_STATUS.IN_PROGRESS]
+      )
+      // No pending ingest_files to cancel
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
+        expect.anything()
       )
     })
 
-    test('should cancel in progress ingests and create new ingest', async () => {
+    test('should cancel in progress ingests, cancel their pending files, and create new ingest', async () => {
       const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 123 }]
-      })
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ id: 456 }]
-      })
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // UPDATE ingest
+      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest_files
+      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 456 }] }) // INSERT ingest
 
       const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
 
@@ -75,53 +79,29 @@ describe('start ingest service', () => {
         }
       })
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = 'cancelled' WHERE entity = $1 AND status = 'in_progress' RETURNING id`,
-        [entity]
+        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
+        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
+      )
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
+        [INGEST_STATUS.CANCELLED, [123], INGEST_STATUS.PENDING]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, 'in_progress']
+        [entity, INGEST_STATUS.IN_PROGRESS]
       )
     })
   })
 
-  describe('dropAndCreateNewStagingTable', () => {
-    test('should create a new staging table', async () => {
-      const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      await dropAndCreateNewStagingTable(entity, dbClient, logger)
-
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1`,
-        [`${entity}_staging`]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
-      )
-    })
-
-    test('should drop the staging table if it exists', async () => {
+  describe('truncateStagingTable', () => {
+    test('should truncate the pre-existing staging table', async () => {
       const entity = 'test_entity'
 
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ tablename: `${entity}_staging` }]
-      })
-
-      await dropAndCreateNewStagingTable(entity, dbClient, logger)
+      await truncateStagingTable(entity, dbClient)
 
       expect(dbClient.query).toHaveBeenCalledWith(
-        `DROP TABLE ${entity}_staging`
+        `TRUNCATE TABLE ${entity}_staging`
       )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
-      )
-      expect(logBusinessError).toHaveBeenCalledWith(logger, {
-        operation: 'start_ingest',
-        context: `${entity}_staging`,
-        error: new Error('Staging table already exists')
-      })
     })
   })
 
@@ -138,6 +118,10 @@ describe('start ingest service', () => {
       dbClient.query.mockResolvedValueOnce({
         rows: [{ id: 123 }]
       })
+      // UPDATE ingest_files (cancel pending files of cancelled ingest)
+      dbClient.query.mockResolvedValueOnce({
+        rows: []
+      })
       // INSERT ingest
       dbClient.query.mockResolvedValueOnce({
         rows: [{ id: 456 }]
@@ -150,15 +134,7 @@ describe('start ingest service', () => {
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
-      // SELECT pg_tables (staging table exists)
-      dbClient.query.mockResolvedValueOnce({
-        rows: [{ tablename: `${entity}_staging` }]
-      })
-      // DROP TABLE staging
-      dbClient.query.mockResolvedValueOnce({
-        rows: []
-      })
-      // CREATE TABLE staging
+      // TRUNCATE staging
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
@@ -178,14 +154,122 @@ describe('start ingest service', () => {
         [456, 'test_file_2', 456, 'pending']
       )
       expect(dbClient.query).toHaveBeenCalledWith(
-        `SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = $1`,
-        [`${entity}_staging`]
+        `TRUNCATE TABLE ${entity}_staging`
       )
+    })
+  })
+
+  describe('set file status', () => {
+    test('setFileInProgress should set file status to in progress', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileInProgress(filename, ingestId, dbClient)
+
       expect(dbClient.query).toHaveBeenCalledWith(
-        `DROP TABLE ${entity}_staging`
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.IN_PROGRESS, ingestId, filename]
       )
+    })
+
+    test('setFileCompleted should set file status to completed', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileCompleted(filename, ingestId, dbClient)
+
       expect(dbClient.query).toHaveBeenCalledWith(
-        `CREATE TABLE ${entity}_staging (LIKE ${entity})`
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.COMPLETED, ingestId, filename]
+      )
+    })
+
+    test('setFileFailed should set file status to failed', async () => {
+      const filename = 'filename'
+      const ingestId = 'ingestId'
+
+      await setFileFailed(filename, ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
+        [INGEST_STATUS.FAILED, ingestId, filename]
+      )
+    })
+  })
+
+  describe('setIngestCompleted', () => {
+    test('should set ingest status to completed and record the completion date', async () => {
+      const ingestId = 'ingestId'
+
+      await setIngestCompleted(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
+        [INGEST_STATUS.COMPLETED, ingestId]
+      )
+    })
+  })
+
+  describe('setIngestFailed', () => {
+    test('should set ingest status to failed', async () => {
+      const ingestId = 'ingestId'
+
+      await setIngestFailed(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest SET status = $1 WHERE id = $2`,
+        [INGEST_STATUS.FAILED, ingestId]
+      )
+    })
+  })
+
+  describe('cancelPendingFiles', () => {
+    test('should cancel all pending files for a given ingest', async () => {
+      const ingestId = 'ingestId'
+
+      await cancelPendingFiles(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND status = $3`,
+        [INGEST_STATUS.CANCELLED, ingestId, INGEST_STATUS.PENDING]
+      )
+    })
+  })
+
+  describe('getFileExpectedRowCount', () => {
+    test('returns the expected row count for a file', async () => {
+      dbClient.query.mockResolvedValueOnce({ rows: [{ total_rows: '123' }] })
+
+      const result = await getFileExpectedRowCount(
+        'ingestId',
+        'file.csv',
+        dbClient
+      )
+
+      expect(result).toBe(123)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `SELECT total_rows FROM ingest_files WHERE ingest_id = $1 AND filename = $2`,
+        ['ingestId', 'file.csv']
+      )
+    })
+  })
+
+  describe('is valid ingest file', () => {
+    test('makes correct db call', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: []
+      })
+      const result = await isValidIngestFile(123, 'filename', dbClient)
+
+      expect(result).toBe(false)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `SELECT
+      1
+    FROM
+      ingest_files f
+      INNER JOIN ingest i ON i.id = f.ingest_id
+    WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
+        [123, 'filename', INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
       )
     })
   })

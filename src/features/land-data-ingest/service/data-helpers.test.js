@@ -4,8 +4,13 @@ import { pipeline } from 'node:stream/promises'
 import {
   createTempTable,
   copyDataToTempTable,
+  getTableRowCount,
   insertData,
-  truncateTableAndInsertData
+  truncateTableAndInsertData,
+  truncateStagingTable,
+  isIngestComplete,
+  promoteStagingTable,
+  logDuplicateRows
 } from './data-helpers.js'
 import { vi } from 'vitest'
 
@@ -31,6 +36,17 @@ describe('Data helpers', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+  })
+
+  test('getTableRowCount should return number of rows in a table', async () => {
+    dbClient.query.mockResolvedValueOnce({ rows: [{ count: '42' }] })
+
+    const result = await getTableRowCount(dbClient, 'land_parcels_tmp')
+
+    expect(result).toBe(42)
+    expect(dbClient.query).toHaveBeenCalledWith(
+      'SELECT COUNT(*) as count FROM land_parcels_tmp'
+    )
   })
 
   test('should create a temporary table', async () => {
@@ -64,6 +80,11 @@ describe('Data helpers', () => {
     expect(pipeline).toHaveBeenCalledTimes(1)
     expect(pipeline.mock.calls[0][0]).toBe(dataStream)
     expect(pipeline.mock.calls[0][1]).toBeInstanceOf(WritableStream)
+
+    // pipeline is mocked, so the streams are never consumed; close them so the
+    // open WritableStream does not leak pending work into later tests.
+    await mockWritableStream.close()
+    await dataStream.cancel()
   })
 
   test('should insert data into the table', async () => {
@@ -104,6 +125,139 @@ describe('Data helpers', () => {
       expect(dbClient.query).toHaveBeenCalledTimes(2)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe('ROLLBACK')
+    })
+  })
+
+  describe('truncateStagingTable', () => {
+    test('should truncate the pre-existing staging table', async () => {
+      await truncateStagingTable(dbClient, 'land_parcels')
+
+      expect(dbClient.query).toHaveBeenCalledTimes(1)
+      expect(dbClient.query.mock.calls[0][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging'
+      )
+    })
+  })
+
+  describe('isIngestComplete', () => {
+    test('should return isComplete true when staging count matches the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '9' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({
+        isComplete: true,
+        isOverCount: false,
+        totalCount: 9
+      })
+      expect(dbClient.query.mock.calls[0][0]).toBe(
+        'SELECT count(*) as count FROM land_parcels_staging'
+      )
+      expect(dbClient.query.mock.calls[1][1]).toEqual([123])
+    })
+
+    test('should return isComplete false when staging count does not match the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '4' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({
+        isComplete: false,
+        isOverCount: false,
+        totalCount: 4
+      })
+    })
+
+    test('should return isOverCount true when staging count exceeds the expected total rows', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '12' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({
+        isComplete: false,
+        isOverCount: true,
+        totalCount: 12
+      })
+    })
+  })
+
+  describe('logDuplicateRows', () => {
+    test('logs and returns the number of duplicate rows found', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: [{ duplicate_count: '3' }]
+      })
+      const logger = { info: vi.fn() }
+
+      const result = await logDuplicateRows(
+        dbClient,
+        'land_parcels',
+        ['SHEET_ID', 'PARCEL_ID'],
+        logger
+      )
+
+      expect(result).toBe(3)
+      expect(dbClient.query).toHaveBeenCalledWith(
+        'SELECT COUNT(*) - COUNT(DISTINCT (SHEET_ID, PARCEL_ID)) AS duplicate_count FROM land_parcels_tmp'
+      )
+      expect(logger.info).toHaveBeenCalled()
+    })
+
+    test('logs zero when there are no duplicates', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: [{ duplicate_count: '0' }]
+      })
+      const logger = { info: vi.fn() }
+
+      const result = await logDuplicateRows(
+        dbClient,
+        'land_parcels',
+        ['SHEET_ID', 'PARCEL_ID'],
+        logger
+      )
+
+      expect(result).toBe(0)
+      expect(logger.info).toHaveBeenCalled()
+    })
+  })
+
+  describe('promoteStagingTable', () => {
+    const logger = { info: vi.fn() }
+
+    test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
+      await promoteStagingTable('land_parcels', dbClient, logger)
+
+      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(dbClient.query.mock.calls[1][0]).toBe(
+        'TRUNCATE TABLE land_parcels'
+      )
+      expect(dbClient.query.mock.calls[2][0]).toBe(
+        'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
+      )
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging'
+      )
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(logger.info).toHaveBeenCalledTimes(1)
+    })
+
+    test('should roll back and rethrow when promotion fails', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
+        .mockRejectedValueOnce(new Error('truncate failed'))
+
+      await expect(
+        promoteStagingTable('land_parcels', dbClient, logger)
+      ).rejects.toThrow('truncate failed')
+
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
   })
 })
