@@ -1,6 +1,7 @@
 import {
   truncateStagingTable,
   cancelAndCreateNewIngest,
+  cancelPendingFiles,
   saveIngestStart,
   setFileInProgress,
   setFileCompleted,
@@ -218,6 +219,19 @@ describe('start ingest service', () => {
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest SET status = $1 WHERE id = $2`,
         [INGEST_STATUS.FAILED, ingestId]
+      )
+    })
+  })
+
+  describe('cancelPendingFiles', () => {
+    test('should cancel all pending files for a given ingest', async () => {
+      const ingestId = 'ingestId'
+
+      await cancelPendingFiles(ingestId, dbClient)
+
+      expect(dbClient.query).toHaveBeenCalledWith(
+        `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND status = $3`,
+        [INGEST_STATUS.CANCELLED, ingestId, INGEST_STATUS.PENDING]
       )
     })
   })
