@@ -91,9 +91,9 @@
     "unzipper": "^0.12.5"
   },
   "devDependencies": {
-    "@babel/cli": "^7.29.7",
-    "@babel/core": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
+    "@babel/cli": "^8.0.1",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
     "@pact-foundation/pact": "^16.5.0",
     "@types/node": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
