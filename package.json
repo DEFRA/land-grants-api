@@ -70,7 +70,7 @@
     "aws-embedded-metrics": "^4.2.1",
     "babel-plugin-module-resolver": "^5.0.3",
     "convict": "^6.2.5",
-    "csv-parse": "^6.2.1",
+    "csv-parse": "^7.0.0",
     "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
     "hapi-pino": "^13.0.0",
