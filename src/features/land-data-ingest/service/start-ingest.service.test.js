@@ -9,7 +9,8 @@ import {
   setIngestCompleted,
   setIngestFailed,
   getFileExpectedRowCount,
-  isValidIngestFile
+  isValidIngestFile,
+  getIngestById
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
@@ -271,6 +272,40 @@ describe('start ingest service', () => {
     WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
         [123, 'filename', INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
       )
+    })
+  })
+
+  describe('get ingest by id', () => {
+    test('should returns the ingest by id', async () => {
+      const ingestId = 123
+      const ingest = {
+        rows: [{ id: 123 }]
+      }
+      const files = {
+        rows: [{
+          id: 1,
+          filename: 'file.csv'
+        }]
+      }
+      dbClient.query.mockResolvedValueOnce(ingest)
+      dbClient.query.mockResolvedValueOnce(files)
+
+      const result = await getIngestById(ingestId, dbClient)
+
+      expect(result).toEqual({ id: 123, files: files.rows })
+    })
+
+    test('should return null when no ingest found', async () => {
+      const ingestId = 123
+      const ingest = {
+        rows: [null]
+      }
+
+      dbClient.query.mockResolvedValueOnce(ingest)
+
+      const result = await getIngestById(ingestId, dbClient)
+
+      expect(result).toBeNull()
     })
   })
 })
