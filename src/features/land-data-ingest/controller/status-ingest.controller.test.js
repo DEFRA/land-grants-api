@@ -120,7 +120,7 @@ describe('StatusIngestController', () => {
       })
     })
 
-    it('Should throw when ingest not found', async () => {
+    it('Should return not found when ingest not found', async () => {
       mockGetIngestById.mockResolvedValueOnce(null)
 
       const request = {
@@ -138,7 +138,7 @@ describe('StatusIngestController', () => {
       })
     })
 
-    it('Should throw when ingest file not found', async () => {
+    it('Should return not found when ingest file not found', async () => {
       mockGetIngestById.mockResolvedValueOnce({
         id: 1,
         entity: 'land_parcels',
@@ -168,6 +168,24 @@ describe('StatusIngestController', () => {
         statusCode: 404,
         error: 'Not Found',
         message: 'Ingest file not found'
+      })
+    })
+
+    it('Should return server error when error thrown', async () => {
+      mockGetIngestById.mockRejectedValueOnce(new Error('Database error'))
+
+      const request = {
+        method: 'GET',
+        url: '/ingest/status?ingestId=1'
+      }
+
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(result).toEqual({
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'An internal server error occurred'
       })
     })
   })
