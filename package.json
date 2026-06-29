@@ -65,7 +65,7 @@
     "@hapi/catbox": "^12.1.1",
     "@hapi/catbox-memory": "^6.0.2",
     "@hapi/hapi": "^21.4.9",
-    "@hapi/inert": "^7.1.1",
+    "@hapi/inert": "^7.1.2",
     "@hapi/vision": "^7.0.3",
     "aws-embedded-metrics": "^4.2.1",
     "babel-plugin-module-resolver": "^5.0.3",
