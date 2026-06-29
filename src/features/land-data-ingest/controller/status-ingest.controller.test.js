@@ -6,167 +6,169 @@ vi.mock('../service/start-ingest.service.js')
 const mockGetIngestById = getIngestById
 
 describe('StatusIngestController', () => {
-    const server = createTestServer()
-    const mockLogger = {
-        info: vi.fn(),
-        debug: vi.fn(),
-        error: vi.fn(),
-        warn: vi.fn()
-    }
+  const server = createTestServer()
+  const mockLogger = {
+    info: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
+  }
 
-    beforeAll(async () => {
-        server.decorate('request', 'logger', mockLogger)
-        server.decorate('server', 'postgresDb', {
-            query: vi.fn()
-        })
-
-        server.route({
-            method: 'GET',
-            path: '/ingest/status',
-            handler: StatusIngestController.handler,
-            options: StatusIngestController.options
-        })
-
-        await server.initialize()
+  beforeAll(async () => {
+    server.decorate('request', 'logger', mockLogger)
+    server.decorate('server', 'postgresDb', {
+      query: vi.fn()
     })
 
-    afterAll(async () => {
-        await server.stop()
+    server.route({
+      method: 'GET',
+      path: '/ingest/status',
+      handler: StatusIngestController.handler,
+      options: StatusIngestController.options
     })
 
-    beforeEach(() => {
-        vi.clearAllMocks()
+    await server.initialize()
+  })
+
+  afterAll(async () => {
+    await server.stop()
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('GET /ingest/status', () => {
+    it('Should return ingest status', async () => {
+      const ingestResponse = {
+        id: 1,
+        entity: 'land_parcels',
+        status: 'completed',
+        start_date: '2022-01-01T00:00:00.000Z',
+        completed_date: '2022-01-01T00:00:00.000Z',
+        files: [
+          {
+            id: 1,
+            ingest_id: 1,
+            filename: 'file1.csv',
+            total_rows: 10,
+            status: 'completed'
+          }
+        ]
+      }
+      mockGetIngestById.mockResolvedValueOnce(ingestResponse)
+
+      const request = {
+        method: 'GET',
+        url: '/ingest/status?ingestId=1'
+      }
+
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(result).toEqual({
+        id: 1,
+        entity: 'land_parcels',
+        status: 'completed',
+        start_date: '2022-01-01T00:00:00.000Z',
+        completed_date: '2022-01-01T00:00:00.000Z',
+        files: [
+          {
+            id: 1,
+            ingest_id: 1,
+            filename: 'file1.csv',
+            total_rows: 10,
+            status: 'completed'
+          }
+        ]
+      })
     })
 
-    describe('GET /ingest/status', () => {
-        it('Should return ingest status', async () => {
-            const ingestResponse = {
-                id: 1,
-                entity: 'land_parcels',
-                status: 'completed',
-                start_date: '2022-01-01T00:00:00.000Z',
-                completed_date: '2022-01-01T00:00:00.000Z',
-                files: [
-                    {
-                        id: 1,
-                        ingest_id: 1,
-                        filename: 'file1.csv',
-                        total_rows: 10,
-                        status: 'completed'
-                    }
-                ]
-            }
-            mockGetIngestById.mockResolvedValueOnce(ingestResponse)
+    it('Should return file status only when filename provided', async () => {
+      const ingestResponse = {
+        id: 1,
+        entity: 'land_parcels',
+        status: 'completed',
+        start_date: '2022-01-01T00:00:00.000Z',
+        completed_date: '2022-01-01T00:00:00.000Z',
+        files: [
+          {
+            id: 1,
+            ingest_id: 1,
+            filename: 'file1.csv',
+            total_rows: 10,
+            status: 'completed'
+          }
+        ]
+      }
+      mockGetIngestById.mockResolvedValueOnce(ingestResponse)
 
-            const request = {
-                method: 'GET',
-                url: '/ingest/status?ingestId=1'
-            }
+      const request = {
+        method: 'GET',
+        url: '/ingest/status?ingestId=1&filename=file1.csv'
+      }
 
-            const { statusCode, result } = await server.inject(request)
+      const { statusCode, result } = await server.inject(request)
 
-            expect(statusCode).toBe(200)
-            expect(result).toEqual({
-                id: 1,
-                entity: 'land_parcels',
-                status: 'completed',
-                start_date: '2022-01-01T00:00:00.000Z',
-                completed_date: '2022-01-01T00:00:00.000Z',
-                files: [
-                    {
-                        id: 1,
-                        ingest_id: 1,
-                        filename: 'file1.csv',
-                        total_rows: 10,
-                        status: 'completed'
-                    }
-                ]
-            })
-        })
-
-        it('Should return file status only when filename provided', async () => {
-            const ingestResponse = {
-                id: 1,
-                entity: 'land_parcels',
-                status: 'completed',
-                start_date: '2022-01-01T00:00:00.000Z',
-                completed_date: '2022-01-01T00:00:00.000Z',
-                files: [
-                    {
-                        id: 1,
-                        ingest_id: 1,
-                        filename: 'file1.csv',
-                        total_rows: 10,
-                        status: 'completed'
-                    }
-                ]
-            }
-            mockGetIngestById.mockResolvedValueOnce(ingestResponse)
-
-            const request = {
-                method: 'GET',
-                url: '/ingest/status?ingestId=1&filename=file1.csv'
-            }
-
-            const { statusCode, result } = await server.inject(request)
-
-            expect(statusCode).toBe(200)
-            expect(result).toEqual({
-                id: 1,
-                ingest_id: 1,
-                filename: 'file1.csv',
-                total_rows: 10,
-                status: 'completed'
-            })
-        })
-
-        it('Should throw when ingest not found', async () => {
-            mockGetIngestById.mockResolvedValueOnce(null)
-
-            const request = {
-                method: 'GET',
-                url: '/ingest/status?ingestId=1'
-            }
-
-            const { statusCode, result } = await server.inject(request)
-
-            expect(statusCode).toBe(404)
-            expect(result).toEqual({
-                statusCode: 404,
-                error: 'Not Found',
-                message: 'Ingest not found'
-            })
-        })
-
-        it('Should throw when ingest file not found', async () => {
-            mockGetIngestById.mockResolvedValueOnce({
-                id: 1,
-                entity: 'land_parcels',
-                status: 'completed',
-                start_date: '2022-01-01T00:00:00.000Z',
-                completed_date: '2022-01-01T00:00:00.000Z',
-                files: [{
-                    id: 1,
-                    ingest_id: 1,
-                    filename: 'file1.csv',
-                    total_rows: 10,
-                    status: 'completed'
-                }]
-            })
-
-            const request = {
-                method: 'GET',
-                url: '/ingest/status?ingestId=1&filename=file2.csv'
-            }
-
-            const { statusCode, result } = await server.inject(request)
-
-            expect(statusCode).toBe(404)
-            expect(result).toEqual({
-                statusCode: 404,
-                error: 'Not Found',
-                message: 'Ingest file not found'
-            })
-        })
+      expect(statusCode).toBe(200)
+      expect(result).toEqual({
+        id: 1,
+        ingest_id: 1,
+        filename: 'file1.csv',
+        total_rows: 10,
+        status: 'completed'
+      })
     })
+
+    it('Should throw when ingest not found', async () => {
+      mockGetIngestById.mockResolvedValueOnce(null)
+
+      const request = {
+        method: 'GET',
+        url: '/ingest/status?ingestId=1'
+      }
+
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(result).toEqual({
+        statusCode: 404,
+        error: 'Not Found',
+        message: 'Ingest not found'
+      })
+    })
+
+    it('Should throw when ingest file not found', async () => {
+      mockGetIngestById.mockResolvedValueOnce({
+        id: 1,
+        entity: 'land_parcels',
+        status: 'completed',
+        start_date: '2022-01-01T00:00:00.000Z',
+        completed_date: '2022-01-01T00:00:00.000Z',
+        files: [
+          {
+            id: 1,
+            ingest_id: 1,
+            filename: 'file1.csv',
+            total_rows: 10,
+            status: 'completed'
+          }
+        ]
+      })
+
+      const request = {
+        method: 'GET',
+        url: '/ingest/status?ingestId=1&filename=file2.csv'
+      }
+
+      const { statusCode, result } = await server.inject(request)
+
+      expect(statusCode).toBe(404)
+      expect(result).toEqual({
+        statusCode: 404,
+        error: 'Not Found',
+        message: 'Ingest file not found'
+      })
+    })
+  })
 })

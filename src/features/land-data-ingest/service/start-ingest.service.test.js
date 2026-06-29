@@ -282,10 +282,12 @@ describe('start ingest service', () => {
         rows: [{ id: 123 }]
       }
       const files = {
-        rows: [{
-          id: 1,
-          filename: 'file.csv'
-        }]
+        rows: [
+          {
+            id: 1,
+            filename: 'file.csv'
+          }
+        ]
       }
       dbClient.query.mockResolvedValueOnce(ingest)
       dbClient.query.mockResolvedValueOnce(files)

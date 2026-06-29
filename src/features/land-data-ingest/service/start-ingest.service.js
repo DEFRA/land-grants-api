@@ -254,10 +254,9 @@ export const isValidIngestFile = async (ingestId, filename, dbClient) => {
  * @returns {Promise<IngestWithFiles>} The ingest and associated files
  */
 export const getIngestById = async (ingestId, dbClient) => {
-  const { rows: [ingest] } = await dbClient.query(
-    `SELECT * FROM ingest WHERE id = $1`,
-    [ingestId]
-  )
+  const {
+    rows: [ingest]
+  } = await dbClient.query(`SELECT * FROM ingest WHERE id = $1`, [ingestId])
 
   if (!ingest) {
     return ingest
