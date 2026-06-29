@@ -14,9 +14,6 @@ updates:
           - 'babel*'
           - 'autoprefixer'
           - 'tsx'
-          - '*vitest*'
-          - '@aws-sdk/*'
-          - 'aws*'
 
       lint:
         patterns:
@@ -32,6 +29,15 @@ updates:
           - '*-pino-format'
           - 'pino'
           - 'pino-*'
+
+      sdk:
+        patterns:
+          - '@aws-sdk/*'
+          - 'aws*'
+
+      test:
+        patterns:
+          - '*vitest*'
 
       tools:
         patterns:
@@ -54,6 +60,7 @@ updates:
     # Schedule run every Monday, local time
     schedule:
       interval: weekly
+      day: monday
       time: '10:30'
       timezone: 'Europe/London'
 
@@ -74,6 +81,7 @@ updates:
     # Schedule run every Monday, local time
     schedule:
       interval: weekly
+      day: monday
       time: '10:30'
       timezone: 'Europe/London'
 
