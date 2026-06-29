@@ -14,9 +14,6 @@ updates:
           - 'babel*'
           - 'autoprefixer'
           - 'tsx'
-          - '*vitest*'
-          - '@aws-sdk/*'
-          - 'aws*'
 
       lint:
         patterns:
@@ -32,6 +29,15 @@ updates:
           - '*-pino-format'
           - 'pino'
           - 'pino-*'
+
+      sdk:
+        patterns:
+          - '@aws-sdk/*'
+          - 'aws*'
+
+      test:
+        patterns:
+          - '*vitest*'
 
       tools:
         patterns:
