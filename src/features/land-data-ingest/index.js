@@ -24,7 +24,8 @@ const landDataIngest = {
           path: '/cdp-uploader-callback',
           handler: LandDataIngestController.handler,
           options: {
-            ...LandDataIngestController.options
+            ...LandDataIngestController.options,
+            auth: false
           }
         },
         {
