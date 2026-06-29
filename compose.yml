@@ -22,8 +22,8 @@ services:
       land-grants-backend-postgres:
         condition: service_healthy
     volumes:
-      - ./changelog:/liquibase/changelog
-      - ./scripts:/scripts
+      - ./changelog:/liquibase/changelog:z
+      - ./scripts:/scripts:z
     networks:
       - land-grants-net
 
@@ -39,8 +39,8 @@ services:
       land-grants-backend-postgres:
         condition: service_healthy
     volumes:
-      - ./changelog:/liquibase/changelog
-      - ./scripts:/scripts
+      - ./changelog:/liquibase/changelog:z
+      - ./scripts:/scripts:z
     networks:
       - land-grants-net
 
@@ -56,7 +56,7 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data:z
     networks:
       - land-grants-net
 
@@ -74,8 +74,8 @@ services:
       SQS_ENDPOINT: http://floci:4566
       S3_ENDPOINT: http://floci:4566
     volumes:
-      - ./src:/home/node/src
-      - node_deps:/home/node/node_modules
+      - ./src:/home/node/src:z
+      - node_deps:/home/node/node_modules:z
     ports:
       - 3001:3001
     depends_on:
@@ -120,7 +120,7 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
     volumes:
-      - ./scripts/infra/start-floci.sh:/setup/init.sh
+      - ./scripts/infra/start-floci.sh:/setup/init.sh:z
     networks:
       - land-grants-net
 
