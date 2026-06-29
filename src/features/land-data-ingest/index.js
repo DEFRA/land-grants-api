@@ -16,8 +16,7 @@ const landDataIngest = {
           path: '/initiate-upload',
           handler: InitiateLandDataUploadController.handler,
           options: {
-            ...InitiateLandDataUploadController.options,
-            auth: false
+            ...InitiateLandDataUploadController.options
           }
         },
         {
@@ -25,8 +24,7 @@ const landDataIngest = {
           path: '/cdp-uploader-callback',
           handler: LandDataIngestController.handler,
           options: {
-            ...LandDataIngestController.options,
-            auth: false
+            ...LandDataIngestController.options
           }
         },
         {
@@ -34,8 +32,7 @@ const landDataIngest = {
           path: '/ingest/{entity}/start',
           handler: StartIngestController.handler,
           options: {
-            ...StartIngestController.options,
-            auth: false
+            ...StartIngestController.options
           }
         },
         {
