@@ -25,8 +25,12 @@
 /**
  * @typedef {object} IngestFile
  * @property {number} id
- * @property {string} ingestId
+ * @property {string} ingest_id
  * @property {string} filename
  * @property {number} total_rows
  * @property {string} status
+ */
+
+/**
+ * @typedef {Ingest & {files: IngestFile[]}} IngestWithFiles
  */
