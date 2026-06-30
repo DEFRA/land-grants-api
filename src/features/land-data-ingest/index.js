@@ -16,8 +16,7 @@ const landDataIngest = {
           path: '/initiate-upload',
           handler: InitiateLandDataUploadController.handler,
           options: {
-            ...InitiateLandDataUploadController.options,
-            auth: false
+            ...InitiateLandDataUploadController.options
           }
         },
         {
@@ -34,8 +33,7 @@ const landDataIngest = {
           path: '/ingest/{entity}/start',
           handler: StartIngestController.handler,
           options: {
-            ...StartIngestController.options,
-            auth: false
+            ...StartIngestController.options
           }
         },
         {
@@ -43,8 +41,7 @@ const landDataIngest = {
           path: '/ingest/status',
           handler: StatusIngestController.handler,
           options: {
-            ...StatusIngestController.options,
-            auth: false
+            ...StatusIngestController.options
           }
         }
       ])
