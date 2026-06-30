@@ -15,6 +15,7 @@ import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
 import { statistics } from '~/src/features/common/plugins/statistics.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
+import { grantsConfigConsumer } from '~/src/features/grants-config/index.js'
 
 async function createServer() {
   const server = hapi.server({
@@ -68,8 +69,8 @@ async function createServer() {
     router,
     s3Client,
     statistics,
-    woodlandManagement
-    // grantsConfigConsumer
+    woodlandManagement,
+    grantsConfigConsumer
   ])
 
   // Register swagger separately as it needs Inert and Vision plugins
