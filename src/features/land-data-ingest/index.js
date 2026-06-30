@@ -41,8 +41,7 @@ const landDataIngest = {
           path: '/ingest/status',
           handler: StatusIngestController.handler,
           options: {
-            ...StatusIngestController.options,
-            auth: false
+            ...StatusIngestController.options
           }
         }
       ])
