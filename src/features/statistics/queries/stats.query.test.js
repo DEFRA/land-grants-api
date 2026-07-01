@@ -118,6 +118,15 @@ describe('getStats', () => {
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
 
+  test('should return empty object when query returns no rows', async () => {
+    mockClient.query = vi.fn().mockResolvedValue({ rows: [] })
+
+    const stats = await getStats(mockLogger, mockDb)
+
+    expect(stats).toEqual({})
+    expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
+
   test('should handle database connection error', async () => {
     const connectionError = new Error('Connection failed')
     mockDb.connect = vi.fn().mockRejectedValue(connectionError)
