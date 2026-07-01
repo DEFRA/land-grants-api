@@ -336,10 +336,25 @@ describe('start ingest service', () => {
           }
         ]
       }
-      dbClient.query.mockResolvedValueOnce(ingestParcels)
-      dbClient.query.mockResolvedValueOnce(parcelsFiles)
-      dbClient.query.mockResolvedValueOnce(ingestCovers)
-      dbClient.query.mockResolvedValueOnce(coversFiles)
+      dbClient.query.mockImplementation((sql, params) => {
+        if (sql.includes('FROM ingest WHERE entity =')) {
+          if (params[0] === 'land_parcels') {
+            return Promise.resolve(ingestParcels)
+          }
+          if (params[0] === 'land_covers') {
+            return Promise.resolve(ingestCovers)
+          }
+        }
+        if (sql.includes('FROM ingest_files WHERE')) {
+          if (params[0] === 123) {
+            return Promise.resolve(parcelsFiles)
+          }
+          if (params[0] === 456) {
+            return Promise.resolve(coversFiles)
+          }
+        }
+        return Promise.resolve({ rows: [] })
+      })
 
       const result = await getLatestEntityStatus(dbClient)
 
