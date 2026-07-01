@@ -1,4 +1,4 @@
-import archiver from 'archiver'
+import { ZipArchive } from 'archiver'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PassThrough } from 'node:stream'
@@ -19,7 +19,7 @@ export function createZipFromFixture(csvFilename) {
     passThrough.on('end', () => resolve(Buffer.concat(chunks)))
     passThrough.on('error', reject)
 
-    const archive = archiver('zip', { zlib: { level: 9 } })
+    const archive = new ZipArchive({ zlib: { level: 9 } })
     archive.on('error', reject)
     archive.pipe(passThrough)
 
