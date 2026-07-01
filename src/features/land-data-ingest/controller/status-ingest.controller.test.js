@@ -2,12 +2,12 @@ import createTestServer from '~/src/tests/test-server.js'
 import { StatusIngestController } from './status-ingest.controller.js'
 import {
   getIngestById,
-  getLatestEntityStatus
+  getLatestEntityStatuses
 } from '../service/start-ingest.service.js'
 
 vi.mock('../service/start-ingest.service.js')
 const mockGetIngestById = getIngestById
-const mockGetLatestEntityStatus = getLatestEntityStatus
+const mockGetLatestEntityStatus = getLatestEntityStatuses
 
 describe('StatusIngestController', () => {
   const server = createTestServer()

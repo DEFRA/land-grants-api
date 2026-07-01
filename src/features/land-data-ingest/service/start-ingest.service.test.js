@@ -11,7 +11,7 @@ import {
   getFileExpectedRowCount,
   isValidIngestFile,
   getIngestById,
-  getLatestEntityStatus
+  getLatestEntityStatuses
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
@@ -356,7 +356,7 @@ describe('start ingest service', () => {
         return Promise.resolve({ rows: [] })
       })
 
-      const result = await getLatestEntityStatus(dbClient)
+      const result = await getLatestEntityStatuses(dbClient)
 
       expect(result).toEqual([
         { ...ingestParcels.rows[0], files: parcelsFiles.rows },
@@ -368,7 +368,7 @@ describe('start ingest service', () => {
       dbClient.query.mockResolvedValueOnce({ rows: [] })
       dbClient.query.mockResolvedValueOnce({ rows: [] })
 
-      const result = await getLatestEntityStatus(dbClient)
+      const result = await getLatestEntityStatuses(dbClient)
 
       expect(result).toEqual([])
     })

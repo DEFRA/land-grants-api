@@ -10,7 +10,7 @@ import {
 } from '../schema/status.schema.js'
 import {
   getIngestById,
-  getLatestEntityStatus
+  getLatestEntityStatuses
 } from '../service/start-ingest.service.js'
 
 export const StatusIngestController = {
@@ -39,7 +39,7 @@ export const StatusIngestController = {
 
     try {
       if (!ingestId) {
-        const latestIngest = await getLatestEntityStatus(postgresDb)
+        const latestIngest = await getLatestEntityStatuses(postgresDb)
         return h.response(latestIngest)
       }
 

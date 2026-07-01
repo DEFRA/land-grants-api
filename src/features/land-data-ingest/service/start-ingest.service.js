@@ -309,7 +309,7 @@ export const getLatestIngestForEntity = async (entityName, dbClient) => {
  * @param {import('pg').Client} dbClient - The database client.
  * @returns {Promise<IngestWithFiles[]>} The status of all entities.
  */
-export const getLatestEntityStatus = async (dbClient) => {
+export const getLatestEntityStatuses = async (dbClient) => {
   const validEntities = ENTITY_TYPES.filter((e) => e.ingest)
   const status = await Promise.all(
     validEntities.map((entity) =>
