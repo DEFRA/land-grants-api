@@ -165,5 +165,43 @@ describe('Ingestion Endpoints', () => {
       expect(statusResponse.status).toBe(200)
       expect(statusResponse.data).toHaveProperty('status')
     })
+
+    test('should return status for ingestId and filename', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      const { ingestId } = response.data
+
+      const statusResponse = await httpClient.get(
+        `/ingest/status?ingestId=${ingestId}&filename=land-data.csv`,
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('filename')
+      expect(statusResponse.data.filename).toBe('land-data.csv')
+    })
+
+    test('should return 400 when filename is provided without ingestId', async () => {
+      const statusResponse = await httpClient.get(
+        '/ingest/status?filename=land-data.csv',
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(400)
+    })
   })
 })

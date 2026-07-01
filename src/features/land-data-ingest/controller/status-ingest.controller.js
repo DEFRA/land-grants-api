@@ -8,7 +8,10 @@ import {
   statusIngestQuery,
   statusResponseSchema
 } from '../schema/status.schema.js'
-import { getIngestById } from '../service/start-ingest.service.js'
+import {
+  getIngestById,
+  getLatestEntityStatuses
+} from '../service/start-ingest.service.js'
 
 export const StatusIngestController = {
   options: {
@@ -35,6 +38,11 @@ export const StatusIngestController = {
     const { ingestId, filename } = query
 
     try {
+      if (!ingestId) {
+        const latestIngest = await getLatestEntityStatuses(postgresDb)
+        return h.response(latestIngest)
+      }
+
       const ingest = await getIngestById(ingestId, postgresDb)
       if (!ingest) {
         return Boom.notFound('Ingest not found')
