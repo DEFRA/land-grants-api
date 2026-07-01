@@ -10,7 +10,8 @@ import {
   setIngestFailed,
   getFileExpectedRowCount,
   isValidIngestFile,
-  getIngestById
+  getIngestById,
+  getLatestEntityStatuses
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
@@ -308,6 +309,58 @@ describe('start ingest service', () => {
       const result = await getIngestById(ingestId, dbClient)
 
       expect(result).toBeNull()
+    })
+  })
+
+  describe('get latest ingest status for all entities', () => {
+    test('should returns the latest ingest status for land_parcels and land_covers', async () => {
+      const ingestParcels = {
+        rows: [{ id: 123, entity: 'land_parcels' }]
+      }
+      const parcelsFiles = {
+        rows: [
+          {
+            id: 1,
+            filename: 'file.csv'
+          }
+        ]
+      }
+      const ingestCovers = {
+        rows: [{ id: 456, entity: 'land_covers' }]
+      }
+      const coversFiles = {
+        rows: [
+          {
+            id: 2,
+            filename: 'file2.csv'
+          }
+        ]
+      }
+      dbClient.query.mockImplementation((sql, params) => {
+        const results = {
+          land_parcels: ingestParcels,
+          land_covers: ingestCovers,
+          123: parcelsFiles,
+          456: coversFiles
+        }
+        return Promise.resolve(results[params[0]] || { rows: [] })
+      })
+
+      const result = await getLatestEntityStatuses(dbClient)
+
+      expect(result).toEqual([
+        { ...ingestParcels.rows[0], files: parcelsFiles.rows },
+        { ...ingestCovers.rows[0], files: coversFiles.rows }
+      ])
+    })
+
+    test('should returns empty array when no ingest found', async () => {
+      dbClient.query.mockResolvedValueOnce({ rows: [] })
+      dbClient.query.mockResolvedValueOnce({ rows: [] })
+
+      const result = await getLatestEntityStatuses(dbClient)
+
+      expect(result).toEqual([])
     })
   })
 })
