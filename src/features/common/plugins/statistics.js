@@ -5,6 +5,7 @@ import {
   stopStatsCache,
   refreshCachedStats
 } from '~/src/features/statistics/stats-cache.js'
+import { metricsCounter } from '~/src/features/common/helpers/metrics.js'
 
 export const statistics = {
   plugin: {
@@ -23,6 +24,17 @@ export const statistics = {
             message: 'Get stats',
             context: stats
           })
+          const { unlinkedParcelsCount, unlinkedCoversCount } =
+            /** @type {{ unlinkedParcelsCount: string | number, unlinkedCoversCount: string | number }} */ (
+              stats
+            )
+          await Promise.all([
+            metricsCounter(
+              'unlinked_parcels_count',
+              Number(unlinkedParcelsCount)
+            ),
+            metricsCounter('unlinked_covers_count', Number(unlinkedCoversCount))
+          ])
         }
 
         server.logger.info('Statistics cron job completed successfully')

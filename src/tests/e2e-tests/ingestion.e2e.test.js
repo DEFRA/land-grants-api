@@ -1,10 +1,12 @@
 import { describe, test, expect } from 'vitest'
 import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 describe('Ingestion Endpoints', () => {
   describe('POST /initiate-upload', () => {
     test('should return 200 with upload URL for valid payload', async () => {
       const response = await httpClient.post('/initiate-upload', {
+        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-1',
           customerId: 'CUST-e2e-1',
@@ -20,6 +22,7 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/initiate-upload', {
+        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-2'
         }
@@ -30,6 +33,7 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for invalid resource', async () => {
       const response = await httpClient.post('/initiate-upload', {
+        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-3',
           customerId: 'CUST-e2e-3',
@@ -115,6 +119,51 @@ describe('Ingestion Endpoints', () => {
 
       expect(response.status).toBe(400)
       expect(response.data).toHaveProperty('message')
+    })
+  })
+
+  describe('POST /ingest/{entity}/start', () => {
+    test('should return new ingestId for valid payload', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('ingestId')
+    })
+
+    test('should return status for ingestId', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      const { ingestId } = response.data
+
+      const statusResponse = await httpClient.get(
+        `/ingest/status?ingestId=${ingestId}`,
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('status')
     })
   })
 })

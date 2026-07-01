@@ -246,3 +246,30 @@ export const isValidIngestFile = async (ingestId, filename, dbClient) => {
 
   return rows.length > 0
 }
+
+/**
+ * Retrieves all files for a given ingest
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<IngestWithFiles>} The ingest and associated files
+ */
+export const getIngestById = async (ingestId, dbClient) => {
+  const {
+    rows: [ingest]
+  } = await dbClient.query(`SELECT * FROM ingest WHERE id = $1`, [ingestId])
+
+  if (!ingest) {
+    return ingest
+  }
+
+  const { rows: files } = await dbClient.query(
+    `SELECT * FROM ingest_files WHERE ingest_id = $1`,
+    [ingestId]
+  )
+
+  return { ...ingest, files }
+}
+
+/**
+ * @import {IngestWithFiles} from '../ingest.d.js'
+ */

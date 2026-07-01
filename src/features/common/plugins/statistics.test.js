@@ -5,12 +5,14 @@ const {
   mockSchedule,
   mockInitStatsCache,
   mockStopStatsCache,
-  mockRefreshCachedStats
+  mockRefreshCachedStats,
+  mockMetricsCounter
 } = vi.hoisted(() => ({
   mockSchedule: vi.fn(),
   mockInitStatsCache: vi.fn(),
   mockStopStatsCache: vi.fn(),
-  mockRefreshCachedStats: vi.fn()
+  mockRefreshCachedStats: vi.fn(),
+  mockMetricsCounter: vi.fn()
 }))
 
 vi.mock('node-cron', () => ({
@@ -21,6 +23,10 @@ vi.mock('~/src/features/statistics/stats-cache.js', () => ({
   initStatsCache: mockInitStatsCache,
   stopStatsCache: mockStopStatsCache,
   refreshCachedStats: mockRefreshCachedStats
+}))
+
+vi.mock('~/src/features/common/helpers/metrics.js', () => ({
+  metricsCounter: mockMetricsCounter
 }))
 
 describe('#statistics', () => {
@@ -162,5 +168,31 @@ describe('#statistics', () => {
     stopHandler()
 
     expect(mockStopStatsCache).toHaveBeenCalledTimes(1)
+  })
+
+  test('Should emit unlinked_parcels_count and unlinked_covers_count metrics when stats are available', async () => {
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+    mockRefreshCachedStats.mockResolvedValue({
+      unlinkedParcelsCount: 5,
+      unlinkedCoversCount: 3
+    })
+
+    await cronCallback()
+
+    expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_parcels_count', 5)
+    expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_covers_count', 3)
+  })
+
+  test('Should not emit orphan metrics when stats refresh returns undefined', async () => {
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+    mockRefreshCachedStats.mockResolvedValue(undefined)
+
+    await cronCallback()
+
+    expect(mockMetricsCounter).not.toHaveBeenCalled()
   })
 })
