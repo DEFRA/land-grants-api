@@ -348,5 +348,14 @@ describe('start ingest service', () => {
         { ...ingestCovers.rows[0], files: coversFiles.rows }
       ])
     })
+
+    test('should returns empty array when no ingest found', async () => {
+      dbClient.query.mockResolvedValueOnce({ rows: [] })
+      dbClient.query.mockResolvedValueOnce({ rows: [] })
+
+      const result = await getLatestEntityStatus(dbClient)
+
+      expect(result).toEqual([])
+    })
   })
 })
