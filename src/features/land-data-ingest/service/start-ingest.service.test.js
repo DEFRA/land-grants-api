@@ -337,23 +337,13 @@ describe('start ingest service', () => {
         ]
       }
       dbClient.query.mockImplementation((sql, params) => {
-        if (sql.includes('FROM ingest WHERE entity =')) {
-          if (params[0] === 'land_parcels') {
-            return Promise.resolve(ingestParcels)
-          }
-          if (params[0] === 'land_covers') {
-            return Promise.resolve(ingestCovers)
-          }
+        const results = {
+          land_parcels: ingestParcels,
+          land_covers: ingestCovers,
+          123: parcelsFiles,
+          456: coversFiles
         }
-        if (sql.includes('FROM ingest_files WHERE')) {
-          if (params[0] === 123) {
-            return Promise.resolve(parcelsFiles)
-          }
-          if (params[0] === 456) {
-            return Promise.resolve(coversFiles)
-          }
-        }
-        return Promise.resolve({ rows: [] })
+        return Promise.resolve(results[params[0]] || { rows: [] })
       })
 
       const result = await getLatestEntityStatuses(dbClient)
