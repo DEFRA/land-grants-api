@@ -121,4 +121,49 @@ describe('Ingestion Endpoints', () => {
       expect(response.data).toHaveProperty('message')
     })
   })
+
+  describe('POST /ingest/{entity}/start', () => {
+    test('should return new ingestId for valid payload', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('ingestId')
+    })
+
+    test('should return status for ingestId', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      const { ingestId } = response.data
+
+      const statusResponse = await httpClient.get(
+        `/ingest/status?ingestId=${ingestId}`,
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('status')
+    })
+  })
 })
