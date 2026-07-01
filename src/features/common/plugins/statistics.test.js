@@ -14,9 +14,7 @@ const {
 }))
 
 vi.mock('node-cron', () => ({
-  default: {
-    schedule: mockSchedule
-  }
+  schedule: mockSchedule
 }))
 
 vi.mock('~/src/features/statistics/stats-cache.js', () => ({

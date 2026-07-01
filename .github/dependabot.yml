@@ -6,14 +6,22 @@ updates:
     directory: /
     open-pull-requests-limit: 10
 
-    # Group packages into shared PR
+    # Group packages into shared PRs
     groups:
-      build:
+      aws-sdk:
+        patterns:
+          - '@aws-sdk/*'
+          - 'aws*'
+
+      babel:
         patterns:
           - '@babel/*'
           - 'babel*'
-          - 'autoprefixer'
-          - 'tsx'
+
+      hapi:
+        patterns:
+          - '@hapi/*'
+          - 'hapi-*'
 
       lint:
         patterns:
@@ -23,30 +31,34 @@ updates:
           - 'stylelint-*'
           - 'typescript'
 
-      logging:
+      pino-logging:
         patterns:
           - '*-pino'
           - '*-pino-format'
           - 'pino'
           - 'pino-*'
+          - 'pino-pretty'
 
-      sdk:
+      postgres:
         patterns:
-          - '@aws-sdk/*'
-          - 'aws*'
+          - 'pg-*'
+          - 'pg-copy-streams'
+          - 'pg'
 
       test:
         patterns:
+          - '@pact-foundation/*'
+          - '@vitest/*'
           - '*vitest*'
+          - 'vitest-fetch-mock'
 
       tools:
         patterns:
-          - 'babel-jest'
-          - 'convict'
           - 'husky'
-          - 'jest'
           - 'nodemon'
           - 'npm-run-all'
+          - 'nyc'
+          - 'tsx'
 
       types:
         patterns:

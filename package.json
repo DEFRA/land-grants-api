@@ -100,7 +100,6 @@
     "@typescript-eslint/parser": "^7.17.0",
     "@vitest/coverage-v8": "^4.1.9",
     "archiver": "^7.0.1",
-    "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
