@@ -122,7 +122,7 @@ describe('Ingestion Endpoints', () => {
     })
   })
 
-  describe('POST /ingest/{entity}/start', async () => {
+  describe('POST /ingest/{entity}/start', () => {
     test('should return new ingestId for valid payload', async () => {
       const response = await httpClient.post('/ingest/land_parcels/start', {
         headers: { Authorization: getAuthHeader() },
