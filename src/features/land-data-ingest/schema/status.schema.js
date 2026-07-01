@@ -1,9 +1,9 @@
 import Joi from 'joi'
 
 export const statusIngestQuery = Joi.object({
-  ingestId: Joi.number(),
+  ingestId: Joi.number().optional(),
   filename: Joi.string().optional()
-})
+}).with('filename', 'ingestId')
 
 export const statusFileResponseSchema = Joi.object({
   id: Joi.number().required(),
@@ -24,5 +24,6 @@ export const statusIngestResponseSchema = Joi.object({
 
 export const statusResponseSchema = Joi.alternatives().try(
   statusIngestResponseSchema,
-  statusFileResponseSchema
+  statusFileResponseSchema,
+  Joi.array().items(statusIngestResponseSchema)
 )

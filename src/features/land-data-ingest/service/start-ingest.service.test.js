@@ -10,7 +10,8 @@ import {
   setIngestFailed,
   getFileExpectedRowCount,
   isValidIngestFile,
-  getIngestById
+  getIngestById,
+  getLatestEntityStatus
 } from './start-ingest.service.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
@@ -308,6 +309,44 @@ describe('start ingest service', () => {
       const result = await getIngestById(ingestId, dbClient)
 
       expect(result).toBeNull()
+    })
+  })
+
+  describe('get latest ingest status for all entities', () => {
+    test('should returns the latest ingest status for land_parcels and land_covers', async () => {
+      const ingestParcels = {
+        rows: [{ id: 123, entity: 'land_parcels' }]
+      }
+      const parcelsFiles = {
+        rows: [
+          {
+            id: 1,
+            filename: 'file.csv'
+          }
+        ]
+      }
+      const ingestCovers = {
+        rows: [{ id: 456, entity: 'land_covers' }]
+      }
+      const coversFiles = {
+        rows: [
+          {
+            id: 2,
+            filename: 'file2.csv'
+          }
+        ]
+      }
+      dbClient.query.mockResolvedValueOnce(ingestParcels)
+      dbClient.query.mockResolvedValueOnce(parcelsFiles)
+      dbClient.query.mockResolvedValueOnce(ingestCovers)
+      dbClient.query.mockResolvedValueOnce(coversFiles)
+
+      const result = await getLatestEntityStatus(dbClient)
+
+      expect(result).toEqual([
+        { ...ingestParcels.rows[0], files: parcelsFiles.rows },
+        { ...ingestCovers.rows[0], files: coversFiles.rows }
+      ])
     })
   })
 })

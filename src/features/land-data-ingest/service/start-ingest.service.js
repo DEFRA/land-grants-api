@@ -1,3 +1,4 @@
+import { ENTITY_TYPES } from '../../common/constants/entity_types.js'
 import {
   logBusinessError,
   logInfo
@@ -253,6 +254,21 @@ export const isValidIngestFile = async (ingestId, filename, dbClient) => {
  * @param {import('pg').Client} dbClient - Database connection
  * @returns {Promise<IngestWithFiles>} The ingest and associated files
  */
+const getIngestFiles = async (ingestId, dbClient) => {
+  const { rows } = await dbClient.query(
+    `SELECT * FROM ingest_files WHERE ingest_id = $1`,
+    [ingestId]
+  )
+
+  return rows
+}
+
+/**
+ * Retrieves all files for a given ingest
+ * @param {string | number} ingestId - The ingest ID
+ * @param {import('pg').Client} dbClient - Database connection
+ * @returns {Promise<IngestWithFiles>} The ingest and associated files
+ */
 export const getIngestById = async (ingestId, dbClient) => {
   const {
     rows: [ingest]
@@ -262,12 +278,46 @@ export const getIngestById = async (ingestId, dbClient) => {
     return ingest
   }
 
-  const { rows: files } = await dbClient.query(
-    `SELECT * FROM ingest_files WHERE ingest_id = $1`,
-    [ingestId]
+  const files = await getIngestFiles(ingestId, dbClient)
+  return { ...ingest, files }
+}
+
+/**
+ * Retrieves the latest ingest for a specific entity.
+ * @param {string} entity - The entity name.
+ * @param {import('pg').Client} dbClient - The database client.
+ * @returns {Promise<IngestWithFiles | null>} The latest ingest data, or null if not found.
+ */
+export const getLatestIngestForEntity = async (entity, dbClient) => {
+  const {
+    rows: [ingest]
+  } = await dbClient.query(
+    `SELECT * FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1`,
+    [entity]
   )
 
+  if (!ingest) {
+    return null
+  }
+
+  const files = await getIngestFiles(ingest.id, dbClient)
   return { ...ingest, files }
+}
+
+/**
+ * Retrieves the status of all entities.
+ * @param {import('pg').Client} dbClient - The database client.
+ * @returns {Promise<IngestWithFiles[]>} The status of all entities.
+ */
+export const getLatestEntityStatus = async (dbClient) => {
+  const status = []
+  for (const entity of ENTITY_TYPES.filter((e) => e.ingest)) {
+    const entityStatus = await getLatestIngestForEntity(entity.name, dbClient)
+    if (entityStatus) {
+      status.push(entityStatus)
+    }
+  }
+  return status
 }
 
 /**
