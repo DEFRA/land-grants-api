@@ -6,7 +6,6 @@ describe('Ingestion Endpoints', () => {
   describe('POST /initiate-upload', () => {
     test('should return 200 with upload URL for valid payload', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-1',
           customerId: 'CUST-e2e-1',
@@ -22,7 +21,6 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-2'
         }
@@ -33,7 +31,6 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for invalid resource', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-3',
           customerId: 'CUST-e2e-3',
