@@ -6,13 +6,17 @@ const {
   mockInitStatsCache,
   mockStopStatsCache,
   mockRefreshCachedStats,
-  mockMetricsCounter
+  mockMetricsCounter,
+  mockWithTaskLock
 } = vi.hoisted(() => ({
   mockSchedule: vi.fn(),
   mockInitStatsCache: vi.fn(),
   mockStopStatsCache: vi.fn(),
   mockRefreshCachedStats: vi.fn(),
-  mockMetricsCounter: vi.fn()
+  mockMetricsCounter: vi.fn(),
+  mockWithTaskLock: vi.fn((pool, taskName, fn) =>
+    fn().then((r) => ({ acquired: true, result: r }))
+  )
 }))
 
 vi.mock('node-cron', () => ({
@@ -27,6 +31,10 @@ vi.mock('~/src/features/statistics/stats-cache.js', () => ({
 
 vi.mock('~/src/features/common/helpers/metrics.js', () => ({
   metricsCounter: mockMetricsCounter
+}))
+
+vi.mock('~/src/features/common/helpers/task-lock.js', () => ({
+  withTaskLock: mockWithTaskLock
 }))
 
 describe('#statistics', () => {

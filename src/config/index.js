@@ -205,6 +205,12 @@ const config = convict({
       default: 'UTC',
       env: 'CRON_TIMEZONE'
     },
+    taskLockTimeoutMinutes: {
+      doc: 'Timeout for task locks in minutes',
+      format: Number,
+      default: 5,
+      env: 'CRON_TASK_LOCK_TIMEOUT_MINUTES'
+    },
     statsSchedule: {
       doc: 'Cron time/schedule for outputting stats',
       format: String,

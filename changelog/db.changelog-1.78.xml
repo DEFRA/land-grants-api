@@ -93,4 +93,27 @@
     <sql>ANALYZE land_covers;</sql>
   </changeSet>
 
+  <changeSet id="create-task-lock-table" author="system">
+    <createTable tableName="task_lock">
+      <column name="task_name" type="VARCHAR(255)">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="acquired_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="expires_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP + INTERVAL '5 minutes'">
+        <constraints nullable="false"/>
+      </column>
+
+    </createTable>
+
+    <createIndex tableName="task_lock" indexName="idx_task_lock_expires_at">
+      <column name="expires_at"/>
+    </createIndex>
+
+    <rollback>
+      <dropTable tableName="task_lock"/>
+    </rollback>
+  </changeSet>
+
 </databaseChangeLog>
