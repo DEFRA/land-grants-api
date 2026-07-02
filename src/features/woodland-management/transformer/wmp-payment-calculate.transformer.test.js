@@ -104,6 +104,48 @@ describe('transformAgreementLevelItems', () => {
   })
 })
 
+describe('pence rounding', () => {
+  test('transformPayments produces integer pence when payment GBP has sub-cent precision', () => {
+    const result = transformPayments({
+      ...createWmpCalculationResult(),
+      payment: 10.001
+    })
+    expect(Number.isInteger(result[0].totalPaymentPence)).toBe(true)
+    expect(Number.isInteger(result[0].lineItems[0].paymentPence)).toBe(true)
+    expect(result[0].totalPaymentPence).toBe(1000)
+  })
+
+  test('transformAgreementLevelItems produces integer pence for all pence fields', () => {
+    const result = transformAgreementLevelItems(
+      ['SX067-99238'],
+      createAction(),
+      {
+        ...createWmpCalculationResult(),
+        payment: 10.001,
+        activeTierRatePence: 30.005,
+        activeTierFlatRatePence: 15.007
+      }
+    )
+    expect(Number.isInteger(result[1].agreementTotalPence)).toBe(true)
+    expect(Number.isInteger(result[1].activeTierRatePence)).toBe(true)
+    expect(Number.isInteger(result[1].activeTierFlatRatePence)).toBe(true)
+    expect(result[1].agreementTotalPence).toBe(1000)
+    expect(result[1].activeTierRatePence).toBe(3001)
+    expect(result[1].activeTierFlatRatePence).toBe(1501)
+  })
+
+  test('wmpPaymentCalculateTransformer produces integer agreementTotalPence', () => {
+    const result = wmpPaymentCalculateTransformer(
+      ['SX067-99238'],
+      { ...createWmpCalculationResult(), payment: 10.001 },
+      createAction(),
+      '2024-01-01'
+    )
+    expect(Number.isInteger(result.agreementTotalPence)).toBe(true)
+    expect(result.agreementTotalPence).toBe(1000)
+  })
+})
+
 describe('wmpPaymentCalculateTransformer', () => {
   test('should return the full response shape with a fixed startDate', () => {
     const result = wmpPaymentCalculateTransformer(

@@ -7,15 +7,9 @@ import {
   startOfMonth
 } from 'date-fns'
 import { roundTo4DecimalPlaces } from '../../common/helpers/measurement.js'
+import { gbpToPence } from '../../common/helpers/currency.js'
 
 const DATE_FORMAT = 'yyyy-MM-dd'
-
-/**
- * Converts a GBP amount to pence.
- * @param {number} gbp - The amount in GBP
- * @returns {number} The amount in pence
- */
-const gbpToPence = (gbp) => gbp * 100
 
 /**
  * Returns the agreement start date. When `startDate` is provided it is used as
