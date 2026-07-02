@@ -1,4 +1,5 @@
 import { schedule } from 'node-cron'
+import { config } from '~/src/config/index.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import {
   initStatsCache,
@@ -40,7 +41,9 @@ export const statistics = {
         server.logger.info('Statistics cron job completed successfully')
       }
 
-      schedule('*/30 * * * *', refreshStats)
+      schedule(config.get('cron.statsSchedule'), refreshStats, {
+        timezone: config.get('cron.timezone')
+      })
 
       refreshStats().catch((error) => {
         server.logger.error(

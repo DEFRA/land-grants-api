@@ -71,8 +71,11 @@ describe('#statistics', () => {
 
     expect(mockSchedule).toHaveBeenCalledTimes(1)
     expect(mockSchedule).toHaveBeenCalledWith(
-      '*/30 * * * *',
-      expect.any(Function)
+      '0 7 * * *',
+      expect.any(Function),
+      {
+        timezone: 'UTC'
+      }
     )
   })
 

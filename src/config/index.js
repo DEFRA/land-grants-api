@@ -198,6 +198,20 @@ const config = convict({
     default: false,
     env: 'LOAD_POSTGRES_DATA'
   },
+  cron: {
+    timezone: {
+      doc: 'Timezone for cron jobs',
+      format: String,
+      default: 'UTC',
+      env: 'CRON_TIMEZONE'
+    },
+    statsSchedule: {
+      doc: 'Cron time/schedule for outputting stats',
+      format: String,
+      default: '0 7 * * *',
+      env: 'CRON_STATS_SCHEDULE'
+    }
+  },
   log: {
     enabled: {
       doc: 'Is logging enabled',
