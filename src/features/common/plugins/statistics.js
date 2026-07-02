@@ -65,7 +65,8 @@ export const statistics = {
       }
 
       schedule(config.get('cron.statsSchedule'), refreshStats, {
-        timezone: config.get('cron.timezone')
+        timezone: config.get('cron.timezone'),
+        maxRandomDelay: config.get('cron.maxRandomDelay')
       })
 
       refreshStats().catch((error) => {

@@ -205,6 +205,12 @@ const config = convict({
       default: 'UTC',
       env: 'CRON_TIMEZONE'
     },
+    maxRandomDelay: {
+      doc: 'Maximum random delay for cron jobs in milliseconds',
+      format: Number,
+      default: 150,
+      env: 'CRON_MAX_RANDOM_DELAY'
+    },
     taskLockTimeoutMinutes: {
       doc: 'Timeout for task locks in minutes',
       format: Number,

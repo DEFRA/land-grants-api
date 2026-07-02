@@ -82,7 +82,8 @@ describe('#statistics', () => {
       '0 7 * * *',
       expect.any(Function),
       {
-        timezone: 'UTC'
+        timezone: 'UTC',
+        maxRandomDelay: 150
       }
     )
   })
