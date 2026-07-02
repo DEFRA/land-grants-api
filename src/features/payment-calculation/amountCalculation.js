@@ -1,5 +1,6 @@
 import { differenceInCalendarMonths } from 'date-fns'
 import { createExplanationSection } from '~/src/features/available-area/explanations.js'
+import { gbpToPence } from '~/src/features/common/helpers/currency.js'
 
 /**
  * currency formatter
@@ -10,13 +11,6 @@ const currencyFormatter = new Intl.NumberFormat('en-GB', {
   style: 'currency',
   currency: 'GBP'
 })
-
-/**
- * Gbp to pence
- * @param {number} gbp
- * @returns {number}
- */
-export const gbpToPence = (gbp = 0) => gbp * 100
 
 /**
  * Find an action by code
