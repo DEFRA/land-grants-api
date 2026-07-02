@@ -206,4 +206,30 @@ describe('#statistics', () => {
 
     expect(mockMetricsCounter).not.toHaveBeenCalled()
   })
+
+  test('Should log skip message when lock not acquired', async () => {
+    mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
+
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+
+    await cronCallback()
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'Skipping statistics run; lock not acquired'
+    )
+  })
+
+  test('Should log error when lock helper throws', async () => {
+    mockWithTaskLock.mockRejectedValueOnce(new Error('lock-failure'))
+
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+
+    await cronCallback()
+
+    expect(mockLogger.error).toHaveBeenCalled()
+  })
 })

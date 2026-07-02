@@ -94,7 +94,9 @@ export async function releaseTaskLock(pool, taskName) {
  */
 export async function withTaskLock(pool, taskName, fn, options = {}) {
   const acquired = await acquireTaskLock(pool, taskName, options)
-  if (!acquired) return { acquired: false }
+  if (!acquired) {
+    return { acquired: false }
+  }
 
   try {
     const result = await fn()

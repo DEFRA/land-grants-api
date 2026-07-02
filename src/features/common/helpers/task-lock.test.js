@@ -76,4 +76,41 @@ describe('task-lock helper', () => {
     expect(result).toBe('ok')
     expect(fn).toHaveBeenCalled()
   })
+
+  test('acquireTaskLock rolls back and releases client on error', async () => {
+    mockClient.query.mockResolvedValueOnce({}) // BEGIN
+    mockClient.query.mockRejectedValueOnce(new Error('boom')) // DELETE fails
+    mockClient.query.mockResolvedValueOnce({}) // ROLLBACK
+
+    await expect(
+      taskLock.acquireTaskLock(mockPool, 'myTask', { timeoutMinutes: 1 })
+    ).rejects.toThrow('boom')
+
+    expect(mockClient.release).toHaveBeenCalled()
+    // Ensure rollback was attempted (second resolved call after reject)
+    expect(mockClient.query).toHaveBeenCalled()
+  })
+
+  test('releaseTaskLock swallows errors', async () => {
+    mockPool.query.mockRejectedValueOnce(new Error('delete-failed'))
+
+    await expect(
+      taskLock.releaseTaskLock(mockPool, 'myTask')
+    ).resolves.toBeUndefined()
+  })
+
+  test('withTaskLock returns acquired false when lock not acquired', async () => {
+    // simulate DB flow where INSERT did not happen (rowCount 0)
+    mockClient.query.mockResolvedValueOnce({}) // BEGIN
+    mockClient.query.mockResolvedValueOnce({}) // DELETE expired
+    mockClient.query.mockResolvedValueOnce({ rowCount: 0 }) // INSERT did nothing
+    mockClient.query.mockResolvedValueOnce({}) // COMMIT
+
+    const fn = vi.fn()
+
+    const res = await taskLock.withTaskLock(mockPool, 't', fn)
+
+    expect(res.acquired).toBe(false)
+    expect(fn).not.toHaveBeenCalled()
+  })
 })
