@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 describe('Ingestion Endpoints', () => {
   describe('POST /initiate-upload', () => {
