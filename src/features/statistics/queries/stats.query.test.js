@@ -3,7 +3,6 @@ import { getStats } from './stats.query.js'
 describe('getStats', () => {
   let mockDb
   let mockLogger
-  let mockClient
 
   beforeEach(() => {
     const row = {
@@ -29,13 +28,15 @@ describe('getStats', () => {
       unlinkedCoversCount: '1'
     }
 
-    mockClient = {
-      query: vi.fn().mockResolvedValue({ rows: [row] }),
-      release: vi.fn()
-    }
-
     mockDb = {
-      connect: vi.fn().mockResolvedValue(mockClient)
+      query: vi
+        .fn()
+        .mockResolvedValueOnce({ rows: [row] })
+        .mockResolvedValueOnce({ rows: [{ count: 450 }] }) // uniqueParcels
+        .mockResolvedValueOnce({ rows: [{ count: 900 }] }) // uniqueCovers
+        .mockResolvedValueOnce({ rows: [{ count: 15 }] }) // duplicateCovers
+        .mockResolvedValueOnce({ rows: [{ count: 3 }] }) // unlinkedParcels
+        .mockResolvedValueOnce({ rows: [{ count: 1 }] }) // unlinkedCovers
     }
 
     mockLogger = {
@@ -44,16 +45,16 @@ describe('getStats', () => {
     }
   })
 
-  test('should connect to the database', async () => {
+  test('should query the database', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1)
+    expect(mockDb.query).toHaveBeenCalled()
   })
 
-  test('should query the database once for counts', async () => {
+  test('should query the database for quick + heavy counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(1)
+    expect(mockDb.query).toHaveBeenCalledTimes(6)
   })
 
   test('should log stats with all counts', async () => {
@@ -76,24 +77,25 @@ describe('getStats', () => {
         registeredBattlefieldsCount: '60',
         scheduledMonumentsCount: '80',
         shineCount: '90',
-        uniqueParcelsCount: '450',
-        uniqueCoversCount: '900',
-        duplicateCoversCount: '15',
-        unlinkedParcelsCount: '3',
-        unlinkedCoversCount: '1'
+        uniqueParcelsCount: 450,
+        uniqueCoversCount: 900,
+        duplicateCoversCount: 15,
+        unlinkedParcelsCount: 3,
+        unlinkedCoversCount: 1
       })
     )
   })
 
-  test('should release the client when done', async () => {
+  test('should not attempt client release (uses pool)', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
+    // nothing to release when using the pool
+    expect(mockDb.query).toHaveBeenCalledTimes(6)
   })
 
   test('should handle errors and log them', async () => {
     const error = new Error('Database error')
-    mockClient.query = vi.fn().mockRejectedValue(error)
+    mockDb.query = vi.fn().mockRejectedValue(error)
 
     await getStats(mockLogger, mockDb)
 
@@ -110,22 +112,25 @@ describe('getStats', () => {
       }),
       expect.stringContaining('Database operation failed: Get stats failed')
     )
-
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
 
-  test('should return empty object when query returns no rows', async () => {
-    mockClient.query = vi.fn().mockResolvedValue({ rows: [] })
+  test('should return zeros when queries return no rows', async () => {
+    mockDb.query = vi.fn().mockResolvedValue({ rows: [] })
 
     const stats = await getStats(mockLogger, mockDb)
 
-    expect(stats).toEqual({})
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
+    expect(stats).toEqual({
+      uniqueParcelsCount: 0,
+      uniqueCoversCount: 0,
+      duplicateCoversCount: 0,
+      unlinkedParcelsCount: 0,
+      unlinkedCoversCount: 0
+    })
   })
 
   test('should handle database connection error', async () => {
     const connectionError = new Error('Connection failed')
-    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
+    mockDb.query = vi.fn().mockRejectedValue(connectionError)
 
     await getStats(mockLogger, mockDb)
 
@@ -142,16 +147,13 @@ describe('getStats', () => {
       }),
       expect.stringContaining('Database operation failed: Get stats failed')
     )
-
-    expect(mockClient.release).not.toHaveBeenCalled()
   })
 
   test('should handle client release if client is not defined', async () => {
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.query = vi.fn().mockRejectedValue(new Error('Connection error'))
 
     await getStats(mockLogger, mockDb)
 
     expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
   })
 })
