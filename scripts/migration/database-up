@@ -1,15 +1,22 @@
 #!/bin/bash
 set -eu
 
+LIQUIBASE=(/liquibase/liquibase \
+	--driver=org.postgresql.Driver \
+	--changeLogFile=/changelog/db.changelog.xml \
+	--url=jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB \
+	--username="$POSTGRES_USER" --password="$POSTGRES_PASSWORD" \
+	--defaultSchemaName="$SCHEMA_NAME")
+
 echo "db update on $POSTGRES_HOST:$POSTGRES_PORT $SCHEMA_NAME as $POSTGRES_USER"
 
-# Wait for Postgres to accept connections, give up after 30 seconds
+# Wait for Postgres to be ready to accept connections, give up after 30 seconds
 timeout=30
 count=0
 echo "Waiting up to ${timeout}s for Postgres to be ready at $POSTGRES_HOST:$POSTGRES_PORT..."
 while [ "$count" -lt "$timeout" ]; do
-	if bash -c "echo > /dev/tcp/$POSTGRES_HOST/$POSTGRES_PORT" >/dev/null 2>&1; then
-		echo "Postgres TCP port is open at $POSTGRES_HOST:$POSTGRES_PORT"
+	if "${LIQUIBASE[@]}" status --verbose >/dev/null 2>&1; then
+		echo "Postgres is ready at $POSTGRES_HOST:$POSTGRES_PORT"
 		break
 	fi
 	count=$((count + 1))
@@ -20,9 +27,4 @@ if [ "$count" -ge "$timeout" ]; then
 	exit 1
 fi
 
-/liquibase/liquibase \
---driver=org.postgresql.Driver \
---changeLogFile=/changelog/db.changelog.xml \
---url=jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB \
---username="$POSTGRES_USER" --password="$POSTGRES_PASSWORD" --defaultSchemaName="$SCHEMA_NAME" \
-update
+"${LIQUIBASE[@]}" update

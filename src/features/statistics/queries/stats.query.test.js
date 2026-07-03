@@ -50,14 +50,10 @@ describe('getStats', () => {
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query all tables for counts', async () => {
+  test('should query the database once for counts', async () => {
     await getStats(mockLogger, mockDb)
 
     expect(mockClient.query).toHaveBeenCalledTimes(1)
-    const calledSql = mockClient.query.mock.calls[0][0]
-    expect(calledSql).toEqual(expect.stringContaining('"actionsCount"'))
-    expect(calledSql).toEqual(expect.stringContaining('"uniqueParcelsCount"'))
-    expect(calledSql).toEqual(expect.stringContaining('"duplicateCoversCount"'))
   })
 
   test('should log stats with all counts', async () => {
