@@ -6,13 +6,17 @@ const {
   mockInitStatsCache,
   mockStopStatsCache,
   mockRefreshCachedStats,
-  mockMetricsCounter
+  mockMetricsCounter,
+  mockWithTaskLock
 } = vi.hoisted(() => ({
   mockSchedule: vi.fn(),
   mockInitStatsCache: vi.fn(),
   mockStopStatsCache: vi.fn(),
   mockRefreshCachedStats: vi.fn(),
-  mockMetricsCounter: vi.fn()
+  mockMetricsCounter: vi.fn(),
+  mockWithTaskLock: vi.fn((pool, taskName, fn) =>
+    fn().then((r) => ({ acquired: true, result: r }))
+  )
 }))
 
 vi.mock('node-cron', () => ({
@@ -27,6 +31,10 @@ vi.mock('~/src/features/statistics/stats-cache.js', () => ({
 
 vi.mock('~/src/features/common/helpers/metrics.js', () => ({
   metricsCounter: mockMetricsCounter
+}))
+
+vi.mock('~/src/features/common/helpers/task-lock.js', () => ({
+  withTaskLock: mockWithTaskLock
 }))
 
 describe('#statistics', () => {
@@ -71,8 +79,12 @@ describe('#statistics', () => {
 
     expect(mockSchedule).toHaveBeenCalledTimes(1)
     expect(mockSchedule).toHaveBeenCalledWith(
-      '*/30 * * * *',
-      expect.any(Function)
+      '0 7 * * *',
+      expect.any(Function),
+      {
+        timezone: 'UTC',
+        maxRandomDelay: 150
+      }
     )
   })
 
@@ -194,5 +206,34 @@ describe('#statistics', () => {
     await cronCallback()
 
     expect(mockMetricsCounter).not.toHaveBeenCalled()
+  })
+
+  test('Should not throw when lock not acquired', async () => {
+    mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
+
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+
+    await expect(cronCallback()).resolves.toBeUndefined()
+
+    expect(mockWithTaskLock).toHaveBeenCalledWith(
+      mockPostgresDb,
+      'refreshStats',
+      expect.any(Function),
+      expect.any(Object)
+    )
+  })
+
+  test('Should not throw when lock helper throws', async () => {
+    mockWithTaskLock.mockRejectedValueOnce(new Error('lock-failure'))
+
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+
+    await expect(cronCallback()).resolves.toBeUndefined()
+
+    expect(mockWithTaskLock).toHaveBeenCalled()
   })
 })
