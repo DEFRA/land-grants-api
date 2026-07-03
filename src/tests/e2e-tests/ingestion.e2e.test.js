@@ -6,7 +6,6 @@ describe('Ingestion Endpoints', () => {
   describe('POST /initiate-upload', () => {
     test('should return 200 with upload URL for valid payload', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-1',
           customerId: 'CUST-e2e-1',
@@ -22,7 +21,6 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-2'
         }
@@ -33,7 +31,6 @@ describe('Ingestion Endpoints', () => {
 
     test('should return 400 for invalid resource', async () => {
       const response = await httpClient.post('/initiate-upload', {
-        headers: { Authorization: getAuthHeader() },
         body: {
           reference: 'REF-e2e-3',
           customerId: 'CUST-e2e-3',
@@ -164,6 +161,44 @@ describe('Ingestion Endpoints', () => {
 
       expect(statusResponse.status).toBe(200)
       expect(statusResponse.data).toHaveProperty('status')
+    })
+
+    test('should return status for ingestId and filename', async () => {
+      const response = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      const { ingestId } = response.data
+
+      const statusResponse = await httpClient.get(
+        `/ingest/status?ingestId=${ingestId}&filename=land-data.csv`,
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('filename')
+      expect(statusResponse.data.filename).toBe('land-data.csv')
+    })
+
+    test('should return 400 when filename is provided without ingestId', async () => {
+      const statusResponse = await httpClient.get(
+        '/ingest/status?filename=land-data.csv',
+        {
+          headers: { Authorization: getAuthHeader() }
+        }
+      )
+
+      expect(statusResponse.status).toBe(400)
     })
   })
 })
