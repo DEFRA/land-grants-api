@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="2026-07-01-create-data-layer-type-indexes" author="system" runInTransaction="false">
+    <comment>Non-blocking indexes to speed data_layer type and metadata filtering</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_layer_meta_type_expr ON data_layer ((metadata->>'type'));</sql>
+  </changeSet>
+
+  <changeSet id="2026-07-01-create-data-layer-partial-indexes" author="system" runInTransaction="false">
+    <comment>Partial indexes for selective data_layer metadata values (useful when small subset queried frequently)</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_layer_registered_parks ON data_layer (data_layer_type_id) WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_parks_gardens';</sql>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_layer_registered_battlefields ON data_layer (data_layer_type_id) WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_battlefields';</sql>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_layer_scheduled_monuments ON data_layer (data_layer_type_id) WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'scheduled_monuments';</sql>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_layer_shine ON data_layer (data_layer_type_id) WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'shine';</sql>
+  </changeSet>
+
+  <changeSet id="2026-07-01-create-land-covers-group-index" author="system">
+    <comment>Support GROUP BY on parcel_id, sheet_id and land_cover_class_code</comment>
+    <createIndex indexName="idx_land_covers_parcel_sheet_class" tableName="land_covers">
+      <column name="parcel_id"/>
+      <column name="sheet_id"/>
+      <column name="land_cover_class_code"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="2026-07-01-add-geom-hash-and-index" author="system">
+    <comment>Add deterministic geom_hash generated column and supporting index to speed exact-geometry grouping</comment>
+    <sql>ALTER TABLE land_covers ADD COLUMN IF NOT EXISTS geom_hash text GENERATED ALWAYS AS (md5(encode(ST_AsBinary(geom), 'hex'))) STORED;</sql>
+    <createIndex indexName="idx_land_covers_geom_hash_full" tableName="land_covers">
+      <column name="parcel_id"/>
+      <column name="sheet_id"/>
+      <column name="land_cover_class_code"/>
+      <column name="geom_hash"/>
+    </createIndex>
+  </changeSet>
+
+  <changeSet id="2026-07-01-idx-application-results-created-at" author="system" runInTransaction="false">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="application_results"/>
+        <columnExists tableName="application_results" columnName="created_at"/>
+      </and>
+    </preConditions>
+    <comment>application_results: create descending index to speed ORDER BY created_at DESC (non-blocking)</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_application_results_created_at ON application_results (created_at DESC);</sql>
+    <rollback>DROP INDEX IF EXISTS idx_application_results_created_at;</rollback>
+  </changeSet>
+
+  <changeSet id="2026-07-01-idx-ingest-files-ingest-id" author="system" runInTransaction="false">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="ingest_files"/>
+        <columnExists tableName="ingest_files" columnName="ingest_id"/>
+      </and>
+    </preConditions>
+    <comment>ingest_files: index ingest_id to speed joins/filters</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ingest_files_ingest_id ON ingest_files (ingest_id);</sql>
+    <rollback>DROP INDEX IF EXISTS idx_ingest_files_ingest_id;</rollback>
+  </changeSet>
+
+  <changeSet id="2026-07-01-idx-ingest-status" author="system" runInTransaction="false">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="ingest"/>
+        <columnExists tableName="ingest" columnName="status"/>
+      </and>
+    </preConditions>
+    <comment>ingest: index status to speed status filtering</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_ingest_status ON ingest (status);</sql>
+    <rollback>DROP INDEX IF EXISTS idx_ingest_status;</rollback>
+  </changeSet>
+
+  <changeSet id="2026-07-01-idx-actions-config-group-id" author="system" runInTransaction="false">
+    <preConditions onFail="MARK_RAN">
+      <and>
+        <tableExists tableName="actions_config"/>
+        <columnExists tableName="actions_config" columnName="group_id"/>
+      </and>
+    </preConditions>
+    <comment>actions_config: add index on group_id to speed FK-like lookups</comment>
+    <sql>CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_actions_config_group_id ON actions_config (group_id);</sql>
+    <rollback>DROP INDEX IF EXISTS idx_actions_config_group_id;</rollback>
+  </changeSet>
+
+  <changeSet id="2026-07-01-analyze-tables" author="system">
+    <comment>Update planner statistics to improve query performance after adding indexes</comment>
+    <sql>ANALYZE data_layer;</sql>
+    <sql>ANALYZE land_parcels;</sql>
+    <sql>ANALYZE land_covers;</sql>
+  </changeSet>
+
+  <changeSet id="create-task-lock-table" author="system">
+    <createTable tableName="task_lock">
+      <column name="task_name" type="VARCHAR(255)">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="acquired_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="expires_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP + INTERVAL '5 minutes'">
+        <constraints nullable="false"/>
+      </column>
+
+    </createTable>
+
+    <createIndex tableName="task_lock" indexName="idx_task_lock_expires_at">
+      <column name="expires_at"/>
+    </createIndex>
+
+    <rollback>
+      <dropTable tableName="task_lock"/>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>
