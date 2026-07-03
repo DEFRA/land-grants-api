@@ -1,63 +1,43 @@
 import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 
-// Run lightweight combined counts in one query, and run heavy counts concurrently
-// via the pool to allow DB-side parallelism (multiple connections).
-const runStatsQuery = async (db) => {
-  const quickSql = `SELECT
-    (SELECT COUNT(*) FROM actions) AS "actionsCount",
-    (SELECT COUNT(*) FROM actions_config) AS "actionsConfigCount",
-    (SELECT COUNT(*) FROM agreements) AS "agreementsCount",
-    (SELECT COUNT(*) FROM application_results) AS "applicationResultsCount",
-    (SELECT COUNT(*) FROM compatibility_matrix) AS "compatibilityMatrixCount",
-    (SELECT COUNT(*) FROM land_cover_codes) AS "landCoverCodesCount",
-    (SELECT COUNT(*) FROM land_cover_codes_actions) AS "landCoverCodesActionsCount",
-    (SELECT COUNT(*) FROM land_covers) AS "landCoversCount",
-    (SELECT COUNT(*) FROM land_parcels) AS "landParcelsCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 1) AS "sssiCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2) AS "moorlandDesignationsCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_parks_gardens') AS "registeredParksGardensCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_battlefields') AS "registeredBattlefieldsCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'scheduled_monuments') AS "scheduledMonumentsCount",
-    (SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'shine') AS "shineCount"
-  `
+const statsSql = [
+  'SELECT COUNT(*) AS actionsCount FROM actions',
+  'SELECT COUNT(*) AS actionsConfigCount FROM actions_config',
+  'SELECT COUNT(*) AS agreementsCount FROM agreements',
+  'SELECT COUNT(*) AS applicationResultsCount FROM application_results',
+  'SELECT COUNT(*) AS compatibilityMatrixCount FROM compatibility_matrix',
+  'SELECT COUNT(*) AS landCoverCodesCount FROM land_cover_codes',
+  'SELECT COUNT(*) AS landCoverCodesActionsCount FROM land_cover_codes_actions',
+  'SELECT COUNT(*) AS landCoversCount FROM land_covers',
+  'SELECT COUNT(*) AS landParcelsCount FROM land_parcels',
+  'SELECT COUNT(*) AS sssiCount FROM data_layer WHERE data_layer_type_id = 1',
+  'SELECT COUNT(*) AS moorlandDesignationsCount FROM data_layer WHERE data_layer_type_id = 2',
+  "SELECT COUNT(*) AS registeredParksGardensCount FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_parks_gardens'",
+  "SELECT COUNT(*) AS registeredBattlefieldsCount FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'registered_battlefields'",
+  "SELECT COUNT(*) AS scheduledMonumentsCount FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'scheduled_monuments'",
+  "SELECT COUNT(*) AS shineCount FROM data_layer WHERE data_layer_type_id = 3 AND (metadata->>'type') = 'shine'",
+  'SELECT COUNT(*) AS uniqueParcelsCount FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_parcels) sub',
+  'SELECT COUNT(*) AS uniqueCoversCount FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_covers) sub',
+  'SELECT COUNT(*) AS duplicateCoversCount FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1) t',
+  'SELECT COUNT(*) AS unlinkedParcelsCount FROM land_parcels p WHERE NOT EXISTS (SELECT 1 FROM land_covers c WHERE c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id)',
+  'SELECT COUNT(*) AS unlinkedCoversCount FROM land_covers c WHERE NOT EXISTS (SELECT 1 FROM land_parcels p WHERE c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id)'
+]
 
-  // heavy queries that benefit from running on separate connections
-  const uniqueParcelsSql = `SELECT COUNT(*)::bigint AS count FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_parcels) sub`
-  const uniqueCoversSql = `SELECT COUNT(*)::bigint AS count FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_covers) sub`
-  const duplicateCoversSql = `SELECT COUNT(*)::bigint AS count FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1) t`
-  const unlinkedParcelsSql = `SELECT COUNT(*)::bigint AS count FROM land_parcels p WHERE NOT EXISTS (SELECT 1 FROM land_covers c WHERE c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id)`
-  const unlinkedCoversSql = `SELECT COUNT(*)::bigint AS count FROM land_covers c WHERE NOT EXISTS (SELECT 1 FROM land_parcels p WHERE c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id)`
+// Run all counts as individual queries in parallel using Promise.all.
+const runStatsQuery = async (client) => {
+  const results = await Promise.all(statsSql.map((sql) => client.query(sql)))
 
-  const quickResult = await db.query(quickSql)
+  // merge returned rows; do not set defaults — only include returned columns
+  /** @type {Record<string, string | number>} */
+  const stats = results.reduce(
+    (acc, res) => ({
+      ...acc,
+      ...(Array.isArray(res?.rows) ? res.rows[0] : {})
+    }),
+    {}
+  )
 
-  // fire heavy queries concurrently using the pool (db.query) so the DB can
-  // schedule them on separate worker connections.
-  const heavyPromises = [
-    db.query(uniqueParcelsSql),
-    db.query(uniqueCoversSql),
-    db.query(duplicateCoversSql),
-    db.query(unlinkedParcelsSql),
-    db.query(unlinkedCoversSql)
-  ]
-
-  const [
-    uniqueParcelsRes,
-    uniqueCoversRes,
-    duplicateCoversRes,
-    unlinkedParcelsRes,
-    unlinkedCoversRes
-  ] = await Promise.all(heavyPromises)
-
-  const row = quickResult?.rows?.[0] || {}
-
-  return {
-    ...row,
-    uniqueParcelsCount: uniqueParcelsRes?.rows?.[0]?.count ?? 0,
-    uniqueCoversCount: uniqueCoversRes?.rows?.[0]?.count ?? 0,
-    duplicateCoversCount: duplicateCoversRes?.rows?.[0]?.count ?? 0,
-    unlinkedParcelsCount: unlinkedParcelsRes?.rows?.[0]?.count ?? 0,
-    unlinkedCoversCount: unlinkedCoversRes?.rows?.[0]?.count ?? 0
-  }
+  return stats
 }
 
 /**
@@ -67,15 +47,20 @@ const runStatsQuery = async (db) => {
  * @returns {Promise<Record<string, string | number> | undefined>} The stats
  */
 async function getStats(logger, db) {
+  let client
   try {
-    // Run against the pool so heavy queries can use separate connections.
-    return await runStatsQuery(db)
+    client = await db.connect()
+    return await runStatsQuery(client)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get stats failed',
       error
     })
     return undefined
+  } finally {
+    if (client) {
+      client.release()
+    }
   }
 }
 
