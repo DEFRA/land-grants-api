@@ -116,4 +116,13 @@
     </rollback>
   </changeSet>
 
+  <changeSet id="2026-07-03-grant-task-lock-permissions" author="system" runInTransaction="false">
+    <preConditions onFail="MARK_RAN">
+      <tableExists tableName="task_lock"/>
+    </preConditions>
+    <comment>Grant the application DB user privileges on task_lock so the app can acquire/release locks</comment>
+    <sql>GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE task_lock TO land_grants_api;</sql>
+    <rollback>REVOKE SELECT, INSERT, UPDATE, DELETE ON TABLE task_lock FROM land_grants_api;</rollback>
+  </changeSet>
+
 </databaseChangeLog>
