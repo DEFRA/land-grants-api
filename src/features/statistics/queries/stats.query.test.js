@@ -102,10 +102,10 @@ describe('getStats', () => {
       `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
     )
     expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels'
+      `SELECT COUNT(*) FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_parcels) AS distinct_pairs`
     )
     expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers'
+      `SELECT COUNT(*) FROM (SELECT DISTINCT sheet_id, parcel_id FROM land_covers) AS distinct_pairs`
     )
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)'
