@@ -12,10 +12,10 @@ Sign in with Azure AD. See [Managing the service](../../docs/managing-the-servic
 
 ### Files
 
-| File                            | Description                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `land-grants-api.json`          | Main dashboard with Parcels, Payments, Case Management Adapter, Application, and Land Data Ingest panels |
-| `land-grants-api-original.json` | Original dashboard export ("Application specific metrics"), kept as reference                            |
+| File                            | Description                                                                                                         |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `land-grants-api.json`          | Main dashboard with Parcels, Payments, Case Management Adapter, Application, Land Data Ingest, and Land Data panels |
+| `land-grants-api-original.json` | Original dashboard export ("Application specific metrics"), kept as reference                                       |
 
 ### Endpoints Monitored
 
@@ -33,6 +33,8 @@ Sign in with Azure AD. See [Managing the service](../../docs/managing-the-servic
 | `/application/*/validation-run`                             | V1      | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/initiate-upload`                                          | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/cdp-uploader-callback`                                    | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
+| `unlinked_parcels_count` (EMF metric, cron every 30 min)    | -       | Avg gauge value                         |
+| `unlinked_covers_count` (EMF metric, cron every 30 min)     | -       | Avg gauge value                         |
 
 ### Key fields
 
