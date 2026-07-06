@@ -201,4 +201,49 @@ describe('Ingestion Endpoints', () => {
       expect(statusResponse.status).toBe(400)
     })
   })
+
+  describe('GET /status', () => {
+    test('should return latest status for each entity type', async () => {
+      const {
+        data: { ingestId: parcelIngestId }
+      } = await httpClient.post('/ingest/land_parcels/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'land-data.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+      const {
+        data: { ingestId: coversIngestId }
+      } = await httpClient.post('/ingest/land_covers/start', {
+        headers: { Authorization: getAuthHeader() },
+        body: {
+          files: [
+            {
+              filename: 'covers.csv',
+              rows: 10
+            }
+          ]
+        }
+      })
+
+      const statusResponse = await httpClient.get('/ingest/status', {
+        headers: { Authorization: getAuthHeader() }
+      })
+
+      const { status, data: statuses } = statusResponse
+      expect(status).toBe(200)
+      expect(statuses).toHaveLength(2)
+      const parcelsStatus = statuses.find((s) => s.id === parcelIngestId)
+      const coversStatus = statuses.find((s) => s.id === coversIngestId)
+      expect(parcelsStatus.entity).toBe('land_parcels')
+      expect(coversStatus.entity).toBe('land_covers')
+      expect(parcelsStatus.status).toBe('in_progress')
+      expect(coversStatus.status).toBe('in_progress')
+    })
+  })
 })
