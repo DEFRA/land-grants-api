@@ -291,6 +291,12 @@ const config = convict({
       format: 'Boolean',
       default: false,
       env: 'ENABLE_TEST_ENDPOINTS'
+    },
+    useInstanceStatsLock: {
+      doc: 'Enable one instance only task locking for statistics refresh',
+      format: Boolean,
+      default: true,
+      env: 'USE_STATS_LOCK'
     }
   }
 })

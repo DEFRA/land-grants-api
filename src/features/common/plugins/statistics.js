@@ -19,45 +19,52 @@ export const statistics = {
       const refreshStats = async () => {
         try {
           const lockTimeout = config.get('cron.taskLockTimeoutMinutes')
-          const { acquired } = await withTaskLock(
-            server.postgresDb,
-            'refreshStats',
-            async () => {
-              server.logger.info('Running statistics cron job')
-              const stats = await refreshCachedStats(
-                server.logger,
-                server.postgresDb
-              )
 
-              if (stats) {
-                logInfo(server.logger, {
-                  category: 'database',
-                  message: 'Get stats',
-                  context: stats
-                })
-                const { unlinkedParcelsCount, unlinkedCoversCount } =
-                  /** @type {{ unlinkedParcelsCount: string | number, unlinkedCoversCount: string | number }} */ (
-                    stats
-                  )
-                await Promise.all([
-                  metricsCounter(
-                    'unlinked_parcels_count',
-                    Number(unlinkedParcelsCount)
-                  ),
-                  metricsCounter(
-                    'unlinked_covers_count',
-                    Number(unlinkedCoversCount)
-                  )
-                ])
-              }
+          const runStatsTask = async () => {
+            server.logger.info('Running statistics cron job')
+            const stats = await refreshCachedStats(
+              server.logger,
+              server.postgresDb
+            )
 
-              server.logger.info('Statistics cron job completed successfully')
-            },
-            { timeoutMinutes: lockTimeout }
-          )
+            if (stats) {
+              logInfo(server.logger, {
+                category: 'database',
+                message: 'Get stats',
+                context: stats
+              })
+              const { unlinkedParcelsCount, unlinkedCoversCount } =
+                /** @type {{ unlinkedParcelsCount: string | number, unlinkedCoversCount: string | number }} */ (
+                  stats
+                )
+              await Promise.all([
+                metricsCounter(
+                  'unlinked_parcels_count',
+                  Number(unlinkedParcelsCount)
+                ),
+                metricsCounter(
+                  'unlinked_covers_count',
+                  Number(unlinkedCoversCount)
+                )
+              ])
+            }
 
-          if (!acquired) {
-            server.logger.info('Skipping statistics run; lock not acquired')
+            server.logger.info('Statistics cron job completed successfully')
+          }
+
+          if (config.get('featureFlags.useInstanceStatsLock')) {
+            const { acquired } = await withTaskLock(
+              server.postgresDb,
+              'refreshStats',
+              runStatsTask,
+              { timeoutMinutes: lockTimeout }
+            )
+
+            if (!acquired) {
+              server.logger.info('Skipping statistics run; lock not acquired')
+            }
+          } else {
+            await runStatsTask()
           }
         } catch (err) {
           server.logger.error({ err }, 'Error running statistics cron job')
