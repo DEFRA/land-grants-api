@@ -52,7 +52,9 @@ export const statistics = {
             server.logger.info('Statistics cron job completed successfully')
           }
 
-          if (config.get('featureFlags.useInstanceStatsLock')) {
+          if (config.get('featureFlags.testEndpoints')) {
+            await runStatsTask()
+          } else {
             const { acquired } = await withTaskLock(
               server.postgresDb,
               'refreshStats',
@@ -63,8 +65,6 @@ export const statistics = {
             if (!acquired) {
               server.logger.info('Skipping statistics run; lock not acquired')
             }
-          } else {
-            await runStatsTask()
           }
         } catch (err) {
           server.logger.error({ err }, 'Error running statistics cron job')

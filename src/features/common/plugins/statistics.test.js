@@ -31,8 +31,8 @@ const { mockConfigGet } = vi.hoisted(() => ({
         return 150
       case 'cron.taskLockTimeoutMinutes':
         return 5
-      case 'featureFlags.useInstanceStatsLock':
-        return true
+      case 'featureFlags.testEndpoints':
+        return false
       default:
         return undefined
     }
@@ -234,9 +234,9 @@ describe('#statistics', () => {
     expect(mockMetricsCounter).not.toHaveBeenCalled()
   })
 
-  test('Should run without task lock when feature flag disabled', async () => {
+  test('Should use task lock when feature flag disabled', async () => {
     mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.useInstanceStatsLock') return false
+      if (key === 'featureFlags.testEndpoints') return false
       if (key === 'cron.taskLockTimeoutMinutes') return 5
       return key === 'cron.statsSchedule'
         ? '0 7 * * *'
@@ -253,14 +253,14 @@ describe('#statistics', () => {
 
     await cronCallback()
 
-    expect(mockWithTaskLock).not.toHaveBeenCalled()
+    expect(mockWithTaskLock).toHaveBeenCalled()
   })
 
   test('Should not throw when lock not acquired', async () => {
     mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
 
     mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.useInstanceStatsLock') return true
+      if (key === 'featureFlags.testEndpoints') return false
       if (key === 'cron.taskLockTimeoutMinutes') return 5
       return key === 'cron.statsSchedule'
         ? '0 7 * * *'
@@ -289,7 +289,7 @@ describe('#statistics', () => {
     mockWithTaskLock.mockRejectedValueOnce(new Error('lock-failure'))
 
     mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.useInstanceStatsLock') return true
+      if (key === 'featureFlags.testEndpoints') return false
       if (key === 'cron.taskLockTimeoutMinutes') return 5
       return key === 'cron.statsSchedule'
         ? '0 7 * * *'
