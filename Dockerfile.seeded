@@ -29,7 +29,7 @@ RUN liquibase \
 ################################
 # Stage 2 - Prepare ingest data
 ################################
-FROM node:24-alpine AS ingest-prep
+FROM node:26-alpine AS ingest-prep
 
 WORKDIR /app
 
