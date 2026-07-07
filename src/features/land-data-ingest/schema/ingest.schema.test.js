@@ -191,33 +191,16 @@ describe('initiateLandDataUploadRequestSchema', () => {
     expect(error.details[0].message).toContain('parcels')
   })
 
-  it('should accept valid resource value - parcels', () => {
-    const data = {
-      reference: 'REF-123456',
-      customerId: 'CUST-789',
-      resource: 'land_parcels'
+  it.each([['land_parcels'], ['land_covers'], ['moorland_designations']])(
+    'should accept valid resource value - %s',
+    (resource) => {
+      const data = {
+        reference: 'REF-123456',
+        customerId: 'CUST-789',
+        resource
+      }
+      const { error } = initiateLandDataUploadRequestSchema.validate(data)
+      expect(error).toBeUndefined()
     }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
-
-  it('should accept valid resource value - covers', () => {
-    const data = {
-      reference: 'REF-123456',
-      customerId: 'CUST-789',
-      resource: 'land_covers'
-    }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
-
-  it('should accept valid resource value - moorland', () => {
-    const data = {
-      reference: 'REF-123456',
-      customerId: 'CUST-789',
-      resource: 'moorland_designations'
-    }
-    const { error } = initiateLandDataUploadRequestSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
+  )
 })

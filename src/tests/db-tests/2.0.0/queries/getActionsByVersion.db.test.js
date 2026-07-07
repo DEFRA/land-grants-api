@@ -1,5 +1,5 @@
 import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get Action Configs By Version Query', () => {
@@ -10,7 +10,7 @@ describe('Get Action Configs By Version Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

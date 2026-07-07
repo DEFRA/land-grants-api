@@ -102,38 +102,44 @@ describe('formatExplanationSections', () => {
       }
     })
 
-    it('includes an Application section listing the target action', () => {
-      const section = sections.find((s) => s.title === 'Application')
-      expect(section).toBeDefined()
-      expect(section.content).toEqual(['Target action: CMOR1'])
-    })
-
-    it('includes a Land covers on the parcel section', () => {
-      const section = sections.find(
-        (s) => s.title === 'Land covers on the parcel'
-      )
-      expect(section).toBeDefined()
-      expect(section.content).toEqual([
-        'Permanent grassland (130): 3.1 ha',
-        'Water/irrigation features (240): 2.5 ha',
-        'Half Hedge Adjacent NON-EFA (110): 1 ha'
-      ])
-    })
-
-    it('includes an eligibility section with land cover descriptions but no areas', () => {
-      const section = sections.find(
-        (s) => s.title === 'Eligible land covers per action'
-      )
-      expect(section).toBeDefined()
-      expect(section.content).toContainEqual('CMOR1: Permanent grassland (130)')
-      expect(section.content).toContainEqual(expect.stringContaining('AA1'))
-      expect(section.content).toContainEqual(
-        expect.stringContaining('Water/irrigation features (240)')
-      )
-      // Areas should not be present (they are in the Land covers section)
-      for (const line of section.content) {
-        expect(line).not.toMatch(/\d+ ha/)
+    it.each([
+      {
+        name: 'Application section listing the target action',
+        title: 'Application',
+        assertContent: (content) => {
+          expect(content).toEqual(['Target action: CMOR1'])
+        }
+      },
+      {
+        name: 'Land covers on the parcel section',
+        title: 'Land covers on the parcel',
+        assertContent: (content) => {
+          expect(content).toEqual([
+            'Permanent grassland (130): 3.1 ha',
+            'Water/irrigation features (240): 2.5 ha',
+            'Half Hedge Adjacent NON-EFA (110): 1 ha'
+          ])
+        }
+      },
+      {
+        name: 'eligibility section with land cover descriptions but no areas',
+        title: 'Eligible land covers per action',
+        assertContent: (content) => {
+          expect(content).toContainEqual('CMOR1: Permanent grassland (130)')
+          expect(content).toContainEqual(expect.stringContaining('AA1'))
+          expect(content).toContainEqual(
+            expect.stringContaining('Water/irrigation features (240)')
+          )
+          // Areas should not be present (they are in the Land covers section)
+          for (const line of content) {
+            expect(line).not.toMatch(/\d+ ha/)
+          }
+        }
       }
+    ])('includes a $name', ({ title, assertContent }) => {
+      const section = sections.find((s) => s.title === title)
+      expect(section).toBeDefined()
+      assertContent(section.content)
     })
 
     it('includes an adjusted actions section', () => {

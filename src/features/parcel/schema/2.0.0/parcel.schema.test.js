@@ -94,38 +94,13 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should validate with single field', () => {
-      const valid = {
-        ...validParcelsRequest,
-        fields: ['size']
-      }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
-    })
-
-    it('should validate with sssiConsentRequired field', () => {
-      const valid = {
-        ...validParcelsRequest,
-        fields: ['actions.sssiConsentRequired']
-      }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
-    })
-
-    it('should validate with heferRequired field', () => {
-      const valid = {
-        ...validParcelsRequest,
-        fields: ['actions.heferRequired']
-      }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
-    })
-
-    it('should validate with groups field', () => {
-      const valid = {
-        ...validParcelsRequest,
-        fields: ['groups']
-      }
+    it.each([
+      ['single field', ['size']],
+      ['sssiConsentRequired field', ['actions.sssiConsentRequired']],
+      ['heferRequired field', ['actions.heferRequired']],
+      ['groups field', ['groups']]
+    ])('should validate with %s', (_name, fields) => {
+      const valid = { ...validParcelsRequest, fields }
       const result = parcelsSchema.validate(valid)
       expect(result.error).toBeUndefined()
     })
