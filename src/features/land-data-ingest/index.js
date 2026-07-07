@@ -1,4 +1,4 @@
-import { LandDataIngestController } from './controller/land-data-ingest.controller.js'
+import { CDPUploaderCallbackController } from './controller/cdp-uploader-callback.controller.js'
 import { InitiateLandDataUploadController } from './controller/initiate-land-data-upload.controller.js'
 import { StartIngestController } from './controller/start-ingest.controller.js'
 import { StatusIngestController } from './controller/status-ingest.controller.js'
@@ -23,9 +23,9 @@ const landDataIngest = {
         {
           method: 'POST',
           path: '/cdp-uploader-callback',
-          handler: LandDataIngestController.handler,
+          handler: CDPUploaderCallbackController.handler,
           options: {
-            ...LandDataIngestController.options,
+            ...CDPUploaderCallbackController.options,
             auth: false
           }
         },
