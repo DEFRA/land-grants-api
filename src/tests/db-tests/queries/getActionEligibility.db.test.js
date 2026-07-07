@@ -1,5 +1,5 @@
 import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get Action Eligibility Query', () => {
@@ -10,7 +10,7 @@ describe('Get Action Eligibility Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

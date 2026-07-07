@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Save Application Mutation', () => {
   let logger, connection
@@ -10,7 +10,7 @@ describe('Save Application Mutation', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

@@ -6,7 +6,7 @@ import {
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 
 import { importLandData } from '~/src/features/land-data-ingest/workers/ingest.module.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 
 const S3_KEYS = ['sssi/sssi.csv', 'sssi/sssi.zip']
@@ -16,7 +16,7 @@ describe('SSSI import', () => {
   let connection
 
   beforeAll(async () => {
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
   })
