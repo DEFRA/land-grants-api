@@ -1,6 +1,6 @@
 import { statistics } from './statistics.js'
 import { vi } from 'vitest'
-import { config } from '../../../config/index.js'
+import { config } from '~/src/config/index.js'
 
 const { mockSchedule, mockGetStats, mockMetricsCounter, mockWithTaskLock } =
   vi.hoisted(() => ({
@@ -16,15 +16,15 @@ vi.mock('node-cron', () => ({
   schedule: mockSchedule
 }))
 
-vi.mock('../../statistics/queries/stats.query.js', () => ({
+vi.mock('~/src/features/statistics/queries/stats.query.js', () => ({
   getStats: mockGetStats
 }))
 
-vi.mock('../helpers/metrics.js', () => ({
+vi.mock('~/src/features/common/helpers/metrics.js', () => ({
   metricsCounter: mockMetricsCounter
 }))
 
-vi.mock('../helpers/task-lock.js', () => ({
+vi.mock('~/src/features/common/helpers/task-lock.js', () => ({
   withTaskLock: mockWithTaskLock
 }))
 

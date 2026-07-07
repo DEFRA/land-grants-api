@@ -1,9 +1,9 @@
 import { schedule } from 'node-cron'
-import { config } from '../../../config/index.js'
-import { logInfo } from '../../common/helpers/logging/log-helpers.js'
-import { getStats } from '../../statistics/queries/stats.query.js'
-import { metricsCounter } from '../helpers/metrics.js'
-import { withTaskLock } from '../helpers/task-lock.js'
+import { config } from '~/src/config/index.js'
+import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { getStats } from '~/src/features/statistics/queries/stats.query.js'
+import { metricsCounter } from '~/src/features/common/helpers/metrics.js'
+import { withTaskLock } from '~/src/features/common/helpers/task-lock.js'
 
 export const statistics = {
   plugin: {
