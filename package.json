@@ -93,7 +93,7 @@
     "@babel/core": "^8.0.1",
     "@babel/preset-env": "^8.0.2",
     "@pact-foundation/pact": "^17.0.0",
-    "@types/node": "^24.1.0",
+    "@types/node": "^24.13.2",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
     "@vitest/coverage-v8": "^4.1.9",
