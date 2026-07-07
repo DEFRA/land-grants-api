@@ -52,7 +52,7 @@ export const statistics = {
             server.logger.info('Statistics cron job completed successfully')
           }
 
-          if (config.get('featureFlags.testEndpoints')) {
+          if (!config.get('featureFlags.runTasksOnSingleInstance')) {
             await runStatsTask()
           } else {
             const { acquired } = await withTaskLock(

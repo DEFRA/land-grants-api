@@ -1,5 +1,6 @@
 import { statistics } from '~/src/features/common/plugins/statistics.js'
 import { vi } from 'vitest'
+import { config } from '~/src/config/index.js'
 
 const {
   mockSchedule,
@@ -19,34 +20,8 @@ const {
   )
 }))
 
-// hoisted mock for config.get to avoid hoisting issues with vi.mock factories
-const { mockConfigGet } = vi.hoisted(() => ({
-  mockConfigGet: vi.fn((key) => {
-    switch (key) {
-      case 'cron.statsSchedule':
-        return '0 7 * * *'
-      case 'cron.timezone':
-        return 'UTC'
-      case 'cron.maxRandomDelay':
-        return 150
-      case 'cron.taskLockTimeoutMinutes':
-        return 5
-      case 'featureFlags.testEndpoints':
-        return false
-      default:
-        return undefined
-    }
-  })
-}))
-
 vi.mock('node-cron', () => ({
   schedule: mockSchedule
-}))
-
-vi.mock('~/src/config/index.js', () => ({
-  config: {
-    get: mockConfigGet
-  }
 }))
 
 vi.mock('~/src/features/statistics/stats-cache.js', () => ({
@@ -84,6 +59,12 @@ describe('#statistics', () => {
     }
     mockInitStatsCache.mockResolvedValue(undefined)
     mockRefreshCachedStats.mockResolvedValue(undefined)
+
+    config.set('cron.statsSchedule', '0 7 * * *')
+    config.set('cron.timezone', 'UTC')
+    config.set('cron.maxRandomDelay', 150)
+    config.set('cron.taskLockTimeoutMinutes', 5)
+    config.set('featureFlags.runTasksOnSingleInstance', false)
   })
 
   test('Should have the correct plugin name', () => {
@@ -235,17 +216,8 @@ describe('#statistics', () => {
   })
 
   test('Should use task lock when feature flag disabled', async () => {
-    mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.testEndpoints') return false
-      if (key === 'cron.taskLockTimeoutMinutes') return 5
-      return key === 'cron.statsSchedule'
-        ? '0 7 * * *'
-        : key === 'cron.timezone'
-          ? 'UTC'
-          : key === 'cron.maxRandomDelay'
-            ? 150
-            : undefined
-    })
+    config.set('featureFlags.runTasksOnSingleInstance', true)
+    config.set('cron.taskLockTimeoutMinutes', 5)
 
     await statistics.plugin.register(mockServer)
 
@@ -259,17 +231,8 @@ describe('#statistics', () => {
   test('Should not throw when lock not acquired', async () => {
     mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
 
-    mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.testEndpoints') return false
-      if (key === 'cron.taskLockTimeoutMinutes') return 5
-      return key === 'cron.statsSchedule'
-        ? '0 7 * * *'
-        : key === 'cron.timezone'
-          ? 'UTC'
-          : key === 'cron.maxRandomDelay'
-            ? 150
-            : undefined
-    })
+    config.set('featureFlags.runTasksOnSingleInstance', true)
+    config.set('cron.taskLockTimeoutMinutes', 5)
 
     await statistics.plugin.register(mockServer)
 
@@ -288,17 +251,8 @@ describe('#statistics', () => {
   test('Should not throw when lock helper throws', async () => {
     mockWithTaskLock.mockRejectedValueOnce(new Error('lock-failure'))
 
-    mockConfigGet.mockImplementation((key) => {
-      if (key === 'featureFlags.testEndpoints') return false
-      if (key === 'cron.taskLockTimeoutMinutes') return 5
-      return key === 'cron.statsSchedule'
-        ? '0 7 * * *'
-        : key === 'cron.timezone'
-          ? 'UTC'
-          : key === 'cron.maxRandomDelay'
-            ? 150
-            : undefined
-    })
+    config.set('featureFlags.runTasksOnSingleInstance', true)
+    config.set('cron.taskLockTimeoutMinutes', 5)
 
     await statistics.plugin.register(mockServer)
 
@@ -307,5 +261,24 @@ describe('#statistics', () => {
     await expect(cronCallback()).resolves.toBeUndefined()
 
     expect(mockWithTaskLock).toHaveBeenCalled()
+  })
+
+  test('Should run stats directly when feature flag disabled (no task lock)', async () => {
+    // ensure feature flag disabled
+    config.set('featureFlags.runTasksOnSingleInstance', false)
+
+    mockRefreshCachedStats.mockResolvedValue({ actionsCount: 2 })
+
+    await statistics.plugin.register(mockServer)
+
+    const cronCallback = mockSchedule.mock.calls[0][1]
+
+    await cronCallback()
+
+    expect(mockWithTaskLock).not.toHaveBeenCalled()
+    expect(mockRefreshCachedStats).toHaveBeenCalledWith(
+      mockLogger,
+      mockPostgresDb
+    )
   })
 })

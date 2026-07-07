@@ -286,11 +286,11 @@ const config = convict({
     }
   },
   featureFlags: {
-    testEndpoints: {
-      doc: 'Enable test endpoints',
-      format: 'Boolean',
-      default: false,
-      env: 'ENABLE_TEST_ENDPOINTS'
+    runTasksOnSingleInstance: {
+      doc: 'Enable running tasks on a single compute instance',
+      format: Boolean,
+      default: true,
+      env: 'ENABLE_TASKS_ON_SINGLE_INSTANCE'
     }
   }
 })
