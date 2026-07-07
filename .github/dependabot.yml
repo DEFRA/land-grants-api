@@ -68,6 +68,8 @@ updates:
       - dependency-name: 'eslint-*'
       - dependency-name: 'eslint'
       - dependency-name: '@typescript-eslint/*'
+      - dependency-name: "@types/node"
+        versions: [">=25"]
 
     # Schedule run every Monday, local time
     schedule:
@@ -89,7 +91,11 @@ updates:
   # Update docker packages
   - package-ecosystem: docker
     directory: /
-    
+
+    ignore:
+      - dependency-name: "node"
+        versions: [">=25"]
+
     # Schedule run every Monday, local time
     schedule:
       interval: weekly
@@ -104,6 +110,10 @@ updates:
   # Update docker-compose packages
   - package-ecosystem: docker-compose
     directory: /
+
+    ignore:
+      - dependency-name: "node"
+        versions: [">=25"]
 
     # Schedule run every Monday, local time
     schedule:
