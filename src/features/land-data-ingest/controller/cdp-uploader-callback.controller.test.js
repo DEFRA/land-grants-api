@@ -1,6 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { vi } from 'vitest'
-import { LandDataIngestController } from './land-data-ingest.controller.js'
+import { CDPUploaderCallbackController } from './cdp-uploader-callback.controller.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   moveFile,
@@ -36,7 +36,7 @@ const mockFailedBucketPath = failedBucketPath
 const mockConfig = config
 const mockCreateS3Client = createS3Client
 
-describe('LandDataIngestController', () => {
+describe('CDPUploaderCallbackController', () => {
   const server = Hapi.server()
 
   const mockLogger = {
@@ -87,8 +87,8 @@ describe('LandDataIngestController', () => {
             server.route({
               method: 'POST',
               path: '/land-data-ingest/callback',
-              handler: LandDataIngestController.handler,
-              options: LandDataIngestController.options
+              handler: CDPUploaderCallbackController.handler,
+              options: CDPUploaderCallbackController.options
             })
           }
         }
