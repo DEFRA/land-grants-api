@@ -1,32 +1,23 @@
-import { statistics } from '~/src/features/common/plugins/statistics.js'
+import { statistics } from './statistics.js'
 import { vi } from 'vitest'
+import { config } from '~/src/config/index.js'
 
-const {
-  mockSchedule,
-  mockInitStatsCache,
-  mockStopStatsCache,
-  mockRefreshCachedStats,
-  mockMetricsCounter,
-  mockWithTaskLock
-} = vi.hoisted(() => ({
-  mockSchedule: vi.fn(),
-  mockInitStatsCache: vi.fn(),
-  mockStopStatsCache: vi.fn(),
-  mockRefreshCachedStats: vi.fn(),
-  mockMetricsCounter: vi.fn(),
-  mockWithTaskLock: vi.fn((pool, taskName, fn) =>
-    fn().then((r) => ({ acquired: true, result: r }))
-  )
-}))
+const { mockSchedule, mockGetStats, mockMetricsCounter, mockWithTaskLock } =
+  vi.hoisted(() => ({
+    mockSchedule: vi.fn(),
+    mockGetStats: vi.fn(),
+    mockMetricsCounter: vi.fn(),
+    mockWithTaskLock: vi.fn((pool, taskName, fn) =>
+      fn().then((r) => ({ acquired: true, result: r }))
+    )
+  }))
 
 vi.mock('node-cron', () => ({
   schedule: mockSchedule
 }))
 
-vi.mock('~/src/features/statistics/stats-cache.js', () => ({
-  initStatsCache: mockInitStatsCache,
-  stopStatsCache: mockStopStatsCache,
-  refreshCachedStats: mockRefreshCachedStats
+vi.mock('~/src/features/statistics/queries/stats.query.js', () => ({
+  getStats: mockGetStats
 }))
 
 vi.mock('~/src/features/common/helpers/metrics.js', () => ({
@@ -56,8 +47,12 @@ describe('#statistics', () => {
         on: vi.fn()
       }
     }
-    mockInitStatsCache.mockResolvedValue(undefined)
-    mockRefreshCachedStats.mockResolvedValue(undefined)
+    mockGetStats.mockResolvedValue({})
+
+    config.set('cron.statsSchedule', '0 7 * * *')
+    config.set('cron.timezone', 'UTC')
+    config.set('cron.maxRandomDelay', 150)
+    config.set('cron.taskLockTimeoutMinutes', 5)
   })
 
   test('Should have the correct plugin name', () => {
@@ -68,14 +63,30 @@ describe('#statistics', () => {
     expect(statistics.plugin.version).toBe('1.0.0')
   })
 
-  test('Should initialise stats cache on register', async () => {
-    await statistics.plugin.register(mockServer)
+  test('Should get stats on startup', async () => {
+    statistics.plugin.register(mockServer)
 
-    expect(mockInitStatsCache).toHaveBeenCalledTimes(1)
+    await vi.waitFor(() => {
+      expect(mockGetStats).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
+    })
   })
 
-  test('Should schedule cron job with correct pattern', async () => {
-    await statistics.plugin.register(mockServer)
+  test('Should log error when initial load fails', async () => {
+    // make the initial getStats call reject
+    mockGetStats.mockRejectedValueOnce(new Error('startup-failure'))
+
+    statistics.plugin.register(mockServer)
+
+    await vi.waitFor(() => {
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({ error: expect.any(Error) }),
+        'Failed to get stats on startup'
+      )
+    })
+  })
+
+  test('Should schedule cron job with correct pattern', () => {
+    statistics.plugin.register(mockServer)
 
     expect(mockSchedule).toHaveBeenCalledTimes(1)
     expect(mockSchedule).toHaveBeenCalledWith(
@@ -88,28 +99,24 @@ describe('#statistics', () => {
     )
   })
 
-  test('Should refresh cached stats when cron runs', async () => {
-    await statistics.plugin.register(mockServer)
+  test('Should get stats when cron runs', async () => {
+    statistics.plugin.register(mockServer)
 
     const cronCallback = mockSchedule.mock.calls[0][1]
-    mockRefreshCachedStats.mockResolvedValue({
-      actionsCount: 10,
-      lastUpdated: '2026-06-16T12:00:00.000Z'
+    mockGetStats.mockResolvedValue({
+      actionsCount: 10
     })
 
     await cronCallback()
 
-    expect(mockRefreshCachedStats).toHaveBeenCalledWith(
-      mockLogger,
-      mockPostgresDb
-    )
+    expect(mockGetStats).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
   })
 
   test('Should log info when cron job starts and completes successfully', async () => {
-    await statistics.plugin.register(mockServer)
+    statistics.plugin.register(mockServer)
 
     const cronCallback = mockSchedule.mock.calls[0][1]
-    mockRefreshCachedStats.mockResolvedValue(undefined)
+    mockGetStats.mockResolvedValue({})
 
     await cronCallback()
 
@@ -120,21 +127,20 @@ describe('#statistics', () => {
   })
 
   test('should log stats with all counts', async () => {
-    await statistics.plugin.register(mockServer)
+    statistics.plugin.register(mockServer)
 
     const cronCallback = mockSchedule.mock.calls[0][1]
 
     await vi.waitFor(() => {
-      expect(mockRefreshCachedStats).toHaveBeenCalled()
+      expect(mockGetStats).toHaveBeenCalled()
     })
 
     mockLogger.info.mockClear()
-    mockRefreshCachedStats.mockClear()
-    mockRefreshCachedStats.mockResolvedValue({
+    mockGetStats.mockClear()
+    mockGetStats.mockResolvedValue({
       actionsCount: 10,
       unlinkedParcelsCount: 3,
-      unlinkedCoversCount: 1,
-      lastUpdated: '2026-06-16T12:00:00.000Z'
+      unlinkedCoversCount: 1
     })
 
     await cronCallback()
@@ -159,34 +165,11 @@ describe('#statistics', () => {
     expect(logMessage).toContain('unlinkedCoversCount=1')
   })
 
-  test('Should refresh cached stats on startup', async () => {
-    await statistics.plugin.register(mockServer)
-
-    await vi.waitFor(() => {
-      expect(mockRefreshCachedStats).toHaveBeenCalledWith(
-        mockLogger,
-        mockPostgresDb
-      )
-    })
-  })
-
-  test('Should stop stats cache when server stops', async () => {
-    await statistics.plugin.register(mockServer)
-
-    const stopHandler = mockServer.events.on.mock.calls.find(
-      ([event]) => event === 'stop'
-    )?.[1]
-
-    stopHandler()
-
-    expect(mockStopStatsCache).toHaveBeenCalledTimes(1)
-  })
-
-  test('Should emit unlinked_parcels_count and unlinked_covers_count metrics when stats are available', async () => {
-    await statistics.plugin.register(mockServer)
+  test('Should emit unlinked_parcels_count and unlinked_covers_count metrics', async () => {
+    statistics.plugin.register(mockServer)
 
     const cronCallback = mockSchedule.mock.calls[0][1]
-    mockRefreshCachedStats.mockResolvedValue({
+    mockGetStats.mockResolvedValue({
       unlinkedParcelsCount: 5,
       unlinkedCoversCount: 3
     })
@@ -195,45 +178,5 @@ describe('#statistics', () => {
 
     expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_parcels_count', 5)
     expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_covers_count', 3)
-  })
-
-  test('Should not emit orphan metrics when stats refresh returns undefined', async () => {
-    await statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-    mockRefreshCachedStats.mockResolvedValue(undefined)
-
-    await cronCallback()
-
-    expect(mockMetricsCounter).not.toHaveBeenCalled()
-  })
-
-  test('Should not throw when lock not acquired', async () => {
-    mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
-
-    await statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-
-    await expect(cronCallback()).resolves.toBeUndefined()
-
-    expect(mockWithTaskLock).toHaveBeenCalledWith(
-      mockPostgresDb,
-      'refreshStats',
-      expect.any(Function),
-      expect.any(Object)
-    )
-  })
-
-  test('Should not throw when lock helper throws', async () => {
-    mockWithTaskLock.mockRejectedValueOnce(new Error('lock-failure'))
-
-    await statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-
-    await expect(cronCallback()).resolves.toBeUndefined()
-
-    expect(mockWithTaskLock).toHaveBeenCalled()
   })
 })
