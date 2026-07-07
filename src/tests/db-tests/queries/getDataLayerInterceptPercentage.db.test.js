@@ -3,7 +3,7 @@ import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Data Layer Intercept Percentage Query', () => {
   let logger, connection
@@ -13,7 +13,7 @@ describe('Get Data Layer Intercept Percentage Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

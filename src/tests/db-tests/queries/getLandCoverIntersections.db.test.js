@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import { getLandCoverIntersections } from '~/src/features/land-covers/queries/getLandCoverIntersections.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Land Cover Intersections Query', () => {
   let logger, connection
@@ -10,7 +10,7 @@ describe('Get Land Cover Intersections Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

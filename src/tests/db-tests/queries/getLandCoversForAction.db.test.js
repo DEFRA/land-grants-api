@@ -3,7 +3,7 @@ import {
   getLandCoversForAction,
   getLandCoversForActions
 } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Land Covers For Action Query', () => {
   let logger, connection
@@ -14,7 +14,7 @@ describe('Get Land Covers For Action Query', () => {
       error: vi.fn(),
       warn: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

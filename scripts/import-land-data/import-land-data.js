@@ -1,4 +1,4 @@
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import fs from 'fs/promises'
 import { createReadStream } from 'fs'
 import { dirname, join } from 'path'
@@ -9,7 +9,7 @@ import { pipeline } from 'node:stream/promises'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const connection = connectToTestDatbase()
+const connection = connectToTestDatabase()
 
 const readFile = async (path) => {
   return await fs.readFile(join(__dirname, path), 'utf8')

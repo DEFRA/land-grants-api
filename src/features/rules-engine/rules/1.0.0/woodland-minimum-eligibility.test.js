@@ -18,71 +18,33 @@ describe('woodlandMinimumEligibility', () => {
     description: ruleDescription
   })
 
-  test('should pass when woodland area over 10 years meets the minimum of 0.5ha exactly', () => {
-    const application = createApplication(0.5)
-    const rule = createRule()
-    const result = woodlandMinimumEligibility.execute(application, rule)
+  test.each([
+    [0.5, '0.5'],
+    [1.2, '1.2'],
+    ['0.5', '0.5']
+  ])(
+    'should pass when woodland area over 10 years is %s',
+    (oldWoodlandArea, expectedTotal) => {
+      const application = createApplication(oldWoodlandArea)
+      const rule = createRule()
+      const result = woodlandMinimumEligibility.execute(application, rule)
 
-    expect(result).toEqual({
-      name: 'woodland-minimum-eligibility',
-      passed: true,
-      reason:
-        'The total woodland area (0.5 ha) meets the minimum required area of (0.5 ha)',
-      description: ruleDescription,
-      explanations: [
-        {
-          title: 'Woodland minimum eligibility',
-          lines: [
-            'The minimum required total woodland area is (0.5 ha), the holding has (0.5 ha)'
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should pass when woodland area over 10 years exceeds the minimum of 0.5ha', () => {
-    const application = createApplication(1.2)
-    const rule = createRule()
-    const result = woodlandMinimumEligibility.execute(application, rule)
-
-    expect(result).toEqual({
-      name: 'woodland-minimum-eligibility',
-      passed: true,
-      reason:
-        'The total woodland area (1.2 ha) meets the minimum required area of (0.5 ha)',
-      description: ruleDescription,
-      explanations: [
-        {
-          title: 'Woodland minimum eligibility',
-          lines: [
-            'The minimum required total woodland area is (0.5 ha), the holding has (1.2 ha)'
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should pass when woodland area is provided as a number rather than a string', () => {
-    const application = createApplication(0.5)
-    const rule = createRule()
-    const result = woodlandMinimumEligibility.execute(application, rule)
-
-    expect(result).toEqual({
-      name: 'woodland-minimum-eligibility',
-      passed: true,
-      reason:
-        'The total woodland area (0.5 ha) meets the minimum required area of (0.5 ha)',
-      description: ruleDescription,
-      explanations: [
-        {
-          title: 'Woodland minimum eligibility',
-          lines: [
-            'The minimum required total woodland area is (0.5 ha), the holding has (0.5 ha)'
-          ]
-        }
-      ]
-    })
-  })
+      expect(result).toEqual({
+        name: 'woodland-minimum-eligibility',
+        passed: true,
+        reason: `The total woodland area (${expectedTotal} ha) meets the minimum required area of (0.5 ha)`,
+        description: ruleDescription,
+        explanations: [
+          {
+            title: 'Woodland minimum eligibility',
+            lines: [
+              `The minimum required total woodland area is (0.5 ha), the holding has (${expectedTotal} ha)`
+            ]
+          }
+        ]
+      })
+    }
+  )
 
   test('should fail when total woodland area is below the minimum of 0.5ha', () => {
     const application = createApplication(0.4, 0.05)

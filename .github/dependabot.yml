@@ -86,6 +86,36 @@ updates:
       # Include direct package.json updates
       - dependency-type: direct
 
+  # Update docker packages
+  - package-ecosystem: docker
+    directory: /
+    
+    # Schedule run every Monday, local time
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: 'Europe/London'
+
+    # Delay a PR for an action update by 5 days
+    cooldown:
+      default-days: 5
+
+  # Update docker-compose packages
+  - package-ecosystem: docker-compose
+    directory: /
+
+    # Schedule run every Monday, local time
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: 'Europe/London'
+
+    # Delay a PR for an action update by 5 days
+    cooldown:
+      default-days: 5
+
   # Update GitHub Actions
   - package-ecosystem: github-actions
     directory: /

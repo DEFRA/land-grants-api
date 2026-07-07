@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import { getLatestApplicationRunForAppId } from '~/src/features/application/queries/getLatestApplicationRunForAppId.query.js'
 
@@ -22,7 +22,7 @@ describe('getActions Service (DB)', () => {
   let connection
 
   beforeAll(() => {
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

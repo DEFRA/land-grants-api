@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { vi } from 'vitest'
 import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/features/payment/controllers/2.0.0/payment-calculate.controller.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
@@ -26,7 +26,7 @@ describe('Payment Controller', () => {
       warn: vi.fn(),
       debug: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   beforeEach(() => {

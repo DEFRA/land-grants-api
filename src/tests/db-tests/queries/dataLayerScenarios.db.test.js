@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { vi } from 'vitest'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getDataLayerScenariosFixtures } from '~/src/tests/db-tests/setup/getDataLayerScenariosFixtures.js'
 import {
   DATA_LAYER_TYPES,
@@ -18,7 +18,7 @@ describe('Data Layer Scenarios', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

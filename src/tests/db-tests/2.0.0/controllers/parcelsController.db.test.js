@@ -1,5 +1,5 @@
 import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/parcels.controller.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
@@ -14,7 +14,7 @@ describe('Parcels Controller 2.0.0', () => {
   let connection
 
   beforeAll(() => {
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

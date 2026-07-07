@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
 
@@ -14,7 +14,7 @@ describe('Payment Calculation Service', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

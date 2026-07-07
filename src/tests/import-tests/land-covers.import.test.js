@@ -7,7 +7,7 @@ import {
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 
 import { importLandData } from '~/src/features/land-data-ingest/workers/ingest.module.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 import { getCsvFixtures } from '~/src/tests/import-tests/setup/csv.js'
 import { saveIngestStart } from '~/src/features/land-data-ingest/service/start-ingest.service.js'
@@ -27,7 +27,7 @@ describe('Land covers import', () => {
   }
 
   beforeAll(async () => {
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
     fixtures = getCsvFixtures('covers_head.csv')

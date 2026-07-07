@@ -1,7 +1,7 @@
 import { saveApplicationValidationRun } from '~/src/features/application/mutations/saveApplicationValidationRun.mutation.js'
 import { getApplicationValidationRuns } from '~/src/features/application/queries/getApplicationValidationRuns.query.js'
 
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { vi } from 'vitest'
 
 describe('Get Application Validation Runs Query', () => {
@@ -21,7 +21,7 @@ describe('Get Application Validation Runs Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {
