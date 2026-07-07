@@ -1,7 +1,10 @@
 import Hapi from '@hapi/hapi'
 import { vi } from 'vitest'
 import { CDPUploaderCallbackController } from './cdp-uploader-callback.controller.js'
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import {
+  logInfo,
+  logBusinessError
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   moveFile,
   processingBucketPath,
@@ -326,6 +329,84 @@ describe('CDPUploaderCallbackController', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe('File is not ready')
+    })
+
+    test('should return 400 when file is invalid', async () => {
+      const payload = {
+        ...validPayload,
+        metadata: {
+          ingestId: 'ingest-123',
+          filename: 'land-data.csv'
+        },
+        form: {
+          file: {
+            ...validPayload.form.file,
+            fileStatus: 'complete'
+          }
+        }
+      }
+      isValidIngestFile.mockResolvedValue(false)
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid ingest file')
+      expect(logBusinessError).toHaveBeenCalledWith(mockLogger, {
+        operation: 'land-data-ingest_error',
+        error: new Error('Invalid ingest file'),
+        context: { payload }
+      })
+    })
+
+    test('should return 500 when error thrown', async () => {
+      const payload = {
+        ...validPayload,
+        metadata: {
+          ingestId: 'ingest-123',
+          filename: 'land-data.csv'
+        },
+        form: {
+          file: {
+            ...validPayload.form.file,
+            fileStatus: 'complete'
+          }
+        }
+      }
+      isValidIngestFile.mockRejectedValueOnce(new Error('Error in db'))
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+      expect(logBusinessError).toHaveBeenCalledWith(mockLogger, {
+        operation: 'land-data-ingest_error',
+        error: new Error('Error in db'),
+        context: {
+          payload: JSON.stringify(payload),
+          s3Key: validPayload.form.file.s3Key,
+          s3Bucket: mockBucket
+        }
+      })
     })
   })
 })
