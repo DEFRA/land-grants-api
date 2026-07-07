@@ -284,14 +284,6 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
-  },
-  featureFlags: {
-    runTasksOnSingleInstance: {
-      doc: 'Enable running tasks on a single compute instance',
-      format: Boolean,
-      default: true,
-      env: 'ENABLE_TASKS_ON_SINGLE_INSTANCE'
-    }
   }
 })
 
