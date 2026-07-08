@@ -5739,7 +5739,7 @@
               "type": "avg"
             }
           ],
-          "query": "_exists_:unlinked_parcels_count",
+          "query": "message:\"unlinkedParcelsCount\" AND NOT message:\"unlinkedParcelsCount=0\"",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
@@ -5855,7 +5855,7 @@
               "type": "avg"
             }
           ],
-          "query": "_exists_:unlinked_covers_count",
+          "query": "message:\"unlinkedCoversCount\" AND NOT message:\"unlinkedCoversCount=0\"",
           "queryType": "lucene",
           "refId": "A",
           "timeField": "@timestamp"
