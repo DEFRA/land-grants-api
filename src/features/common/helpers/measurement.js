@@ -25,7 +25,7 @@ export const haToSqm = (ha) => {
   }
 
   const hectares = ha * 10000
-  return hectares
+  return Math.round(hectares)
 }
 
 export const roundSqm = (sqm) => {

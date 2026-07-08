@@ -229,7 +229,7 @@ describe('haToSqm', () => {
     })
 
     test('converts decimal hectares with precision', () => {
-      expect(haToSqm(1.23456)).toBe(12345.6)
+      expect(haToSqm(1.23456)).toBe(12346)
     })
   })
 
@@ -243,8 +243,8 @@ describe('haToSqm', () => {
     })
 
     test('handles very small areas with precision', () => {
-      expect(haToSqm(0.00005)).toBe(0.5)
-      expect(haToSqm(0.00004)).toBe(0.4)
+      expect(haToSqm(0.00005)).toBe(1)
+      expect(haToSqm(0.00004)).toBe(0)
     })
 
     test('handles very large areas', () => {
@@ -256,8 +256,8 @@ describe('haToSqm', () => {
     })
 
     test('handles fractional hectares with precision', () => {
-      expect(haToSqm(1.23454)).toBe(12345.4)
-      expect(haToSqm(1.23455)).toBe(12345.5)
+      expect(haToSqm(1.23454)).toBe(12345)
+      expect(haToSqm(1.23455)).toBe(12346)
     })
   })
 
@@ -299,28 +299,6 @@ describe('haToSqm', () => {
     })
   })
 
-  describe('precision handling', () => {
-    test('maintains decimal precision correctly', () => {
-      expect(haToSqm(1.23449)).toBeCloseTo(12344.9)
-      expect(haToSqm(1.2345)).toBe(12345)
-      expect(haToSqm(1.23451)).toBeCloseTo(12345.1)
-      expect(haToSqm(1.23455)).toBeCloseTo(12345.5)
-      expect(haToSqm(1.23459)).toBeCloseTo(12345.9)
-    })
-
-    test('handles very precise inputs', () => {
-      expect(haToSqm(0.000049)).toBeCloseTo(0.49)
-      expect(haToSqm(0.00005)).toBeCloseTo(0.5)
-      expect(haToSqm(0.000051)).toBeCloseTo(0.51)
-    })
-
-    test('handles precision at different scales', () => {
-      expect(haToSqm(10.99999)).toBeCloseTo(109999.9)
-      expect(haToSqm(10.99994)).toBeCloseTo(109999.4)
-      expect(haToSqm(10.99995)).toBeCloseTo(109999.5)
-    })
-  })
-
   describe('real world scenarios', () => {
     test('converts typical field sizes', () => {
       expect(haToSqm(2.5)).toBe(25000)
@@ -338,19 +316,8 @@ describe('haToSqm', () => {
       expect(haToSqm(1000)).toBe(10000000)
     })
 
-    test('converts complex area measurements with precision', () => {
-      expect(haToSqm(12.3456789)).toBeCloseTo(123456.789)
-      expect(haToSqm(98.7654321)).toBeCloseTo(987654.321)
-    })
-
-    test('converts areas maintaining full precision', () => {
-      expect(haToSqm(1.00005)).toBeCloseTo(10000.5)
-      expect(haToSqm(0.99995)).toBeCloseTo(9999.5)
-      expect(haToSqm(0.99994)).toBeCloseTo(9999.4)
-    })
-
     test('handles floating point precision issues', () => {
-      expect(haToSqm(0.1 + 0.2)).toBe(3000.0000000000005)
+      expect(haToSqm(0.1 + 0.2)).toBe(3000)
       expect(haToSqm(0.1 + 0.2)).not.toBe(0.3)
     })
   })
