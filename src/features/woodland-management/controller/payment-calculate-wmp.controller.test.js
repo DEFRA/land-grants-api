@@ -180,8 +180,8 @@ describe('Payment calculate WMP controller', () => {
         {
           data: {
             totalParcelArea: 8,
-            oldWoodlandAreaHa: 5,
-            newWoodlandAreaHa: 3
+            oldWoodlandAreaSqm: 5 * 10000,
+            newWoodlandAreaSqm: 3 * 10000
           }
         }
       )

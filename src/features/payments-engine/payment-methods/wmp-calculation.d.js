@@ -21,8 +21,8 @@
 /**
  * @typedef {object} WmpCalculationData
  * @property {number} totalParcelArea - Total parcel area in hectares
- * @property {number} oldWoodlandAreaHa - Area of established woodland in hectares
- * @property {number} newWoodlandAreaHa - Area of young woodland (under 10 years) in hectares
+ * @property {number} oldWoodlandAreaSqm - Area of established woodland in square metres
+ * @property {number} newWoodlandAreaSqm - Area of young woodland (under 10 years) in square metres
  * @property {string | Date | undefined} startDate - The agreement start date. May be a Date object (produced by Joi date() coercion), an ISO string, or undefined to default to the 1st of next month
  */
 
