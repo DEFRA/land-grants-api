@@ -33,6 +33,21 @@ const config = convict({
     default: 'local',
     env: 'NODE_ENV'
   },
+  cdpEnvironment: {
+    doc: 'The CDP environment the app is running in. With the addition of "local" for local development',
+    format: [
+      'local',
+      'infra-dev',
+      'management',
+      'dev',
+      'test',
+      'perf-test',
+      'ext-test',
+      'prod'
+    ],
+    default: 'local',
+    env: 'ENVIRONMENT'
+  },
   port: {
     doc: 'The port to bind.',
     format: 'port',
@@ -120,6 +135,28 @@ const config = convict({
       format: String,
       default: 'http://localhost:4566/000000000000/grants_config_broker_update',
       env: 'GRANTS_CONFIG_QUEUE_URL'
+    }
+  },
+  aws: {
+    region: {
+      doc: 'AWS region',
+      format: String,
+      default: 'eu-west-2',
+      env: 'AWS_REGION'
+    }
+  },
+  sns: {
+    endpoint: {
+      doc: 'AWS SNS endpoint (local/dev only; in CDP this is typically not required)',
+      format: String,
+      default: 'http://localhost:4566',
+      env: 'SNS_ENDPOINT'
+    },
+    auditTopicArn: {
+      doc: 'SNS topic ARN for audit events (fcp_audit_land_grants_api)',
+      format: String,
+      default: 'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api',
+      env: 'SNS_TOPIC_ARN_AUDIT'
     }
   },
   grantsConfig: {
