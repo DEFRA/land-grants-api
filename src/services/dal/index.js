@@ -1,46 +1,26 @@
 import { config } from '~/src/config/index.js'
 import { proxyFetch } from '~/src/features/common/helpers/proxy.js'
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
-
-const logger = createLogger()
-
-/**
- * @typedef {object} agreement
- * @property {string} code - The action/agreement code
- * @property {number} area - The area (ha) covered by the existing agreement
- */
-
-/**
- * Builds the request URL, using either the mock/stub DAL (grants-ui-dal-stub)
- * or the real DAL endpoint, depending on configuration.
- * @returns {string} The base URL to call
- */
-function getDalEndpoint() {
-  const mockEnabled = config.get('dal.mockEnabled')
-
-  return mockEnabled
-    ? config.get('dal.stubApiEndpoint')
-    : config.get('dal.apiEndpoint')
-}
+import { getAgreementsBySbiQuery } from './queries.js'
 
 /**
  * Fetches existing Siti Agri agreements for a business from the DAL
- * (or the mock/stub DAL when enabled).
- * @param {string|number} sbi - Single Business Identifier
- * @returns {Promise<agreement[]>} The existing agreements for the sbi
+ * @param {string} sbi - Single Business Identifier
+ * @returns {Promise<[]>} The existing agreements for the sbi
  */
-export async function getExistingDalAgreement(sbi) {
-  const endpoint = getDalEndpoint()
+export async function getExistingDalAgreements(sbi, { defraIdToken }) {
+  const endpoint = config.get('dal.apiEndpoint')
 
-  if (!endpoint) {
-    logger.warn('DAL endpoint is not configured')
-    return []
-  }
-
-  const response = await proxyFetch(`${endpoint}/agreements/${sbi}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' }
+  const response = await proxyFetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'gateway-type': 'external',
+      'x-forwarded-authorization': defraIdToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: getAgreementsBySbiQuery,
+      variables: { sbi }
+    })
   })
 
   if (!response.ok) {
@@ -49,14 +29,8 @@ export async function getExistingDalAgreement(sbi) {
     )
   }
 
-  const { agreements = [] } = await response.json()
-
-  logInfo(logger, {
-    category: 'existing_agreement',
-    operation: 'dal_fetch',
-    message: 'Fetched existing DAL agreements',
-    context: { sbi, count: agreements.length }
-  })
+  const { data: { business: { agreements = [] } = {} } = {} } =
+    await response.json()
 
   return agreements
 }

@@ -285,21 +285,17 @@ const config = convict({
       env: 'TRACING_HEADER'
     }
   },
-  dal: {
-    mockEnabled: {
-      doc: 'Use the mock/stub DAL instead of the real DAL',
+  featureFlags: {
+    useDalAgreements: {
+      doc: 'When true, use DAL for existing agreements instead of postgres (from static CSV data)',
       format: Boolean,
       default: false,
-      env: 'DAL_MOCK_ENABLED'
-    },
-    stubApiEndpoint: {
-      doc: 'Stub DAL endpoint (grants-ui-dal-stub)',
-      format: String,
-      default: '',
-      env: 'DAL_STUB_URL'
-    },
+      env: 'USE_DAL_AGREEMENTS'
+    }
+  },
+  dal: {
     apiEndpoint: {
-      doc: 'Real DAL endpoint',
+      doc: 'DAL GraphQL endpoint',
       format: String,
       default: '',
       env: 'DAL_API_ENDPOINT'
