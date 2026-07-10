@@ -284,6 +284,26 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  dal: {
+    mockEnabled: {
+      doc: 'Use the mock/stub DAL instead of the real DAL',
+      format: Boolean,
+      default: false,
+      env: 'DAL_MOCK_ENABLED'
+    },
+    stubApiEndpoint: {
+      doc: 'Stub DAL endpoint (grants-ui-dal-stub)',
+      format: String,
+      default: '',
+      env: 'DAL_STUB_URL'
+    },
+    apiEndpoint: {
+      doc: 'Real DAL endpoint',
+      format: String,
+      default: '',
+      env: 'DAL_API_ENDPOINT'
+    }
   }
 })
 
