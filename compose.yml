@@ -77,6 +77,8 @@ services:
       GRANTS_CONFIG_BUCKET: configs-bucket
       SQS_ENDPOINT: http://floci:4566
       S3_ENDPOINT: http://floci:4566
+      SNS_ENDPOINT: http://floci:4566
+      SNS_TOPIC_ARN_AUDIT: arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api
     volumes:
       - ./src:/home/node/src
       - node_deps:/home/node/node_modules

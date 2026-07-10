@@ -35,3 +35,7 @@ aws sns subscribe \
   --attributes RawMessageDelivery=true \
   --notification-endpoint arn:aws:sqs:${AWS_REGION}:000000000000:grants_config_broker_update
 echo "Subscribed grants_config_broker_update to gfr__sns___config_update"
+
+echo "Creating audit event SNS topic"
+aws sns create-topic --name fcp_audit_land_grants_api
+echo "Created SNS topic: fcp_audit_land_grants_api"
