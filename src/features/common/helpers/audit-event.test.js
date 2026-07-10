@@ -1,0 +1,318 @@
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+
+const mockConfigGet = vi.hoisted(() =>
+  vi.fn((key) => {
+    const configMap = {
+      cdpEnvironment: 'test',
+      serviceName: 'land-grants-api',
+      'aws.region': 'eu-west-2',
+      'sns.endpoint': 'http://localhost:4566',
+      'sns.auditTopicArn':
+        'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api'
+    }
+    return configMap[key]
+  })
+)
+
+const mockNetworkInterfaces = vi.hoisted(() => vi.fn())
+
+vi.mock('~/src/config/index.js', () => ({ config: { get: mockConfigGet } }))
+
+vi.mock('node:os', () => ({
+  networkInterfaces: mockNetworkInterfaces
+}))
+
+describe('AuditEvent', () => {
+  let AuditEvent
+
+  beforeEach(async () => {
+    vi.resetModules()
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = vi.fn().mockResolvedValue({})
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  test('is frozen', () => {
+    expect(Object.isFrozen(AuditEvent)).toBe(true)
+  })
+
+  test('has no event types yet - populated by future tickets', () => {
+    expect(Object.keys(AuditEvent)).toHaveLength(0)
+  })
+
+  test('cannot be mutated', () => {
+    expect(() => {
+      AuditEvent.NEW_KEY = 'value'
+    }).toThrow(TypeError)
+    expect(AuditEvent.NEW_KEY).toBeUndefined()
+  })
+})
+
+describe('auditEvent', () => {
+  let auditEvent
+  let mockSend
+  let mockLogger
+  let SNSClient
+  let PublishCommand
+
+  const UNMAPPED_EVENT = 'SOME_EVENT_NOT_YET_WIRED_UP'
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn().mockResolvedValue({})
+    mockLogger = { info: vi.fn(), warn: vi.fn() }
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => mockLogger)
+    }))
+    ;({ auditEvent } = await import('./audit-event.js'))
+    ;({ SNSClient, PublishCommand } = await import('@aws-sdk/client-sns'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const getPublishedPayload = () => {
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    return JSON.parse(publishCommandInstance.input.Message)
+  }
+
+  test('creates SNSClient with correct region and endpoint', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(SNSClient).toHaveBeenCalledWith({
+      region: 'eu-west-2',
+      endpoint: 'http://localhost:4566'
+    })
+  })
+
+  test('publishes to the correct topic ARN', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(PublishCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        TopicArn: 'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api'
+      })
+    )
+  })
+
+  test('publishes correct top-level fields', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      sessionId: 'session-abc',
+      user: 'test.user@defra.gov.uk'
+    }
+
+    await auditEvent(UNMAPPED_EVENT, context)
+
+    expect(getPublishedPayload()).toMatchObject({
+      sessionid: 'session-abc',
+      user: 'test.user@defra.gov.uk',
+      correlationid: 'corr-xyz',
+      datetime: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      environment: 'cdp-test',
+      application: 'Grants',
+      component: 'land-grants-api'
+    })
+  })
+
+  test('sessionid and user are undefined when absent from context', async () => {
+    await auditEvent(UNMAPPED_EVENT, { correlationId: 'corr-xyz' })
+
+    const payload = getPublishedPayload()
+    expect(payload.sessionid).toBeUndefined()
+    expect(payload.user).toBeUndefined()
+  })
+
+  test('security fields are undefined until an event type is wired up', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    const { security } = getPublishedPayload()
+
+    expect(security.pmccode).toBeUndefined()
+    expect(security.priority).toBe('0')
+    expect(security.details.transactioncode).toBeUndefined()
+    expect(security.details.message).toBeUndefined()
+    expect(security.details.additionalinfo).toBeUndefined()
+  })
+
+  test('publishes correct audit fields', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      identifiers: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
+    }
+
+    await auditEvent(UNMAPPED_EVENT, context)
+
+    const { audit } = getPublishedPayload()
+
+    expect(audit.eventtype).toBeUndefined()
+    expect(audit).toMatchObject({
+      entities: [],
+      status: 'success',
+      details: context,
+      accounts: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
+    })
+  })
+
+  test('audit.accounts populates only known fields', async () => {
+    await auditEvent(UNMAPPED_EVENT, {
+      identifiers: { sbi: 111111111 }
+    })
+
+    expect(getPublishedPayload().audit.accounts).toEqual({
+      sbi: 111111111,
+      frn: undefined,
+      crn: undefined
+    })
+  })
+
+  test('ip is populated from request.server.info.host when available', async () => {
+    const mockRequest = { server: { info: { host: '10.0.0.5' } } }
+
+    await auditEvent(UNMAPPED_EVENT, {}, 'success', mockRequest)
+
+    expect(getPublishedPayload().ip).toBe('10.0.0.5')
+  })
+
+  test('ip falls back to os.networkInterfaces() when no request is available', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(getPublishedPayload().ip).toBe('192.168.1.100')
+  })
+
+  test('ip falls back to os.networkInterfaces() when server host is 0.0.0.0', async () => {
+    const mockRequest = { server: { info: { host: '0.0.0.0' } } }
+
+    await auditEvent(UNMAPPED_EVENT, {}, 'success', mockRequest)
+
+    expect(getPublishedPayload().ip).toBe('192.168.1.100')
+  })
+
+  test('passes failure status through to the published payload', async () => {
+    await auditEvent(UNMAPPED_EVENT, {}, 'failure')
+
+    expect(getPublishedPayload().audit.status).toBe('failure')
+  })
+
+  test('handles empty context gracefully', async () => {
+    await auditEvent(UNMAPPED_EVENT)
+
+    const payload = getPublishedPayload()
+    expect(payload.correlationid).toBeUndefined()
+    expect(payload.audit.entities).toEqual([])
+  })
+
+  test('defaults status to success when not provided', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(getPublishedPayload().audit.status).toBe('success')
+  })
+
+  test('message is valid JSON', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    expect(() => JSON.parse(publishCommandInstance.input.Message)).not.toThrow()
+  })
+
+  test('logs info when the audit event is successfully published', async () => {
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'Audit event successfully published'
+    )
+  })
+})
+
+describe('auditEvent error handling', () => {
+  let auditEvent
+  let mockSend
+  let mockLogger
+
+  const UNMAPPED_EVENT = 'SOME_EVENT_NOT_YET_WIRED_UP'
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn()
+    mockLogger = { info: vi.fn(), warn: vi.fn() }
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => mockLogger)
+    }))
+    ;({ auditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  test('logs warning when SNS publish fails', async () => {
+    const testError = new Error('SNS publish failed')
+    mockSend.mockRejectedValue(testError)
+
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      testError,
+      'Failed to publish audit event'
+    )
+  })
+
+  test('does not throw when SNS publish fails', async () => {
+    mockSend.mockRejectedValue(new Error('SNS publish failed'))
+
+    await expect(auditEvent(UNMAPPED_EVENT, {})).resolves.not.toThrow()
+  })
+
+  test('handles AWS SDK errors gracefully', async () => {
+    const awsError = new Error('AccessDenied')
+    awsError.code = 'AccessDenied'
+    mockSend.mockRejectedValue(awsError)
+
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      awsError,
+      'Failed to publish audit event'
+    )
+  })
+})
