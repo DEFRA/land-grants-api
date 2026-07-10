@@ -321,6 +321,14 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  dal: {
+    apiEndpoint: {
+      doc: 'DAL GraphQL endpoint',
+      format: String,
+      default: '',
+      env: 'DAL_API_ENDPOINT'
+    }
   }
 })
 
