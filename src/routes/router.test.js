@@ -7,9 +7,17 @@ import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { landDataIngest } from '~/src/features/land-data-ingest/index.js'
 
+// `log` must resolve to a valid shape here (not just in beforeEach): several
+// registered plugins transitively import the pino logger at module-load
+// time (e.g. via audit-event.js), which reads config.get('log') immediately,
+// before any test hook runs.
 vi.mock('~/src/config/index.js', () => ({
   config: {
-    get: vi.fn()
+    get: vi.fn((key) =>
+      key === 'log'
+        ? { enabled: false, level: 'silent', format: 'pino-pretty', redact: [] }
+        : false
+    )
   }
 }))
 

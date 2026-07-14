@@ -2,15 +2,21 @@ import { payments } from '~/src/features/payment/index.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
+import {
+  AuditEvent,
+  auditEvent
+} from '~/src/features/common/helpers/audit-event.js'
 import { vi } from 'vitest'
 import createTestServer from '~/src/tests/test-server.js'
 import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockValidateRequest = validateRequest
 const mockGetActions = getActions
+const mockAuditEvent = auditEvent
 
 const mockLandActions = {
   sbi: '123456789',
@@ -108,6 +114,7 @@ describe('Payment calculate controller V2', () => {
 
     mockValidateRequest.mockResolvedValue([])
     mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
+    mockAuditEvent.mockResolvedValue(undefined)
     mockGetActions.mockResolvedValue([
       {
         version: 1,
@@ -145,6 +152,45 @@ describe('Payment calculate controller V2', () => {
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
+    })
+
+    test('should send an audit event with all relevant payment calculation information', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/payments/calculate',
+        payload: {
+          ...mockLandActions,
+          applicationId: 'application-1'
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.PAYMENT_CALCULATED,
+        expect.objectContaining({
+          applicationId: 'application-1',
+          identifiers: { sbi: mockLandActions.sbi },
+          request: { parcel: mockLandActions.parcel, startDate: undefined },
+          response: expect.objectContaining(validResponse)
+        }),
+        'success',
+        expect.objectContaining({ method: 'post' })
+      )
+    })
+
+    test('should not send an audit event when the calculation fails', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/payments/calculate',
+        payload: {
+          parcel: null
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockAuditEvent).not.toHaveBeenCalled()
     })
 
     test('should return 400 if the request has an invalid parcel payload', async () => {
@@ -331,6 +377,31 @@ describe('Payment calculate controller V2', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
+    })
+
+    test('should send a failure audit event when an unexpected error occurs', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/payments/calculate',
+        payload: { ...mockLandActions, applicationId: 'application-1' }
+      }
+
+      const errorMessage = 'Database connection failed'
+      mockGetActions.mockRejectedValue(new Error(errorMessage))
+
+      await server.inject(request)
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.PAYMENT_CALCULATED,
+        expect.objectContaining({
+          applicationId: 'application-1',
+          identifiers: { sbi: mockLandActions.sbi },
+          request: { parcel: mockLandActions.parcel, startDate: undefined },
+          error: errorMessage
+        }),
+        'failure',
+        expect.objectContaining({ method: 'post' })
+      )
     })
   })
 })
