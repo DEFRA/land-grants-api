@@ -27,27 +27,38 @@ const getLocalIp = (request) => {
 }
 
 /**
- * Audit event types. Populated by future tickets as land-grants-api
- * operations are wired up to auditing.
+ * Audit event types. Populated by tickets as land-grants-api operations are
+ * wired up to auditing.
  * @enum {string}
  */
-export const AuditEvent = Object.freeze({})
+export const AuditEvent = Object.freeze({
+  PAYMENT_CALCULATED: 'PAYMENT_CALCULATED'
+})
 
 // Human-readable description for each audit event, used in security.details.message
-const eventMessages = {}
+const eventMessages = {
+  [AuditEvent.PAYMENT_CALCULATED]: 'Payment calculation completed'
+}
 
 // Transaction code for each audit event, used in security.details.transactioncode
 const eventTransactionCodes = {}
 
-// PMC code for each audit event, used in security.pmccode
+// PMC code for each audit event, used in security.pmccode. PAYMENT_CALCULATED
+// has none - it is not forwarded to the SOC, so it carries no security block.
 const eventPmcCodes = {}
 
 // Audit event type for each audit event, used in audit.eventtype
-const eventTypes = {}
+const eventTypes = {
+  [AuditEvent.PAYMENT_CALCULATED]: 'GrantsPaymentCalculated'
+}
 
 // Entities for each audit event, used in audit.entities
 // action must be one of: created, read, updated, deleted, submitted, accepted, rejected, withdrawn
-const eventEntities = {}
+const eventEntities = {
+  [AuditEvent.PAYMENT_CALCULATED]: (context) => [
+    { entity: 'payment', action: 'read', entityid: context.applicationId }
+  ]
+}
 
 /**
  * Builds the full audit payload for a land-grants-api operation.
@@ -61,39 +72,48 @@ const buildAuditPayload = (
   context = {},
   status = 'success',
   request = null
-) => ({
-  sessionid: context.sessionId,
-  user: context.user,
-  correlationid: context.correlationId,
-  datetime: new Date().toISOString(),
-  environment: `cdp-${config.get('cdpEnvironment')}`,
-  version: '0.1.0',
-  application: 'Grants',
-  component: config.get('serviceName'),
-  ip: getLocalIp(request),
+) => {
+  // Events are only forwarded to the SOC once a pmc code has been agreed
+  // with the security team; until then the payload carries no `security`
+  // block at all (not just one with empty/undefined fields).
+  const hasSecurity = eventPmcCodes[event] != null
 
-  security: {
-    pmccode: eventPmcCodes[event],
-    priority: '0',
-    details: {
-      transactioncode: eventTransactionCodes[event],
-      message: eventMessages[event],
-      additionalinfo: context.additionalInfo
-    }
-  },
+  return {
+    sessionid: context.sessionId,
+    user: context.user,
+    correlationid: context.correlationId,
+    datetime: new Date().toISOString(),
+    environment: `cdp-${config.get('cdpEnvironment')}`,
+    version: '0.1.0',
+    application: 'Grants',
+    component: config.get('serviceName'),
+    ip: getLocalIp(request),
 
-  audit: {
-    eventtype: eventTypes[event],
-    entities: eventEntities[event]?.(context) ?? [],
-    status,
-    details: context,
-    accounts: {
-      sbi: context.identifiers?.sbi,
-      frn: context.identifiers?.frn,
-      crn: context.identifiers?.crn
+    ...(hasSecurity && {
+      security: {
+        pmccode: eventPmcCodes[event],
+        priority: '0',
+        details: {
+          transactioncode: eventTransactionCodes[event],
+          message: eventMessages[event],
+          additionalinfo: context.additionalInfo
+        }
+      }
+    }),
+
+    audit: {
+      eventtype: eventTypes[event],
+      entities: eventEntities[event]?.(context) ?? [],
+      status,
+      details: context,
+      accounts: {
+        sbi: context.identifiers?.sbi,
+        frn: context.identifiers?.frn,
+        crn: context.identifiers?.crn
+      }
     }
   }
-})
+}
 
 /**
  * Records a land-grants-api audit event by publishing it to the FCP

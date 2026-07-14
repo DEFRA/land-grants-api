@@ -7,12 +7,15 @@ import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPay
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
 import { actions } from '../fixtures/actions.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
+import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockValidateRequest = validateRequest
 const mockGetActions = getActions
+const mockAuditEvent = auditEvent
 
 describe('Payment Controller', () => {
   let logger, connection
@@ -32,6 +35,7 @@ describe('Payment Controller', () => {
   beforeEach(() => {
     mockValidateRequest.mockResolvedValue([])
     mockGetActions.mockResolvedValue(actions)
+    mockAuditEvent.mockResolvedValue(undefined)
   })
 
   afterAll(async () => {

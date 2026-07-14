@@ -50,8 +50,8 @@ describe('AuditEvent', () => {
     expect(Object.isFrozen(AuditEvent)).toBe(true)
   })
 
-  test('has no event types yet - populated by future tickets', () => {
-    expect(Object.keys(AuditEvent)).toHaveLength(0)
+  test('contains expected event keys', () => {
+    expect(AuditEvent.PAYMENT_CALCULATED).toBe('PAYMENT_CALCULATED')
   })
 
   test('cannot be mutated', () => {
@@ -150,16 +150,10 @@ describe('auditEvent', () => {
     expect(payload.user).toBeUndefined()
   })
 
-  test('security fields are undefined until an event type is wired up', async () => {
+  test('omits the security block entirely for an event with no pmc code', async () => {
     await auditEvent(UNMAPPED_EVENT, {})
 
-    const { security } = getPublishedPayload()
-
-    expect(security.pmccode).toBeUndefined()
-    expect(security.priority).toBe('0')
-    expect(security.details.transactioncode).toBeUndefined()
-    expect(security.details.message).toBeUndefined()
-    expect(security.details.additionalinfo).toBeUndefined()
+    expect(getPublishedPayload().security).toBeUndefined()
   })
 
   test('publishes correct audit fields', async () => {
@@ -248,6 +242,92 @@ describe('auditEvent', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Audit event successfully published'
     )
+  })
+})
+
+describe('auditEvent - PAYMENT_CALCULATED', () => {
+  let auditEvent
+  let AuditEvent
+  let mockSend
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn().mockResolvedValue({})
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ auditEvent, AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const getPublishedPayload = () => {
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    return JSON.parse(publishCommandInstance.input.Message)
+  }
+
+  test('does not include a security block', async () => {
+    await auditEvent(AuditEvent.PAYMENT_CALCULATED, { applicationId: 'app-1' })
+
+    expect(getPublishedPayload().security).toBeUndefined()
+  })
+
+  test('publishes correct audit fields, including all payment calculation details', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      applicationId: 'app-1',
+      identifiers: { sbi: 123456789 },
+      request: { parcel: [{ sheetId: 'SD2324', parcelId: '1253' }] },
+      response: { annualTotalPence: 100000, agreementTotalPence: 300000 }
+    }
+
+    await auditEvent(AuditEvent.PAYMENT_CALCULATED, context)
+
+    const payload = getPublishedPayload()
+    expect(payload.audit).toMatchObject({
+      eventtype: 'GrantsPaymentCalculated',
+      entities: [{ entity: 'payment', action: 'read', entityid: 'app-1' }],
+      status: 'success',
+      details: context,
+      accounts: { sbi: 123456789 }
+    })
+  })
+
+  test('is traceable to a named user and session when provided', async () => {
+    const context = {
+      applicationId: 'app-1',
+      user: 'test.user@defra.gov.uk',
+      sessionId: 'session-abc'
+    }
+
+    await auditEvent(AuditEvent.PAYMENT_CALCULATED, context)
+
+    expect(getPublishedPayload()).toMatchObject({
+      user: 'test.user@defra.gov.uk',
+      sessionid: 'session-abc'
+    })
+  })
+
+  test('user and sessionid are omitted when not provided', async () => {
+    await auditEvent(AuditEvent.PAYMENT_CALCULATED, { applicationId: 'app-1' })
+
+    const payload = getPublishedPayload()
+    expect(payload.user).toBeUndefined()
+    expect(payload.sessionid).toBeUndefined()
   })
 })
 
