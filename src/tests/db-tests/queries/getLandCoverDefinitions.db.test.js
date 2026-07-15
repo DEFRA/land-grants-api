@@ -1,13 +1,13 @@
 import { vi } from 'vitest'
 import { getLandCoverDefinitions } from '~/src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 
 describe('Get Land Cover Definitions Query', () => {
   let connection
 
   beforeAll(() => {
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

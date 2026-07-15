@@ -63,77 +63,36 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
     })
   })
 
-  test('should fail when area applied for is zero', () => {
-    const application = createApplication('0', '10.5')
-    const rule = createRule()
-    const result = appliedForTotalOrPartialAvailableArea.execute(
-      application,
-      rule
-    )
+  test.each([
+    ['0', '0 ha'],
+    [undefined, '0 ha'],
+    ['11.6', '11.6 ha']
+  ])(
+    'should fail for invalid or out of range appliedFor (%s)',
+    (appliedFor, expectedDisplay) => {
+      const application = createApplication(appliedFor, '10.5')
+      const rule = createRule()
+      const result = appliedForTotalOrPartialAvailableArea.execute(
+        application,
+        rule
+      )
 
-    expect(result).toEqual({
-      name: 'applied-for-total-or-partial-available-area',
-      passed: false,
-      reason:
-        'The amount of land must be the same as or less than the available area',
-      explanations: [
-        {
-          title: 'Total or partial available area',
-          lines: [
-            'The available area is (10.5 ha), and the applicant applied for (0 ha).'
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should fail when area applied for exceeds available area', () => {
-    const application = createApplication('11.6', '10.5')
-    const rule = createRule()
-    const result = appliedForTotalOrPartialAvailableArea.execute(
-      application,
-      rule
-    )
-
-    expect(result).toEqual({
-      name: 'applied-for-total-or-partial-available-area',
-      passed: false,
-      reason:
-        'The amount of land must be the same as or less than the available area',
-      explanations: [
-        {
-          title: 'Total or partial available area',
-          lines: [
-            'The available area is (10.5 ha), and the applicant applied for (11.6 ha).'
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should fail when area applied for is invalid and coerced to zero', () => {
-    const application = createApplication(undefined, '10.5')
-    const rule = createRule()
-    const result = appliedForTotalOrPartialAvailableArea.execute(
-      application,
-      rule
-    )
-
-    expect(result).toEqual({
-      name: 'applied-for-total-or-partial-available-area',
-      passed: false,
-      reason:
-        'The amount of land must be the same as or less than the available area',
-      explanations: [
-        {
-          title: 'Total or partial available area',
-          lines: [
-            'The available area is (10.5 ha), and the applicant applied for (0 ha).'
-          ]
-        }
-      ]
-    })
-  })
+      expect(result).toEqual({
+        name: 'applied-for-total-or-partial-available-area',
+        passed: false,
+        reason:
+          'The amount of land must be the same as or less than the available area',
+        explanations: [
+          {
+            title: 'Total or partial available area',
+            lines: [
+              `The available area is (10.5 ha), and the applicant applied for (${expectedDisplay}).`
+            ]
+          }
+        ]
+      })
+    }
+  )
 
   test('should fail when area applied for is above available area', () => {
     const application = createApplication('11.5', '10.5')

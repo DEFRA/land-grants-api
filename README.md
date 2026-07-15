@@ -303,6 +303,14 @@ npm run test:ingest
 npm run test:e2e
 ```
 
+To run an individual test, you can use:
+
+```bash
+npx vitest run --config=vitest.unit.config.js [test file]
+```
+
+You can also filter tests by tags or description; see vitest docs for more details.
+
 ## Database Migrations
 
 The api uses [Liquibase](https://docs.liquibase.com/home.html) for db migrations, the `changelog` folder contains our current `postgres` schema.

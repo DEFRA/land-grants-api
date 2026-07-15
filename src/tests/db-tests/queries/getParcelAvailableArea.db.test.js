@@ -1,7 +1,7 @@
 import { vi } from 'vitest'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getParcelAvailableArea } from '~/src/features/parcel/queries/getParcelAvailableArea.query.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Parcel Available Area Query', () => {
   let logger, connection
@@ -11,28 +11,48 @@ describe('Get Parcel Available Area Query', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {
     await connection.end()
   })
 
-  test('should return 0 available area when no landCoverClassCodes provided', async () => {
-    const sheetId = 'SD5649'
-    const parcelId = '9215'
-    const landCoverClassCodes = []
+  // parameterized tests for various landCoverClassCodes inputs
+  test.each([
+    ['no landCoverClassCodes provided', 'SD5649', '9215', [], 0],
+    [
+      'all landCoverClassCodes in the system provided',
+      'SD5649',
+      '9215',
+      Array.from(
+        new Set(
+          mockActionConfig[0].landCoverClassCodes.concat(['131', '241', '243'])
+        )
+      ),
+      7624624
+    ],
+    [
+      'few landCoverClassCodes in the system provided',
+      'SD5649',
+      '9215',
+      ['551', '131', '130', '551'],
+      7624702
+    ]
+  ])(
+    'should return %s',
+    async (_desc, sheetId, parcelId, landCoverClassCodes, expected) => {
+      const availableArea = await getParcelAvailableArea(
+        sheetId,
+        parcelId,
+        landCoverClassCodes,
+        connection,
+        logger
+      )
 
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(0)
-  })
+      expect(availableArea).toBe(expected)
+    }
+  )
 
   test('should return 0 available area when invalid landCoverClassCodes provided', async () => {
     const sheetId = 'SD5649'
@@ -48,42 +68,6 @@ describe('Get Parcel Available Area Query', () => {
     )
 
     expect(availableArea).toBe(0)
-  })
-
-  test('should return 7529.21 available area when all landCoverClassCodes in the system provided', async () => {
-    const sheetId = 'SD5649'
-    const parcelId = '9215'
-    const landCoverCodes = Array.from(
-      new Set(
-        mockActionConfig[0].landCoverClassCodes.concat(['131', '241', '243'])
-      )
-    )
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(7624624)
-  })
-
-  test('should return 5702.54 available area when few landCoverClassCodes in the system provided', async () => {
-    const sheetId = 'SD5649'
-    const parcelId = '9215'
-    const landCoverClassCodes = ['551', '131', '130', '551']
-
-    const availableArea = await getParcelAvailableArea(
-      sheetId,
-      parcelId,
-      landCoverClassCodes,
-      connection,
-      logger
-    )
-
-    expect(availableArea).toBe(7624702)
   })
 
   test('should return 0 available area when sheetId not found in the system', async () => {

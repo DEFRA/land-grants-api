@@ -2,7 +2,7 @@
 import { vi } from 'vitest'
 import { PaymentsCalculateWMPControllerV2 } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js'
 import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 
 vi.mock(
@@ -53,7 +53,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       warn: vi.fn(),
       debug: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
     vi.setSystemTime(mockDate)
   })
 

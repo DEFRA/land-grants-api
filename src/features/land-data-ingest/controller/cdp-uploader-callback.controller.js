@@ -90,7 +90,7 @@ const startFileProcessing = (
   })
 }
 
-export const LandDataIngestController = {
+export const CDPUploaderCallbackController = {
   options: {
     tags: ['api'],
     description: 'Handles CDP uploader callback',

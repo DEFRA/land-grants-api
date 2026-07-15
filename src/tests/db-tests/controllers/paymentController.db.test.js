@@ -1,18 +1,21 @@
 /* eslint-disable no-console */
 import { vi } from 'vitest'
 import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/features/payment/controllers/2.0.0/payment-calculate.controller.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
 import { validateRequest } from '~/src/features/application/validation/application.validation.js'
 import { actions } from '../fixtures/actions.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
+import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockValidateRequest = validateRequest
 const mockGetActions = getActions
+const mockAuditEvent = auditEvent
 
 describe('Payment Controller', () => {
   let logger, connection
@@ -26,12 +29,13 @@ describe('Payment Controller', () => {
       warn: vi.fn(),
       debug: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   beforeEach(() => {
     mockValidateRequest.mockResolvedValue([])
     mockGetActions.mockResolvedValue(actions)
+    mockAuditEvent.mockResolvedValue(undefined)
   })
 
   afterAll(async () => {

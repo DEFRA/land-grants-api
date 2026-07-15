@@ -68,6 +68,8 @@ updates:
       - dependency-name: 'eslint-*'
       - dependency-name: 'eslint'
       - dependency-name: '@typescript-eslint/*'
+      - dependency-name: "@types/node"
+        versions: [">=25"]
 
     # Schedule run every Monday, local time
     schedule:
@@ -85,6 +87,44 @@ updates:
     allow:
       # Include direct package.json updates
       - dependency-type: direct
+
+  # Update docker packages
+  - package-ecosystem: docker
+    directory: /
+
+    ignore:
+      - dependency-name: "node"
+        versions: [">=25"]
+
+    # Schedule run every Monday, local time
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: 'Europe/London'
+
+    # Delay a PR for an action update by 5 days
+    cooldown:
+      default-days: 5
+
+  # Update docker-compose packages
+  - package-ecosystem: docker-compose
+    directory: /
+
+    ignore:
+      - dependency-name: "node"
+        versions: [">=25"]
+
+    # Schedule run every Monday, local time
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: 'Europe/London'
+
+    # Delay a PR for an action update by 5 days
+    cooldown:
+      default-days: 5
 
   # Update GitHub Actions
   - package-ecosystem: github-actions

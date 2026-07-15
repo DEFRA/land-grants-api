@@ -1,5 +1,5 @@
 import { vi } from 'vitest'
-import { LandDataIngestController } from '~/src/features/land-data-ingest/controller/land-data-ingest.controller.js'
+import { CDPUploaderCallbackController } from '~/src/features/land-data-ingest/controller/cdp-uploader-callback.controller.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import {
   createTestS3Client,
@@ -8,7 +8,7 @@ import {
   listTestFiles,
   clearTestBucket
 } from '~/src/tests/db-tests/setup/s3-test-helpers.js'
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('CDP Uploader Callback Controller', () => {
   const { h, getResponse } = createResponseCapture()
@@ -23,7 +23,7 @@ describe('CDP Uploader Callback Controller', () => {
       warn: vi.fn(),
       debug: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
     await clearTestBucket(s3Client)
@@ -55,7 +55,7 @@ describe('CDP Uploader Callback Controller', () => {
       }
     }
 
-    await LandDataIngestController.handler(request, h)
+    await CDPUploaderCallbackController.handler(request, h)
 
     const { statusCode } = getResponse()
 

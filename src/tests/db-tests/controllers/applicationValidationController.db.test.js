@@ -1,4 +1,4 @@
-import { connectToTestDatbase } from '~/src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { ApplicationValidationController } from '~/src/features/application/controllers/2.0.0/application-validation.controller.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
@@ -14,7 +14,7 @@ describe('Application Validation Controller', () => {
       warn: vi.fn(),
       debug: vi.fn()
     }
-    connection = connectToTestDatbase()
+    connection = connectToTestDatabase()
   })
 
   afterAll(async () => {

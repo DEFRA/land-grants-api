@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { connectToTestDatbase } from '../src/tests/db-tests/setup/postgres.js'
+import { connectToTestDatabase } from '../src/tests/db-tests/setup/postgres.js'
 import { createCompatibilityMatrix } from '../src/features/available-area/compatibilityMatrix.js'
 import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableAreaDataRequirements.js'
 import { getAvailableAreaFixtures } from '../src/tests/db-tests/setup/getAvailableAreaFixtures.js'
@@ -293,7 +293,7 @@ const logCompletionStats = (scenarios, actionCodes, fixturesData) => {
  */
 async function generateAvailableAreaFixtures() {
   const logger = createLogger()
-  const connection = connectToTestDatbase()
+  const connection = connectToTestDatabase()
 
   try {
     console.log('🔄 Starting fixture generation...')
