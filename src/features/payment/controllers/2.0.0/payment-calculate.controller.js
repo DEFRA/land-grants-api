@@ -23,17 +23,9 @@ import { paymentCalculationTransformerV2 } from '~/src/features/payment/transfor
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
   AuditEvent,
-  auditEvent
+  auditEvent,
+  getCorrelationId
 } from '~/src/features/common/helpers/audit-event.js'
-import { config } from '~/src/config/index.js'
-
-/**
- * Resolves the correlation id to record on audit events from the tracing header.
- * @param {import('@hapi/hapi').Request} request
- * @returns {string|string[]|undefined}
- */
-const getCorrelationId = (request) =>
-  request.headers?.[config.get('tracing.header')]
 
 /**
  * Builds the shared portion of a payment calculation audit context.

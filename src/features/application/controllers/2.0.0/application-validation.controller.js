@@ -23,6 +23,26 @@ import {
 } from '~/src/features/application/service/validation.service.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
+import {
+  AuditEvent,
+  auditEvent,
+  getCorrelationId
+} from '~/src/features/common/helpers/audit-event.js'
+
+/**
+ * Builds the shared portion of an application validation audit context.
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} params
+ * @param {string} params.applicationId
+ * @param {string} params.sbi
+ * @param {string} params.applicantCrn
+ * @returns {object}
+ */
+const buildAuditContext = (request, { applicationId, sbi, applicantCrn }) => ({
+  correlationId: getCorrelationId(request),
+  applicationId,
+  identifiers: { sbi, crn: applicantCrn }
+})
 
 /**
  * Save application validation results
@@ -99,17 +119,78 @@ const buildValidationResponse = (
 }
 
 /**
+ * Runs the application validation pipeline: resolves the enabled actions,
+ * validates the request, validates every land parcel, persists the result
+ * and builds the client-facing response.
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} postgresDb - Postgres connection
+ * @param {object} params
+ * @param {Array} params.landActions
+ * @param {string} params.applicationId
+ * @param {string} params.sbi
+ * @param {string} params.applicantCrn
+ * @param {string} params.requester
+ * @returns {Promise<object | import('@hapi/boom').Boom>} Validation response, or a Boom error response
+ */
+const runApplicationValidation = async (
+  request,
+  postgresDb,
+  { landActions, applicationId, sbi, applicantCrn, requester }
+) => {
+  const actions = await getActions(
+    request,
+    postgresDb,
+    landActions,
+    applicationId
+  )
+
+  const validationError = await validateRequestData(request, {
+    landActions,
+    actions,
+    applicationId,
+    sbi
+  })
+  if (validationError) {
+    return validationError
+  }
+
+  const parcelResults = await validateAllLandParcels(request, postgresDb, {
+    landActions,
+    actions
+  })
+
+  const id = await saveValidationResults(request, postgresDb, {
+    applicationId,
+    applicantCrn,
+    sbi,
+    requester,
+    landActions,
+    parcelResults
+  })
+
+  return buildValidationResponse(
+    applicationId,
+    applicantCrn,
+    sbi,
+    requester,
+    landActions,
+    parcelResults,
+    id
+  )
+}
+
+/**
  * Handles errors thrown during application validation.
  * @param {Error} error
  * @param {import('@hapi/hapi').Request} request
- * @returns {import('@hapi/boom').Boom}
+ * @returns {Promise<import('@hapi/boom').Boom>}
  */
-const handleValidationError = (error, request) => {
+const handleValidationError = async (error, request) => {
   if (error instanceof InfeasibleAreaError) {
     return Boom.boomify(error, { statusCode: 422 })
   }
   // @ts-expect-error - payload
-  const { landActions, applicationId, sbi } = request.payload
+  const { landActions, applicationId, sbi, applicantCrn } = request.payload
   logBusinessError(request.logger, {
     operation: 'Validate application',
     error,
@@ -119,7 +200,47 @@ const handleValidationError = (error, request) => {
       landActionsCount: landActions?.length ?? 0
     }
   })
+
+  await auditEvent(
+    AuditEvent.APPLICATION_VALIDATED,
+    {
+      ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
+      request: { landActions },
+      error: error.message
+    },
+    'failure',
+    request
+  )
+
   return Boom.internal(`Error validating application: ${error.message}`)
+}
+
+/**
+ * Publishes the eligibility decision audit event for a completed application
+ * validation, including the per-action rule decisions and explanations.
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} params
+ * @param {string} params.applicationId
+ * @param {string} params.sbi
+ * @param {string} params.applicantCrn
+ * @param {Array} params.landActions
+ * @param {object} params.responseData
+ * @returns {Promise<void>}
+ */
+const sendValidationAuditEvent = async (
+  request,
+  { applicationId, sbi, applicantCrn, landActions, responseData }
+) => {
+  await auditEvent(
+    AuditEvent.APPLICATION_VALIDATED,
+    {
+      ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
+      request: { landActions },
+      response: { valid: responseData.valid, actions: responseData.actions }
+    },
+    'success',
+    request
+  )
 }
 
 const ApplicationValidationController = {
@@ -166,51 +287,15 @@ const ApplicationValidationController = {
         }
       })
 
-      const actions = await getActions(
+      const validationResult = await runApplicationValidation(
         request,
         postgresDb,
-        landActions,
-        applicationId
+        { landActions, applicationId, sbi, applicantCrn, requester }
       )
-
-      // Validate request data
-      const validationError = await validateRequestData(request, {
-        landActions,
-        actions,
-        applicationId,
-        sbi
-      })
-
-      if (validationError) {
-        return validationError
+      if (Boom.isBoom(validationResult)) {
+        return validationResult
       }
-
-      // Validate all land parcels
-      const parcelResults = await validateAllLandParcels(request, postgresDb, {
-        landActions,
-        actions
-      })
-
-      // Save validation results
-      const id = await saveValidationResults(request, postgresDb, {
-        applicationId,
-        applicantCrn,
-        sbi,
-        requester,
-        landActions,
-        parcelResults
-      })
-
-      // Build response
-      const responseData = buildValidationResponse(
-        applicationId,
-        applicantCrn,
-        sbi,
-        requester,
-        landActions,
-        parcelResults,
-        id
-      )
+      const responseData = validationResult
 
       logInfo(request.logger, {
         category: 'application',
@@ -221,6 +306,14 @@ const ApplicationValidationController = {
           crn: applicantCrn,
           valid: responseData.valid
         }
+      })
+
+      await sendValidationAuditEvent(request, {
+        applicationId,
+        sbi,
+        applicantCrn,
+        landActions,
+        responseData
       })
 
       return h.response(responseData).code(statusCodes.ok)
