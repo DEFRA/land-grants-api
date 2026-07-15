@@ -84,6 +84,7 @@ describe('Parcel Schema Validation v2', () => {
 
   describe('parcelsSchema', () => {
     const validParcelsRequest = {
+      sbi: '012345678',
       parcelIds: ['SX0679-9238', 'AB1234-5678'],
       fields: ['size', 'actions'],
       plannedActions: [{ actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }]
@@ -129,6 +130,12 @@ describe('Parcel Schema Validation v2', () => {
 
     it('should allow empty parcelIds array', () => {
       const valid = { ...validParcelsRequest, parcelIds: [] }
+      const result = parcelsSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should allow missing SBI', () => {
+      const valid = { ...validParcelsRequest, sbi: undefined }
       const result = parcelsSchema.validate(valid)
       expect(result.error).toBeUndefined()
     })
