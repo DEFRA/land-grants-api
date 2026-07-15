@@ -1,7 +1,14 @@
+import * as fx from '~/src/services/dal/fixtures/business.js'
 import {
   agreementActionsTransformer,
+  dalBusinessToAgreements,
   mergeAgreementsTransformer
 } from './agreements.transformer.js'
+
+const defaultDates = {
+  startDate: new Date('2020-01-01T00:00:00+01:00'),
+  endDate: new Date('2021-01-01T00:00:00+01:00')
+}
 
 describe('agreementActionsTransformer', () => {
   test('should transform agreements with actions correctly', () => {
@@ -384,5 +391,115 @@ describe('mergeAgreementsTransformer', () => {
         unit: 'm'
       }
     ])
+  })
+})
+
+describe('dalBusinessToAgreements', () => {
+  test('should transform a business actions to AgreementActions', () => {
+    const expected = [
+      {
+        actionCode: 'BN1',
+        quantity: 10,
+        unit: 'm',
+        ...defaultDates
+      },
+      {
+        actionCode: 'BN2',
+        quantity: 10,
+        unit: 'm',
+        ...defaultDates
+      },
+      {
+        actionCode: 'AF1',
+        quantity: 1000,
+        unit: 'count',
+        ...defaultDates
+      }
+    ]
+    const actual = dalBusinessToAgreements(
+      fx.SIMPLE_BUSINESS,
+      fx.PARCEL_ID,
+      fx.SHEET_ID
+    )
+
+    expect(actual).toEqual(expected)
+  })
+
+  test('should transform hectare areas into sqm', () => {
+    const expected = [
+      {
+        actionCode: 'CLIG3',
+        quantity: 1000000,
+        unit: 'sqm',
+        ...defaultDates
+      }
+    ]
+    const actual = dalBusinessToAgreements(
+      fx.BUSINESS_CLIG3,
+      fx.PARCEL_ID,
+      fx.SHEET_ID
+    )
+
+    expect(actual).toEqual(expected)
+  })
+
+  test('should filter out non-SIGNED agreements', () => {
+    const expected = [
+      {
+        actionCode: 'AF1',
+        quantity: 1000,
+        unit: 'count',
+        ...defaultDates
+      }
+    ]
+    const actual = dalBusinessToAgreements(
+      fx.BUSINESS_WITH_DRAFTS,
+      fx.PARCEL_ID,
+      fx.SHEET_ID
+    )
+
+    expect(actual).toEqual(expected)
+  })
+
+  test('should filter resulting actions by parcelId and sheetName', () => {
+    const expected = [
+      {
+        actionCode: 'BN1',
+        quantity: 10,
+        unit: 'm',
+        ...defaultDates
+      }
+    ]
+    const actual = dalBusinessToAgreements(
+      fx.BUSINESS_WITH_MULTIPLE_PARCELS,
+      fx.PARCEL_ID,
+      fx.SHEET_ID
+    )
+
+    expect(actual).toEqual(expected)
+  })
+
+  test('should filter out actions with capital grants (no quantity specified at all)', () => {
+    const expected = [
+      {
+        actionCode: 'BN1',
+        quantity: 10,
+        unit: 'm',
+        ...defaultDates
+      },
+      {
+        actionCode: 'AF1',
+        quantity: 1000,
+        unit: 'count',
+        ...defaultDates
+      }
+    ]
+    const actual = dalBusinessToAgreements(
+      fx.BUSINESS_WITH_CAPITAL_GRANTS,
+      fx.PARCEL_ID,
+      fx.SHEET_ID
+    )
+
+    expect(actual).toEqual(expected)
   })
 })
