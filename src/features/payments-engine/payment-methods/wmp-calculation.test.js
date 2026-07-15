@@ -50,21 +50,21 @@ describe('calculateEligibleArea', () => {
 
 describe('calculatePayment', () => {
   test.each([
-    { area: haToSqm(0.2), expected: 0 },
-    { area: haToSqm(0.4999), expected: 0 },
-    { area: haToSqm(0.5), expected: 1500 },
-    { area: haToSqm(50.5), expected: 1515 },
-    { area: haToSqm(50.9999), expected: 1530 },
-    { area: haToSqm(51), expected: 1530 },
-    { area: haToSqm(51.5), expected: 1545 },
-    { area: haToSqm(100), expected: 3000 },
-    { area: haToSqm(100.0001), expected: 3000 },
-    { area: haToSqm(100.1), expected: 3001.5 },
-    { area: haToSqm(150), expected: 3750 }
+    { area: 0.2, expected: 0 },
+    { area: 0.4999, expected: 0 },
+    { area: 0.5, expected: 1500 },
+    { area: 50.5, expected: 1515 },
+    { area: 50.9999, expected: 1530 },
+    { area: 51, expected: 1530 },
+    { area: 51.5, expected: 1545 },
+    { area: 100, expected: 3000 },
+    { area: 100.0001, expected: 3000 },
+    { area: 100.1, expected: 3001.5 },
+    { area: 150, expected: 3750 }
   ])(
     'should return £$expected for $area sqm eligible area',
     ({ area, expected }) => {
-      expect(calculatePayment(area, tiers).payment).toBe(expected)
+      expect(calculatePayment(haToSqm(area), tiers).payment).toBe(expected)
     }
   )
 })

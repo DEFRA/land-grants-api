@@ -309,6 +309,8 @@ describe('haToSqm', () => {
     test('converts small garden areas', () => {
       expect(haToSqm(0.01)).toBe(100)
       expect(haToSqm(0.05)).toBe(500)
+      expect(haToSqm(0.0001)).toBe(1)
+      expect(haToSqm(0.0005)).toBe(5)
     })
 
     test('converts large farm areas', () => {
@@ -316,9 +318,9 @@ describe('haToSqm', () => {
       expect(haToSqm(1000)).toBe(10000000)
     })
 
-    test('handles floating point precision issues', () => {
-      expect(haToSqm(0.1 + 0.2)).toBe(3000)
-      expect(haToSqm(0.1 + 0.2)).not.toBe(0.3)
+    test('rounds to nearest integer', () => {
+      expect(haToSqm(5.4444)).toBe(54444)
+      expect(haToSqm(3.1234)).toBe(31234)
     })
   })
 })
