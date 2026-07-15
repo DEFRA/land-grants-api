@@ -1,12 +1,13 @@
 import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 const ruleDescription =
   'Is the parcel eligible for the woodland management plan action?'
 
 describe('woodlandMinimumEligibility', () => {
   const createApplication = (oldWoodlandAreaHa, newWoodlandAreaHa = 0) => ({
-    oldWoodlandAreaHa,
-    newWoodlandAreaHa
+    oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+    newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
   })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
@@ -19,9 +20,9 @@ describe('woodlandMinimumEligibility', () => {
   })
 
   test.each([
-    [0.5, '0.5'],
-    [1.2, '1.2'],
-    ['0.5', '0.5']
+    [0.5, 0.5],
+    [1.2, 1.2],
+    [0.5, 0.5]
   ])(
     'should pass when woodland area over 10 years is %s',
     (oldWoodlandArea, expectedTotal) => {

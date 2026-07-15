@@ -81,6 +81,7 @@ export const ValidateWMPController = {
       // @ts-expect-error - payload
       const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } =
         request.payload
+
       logBusinessError(request.logger, {
         operation: 'Validation failure for WMP',
         error,
