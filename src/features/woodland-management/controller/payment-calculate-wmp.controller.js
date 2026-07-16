@@ -17,7 +17,7 @@ import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calcu
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
 import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { sumTotalLandAreaSqm } from '../service/wmp-payment-calculate.service.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
 
 export const PaymentsCalculateWMPControllerV2 = {
   options: {
@@ -89,15 +89,12 @@ export const PaymentsCalculateWMPControllerV2 = {
         return Boom.badRequest('Action not found')
       }
 
-      const totalParcelAreaSqm = sumTotalLandAreaSqm(validationResponse.parcels)
-
       const paymentResult = executePaymentMethod(
         { ...action?.paymentMethod },
         {
           data: {
-            totalParcelArea: totalParcelAreaSqm,
-            oldWoodlandAreaHa,
-            newWoodlandAreaHa
+            oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+            newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
           }
         }
       )

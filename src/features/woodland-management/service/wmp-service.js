@@ -1,6 +1,7 @@
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
 
 /**
  * @param {LandParcelDb[]|null} parcels - The parcels
@@ -24,8 +25,8 @@ export const validateWoodlandManagementPlan = async (parcels, request) => {
     rules,
     /** @type {import('~/src/features/rules-engine/rules.d.js').RuleEngineApplication} */
     {
-      oldWoodlandAreaHa,
-      newWoodlandAreaHa,
+      oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+      newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa),
       totalParcelAreaSqm
     },
     action?.rules
