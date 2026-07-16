@@ -319,8 +319,8 @@ describe('haToSqm', () => {
     })
 
     test('rounds to nearest integer', () => {
-      expect(haToSqm(5.4444)).toBe(54444)
-      expect(haToSqm(3.1234)).toBe(31234)
+      expect(haToSqm(5.44445)).toBe(54445)
+      expect(haToSqm(3.12341)).toBe(31234)
     })
   })
 })
