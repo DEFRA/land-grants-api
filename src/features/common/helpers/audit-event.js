@@ -27,29 +27,41 @@ const getLocalIp = (request) => {
 }
 
 /**
+ * Resolves the correlation id to record on audit events from the tracing header.
+ * @param {import('@hapi/hapi').Request} request
+ * @returns {string|string[]|undefined}
+ */
+export const getCorrelationId = (request) =>
+  request.headers?.[config.get('tracing.header')]
+
+/**
  * Audit event types. Populated by tickets as land-grants-api operations are
  * wired up to auditing.
  * @enum {string}
  */
 export const AuditEvent = Object.freeze({
-  PAYMENT_CALCULATED: 'PAYMENT_CALCULATED'
+  PAYMENT_CALCULATED: 'PAYMENT_CALCULATED',
+  APPLICATION_VALIDATED: 'APPLICATION_VALIDATED'
 })
 
 // Human-readable description for each audit event, used in security.details.message
 const eventMessages = {
-  [AuditEvent.PAYMENT_CALCULATED]: 'Payment calculation completed'
+  [AuditEvent.PAYMENT_CALCULATED]: 'Payment calculation completed',
+  [AuditEvent.APPLICATION_VALIDATED]:
+    'Application eligibility validation completed'
 }
 
 // Transaction code for each audit event, used in security.details.transactioncode
 const eventTransactionCodes = {}
 
-// PMC code for each audit event, used in security.pmccode. PAYMENT_CALCULATED
-// has none - it is not forwarded to the SOC, so it carries no security block.
+// PMC code for each audit event, used in security.pmccode. Neither event has
+// one yet - they are not forwarded to the SOC, so they carry no security block.
 const eventPmcCodes = {}
 
 // Audit event type for each audit event, used in audit.eventtype
 const eventTypes = {
-  [AuditEvent.PAYMENT_CALCULATED]: 'GrantsPaymentCalculated'
+  [AuditEvent.PAYMENT_CALCULATED]: 'GrantsPaymentCalculated',
+  [AuditEvent.APPLICATION_VALIDATED]: 'GrantsApplicationValidated'
 }
 
 // Entities for each audit event, used in audit.entities
@@ -57,6 +69,13 @@ const eventTypes = {
 const eventEntities = {
   [AuditEvent.PAYMENT_CALCULATED]: (context) => [
     { entity: 'payment', action: 'read', entityid: context.applicationId }
+  ],
+  [AuditEvent.APPLICATION_VALIDATED]: (context) => [
+    {
+      entity: 'application',
+      action: 'created',
+      entityid: context.applicationId
+    }
   ]
 }
 
