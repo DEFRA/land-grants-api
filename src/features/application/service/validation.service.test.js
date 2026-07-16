@@ -106,6 +106,8 @@ describe('Validation Service', () => {
 
   describe('validateAllLandParcels', () => {
     test('should return an array of parcel results when validation passes', async () => {
+      const sbi = '012345678'
+      const defraIdToken = 'dummy'
       const mockParcelResult1 = { sheetId: 'SX0679', parcelId: '9238' }
       const mockParcelResult2 = { sheetId: 'SX0680', parcelId: '9239' }
       const mockLandActionsForTest = [
@@ -118,10 +120,16 @@ describe('Validation Service', () => {
         .mockResolvedValueOnce(mockParcelResult1)
         .mockResolvedValueOnce(mockParcelResult2)
 
-      const result = await validateAllLandParcels(mockRequest, mockPostgresDb, {
-        landActions: mockLandActionsForTest,
-        actions: mockActions
-      })
+      const result = await validateAllLandParcels(
+        mockRequest,
+        mockPostgresDb,
+        sbi,
+        defraIdToken,
+        {
+          landActions: mockLandActionsForTest,
+          actions: mockActions
+        }
+      )
 
       expect(result).toEqual([mockParcelResult1, mockParcelResult2])
       expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
@@ -131,17 +139,21 @@ describe('Validation Service', () => {
       expect(mockValidateLandParcelActions).toHaveBeenCalledTimes(2)
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         1,
+        sbi,
         mockLandActionsForTest[0],
         mockActions,
         mockCompatibilityCheckFn,
-        mockRequest
+        mockRequest,
+        defraIdToken
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
+        sbi,
         mockLandActionsForTest[1],
         mockActions,
         mockCompatibilityCheckFn,
-        mockRequest
+        mockRequest,
+        defraIdToken
       )
     })
   })

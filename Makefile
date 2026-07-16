@@ -9,3 +9,9 @@ lint-fix:
 
 test:
 	npm run test:quick
+
+test/all:
+	npm run test && npm run test:db && npm run test:e2e
+
+test/contracts:
+	npm run test:contracts

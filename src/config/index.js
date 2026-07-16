@@ -335,6 +335,14 @@ const config = convict({
       default: '',
       env: 'DAL_API_ENDPOINT'
     }
+  },
+  featureFlags: {
+    useDal: {
+      doc: 'Use DAL to get additional agreements',
+      format: Boolean,
+      default: !isProduction,
+      env: 'FEATURE_USE_DAL'
+    }
   }
 })
 

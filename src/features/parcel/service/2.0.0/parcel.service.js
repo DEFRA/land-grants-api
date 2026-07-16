@@ -1,27 +1,27 @@
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import {
+  DATA_LAYER_TYPES,
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryUnion
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
+import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import {
   findMaximumAvailableArea,
   throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
-import {
-  DATA_LAYER_TYPES,
-  getDataLayerQueryAccumulated,
-  getDataLayerQueryUnion
-} from '~/src/features/data-layers/queries/getDataLayer.query.js'
-import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
-import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -128,9 +128,10 @@ export async function getActionsForParcel(
   showActionResults,
   enabledActions,
   compatibilityCheckFn,
-  request
+  request,
+  defraIdToken
 ) {
-  const { fields, plannedActions } = payload
+  const { fields, plannedActions, sbi } = payload
 
   const parcelResponse = {
     parcelId: parcel.parcel_id,
@@ -142,9 +143,11 @@ export async function getActionsForParcel(
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {
-    const agreements = await getAgreementsForParcel(
+    const agreements = await getAgreements(
+      sbi,
       parcel.sheet_id,
       parcel.parcel_id,
+      defraIdToken,
       request.server.postgresDb,
       request.logger
     )

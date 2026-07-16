@@ -2,11 +2,16 @@ import { describe, test, expect } from 'vitest'
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const headers = {
+  Authorization: getAuthHeader(),
+  'X-Forwarded-Authorization': 'dummy'
+}
+
 describe('Application Validation Endpoints', () => {
   describe('POST /api/v2/application/validate', () => {
     test('should validate application with authentication', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: 'appid-1',
           requester: 'test-user',
@@ -38,6 +43,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should return 401 without authentication', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         body: {
           applicationId: 'appid-2',
           requester: 'test-user',
@@ -63,7 +69,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: 'appid-3',
           requester: 'test-user'
@@ -75,7 +81,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should return 422 for negative quantity', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: 'appid-5',
           requester: 'test-user',
@@ -101,7 +107,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should validate multiple parcels with multiple actions', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: 'appid-6',
           requester: 'test-user',
@@ -147,7 +153,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should create validation run for retrieval test', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: 'appid-run-1',
           requester: 'test-user',
@@ -204,9 +210,7 @@ describe('Application Validation Endpoints', () => {
     test('should return 404 for non-existent validation run id', async () => {
       const response = await httpClient.post(
         '/application/validation-run/999999999',
-        {
-          headers: { Authorization: getAuthHeader() }
-        }
+        { headers }
       )
 
       expect(response.status).toBe(404)
@@ -218,7 +222,7 @@ describe('Application Validation Endpoints', () => {
 
     test('should create validation run', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
           applicationId: testApplicationId,
           requester: 'test-user',
@@ -246,7 +250,7 @@ describe('Application Validation Endpoints', () => {
       const response = await httpClient.post(
         `/application/${testApplicationId}/validation-run`,
         {
-          headers: { Authorization: getAuthHeader() },
+          headers,
           body: {
             fields: []
           }
@@ -264,6 +268,7 @@ describe('Application Validation Endpoints', () => {
       const response = await httpClient.post(
         `/application/${testApplicationId}/validation-run`,
         {
+          headers: { 'X-Forwarded-Authorization': 'dummy' },
           body: {
             fields: []
           }

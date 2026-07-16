@@ -99,6 +99,11 @@ const ParcelsControllerV2 = {
         }
       })
 
+      const defraIdToken = request.headers['x-forwarded-authorization']
+      if (!defraIdToken) {
+        return Boom.unauthorized('X-Forwarded-Authorization is required')
+      }
+
       const sssiConsentRequiredError = validateSSSIConsentRequired(
         parcelIds,
         fields
@@ -147,7 +152,8 @@ const ParcelsControllerV2 = {
             showActionResults,
             validationResponse.enabledActions,
             compatibilityCheckFn,
-            request
+            request,
+            defraIdToken
           )
         })
       )

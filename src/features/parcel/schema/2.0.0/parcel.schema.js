@@ -35,7 +35,7 @@ const parcelSchema = Joi.object({
 })
 
 const parcelsSchema = Joi.object({
-  sbi: Joi.string().optional(),
+  sbi: Joi.string().required(),
   parcelIds: Joi.array().items(parcelIdSchema).required(),
   fields: Joi.array()
     .items(
