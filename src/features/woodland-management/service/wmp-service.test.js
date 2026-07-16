@@ -3,6 +3,7 @@ import { validateWoodlandManagementPlan } from './wmp-service.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
@@ -48,7 +49,11 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 200 },
+      {
+        oldWoodlandAreaSqm: haToSqm(10),
+        newWoodlandAreaSqm: haToSqm(5),
+        totalParcelAreaSqm: 200
+      },
       ['ruleA']
     )
 
@@ -71,7 +76,11 @@ describe('validateWoodlandManagementPlan', () => {
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
-      { oldWoodlandAreaHa: 10, newWoodlandAreaHa: 5, totalParcelAreaSqm: 0 },
+      {
+        oldWoodlandAreaSqm: haToSqm(10),
+        newWoodlandAreaSqm: haToSqm(5),
+        totalParcelAreaSqm: 0
+      },
       ['ruleA']
     )
 

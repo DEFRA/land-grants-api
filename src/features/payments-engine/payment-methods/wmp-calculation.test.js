@@ -3,6 +3,7 @@ import {
   calculatePayment,
   wmpCalculation
 } from './wmp-calculation.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
 
 const tiers = [
   {
@@ -27,18 +28,23 @@ const tiers = [
 
 describe('calculateEligibleArea', () => {
   test('should include all new woodland when it is within the cap', () => {
-    // old=80ha, new=10ha, total=90ha, 20% cap=18ha → new(10) ≤ cap(18) → eligible=90ha
-    expect(calculateEligibleArea(80, 10, 20)).toBe(90)
+    // old=800000, new=100000, total=900000, 20% cap=180000 → new(100000) ≤ cap(180000) → eligible=900000
+    expect(calculateEligibleArea(800000, 100000, 20)).toBe(900000)
   })
 
   test('should cap new woodland when it exceeds the maximum percentage', () => {
-    // old=20ha, new=30ha, total=50ha, 20% cap=10ha → new(30) > cap(10) → eligible=30ha
-    expect(calculateEligibleArea(20, 30, 20)).toBe(30)
+    // old=200000, new=300000, total=500000, 20% cap=100000 → new(300000) > cap(100000) → eligible=300000
+    expect(calculateEligibleArea(200000, 300000, 20)).toBe(300000)
   })
 
   test('should include all new woodland when exactly at the cap', () => {
-    // old=80ha, new=20ha, total=100ha, 20% cap=20ha → new(20) = cap(20) → eligible=100ha
-    expect(calculateEligibleArea(80, 20, 20)).toBe(100)
+    // old=800000, new=200000, total=1000000, 20% cap=200000 → new(200000) = cap(200000) → eligible=1000000
+    expect(calculateEligibleArea(800000, 200000, 20)).toBe(1000000)
+  })
+
+  test('should cap new woodland when it exceeds the maximum percentage and return decimal places', () => {
+    // ensure rounding to 4 decimal places
+    expect(calculateEligibleArea(812000, 204000, 20)).toBe(1015200)
   })
 })
 
@@ -56,9 +62,9 @@ describe('calculatePayment', () => {
     { area: 100.1, expected: 3001.5 },
     { area: 150, expected: 3750 }
   ])(
-    'should return £$expected for $area ha eligible area',
+    'should return £$expected for $area sqm eligible area',
     ({ area, expected }) => {
-      expect(calculatePayment(area, tiers).payment).toBe(expected)
+      expect(calculatePayment(haToSqm(area), tiers).payment).toBe(expected)
     }
   )
 })
@@ -72,8 +78,8 @@ describe('wmpCalculation', () => {
   const createData = (oldWoodlandAreaHa, newWoodlandAreaHa) => ({
     data: {
       totalParcelArea: oldWoodlandAreaHa + newWoodlandAreaHa,
-      oldWoodlandAreaHa,
-      newWoodlandAreaHa,
+      oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+      newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa),
       startDate: '2024-01-01'
     }
   })

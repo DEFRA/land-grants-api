@@ -45,7 +45,7 @@ export const paymentCalculateWMPResponseSchema = Joi.object({
 
 export const paymentCalculateWMPSchemaV2 = Joi.object({
   parcelIds: Joi.array().items(Joi.string()).min(1).required(),
-  oldWoodlandAreaHa: Joi.number().min(0).required(),
-  newWoodlandAreaHa: Joi.number().min(0).required(),
+  oldWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
+  newWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   startDate: Joi.date().optional()
 })

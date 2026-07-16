@@ -1,10 +1,6 @@
 // Rule 2: total area not exceed land parcels
 
-import {
-  haToSqm,
-  sqmToHaRounded,
-  roundTo4DecimalPlaces
-} from '~/src/features/common/helpers/measurement.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 
 // The total area of woodland (young + old) must not exceed the total area of land parcels entered into the agreement.
 
@@ -27,18 +23,14 @@ import {
  */
 export const woodlandTotalArea = {
   execute: (application, rule) => {
-    const { oldWoodlandAreaHa, newWoodlandAreaHa, totalParcelAreaSqm } =
+    const { oldWoodlandAreaSqm, newWoodlandAreaSqm, totalParcelAreaSqm } =
       application
 
-    const totalWoodlandAreaHa =
-      Number.parseFloat(oldWoodlandAreaHa) +
-      Number.parseFloat(newWoodlandAreaHa || 0)
-    const totalWoodlandAreaSqm = Math.round(haToSqm(totalWoodlandAreaHa))
+    const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
     const roundedTotalParcelAreaHa = sqmToHaRounded(
       Number.parseFloat(totalParcelAreaSqm)
     )
-    const roundedTotalWoodlandAreaHa =
-      roundTo4DecimalPlaces(totalWoodlandAreaHa)
+    const roundedTotalWoodlandAreaHa = sqmToHaRounded(totalWoodlandAreaSqm)
 
     const name = rule.name
     const explanations = [
@@ -50,7 +42,7 @@ export const woodlandTotalArea = {
       }
     ]
 
-    if (totalWoodlandAreaSqm > Number.parseFloat(totalParcelAreaSqm)) {
+    if (totalWoodlandAreaSqm > totalParcelAreaSqm) {
       return {
         name,
         passed: false,

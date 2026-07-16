@@ -2,7 +2,8 @@
 
 import {
   haToSqm,
-  roundTo4DecimalPlaces
+  roundTo4DecimalPlaces,
+  sqmToHaRounded
 } from '~/src/features/common/helpers/measurement.js'
 
 // There must be a minimum of 0.5ha of woodland over 10 years old on the holding. If this is not met,
@@ -25,18 +26,14 @@ import {
  */
 export const woodlandMinimumEligibility = {
   execute: (application, rule) => {
-    const { oldWoodlandAreaHa = 0, newWoodlandAreaHa = 0 } = application
+    const { oldWoodlandAreaSqm, newWoodlandAreaSqm = 0 } = application
     const { minimumSize: minimumSizeHa, minOldWoodlandHa } = rule.config
     const name = rule.name
-
-    const oldWoodlandAreaSqm = haToSqm(Number.parseFloat(oldWoodlandAreaHa))
-    const newWoodlandAreaSqm = haToSqm(Number.parseFloat(newWoodlandAreaHa))
     const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
 
     const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
-    const roundedTotalWoodlandAreaHa = roundTo4DecimalPlaces(
-      Number.parseFloat(oldWoodlandAreaHa) +
-        Number.parseFloat(newWoodlandAreaHa)
+    const roundedTotalWoodlandAreaHa = sqmToHaRounded(
+      oldWoodlandAreaSqm + newWoodlandAreaSqm
     )
     const roundedMinimumSizeHa = roundTo4DecimalPlaces(
       Number.parseFloat(minimumSizeHa)
@@ -61,12 +58,12 @@ export const woodlandMinimumEligibility = {
       }
     }
 
-    if (oldWoodlandAreaHa < minOldWoodlandHa) {
+    if (oldWoodlandAreaSqm < haToSqm(minOldWoodlandHa)) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `The area of woodland over 10 years old (${oldWoodlandAreaHa} ha) does not meet the minimum required area of (${minOldWoodlandHa} ha)`,
+        reason: `The area of woodland over 10 years old (${sqmToHaRounded(oldWoodlandAreaSqm)} ha) does not meet the minimum required area of (${minOldWoodlandHa} ha)`,
         explanations
       }
     }

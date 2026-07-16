@@ -1,4 +1,5 @@
 import { woodlandTotalArea } from './woodland-total-area.js'
+import { haToSqm } from '../../../common/helpers/measurement.js'
 
 const ruleDescription =
   'Has the total available area for the woodland management plan been applied for?'
@@ -9,8 +10,8 @@ describe('woodlandTotalArea', () => {
     newWoodlandAreaHa,
     totalParcelAreaSqm
   ) => ({
-    oldWoodlandAreaHa,
-    newWoodlandAreaHa,
+    oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+    newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa),
     totalParcelAreaSqm
   })
 
@@ -116,13 +117,13 @@ describe('woodlandTotalArea', () => {
       name: 'woodland-total-area',
       passed: true,
       reason:
-        'The total woodland area (9.6455 ha) does not exceed the total land parcel area (10.5434 ha)',
+        'The total woodland area (9.6454 ha) does not exceed the total land parcel area (10.5434 ha)',
       description: ruleDescription,
       explanations: [
         {
           title: 'Woodland total area',
           lines: [
-            'The total land parcel area is (10.5434 ha), the total woodland area (young + old) is (9.6455 ha)'
+            'The total land parcel area is (10.5434 ha), the total woodland area (young + old) is (9.6454 ha)'
           ]
         }
       ]

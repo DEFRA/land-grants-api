@@ -284,7 +284,7 @@ describe('plannedActionsTransformer', () => {
 
     const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 0.1 }])
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 0 }])
   })
 
   test('should return empty array when plannedActions is null', () => {
