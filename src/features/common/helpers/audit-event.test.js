@@ -8,7 +8,8 @@ const mockConfigGet = vi.hoisted(() =>
       'aws.region': 'eu-west-2',
       'sns.endpoint': 'http://localhost:4566',
       'sns.auditTopicArn':
-        'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api'
+        'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api',
+      'tracing.header': 'x-cdp-request-id'
     }
     return configMap[key]
   })
@@ -52,6 +53,7 @@ describe('AuditEvent', () => {
 
   test('contains expected event keys', () => {
     expect(AuditEvent.PAYMENT_CALCULATED).toBe('PAYMENT_CALCULATED')
+    expect(AuditEvent.APPLICATION_VALIDATED).toBe('APPLICATION_VALIDATED')
   })
 
   test('cannot be mutated', () => {
@@ -328,6 +330,112 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
     const payload = getPublishedPayload()
     expect(payload.user).toBeUndefined()
     expect(payload.sessionid).toBeUndefined()
+  })
+})
+
+describe('auditEvent - APPLICATION_VALIDATED', () => {
+  let auditEvent
+  let AuditEvent
+  let mockSend
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn().mockResolvedValue({})
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ auditEvent, AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const getPublishedPayload = () => {
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    return JSON.parse(publishCommandInstance.input.Message)
+  }
+
+  test('does not include a security block', async () => {
+    await auditEvent(AuditEvent.APPLICATION_VALIDATED, {
+      applicationId: 'app-1'
+    })
+
+    expect(getPublishedPayload().security).toBeUndefined()
+  })
+
+  test('publishes correct audit fields, including the eligibility decisions and explanations', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      applicationId: 'app-1',
+      identifiers: { sbi: 123456789, crn: 'CRN-001' },
+      request: { landActions: [{ sheetId: 'SD2324', parcelId: '1253' }] },
+      response: {
+        valid: false,
+        actions: [
+          {
+            actionCode: 'BND1',
+            hasPassed: false,
+            rules: [
+              {
+                name: 'sssi-consent-required',
+                passed: false,
+                explanations: [{ title: 'sssi check', lines: ['reason'] }]
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+    await auditEvent(AuditEvent.APPLICATION_VALIDATED, context)
+
+    const payload = getPublishedPayload()
+    expect(payload.audit).toMatchObject({
+      eventtype: 'GrantsApplicationValidated',
+      entities: [
+        { entity: 'application', action: 'created', entityid: 'app-1' }
+      ],
+      status: 'success',
+      details: context,
+      accounts: { sbi: 123456789, crn: 'CRN-001' }
+    })
+  })
+})
+
+describe('getCorrelationId', () => {
+  let getCorrelationId
+
+  beforeEach(async () => {
+    vi.resetModules()
+    ;({ getCorrelationId } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  test('reads the correlation id from the configured tracing header', () => {
+    const request = { headers: { 'x-cdp-request-id': 'trace-123' } }
+
+    expect(getCorrelationId(request)).toBe('trace-123')
+  })
+
+  test('returns undefined when headers are absent from the request', () => {
+    expect(getCorrelationId({})).toBeUndefined()
   })
 })
 

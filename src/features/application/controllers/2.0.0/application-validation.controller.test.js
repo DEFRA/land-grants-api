@@ -9,6 +9,10 @@ import {
   validateRequestData,
   validateAllLandParcels
 } from '~/src/features/application/service/validation.service.js'
+import {
+  AuditEvent,
+  auditEvent
+} from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/actions/service/action.service.js', () => ({
   getActions: vi.fn()
@@ -23,12 +27,14 @@ vi.mock('~/src/features/application/service/validation.service.js', () => ({
   validateRequestData: vi.fn(),
   validateAllLandParcels: vi.fn()
 }))
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockGetActions = vi.mocked(getActions)
 const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
 const mockSaveApplication = vi.mocked(saveApplication)
 const mockValidateRequestData = vi.mocked(validateRequestData)
 const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
+const mockAuditEvent = vi.mocked(auditEvent)
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
@@ -169,6 +175,7 @@ describe('ApplicationValidationController', () => {
     mockValidateRequestData.mockResolvedValue(null)
     mockValidateAllLandParcels.mockResolvedValue(mockActionValidationResults)
     mockSaveApplication.mockResolvedValue(1)
+    mockAuditEvent.mockResolvedValue(undefined)
   })
 
   describe('POST /applications/validate route', () => {
@@ -245,6 +252,79 @@ describe('ApplicationValidationController', () => {
         expect.objectContaining({ logger: expect.any(Object) }),
         mockPostgresDb,
         { landActions: mockLandActions, actions: mockActions }
+      )
+    })
+
+    test('should send an audit event with the eligibility decisions and explanations', async () => {
+      const applicationId = 'APP-123'
+      const sbi = 123456789
+      const request = {
+        method: 'POST',
+        url: '/api/v2/application/validate',
+        payload: {
+          applicationId,
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi,
+          landActions: mockLandActions
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.APPLICATION_VALIDATED,
+        expect.objectContaining({
+          applicationId,
+          identifiers: { sbi, crn: 'CRN-456' },
+          request: { landActions: mockLandActions },
+          response: expect.objectContaining({
+            valid: true,
+            actions: expect.arrayContaining([
+              expect.objectContaining({
+                actionCode: 'BND1',
+                rules: expect.arrayContaining([
+                  expect.objectContaining({
+                    name: 'sssi-consent-required',
+                    explanations: [{ title: 'sssi check', lines: [] }]
+                  })
+                ])
+              })
+            ])
+          })
+        }),
+        'success',
+        expect.objectContaining({ method: 'post' })
+      )
+    })
+
+    test('should send a failure audit event when an unexpected error occurs', async () => {
+      mockGetActions.mockRejectedValue(new Error('Database connection failed'))
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/application/validate',
+        payload: {
+          applicationId: 'APP-123',
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi: 123456789,
+          landActions: mockLandActions
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.APPLICATION_VALIDATED,
+        expect.objectContaining({
+          applicationId: 'APP-123',
+          identifiers: { sbi: 123456789, crn: 'CRN-456' },
+          request: { landActions: mockLandActions },
+          error: 'Database connection failed'
+        }),
+        'failure',
+        expect.objectContaining({ method: 'post' })
       )
     })
 

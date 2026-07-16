@@ -2,7 +2,12 @@ import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { ApplicationValidationController } from '~/src/features/application/controllers/2.0.0/application-validation.controller.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
+import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 import { vi } from 'vitest'
+
+vi.mock('~/src/features/common/helpers/audit-event.js')
+
+const mockAuditEvent = auditEvent
 
 describe('Application Validation Controller', () => {
   let logger, connection
@@ -15,6 +20,10 @@ describe('Application Validation Controller', () => {
       debug: vi.fn()
     }
     connection = connectToTestDatabase()
+  })
+
+  beforeEach(() => {
+    mockAuditEvent.mockResolvedValue(undefined)
   })
 
   afterAll(async () => {
