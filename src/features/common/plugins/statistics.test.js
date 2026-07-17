@@ -43,6 +43,7 @@ describe('#statistics', () => {
     mockServer = {
       logger: mockLogger,
       postgresDb: mockPostgresDb,
+      expose: vi.fn(),
       events: {
         on: vi.fn()
       }
@@ -178,5 +179,14 @@ describe('#statistics', () => {
 
     expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_parcels_count', 5)
     expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_covers_count', 3)
+  })
+
+  test('Should expose loadStats function', () => {
+    statistics.plugin.register(mockServer)
+
+    expect(mockServer.expose).toHaveBeenCalledWith(
+      'loadStats',
+      expect.any(Function)
+    )
   })
 })
