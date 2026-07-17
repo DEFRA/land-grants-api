@@ -2,12 +2,18 @@ import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
 import createTestServer from '~/src/tests/test-server.js'
+import {
+  AuditEvent,
+  auditEvent
+} from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('../service/wmp-service.js')
 vi.mock('../../parcel/validation/2.0.0/parcel.validation.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan
 const mockGetAndValidateParcels = getAndValidateParcels
+const mockAuditEvent = auditEvent
 
 const mockRuleResult = [
   {
@@ -98,6 +104,15 @@ describe('Validate WMP controller', () => {
     expect(statusCode).toBe(200)
     expect(message).toBe('success')
     expect(result).toEqual(mockTransformedResult)
+    expect(mockAuditEvent).toHaveBeenCalledWith(
+      AuditEvent.WMP_VALIDATED,
+      expect.objectContaining({
+        parcelIds: ['SX067-99238'],
+        response: { result: mockTransformedResult }
+      }),
+      'success',
+      expect.objectContaining({ method: 'post' })
+    )
   })
 
   test('should handle error', async () => {
@@ -110,6 +125,7 @@ describe('Validate WMP controller', () => {
         newWoodlandAreaHa: 1
       }
     }
+    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult)
     mockValidateWoodlandManagementPlan.mockRejectedValue(
       new Error('Something went wrong')
     )
@@ -119,6 +135,15 @@ describe('Validate WMP controller', () => {
 
     expect(result.statusCode).toBe(500)
     expect(result.result.message).toBe('An internal server error occurred')
+    expect(mockAuditEvent).toHaveBeenCalledWith(
+      AuditEvent.WMP_VALIDATED,
+      expect.objectContaining({
+        parcelIds: ['SX067-99238'],
+        error: 'Something went wrong'
+      }),
+      'failure',
+      expect.objectContaining({ method: 'post' })
+    )
   })
 
   test('should return not found when a parcel is not found', async () => {
@@ -141,6 +166,7 @@ describe('Validate WMP controller', () => {
 
     expect(result.statusCode).toBe(404)
     expect(result.result.message).toBe('Land parcels not found: SX067-99238')
+    expect(mockAuditEvent).not.toHaveBeenCalled()
   })
 
   test('should return bad request when no oldWoodlandAreaHa', async () => {

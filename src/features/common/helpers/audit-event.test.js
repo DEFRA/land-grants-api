@@ -52,8 +52,12 @@ describe('AuditEvent', () => {
   })
 
   test('contains expected event keys', () => {
-    expect(AuditEvent.PAYMENT_CALCULATED).toBe('PAYMENT_CALCULATED')
-    expect(AuditEvent.APPLICATION_VALIDATED).toBe('APPLICATION_VALIDATED')
+    expect(AuditEvent.SFI_PAYMENT_CALCULATED).toBe('SFI_PAYMENT_CALCULATED')
+    expect(AuditEvent.SFI_APPLICATION_VALIDATED).toBe(
+      'SFI_APPLICATION_VALIDATED'
+    )
+    expect(AuditEvent.WMP_PAYMENT_CALCULATED).toBe('WMP_PAYMENT_CALCULATED')
+    expect(AuditEvent.WMP_VALIDATED).toBe('WMP_VALIDATED')
   })
 
   test('cannot be mutated', () => {
@@ -211,6 +215,28 @@ describe('auditEvent', () => {
     expect(getPublishedPayload().ip).toBe('192.168.1.100')
   })
 
+  test('ip is empty when no non-internal IPv4 interface is found', async () => {
+    mockNetworkInterfaces.mockReturnValue({
+      lo: [{ address: '127.0.0.1', family: 'IPv4', internal: true }],
+      eth0: [{ address: 'fe80::1', family: 'IPv6', internal: false }]
+    })
+
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(getPublishedPayload().ip).toBe('')
+  })
+
+  test('skips interface entries that are undefined', async () => {
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: undefined,
+      eth1: [{ address: '10.0.0.9', family: 'IPv4', internal: false }]
+    })
+
+    await auditEvent(UNMAPPED_EVENT, {})
+
+    expect(getPublishedPayload().ip).toBe('10.0.0.9')
+  })
+
   test('passes failure status through to the published payload', async () => {
     await auditEvent(UNMAPPED_EVENT, {}, 'failure')
 
@@ -247,7 +273,7 @@ describe('auditEvent', () => {
   })
 })
 
-describe('auditEvent - PAYMENT_CALCULATED', () => {
+describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
   let auditEvent
   let AuditEvent
   let mockSend
@@ -283,7 +309,9 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
   }
 
   test('does not include a security block', async () => {
-    await auditEvent(AuditEvent.PAYMENT_CALCULATED, { applicationId: 'app-1' })
+    await auditEvent(AuditEvent.SFI_PAYMENT_CALCULATED, {
+      applicationId: 'app-1'
+    })
 
     expect(getPublishedPayload().security).toBeUndefined()
   })
@@ -297,7 +325,7 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
       response: { annualTotalPence: 100000, agreementTotalPence: 300000 }
     }
 
-    await auditEvent(AuditEvent.PAYMENT_CALCULATED, context)
+    await auditEvent(AuditEvent.SFI_PAYMENT_CALCULATED, context)
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
@@ -316,7 +344,7 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
       sessionId: 'session-abc'
     }
 
-    await auditEvent(AuditEvent.PAYMENT_CALCULATED, context)
+    await auditEvent(AuditEvent.SFI_PAYMENT_CALCULATED, context)
 
     expect(getPublishedPayload()).toMatchObject({
       user: 'test.user@defra.gov.uk',
@@ -325,7 +353,9 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
   })
 
   test('user and sessionid are omitted when not provided', async () => {
-    await auditEvent(AuditEvent.PAYMENT_CALCULATED, { applicationId: 'app-1' })
+    await auditEvent(AuditEvent.SFI_PAYMENT_CALCULATED, {
+      applicationId: 'app-1'
+    })
 
     const payload = getPublishedPayload()
     expect(payload.user).toBeUndefined()
@@ -333,7 +363,7 @@ describe('auditEvent - PAYMENT_CALCULATED', () => {
   })
 })
 
-describe('auditEvent - APPLICATION_VALIDATED', () => {
+describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
   let auditEvent
   let AuditEvent
   let mockSend
@@ -369,7 +399,7 @@ describe('auditEvent - APPLICATION_VALIDATED', () => {
   }
 
   test('does not include a security block', async () => {
-    await auditEvent(AuditEvent.APPLICATION_VALIDATED, {
+    await auditEvent(AuditEvent.SFI_APPLICATION_VALIDATED, {
       applicationId: 'app-1'
     })
 
@@ -400,7 +430,7 @@ describe('auditEvent - APPLICATION_VALIDATED', () => {
       }
     }
 
-    await auditEvent(AuditEvent.APPLICATION_VALIDATED, context)
+    await auditEvent(AuditEvent.SFI_APPLICATION_VALIDATED, context)
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
@@ -411,6 +441,145 @@ describe('auditEvent - APPLICATION_VALIDATED', () => {
       status: 'success',
       details: context,
       accounts: { sbi: 123456789, crn: 'CRN-001' }
+    })
+  })
+})
+
+describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
+  let auditEvent
+  let AuditEvent
+  let mockSend
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn().mockResolvedValue({})
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ auditEvent, AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const getPublishedPayload = () => {
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    return JSON.parse(publishCommandInstance.input.Message)
+  }
+
+  test('does not include a security block', async () => {
+    await auditEvent(AuditEvent.WMP_PAYMENT_CALCULATED, {
+      parcelIds: ['SX067-99238']
+    })
+
+    expect(getPublishedPayload().security).toBeUndefined()
+  })
+
+  test('publishes correct audit fields, including the WMP payment calculation details', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      parcelIds: ['SX067-99238', 'SX067-99239'],
+      request: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 },
+      response: { agreementTotalPence: 150000 }
+    }
+
+    await auditEvent(AuditEvent.WMP_PAYMENT_CALCULATED, context)
+
+    const payload = getPublishedPayload()
+    expect(payload.audit).toMatchObject({
+      eventtype: 'GrantsWmpPaymentCalculated',
+      entities: [
+        {
+          entity: 'payment',
+          action: 'read',
+          entityid: 'SX067-99238,SX067-99239'
+        }
+      ],
+      status: 'success',
+      details: context
+    })
+  })
+
+  test('entity id is undefined when parcelIds is absent', async () => {
+    await auditEvent(AuditEvent.WMP_PAYMENT_CALCULATED, {})
+
+    expect(getPublishedPayload().audit.entities).toEqual([
+      { entity: 'payment', action: 'read', entityid: undefined }
+    ])
+  })
+})
+
+describe('auditEvent - WMP_VALIDATED', () => {
+  let auditEvent
+  let AuditEvent
+  let mockSend
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockSend = vi.fn().mockResolvedValue({})
+    mockNetworkInterfaces.mockReturnValue({
+      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
+    })
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn().mockImplementation(function () {
+        this.send = mockSend
+      }),
+      PublishCommand: vi.fn().mockImplementation(function (input) {
+        this.input = input
+      })
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ auditEvent, AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const getPublishedPayload = () => {
+    const [publishCommandInstance] = mockSend.mock.calls[0]
+    return JSON.parse(publishCommandInstance.input.Message)
+  }
+
+  test('does not include a security block', async () => {
+    await auditEvent(AuditEvent.WMP_VALIDATED, {
+      parcelIds: ['SX067-99238']
+    })
+
+    expect(getPublishedPayload().security).toBeUndefined()
+  })
+
+  test('publishes correct audit fields, including the WMP validation result', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      parcelIds: ['SX067-99238'],
+      response: { result: { hasPassed: true, code: 'PA3' } }
+    }
+
+    await auditEvent(AuditEvent.WMP_VALIDATED, context)
+
+    const payload = getPublishedPayload()
+    expect(payload.audit).toMatchObject({
+      eventtype: 'GrantsWmpValidated',
+      entities: [{ entity: 'wmp', action: 'read', entityid: 'SX067-99238' }],
+      status: 'success',
+      details: context
     })
   })
 })

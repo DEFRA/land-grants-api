@@ -16,6 +16,23 @@ import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
 import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
+import {
+  AuditEvent,
+  auditEvent,
+  getCorrelationId
+} from '../../common/helpers/audit-event.js'
+
+/**
+ * Builds the shared portion of a WMP validation audit context.
+ * @param {import('@hapi/hapi').Request} request
+ * @param {object} params
+ * @param {string[]} params.parcelIds
+ * @returns {object}
+ */
+const buildAuditContext = (request, { parcelIds }) => ({
+  correlationId: getCorrelationId(request),
+  parcelIds
+})
 
 export const ValidateWMPController = {
   options: {
@@ -70,10 +87,25 @@ export const ValidateWMPController = {
         request
       )
 
+      const transformedResult = wmpResultTransformer(
+        result.action,
+        result.ruleResult
+      )
+
+      await auditEvent(
+        AuditEvent.WMP_VALIDATED,
+        {
+          ...buildAuditContext(request, { parcelIds }),
+          response: { result: transformedResult }
+        },
+        'success',
+        request
+      )
+
       return h
         .response({
           message: 'success',
-          result: wmpResultTransformer(result.action, result.ruleResult)
+          result: transformedResult
         })
         .code(statusCodes.ok)
     } catch (error) {
@@ -91,6 +123,17 @@ export const ValidateWMPController = {
           newWoodlandAreaHa
         }
       })
+
+      await auditEvent(
+        AuditEvent.WMP_VALIDATED,
+        {
+          ...buildAuditContext(request, { parcelIds }),
+          error: error.message
+        },
+        'failure',
+        request
+      )
+
       return Boom.internal('Error validating WMP')
     }
   }
