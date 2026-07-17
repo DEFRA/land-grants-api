@@ -56,6 +56,7 @@ export const statistics = {
           throw err
         }
       }
+      server.expose('loadStats', loadStats)
 
       schedule(config.get('cron.statsSchedule'), loadStats, {
         timezone: config.get('cron.timezone'),

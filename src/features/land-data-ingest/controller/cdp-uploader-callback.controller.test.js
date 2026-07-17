@@ -408,5 +408,55 @@ describe('CDPUploaderCallbackController', () => {
         }
       })
     })
+
+    test('should run loadStats on statistics plugin when processFile completes successfully', async () => {
+      const mockLoadStats = vi.fn().mockResolvedValue(undefined)
+      server.plugins.statistics = {
+        loadStats: mockLoadStats
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload: validPayload
+      }
+
+      const { statusCode } = await server.inject(request)
+      expect(statusCode).toBe(200)
+
+      await vi.waitFor(() => {
+        expect(mockLoadStats).toHaveBeenCalled()
+      })
+
+      delete server.plugins.statistics
+    })
+
+    test('should log an error and not crash when loadStats throws an error', async () => {
+      const mockLoadStats = vi
+        .fn()
+        .mockRejectedValue(new Error('LoadStats failed'))
+      server.plugins.statistics = {
+        loadStats: mockLoadStats
+      }
+
+      const request = {
+        method: 'POST',
+        url: '/land-data-ingest/callback',
+        payload: validPayload
+      }
+
+      const { statusCode } = await server.inject(request)
+      expect(statusCode).toBe(200)
+
+      await vi.waitFor(() => {
+        expect(mockLoadStats).toHaveBeenCalled()
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          expect.objectContaining({ error: expect.any(Error) }),
+          'Failed to run statistics after successful data ingestion'
+        )
+      })
+
+      delete server.plugins.statistics
+    })
   })
 })

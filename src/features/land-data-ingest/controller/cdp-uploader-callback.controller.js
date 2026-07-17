@@ -77,17 +77,33 @@ const startFileProcessing = (
     category,
     title,
     taskId
-  }).catch((error) => {
-    logBusinessError(request.logger, {
-      operation: `${category}_process_file_error`,
-      error,
-      context: {
-        payload: JSON.stringify(payload ?? {}),
-        s3Key: payload.form.file.s3Key,
-        s3Bucket: config.get('s3.bucket')
-      }
-    })
   })
+    .then(async () => {
+      // @ts-expect-error - statistics is not typed on server.plugins
+      const statistics = request.server.plugins.statistics
+      if (statistics?.loadStats) {
+        try {
+          await statistics.loadStats()
+        } catch (error) {
+          request.logger.error(
+            { error },
+            'Failed to run statistics after successful data ingestion'
+          )
+        }
+      }
+      return null
+    })
+    .catch((error) => {
+      logBusinessError(request.logger, {
+        operation: `${category}_process_file_error`,
+        error,
+        context: {
+          payload: JSON.stringify(payload ?? {}),
+          s3Key: payload.form.file.s3Key,
+          s3Bucket: config.get('s3.bucket')
+        }
+      })
+    })
 }
 
 export const CDPUploaderCallbackController = {
