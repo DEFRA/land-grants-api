@@ -1,6 +1,5 @@
 import {
   actionTransformer,
-  parcelTransformer,
   parcelActionsTransformer,
   plannedActionsTransformer,
   sizeTransformer,
@@ -161,63 +160,6 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      }
-    })
-  })
-})
-
-describe('parcelTransformer', () => {
-  test('should transform land parcel with actions', () => {
-    const landParcel = {
-      parcel_id: 'P123',
-      sheet_id: 'S456',
-      area_sqm: 2000
-    }
-    const actions = [
-      {
-        code: 'ACTION1',
-        description: 'Test Action 1',
-        availableArea: {
-          unit: 'ha',
-          value: 1000
-        }
-      }
-    ]
-
-    const result = parcelTransformer(landParcel, actions)
-
-    expect(result).toEqual({
-      parcel: {
-        parcelId: 'P123',
-        sheetId: 'S456',
-        size: {
-          unit: 'ha',
-          value: 2000
-        },
-        actions
-      }
-    })
-  })
-
-  test('should handle null parcel_id and sheet_id', () => {
-    const landParcel = {
-      parcel_id: null,
-      sheet_id: null,
-      area_sqm: 2000
-    }
-    const actions = []
-
-    const result = parcelTransformer(landParcel, actions)
-
-    expect(result).toEqual({
-      parcel: {
-        parcelId: null,
-        sheetId: null,
-        size: {
-          unit: 'ha',
-          value: 2000
-        },
-        actions: []
       }
     })
   })

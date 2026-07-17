@@ -1,10 +1,11 @@
 import { appliedForTotalOrPartialAvailableArea } from './applied-for-total-or-partial-available-area.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 describe('appliedForTotalOrPartialAvailableArea', () => {
   const createApplication = (areaAppliedFor, parcelArea) => ({
     areaAppliedFor,
     landParcel: {
-      area: parcelArea
+      availableAreaSqm: haToSqm(Number.parseFloat(parcelArea))
     }
   })
 

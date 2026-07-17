@@ -1,4 +1,3 @@
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
@@ -134,7 +133,7 @@ const buildRuleEngineApplication = async (
   return ruleEngineApplicationTransformer(
     action.quantity,
     action.code,
-    sqmToHaRounded(availableArea.availableAreaSqm),
+    availableArea.availableAreaSqm,
     intersectingAreaPercentage,
     sssiDataLayerData,
     historicFeaturesDataLayerData,

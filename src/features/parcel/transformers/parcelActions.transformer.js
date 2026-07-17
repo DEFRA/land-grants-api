@@ -46,22 +46,6 @@ function actionTransformer(action, availableArea = null, showResults = false) {
 }
 
 /**
- * Transform parcel and actions to land parcel and actions
- * @param {object} landParcel - The parcel to merge
- * @param {object} actions - The actions to merge
- */
-function parcelTransformer(landParcel, actions) {
-  return {
-    parcel: {
-      parcelId: landParcel?.parcel_id,
-      sheetId: landParcel?.sheet_id,
-      size: sizeTransformer(landParcel.area_sqm),
-      actions
-    }
-  }
-}
-
-/**
  * Transform parcel to land parcel
  * @param {object} landParcel - The parcel to merge
  */
@@ -147,7 +131,6 @@ function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
 export {
   actionTransformer,
   parcelActionsTransformer,
-  parcelTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
