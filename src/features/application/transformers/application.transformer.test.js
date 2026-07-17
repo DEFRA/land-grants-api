@@ -455,7 +455,7 @@ describe('ruleEngineApplicationTransformer', () => {
       areaAppliedFor: 100,
       actionCodeAppliedFor: 'UPL1',
       landParcel: {
-        area: 500,
+        availableAreaSqm: 500,
         existingAgreements: [
           { id: 'AG1', type: 'agreement1' },
           { id: 'AG2', type: 'agreement2' }
@@ -497,7 +497,7 @@ describe('ruleEngineApplicationTransformer', () => {
       areaAppliedFor: 0,
       actionCodeAppliedFor: 'UPL1',
       landParcel: {
-        area: 0,
+        availableAreaSqm: 0,
         existingAgreements: [],
         intersections: {
           moorland: { intersectingAreaPercentage: 0 },
@@ -526,7 +526,7 @@ describe('ruleEngineApplicationTransformer', () => {
       areaAppliedFor: -100,
       actionCodeAppliedFor: 'UPL1',
       landParcel: {
-        area: -500,
+        availableAreaSqm: -500,
         existingAgreements: [],
         intersections: {
           moorland: { intersectingAreaPercentage: -25.5 },
@@ -558,7 +558,7 @@ describe('ruleEngineApplicationTransformer', () => {
       areaAppliedFor: null,
       actionCodeAppliedFor: 'UPL1',
       landParcel: {
-        area: undefined,
+        availableAreaSqm: undefined,
         existingAgreements: null,
         intersections: {
           moorland: { intersectingAreaPercentage: 0 },
