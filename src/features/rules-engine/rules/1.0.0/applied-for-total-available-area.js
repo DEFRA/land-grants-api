@@ -1,3 +1,8 @@
+import {
+  haToSqm,
+  sqmToHaRounded
+} from '~/src/features/common/helpers/measurement.js'
+
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
@@ -12,25 +17,29 @@ export const appliedForTotalAvailableArea = {
   execute: (application, rule) => {
     const {
       areaAppliedFor,
-      landParcel: { area }
+      landParcel: { availableAreaSqm }
     } = application
+
+    const areaAppliedForHa = Number.parseFloat(areaAppliedFor)
+    const availableAreaHa = sqmToHaRounded(availableAreaSqm)
+    const areaAppliedForSqm = haToSqm(areaAppliedForHa)
 
     const name = rule.name
     const explanations = [
       {
         title: 'Total valid land cover',
         lines: [
-          `The available area was (${Number.parseFloat(area)} ha) the applicant applied for (${Number.parseFloat(areaAppliedFor)} ha)`
+          `The available area was (${availableAreaHa} ha) the applicant applied for (${areaAppliedFor} ha)`
         ]
       }
     ]
 
-    if (Number.parseFloat(areaAppliedFor) !== Number.parseFloat(area)) {
+    if (areaAppliedForSqm !== availableAreaSqm) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `There is not sufficient available area (${Number.parseFloat(area)} ha) for the applied figure (${Number.parseFloat(areaAppliedFor)} ha)`,
+        reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
         explanations
       }
     }
@@ -39,7 +48,7 @@ export const appliedForTotalAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `There is sufficient available area (${Number.parseFloat(area)} ha) for the applied figure (${Number.parseFloat(areaAppliedFor)} ha)`,
+      reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
       explanations
     }
   }

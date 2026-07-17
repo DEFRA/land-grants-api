@@ -187,7 +187,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
     areaAppliedFor: 0,
     actionCodeAppliedFor: '',
     landParcel: {
-      area: 0,
+      availableAreaSqm: 0,
       existingAgreements: [],
       intersections: {
         sssi: { intersectingAreaPercentage }
@@ -229,7 +229,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
     areaAppliedFor: 0,
     actionCodeAppliedFor: '',
     landParcel: {
-      area: 0,
+      availableAreaSqm: 0,
       existingAgreements: [],
       intersections: {
         historic_features: { intersectingAreaPercentage }
