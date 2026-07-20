@@ -2,12 +2,19 @@ import Hapi from '@hapi/hapi'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import { validateApplication } from '../../application/service/application-validation.service.js'
+import {
+  AuditEvent,
+  auditEvent
+} from '~/src/features/common/helpers/audit-event.js'
 import { vi } from 'vitest'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js'
 )
 vi.mock('../../application/service/application-validation.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
+
+const mockAuditEvent = auditEvent
 
 describe('Case Management Application Validation Controller', () => {
   const server = Hapi.server()
@@ -139,6 +146,20 @@ describe('Case Management Application Validation Controller', () => {
           server: expect.objectContaining({ postgresDb: expect.any(Object) })
         })
       )
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.SFI_APPLICATION_VALIDATED,
+        expect.objectContaining({
+          applicationId: mockApplicationValidationRun.application_id,
+          identifiers: {
+            sbi: mockApplicationValidationRun.sbi,
+            crn: mockApplicationValidationRun.crn
+          },
+          response: { valid: true, id: 1 }
+        }),
+        'success',
+        expect.objectContaining({ method: 'post' })
+      )
     })
 
     test('should return 404 when application validation run is not found', async () => {
@@ -167,6 +188,7 @@ describe('Case Management Application Validation Controller', () => {
       )
 
       expect(validateApplication).not.toHaveBeenCalled()
+      expect(mockAuditEvent).not.toHaveBeenCalled()
     })
 
     test('should return 400 when payload is missing requesterUsername', async () => {
@@ -257,6 +279,8 @@ describe('Case Management Application Validation Controller', () => {
         },
         'Validation failed: Case management application validation [sbi=123456789 | crn=1234567890 | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
       )
+
+      expect(mockAuditEvent).not.toHaveBeenCalled()
     })
 
     test('should return 500 when validateApplication fails', async () => {
@@ -290,6 +314,20 @@ describe('Case Management Application Validation Controller', () => {
           })
         }),
         'Business operation failed: Case Management validation run [validationRunId=1 | requesterUsername=test.user@example.com]'
+      )
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.SFI_APPLICATION_VALIDATED,
+        expect.objectContaining({
+          applicationId: mockApplicationValidationRun.application_id,
+          identifiers: {
+            sbi: mockApplicationValidationRun.sbi,
+            crn: mockApplicationValidationRun.crn
+          },
+          error: 'Validation service failed'
+        }),
+        'failure',
+        expect.objectContaining({ method: 'post' })
       )
     })
   })

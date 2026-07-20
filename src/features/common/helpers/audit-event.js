@@ -40,15 +40,19 @@ export const getCorrelationId = (request) =>
  * @enum {string}
  */
 export const AuditEvent = Object.freeze({
-  PAYMENT_CALCULATED: 'PAYMENT_CALCULATED',
-  APPLICATION_VALIDATED: 'APPLICATION_VALIDATED'
+  SFI_PAYMENT_CALCULATED: 'SFI_PAYMENT_CALCULATED',
+  SFI_APPLICATION_VALIDATED: 'SFI_APPLICATION_VALIDATED',
+  WMP_PAYMENT_CALCULATED: 'WMP_PAYMENT_CALCULATED',
+  WMP_VALIDATED: 'WMP_VALIDATED'
 })
 
 // Human-readable description for each audit event, used in security.details.message
 const eventMessages = {
-  [AuditEvent.PAYMENT_CALCULATED]: 'Payment calculation completed',
-  [AuditEvent.APPLICATION_VALIDATED]:
-    'Application eligibility validation completed'
+  [AuditEvent.SFI_PAYMENT_CALCULATED]: 'Payment calculation completed',
+  [AuditEvent.SFI_APPLICATION_VALIDATED]:
+    'Application eligibility validation completed',
+  [AuditEvent.WMP_PAYMENT_CALCULATED]: 'WMP payment calculation completed',
+  [AuditEvent.WMP_VALIDATED]: 'WMP validation completed'
 }
 
 // Transaction code for each audit event, used in security.details.transactioncode
@@ -60,22 +64,34 @@ const eventPmcCodes = {}
 
 // Audit event type for each audit event, used in audit.eventtype
 const eventTypes = {
-  [AuditEvent.PAYMENT_CALCULATED]: 'GrantsPaymentCalculated',
-  [AuditEvent.APPLICATION_VALIDATED]: 'GrantsApplicationValidated'
+  [AuditEvent.SFI_PAYMENT_CALCULATED]: 'GrantsPaymentCalculated',
+  [AuditEvent.SFI_APPLICATION_VALIDATED]: 'GrantsApplicationValidated',
+  [AuditEvent.WMP_PAYMENT_CALCULATED]: 'GrantsWmpPaymentCalculated',
+  [AuditEvent.WMP_VALIDATED]: 'GrantsWmpValidated'
 }
 
 // Entities for each audit event, used in audit.entities
 // action must be one of: created, read, updated, deleted, submitted, accepted, rejected, withdrawn
 const eventEntities = {
-  [AuditEvent.PAYMENT_CALCULATED]: (context) => [
+  [AuditEvent.SFI_PAYMENT_CALCULATED]: (context) => [
     { entity: 'payment', action: 'read', entityid: context.applicationId }
   ],
-  [AuditEvent.APPLICATION_VALIDATED]: (context) => [
+  [AuditEvent.SFI_APPLICATION_VALIDATED]: (context) => [
     {
       entity: 'application',
       action: 'created',
       entityid: context.applicationId
     }
+  ],
+  [AuditEvent.WMP_PAYMENT_CALCULATED]: (context) => [
+    {
+      entity: 'payment',
+      action: 'read',
+      entityid: context.parcelIds?.join(',')
+    }
+  ],
+  [AuditEvent.WMP_VALIDATED]: (context) => [
+    { entity: 'wmp', action: 'read', entityid: context.parcelIds?.join(',') }
   ]
 }
 

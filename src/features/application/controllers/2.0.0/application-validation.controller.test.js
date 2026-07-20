@@ -273,7 +273,7 @@ describe('ApplicationValidationController', () => {
       await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.APPLICATION_VALIDATED,
+        AuditEvent.SFI_APPLICATION_VALIDATED,
         expect.objectContaining({
           applicationId,
           identifiers: { sbi, crn: 'CRN-456' },
@@ -316,7 +316,7 @@ describe('ApplicationValidationController', () => {
       await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.APPLICATION_VALIDATED,
+        AuditEvent.SFI_APPLICATION_VALIDATED,
         expect.objectContaining({
           applicationId: 'APP-123',
           identifiers: { sbi: 123456789, crn: 'CRN-456' },

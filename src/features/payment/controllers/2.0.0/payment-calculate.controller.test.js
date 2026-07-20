@@ -167,7 +167,7 @@ describe('Payment calculate controller V2', () => {
       await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.PAYMENT_CALCULATED,
+        AuditEvent.SFI_PAYMENT_CALCULATED,
         expect.objectContaining({
           applicationId: 'application-1',
           identifiers: { sbi: mockLandActions.sbi },
@@ -392,7 +392,7 @@ describe('Payment calculate controller V2', () => {
       await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.PAYMENT_CALCULATED,
+        AuditEvent.SFI_PAYMENT_CALCULATED,
         expect.objectContaining({
           applicationId: 'application-1',
           identifiers: { sbi: mockLandActions.sbi },

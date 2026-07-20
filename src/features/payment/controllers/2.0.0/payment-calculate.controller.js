@@ -125,7 +125,7 @@ const handleCalculationError = async (request, error) => {
   })
 
   await auditEvent(
-    AuditEvent.PAYMENT_CALCULATED,
+    AuditEvent.SFI_PAYMENT_CALCULATED,
     {
       ...buildAuditContext(request, { applicationId, sbi }),
       request: { parcel, startDate },
@@ -203,7 +203,7 @@ const PaymentsCalculateControllerV2 = {
       })
 
       await auditEvent(
-        AuditEvent.PAYMENT_CALCULATED,
+        AuditEvent.SFI_PAYMENT_CALCULATED,
         {
           ...buildAuditContext(request, { applicationId, sbi }),
           request: { parcel: landActions, startDate },
