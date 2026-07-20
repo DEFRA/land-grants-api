@@ -25,11 +25,9 @@ updates:
 
       lint:
         patterns:
-          - '@typescript-eslint/*'
           - 'prettier'
           - 'stylelint'
           - 'stylelint-*'
-          - 'typescript'
 
       pino-logging:
         patterns:
