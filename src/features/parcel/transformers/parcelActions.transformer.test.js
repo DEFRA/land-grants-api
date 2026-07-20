@@ -219,10 +219,8 @@ describe('parcelActionsTransformer', () => {
 })
 
 describe('plannedActionsTransformer', () => {
-  test('should transform current actions to actions with area in square meters', () => {
-    const plannedActions = [
-      { actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }
-    ]
+  test('should transform current actions to actions', () => {
+    const plannedActions = [{ actionCode: 'UPL1', quantity: 0, unit: 'sqm' }]
 
     const result = plannedActionsTransformer(plannedActions)
 
