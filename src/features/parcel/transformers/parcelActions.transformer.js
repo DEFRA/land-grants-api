@@ -1,7 +1,4 @@
-import {
-  applicationUnitOfMeasurement,
-  haToSqm
-} from '~/src/features/common/helpers/measurement.js'
+import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * Transform size to application unit of measurement
@@ -78,7 +75,7 @@ function plannedActionsTransformer(plannedActions) {
   return (plannedActions ?? []).map((a) => {
     return {
       actionCode: a.actionCode,
-      areaSqm: haToSqm(a.quantity)
+      areaSqm: a.quantity
     }
   })
 }
