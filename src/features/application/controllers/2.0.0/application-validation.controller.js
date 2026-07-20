@@ -202,7 +202,7 @@ const handleValidationError = async (error, request) => {
   })
 
   await auditEvent(
-    AuditEvent.APPLICATION_VALIDATED,
+    AuditEvent.SFI_APPLICATION_VALIDATED,
     {
       ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
       request: { landActions },
@@ -232,7 +232,7 @@ const sendValidationAuditEvent = async (
   { applicationId, sbi, applicantCrn, landActions, responseData }
 ) => {
   await auditEvent(
-    AuditEvent.APPLICATION_VALIDATED,
+    AuditEvent.SFI_APPLICATION_VALIDATED,
     {
       ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
       request: { landActions },
