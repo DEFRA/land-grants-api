@@ -57,13 +57,13 @@ describe('Agreements import', () => {
       expect(agreement.ingest_date).toBeDefined()
       const [action1, action2] = agreement.actions
       expect(action1.actionCode).toBe('CMOR1')
-      expect(action1.unit).toBe('ha')
-      expect(action1.quantity).toBe(0.8617)
+      expect(action1.unit).toBe('sqm')
+      expect(action1.quantity).toBe(8617)
       expect(action1.startDate).toBe('2025-01-01T00:00:00+00:00')
       expect(action1.endDate).toBe('2027-12-31T00:00:00+00:00')
       expect(action2.actionCode).toBe('UPL8')
-      expect(action2.unit).toBe('ha')
-      expect(action2.quantity).toBe(0.8617)
+      expect(action2.unit).toBe('sqm')
+      expect(action2.quantity).toBe(8617)
       expect(action2.startDate).toBe('2025-01-01T00:00:00+00:00')
       expect(action2.endDate).toBe('2027-12-31T00:00:00+00:00')
 

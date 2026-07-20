@@ -5,8 +5,8 @@ SELECT
     json_agg(
         json_build_object(
             'actionCode', option_code,
-            'quantity', option_quantity,
-            'unit', 'ha',
+            'quantity', ROUND(option_quantity*10000),
+            'unit', 'sqm',
             'startDate', TO_TIMESTAMP(option_start_date, 'MM/DD/YY'),
             'endDate', TO_TIMESTAMP(option_end_date, 'MM/DD/YY')
         )
