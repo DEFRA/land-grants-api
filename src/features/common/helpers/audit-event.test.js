@@ -265,10 +265,12 @@ describe('auditEvent', () => {
   })
 
   test('logs info when the audit event is successfully published', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    const context = { correlationId: 'corr-xyz' }
+
+    await auditEvent(UNMAPPED_EVENT, context)
 
     expect(mockLogger.info).toHaveBeenCalledWith(
-      'Audit event successfully published'
+      `Audit event successfully published: ${UNMAPPED_EVENT} ${JSON.stringify(context)}`
     )
   })
 })
@@ -644,13 +646,14 @@ describe('auditEvent error handling', () => {
 
   test('logs warning when SNS publish fails', async () => {
     const testError = new Error('SNS publish failed')
+    const context = { correlationId: 'corr-xyz' }
     mockSend.mockRejectedValue(testError)
 
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(UNMAPPED_EVENT, context)
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       testError,
-      'Failed to publish audit event'
+      `Failed to publish audit event: ${UNMAPPED_EVENT} ${JSON.stringify(context)}`
     )
   })
 
@@ -669,7 +672,7 @@ describe('auditEvent error handling', () => {
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
       awsError,
-      'Failed to publish audit event'
+      `Failed to publish audit event: ${UNMAPPED_EVENT} ${JSON.stringify({})}`
     )
   })
 })
