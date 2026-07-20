@@ -3,6 +3,7 @@ import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { landDataIngest } from '~/src/features/land-data-ingest/index.js'
+import { vectorTiles } from '~/src/features/vector-tiles/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
@@ -17,6 +18,7 @@ const router = {
       await server.register([application])
       await server.register([caseManagementAdapter])
       await server.register([landDataIngest])
+      await server.register([vectorTiles])
     }
   }
 }
