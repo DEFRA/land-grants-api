@@ -5,6 +5,10 @@ import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-cal
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import createTestServer from '~/src/tests/test-server.js'
+import {
+  AuditEvent,
+  auditEvent
+} from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock(
@@ -22,6 +26,7 @@ vi.mock(
 )
 vi.mock('../../payments-engine/paymentsEngine.js')
 vi.mock('../transformer/wmp-payment-calculate.transformer.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockGetLandData = getLandData
 const mockGetActionsByLatestVersion = getActionsByLatestVersion
@@ -29,6 +34,7 @@ const mockExecuteRulesForPaymentCalculationWMP =
   executeRulesForPaymentCalculationWMP
 const mockExecutePaymentMethod = executePaymentMethod
 const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
+const mockAuditEvent = auditEvent
 
 const createMockParcel = () => ({
   id: 1,
@@ -190,6 +196,20 @@ describe('Payment calculate WMP controller', () => {
         expect.objectContaining({ code: 'PA3' }),
         expect.any(Date)
       )
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.WMP_PAYMENT_CALCULATED,
+        expect.objectContaining({
+          parcelIds: ['SX067-99238'],
+          request: {
+            oldWoodlandAreaHa: 5,
+            newWoodlandAreaHa: 3,
+            startDate: new Date('2024-01-01')
+          },
+          response: createMockPaymentResponse()
+        }),
+        'success',
+        expect.objectContaining({ method: 'post' })
+      )
     })
 
     test('should return 200 when startDate is not provided, defaulting to next month', async () => {
@@ -224,6 +244,7 @@ describe('Payment calculate WMP controller', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe('Land parcels not found: SX067-99238')
+      expect(mockAuditEvent).not.toHaveBeenCalled()
     })
 
     test('should return 400 when no PA3 action exists', async () => {
@@ -436,6 +457,15 @@ describe('Payment calculate WMP controller', () => {
       })
 
       expect(statusCode).toBe(500)
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.WMP_PAYMENT_CALCULATED,
+        expect.objectContaining({
+          parcelIds: ['SX067-99238'],
+          error: 'Unexpected transformer error'
+        }),
+        'failure',
+        expect.objectContaining({ method: 'post' })
+      )
     })
   })
 })
