@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="update-agreements-area-to-sqm" author="system">
+    <sql>
+    UPDATE agreements
+    SET actions = (
+      SELECT jsonb_agg(
+        elem || jsonb_build_object(
+            'quantity', ROUND((elem->>'quantity')::numeric * 10000),
+            'unit', 'sqm'
+        ) ORDER BY ord)
+      FROM jsonb_array_elements(actions) WITH ORDINALITY AS e(elem, ord)
+    );
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

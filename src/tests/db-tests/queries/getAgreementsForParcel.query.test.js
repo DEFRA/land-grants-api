@@ -45,15 +45,15 @@ describe('Get Agreements For Parcel Query', () => {
     expect(actions).toStrictEqual([
       {
         actionCode: 'MOR1',
-        quantity: 48.4547,
-        unit: 'ha',
+        quantity: 484547,
+        unit: 'sqm',
         startDate: new Date('2024-07-01T00:00:00.000Z'),
         endDate: new Date('2027-06-30T00:00:00.000Z')
       },
       {
         actionCode: 'UP3',
-        quantity: 48.4547,
-        unit: 'ha',
+        quantity: 484547,
+        unit: 'sqm',
         startDate: new Date('2019-01-01T00:00:00.000Z'),
         endDate: new Date('2028-12-31T00:00:00.000Z')
       }

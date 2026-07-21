@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
@@ -53,7 +54,9 @@ const parcelsSchema = Joi.object({
       Joi.object({
         actionCode: Joi.string().required(),
         quantity: Joi.number().required(),
-        unit: Joi.string().valid('ha', 'sqm').required()
+        unit: Joi.string()
+          .valid(...UNIT_TYPES)
+          .required()
       })
     )
     .optional()
