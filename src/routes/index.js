@@ -55,7 +55,7 @@ async function createServer() {
   // auth                - provides service-to-service authentication
   // router              - routes used in the app
   // s3Client            - S3 client
-  // statistics          - statistics cron job
+  // statistics          - statistics counts
   // grantsConfig        - SQS consumer for grants-config-broker updates
   // swagger             - swagger documentation
   await server.register([

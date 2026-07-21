@@ -1,4 +1,3 @@
-import { schedule } from 'node-cron'
 import { config } from '~/src/config/index.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { getStats } from '~/src/features/statistics/queries/stats.query.js'
@@ -10,12 +9,12 @@ export const statistics = {
     name: 'statistics',
     version: '1.0.0',
     register(server) {
-      const loadStats = async () => {
+      const loadAndLogStats = async () => {
         try {
-          const lockTimeout = config.get('cron.taskLockTimeoutMinutes')
+          const lockTimeout = config.get('taskLockTimeoutMinutes')
 
           const runStatsTask = async () => {
-            server.logger.info('Running statistics cron job')
+            server.logger.info('Running statistics counts')
             const stats = await getStats(server.logger, server.postgresDb)
 
             logInfo(server.logger, {
@@ -38,12 +37,12 @@ export const statistics = {
               )
             ])
 
-            server.logger.info('Statistics cron job completed successfully')
+            server.logger.info('Statistics counts completed successfully')
           }
 
           const { acquired } = await withTaskLock(
             server.postgresDb,
-            'loadStats',
+            'loadAndLogStats',
             runStatsTask,
             { timeoutMinutes: lockTimeout }
           )
@@ -52,18 +51,13 @@ export const statistics = {
             server.logger.info('Skipping statistics run; lock not acquired')
           }
         } catch (err) {
-          server.logger.error({ err }, 'Error running statistics cron job')
+          server.logger.error({ err }, 'Error running statistics counts')
           throw err
         }
       }
-      server.expose('loadStats', loadStats)
+      server.expose('loadAndLogStats', loadAndLogStats)
 
-      schedule(config.get('cron.statsSchedule'), loadStats, {
-        timezone: config.get('cron.timezone'),
-        maxRandomDelay: config.get('cron.maxRandomDelay')
-      })
-
-      loadStats().catch((error) => {
+      loadAndLogStats().catch((error) => {
         server.logger.error({ error }, 'Failed to get stats on startup')
       })
     }

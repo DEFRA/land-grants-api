@@ -33,8 +33,8 @@ Sign in with Azure AD. See [Managing the service](../../docs/managing-the-servic
 | `/application/*/validation-run`                             | V1      | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/initiate-upload`                                          | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/cdp-uploader-callback`                                    | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
-| `unlinked_parcels_count` (EMF metric, cron every 30 min)    | -       | Avg gauge value                         |
-| `unlinked_covers_count` (EMF metric, cron every 30 min)     | -       | Avg gauge value                         |
+| `unlinked_parcels_count` (EMF metric)                       | -       | Avg gauge value                         |
+| `unlinked_covers_count` (EMF metric)                        | -       | Avg gauge value                         |
 
 ### Key fields
 

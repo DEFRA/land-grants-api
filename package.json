@@ -79,7 +79,6 @@
     "javascript-lp-solver": "^1.0.3",
     "joi": "^17.13.4",
     "minimatch": "^10.2.5",
-    "node-cron": "^4.6.0",
     "pg": "^8.22.0",
     "pg-copy-streams": "^7.0.0",
     "pino": "^10.3.1",

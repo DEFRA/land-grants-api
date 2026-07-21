@@ -78,21 +78,6 @@ const startFileProcessing = (
     title,
     taskId
   })
-    .then(async () => {
-      // @ts-expect-error - statistics is not typed on server.plugins
-      const statistics = request.server.plugins.statistics
-      if (statistics?.loadStats) {
-        try {
-          await statistics.loadStats()
-        } catch (error) {
-          request.logger.error(
-            { error },
-            'Failed to run statistics after successful data ingestion'
-          )
-        }
-      }
-      return null
-    })
     .catch((error) => {
       logBusinessError(request.logger, {
         operation: `${category}_process_file_error`,
@@ -103,6 +88,20 @@ const startFileProcessing = (
           s3Bucket: config.get('s3.bucket')
         }
       })
+    })
+    .then(async () => {
+      // @ts-expect-error - statistics is not typed on server.plugins
+      const statistics = request.server.plugins.statistics
+      if (statistics?.loadAndLogStats) {
+        await statistics.loadAndLogStats()
+      }
+      return undefined
+    })
+    .catch((error) => {
+      request.logger.error(
+        { error },
+        'Failed to run statistics after successful data ingestion'
+      )
     })
 }
 

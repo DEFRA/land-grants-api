@@ -235,31 +235,11 @@ const config = convict({
     default: false,
     env: 'LOAD_POSTGRES_DATA'
   },
-  cron: {
-    timezone: {
-      doc: 'Timezone for cron jobs',
-      format: String,
-      default: 'UTC',
-      env: 'CRON_TIMEZONE'
-    },
-    maxRandomDelay: {
-      doc: 'Maximum random delay for cron jobs in milliseconds',
-      format: Number,
-      default: 150,
-      env: 'CRON_MAX_RANDOM_DELAY'
-    },
-    taskLockTimeoutMinutes: {
-      doc: 'Timeout for task locks in minutes',
-      format: Number,
-      default: 5,
-      env: 'CRON_TASK_LOCK_TIMEOUT_MINUTES'
-    },
-    statsSchedule: {
-      doc: 'Cron time/schedule for outputting stats',
-      format: String,
-      default: '0 7 * * *',
-      env: 'CRON_STATS_SCHEDULE'
-    }
+  taskLockTimeoutMinutes: {
+    doc: 'Timeout for task locks in minutes',
+    format: Number,
+    default: 5,
+    env: 'TASK_LOCK_TIMEOUT_MINUTES'
   },
   log: {
     enabled: {
