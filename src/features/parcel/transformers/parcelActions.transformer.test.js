@@ -219,12 +219,22 @@ describe('parcelActionsTransformer', () => {
 })
 
 describe('plannedActionsTransformer', () => {
-  test('should transform current actions to actions', () => {
-    const plannedActions = [{ actionCode: 'UPL1', quantity: 0, unit: 'sqm' }]
+  test('should transform current actions to actions with sqm', () => {
+    const plannedActions = [{ actionCode: 'UPL1', quantity: 190, unit: 'sqm' }]
 
     const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 0 }])
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 190 }])
+  })
+
+  test('should transform current actions to actions with ha', () => {
+    const plannedActions = [
+      { actionCode: 'UPL1', quantity: 5.1267, unit: 'ha' }
+    ]
+
+    const result = plannedActionsTransformer(plannedActions)
+
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 51267 }])
   })
 
   test('should return empty array when plannedActions is null', () => {

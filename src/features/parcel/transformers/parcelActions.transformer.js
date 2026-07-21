@@ -1,4 +1,8 @@
-import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js'
+import {
+  applicationUnitOfMeasurement,
+  haToSqm
+} from '~/src/features/common/helpers/measurement.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 
 /**
  * Transform size to application unit of measurement
@@ -75,7 +79,7 @@ function plannedActionsTransformer(plannedActions) {
   return (plannedActions ?? []).map((a) => {
     return {
       actionCode: a.actionCode,
-      areaSqm: a.quantity
+      areaSqm: a.unit === HECTARES ? haToSqm(a.quantity) : a.quantity
     }
   })
 }
