@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks'
-import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
+import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js'
 import {
   logInfo,
   logBusinessError
@@ -51,11 +51,12 @@ async function connectToDb(logger) {
   if (!hasDBOptions(dbOptions, logger)) {
     throw new Error('Database options are not set')
   }
-  const connection = createDBPool(dbOptions, {
+  const client = createDBClient(dbOptions, {
     secureContext: createSecureContext(logger),
     logger
   })
-  return await connection.connect()
+  await client.connect()
+  return client
 }
 
 /**

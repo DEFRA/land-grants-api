@@ -36,6 +36,12 @@ describe('Ingest Service', () => {
     // Mock startWorker to return a resolved promise
     workerThread.startWorker.mockResolvedValue()
 
+    config.get.mockImplementation((key) => {
+      if (key === 'ingest.maxConcurrentWorkers') return 5
+      if (key === 's3.bucket') return 'test-bucket'
+      return undefined
+    })
+
     vi.clearAllMocks()
   })
 
@@ -562,6 +568,25 @@ describe('Ingest Service', () => {
           )
         ).rejects.toThrow('Connection refused')
       })
+
+      it('should throw error when response is not ok', async () => {
+        global.fetch.mockResolvedValue({
+          ok: false,
+          json: vi.fn().mockResolvedValue({ message: 'Service unavailable' })
+        })
+
+        await expect(
+          initiateLandDataUpload(
+            mockEndpoint,
+            mockCallback,
+            mockS3Bucket,
+            mockS3Path,
+            mockMetadata
+          )
+        ).rejects.toThrow(
+          'Failed to initiate land data upload: Service unavailable'
+        )
+      })
     })
 
     describe('response handling', () => {
@@ -630,5 +655,137 @@ describe('Ingest Service', () => {
         expect(result).toEqual(mockResponse)
       })
     })
+  })
+})
+
+describe('Worker slot concurrency control', () => {
+  const mockStartWorker = vi.fn()
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.doMock('../../common/worker-thread/start-worker-thread.js', () => ({
+      startWorker: mockStartWorker
+    }))
+    vi.doMock('../../../config/index.js', () => ({
+      config: {
+        get: vi.fn((key) => {
+          if (key === 'ingest.maxConcurrentWorkers') return 1
+          return undefined
+        })
+      }
+    }))
+    vi.doMock('../../common/helpers/logging/log-helpers.js', () => ({
+      logInfo: vi.fn()
+    }))
+    mockStartWorker.mockReset()
+    mockStartWorker.mockResolvedValue()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.resetModules()
+  })
+
+  it('should run only one worker when max is 1', async () => {
+    const { processFile } = await import('./ingest.service.js')
+
+    const order = []
+    let resolveFirst
+
+    mockStartWorker.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve
+          order.push('first-started')
+        })
+    )
+    mockStartWorker.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          order.push('second-started')
+          resolve()
+        })
+    )
+
+    const first = processFile(
+      { s3key: 'a.csv' },
+      { logger: { info: vi.fn() } },
+      { category: 'land_parcels', title: 'Land Parcels', taskId: 1 }
+    )
+    const second = processFile(
+      { s3key: 'b.csv' },
+      { logger: { info: vi.fn() } },
+      { category: 'land_covers', title: 'Land Covers', taskId: 2 }
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    expect(order).toEqual(['first-started'])
+    expect(mockStartWorker).toHaveBeenCalledTimes(1)
+
+    resolveFirst()
+    await first
+    await second
+
+    expect(order).toEqual(['first-started', 'second-started'])
+    expect(mockStartWorker).toHaveBeenCalledTimes(2)
+  })
+
+  it('should release slot when worker completes and unblock waiting caller', async () => {
+    const { processFile } = await import('./ingest.service.js')
+
+    let resolveFirst
+
+    mockStartWorker.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve
+        })
+    )
+    mockStartWorker.mockResolvedValueOnce()
+
+    const first = processFile(
+      { s3key: 'a.csv' },
+      { logger: { info: vi.fn() } },
+      { category: 'land_parcels', title: 'Land Parcels', taskId: 1 }
+    )
+    const second = processFile(
+      { s3key: 'b.csv' },
+      { logger: { info: vi.fn() } },
+      { category: 'land_covers', title: 'Land Covers', taskId: 2 }
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(mockStartWorker).toHaveBeenCalledTimes(1)
+
+    resolveFirst()
+    await first
+    await second
+
+    expect(mockStartWorker).toHaveBeenCalledTimes(2)
+  })
+
+  it('should release slot even when worker throws', async () => {
+    const { processFile } = await import('./ingest.service.js')
+
+    mockStartWorker.mockRejectedValueOnce(new Error('fail'))
+
+    await expect(
+      processFile(
+        { s3key: 'a.csv' },
+        { logger: { info: vi.fn() } },
+        { category: 'land_parcels', title: 'Land Parcels', taskId: 1 }
+      )
+    ).rejects.toThrow('fail')
+
+    mockStartWorker.mockResolvedValueOnce()
+
+    await processFile(
+      { s3key: 'b.csv' },
+      { logger: { info: vi.fn() } },
+      { category: 'land_covers', title: 'Land Covers', taskId: 2 }
+    )
+
+    expect(mockStartWorker).toHaveBeenCalledTimes(2)
   })
 })

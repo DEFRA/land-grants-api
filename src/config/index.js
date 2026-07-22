@@ -186,6 +186,12 @@ const config = convict({
       format: String,
       default: 'https://grants-ui.dev.cdp-int.defra.cloud',
       env: 'GRANTS_UI_HOST'
+    },
+    maxConcurrentWorkers: {
+      doc: 'Maximum number of concurrent ingest worker threads. Each worker uses one DB connection, so total DB connections from ingest equals this value. Keep below the pool max (10) to leave headroom for API/stats connections.',
+      format: Number,
+      default: 5,
+      env: 'INGEST_MAX_CONCURRENT_WORKERS'
     }
   },
   auth: {

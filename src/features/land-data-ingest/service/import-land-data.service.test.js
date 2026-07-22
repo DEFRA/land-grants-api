@@ -1,6 +1,6 @@
 import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest'
 import { importData } from './import-land-data.service.js'
-import { createDBPool, getDBOptions } from '../../common/helpers/postgres.js'
+import { createDBClient, getDBOptions } from '../../common/helpers/postgres.js'
 import {
   createTempTable,
   copyDataToTempTable,
@@ -34,7 +34,6 @@ const asIsEntities = ENTITY_TYPES.filter((entity) => entity.ingest !== true)
 
 describe('Import Land Data Service', () => {
   let mockClient
-  let mockConnection
   let mockLogger
   const ingestId = '1234567890'
 
@@ -50,13 +49,10 @@ describe('Import Land Data Service', () => {
         }
         return Promise.resolve({ rowCount: 1 })
       }),
+      connect: vi.fn(),
       end: vi.fn()
     }
-    mockConnection = {
-      connect: vi.fn().mockResolvedValue(mockClient),
-      end: vi.fn()
-    }
-    createDBPool.mockReturnValue(mockConnection)
+    createDBClient.mockReturnValue(mockClient)
     getDBOptions.mockReturnValue({
       user: 'test-user',
       database: 'test-db',
@@ -102,7 +98,7 @@ describe('Import Land Data Service', () => {
     it(`should import ${entity.name} and promote when ingest is complete`, async () => {
       await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
 
-      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(setFileInProgress).toHaveBeenCalledTimes(1)
       expect(createTempTable).toHaveBeenCalledTimes(1)
@@ -227,7 +223,7 @@ describe('Import Land Data Service', () => {
     it(`should import ${entity.name}`, async () => {
       await importData(makeStream(), entity, ingestId, '', mockLogger)
 
-      expect(mockConnection.connect).toHaveBeenCalledTimes(1)
+      expect(mockClient.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.end).toHaveBeenCalledTimes(1)
       expect(createTempTable).toHaveBeenCalledTimes(1)
       expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
