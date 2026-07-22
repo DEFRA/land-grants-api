@@ -122,4 +122,4 @@ const importLandData = async () => {
   await client.end()
 }
 
-importLandData()
+await importLandData()

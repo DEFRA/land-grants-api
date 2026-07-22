@@ -75,6 +75,7 @@ function getDalQuantityFields(action) {
  * @param {Business} business The business to convert
  * @returns {AgreementAction[]} Agreements related to this business
  */
+// eslint-disable-next-line import-x/no-unused-modules
 export function dalBusinessToAgreements(business, parcelId, sheetId) {
   // Agreement actions are nested in agreement.paymentSchedules so we flatten them out of the
   // agreements array. We also need to filter by agreement status and parcelId + sheetId in order

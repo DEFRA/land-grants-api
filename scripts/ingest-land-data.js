@@ -20,7 +20,7 @@ const resources = [
   'action_sssi_hf_mapping'
 ]
 
-transferAllResources()
+await transferAllResources()
 
 async function transferAllResources() {
   for (const environment of environments) {
@@ -230,7 +230,7 @@ async function transferResource(resource, environment) {
   console.log(`${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`)
 
   // get the files to ingest from the directory
-  const currentfailedFiles = await readFailedFiles(resource)
+  const currentfailedFiles = readFailedFiles(resource)
   let files = []
   if (currentfailedFiles.length > 0) {
     files = currentfailedFiles
@@ -244,7 +244,7 @@ async function transferResource(resource, environment) {
   for (const landDataFile of files) {
     console.log(`✓ Start ingesting ${landDataFile}`)
 
-    //reject files that do not contain .csv or .zip extension
+    // reject files that do not contain .csv or .zip extension
     if (!landDataFile.endsWith('.csv') && !landDataFile.endsWith('.zip')) {
       console.log(
         `✗ Skipping ${landDataFile} as it does not end with .csv or .zip`
@@ -294,15 +294,15 @@ async function transferResource(resource, environment) {
     }
   }
 
-  await saveResults(resource, failedFiles)
+  saveResults(resource, failedFiles)
   if (failedFiles.length === 0) {
-    await deleteFailedFiles(resource)
+    deleteFailedFiles(resource)
   }
 
   console.log('✓ Ingestion complete for : ' + resource)
 }
 
-async function saveResults(resource, filesCompleted) {
+function saveResults(resource, filesCompleted) {
   if (filesCompleted.length > 0) {
     const textString = filesCompleted.join('\n')
     const datePart = new Date().toISOString().replace('T', ':').slice(0, 19)
@@ -310,7 +310,7 @@ async function saveResults(resource, filesCompleted) {
   }
 }
 
-async function readFailedFiles(resource) {
+function readFailedFiles(resource) {
   const currentDirectory = process.cwd()
   const files = fs
     .readdirSync(currentDirectory)
@@ -322,7 +322,7 @@ async function readFailedFiles(resource) {
   return [...new Set(failedFiles)]
 }
 
-async function deleteFailedFiles(resource) {
+function deleteFailedFiles(resource) {
   const currentDirectory = process.cwd()
   const files = fs
     .readdirSync(currentDirectory)

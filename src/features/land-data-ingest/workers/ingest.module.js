@@ -21,7 +21,7 @@ import { getEntityNameForIngest } from '../service/start-ingest.service.js'
  * @param {string} entityName - The entity name
  * @returns {object} The resource
  */
-export const getEntityType = (entityName) => {
+const getEntityType = (entityName) => {
   const entityType = getEntityByName(entityName)
   if (!entityType) {
     throw new Error(`Entity type ${entityName} not found`)
@@ -35,7 +35,7 @@ export const getEntityType = (entityName) => {
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  * @returns {Promise<object>} The resolved entity type
  */
-export const getEntityTypeForIngest = async (ingestId, logger) => {
+const getEntityTypeForIngest = async (ingestId, logger) => {
   const dbOptions = getDBOptions()
   const client = createDBClient(dbOptions, {
     secureContext: createSecureContext(logger),
@@ -127,7 +127,7 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
  * @param {{s3key: string, filename?: string, ingestId?: number}} data
  * @returns {Promise<string>} The string representation of the file
  */
-export async function importLandData(data) {
+async function importLandData(data) {
   const { s3key, filename: originalFilename, ingestId: providedIngestId } = data
 
   const category = 'import-land-data'

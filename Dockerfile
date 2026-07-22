@@ -11,7 +11,7 @@ ARG PORT_DEBUG
 ENV PORT=${PORT}
 EXPOSE ${PORT} ${PORT_DEBUG}
 
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node .npmrc package*.json ./
 RUN npm install --ignore-scripts
 COPY --chown=node:node . .
 RUN npm run build

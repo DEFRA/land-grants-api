@@ -14,7 +14,7 @@ import {
  * @param {number} newWoodlandMaxPercent - Maximum percentage of total area that new woodland may contribute
  * @returns {number} The eligible area in square metres
  */
-export const calculateEligibleArea = (
+const calculateEligibleArea = (
   oldWoodlandAreaSqm,
   newWoodlandAreaSqm,
   newWoodlandMaxPercent
@@ -34,7 +34,7 @@ export const calculateEligibleArea = (
  * @param {WmpTier[]} tiers - Payment tiers ordered ascending by lowerLimitHa
  * @returns {{ payment: number, tierIndex: number }} The payment in GBP and the 0-based index of the selected tier (-1 if none)
  */
-export const calculatePayment = (eligibleAreaSqm, tiers) => {
+const calculatePayment = (eligibleAreaSqm, tiers) => {
   if (eligibleAreaSqm < haToSqm(tiers[0].lowerLimitHa)) {
     return { payment: 0, tierIndex: -1 }
   }

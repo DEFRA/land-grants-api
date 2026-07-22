@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { connectToTestDatabase } from '../src/tests/db-tests/setup/postgres.js'
 import { createCompatibilityMatrix } from '../src/features/available-area/compatibilityMatrix.js'
 import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableAreaDataRequirements.js'
@@ -13,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 /**
  * Extract the union of all action codes from CSV scenarios and synthetic scenarios
  * @param {Array<Array>} scenarios CSV scenario tuples
- * @param {Object} syntheticScenarios Synthetic scenario map
+ * @param {object} syntheticScenarios Synthetic scenario map
  * @returns {Array<string>} Sorted, deduplicated action codes
  */
 const extractActionCodes = (scenarios, syntheticScenarios) => {
@@ -38,7 +36,7 @@ const extractActionCodes = (scenarios, syntheticScenarios) => {
 
 /**
  * Create a logger object with console methods
- * @returns {Object} Logger object
+ * @returns {object} Logger object
  */
 const createLogger = () => ({
   log: console.log,
@@ -81,9 +79,9 @@ const buildCompatibilityMatrix = (compatibilityCheckFn, actionCodes) => {
 
 /**
  * Parse existing actions from scenario with error handling
- * @param {Object} scenario Test scenario object
+ * @param {object} scenario Test scenario object
  * @param {string} scenarioName Name of the scenario
- * @param {Object} logger Logger object
+ * @param {object} logger Logger object
  * @returns {Array} Parsed existing actions
  */
 const parseExistingActions = (scenario, scenarioName, logger) => {
@@ -100,8 +98,8 @@ const parseExistingActions = (scenario, scenarioName, logger) => {
 
 /**
  * Validate that data requirements contain real database data
- * @param {Object} dataRequirements Database requirements object
- * @param {Object} scenario Test scenario
+ * @param {object} dataRequirements Database requirements object
+ * @param {object} scenario Test scenario
  * @param {Array} existingActions Parsed existing actions
  * @throws {Error} If validation fails
  */
@@ -142,11 +140,11 @@ const validateDataRequirements = (
 
 /**
  * Process a single scenario to compute its data requirements
- * @param {Object} scenario Test scenario object
+ * @param {object} scenario Test scenario object
  * @param {string} scenarioName Name of the scenario
- * @param {Object} connection Database connection
- * @param {Object} logger Logger object
- * @returns {Promise<Object>} Computed fixture data for the scenario
+ * @param {object} connection Database connection
+ * @param {object} logger Logger object
+ * @returns {Promise<object>} Computed fixture data for the scenario
  */
 const processScenario = async (scenario, scenarioName, connection, logger) => {
   const existingActions = parseExistingActions(scenario, scenarioName, logger)
@@ -170,7 +168,7 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
       applyingForAction: scenario.applyingForAction,
       sheetId: scenario.sheetId,
       parcelId: scenario.parcelId,
-      existingActions: existingActions,
+      existingActions,
       expectedAvailableArea: scenario.expectedAvailableArea
     },
     // Pre-computed database results
@@ -192,9 +190,9 @@ const processScenario = async (scenario, scenarioName, connection, logger) => {
 /**
  * Process all scenarios to compute their data requirements
  * @param {Array} scenarios Array of [scenarioName, scenario] tuples
- * @param {Object} connection Database connection
- * @param {Object} logger Logger object
- * @returns {Promise<Object>} Object mapping scenario names to computed fixtures
+ * @param {object} connection Database connection
+ * @param {object} logger Logger object
+ * @returns {Promise<object>} Object mapping scenario names to computed fixtures
  */
 const processAllScenarios = async (scenarios, connection, logger) => {
   console.log(
@@ -225,7 +223,7 @@ const processAllScenarios = async (scenarios, connection, logger) => {
  * Load synthetic scenarios from the JSON file
  * Synthetic scenarios provide both scenario inputs and dataRequirements directly,
  * without needing a database to compute them.
- * @returns {Object} Object mapping scenario names to scenario data
+ * @returns {object} Object mapping scenario names to scenario data
  */
 const loadSyntheticScenarios = () => {
   const syntheticPath = resolve(
@@ -244,9 +242,9 @@ const loadSyntheticScenarios = () => {
 /**
  * Create the complete fixtures data structure
  * @param {Array<Array<string>>} compatibilityMatrix Compatible action code pairs
- * @param {Object} computedFixtures Computed scenario fixtures
+ * @param {object} computedFixtures Computed scenario fixtures
  * @param {Array<string>} actionCodes Action codes
- * @returns {Object} Complete fixtures data structure
+ * @returns {object} Complete fixtures data structure
  */
 const buildFixturesData = (
   compatibilityMatrix,
@@ -255,7 +253,7 @@ const buildFixturesData = (
 ) => ({
   metadata: {
     generatedAt: new Date().toISOString(),
-    actionCodes: actionCodes,
+    actionCodes,
     scenarioCount: Object.keys(computedFixtures).length,
     version: '1.0.0'
   },
@@ -265,7 +263,7 @@ const buildFixturesData = (
 
 /**
  * Write fixtures data to file
- * @param {Object} fixturesData Complete fixtures data
+ * @param {object} fixturesData Complete fixtures data
  * @param {string} outputPath Output file path
  */
 const writeFixturesToFile = (fixturesData, outputPath) => {
@@ -277,7 +275,7 @@ const writeFixturesToFile = (fixturesData, outputPath) => {
  * Log completion statistics
  * @param {Array} scenarios Array of scenarios
  * @param {Array<string>} actionCodes Action codes
- * @param {Object} fixturesData Complete fixtures data structure
+ * @param {object} fixturesData Complete fixtures data structure
  */
 const logCompletionStats = (scenarios, actionCodes, fixturesData) => {
   console.log('✅ Fixture generation completed successfully!')
@@ -370,5 +368,3 @@ if (resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])) {
     process.exit(1)
   }
 }
-
-export { generateAvailableAreaFixtures }

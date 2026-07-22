@@ -1,8 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getEntityType } from './ingest.module.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 import { PassThrough } from 'node:stream'
-import { ENTITY_TYPES } from '~/src/features/common/constants/entity_types.js'
+
+const mockPostMessage = vi.fn()
+
+vi.mock('node:worker_threads', () => ({
+  parentPort: {
+    postMessage: mockPostMessage
+  }
+}))
 
 vi.mock('unzipper', () => ({
   default: {
@@ -54,36 +60,8 @@ vi.mock('../service/start-ingest.service.js', () => ({
 }))
 
 describe('Ingest Module', () => {
-  describe('getEntityType', () => {
-    it('should return correct resource for all valid resource types', () => {
-      ENTITY_TYPES.forEach((resource) => {
-        const result = getEntityType(resource.name)
-        expect(result).toBe(resource)
-        expect(result).toEqual(resource)
-      })
-    })
-
-    it('should throw error for non-existent resource type', () => {
-      expect(() => getEntityType('invalid_resource')).toThrow(
-        'Entity type invalid_resource not found'
-      )
-    })
-
-    it('should throw error for invalid inputs', () => {
-      expect(() => getEntityType('')).toThrow()
-      expect(() => getEntityType(null)).toThrow()
-      expect(() => getEntityType(undefined)).toThrow()
-    })
-
-    it('should be case-sensitive', () => {
-      expect(() => getEntityType('Land_Parcels')).toThrow(
-        'Entity type Land_Parcels not found'
-      )
-    })
-  })
-
   describe('importLandData', () => {
-    let importLandData
+    let ingestLandData
     let getFile
     let importData
     let logBusinessError
@@ -106,7 +84,7 @@ describe('Ingest Module', () => {
         await import('../service/start-ingest.service.js')
       unzipper = (await import('unzipper')).default
 
-      importLandData = module.importLandData
+      ingestLandData = module.ingestLandData
       getFile = s3Module.getFile
       importData = importServiceModule.importData
       logBusinessError = logHelpersModule.logBusinessError
@@ -131,13 +109,16 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
       importData.mockResolvedValue(undefined)
 
-      const result = await importLandData({
-        s3key: 'land_parcels/123/test.csv',
-        filename: 'test.csv',
-        ingestId: '123'
+      const result = await ingestLandData({
+        taskId: 'task-1',
+        data: {
+          s3key: 'land_parcels/123/test.csv',
+          filename: 'test.csv',
+          ingestId: '123'
+        }
       })
 
-      expect(result).toBe('Land data imported successfully')
+      expect(result).toBeUndefined()
       expect(getFile).toHaveBeenCalledWith(
         { client: 'mock-s3-client' },
         'test-bucket',
@@ -169,14 +150,24 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
 
       await expect(
-        importLandData({
-          s3key: 'land_parcels/123/test.csv',
-          filename: 'test.csv',
-          ingestId: '123'
+        ingestLandData({
+          taskId: 'task-2',
+          data: {
+            s3key: 'land_parcels/123/test.csv',
+            filename: 'test.csv',
+            ingestId: '123'
+          }
         })
       ).rejects.toThrow('Ingest 123 not found')
 
       expect(importData).not.toHaveBeenCalled()
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-2',
+          success: false,
+          error: 'Ingest 123 not found'
+        })
+      )
     })
 
     it('should successfully import land data with ZIP file containing CSV', async () => {
@@ -202,11 +193,14 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
       importData.mockResolvedValue(undefined)
 
-      const result = await importLandData({
-        s3key: 'land_parcels/123/test.zip'
+      const result = await ingestLandData({
+        taskId: 'task-3',
+        data: {
+          s3key: 'land_parcels/123/test.zip'
+        }
       })
 
-      expect(result).toBe('Land data imported successfully')
+      expect(result).toBeUndefined()
       expect(unzipper.Parse).toHaveBeenCalledWith({ forceStream: true })
       expect(importData).toHaveBeenCalledWith(
         { path: 'data.csv' },
@@ -240,11 +234,21 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
 
       await expect(
-        importLandData({ s3key: 'land_parcels/123/test.zip' })
+        ingestLandData({
+          taskId: 'task-4',
+          data: { s3key: 'land_parcels/123/test.zip' }
+        })
       ).rejects.toThrow('No CSV found in the ZIP')
 
       expect(importData).not.toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-4',
+          success: false,
+          error: 'No CSV found in the ZIP'
+        })
+      )
     })
 
     it('should throw error for invalid content type', async () => {
@@ -258,11 +262,21 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
 
       await expect(
-        importLandData({ s3key: 'land_parcels/123/test.json' })
+        ingestLandData({
+          taskId: 'task-5',
+          data: { s3key: 'land_parcels/123/test.json' }
+        })
       ).rejects.toThrow('Invalid content type: application/json')
 
       expect(importData).not.toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-5',
+          success: false,
+          error: 'Invalid content type: application/json'
+        })
+      )
     })
 
     it('should handle S3 errors', async () => {
@@ -270,11 +284,21 @@ describe('Ingest Module', () => {
       getFile.mockRejectedValue(s3Error)
 
       await expect(
-        importLandData({ s3key: 'land_parcels/123/test.csv' })
+        ingestLandData({
+          taskId: 'task-6',
+          data: { s3key: 'land_parcels/123/test.csv' }
+        })
       ).rejects.toThrow('S3 connection failed')
 
       expect(logBusinessError).toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-6',
+          success: false,
+          error: 'S3 connection failed'
+        })
+      )
     })
 
     it('should handle invalid resource type in file path', async () => {
@@ -289,11 +313,21 @@ describe('Ingest Module', () => {
       getFile.mockResolvedValue(mockResponse)
 
       await expect(
-        importLandData({ s3key: 'invalid_resource/123/test.csv' })
+        ingestLandData({
+          taskId: 'task-7',
+          data: { s3key: 'invalid_resource/123/test.csv' }
+        })
       ).rejects.toThrow('Entity type invalid_resource not found')
 
       expect(logBusinessError).toHaveBeenCalled()
       expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-7',
+          success: false,
+          error: 'Entity type invalid_resource not found'
+        })
+      )
     })
   })
 })

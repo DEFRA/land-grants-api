@@ -77,7 +77,7 @@ async function getActionsByVersion(logger, db, actions) {
   }
 }
 
-export { getActionsByVersion, getActionsByVersionSql }
+export { getActionsByVersion }
 
 /**
  * @import {Action} from '../../action.d.js'

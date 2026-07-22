@@ -28,7 +28,7 @@ async function callCallbackEndpoint(filename, s3Path) {
       form: {
         file: {
           fileId: crypto.randomUUID(),
-          filename: filename,
+          filename,
           contentType: 'text/csv',
           fileStatus: 'complete',
           contentLength: 230084,
@@ -90,20 +90,20 @@ async function startIngest(filepath, resourceType) {
   const isDirectory = fs.lstatSync(filepath).isDirectory()
   if (isDirectory) {
     const files = fs.readdirSync(filepath)
-    files.forEach((file) => {
+    for (const file of files) {
       if (file.endsWith('.csv')) {
-        ingestFile(path.join(filepath, file), resourceType)
+        await ingestFile(path.join(filepath, file), resourceType)
       }
-    })
+    }
   } else {
-    ingestFile(filepath, resourceType)
+    await ingestFile(filepath, resourceType)
   }
 }
 
 const [resourceType, filepath] = argv.slice(2)
 console.log(`Ingesting file: ${filepath} for resource type: ${resourceType}`)
 if (validResourceTypes.includes(resourceType) && filepath) {
-  startIngest(filepath, resourceType)
+  await startIngest(filepath, resourceType)
 } else {
   console.error(
     `Invalid resource type: ${resourceType} or file path: ${filepath}`

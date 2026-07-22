@@ -36,37 +36,11 @@ export const actionResultTransformer = (
 }
 
 /**
- * Transform the error messages
- * @param {object[]} parcelResults - The parcel results
- * @returns {string[]} The error messages
- */
-export const errorMessagesTransformer = (parcelResults) => {
-  return parcelResults.flatMap((parcel) =>
-    parcel.actions
-      .filter((action) => !action.hasPassed)
-      .flatMap((action) =>
-        action.rules
-          .flat()
-          .filter((rule) => !rule.passed)
-          .map((rule) => {
-            return {
-              code: action.code,
-              description: rule.reason,
-              sheetId: parcel.sheetId,
-              parcelId: parcel.parcelId,
-              passed: rule.passed
-            }
-          })
-      )
-  )
-}
-
-/**
  * map rules for application validation v2
  * @param {*} rule - The rule
  * @returns
  */
-export const mapRules = (rule) => {
+const mapRules = (rule) => {
   return {
     name: rule.name,
     passed: rule.passed,

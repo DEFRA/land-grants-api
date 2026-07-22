@@ -50,7 +50,7 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
  * @param {object} logger - Logger instance
  * @returns {Promise<object>} The ingest data
  */
-export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
+const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
   // set in progress ingests to cancelled
   const { rows } = await dbClient.query(
     `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
@@ -91,23 +91,8 @@ export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
  * @param {import('pg').Client} dbClient - Database connection
  * @returns {Promise<void>}
  */
-export const truncateStagingTable = async (entity, dbClient) => {
+const truncateStagingTable = async (entity, dbClient) => {
   await dbClient.query(`TRUNCATE TABLE ${entity}_staging`)
-}
-
-/**
- * Gets active ingest for the given entity
- * @param {string} entity - The entity to get active ingest for
- * @param {import('pg').Client} dbClient - Database connection
- * @returns {Promise<import('../ingest.d.js').Ingest|null>} The active ingest data
- */
-export const getActiveIngestForEntity = async (entity, dbClient) => {
-  const { rows } = await dbClient.query(
-    `SELECT * FROM ingest WHERE entity = $1 AND status = $2 LIMIT 1`,
-    [entity, INGEST_STATUS.IN_PROGRESS]
-  )
-
-  return rows?.[0]
 }
 
 /**
@@ -288,7 +273,7 @@ export const getIngestById = async (ingestId, dbClient) => {
  * @param {import('pg').Client} dbClient - The database client.
  * @returns {Promise<IngestWithFiles | null>} The latest ingest data, or null if not found.
  */
-export const getLatestIngestForEntity = async (entityName, dbClient) => {
+const getLatestIngestForEntity = async (entityName, dbClient) => {
   const {
     rows: [ingest]
   } = await dbClient.query(

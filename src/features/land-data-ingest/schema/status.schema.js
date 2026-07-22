@@ -5,7 +5,7 @@ export const statusIngestQuery = Joi.object({
   filename: Joi.string().optional()
 }).with('filename', 'ingestId')
 
-export const statusFileResponseSchema = Joi.object({
+const statusFileResponseSchema = Joi.object({
   id: Joi.number().required(),
   ingest_id: Joi.number().required(),
   filename: Joi.string().required(),
@@ -13,7 +13,7 @@ export const statusFileResponseSchema = Joi.object({
   status: Joi.string().required()
 })
 
-export const statusIngestResponseSchema = Joi.object({
+const statusIngestResponseSchema = Joi.object({
   id: Joi.number().required(),
   entity: Joi.string().required(),
   status: Joi.string().required(),

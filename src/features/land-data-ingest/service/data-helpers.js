@@ -83,15 +83,6 @@ export async function truncateTableAndInsertData(
 }
 
 /**
- * Truncates the pre-existing staging table for the given entity
- * @param {import('pg').Client} dbClient
- * @param {string} tableName
- */
-export async function truncateStagingTable(dbClient, tableName) {
-  await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
-}
-
-/**
  * check ingested rows matched expected count
  * @param {*} tableName
  * @param {*} ingestId
