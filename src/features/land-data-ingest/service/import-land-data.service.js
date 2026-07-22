@@ -13,6 +13,8 @@ import {
   truncateTableAndInsertData,
   isIngestComplete,
   promoteStagingTable,
+  completeAndPromotePaired,
+  failPairedAwaitingIngest,
   logDuplicateRows
 } from './data-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
@@ -133,12 +135,15 @@ async function assertFileRowCount(
 }
 
 /**
- * Promotes the staging table to live when the ingest is complete
- * @param {{isComplete: boolean, entityName: string, dbClient: object, totalCount: number, logger: object}} params
+ * Finalizes the ingest once all files have landed in staging. Entities that are paired
+ * (land_parcels/land_covers) must be promoted together, so this entity is marked completed
+ * and only actually promoted once its pair has also finished staging.
+ * @param {{isComplete: boolean, entityType: import('../../common/common.d.js').EntityType, ingestId: string | number, dbClient: object, totalCount: number, logger: object}} params
  */
-async function promoteIfComplete({
+async function finalizeIfComplete({
   isComplete,
-  entityName,
+  entityType,
+  ingestId,
   dbClient,
   totalCount,
   logger
@@ -147,7 +152,27 @@ async function promoteIfComplete({
     return
   }
 
-  await promoteStagingTable(entityName, dbClient, logger)
+  const { name: entityName, pairedWith } = entityType
+
+  let promoted
+  if (pairedWith) {
+    promoted = await completeAndPromotePaired(
+      entityName,
+      pairedWith,
+      ingestId,
+      dbClient,
+      logger
+    )
+  } else {
+    await promoteStagingTable(entityName, dbClient, logger)
+    await setIngestCompleted(ingestId, dbClient)
+    promoted = true
+  }
+
+  if (!promoted) {
+    return
+  }
+
   logInfo(logger, {
     category: logCategory,
     operation: `${entityName}_import_completed`,
@@ -237,6 +262,101 @@ export async function importDataAsIs(dataStream, entityType, ingestId, logger) {
 }
 
 /**
+ * Loads one file into staging, validates its row count, and finalizes the ingest (promoting
+ * it, or its paired entity's tables, once complete).
+ * @param {import('stream').Readable} dataStream - The data stream
+ * @param {import('../../common/common.d.js').EntityType} entityType - The table name
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
+ * @param {import('pg').Client} dbClient - Database connection
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ */
+async function processValidatedFile(
+  dataStream,
+  entityType,
+  ingestId,
+  filename,
+  dbClient,
+  logger
+) {
+  const startTime = performance.now()
+  const { name: entityName } = entityType
+
+  // @ts-expect-error filename
+  await setFileInProgress(filename, ingestId, dbClient)
+  await createTempTable(dbClient, entityName)
+  await copyDataToTempTable(dbClient, entityName, dataStream)
+  await dedupeIfNeeded(dbClient, entityName, logger)
+
+  // @ts-expect-error filename
+  await assertFileRowCount(filename, ingestId, entityName, dbClient, logger)
+
+  const { rowCount } = await insertData(dbClient, entityName, ingestId)
+  // @ts-expect-error filename
+  await setFileCompleted(filename, ingestId, dbClient)
+
+  const { isComplete, isOverCount, totalCount } = await isIngestComplete(
+    entityName,
+    ingestId,
+    dbClient
+  )
+
+  assertExpectedCount({ isOverCount, entityName, ingestId, totalCount, logger })
+  await finalizeIfComplete({
+    isComplete,
+    entityType,
+    ingestId,
+    dbClient,
+    totalCount,
+    logger
+  })
+
+  const duration = performance.now() - startTime
+  logInfo(logger, {
+    category: logCategory,
+    operation: `${entityName}_file_import_completed`,
+    message: `${entityName} file imported successfully in ${duration}ms`,
+    context: { rowCount, duration }
+  })
+  await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
+}
+
+/**
+ * Marks the file/ingest as failed, cancels any pending files, and - if this entity is
+ * paired with another - fails that paired entity's awaiting ingest too.
+ * @param {Error} error
+ * @param {import('../../common/common.d.js').EntityType} entityType - The table name
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
+ * @param {import('pg').Client} dbClient - Database connection
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ */
+async function handleImportFailure(
+  error,
+  entityType,
+  ingestId,
+  filename,
+  dbClient,
+  logger
+) {
+  const { name: entityName, pairedWith } = entityType
+
+  logBusinessError(logger, {
+    operation: `${entityName}_import_failed`,
+    error,
+    context: { entityName, filename }
+  })
+  // @ts-expect-error filename
+  await setFileFailed(filename, ingestId, dbClient)
+  await setIngestFailed(ingestId, dbClient)
+  await cancelPendingFiles(ingestId, dbClient)
+  if (pairedWith) {
+    await failPairedAwaitingIngest(entityName, pairedWith, dbClient, logger)
+  }
+  await metricsCounter(`${entityName}_data_ingest_failed`, 1)
+}
+
+/**
  * ingests data and checks all rows are present before promoting table
  * @param {import('stream').Readable} dataStream - The data stream
  * @param {import('../../common/common.d.js').EntityType} entityType - The table name
@@ -251,8 +371,6 @@ export async function importDataValidate(
   filename,
   logger
 ) {
-  const startTime = performance.now()
-
   const { name: entityName, truncateTable } = entityType
   logInfo(logger, {
     category: logCategory,
@@ -264,64 +382,23 @@ export async function importDataValidate(
   const dbClient = await connectToDb(logger)
 
   try {
-    // @ts-expect-error filename
-    await setFileInProgress(filename, ingestId, dbClient)
-    await createTempTable(dbClient, entityName)
-    await copyDataToTempTable(dbClient, entityName, dataStream)
-    await dedupeIfNeeded(dbClient, entityName, logger)
-
-    // @ts-expect-error filename
-    await assertFileRowCount(filename, ingestId, entityName, dbClient, logger)
-
-    const { rowCount } = await insertData(dbClient, entityName, ingestId)
-    // @ts-expect-error filename
-    await setFileCompleted(filename, ingestId, dbClient)
-
-    const { isComplete, isOverCount, totalCount } = await isIngestComplete(
-      entityName,
+    await processValidatedFile(
+      dataStream,
+      entityType,
       ingestId,
-      dbClient
-    )
-
-    assertExpectedCount({
-      isOverCount,
-      entityName,
-      ingestId,
-      totalCount,
-      logger
-    })
-    await promoteIfComplete({
-      isComplete,
-      entityName,
+      filename,
       dbClient,
-      totalCount,
       logger
-    })
-
-    if (isComplete) {
-      await setIngestCompleted(ingestId, dbClient)
-    }
-
-    const endTime = performance.now()
-    const duration = endTime - startTime
-    logInfo(logger, {
-      category: logCategory,
-      operation: `${entityName}_file_import_completed`,
-      message: `${entityName} file imported successfully in ${duration}ms`,
-      context: { rowCount, duration }
-    })
-    await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
+    )
   } catch (error) {
-    logBusinessError(logger, {
-      operation: `${entityName}_import_failed`,
+    await handleImportFailure(
       error,
-      context: { entityName, filename }
-    })
-    // @ts-expect-error filename
-    await setFileFailed(filename, ingestId, dbClient)
-    await setIngestFailed(ingestId, dbClient)
-    await cancelPendingFiles(ingestId, dbClient)
-    await metricsCounter(`${entityName}_data_ingest_failed`, 1)
+      entityType,
+      ingestId,
+      filename,
+      dbClient,
+      logger
+    )
     throw error
   } finally {
     await dbClient?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`)

@@ -9,6 +9,8 @@ import {
   truncateTableAndInsertData,
   isIngestComplete,
   promoteStagingTable,
+  completeAndPromotePaired,
+  failPairedAwaitingIngest,
   logDuplicateRows
 } from './data-helpers.js'
 import {
@@ -73,6 +75,8 @@ describe('Import Land Data Service', () => {
       totalCount: 1
     })
     promoteStagingTable.mockResolvedValue()
+    completeAndPromotePaired.mockResolvedValue(true)
+    failPairedAwaitingIngest.mockResolvedValue()
     setFileInProgress.mockResolvedValue()
     setFileCompleted.mockResolvedValue()
     setFileFailed.mockResolvedValue()
@@ -111,8 +115,15 @@ describe('Import Land Data Service', () => {
       expect(setFileCompleted).toHaveBeenCalledTimes(1)
       expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
       expect(isIngestComplete).toHaveBeenCalledTimes(1)
-      expect(promoteStagingTable).toHaveBeenCalledTimes(1)
-      expect(setIngestCompleted).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(completeAndPromotePaired).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        ingestId,
+        mockClient,
+        mockLogger
+      )
+      expect(promoteStagingTable).not.toHaveBeenCalled()
+      expect(setIngestCompleted).not.toHaveBeenCalled()
 
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
@@ -133,6 +144,28 @@ describe('Import Land Data Service', () => {
       } else {
         expect(logDuplicateRows).not.toHaveBeenCalled()
       }
+    })
+
+    it(`should stage ${entity.name} but not report completion when its paired entity has not finished`, async () => {
+      completeAndPromotePaired.mockResolvedValue(false)
+
+      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+
+      expect(completeAndPromotePaired).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        ingestId,
+        mockClient,
+        mockLogger
+      )
+      expect(metricsCounter).not.toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_completed`,
+        expect.anything()
+      )
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_file_ingest_completed`,
+        1
+      )
     })
 
     it(`should not promote ${entity.name} when ingest is incomplete`, async () => {
@@ -171,6 +204,12 @@ describe('Import Land Data Service', () => {
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        mockClient,
+        mockLogger
+      )
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
@@ -195,6 +234,12 @@ describe('Import Land Data Service', () => {
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        mockClient,
+        mockLogger
+      )
       expect(mockLogger.error).toHaveBeenCalledTimes(2)
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
@@ -212,10 +257,41 @@ describe('Import Land Data Service', () => {
       ).rejects.toThrow(`Failed to import ${entity.name}`)
 
       expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        mockClient,
+        mockLogger
+      )
       expect(setFileFailed).toHaveBeenCalledTimes(1)
       expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
       expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
       expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_failed`,
+        1
+      )
+    })
+
+    it(`should fail ${entity.name} when its paired entity already failed`, async () => {
+      const pairError = new Error(
+        `${entity.name} cannot be promoted because its paired entity ${entity.pairedWith} already failed`
+      )
+      completeAndPromotePaired.mockRejectedValue(pairError)
+
+      await expect(
+        importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      ).rejects.toThrow(pairError.message)
+
+      expect(setFileFailed).toHaveBeenCalledTimes(1)
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
+        entity.name,
+        entity.pairedWith,
+        mockClient,
+        mockLogger
+      )
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
