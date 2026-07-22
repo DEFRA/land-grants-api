@@ -1,9 +1,14 @@
 import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
-import { Pool } from 'pg'
+import { Pool, Client } from 'pg'
 import { config } from '../../../config/index.js'
-import { getDBOptions, createDBPool, postgresDb } from './postgres.js'
+import {
+  getDBOptions,
+  createDBPool,
+  createDBClient,
+  postgresDb
+} from './postgres.js'
 
 vi.mock('@aws-sdk/credential-providers', () => ({
   fromNodeProviderChain: vi.fn()
@@ -14,7 +19,8 @@ vi.mock('@aws-sdk/rds-signer', () => ({
 }))
 
 vi.mock('pg', () => ({
-  Pool: vi.fn()
+  Pool: vi.fn(),
+  Client: vi.fn()
 }))
 
 vi.mock('../../../config/index.js', () => ({
@@ -27,6 +33,7 @@ describe('Postgres Helper', () => {
   beforeEach(() => {
     config.get = vi.fn((value) => (value === 'isTest' ? false : 'test-value'))
     vi.mocked(Pool).mockClear()
+    vi.mocked(Client).mockClear()
   })
 
   afterEach(() => {
@@ -368,6 +375,286 @@ describe('Postgres Helper', () => {
       const password = await poolConfig.password()
 
       expect(password).toBe('password')
+    })
+  })
+
+  describe('createDBClient', () => {
+    let mockClient
+
+    beforeEach(() => {
+      mockClient = {
+        connect: vi.fn(),
+        end: vi.fn()
+      }
+      vi.mocked(Client).mockImplementation(function () {
+        return mockClient
+      })
+    })
+
+    describe('test environment', () => {
+      test('should create client with direct password for test environment', () => {
+        config.get = vi.fn((value) =>
+          value === 'isTest' ? true : 'test-value'
+        )
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          password: 'test-password',
+          port: 5433
+        }
+
+        createDBClient(options)
+
+        expect(Client).toHaveBeenCalledWith({
+          port: 5433,
+          user: 'test-user',
+          password: 'test-password',
+          host: 'localhost',
+          database: 'test-db'
+        })
+      })
+
+      test('should use default port when port not provided', () => {
+        config.get = vi.fn((value) =>
+          value === 'isTest' ? true : 'test-value'
+        )
+        const options = {
+          user: 'test-user',
+          database: 'test-db',
+          host: 'localhost',
+          password: 'test-password'
+        }
+
+        createDBClient(options)
+
+        expect(Client).toHaveBeenCalledWith({
+          port: 5432,
+          user: 'test-user',
+          password: 'test-password',
+          host: 'localhost',
+          database: 'test-db'
+        })
+      })
+    })
+
+    describe('local development', () => {
+      test('should create client with local password', async () => {
+        const options = {
+          user: 'local-user',
+          database: 'local-db',
+          host: 'localhost',
+          passwordForLocalDev: 'local-password',
+          isLocal: true
+        }
+
+        const mockServer = {
+          logger: {
+            info: vi.fn()
+          }
+        }
+
+        createDBClient(options, mockServer)
+
+        expect(Client).toHaveBeenCalledWith(
+          expect.objectContaining({
+            port: 5432,
+            user: 'local-user',
+            host: 'localhost',
+            database: 'local-db'
+          })
+        )
+
+        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        const password = await clientConfig.password()
+
+        expect(password).toBe('local-password')
+        expect(mockServer.logger.info).toHaveBeenCalledWith(
+          'Getting Postgres authentication token'
+        )
+      })
+    })
+
+    describe('remote environment', () => {
+      test('should create client with token for remote environment', async () => {
+        const mockCredentials = { mock: 'credentials' }
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+
+        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token')
+        vi.mocked(Signer).mockImplementation(function () {
+          return {
+            getAuthToken: mockGetAuthToken
+          }
+        })
+
+        const options = {
+          user: 'remote-user',
+          database: 'remote-db',
+          host: 'remote-host',
+          isLocal: false,
+          region: 'eu-west-1'
+        }
+
+        const mockServer = {
+          logger: {
+            info: vi.fn()
+          }
+        }
+
+        createDBClient(options, mockServer)
+
+        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        const password = await clientConfig.password()
+
+        expect(Signer).toHaveBeenCalledWith({
+          hostname: 'remote-host',
+          port: 5432,
+          username: 'remote-user',
+          credentials: mockCredentials,
+          region: 'eu-west-1'
+        })
+        expect(password).toBe('rds-auth-token')
+      })
+
+      test('should create client with SSL when secureContext is provided', () => {
+        const options = {
+          user: 'remote-user',
+          database: 'remote-db',
+          host: 'remote-host',
+          isLocal: false,
+          region: 'eu-west-1'
+        }
+
+        const mockSecureContext = { mock: 'context' }
+        const mockServer = {
+          logger: { info: vi.fn() },
+          secureContext: mockSecureContext
+        }
+
+        createDBClient(options, mockServer)
+
+        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        expect(clientConfig.ssl).toEqual({
+          secureContext: mockSecureContext
+        })
+      })
+
+      test('should not include SSL when secureContext is not provided', () => {
+        const options = {
+          user: 'remote-user',
+          database: 'remote-db',
+          host: 'remote-host',
+          isLocal: false,
+          region: 'eu-west-1'
+        }
+
+        const mockServer = {
+          logger: { info: vi.fn() }
+        }
+
+        createDBClient(options, mockServer)
+
+        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        expect(clientConfig.ssl).toBeUndefined()
+      })
+
+      test('should handle error when getting token fails', async () => {
+        const mockCredentials = { mock: 'credentials' }
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+
+        const tokenError = new Error('Failed to get auth token')
+        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError)
+        vi.mocked(Signer).mockImplementation(function () {
+          return {
+            getAuthToken: mockGetAuthToken
+          }
+        })
+
+        const options = {
+          user: 'remote-user',
+          database: 'remote-db',
+          host: 'remote-host',
+          isLocal: false,
+          region: 'eu-west-1'
+        }
+
+        const mockServer = {
+          logger: {
+            info: vi.fn(),
+            error: vi.fn()
+          }
+        }
+
+        createDBClient(options, mockServer)
+
+        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        await expect(clientConfig.password()).rejects.toThrow(
+          'Failed to get auth token'
+        )
+
+        expect(mockServer.logger.error).toHaveBeenCalledWith(
+          'Failed to get Postgres authentication token',
+          {
+            error: 'Failed to get auth token',
+            user: 'remote-user',
+            host: 'remote-host'
+          }
+        )
+      })
+    })
+
+    test('should create client with no server', () => {
+      const options = {
+        user: 'test-user',
+        database: 'test-db',
+        host: 'localhost',
+        isLocal: true
+      }
+
+      createDBClient(options)
+
+      expect(Client).toHaveBeenCalledWith(
+        expect.objectContaining({
+          port: 5432,
+          user: 'test-user',
+          database: 'test-db'
+        })
+      )
+    })
+
+    test('should handle server with missing logger gracefully', async () => {
+      const options = {
+        user: 'test-user',
+        database: 'test-db',
+        host: 'localhost',
+        passwordForLocalDev: 'password',
+        isLocal: true
+      }
+
+      const mockServer = {}
+
+      createDBClient(options, mockServer)
+
+      const clientConfig = vi.mocked(Client).mock.calls[0][0]
+      const password = await clientConfig.password()
+
+      expect(password).toBe('password')
+    })
+
+    test('should include keepAlive settings', () => {
+      const options = {
+        user: 'remote-user',
+        database: 'remote-db',
+        host: 'remote-host',
+        isLocal: false,
+        region: 'eu-west-1'
+      }
+
+      createDBClient(options)
+
+      const clientConfig = vi.mocked(Client).mock.calls[0][0]
+      expect(clientConfig.keepAlive).toBe(true)
+      expect(clientConfig.keepAliveInitialDelayMillis).toBe(10000)
     })
   })
 

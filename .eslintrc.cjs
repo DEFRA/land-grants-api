@@ -2,13 +2,7 @@
  * @type {ESLint.ConfigData}
  */
 module.exports = {
-  ignorePatterns: [
-    '.server',
-    '.public',
-    'src/__fixtures__',
-    'coverage',
-    'scripts'
-  ],
+  ignorePatterns: ['.server', '.public', 'src/__fixtures__', 'coverage'],
   overrides: [
     {
       extends: [
@@ -84,7 +78,8 @@ module.exports = {
           {
             unusedExports: true,
             src: [
-              'src/**/!(*.test|*fixtures|testUtils|testLandCoverToString).js'
+              'src/**/!(*.test|*fixtures|testUtils|testLandCoverToString).js',
+              'scripts/**/*.js'
             ]
           }
         ],
@@ -135,6 +130,13 @@ module.exports = {
             allowModules: []
           }
         ]
+      }
+    },
+    {
+      files: ['scripts/**/*.js'],
+      rules: {
+        'no-console': 'off',
+        'n/no-process-exit': 'off'
       }
     },
     {

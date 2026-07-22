@@ -1,3 +1,3 @@
 import { ingestLandData } from './local-ingest-service.js'
 
-ingestLandData()
+await ingestLandData()

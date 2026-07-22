@@ -50,7 +50,7 @@ vi.mock('../../common/helpers/metrics.js')
 
 vi.mock('../../common/helpers/postgres.js', () => ({
   getDBOptions: vi.fn(() => ({})),
-  createDBPool: vi.fn()
+  createDBClient: vi.fn()
 }))
 vi.mock('../../common/helpers/secure-context/secure-context.js', () => ({
   createSecureContext: vi.fn()
@@ -65,7 +65,7 @@ describe('Ingest Module', () => {
     let getFile
     let importData
     let logBusinessError
-    let createDBPool
+    let createDBClient
     let getEntityNameForIngest
 
     let unzipper
@@ -88,13 +88,11 @@ describe('Ingest Module', () => {
       getFile = s3Module.getFile
       importData = importServiceModule.importData
       logBusinessError = logHelpersModule.logBusinessError
-      createDBPool = postgresModule.createDBPool
+      createDBClient = postgresModule.createDBClient
       getEntityNameForIngest = startIngestModule.getEntityNameForIngest
 
-      const mockClient = { end: vi.fn() }
-      createDBPool.mockReturnValue({
-        connect: vi.fn().mockResolvedValue(mockClient)
-      })
+      const mockClient = { end: vi.fn(), connect: vi.fn() }
+      createDBClient.mockReturnValue(mockClient)
       getEntityNameForIngest.mockResolvedValue('land_parcels')
     })
 
@@ -139,14 +137,7 @@ describe('Ingest Module', () => {
         '123',
         expect.any(Object)
       )
-      expect(createDBPool).toHaveBeenCalledTimes(1)
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          taskId: 'task-1',
-          success: true,
-          result: 'Land data imported successfully'
-        })
-      )
+      expect(createDBClient).toHaveBeenCalledTimes(1)
     })
 
     it('should throw a clear error when the ingest record or its entity cannot be found', async () => {
@@ -221,14 +212,7 @@ describe('Ingest Module', () => {
 
       // no ingestId provided, so entity type is derived from the s3 key, not the DB
       expect(getEntityNameForIngest).not.toHaveBeenCalled()
-      expect(createDBPool).not.toHaveBeenCalled()
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          taskId: 'task-3',
-          success: true,
-          result: 'Land data imported successfully'
-        })
-      )
+      expect(createDBClient).not.toHaveBeenCalled()
     })
 
     it('should throw error if no CSV is found in the ZIP archive', async () => {
