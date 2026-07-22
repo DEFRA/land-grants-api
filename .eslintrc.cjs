@@ -36,6 +36,7 @@ module.exports = {
       plugins: [
         '@typescript-eslint',
         'import',
+        'import-x',
         'jsdoc',
         'n',
         'promise',
@@ -77,6 +78,17 @@ module.exports = {
         // https://nodejs.org/api/esm.html#mandatory-file-extensions
         'import/extensions': ['error', 'always', { ignorePackages: true }],
 
+        // Flag exports that are not imported by any other module
+        'import-x/no-unused-modules': [
+          'error',
+          {
+            unusedExports: true,
+            src: [
+              'src/**/!(*.test|*fixtures|testUtils|testLandCoverToString).js'
+            ]
+          }
+        ],
+
         // Skip rules handled by TypeScript compiler
         'import/default': 'off',
         'import/namespace': 'off',
@@ -90,6 +102,10 @@ module.exports = {
           '@typescript-eslint/parser': ['.cjs', '.js']
         },
         'import/resolver': {
+          node: true,
+          typescript: true
+        },
+        'import-x/resolver': {
           node: true,
           typescript: true
         }
@@ -175,6 +191,29 @@ module.exports = {
       files: ['vitest.*.config.js'],
       globals: {
         __dirname: 'readonly'
+      }
+    },
+    {
+      files: ['**/*.test.{cjs,js}'],
+      rules: {
+        'import-x/no-unused-modules': [
+          'error',
+          {
+            unusedExports: true,
+            src: ['src/**/*.test.js']
+          }
+        ]
+      }
+    },
+    {
+      files: [
+        'src/tests/**',
+        'src/**/fixtures/**',
+        'src/**/testUtils.js',
+        'src/**/testLandCoverToString.js'
+      ],
+      rules: {
+        'import-x/no-unused-modules': 'off'
       }
     }
   ],

@@ -6,7 +6,7 @@ import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
  * @param {object[]} actions - The actions
  * @returns {string | null} The error message
  */
-export const validateLandActionsRequest = (landActions, actions) => {
+const validateLandActionsRequest = (landActions, actions) => {
   const invalidActions = landActions
     .flatMap((landAction) => landAction.actions.map((action) => action.code))
     .filter((code) => !actions.some((a) => a.code === code))
@@ -24,7 +24,7 @@ export const validateLandActionsRequest = (landActions, actions) => {
  * @param {object} request - The request
  * @returns {Promise<string | null>} The error message
  */
-export const validateLandParcelsRequest = async (landActions, request) => {
+const validateLandParcelsRequest = async (landActions, request) => {
   const errors = (
     await Promise.all(
       landActions.map(async (landAction) => {

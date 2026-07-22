@@ -51,21 +51,6 @@ const applicationValidationRunsBodyRequestSchema = Joi.object({
   fields: Joi.array().items(Joi.string().valid('details')).required()
 })
 
-const applicationValidationResponseSchema = Joi.object({
-  message: Joi.string().required(),
-  id: Joi.number().integer().required(),
-  errorMessages: Joi.array().items(
-    Joi.object({
-      code: Joi.string().required(),
-      description: Joi.string().required(),
-      sheetId: Joi.string().required(),
-      parcelId: Joi.string().required(),
-      passed: Joi.boolean().required()
-    })
-  ),
-  valid: Joi.boolean().required()
-})
-
 const applicationValidationRunsResponseSchema = Joi.alternatives(
   Joi.object({
     message: Joi.string().required(),
@@ -82,10 +67,8 @@ const applicationValidationRunsResponseSchema = Joi.alternatives(
 
 export {
   applicationValidationSchema,
-  applicationValidationRunSchema,
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema,
-  applicationValidationResponseSchema,
   applicationValidationRunsRequestSchema,
   applicationValidationRunsResponseSchema,
   applicationValidationRunsBodyRequestSchema

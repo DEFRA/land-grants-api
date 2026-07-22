@@ -143,4 +143,4 @@ const auth = {
   }
 }
 
-export { auth, decryptToken, validateAuthToken }
+export { auth }

@@ -69,4 +69,4 @@ function proxyFetch(url, options) {
   })
 }
 
-export { proxyFetch, provideProxy }
+export { proxyFetch }

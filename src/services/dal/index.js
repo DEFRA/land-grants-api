@@ -8,6 +8,7 @@ import { proxyFetch } from '~/src/features/common/helpers/proxy.js'
  * @param {string} sbi - Single Business Identifier
  * @returns {Promise<AgreementAction[]>} The existing agreements for the sbi
  */
+// eslint-disable-next-line import-x/no-unused-modules
 export async function getAgreements(sbi, parcelId, sheetId, defraIdToken) {
   const endpoint = config.get('dal.apiEndpoint')
 

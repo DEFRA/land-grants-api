@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-export const PaymentsSchema = Joi.array()
+const PaymentsSchema = Joi.array()
   .items(
     Joi.object({
       totalPaymentPence: Joi.number().integer().min(0),
@@ -17,7 +17,7 @@ export const PaymentsSchema = Joi.array()
   .min(1)
   .required()
 
-export const ExplanationsSchema = Joi.array().items(
+const ExplanationsSchema = Joi.array().items(
   Joi.object({
     title: Joi.string().required(),
     content: Joi.array().items(Joi.string()).required()
@@ -65,7 +65,7 @@ const parcelItemsSchemaV2 = Joi.object()
   )
   .optional()
 
-export const agreementLevelItemsSchemaV2 = Joi.object()
+const agreementLevelItemsSchemaV2 = Joi.object()
   .pattern(
     Joi.number().integer(),
     Joi.object({

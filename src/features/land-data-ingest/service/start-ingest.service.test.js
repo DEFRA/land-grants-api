@@ -1,6 +1,4 @@
 import {
-  truncateStagingTable,
-  cancelAndCreateNewIngest,
   cancelPendingFiles,
   saveIngestStart,
   setFileInProgress,
@@ -13,7 +11,6 @@ import {
   getIngestById,
   getLatestEntityStatuses
 } from './start-ingest.service.js'
-import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 import { INGEST_STATUS } from '../service/ingest-status.js'
 
 vi.mock('../../common/helpers/logging/log-helpers.js', () => ({
@@ -37,74 +34,6 @@ describe('start ingest service', () => {
 
   afterEach(() => {
     vi.resetAllMocks()
-  })
-
-  describe('cancelAndCreateNewIngest', () => {
-    test('should create new ingest when no prior ingest is in progress', async () => {
-      const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest (nothing to cancel)
-      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // INSERT ingest
-
-      const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
-
-      expect(result).toEqual(123)
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
-        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, INGEST_STATUS.IN_PROGRESS]
-      )
-      // No pending ingest_files to cancel
-      expect(dbClient.query).not.toHaveBeenCalledWith(
-        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
-        expect.anything()
-      )
-    })
-
-    test('should cancel in progress ingests, cancel their pending files, and create new ingest', async () => {
-      const entity = 'test_entity'
-      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 123 }] }) // UPDATE ingest
-      dbClient.query.mockResolvedValueOnce({ rows: [] }) // UPDATE ingest_files
-      dbClient.query.mockResolvedValueOnce({ rows: [{ id: 456 }] }) // INSERT ingest
-
-      const result = await cancelAndCreateNewIngest(entity, dbClient, logger)
-
-      expect(result).toEqual(456)
-      expect(logInfo).toHaveBeenCalledWith(logger, {
-        category: 'ingest',
-        message: `Ingest tasks cancelled: 123`,
-        context: {
-          ids: [123],
-          entity
-        }
-      })
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
-        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
-        [INGEST_STATUS.CANCELLED, [123], INGEST_STATUS.PENDING]
-      )
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
-        [entity, INGEST_STATUS.IN_PROGRESS]
-      )
-    })
-  })
-
-  describe('truncateStagingTable', () => {
-    test('should truncate the pre-existing staging table', async () => {
-      const entity = 'test_entity'
-
-      await truncateStagingTable(entity, dbClient)
-
-      expect(dbClient.query).toHaveBeenCalledWith(
-        `TRUNCATE TABLE ${entity}_staging`
-      )
-    })
   })
 
   describe('saveIngestStart', () => {

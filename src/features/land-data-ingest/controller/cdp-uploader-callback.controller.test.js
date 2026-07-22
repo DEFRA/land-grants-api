@@ -5,11 +5,7 @@ import {
   logInfo,
   logBusinessError
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import {
-  moveFile,
-  processingBucketPath,
-  failedBucketPath
-} from '../../common/s3/s3.js'
+import { failedBucketPath } from '../../common/s3/s3.js'
 import { config } from '~/src/config/index.js'
 import { createS3Client } from '../../common/plugins/s3-client.js'
 import { processFile, createTaskInfo } from '../service/ingest.service.js'
@@ -33,8 +29,6 @@ vi.mock('../service/start-ingest.service.js', async () => ({
 const mockProcessFile = processFile
 const mockCreateTaskInfo = createTaskInfo
 const mockLogInfo = logInfo
-const mockMoveFile = moveFile
-const mockProcessingBucketPath = processingBucketPath
 const mockFailedBucketPath = failedBucketPath
 const mockConfig = config
 const mockCreateS3Client = createS3Client
@@ -115,11 +109,6 @@ describe('CDPUploaderCallbackController', () => {
       }
       return configMap[key]
     })
-    mockMoveFile.mockResolvedValue({
-      success: true,
-      message: 'File moved successfully'
-    })
-    mockProcessingBucketPath.mockImplementation((key) => `processing/${key}`)
     mockFailedBucketPath.mockImplementation((key) => `failed/${key}`)
     mockProcessFile.mockResolvedValue(undefined)
     // Mock createTaskInfo to return expected values
