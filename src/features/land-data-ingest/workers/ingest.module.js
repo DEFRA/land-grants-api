@@ -12,7 +12,7 @@ import {
 } from '../../common/helpers/logging/log-helpers.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 import { getEntityByName } from '~/src/features/common/constants/entity_types.js'
-import { getDBOptions, createDBPool } from '../../common/helpers/postgres.js'
+import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js'
 import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
 import { getEntityNameForIngest } from '../service/start-ingest.service.js'
 
@@ -37,11 +37,11 @@ export const getEntityType = (entityName) => {
  */
 export const getEntityTypeForIngest = async (ingestId, logger) => {
   const dbOptions = getDBOptions()
-  const connection = createDBPool(dbOptions, {
+  const client = createDBClient(dbOptions, {
     secureContext: createSecureContext(logger),
     logger
   })
-  const client = await connection.connect()
+  await client.connect()
 
   try {
     const entityName = await getEntityNameForIngest(ingestId, client)
