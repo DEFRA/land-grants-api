@@ -36,6 +36,12 @@ describe('Ingest Service', () => {
     // Mock startWorker to return a resolved promise
     workerThread.startWorker.mockResolvedValue()
 
+    config.get.mockImplementation((key) => {
+      if (key === 'ingest.maxConcurrentWorkers') return 5
+      if (key === 's3.bucket') return 'test-bucket'
+      return undefined
+    })
+
     vi.clearAllMocks()
   })
 

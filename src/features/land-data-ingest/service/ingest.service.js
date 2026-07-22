@@ -8,6 +8,39 @@ import { logInfo } from '../../common/helpers/logging/log-helpers.js'
  * @import { InitiateUploaderResponse, Task } from '../ingest.d.js'
  */
 
+let activeWorkers = 0
+const waitQueue = []
+
+/**
+ * Reserves a worker slot, blocking if the maximum concurrency has been
+ * reached. Callers should {@link releaseWorkerSlot} once the work is done.
+ * @returns {Promise<void>} Resolves when a slot is available
+ */
+function acquireWorkerSlot() {
+  const maxWorkers = config.get('ingest.maxConcurrentWorkers')
+  return new Promise((resolve) => {
+    if (activeWorkers < maxWorkers) {
+      activeWorkers++
+      resolve()
+    } else {
+      waitQueue.push(resolve)
+    }
+  })
+}
+
+/**
+ * Returns a worker slot to the pool. If other callers are waiting
+ * (via {@link acquireWorkerSlot}), the next one is unblocked immediately.
+ */
+function releaseWorkerSlot() {
+  activeWorkers--
+  if (waitQueue.length > 0) {
+    const next = waitQueue.shift()
+    activeWorkers++
+    next()
+  }
+}
+
 /**
  * Process a file
  * @param {{s3key: string, filename?: string, ingestId?: number}} data
@@ -28,7 +61,17 @@ export const processFile = async (
   })
   const __dirname = dirname(fileURLToPath(import.meta.url))
   const workerPath = join(__dirname, '../workers/ingest.worker.js')
-  return startWorker(request, workerPath, data, { title, category, taskId })
+
+  await acquireWorkerSlot()
+  try {
+    return await startWorker(request, workerPath, data, {
+      title,
+      category,
+      taskId
+    })
+  } finally {
+    releaseWorkerSlot()
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
-import { Pool } from 'pg'
+import { Client, Pool } from 'pg'
 import { config } from '../../../config/index.js'
 
 const DEFAULT_PORT = 5432
@@ -58,7 +58,6 @@ export function getDBOptions() {
 }
 
 /**
- *
  * @param {*} options - database configuration options
  * @param {*} server - server instance
  * @returns {Pool} Database pool
@@ -100,6 +99,54 @@ export function createDBPool(options, server = {}) {
     idleTimeoutMillis: 30000, // Release idle connections after 30s so a previous version hands back connections during a rolling deploy
     connectionTimeoutMillis: 10000, // How long to wait for a free connection before failing, prevents requests from hanging under load
     allowExitOnIdle: false, // Keep Node.js process alive even when pool is idle, required for servers / APIs
+    ...(!options.isLocal &&
+      server?.secureContext && {
+        ssl: {
+          secureContext: server.secureContext
+        }
+      })
+  })
+}
+
+/**
+ * Creates a single database client (not a pool). Use this in worker threads
+ * where each worker only needs one connection, to avoid each worker creating
+ * its own pool and multiplying total connection count.
+ * @param {*} options - database configuration options
+ * @param {*} server - server instance
+ * @returns {Client} Database client
+ */
+export function createDBClient(options, server = {}) {
+  if (config.get('isTest')) {
+    return new Client({
+      port: options.port || DEFAULT_PORT,
+      user: options.user,
+      password: options.password,
+      host: options.host,
+      database: options.database
+    })
+  }
+  return new Client({
+    port: options.port || DEFAULT_PORT,
+    user: options.user,
+    password: async () => {
+      server?.logger?.info('Getting Postgres authentication token')
+      try {
+        const token = await getToken(options)
+        return token
+      } catch (error) {
+        server?.logger?.error('Failed to get Postgres authentication token', {
+          error: error.message,
+          user: options.user,
+          host: options.host
+        })
+        throw error
+      }
+    },
+    host: options.host,
+    database: options.database,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
     ...(!options.isLocal &&
       server?.secureContext && {
         ssl: {
