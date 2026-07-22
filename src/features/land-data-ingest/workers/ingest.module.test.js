@@ -147,7 +147,12 @@ describe('Ingest Module', () => {
       )
       expect(importData).toHaveBeenCalledWith(
         expect.any(Object),
-        { name: 'land_parcels', truncateTable: false, ingest: true },
+        {
+          name: 'land_parcels',
+          truncateTable: false,
+          ingest: true,
+          pairedWith: 'land_covers'
+        },
         '123',
         'test.csv',
         expect.any(Object)
@@ -212,7 +217,12 @@ describe('Ingest Module', () => {
       expect(unzipper.Parse).toHaveBeenCalledWith({ forceStream: true })
       expect(importData).toHaveBeenCalledWith(
         { path: 'data.csv' },
-        { name: 'land_parcels', truncateTable: false, ingest: true },
+        {
+          name: 'land_parcels',
+          truncateTable: false,
+          ingest: true,
+          pairedWith: 'land_covers'
+        },
         '123',
         undefined,
         expect.any(Object)

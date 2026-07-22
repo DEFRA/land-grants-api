@@ -49,8 +49,16 @@ describe('start ingest service', () => {
 
       expect(result).toEqual(123)
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
-        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
+        `UPDATE ingest
+     SET status = $1
+     WHERE entity = $2
+       AND status = ANY($3)
+     RETURNING id`,
+        [
+          INGEST_STATUS.CANCELLED,
+          entity,
+          [INGEST_STATUS.IN_PROGRESS, INGEST_STATUS.STAGED]
+        ]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
@@ -81,8 +89,16 @@ describe('start ingest service', () => {
         }
       })
       expect(dbClient.query).toHaveBeenCalledWith(
-        `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
-        [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
+        `UPDATE ingest
+     SET status = $1
+     WHERE entity = $2
+       AND status = ANY($3)
+     RETURNING id`,
+        [
+          INGEST_STATUS.CANCELLED,
+          entity,
+          [INGEST_STATUS.IN_PROGRESS, INGEST_STATUS.STAGED]
+        ]
       )
       expect(dbClient.query).toHaveBeenCalledWith(
         `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,

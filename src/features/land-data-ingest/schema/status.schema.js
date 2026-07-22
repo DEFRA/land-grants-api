@@ -18,6 +18,7 @@ export const statusIngestResponseSchema = Joi.object({
   entity: Joi.string().required(),
   status: Joi.string().required(),
   start_date: Joi.date().required(),
+  staged_date: Joi.date().allow(null).optional(),
   completed_date: Joi.date().allow(null).optional(),
   files: Joi.array().items(statusFileResponseSchema).optional()
 })
