@@ -51,10 +51,20 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
  * @returns {Promise<object>} The ingest data
  */
 export const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
-  // set in progress ingests to cancelled
+  // Cancel in-progress ingests, and any ingest that finished staging but is still
+  // awaiting promotion (paired entities only) - its staging table is about to be
+  // truncated for this new run, so it can no longer be promoted.
   const { rows } = await dbClient.query(
-    `UPDATE ingest SET status = $1 WHERE entity = $2 AND status = $3 RETURNING id`,
-    [INGEST_STATUS.CANCELLED, entity, INGEST_STATUS.IN_PROGRESS]
+    `UPDATE ingest
+     SET status = $1
+     WHERE entity = $2
+       AND status = ANY($3)
+     RETURNING id`,
+    [
+      INGEST_STATUS.CANCELLED,
+      entity,
+      [INGEST_STATUS.IN_PROGRESS, INGEST_STATUS.STAGED]
+    ]
   )
 
   if (rows.length > 0) {
