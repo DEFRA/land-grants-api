@@ -127,22 +127,22 @@ describe('getStats', () => {
     )
     expect(mockClient.query).toHaveBeenCalledWith(
       `SELECT COUNT(*) AS "duplicateCoversCount" FROM (
-        SELECT 1 FROM land_covers
-        GROUP BY parcel_id, sheet_id, land_cover_class_code, geom_hash
-        HAVING COUNT(*) > 1
-      )`
+      SELECT 1 FROM land_covers
+      GROUP BY parcel_id, sheet_id, land_cover_class_code, geom_hash
+      HAVING COUNT(*) > 1
+    )`
     )
     expect(mockClient.query).toHaveBeenCalledWith(
       `SELECT COUNT(*) AS "unlinkedParcelsCount"
-        FROM land_parcels p
-        LEFT JOIN land_covers c ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
-        WHERE c.sheet_id IS NULL`
+      FROM land_parcels p
+      LEFT JOIN land_covers c ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
+      WHERE c.sheet_id IS NULL`
     )
     expect(mockClient.query).toHaveBeenCalledWith(
       `SELECT COUNT(*) AS "unlinkedCoversCount"
-        FROM land_covers c
-        LEFT JOIN land_parcels p ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
-        WHERE p.sheet_id IS NULL`
+      FROM land_covers c
+      LEFT JOIN land_parcels p ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
+      WHERE p.sheet_id IS NULL`
     )
   })
 
