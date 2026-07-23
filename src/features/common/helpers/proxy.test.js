@@ -62,6 +62,13 @@ describe('#proxy', () => {
         expect(result).toHaveProperty('proxyAgent')
         expect(result).toHaveProperty('httpAndHttpsProxyAgent')
       })
+
+      test('Should return the same ProxyAgent instance on subsequent calls', () => {
+        const first = provideProxy()
+        const second = provideProxy()
+        expect(first).toBe(second)
+        expect(first.proxyAgent).toBe(second.proxyAgent)
+      })
     })
 
     describe('When a HTTPS Proxy URL has been set', () => {
@@ -86,6 +93,13 @@ describe('#proxy', () => {
         expect(result).toHaveProperty('url')
         expect(result).toHaveProperty('proxyAgent')
         expect(result).toHaveProperty('httpAndHttpsProxyAgent')
+      })
+
+      test('Should return the same ProxyAgent instance on subsequent calls', () => {
+        const first = provideProxy()
+        const second = provideProxy()
+        expect(first).toBe(second)
+        expect(first.proxyAgent).toBe(second.proxyAgent)
       })
     })
   })
@@ -128,16 +142,8 @@ describe('#proxy', () => {
         )
       })
 
-      test('Should make expected set up message', () => {
-        expect(mockLoggerDebug).toHaveBeenNthCalledWith(
-          1,
-          `Proxy set up using ${httpsProxyUrl}:${httpsPort}`
-        )
-      })
-
       test('Should make expected fetching via the proxy message', () => {
-        expect(mockLoggerDebug).toHaveBeenNthCalledWith(
-          2,
+        expect(mockLoggerDebug).toHaveBeenCalledWith(
           `Fetching: ${secureUrl.toString()} via the proxy: ${httpsProxyUrl}:${httpsPort}`
         )
       })
