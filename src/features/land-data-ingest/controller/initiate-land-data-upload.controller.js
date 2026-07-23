@@ -12,6 +12,7 @@ import {
   initiateLandDataUploadSuccessResponseSchema
 } from '../schema/ingest.schema.js'
 import { isValidIngestFile } from '../service/start-ingest.service.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 export const InitiateLandDataUploadController = {
   options: {
@@ -108,6 +109,7 @@ export const InitiateLandDataUploadController = {
           payload
         }
       })
+      await metricsCounter('error_initiating_data_ingest', 1)
       return Boom.internal('Error initiating land data upload')
     }
   }

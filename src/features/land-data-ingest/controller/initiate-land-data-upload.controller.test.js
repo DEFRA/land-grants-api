@@ -5,17 +5,22 @@ import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { initiateLandDataUpload } from '../service/ingest.service.js'
 import { config } from '~/src/config/index.js'
 import { isValidIngestFile } from '../service/start-ingest.service.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 // Mock dependencies
 vi.mock('~/src/features/common/helpers/logging/log-helpers.js')
 vi.mock('../service/ingest.service.js')
 vi.mock('~/src/config/index.js')
 vi.mock('../service/start-ingest.service.js')
+vi.mock('../../common/helpers/metrics.js', () => ({
+  metricsCounter: vi.fn()
+}))
 
 const mockLogInfo = logInfo
 const mockInitiateLandDataUpload = initiateLandDataUpload
 const mockConfig = config
 const mockIsValidIngestFile = isValidIngestFile
+const mockMetricsCounter = metricsCounter
 
 describe('InitiateLandDataUploadController', () => {
   const server = Hapi.server()
@@ -72,7 +77,9 @@ describe('InitiateLandDataUploadController', () => {
         's3.bucket': mockBucket,
         'ingest.endpoint': mockEndpoint,
         'ingest.callback': mockCallback,
-        'ingest.grantsUiHost': mockGrantsUiHost
+        'ingest.grantsUiHost': mockGrantsUiHost,
+        isMetricsEnabled: true,
+        'log.enabled': true
       }
       return configMap[key]
     })
@@ -404,6 +411,10 @@ describe('InitiateLandDataUploadController', () => {
 
       expect(statusCode).toBe(500)
       expect(message).toBe('An internal server error occurred')
+      expect(mockMetricsCounter).toHaveBeenCalledWith(
+        'error_initiating_data_ingest',
+        1
+      )
     })
 
     test('should log CDP uploader response', async () => {
