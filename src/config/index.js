@@ -263,7 +263,7 @@ const config = convict({
     statsSchedule: {
       doc: 'Cron time/schedule for outputting stats',
       format: String,
-      default: '0 7 * * *',
+      default: '27 7 * * *',
       env: 'CRON_STATS_SCHEDULE'
     }
   },
