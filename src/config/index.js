@@ -317,7 +317,7 @@ const config = convict({
   isMetricsEnabled: {
     doc: 'Enable metrics reporting',
     format: Boolean,
-    default: isProduction,
+    default: true,
     env: 'ENABLE_METRICS'
   },
   tracing: {
