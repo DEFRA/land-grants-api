@@ -15,12 +15,12 @@ const mockConfigGet = vi.hoisted(() =>
   })
 )
 
-const mockNetworkInterfaces = vi.hoisted(() => vi.fn())
+const mockExtractIp = vi.hoisted(() => vi.fn())
 
 vi.mock('~/src/config/index.js', () => ({ config: { get: mockConfigGet } }))
 
-vi.mock('node:os', () => ({
-  networkInterfaces: mockNetworkInterfaces
+vi.mock('~/src/features/common/helpers/request-ip.js', () => ({
+  extractIp: mockExtractIp
 }))
 
 describe('AuditEvent', () => {
@@ -81,9 +81,7 @@ describe('auditEvent', () => {
     vi.resetModules()
     mockSend = vi.fn().mockResolvedValue({})
     mockLogger = { info: vi.fn(), warn: vi.fn() }
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = mockSend
@@ -193,48 +191,21 @@ describe('auditEvent', () => {
     })
   })
 
-  test('ip is populated from request.server.info.host when available', async () => {
-    const mockRequest = { server: { info: { host: '10.0.0.5' } } }
+  test('ip is populated from extractIp(request)', async () => {
+    mockExtractIp.mockReturnValue('10.0.0.5')
+    const mockRequest = { headers: { 'x-forwarded-for': '10.0.0.5' } }
 
     await auditEvent(UNMAPPED_EVENT, {}, 'success', mockRequest)
 
+    expect(mockExtractIp).toHaveBeenCalledWith(mockRequest)
     expect(getPublishedPayload().ip).toBe('10.0.0.5')
   })
 
-  test('ip falls back to os.networkInterfaces() when no request is available', async () => {
+  test('ip is populated from extractIp(null) when no request is available', async () => {
     await auditEvent(UNMAPPED_EVENT, {})
 
+    expect(mockExtractIp).toHaveBeenCalledWith(null)
     expect(getPublishedPayload().ip).toBe('192.168.1.100')
-  })
-
-  test('ip falls back to os.networkInterfaces() when server host is 0.0.0.0', async () => {
-    const mockRequest = { server: { info: { host: '0.0.0.0' } } }
-
-    await auditEvent(UNMAPPED_EVENT, {}, 'success', mockRequest)
-
-    expect(getPublishedPayload().ip).toBe('192.168.1.100')
-  })
-
-  test('ip is empty when no non-internal IPv4 interface is found', async () => {
-    mockNetworkInterfaces.mockReturnValue({
-      lo: [{ address: '127.0.0.1', family: 'IPv4', internal: true }],
-      eth0: [{ address: 'fe80::1', family: 'IPv6', internal: false }]
-    })
-
-    await auditEvent(UNMAPPED_EVENT, {})
-
-    expect(getPublishedPayload().ip).toBe('')
-  })
-
-  test('skips interface entries that are undefined', async () => {
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: undefined,
-      eth1: [{ address: '10.0.0.9', family: 'IPv4', internal: false }]
-    })
-
-    await auditEvent(UNMAPPED_EVENT, {})
-
-    expect(getPublishedPayload().ip).toBe('10.0.0.9')
   })
 
   test('passes failure status through to the published payload', async () => {
@@ -283,9 +254,7 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
   beforeEach(async () => {
     vi.resetModules()
     mockSend = vi.fn().mockResolvedValue({})
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = mockSend
@@ -373,9 +342,7 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
   beforeEach(async () => {
     vi.resetModules()
     mockSend = vi.fn().mockResolvedValue({})
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = mockSend
@@ -455,9 +422,7 @@ describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
   beforeEach(async () => {
     vi.resetModules()
     mockSend = vi.fn().mockResolvedValue({})
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = mockSend
@@ -532,9 +497,7 @@ describe('auditEvent - WMP_VALIDATED', () => {
   beforeEach(async () => {
     vi.resetModules()
     mockSend = vi.fn().mockResolvedValue({})
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = mockSend
@@ -621,9 +584,7 @@ describe('auditEvent error handling', () => {
     vi.resetModules()
     mockSend = vi.fn()
     mockLogger = { info: vi.fn(), warn: vi.fn() }
-    mockNetworkInterfaces.mockReturnValue({
-      eth0: [{ address: '192.168.1.100', family: 'IPv4', internal: false }]
-    })
+    mockExtractIp.mockReturnValue('192.168.1.100')
 
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
