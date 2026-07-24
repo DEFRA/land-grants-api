@@ -287,8 +287,11 @@ const ApplicationValidationController = {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
-      const { landActions, applicationId, sbi, applicantCrn, requester } =
+      const { landActions, applicationId, applicantCrn, requester } =
         request.payload
+
+      // @ts-expect-error - payload
+      const sbi = String(request.payload.sbi)
 
       logInfo(request.logger, {
         category: 'application',
@@ -306,7 +309,7 @@ const ApplicationValidationController = {
         {
           landActions,
           applicationId,
-          sbi: String(sbi),
+          sbi,
           applicantCrn,
           requester
         }
