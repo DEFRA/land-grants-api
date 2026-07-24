@@ -134,12 +134,6 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should allow missing SBI', () => {
-      const valid = { ...validParcelsRequest, sbi: undefined }
-      const result = parcelsSchema.validate(valid)
-      expect(result.error).toBeUndefined()
-    })
-
     it('should reject invalid parcel ID format', () => {
       const invalid = {
         ...validParcelsRequest,

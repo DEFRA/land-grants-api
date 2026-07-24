@@ -303,6 +303,8 @@ npm run test:ingest
 npm run test:e2e
 ```
 
+#### Run an individual unit test
+
 To run an individual test, you can use:
 
 ```bash
@@ -310,6 +312,28 @@ npx vitest run --config=vitest.unit.config.js [test file]
 ```
 
 You can also filter tests by tags or description; see vitest docs for more details.
+
+#### Run an individual db test
+
+To debug individual db tests without destroying the environment each time, run:
+
+```bash
+npm run test:db:up
+```
+
+which will bring up the db, run tests, and leave the db running. Then you can run individual tests like:
+
+```bash
+npx vitest run --config=vitest.db.config.js
+```
+
+Note the different vitest config file for db tests.
+
+When you're done, destroy the environment with:
+
+```bash
+docker compose -p land-grants-test down --volumes --remove-orphans
+```
 
 ## Database Migrations
 
