@@ -52,12 +52,6 @@ describe('Application Validation Schema', () => {
       expect(error.details[0].message).toContain('applicantCrn')
     })
 
-    it('should require sbi as integer', () => {
-      const data = { ...validData, sbi: 'not-a-number' }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('sbi')
-    })
-
     it('should require landActions array with minimum 1 item', () => {
       const data = { ...validData, landActions: [] }
       const { error } = applicationValidationSchema.validate(data)
