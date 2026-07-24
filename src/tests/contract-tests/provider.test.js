@@ -1,33 +1,34 @@
+import dotenv from 'dotenv'
 import { env } from 'node:process'
 
-import dotenv from 'dotenv'
+import createTestServer from '../test-server.js'
 import { Verifier } from '@pact-foundation/pact'
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { application } from '~/src/features/application/index.js'
+import { applicationValidationRunToCaseManagement } from '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
+import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
+import { config } from '~/src/config/index.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
+import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { getLatestVersion } from './git.js'
+import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import {
   mockActionConfig,
   mockWoodlandManagementActionConfig
 } from '~/src/features/actions/fixtures/index.js'
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
-import { application } from '~/src/features/application/index.js'
-import { woodlandManagement } from '~/src/features/woodland-management/index.js'
-import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
-import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
-import { getLatestVersion } from './git.js'
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
-import { applicationValidationRunToCaseManagement } from '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
-import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
 import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
-import createTestServer from '../test-server.js'
+import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
@@ -228,6 +229,7 @@ describe('Pact Verification', () => {
   const server = createTestServer()
 
   beforeAll(async () => {
+    config.set('featureFlags.useDal', false)
     server.decorate('request', 'logger', logger)
     server.decorate('server', 'postgresDb', {
       connect: vi.fn(),
@@ -245,6 +247,7 @@ describe('Pact Verification', () => {
   })
 
   afterAll(async () => {
+    config.set('featureFlags.useDal', config.default('featureFlags.useDal'))
     await server.stop()
   })
 

@@ -1,13 +1,16 @@
 import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/parcels.controller.js'
+import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
-import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getAgreements } from '~/src/services/dal/index.js'
+import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 
+vi.mock('~/src/services/dal/index.js')
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 )
+const mockGetAgreements = getAgreements
 const mockGetEnabledActions = getActionsByLatestVersion
 
 describe('Parcels Controller 2.0.0', () => {
@@ -22,6 +25,7 @@ describe('Parcels Controller 2.0.0', () => {
   })
 
   beforeEach(() => {
+    mockGetAgreements.mockResolvedValue([])
     mockGetEnabledActions.mockResolvedValue(actions)
   })
 
@@ -35,6 +39,7 @@ describe('Parcels Controller 2.0.0', () => {
           fields: ['groups'],
           plannedActions: []
         },
+        headers: { 'x-forwarded-authorization': 'dummy' },
         logger,
         server: {
           postgresDb: connection
@@ -65,6 +70,7 @@ describe('Parcels Controller 2.0.0', () => {
           fields: ['size'],
           plannedActions: []
         },
+        headers: { 'x-forwarded-authorization': 'dummy' },
         logger,
         server: {
           postgresDb: connection
@@ -93,6 +99,7 @@ describe('Parcels Controller 2.0.0', () => {
           ],
           plannedActions: []
         },
+        headers: { 'x-forwarded-authorization': 'dummy' },
         logger,
         server: {
           postgresDb: connection

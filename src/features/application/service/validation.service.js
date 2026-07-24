@@ -39,6 +39,8 @@ export const validateRequestData = async (
  * Validate all land parcel actions
  * @param {import('@hapi/hapi').Request} request
  * @param {object} postgresDb
+ * @param {string} sbi
+ * @param {string|null} defraIdToken
  * @param {object} data
  * @param {Array} data.landActions
  * @param {Array} data.actions
@@ -47,6 +49,8 @@ export const validateRequestData = async (
 export const validateAllLandParcels = async (
   request,
   postgresDb,
+  sbi,
+  defraIdToken,
   { landActions, actions }
 ) => {
   const compatibilityCheckFn = await createCompatibilityMatrix(
@@ -57,10 +61,12 @@ export const validateAllLandParcels = async (
   const parcelResults = await Promise.all(
     landActions.map(async (landAction) => {
       return validateLandParcelActions(
+        sbi,
         landAction,
         actions,
         compatibilityCheckFn,
-        request
+        request,
+        defraIdToken
       )
     })
   )

@@ -1,12 +1,16 @@
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
-import { ApplicationValidationController } from '~/src/features/application/controllers/2.0.0/application-validation.controller.js'
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
-import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 import { vi } from 'vitest'
 
+import { ApplicationValidationController } from '~/src/features/application/controllers/2.0.0/application-validation.controller.js'
+import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
+import { getAgreements } from '~/src/services/dal/index.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
+
+vi.mock('~/src/services/dal/index.js')
 vi.mock('~/src/features/common/helpers/audit-event.js')
 
+const mockGetAgreements = getAgreements
 const mockAuditEvent = auditEvent
 
 describe('Application Validation Controller', () => {
@@ -23,6 +27,7 @@ describe('Application Validation Controller', () => {
   })
 
   beforeEach(() => {
+    mockGetAgreements.mockResolvedValue([])
     mockAuditEvent.mockResolvedValue(undefined)
   })
 
@@ -57,6 +62,7 @@ describe('Application Validation Controller', () => {
             }
           ]
         },
+        headers: { 'x-forwarded-authorization': 'dummy' },
         logger,
         server: {
           postgresDb: connection
@@ -65,6 +71,7 @@ describe('Application Validation Controller', () => {
       h
     )
     const { data, statusCode } = getResponse()
+    expect(statusCode).toBe(200)
 
     const applicationResult = await getApplicationValidationRun(
       logger,
@@ -72,7 +79,6 @@ describe('Application Validation Controller', () => {
       data.id
     )
 
-    expect(statusCode).toBe(200)
     expect(data.message).toBe('Application validated successfully')
     expect(data.valid).toBe(false)
     expect(applicationResult).toMatchObject({

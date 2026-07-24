@@ -244,6 +244,14 @@ describe('plannedActionsTransformer', () => {
 
     expect(result).toEqual([])
   })
+
+  test('should transform current actions to actions when area is already sqm', () => {
+    const plannedActions = [{ actionCode: 'UPL1', quantity: 1000, unit: 'sqm' }]
+
+    const result = plannedActionsTransformer(plannedActions)
+
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 1000 }])
+  })
 })
 
 describe('sssiConsentRequiredActionTransformer', () => {
