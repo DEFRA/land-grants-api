@@ -1,17 +1,10 @@
 import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 
-const BATCH_DELAY_MS = 100
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
 const mergeResults = (results) =>
   Object.assign({}, ...results.map((r) => r.rows[0]))
 
-const queryBatch = async (client, queries) => {
-  const results = await Promise.all(queries.map((sql) => client.query(sql)))
-  await sleep(BATCH_DELAY_MS)
-  return results
-}
+const queryBatch = async (client, queries) =>
+  Promise.all(queries.map((sql) => client.query(sql)))
 
 const countTableRows = (client) =>
   queryBatch(client, [
@@ -19,35 +12,19 @@ const countTableRows = (client) =>
     `SELECT COUNT(*) AS "actionsConfigCount" FROM actions_config`,
     `SELECT COUNT(*) AS "agreementsCount" FROM agreements`,
     `SELECT COUNT(*) AS "applicationResultsCount" FROM application_results`,
-    `SELECT COUNT(*) AS "compatibilityMatrixCount" FROM compatibility_matrix`
-  ])
-
-const countLandTables = (client) =>
-  queryBatch(client, [
+    `SELECT COUNT(*) AS "compatibilityMatrixCount" FROM compatibility_matrix`,
     `SELECT COUNT(*) AS "landCoverCodesCount" FROM land_cover_codes`,
     `SELECT COUNT(*) AS "landCoverCodesActionsCount" FROM land_cover_codes_actions`,
     `SELECT COUNT(*) AS "landCoversCount" FROM land_covers`,
-    `SELECT COUNT(*) AS "landParcelsCount" FROM land_parcels`
-  ])
-
-const countDataLayers = (client) =>
-  queryBatch(client, [
+    `SELECT COUNT(*) AS "landParcelsCount" FROM land_parcels`,
     `SELECT COUNT(*) AS "sssiCount" FROM data_layer WHERE data_layer_type_id = 1`,
     `SELECT COUNT(*) AS "moorlandDesignationsCount" FROM data_layer WHERE data_layer_type_id = 2`,
     `SELECT COUNT(*) AS "registeredParksGardensCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`,
     `SELECT COUNT(*) AS "registeredBattlefieldsCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`,
     `SELECT COUNT(*) AS "scheduledMonumentsCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`,
-    `SELECT COUNT(*) AS "shineCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
-  ])
-
-const countDistinctParcels = (client) =>
-  queryBatch(client, [
+    `SELECT COUNT(*) AS "shineCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`,
     `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS "uniqueParcelsCount" FROM land_parcels`,
-    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS "uniqueCoversCount" FROM land_covers`
-  ])
-
-const countDataQuality = (client) =>
-  queryBatch(client, [
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS "uniqueCoversCount" FROM land_covers`,
     `SELECT COUNT(*) AS "duplicateCoversCount" FROM (
       SELECT 1 FROM land_covers
       GROUP BY parcel_id, sheet_id, land_cover_class_code, geom_hash
@@ -66,13 +43,7 @@ const countDataQuality = (client) =>
 const runStatsQuery = async (client) => {
   await client.query('SET max_parallel_workers_per_gather = 0')
 
-  const results = [
-    ...(await countTableRows(client)),
-    ...(await countLandTables(client)),
-    ...(await countDataLayers(client)),
-    ...(await countDistinctParcels(client)),
-    ...(await countDataQuality(client))
-  ]
+  const results = await countTableRows(client)
 
   await client.query('SET max_parallel_workers_per_gather = DEFAULT')
 
