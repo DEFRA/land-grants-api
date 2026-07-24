@@ -150,6 +150,19 @@ const buildAuditPayload = (
   }
 }
 
+/** @type {import('@aws-sdk/client-sns').SNSClient|null} */
+let snsClient = null
+
+const getSnsClient = () => {
+  if (!snsClient) {
+    snsClient = new SNSClient({
+      region: config.get('aws.region'),
+      endpoint: config.get('sns.endpoint')
+    })
+  }
+  return snsClient
+}
+
 /**
  * Records a land-grants-api audit event by publishing it to the FCP
  * Sentinel audit SNS topic.
@@ -166,12 +179,7 @@ export const auditEvent = async (
 ) => {
   const logger = createLogger()
   try {
-    const client = new SNSClient({
-      region: config.get('aws.region'),
-      endpoint: config.get('sns.endpoint')
-    })
-
-    await client.send(
+    await getSnsClient().send(
       new PublishCommand({
         TopicArn: config.get('sns.auditTopicArn'),
         Message: JSON.stringify(
