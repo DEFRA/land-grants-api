@@ -1,118 +1,53 @@
 import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 
-const runStatsQuery = async (client) => {
-  return await Promise.all([
-    client.query(`SELECT COUNT(*) FROM actions`),
-    client.query(`SELECT COUNT(*) FROM actions_config`),
-    client.query(`SELECT COUNT(*) FROM agreements`),
-    client.query(`SELECT COUNT(*) FROM application_results`),
-    client.query(`SELECT COUNT(*) FROM compatibility_matrix`),
-    client.query(`SELECT COUNT(*) FROM land_cover_codes`),
-    client.query(`SELECT COUNT(*) FROM land_cover_codes_actions`),
-    client.query(`SELECT COUNT(*) FROM land_covers`),
-    client.query(`SELECT COUNT(*) FROM land_parcels`),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 1`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
-    ),
-    client.query(
-      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels`
-    ),
-    client.query(
-      `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers`
-    ),
-    client.query(
-      `SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)`
-    ),
-    client.query(
-      `SELECT COUNT(*)
-        FROM land_parcels p
-        WHERE NOT EXISTS(select 1 from land_covers c where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
-    ),
-    client.query(
-      `SELECT COUNT(*)
-        FROM land_covers c
-        WHERE NOT EXISTS(select 1 from land_parcels p where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
-    )
+const mergeResults = (results) =>
+  Object.assign({}, ...results.map((r) => r.rows[0]))
+
+const queryBatch = async (client, queries) =>
+  Promise.all(queries.map((sql) => client.query(sql)))
+
+const countTableRows = (client) =>
+  queryBatch(client, [
+    `SELECT COUNT(*) AS "actionsCount" FROM actions`,
+    `SELECT COUNT(*) AS "actionsConfigCount" FROM actions_config`,
+    `SELECT COUNT(*) AS "agreementsCount" FROM agreements`,
+    `SELECT COUNT(*) AS "applicationResultsCount" FROM application_results`,
+    `SELECT COUNT(*) AS "compatibilityMatrixCount" FROM compatibility_matrix`,
+    `SELECT COUNT(*) AS "landCoverCodesCount" FROM land_cover_codes`,
+    `SELECT COUNT(*) AS "landCoverCodesActionsCount" FROM land_cover_codes_actions`,
+    `SELECT COUNT(*) AS "landCoversCount" FROM land_covers`,
+    `SELECT COUNT(*) AS "landParcelsCount" FROM land_parcels`,
+    `SELECT COUNT(*) AS "sssiCount" FROM data_layer WHERE data_layer_type_id = 1`,
+    `SELECT COUNT(*) AS "moorlandDesignationsCount" FROM data_layer WHERE data_layer_type_id = 2`,
+    `SELECT COUNT(*) AS "registeredParksGardensCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`,
+    `SELECT COUNT(*) AS "registeredBattlefieldsCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`,
+    `SELECT COUNT(*) AS "scheduledMonumentsCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`,
+    `SELECT COUNT(*) AS "shineCount" FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`,
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS "uniqueParcelsCount" FROM land_parcels`,
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS "uniqueCoversCount" FROM land_covers`,
+    `SELECT COUNT(*) AS "duplicateCoversCount" FROM (
+      SELECT 1 FROM land_covers
+      GROUP BY parcel_id, sheet_id, land_cover_class_code, geom_hash
+      HAVING COUNT(*) > 1
+    )`,
+    `SELECT COUNT(*) AS "unlinkedParcelsCount"
+      FROM land_parcels p
+      LEFT JOIN land_covers c ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
+      WHERE c.sheet_id IS NULL`,
+    `SELECT COUNT(*) AS "unlinkedCoversCount"
+      FROM land_covers c
+      LEFT JOIN land_parcels p ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
+      WHERE p.sheet_id IS NULL`
   ])
-}
 
-/**
- * Extract a count value from a SQL query result.
- * @param {{ rows: Array<{ count: string | number }> }} result - Query result containing a count in the first row.
- * @returns {string | number} The count value from the query result.
- */
-const getCountFromResult = (result) => result.rows[0].count
+const runStatsQuery = async (client) => {
+  await client.query('SET max_parallel_workers_per_gather = 0')
 
-/**
- * Build a stats object from the stats query results.
- * @param {Array<{ rows: Array<{ count: string | number }> }>} results - Ordered query results from runStatsQuery.
- * @returns {Record<string, string | number>} Named stats values for logging.
- */
-const mapStatsResults = (results) => {
-  const [
-    actionsResult,
-    actionsConfigResult,
-    agreementsResult,
-    applicationResultsResult,
-    compatibilityMatrixResult,
-    landCoverCodesResult,
-    landCoverCodesActionsResult,
-    landCoversResult,
-    landParcelsResult,
-    sssiResults,
-    moorlandDesignationResult,
-    registeredParksGardensResult,
-    registeredBattlefieldsResult,
-    scheduledMonumentsResult,
-    shineResult,
-    uniqueParcelsResult,
-    uniqueCoversResult,
-    duplicateCoversResult,
-    unlinkedParcelsResult,
-    unlinkedCoversResult
-  ] = results
+  const results = await countTableRows(client)
 
-  return {
-    actionsCount: getCountFromResult(actionsResult),
-    actionsConfigCount: getCountFromResult(actionsConfigResult),
-    agreementsCount: getCountFromResult(agreementsResult),
-    applicationResultsCount: getCountFromResult(applicationResultsResult),
-    compatibilityMatrixCount: getCountFromResult(compatibilityMatrixResult),
-    landCoverCodesCount: getCountFromResult(landCoverCodesResult),
-    landCoverCodesActionsCount: getCountFromResult(landCoverCodesActionsResult),
-    landCoversCount: getCountFromResult(landCoversResult),
-    landParcelsCount: getCountFromResult(landParcelsResult),
-    sssiCount: getCountFromResult(sssiResults),
-    moorlandDesignationsCount: getCountFromResult(moorlandDesignationResult),
-    registeredParksGardensCount: getCountFromResult(
-      registeredParksGardensResult
-    ),
-    registeredBattlefieldsCount: getCountFromResult(
-      registeredBattlefieldsResult
-    ),
-    scheduledMonumentsCount: getCountFromResult(scheduledMonumentsResult),
-    shineCount: getCountFromResult(shineResult),
-    uniqueParcelsCount: getCountFromResult(uniqueParcelsResult),
-    uniqueCoversCount: getCountFromResult(uniqueCoversResult),
-    duplicateCoversCount: getCountFromResult(duplicateCoversResult),
-    unlinkedParcelsCount: getCountFromResult(unlinkedParcelsResult),
-    unlinkedCoversCount: getCountFromResult(unlinkedCoversResult)
-  }
+  await client.query('SET max_parallel_workers_per_gather = DEFAULT')
+
+  return mergeResults(results)
 }
 
 /**
@@ -125,7 +60,7 @@ async function getStats(logger, db) {
   let client
   try {
     client = await db.connect()
-    return mapStatsResults(await runStatsQuery(client))
+    return await runStatsQuery(client)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get stats failed',
