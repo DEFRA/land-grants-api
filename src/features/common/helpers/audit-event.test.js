@@ -240,8 +240,10 @@ describe('auditEvent', () => {
 
     await auditEvent(UNMAPPED_EVENT, context)
 
+    const publishedMessage = mockSend.mock.calls[0][0].input.Message
+
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `Audit event successfully published: ${UNMAPPED_EVENT} ${JSON.stringify(context)}`
+      `Audit event successfully published: ${UNMAPPED_EVENT} ${publishedMessage}`
     )
   })
 })
@@ -612,9 +614,11 @@ describe('auditEvent error handling', () => {
 
     await auditEvent(UNMAPPED_EVENT, context)
 
+    const publishedMessage = mockSend.mock.calls[0][0].input.Message
+
     expect(mockLogger.warn).toHaveBeenCalledWith(
       testError,
-      `Failed to publish audit event: ${UNMAPPED_EVENT} ${JSON.stringify(context)}`
+      `Failed to publish audit event: ${UNMAPPED_EVENT} ${publishedMessage}`
     )
   })
 
@@ -631,9 +635,11 @@ describe('auditEvent error handling', () => {
 
     await auditEvent(UNMAPPED_EVENT, {})
 
+    const publishedMessage = mockSend.mock.calls[0][0].input.Message
+
     expect(mockLogger.warn).toHaveBeenCalledWith(
       awsError,
-      `Failed to publish audit event: ${UNMAPPED_EVENT} ${JSON.stringify({})}`
+      `Failed to publish audit event: ${UNMAPPED_EVENT} ${publishedMessage}`
     )
   })
 })

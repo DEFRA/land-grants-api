@@ -155,22 +155,21 @@ export const auditEvent = async (
   request = null
 ) => {
   const logger = createLogger()
+  const auditPayload = JSON.stringify(
+    buildAuditPayload(event, context, status, request)
+  )
   try {
     await getSnsClient().send(
       new PublishCommand({
         TopicArn: config.get('sns.auditTopicArn'),
-        Message: JSON.stringify(
-          buildAuditPayload(event, context, status, request)
-        )
+        Message: auditPayload
       })
     )
-    logger.info(
-      `Audit event successfully published: ${event} ${JSON.stringify(context)}`
-    )
+    logger.info(`Audit event successfully published: ${event} ${auditPayload}`)
   } catch (error) {
     logger.warn(
       error,
-      `Failed to publish audit event: ${event} ${JSON.stringify(context)}`
+      `Failed to publish audit event: ${event} ${auditPayload}`
     )
   }
 }
