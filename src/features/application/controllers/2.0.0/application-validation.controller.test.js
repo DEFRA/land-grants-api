@@ -36,6 +36,8 @@ const mockValidateRequestData = vi.mocked(validateRequestData)
 const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
 const mockAuditEvent = vi.mocked(auditEvent)
 
+const sbi = '123456789'
+
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
 
@@ -181,9 +183,9 @@ describe('ApplicationValidationController', () => {
   describe('POST /applications/validate route', () => {
     test('should return 200 with valid application when validation passes', async () => {
       const applicationId = 'APP-123'
-      const sbi = 123456789
       const request = {
         method: 'POST',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         url: '/api/v2/application/validate',
         payload: {
           applicationId,
@@ -245,22 +247,50 @@ describe('ApplicationValidationController', () => {
           landActions: mockLandActions,
           actions: mockActions,
           applicationId,
-          sbi
+          sbi: String(sbi)
         }
       )
       expect(mockValidateAllLandParcels).toHaveBeenCalledWith(
         expect.objectContaining({ logger: expect.any(Object) }),
         mockPostgresDb,
+        String(sbi),
+        'dummy-token',
         { landActions: mockLandActions, actions: mockActions }
       )
     })
 
+    test('should allow number for SBI', async () => {
+      const applicationId = 'APP-123'
+      const request = {
+        method: 'POST',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
+        url: '/api/v2/application/validate',
+        payload: {
+          applicationId,
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi: 123456789,
+          landActions: mockLandActions
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { valid, id }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(valid).toBe(true)
+      expect(id).toBe(1)
+    })
+
     test('should send an audit event with the eligibility decisions and explanations', async () => {
       const applicationId = 'APP-123'
-      const sbi = 123456789
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId,
           requester: 'test-user',
@@ -304,11 +334,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -319,13 +350,33 @@ describe('ApplicationValidationController', () => {
         AuditEvent.SFI_APPLICATION_VALIDATED,
         expect.objectContaining({
           applicationId: 'APP-123',
-          identifiers: { sbi: 123456789, crn: 'CRN-456' },
+          identifiers: { sbi, crn: 'CRN-456' },
           request: { landActions: mockLandActions },
           error: 'Database connection failed'
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
       )
+    })
+
+    test('should return 401 when missing X-Forwarded-Authorization header', async () => {
+      const applicationId = 'APP-123'
+      const request = {
+        method: 'POST',
+        url: '/api/v2/application/validate',
+        payload: {
+          applicationId,
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi,
+          landActions: mockLandActions
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(401)
     })
 
     test('should return 400 when validation errors exist', async () => {
@@ -338,11 +389,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/applications/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -365,11 +417,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -390,11 +443,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -428,11 +482,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -455,11 +510,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -478,11 +534,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SX0679',
@@ -512,11 +569,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: []
         }
       }
@@ -537,11 +595,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -563,11 +622,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }
@@ -591,11 +651,12 @@ describe('ApplicationValidationController', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
           applicantCrn: 'CRN-456',
-          sbi: 123456789,
+          sbi,
           landActions: mockLandActions
         }
       }

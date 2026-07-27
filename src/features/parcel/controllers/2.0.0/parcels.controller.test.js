@@ -1,13 +1,14 @@
-import { parcel } from '~/src/features/parcel/index.js'
+import { vi } from 'vitest'
+
+import createTestServer from '~/src/tests/test-server.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import {
   getActionsForParcel,
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
-import { vi } from 'vitest'
-import createTestServer from '~/src/tests/test-server.js'
+import { parcel } from '~/src/features/parcel/index.js'
 
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
@@ -20,6 +21,8 @@ const mockGetActionsForParcelWithSSSIConsentRequired =
 const mockGetActionsForParcelWithHEFERConsentRequired =
   getActionsForParcelWithHEFERConsentRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+
+const sbi = '012345678'
 
 const mockParcelData = {
   sheet_id: 'SX0679',
@@ -160,7 +163,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['size']
         }
@@ -199,7 +204,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -261,7 +268,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions.results']
         }
@@ -286,7 +295,8 @@ describe('Parcels Controller 2.0.0', () => {
         true, // showActionResults should be true
         mockEnabledActions,
         expect.any(Function),
-        expect.anything()
+        expect.anything(),
+        'dummy'
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -300,7 +310,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions', 'actions.sssiConsentRequired']
         }
@@ -341,7 +353,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238', 'SX0679-9239'],
           fields: ['actions', 'actions.sssiConsentRequired']
         }
@@ -368,7 +382,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -387,11 +403,27 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should return 200 and call getActionsForParcelWithHEFERConsentRequired when requesting actions.heferRequired', async () => {
+    test('should return 401 when defra ID token not provided', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
         payload: {
+          sbi,
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+      const response = await server.inject(request)
+      expect(response.statusCode).toBe(401)
+    })
+
+    test('should return 200 and call getActionsForParcelWithHEFERConsentRequired when requesting actions.heferRequired', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
+        payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions', 'actions.heferRequired']
         }
@@ -432,7 +464,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -455,7 +489,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238', 'SX0679-9239'],
           fields: ['actions', 'actions.heferRequired']
         }
@@ -482,7 +518,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: [
             'actions',
@@ -538,7 +576,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
           plannedActions: [
@@ -575,7 +615,8 @@ describe('Parcels Controller 2.0.0', () => {
         false,
         mockEnabledActions,
         expect.any(Function),
-        expect.anything()
+        expect.anything(),
+        'dummy'
       )
     })
 
@@ -632,7 +673,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -654,7 +697,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['groups']
         }
@@ -678,7 +723,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['size']
         }
@@ -701,7 +748,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9999'],
           fields: ['size']
         }
@@ -727,7 +776,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9999'],
           fields: ['size']
         }
@@ -749,7 +800,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           fields: ['size']
         }
       }
@@ -768,7 +821,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238']
         }
       }
@@ -787,7 +842,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['invalid-parcel-id'],
           fields: ['size']
         }
@@ -809,7 +866,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['invalid-field']
         }
@@ -831,7 +890,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
           plannedActions: [
@@ -857,7 +918,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
           plannedActions: [
@@ -888,7 +951,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -912,7 +977,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -936,7 +1003,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions', 'actions.sssiConsentRequired']
         }
@@ -960,7 +1029,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions', 'actions.heferRequired']
         }
@@ -984,7 +1055,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -1008,7 +1081,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['size']
         }
@@ -1028,7 +1103,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -1046,7 +1123,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -1063,7 +1142,8 @@ describe('Parcels Controller 2.0.0', () => {
         false,
         mockEnabledActions,
         expect.any(Function),
-        expect.anything()
+        expect.anything(),
+        'dummy'
       )
     })
 
@@ -1071,7 +1151,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
           plannedActions: []
@@ -1112,7 +1194,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }
@@ -1153,7 +1237,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['size']
         }
@@ -1180,7 +1266,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9999'],
           fields: ['size']
         }
@@ -1199,7 +1287,9 @@ describe('Parcels Controller 2.0.0', () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
         payload: {
+          sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['size']
         }

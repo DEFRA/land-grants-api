@@ -14,15 +14,29 @@ const logger = createLogger()
  * @property {HttpsProxyAgent<string>} httpAndHttpsProxyAgent
  */
 
+/** @type {Proxy|null} */
+let cachedProxy = null
+/** @type {string|null} */
+let cachedProxyUrl = null
+
 /**
- * Provide ProxyAgent and HttpsProxyAgent when http/s proxy url config has been set
+ * Provide ProxyAgent and HttpsProxyAgent when http/s proxy url config has been set.
+ * Returns a lazily-initialised singleton to avoid creating a new ProxyAgent (and
+ * its underlying undici connection pool) on every request, which causes
+ * EventEmitter MaxListenersExceeded warnings from leaked socket connect listeners.
  * @returns {Proxy|null}
  */
 function provideProxy() {
   const proxyUrl = config.get('httpsProxy') ?? config.get('httpProxy')
 
   if (!proxyUrl) {
+    cachedProxy = null
+    cachedProxyUrl = null
     return null
+  }
+
+  if (cachedProxy && cachedProxyUrl === proxyUrl) {
+    return cachedProxy
   }
 
   const url = new URL(proxyUrl)
@@ -33,7 +47,8 @@ function provideProxy() {
 
   logger.debug(`Proxy set up using ${url.origin}:${port}`)
 
-  return {
+  cachedProxyUrl = proxyUrl
+  cachedProxy = {
     url,
     port,
     proxyAgent: new ProxyAgent({
@@ -43,6 +58,8 @@ function provideProxy() {
     }),
     httpAndHttpsProxyAgent: new HttpsProxyAgent(url)
   }
+
+  return cachedProxy
 }
 
 /**

@@ -263,7 +263,7 @@ const config = convict({
     statsSchedule: {
       doc: 'Cron time/schedule for outputting stats',
       format: String,
-      default: '0 7 * * *',
+      default: '27 7 * * *',
       env: 'CRON_STATS_SCHEDULE'
     }
   },
@@ -334,6 +334,14 @@ const config = convict({
       format: String,
       default: '',
       env: 'DAL_API_ENDPOINT'
+    }
+  },
+  featureFlags: {
+    useDal: {
+      doc: 'Use DAL to get additional agreements',
+      format: Boolean,
+      default: !isProduction,
+      env: 'FEATURE_USE_DAL'
     }
   }
 })

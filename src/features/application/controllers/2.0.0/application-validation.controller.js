@@ -137,6 +137,13 @@ const runApplicationValidation = async (
   postgresDb,
   { landActions, applicationId, sbi, applicantCrn, requester }
 ) => {
+  const defraIdToken = /** @type {string} */ (
+    request.headers['x-forwarded-authorization']
+  )
+  if (!defraIdToken) {
+    return Boom.unauthorized('X-Forwarded-Authorization is required')
+  }
+
   const actions = await getActions(
     request,
     postgresDb,
@@ -154,10 +161,16 @@ const runApplicationValidation = async (
     return validationError
   }
 
-  const parcelResults = await validateAllLandParcels(request, postgresDb, {
-    landActions,
-    actions
-  })
+  const parcelResults = await validateAllLandParcels(
+    request,
+    postgresDb,
+    sbi,
+    defraIdToken,
+    {
+      landActions,
+      actions
+    }
+  )
 
   const id = await saveValidationResults(request, postgresDb, {
     applicationId,
@@ -274,8 +287,11 @@ const ApplicationValidationController = {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
-      const { landActions, applicationId, sbi, applicantCrn, requester } =
+      const { landActions, applicationId, applicantCrn, requester } =
         request.payload
+
+      // @ts-expect-error - payload
+      const sbi = String(request.payload.sbi)
 
       logInfo(request.logger, {
         category: 'application',
@@ -290,7 +306,13 @@ const ApplicationValidationController = {
       const validationResult = await runApplicationValidation(
         request,
         postgresDb,
-        { landActions, applicationId, sbi, applicantCrn, requester }
+        {
+          landActions,
+          applicationId,
+          sbi,
+          applicantCrn,
+          requester
+        }
       )
       if (Boom.isBoom(validationResult)) {
         return validationResult

@@ -2,12 +2,17 @@ import { describe, test, expect, beforeAll } from 'vitest'
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const headers = {
+  Authorization: getAuthHeader(),
+  'X-Forwarded-Authorization': 'dummy'
+}
+
 describe('Case Management Adapter Endpoints', () => {
   let validationRunId
 
   beforeAll(async () => {
     const response = await httpClient.post('/api/v2/application/validate', {
-      headers: { Authorization: getAuthHeader() },
+      headers,
       body: {
         applicationId: 'appid-cma-1',
         requester: 'test-user',
@@ -36,9 +41,7 @@ describe('Case Management Adapter Endpoints', () => {
     test('should retrieve validation run by id with authentication', async () => {
       const response = await httpClient.get(
         `/case-management-adapter/application/validation-run/${validationRunId}`,
-        {
-          headers: { Authorization: getAuthHeader() }
-        }
+        { headers }
       )
 
       expect(response.status).toBe(200)
@@ -56,7 +59,7 @@ describe('Case Management Adapter Endpoints', () => {
       const response = await httpClient.post(
         '/case-management-adapter/application/validation-run/rerun',
         {
-          headers: { Authorization: getAuthHeader() },
+          headers,
           body: {
             requesterUsername: 'test-user',
             id: validationRunId
@@ -77,7 +80,7 @@ describe('Case Management Adapter Endpoints', () => {
       const response = await httpClient.post(
         '/case-management-adapter/application/validation-run/rerun',
         {
-          headers: { Authorization: getAuthHeader() },
+          headers,
           body: {
             requesterUsername: 'test-user',
             id: 999999999

@@ -196,17 +196,21 @@ describe('Application Validation Service', () => {
       expect(mockValidateLandParcelActions).toHaveBeenCalledTimes(2)
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         1,
+        mockSbi,
         mockLandAction[0],
         mockEnabledActions,
         mockCompatibilityCheckFn,
-        mockRequest
+        mockRequest,
+        null
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
+        mockSbi,
         mockLandAction[1],
         mockEnabledActions,
         mockCompatibilityCheckFn,
-        mockRequest
+        mockRequest,
+        null
       )
 
       expect(mockApplicationDataTransformer).toHaveBeenCalledWith(

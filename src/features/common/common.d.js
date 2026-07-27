@@ -27,4 +27,5 @@
  * @property {string} name
  * @property {boolean} truncateTable
  * @property {boolean} [ingest]
+ * @property {string} [pairedWith]
  */

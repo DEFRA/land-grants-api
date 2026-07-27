@@ -2,12 +2,18 @@ import { describe, test, expect } from 'vitest'
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const headers = {
+  Authorization: getAuthHeader(),
+  'X-Forwarded-Authorization': 'dummy'
+}
+
 describe('Parcels Endpoints', () => {
   describe('POST /api/v2/parcels', () => {
     test('should return parcel data with size and actions when authenticated', async () => {
       const response = await httpClient.post('/api/v2/parcels', {
-        headers: { Authorization: getAuthHeader() },
+        headers,
         body: {
+          sbi: '0123456789',
           parcelIds: ['SD5649-9215'],
           fields: ['size', 'actions']
         }

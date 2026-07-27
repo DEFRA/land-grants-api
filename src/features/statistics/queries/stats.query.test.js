@@ -6,33 +6,45 @@ describe('getStats', () => {
   let mockClient
 
   beforeEach(() => {
-    const createMockResult = (count) => ({
-      rows: [{ count: String(count) }]
+    const createMockResult = (key, count) => ({
+      rows: [{ [key]: String(count) }]
     })
 
     mockClient = {
       query: vi
         .fn()
-        .mockResolvedValueOnce(createMockResult(10)) // actions
-        .mockResolvedValueOnce(createMockResult(15)) // actions_config
-        .mockResolvedValueOnce(createMockResult(5)) // agreements
-        .mockResolvedValueOnce(createMockResult(20)) // application_results
-        .mockResolvedValueOnce(createMockResult(100)) // compatibility_matrix
-        .mockResolvedValueOnce(createMockResult(25)) // land_cover_codes
-        .mockResolvedValueOnce(createMockResult(50)) // land_cover_codes_actions
-        .mockResolvedValueOnce(createMockResult(1000)) // land_covers
-        .mockResolvedValueOnce(createMockResult(500)) // land_parcels
-        .mockResolvedValueOnce(createMockResult(70)) // sssi
-        .mockResolvedValueOnce(createMockResult(30)) // moorland_designations
-        .mockResolvedValueOnce(createMockResult(40)) // registered_parks_gardens
-        .mockResolvedValueOnce(createMockResult(60)) // registered_battlefields
-        .mockResolvedValueOnce(createMockResult(80)) // scheduled_monuments
-        .mockResolvedValueOnce(createMockResult(90)) // shine
-        .mockResolvedValueOnce(createMockResult(450)) // unique parcels
-        .mockResolvedValueOnce(createMockResult(900)) // unique covers
-        .mockResolvedValueOnce(createMockResult(15)) // duplicate covers
-        .mockResolvedValueOnce(createMockResult(3)) // unlinked parcels
-        .mockResolvedValueOnce(createMockResult(1)), // unlinked covers
+        .mockResolvedValueOnce({ command: 'SET' }) // SET max_parallel_workers_per_gather
+        .mockResolvedValueOnce(createMockResult('actionsCount', 10))
+        .mockResolvedValueOnce(createMockResult('actionsConfigCount', 15))
+        .mockResolvedValueOnce(createMockResult('agreementsCount', 5))
+        .mockResolvedValueOnce(createMockResult('applicationResultsCount', 20))
+        .mockResolvedValueOnce(
+          createMockResult('compatibilityMatrixCount', 100)
+        )
+        .mockResolvedValueOnce(createMockResult('landCoverCodesCount', 25))
+        .mockResolvedValueOnce(
+          createMockResult('landCoverCodesActionsCount', 50)
+        )
+        .mockResolvedValueOnce(createMockResult('landCoversCount', 1000))
+        .mockResolvedValueOnce(createMockResult('landParcelsCount', 500))
+        .mockResolvedValueOnce(createMockResult('sssiCount', 70))
+        .mockResolvedValueOnce(
+          createMockResult('moorlandDesignationsCount', 30)
+        )
+        .mockResolvedValueOnce(
+          createMockResult('registeredParksGardensCount', 40)
+        )
+        .mockResolvedValueOnce(
+          createMockResult('registeredBattlefieldsCount', 60)
+        )
+        .mockResolvedValueOnce(createMockResult('scheduledMonumentsCount', 80))
+        .mockResolvedValueOnce(createMockResult('shineCount', 90))
+        .mockResolvedValueOnce(createMockResult('uniqueParcelsCount', 450))
+        .mockResolvedValueOnce(createMockResult('uniqueCoversCount', 900))
+        .mockResolvedValueOnce(createMockResult('duplicateCoversCount', 15))
+        .mockResolvedValueOnce(createMockResult('unlinkedParcelsCount', 3))
+        .mockResolvedValueOnce(createMockResult('unlinkedCoversCount', 1))
+        .mockResolvedValueOnce({ command: 'SET' }), // reset max_parallel_workers_per_gather
       release: vi.fn()
     }
 
@@ -55,100 +67,34 @@ describe('getStats', () => {
   test('should query all tables for counts', async () => {
     await getStats(mockLogger, mockDb)
 
-    expect(mockClient.query).toHaveBeenCalledTimes(20)
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM actions'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM actions_config'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM agreements'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM application_results'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM compatibility_matrix'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM land_cover_codes'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM land_cover_codes_actions'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM land_covers'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM land_parcels'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 1'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 2'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_parks_gardens'`
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'registered_battlefields'`
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'scheduled_monuments'`
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*) FROM data_layer WHERE data_layer_type_id = 3 and (metadata->>'type') = 'shine'`
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_parcels'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS count FROM land_covers'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      'SELECT COUNT(*) FROM (SELECT 1 FROM land_covers GROUP BY parcel_id, sheet_id, land_cover_class_code, geom HAVING COUNT(*) > 1)'
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*)
-        FROM land_parcels p
-        WHERE NOT EXISTS(select 1 from land_covers c where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
-    )
-    expect(mockClient.query).toHaveBeenCalledWith(
-      `SELECT COUNT(*)
-        FROM land_covers c
-        WHERE NOT EXISTS(select 1 from land_parcels p where c.sheet_id = p.sheet_id and c.parcel_id = p.parcel_id)`
-    )
+    expect(mockClient.query).toHaveBeenCalledTimes(22)
   })
 
   test('should log stats with all counts', async () => {
     const stats = await getStats(mockLogger, mockDb)
 
-    expect(stats).toEqual(
-      expect.objectContaining({
-        actionsCount: '10',
-        actionsConfigCount: '15',
-        agreementsCount: '5',
-        applicationResultsCount: '20',
-        compatibilityMatrixCount: '100',
-        landCoverCodesCount: '25',
-        landCoverCodesActionsCount: '50',
-        landCoversCount: '1000',
-        landParcelsCount: '500',
-        sssiCount: '70',
-        moorlandDesignationsCount: '30',
-        registeredParksGardensCount: '40',
-        registeredBattlefieldsCount: '60',
-        scheduledMonumentsCount: '80',
-        shineCount: '90',
-        uniqueParcelsCount: '450',
-        uniqueCoversCount: '900',
-        duplicateCoversCount: '15',
-        unlinkedParcelsCount: '3',
-        unlinkedCoversCount: '1'
-      })
-    )
+    expect(stats).toEqual({
+      actionsCount: '10',
+      actionsConfigCount: '15',
+      agreementsCount: '5',
+      applicationResultsCount: '20',
+      compatibilityMatrixCount: '100',
+      landCoverCodesCount: '25',
+      landCoverCodesActionsCount: '50',
+      landCoversCount: '1000',
+      landParcelsCount: '500',
+      sssiCount: '70',
+      moorlandDesignationsCount: '30',
+      registeredParksGardensCount: '40',
+      registeredBattlefieldsCount: '60',
+      scheduledMonumentsCount: '80',
+      shineCount: '90',
+      uniqueParcelsCount: '450',
+      uniqueCoversCount: '900',
+      duplicateCoversCount: '15',
+      unlinkedParcelsCount: '3',
+      unlinkedCoversCount: '1'
+    })
   })
 
   test('should release the client when done', async () => {

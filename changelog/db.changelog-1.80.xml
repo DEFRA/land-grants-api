@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="add-ingest-staged-date" author="system">
+    <comment>
+      Tracks when an ingest finished loading into its staging table, distinct from
+      completed_date (when it was promoted to its live table). land_parcels/land_covers must
+      be promoted together: one can finish staging (status=staged) well before the other, and
+      only moves to status=completed once both have staged and are promoted in one transaction.
+    </comment>
+    <addColumn tableName="ingest">
+      <column name="staged_date" type="TIMESTAMP"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>

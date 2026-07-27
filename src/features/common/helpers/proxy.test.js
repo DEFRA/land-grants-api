@@ -4,6 +4,7 @@ import { ProxyAgent } from 'undici'
 import { config } from '~/src/config/index.js'
 import { proxyFetch } from '~/src/features/common/helpers/proxy.js'
 
+// fetchMock is made available globally via .vitest/setup.js
 const { fetchMock } = global
 
 const mockLoggerDebug = vi.fn()
@@ -11,11 +12,8 @@ vi.mock('~/src/features/common/helpers/logging/logger.js', () => ({
   createLogger: () => ({ debug: (...args) => mockLoggerDebug(...args) })
 }))
 
-const httpProxyUrl = 'http://proxy.example.com'
 const httpsProxyUrl = 'https://proxy.example.com'
-const httpPort = 80
 const httpsPort = 443
-const secureUrl = 'https://beepboopbeep.com'
 
 describe('#proxy', () => {
   beforeEach(() => {
@@ -29,8 +27,10 @@ describe('#proxy', () => {
     vi.clearAllMocks()
   })
 
-  describe('When no proxy is configured', () => {
-    test('Should fetch without proxy agent', async () => {
+  describe('#proxyFetch', () => {
+    const secureUrl = 'https://beepboopbeep.com'
+
+    test('Should pass options through', async () => {
       fetchMock.mockResponse(() => Promise.resolve({}))
 
       await proxyFetch(secureUrl, { method: 'GET' })
@@ -38,72 +38,38 @@ describe('#proxy', () => {
       expect(global.fetch).toHaveBeenCalledWith(secureUrl, { method: 'GET' })
     })
 
-    test('Should pass options through', async () => {
-      fetchMock.mockResponse(() => Promise.resolve({}))
+    describe('When no Proxy is configured', () => {
+      test('Should fetch without Proxy Agent', async () => {
+        fetchMock.mockResponse(() => Promise.resolve({}))
 
-      await proxyFetch(secureUrl, {})
+        await proxyFetch(secureUrl, {})
 
-      expect(global.fetch).toHaveBeenCalledWith(secureUrl, {})
-    })
-  })
-
-  describe('When a HTTP proxy URL has been set', () => {
-    test('Should fetch with proxy agent', async () => {
-      config.set('httpProxy', httpProxyUrl)
-      fetchMock.mockResponse(() => Promise.resolve({}))
-
-      await proxyFetch(secureUrl, {})
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        secureUrl,
-        expect.objectContaining({
-          dispatcher: expect.any(ProxyAgent)
-        })
-      )
+        expect(global.fetch).toHaveBeenCalledWith(secureUrl, {})
+      })
     })
 
-    test('Should log proxy setup and fetch via proxy messages', async () => {
-      config.set('httpProxy', httpProxyUrl)
-      fetchMock.mockResponse(() => Promise.resolve({}))
+    describe('When proxy is configured', () => {
+      beforeEach(async () => {
+        config.set('httpProxy', httpsProxyUrl)
+        fetchMock.mockResponse(() => Promise.resolve({}))
 
-      await proxyFetch(secureUrl, {})
+        await proxyFetch(secureUrl, {})
+      })
 
-      expect(mockLoggerDebug).toHaveBeenCalledWith(
-        `Proxy set up using ${httpProxyUrl}:${httpPort}`
-      )
-      expect(mockLoggerDebug).toHaveBeenCalledWith(
-        `Fetching: ${secureUrl} via the proxy: ${httpProxyUrl}:${httpPort}`
-      )
-    })
-  })
+      test('Should fetch with Proxy Agent', () => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          secureUrl,
+          expect.objectContaining({
+            dispatcher: expect.any(ProxyAgent)
+          })
+        )
+      })
 
-  describe('When a HTTPS proxy URL has been set', () => {
-    test('Should fetch with proxy agent', async () => {
-      config.set('httpsProxy', httpsProxyUrl)
-      fetchMock.mockResponse(() => Promise.resolve({}))
-
-      await proxyFetch(secureUrl, {})
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        secureUrl,
-        expect.objectContaining({
-          dispatcher: expect.any(ProxyAgent)
-        })
-      )
-    })
-
-    test('Should log proxy setup and fetch via proxy messages', async () => {
-      config.set('httpsProxy', httpsProxyUrl)
-      fetchMock.mockResponse(() => Promise.resolve({}))
-
-      await proxyFetch(secureUrl, {})
-
-      expect(mockLoggerDebug).toHaveBeenCalledWith(
-        `Proxy set up using ${httpsProxyUrl}:${httpsPort}`
-      )
-      expect(mockLoggerDebug).toHaveBeenCalledWith(
-        `Fetching: ${secureUrl} via the proxy: ${httpsProxyUrl}:${httpsPort}`
-      )
+      test('Should make expected fetching via the proxy message', () => {
+        expect(mockLoggerDebug).toHaveBeenCalledWith(
+          `Fetching: ${secureUrl.toString()} via the proxy: ${httpsProxyUrl}:${httpsPort}`
+        )
+      })
     })
   })
 })

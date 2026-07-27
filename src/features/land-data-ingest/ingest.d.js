@@ -19,7 +19,8 @@
  * @property {string} entity
  * @property {string} status
  * @property {Date} start_date
- * @property {Date} completed_date
+ * @property {Date | null} staged_date
+ * @property {Date | null} completed_date
  */
 
 /**

@@ -1,30 +1,7 @@
-import { networkInterfaces } from 'node:os'
-
 import { PublishCommand, SNSClient } from '@aws-sdk/client-sns'
 import { config } from '~/src/config/index.js'
 import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
-
-/**
- * Resolves the IP to record on the audit event: prefers the Hapi server's
- * bound host (when not the "listen on all interfaces" wildcard), then falls
- * back to this service's own non-internal IPv4 address.
- * @param {import('@hapi/hapi').Request|null} [request]
- * @returns {string}
- */
-const getLocalIp = (request) => {
-  const hapiHost = request?.server?.info?.host
-  if (hapiHost && hapiHost !== '0.0.0.0') {
-    return hapiHost
-  }
-  for (const iface of Object.values(networkInterfaces())) {
-    for (const addr of iface ?? []) {
-      if (!addr.internal && addr.family === 'IPv4') {
-        return addr.address
-      }
-    }
-  }
-  return ''
-}
+import { extractIp } from '~/src/features/common/helpers/request-ip.js'
 
 /**
  * Resolves the correlation id to record on audit events from the tracing header.
@@ -122,7 +99,7 @@ const buildAuditPayload = (
     version: '0.1.0',
     application: 'Grants',
     component: config.get('serviceName'),
-    ip: getLocalIp(request),
+    ip: extractIp(request),
 
     ...(hasSecurity && {
       security: {
@@ -150,6 +127,19 @@ const buildAuditPayload = (
   }
 }
 
+/** @type {import('@aws-sdk/client-sns').SNSClient|null} */
+let snsClient = null
+
+const getSnsClient = () => {
+  if (!snsClient) {
+    snsClient = new SNSClient({
+      region: config.get('aws.region'),
+      endpoint: config.get('sns.endpoint')
+    })
+  }
+  return snsClient
+}
+
 /**
  * Records a land-grants-api audit event by publishing it to the FCP
  * Sentinel audit SNS topic.
@@ -166,12 +156,7 @@ export const auditEvent = async (
 ) => {
   const logger = createLogger()
   try {
-    const client = new SNSClient({
-      region: config.get('aws.region'),
-      endpoint: config.get('sns.endpoint')
-    })
-
-    await client.send(
+    await getSnsClient().send(
       new PublishCommand({
         TopicArn: config.get('sns.auditTopicArn'),
         Message: JSON.stringify(
