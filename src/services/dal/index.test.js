@@ -1,4 +1,3 @@
-import * as proxy from '~/src/features/common/helpers/proxy.js'
 import { GET_BUSINESS } from './queries.js'
 import {
   PARCEL_ID,
@@ -8,8 +7,6 @@ import {
 import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { getAgreements } from './index.js'
-
-vi.mock('~/src/features/common/helpers/proxy.js')
 
 const stubEndpoint = 'http://stub-dal/graphql'
 const dalResponse = { data: { business: SIMPLE_BUSINESS } }
@@ -38,10 +35,11 @@ describe('getAgreements', () => {
     config.set('dal.apiEndpoint', stubEndpoint)
     config.set('featureFlags.useDal', true)
     vi.clearAllMocks()
+    global.fetch = vi.fn()
   })
 
   it('should provide agreements from DAL', async () => {
-    proxy.proxyFetch.mockResolvedValue({
+    fetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(dalResponse)
     })
@@ -54,7 +52,7 @@ describe('getAgreements', () => {
       mockLogger
     )
 
-    expect(proxy.proxyFetch).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       stubEndpoint,
       expect.objectContaining({
         method: 'POST',
@@ -72,7 +70,7 @@ describe('getAgreements', () => {
   })
 
   it('throws when the DAL response is not ok', async () => {
-    proxy.proxyFetch.mockResolvedValue({
+    fetch.mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Internal Server Error'
@@ -84,7 +82,7 @@ describe('getAgreements', () => {
   })
 
   it('returns an empty array when DAL 404s', async () => {
-    proxy.proxyFetch.mockResolvedValue({
+    fetch.mockResolvedValue({
       ok: false,
       status: 404,
       statusText: 'Not Found',
@@ -111,7 +109,7 @@ describe('getAgreements', () => {
       mockLogger
     )
 
-    expect(proxy.proxyFetch).not.toBeCalled()
+    expect(fetch).not.toBeCalled()
     expect(result).toEqual([])
   })
 
@@ -125,7 +123,7 @@ describe('getAgreements', () => {
       mockLogger
     )
 
-    expect(proxy.proxyFetch).not.toBeCalled()
+    expect(fetch).not.toBeCalled()
     expect(result).toEqual([])
   })
 })
