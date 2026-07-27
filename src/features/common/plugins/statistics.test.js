@@ -2,19 +2,15 @@ import { statistics } from './statistics.js'
 import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 
-const { mockSchedule, mockGetStats, mockMetricsCounter, mockWithTaskLock } =
-  vi.hoisted(() => ({
-    mockSchedule: vi.fn(),
+const { mockGetStats, mockMetricsCounter, mockWithTaskLock } = vi.hoisted(
+  () => ({
     mockGetStats: vi.fn(),
     mockMetricsCounter: vi.fn(),
     mockWithTaskLock: vi.fn((pool, taskName, fn) =>
       fn().then((r) => ({ acquired: true, result: r }))
     )
-  }))
-
-vi.mock('node-cron', () => ({
-  schedule: mockSchedule
-}))
+  })
+)
 
 vi.mock('~/src/features/statistics/queries/stats.query.js', () => ({
   getStats: mockGetStats
@@ -50,10 +46,7 @@ describe('#statistics', () => {
     }
     mockGetStats.mockResolvedValue({})
 
-    config.set('cron.statsSchedule', '0 7 * * *')
-    config.set('cron.timezone', 'UTC')
-    config.set('cron.maxRandomDelay', 150)
-    config.set('cron.taskLockTimeoutMinutes', 5)
+    config.set('taskLockTimeoutMinutes', 5)
   })
 
   test('Should have the correct plugin name', () => {
@@ -86,51 +79,21 @@ describe('#statistics', () => {
     })
   })
 
-  test('Should schedule cron job with correct pattern', () => {
+  test('Should log info when stats job starts and completes successfully', async () => {
     statistics.plugin.register(mockServer)
 
-    expect(mockSchedule).toHaveBeenCalledTimes(1)
-    expect(mockSchedule).toHaveBeenCalledWith(
-      '0 7 * * *',
-      expect.any(Function),
-      {
-        timezone: 'UTC',
-        maxRandomDelay: 150
-      }
-    )
-  })
-
-  test('Should get stats when cron runs', async () => {
-    statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-    mockGetStats.mockResolvedValue({
-      actionsCount: 10
+    await vi.waitFor(() => {
+      expect(mockLogger.info).toHaveBeenCalledWith('Running statistics counts')
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Statistics counts job completed successfully'
+      )
     })
-
-    await cronCallback()
-
-    expect(mockGetStats).toHaveBeenCalledWith(mockLogger, mockPostgresDb)
-  })
-
-  test('Should log info when cron job starts and completes successfully', async () => {
-    statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
-    mockGetStats.mockResolvedValue({})
-
-    await cronCallback()
-
-    expect(mockLogger.info).toHaveBeenCalledWith('Running statistics cron job')
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Statistics cron job completed successfully'
-    )
   })
 
   test('should log stats with all counts', async () => {
     statistics.plugin.register(mockServer)
 
-    const cronCallback = mockSchedule.mock.calls[0][1]
+    const loadAndLogStats = mockServer.expose.mock.calls[0][1]
 
     await vi.waitFor(() => {
       expect(mockGetStats).toHaveBeenCalled()
@@ -144,7 +107,7 @@ describe('#statistics', () => {
       unlinkedCoversCount: 1
     })
 
-    await cronCallback()
+    await loadAndLogStats()
 
     expect(mockLogger.info).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,25 +130,42 @@ describe('#statistics', () => {
   })
 
   test('Should emit unlinked_parcels_count and unlinked_covers_count metrics', async () => {
-    statistics.plugin.register(mockServer)
-
-    const cronCallback = mockSchedule.mock.calls[0][1]
     mockGetStats.mockResolvedValue({
       unlinkedParcelsCount: 5,
       unlinkedCoversCount: 3
     })
 
-    await cronCallback()
+    statistics.plugin.register(mockServer)
 
-    expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_parcels_count', 5)
-    expect(mockMetricsCounter).toHaveBeenCalledWith('unlinked_covers_count', 3)
+    await vi.waitFor(() => {
+      expect(mockMetricsCounter).toHaveBeenCalledWith(
+        'unlinked_parcels_count',
+        5
+      )
+      expect(mockMetricsCounter).toHaveBeenCalledWith(
+        'unlinked_covers_count',
+        3
+      )
+    })
   })
 
-  test('Should expose loadStats function', () => {
+  test('Should skip run and log when task lock is not acquired', async () => {
+    mockWithTaskLock.mockResolvedValueOnce({ acquired: false })
+
+    statistics.plugin.register(mockServer)
+
+    await vi.waitFor(() => {
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Skipping statistics run; lock not acquired'
+      )
+    })
+  })
+
+  test('Should expose loadAndLogStats function', () => {
     statistics.plugin.register(mockServer)
 
     expect(mockServer.expose).toHaveBeenCalledWith(
-      'loadStats',
+      'loadAndLogStats',
       expect.any(Function)
     )
   })

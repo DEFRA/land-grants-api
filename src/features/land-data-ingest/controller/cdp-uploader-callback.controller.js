@@ -81,9 +81,9 @@ const startFileProcessing = (
     .then(async () => {
       // @ts-expect-error - statistics is not typed on server.plugins
       const statistics = request.server.plugins.statistics
-      if (statistics?.loadStats) {
+      if (statistics?.loadAndLogStats) {
         try {
-          await statistics.loadStats()
+          await statistics.loadAndLogStats()
         } catch (error) {
           request.logger.error(
             { error },
