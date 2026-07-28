@@ -33,8 +33,8 @@ Sign in with Azure AD. See [Managing the service](../../docs/managing-the-servic
 | `/application/*/validation-run`                             | V1      | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/initiate-upload`                                          | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
 | `/cdp-uploader-callback`                                    | -       | Count 2xx, 4xx, 5xx; Response time (ms) |
-| `unlinked_parcels_count` (EMF metric, cron every 30 min)    | -       | Avg gauge value                         |
-| `unlinked_covers_count` (EMF metric, cron every 30 min)     | -       | Avg gauge value                         |
+| `unlinked_parcels_count` (EMF metric)                       | -       | Avg gauge value                         |
+| `unlinked_covers_count` (EMF metric)                        | -       | Avg gauge value                         |
 
 ### Key fields
 
@@ -63,20 +63,24 @@ Sign in with Azure AD. See [Managing the service](../../docs/managing-the-servic
 
 ### Update Dashboard
 
-The simplest way to apply changes is via **Dashboard settings** (gear icon) → **JSON Model** — paste the updated JSON and save.
+The simplest way to apply changes is via **Dashboard settings** (gear icon) → **JSON Model** — paste the updated JSON
+and save.
 
 ### Add Rules
 
 To add an alert rule to each 5xx Count panel:
 
-1. Open the dashboard and locate the 5xx panel (e.g. **Get Parcels - Count 5xx**, **Payment Calculation - Count 5xx**, etc.).
+1. Open the dashboard and locate the 5xx panel (e.g. **Get Parcels - Count 5xx**, **Payment Calculation - Count 5xx**,
+   etc.).
 2. Click the panel title → **Edit** (or right-click → **Edit**).
 3. Open the **Alert** tab.
 4. Click **Create alert rule from this panel**.
 5. Configure the rule:
-   - **Condition:** e.g. `WHEN count() IS ABOVE 0` (or set a threshold such as 5).
-   - **Evaluate every:** e.g. `1m`.
-   - **For:** e.g. `0m` (alert immediately) or `5m` (wait before firing).
+
+- **Condition:** e.g. `WHEN count() IS ABOVE 0` (or set a threshold such as 5).
+- **Evaluate every:** e.g. `1m`.
+- **For:** e.g. `0m` (alert immediately) or `5m` (wait before firing).
+
 6. Add a **Contact point** (notification channel) and **Labels** if needed.
 7. Click **Save rule**.
 8. Repeat for each 5xx panel you want to monitor.

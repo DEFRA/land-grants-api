@@ -7,14 +7,16 @@ import { importLandData } from './import-land-data.js'
  * @param {boolean} success - Whether the task was successful
  * @param {string | null} result - The result of the task
  * @param {string | null} error - The error message
+ * @param {boolean} [dataChanged] - Whether an entity's live table was updated this run
  */
-const postMessage = (taskId, success, result, error) => {
+const postMessage = (taskId, success, result, error, dataChanged = false) => {
   parentPort?.postMessage({
     taskId,
     completedAt: new Date().toISOString(),
     success,
     result,
-    error
+    error,
+    dataChanged
   })
 }
 
@@ -24,8 +26,8 @@ const postMessage = (taskId, success, result, error) => {
  */
 export async function ingestLandData(landData) {
   try {
-    const result = await importLandData(landData.data)
-    postMessage(landData.taskId, true, result, null)
+    const { message, dataChanged } = await importLandData(landData.data)
+    postMessage(landData.taskId, true, message, null, dataChanged)
   } catch (error) {
     postMessage(landData.taskId, false, null, error.message)
     throw error

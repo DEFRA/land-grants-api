@@ -140,6 +140,7 @@ async function assertFileRowCount(
  * (land_parcels/land_covers) must be promoted together, so this entity is marked completed
  * and only actually promoted once its pair has also finished staging.
  * @param {{isComplete: boolean, entityType: import('../../common/common.d.js').EntityType, ingestId: string | number, dbClient: object, totalCount: number, logger: object}} params
+ * @returns {Promise<boolean>} true if the entity's table(s) were promoted to live this call
  */
 async function finalizeIfComplete({
   isComplete,
@@ -150,7 +151,7 @@ async function finalizeIfComplete({
   logger
 }) {
   if (!isComplete) {
-    return
+    return false
   }
 
   const { name: entityName, pairedWith } = entityType
@@ -171,7 +172,7 @@ async function finalizeIfComplete({
   }
 
   if (!promoted) {
-    return
+    return false
   }
 
   logInfo(logger, {
@@ -181,6 +182,8 @@ async function finalizeIfComplete({
     context: { totalCount }
   })
   await metricsCounter(`${entityName}_data_ingest_completed`, totalCount)
+
+  return true
 }
 
 /**
@@ -190,6 +193,8 @@ async function finalizeIfComplete({
  * @param {string | number} ingestId - The ingest ID
  * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<boolean>} true if the entity's live table was updated by this call - either
+ * because it was written to directly, or because its staging table was promoted to live
  */
 export async function importData(
   dataStream,
@@ -199,10 +204,17 @@ export async function importData(
   logger
 ) {
   if (entityType.ingest === true) {
-    await importDataValidate(dataStream, entityType, ingestId, filename, logger)
-  } else {
-    await importDataAsIs(dataStream, entityType, ingestId, logger)
+    return importDataValidate(
+      dataStream,
+      entityType,
+      ingestId,
+      filename,
+      logger
+    )
   }
+
+  await importDataAsIs(dataStream, entityType, ingestId, logger)
+  return true
 }
 
 /**
@@ -271,6 +283,7 @@ async function importDataAsIs(dataStream, entityType, ingestId, logger) {
  * @param {string | undefined} filename
  * @param {import('pg').Client} dbClient - Database connection
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<boolean>} true if the entity's table(s) were promoted to live this call
  */
 async function processValidatedFile(
   dataStream,
@@ -303,7 +316,7 @@ async function processValidatedFile(
   )
 
   assertExpectedCount({ isOverCount, entityName, ingestId, totalCount, logger })
-  await finalizeIfComplete({
+  const promoted = await finalizeIfComplete({
     isComplete,
     entityType,
     ingestId,
@@ -320,6 +333,8 @@ async function processValidatedFile(
     context: { rowCount, duration }
   })
   await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
+
+  return promoted
 }
 
 /**
@@ -364,6 +379,7 @@ async function handleImportFailure(
  * @param {string | number} ingestId - The ingest ID
  * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<boolean>} true if the entity's table(s) were promoted to live this call
  */
 async function importDataValidate(
   dataStream,
@@ -383,7 +399,7 @@ async function importDataValidate(
   const dbClient = await connectToDb(logger)
 
   try {
-    await processValidatedFile(
+    return await processValidatedFile(
       dataStream,
       entityType,
       ingestId,

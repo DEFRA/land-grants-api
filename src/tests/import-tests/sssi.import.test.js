@@ -36,7 +36,10 @@ describe('SSSI import', () => {
 
       const result = await importLandData({ s3key })
 
-      expect(result).toBe('Land data imported successfully')
+      expect(result).toEqual({
+        message: 'Land data imported successfully',
+        dataChanged: true
+      })
 
       const allSSSI = await getRecordsByQuery(
         connection,

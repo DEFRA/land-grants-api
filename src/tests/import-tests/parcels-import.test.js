@@ -124,7 +124,10 @@ describe('Parcels import', () => {
         ingestId
       })
 
-      expect(result).toBe('Land data imported successfully')
+      expect(result).toEqual({
+        message: 'Land data imported successfully',
+        dataChanged: false
+      })
 
       await completeCoversPairing(s3Client, connection, logger)
 
@@ -244,7 +247,10 @@ describe('Land covers import', () => {
         ingestId
       })
 
-      expect(result).toBe('Land data imported successfully')
+      expect(result).toEqual({
+        message: 'Land data imported successfully',
+        dataChanged: false
+      })
 
       await completeParcelsPairing(s3Client, connection, logger)
 

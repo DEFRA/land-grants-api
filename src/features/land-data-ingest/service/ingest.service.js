@@ -5,6 +5,27 @@ import { config } from '../../../config/index.js'
 import { logInfo } from '../../common/helpers/logging/log-helpers.js'
 
 /**
+ * Refreshes statistics after a successful ingest, logging (but not throwing on) failure.
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
+ */
+async function refreshStats(request) {
+  // @ts-expect-error - statistics is not typed on server.plugins
+  const statistics = request.server.plugins.statistics
+  if (!statistics?.loadAndLogStats) {
+    return
+  }
+
+  try {
+    await statistics.loadAndLogStats()
+  } catch (error) {
+    request.logger.error(
+      { error },
+      'Failed to run statistics after successful data ingestion'
+    )
+  }
+}
+
+/**
  * @import { InitiateUploaderResponse, Task } from '../ingest.d.js'
  */
 
@@ -42,11 +63,12 @@ function releaseWorkerSlot() {
 }
 
 /**
- * Process a file
+ * Process a file. If it results in an entity's live table being updated, statistics are
+ * refreshed afterwards so downstream consumers see up to date counts.
  * @param {{s3key: string, filename?: string, ingestId?: number}} data
- * @param {object} request - The request object
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
  * @param {{title: string, category: string, taskId: number}} metadata
- * @returns {Promise<void>} Promise that resolves when the file is processed
+ * @returns {Promise<{dataChanged: boolean} | undefined>} Promise that resolves when the file is processed
  */
 export const processFile = async (
   data,
@@ -63,8 +85,9 @@ export const processFile = async (
   const workerPath = join(__dirname, '../workers/ingest.worker.js')
 
   await acquireWorkerSlot()
+  let result
   try {
-    return await startWorker(request, workerPath, data, {
+    result = await startWorker(request, workerPath, data, {
       title,
       category,
       taskId
@@ -72,6 +95,12 @@ export const processFile = async (
   } finally {
     releaseWorkerSlot()
   }
+
+  if (result?.dataChanged) {
+    await refreshStats(request)
+  }
+
+  return result
 }
 
 /**

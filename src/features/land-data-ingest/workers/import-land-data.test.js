@@ -94,7 +94,7 @@ describe('importLandData', () => {
     }
 
     getFile.mockResolvedValue(mockResponse)
-    importData.mockResolvedValue(undefined)
+    importData.mockResolvedValue(true)
 
     const result = await importLandData({
       s3key: 'land_parcels/123/test.csv',
@@ -102,7 +102,10 @@ describe('importLandData', () => {
       ingestId: '123'
     })
 
-    expect(result).toBe('Land data imported successfully')
+    expect(result).toEqual({
+      message: 'Land data imported successfully',
+      dataChanged: true
+    })
     expect(getFile).toHaveBeenCalledWith(
       { client: 'mock-s3-client' },
       'test-bucket',
@@ -169,13 +172,16 @@ describe('importLandData', () => {
     }
 
     getFile.mockResolvedValue(mockResponse)
-    importData.mockResolvedValue(undefined)
+    importData.mockResolvedValue(false)
 
     const result = await importLandData({
       s3key: 'land_parcels/123/test.zip'
     })
 
-    expect(result).toBe('Land data imported successfully')
+    expect(result).toEqual({
+      message: 'Land data imported successfully',
+      dataChanged: false
+    })
     expect(unzipper.Parse).toHaveBeenCalledWith({ forceStream: true })
     expect(importData).toHaveBeenCalledWith(
       { path: 'data.csv' },
