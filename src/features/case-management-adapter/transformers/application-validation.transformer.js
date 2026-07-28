@@ -14,7 +14,7 @@ const LEVEL_3 = 3
  * @param {string} [id] - Optional id for the heading
  * @returns {HeadingComponent}
  */
-export const createHeadingComponent = (text, level, id) => {
+const createHeadingComponent = (text, level, id) => {
   return {
     component: 'heading',
     text,
@@ -28,7 +28,7 @@ export const createHeadingComponent = (text, level, id) => {
  * @param {string} text - The paragraph text
  * @returns {ParagraphComponent | null}
  */
-export const createParagraphComponent = (text) => {
+const createParagraphComponent = (text) => {
   if (text === '') {
     return null
   }
@@ -44,7 +44,7 @@ export const createParagraphComponent = (text) => {
  * @param {boolean} hasPassed - Whether the check has passed
  * @returns {StatusComponent} - Status component with appropriate text and color
  */
-export const createStatusComponent = (hasPassed) => {
+const createStatusComponent = (hasPassed) => {
   return {
     classes: 'govuk-!-margin-left-8',
     component: 'status',
@@ -77,7 +77,7 @@ const createDetailsComponent = (
  * @param {ExplanationSection[]} explanations - The available area explanations
  * @returns {DetailsComponent}
  */
-export const createAvailableAreaDetails = (explanations) => {
+const createAvailableAreaDetails = (explanations) => {
   const items = explanations.flatMap((explanation) => [
     createParagraphComponent(explanation.title),
     ...explanation.content.map((line) => createParagraphComponent(line))
@@ -94,7 +94,7 @@ export const createAvailableAreaDetails = (explanations) => {
  * @param {RuleResult} rule - The rule result
  * @returns {DetailsComponent}
  */
-export const createRuleDetails = (rule) => {
+const createRuleDetails = (rule) => {
   const items = rule.explanations
     .flatMap((explanation) =>
       explanation.lines.map((line) => createParagraphComponent(line))
@@ -113,7 +113,7 @@ export const createRuleDetails = (rule) => {
  * @param {ActionResult} action - The action result
  * @returns {DetailsComponent}
  */
-export const createActionDetails = (action) => {
+const createActionDetails = (action) => {
   /** @type {ValidationComponent[]} */
   const actionItems = []
 

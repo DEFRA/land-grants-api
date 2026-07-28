@@ -108,7 +108,7 @@ export async function getAvailableAreaDataRequirements(
  * @param {LandCover[]} landCovers
  * @returns {LandCover[]}
  */
-export function aggregateLandCovers(landCovers) {
+function aggregateLandCovers(landCovers) {
   /** @type {Map<string, number>} */
   const grouped = new Map()
   for (const landCover of landCovers) {

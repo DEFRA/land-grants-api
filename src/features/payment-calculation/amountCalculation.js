@@ -18,7 +18,7 @@ const currencyFormatter = new Intl.NumberFormat('en-GB', {
  * @param {Array<Action>} actions
  * @returns {Action | undefined}
  */
-export const findActionByCode = (code, actions = []) => {
+const findActionByCode = (code, actions = []) => {
   const action = actions.find((a) => a.code === code)
   return action
 }
@@ -159,7 +159,7 @@ const shiftTotalPenniesToFirstScheduledPayment = (
  * @param {Array<ScheduledPayment>} payments
  * @returns {Array<ScheduledPayment>}
  */
-export const roundPaymentAmountForPaymentLineItems = (payments) =>
+const roundPaymentAmountForPaymentLineItems = (payments) =>
   structuredClone(payments).map((payment) => ({
     ...payment,
     lineItems: payment.lineItems.map((lineItem) => ({
@@ -353,7 +353,7 @@ export const createPaymentItems = (parcels, actions) => {
  * @param {number} ratePerAgreementPerYearGbp
  * @returns {number}
  */
-export const addAgreementItem = (
+const addAgreementItem = (
   paymentItems,
   action,
   explanations,

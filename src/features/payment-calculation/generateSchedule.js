@@ -11,7 +11,7 @@ import {
 } from 'date-fns'
 
 const PAYMENT_DAY_OF_MONTH = 15
-export const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd'
+const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd'
 
 /**
  * Get the payment date of the month set by date, adjusted for weekends
@@ -26,7 +26,7 @@ function getPaymentDayForDate(date) {
  *
  * @returns the first of next month
  */
-export function getFirstDayOfNextMonth(startDate) {
+function getFirstDayOfNextMonth(startDate) {
   return format(startOfMonth(addMonths(startDate, 1)), SCHEDULE_DATE_FORMAT)
 }
 
@@ -34,7 +34,7 @@ export function getFirstDayOfNextMonth(startDate) {
  *
  * @returns the end date of an agreement
  */
-export function getAgreementEndDate(startDate, agreementYears) {
+function getAgreementEndDate(startDate, agreementYears) {
   return format(
     subDays(addYears(startDate, agreementYears), 1),
     SCHEDULE_DATE_FORMAT

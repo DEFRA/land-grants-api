@@ -7,7 +7,6 @@ import {
   getTableRowCount,
   insertData,
   truncateTableAndInsertData,
-  truncateStagingTable,
   isIngestComplete,
   promoteStagingTable,
   completeAndPromotePaired,
@@ -127,17 +126,6 @@ describe('Data helpers', () => {
       expect(dbClient.query).toHaveBeenCalledTimes(2)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe('ROLLBACK')
-    })
-  })
-
-  describe('truncateStagingTable', () => {
-    test('should truncate the pre-existing staging table', async () => {
-      await truncateStagingTable(dbClient, 'land_parcels')
-
-      expect(dbClient.query).toHaveBeenCalledTimes(1)
-      expect(dbClient.query.mock.calls[0][0]).toBe(
-        'TRUNCATE TABLE land_parcels_staging'
-      )
     })
   })
 

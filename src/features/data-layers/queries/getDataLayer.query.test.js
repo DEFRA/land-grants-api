@@ -1,7 +1,5 @@
 import { vi } from 'vitest'
 import {
-  accumulatedIntersectionAreaQuery,
-  unionIntersectionAreaQuery,
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from './getDataLayer.query.js'
@@ -67,10 +65,10 @@ describe('getDataLayerQuery', () => {
       mockLogger
     )
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      accumulatedIntersectionAreaQuery,
-      expectedValues
-    )
+    const [actualQuery, actualValues] = mockClient.query.mock.calls[0]
+    expect(actualQuery).toContain('ST_Area(ST_Intersection')
+    expect(actualQuery).toContain('GROUP BY')
+    expect(actualValues).toEqual(expectedValues)
   })
 
   test('should use union query when queryType is union', async () => {
@@ -87,10 +85,9 @@ describe('getDataLayerQuery', () => {
       mockLogger
     )
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      unionIntersectionAreaQuery,
-      expectedValues
-    )
+    const [actualQuery, actualValues] = mockClient.query.mock.calls[0]
+    expect(actualQuery).toContain('ST_Union(m.geom)')
+    expect(actualValues).toEqual(expectedValues)
   })
 
   test('should return the overlap percentage', async () => {

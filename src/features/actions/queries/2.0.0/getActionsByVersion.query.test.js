@@ -1,7 +1,4 @@
-import {
-  getActionsByVersion,
-  getActionsByVersionSql
-} from './getActionsByVersion.query.js'
+import { getActionsByVersion } from './getActionsByVersion.query.js'
 import { vi } from 'vitest'
 
 describe('getActionsByVersion', () => {
@@ -135,9 +132,10 @@ describe('getActionsByVersion', () => {
 
     await getActionsByVersion(mockLogger, mockDb, actions)
 
-    expect(mockClient.query).toHaveBeenCalledWith(getActionsByVersionSql, [
-      JSON.stringify(actions)
-    ])
+    const [actualQuery, actualParams] = mockClient.query.mock.calls[0]
+    expect(actualQuery).toContain('requested')
+    expect(actualQuery).toContain('actions_config')
+    expect(actualParams).toEqual([JSON.stringify(actions)])
   })
 
   test('should return all actions including those not in the requested list', async () => {

@@ -1,4 +1,4 @@
-import * as taskLock from './task-lock.js'
+import { withTaskLock } from './task-lock.js'
 
 describe('task-lock helper', () => {
   let mockClient
@@ -16,101 +16,98 @@ describe('task-lock helper', () => {
     }
   })
 
-  test('acquireTaskLock inserts lock when available', async () => {
-    mockClient.query.mockResolvedValueOnce({}) // BEGIN
-    mockClient.query.mockResolvedValueOnce({}) // DELETE expired
-    mockClient.query.mockResolvedValueOnce({ rowCount: 1 }) // INSERT
-    mockClient.query.mockResolvedValueOnce({}) // COMMIT
-
-    const acquired = await taskLock.acquireTaskLock(mockPool, 'myTask', {
-      timeoutMinutes: 1
+  describe('when lock is acquired', () => {
+    beforeEach(() => {
+      mockClient.query.mockResolvedValueOnce({}) // BEGIN
+      mockClient.query.mockResolvedValueOnce({}) // DELETE expired
+      mockClient.query.mockResolvedValueOnce({ rowCount: 1 }) // INSERT
+      mockClient.query.mockResolvedValueOnce({}) // COMMIT
+      mockPool.query.mockResolvedValueOnce({}) // releaseTaskLock
     })
 
-    expect(acquired).toBe(true)
-    expect(mockPool.connect).toHaveBeenCalled()
-    expect(mockClient.release).toHaveBeenCalled()
-  })
+    test('runs fn and returns result', async () => {
+      const fn = vi.fn().mockResolvedValue('ok')
 
-  test('acquireTaskLock returns false when insert did not happen', async () => {
-    mockClient.query.mockResolvedValueOnce({}) // BEGIN
-    mockClient.query.mockResolvedValueOnce({}) // DELETE expired
-    mockClient.query.mockResolvedValueOnce({ rowCount: 0 }) // INSERT did nothing
-    mockClient.query.mockResolvedValueOnce({}) // COMMIT
+      const { acquired, result } = await withTaskLock(mockPool, 't', fn, {
+        timeoutMinutes: 1
+      })
 
-    const acquired = await taskLock.acquireTaskLock(mockPool, 'myTask', {
-      timeoutMinutes: 1
+      expect(acquired).toBe(true)
+      expect(result).toBe('ok')
+      expect(fn).toHaveBeenCalled()
     })
 
-    expect(acquired).toBe(false)
+    test('releases lock after fn completes', async () => {
+      await withTaskLock(mockPool, 't', vi.fn().mockResolvedValue('ok'), {
+        timeoutMinutes: 1
+      })
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        'DELETE FROM task_lock WHERE task_name = $1',
+        ['t']
+      )
+    })
+
+    test('releases lock even if fn throws', async () => {
+      const fn = vi.fn().mockRejectedValue(new Error('work failed'))
+
+      await expect(
+        withTaskLock(mockPool, 't', fn, { timeoutMinutes: 1 })
+      ).rejects.toThrow('work failed')
+
+      expect(mockPool.query).toHaveBeenCalledWith(
+        'DELETE FROM task_lock WHERE task_name = $1',
+        ['t']
+      )
+    })
   })
 
-  test('releaseTaskLock deletes row', async () => {
-    mockPool.query.mockResolvedValueOnce({})
+  describe('when lock is not acquired', () => {
+    beforeEach(() => {
+      mockClient.query.mockResolvedValueOnce({}) // BEGIN
+      mockClient.query.mockResolvedValueOnce({}) // DELETE expired
+      mockClient.query.mockResolvedValueOnce({ rowCount: 0 }) // INSERT did nothing
+      mockClient.query.mockResolvedValueOnce({}) // COMMIT
+    })
 
-    await taskLock.releaseTaskLock(mockPool, 'myTask')
+    test('returns acquired false and does not run fn', async () => {
+      const fn = vi.fn()
 
-    expect(mockPool.query).toHaveBeenCalledWith(
-      'DELETE FROM task_lock WHERE task_name = $1',
-      ['myTask']
-    )
+      const res = await withTaskLock(mockPool, 't', fn)
+
+      expect(res.acquired).toBe(false)
+      expect(fn).not.toHaveBeenCalled()
+    })
   })
 
-  test('withTaskLock runs fn when acquired and releases lock', async () => {
-    // prepare acquireTaskLock to succeed (simulate DB responses)
-    mockClient.query.mockResolvedValueOnce({}) // BEGIN
-    mockClient.query.mockResolvedValueOnce({}) // DELETE expired
-    mockClient.query.mockResolvedValueOnce({ rowCount: 1 }) // INSERT
-    mockClient.query.mockResolvedValueOnce({}) // COMMIT
-    mockPool.query.mockResolvedValueOnce({}) // releaseTaskLock deletion
+  describe('when acquireTaskLock errors', () => {
+    test('propagates error and releases client', async () => {
+      mockClient.query.mockResolvedValueOnce({}) // BEGIN
+      mockClient.query.mockRejectedValueOnce(new Error('boom')) // DELETE fails
+      mockClient.query.mockResolvedValueOnce({}) // ROLLBACK
 
-    const fn = vi.fn().mockResolvedValue('ok')
+      await expect(withTaskLock(mockPool, 't', vi.fn())).rejects.toThrow('boom')
 
-    const { acquired, result } = await taskLock.withTaskLock(
-      mockPool,
-      't',
-      fn,
-      { timeoutMinutes: 1 }
-    )
-
-    expect(acquired).toBe(true)
-    expect(result).toBe('ok')
-    expect(fn).toHaveBeenCalled()
+      expect(mockClient.release).toHaveBeenCalled()
+    })
   })
 
-  test('acquireTaskLock rolls back and releases client on error', async () => {
-    mockClient.query.mockResolvedValueOnce({}) // BEGIN
-    mockClient.query.mockRejectedValueOnce(new Error('boom')) // DELETE fails
-    mockClient.query.mockResolvedValueOnce({}) // ROLLBACK
+  describe('when releaseTaskLock fails', () => {
+    test('swallows error and still returns result', async () => {
+      mockClient.query.mockResolvedValueOnce({}) // BEGIN
+      mockClient.query.mockResolvedValueOnce({}) // DELETE expired
+      mockClient.query.mockResolvedValueOnce({ rowCount: 1 }) // INSERT
+      mockClient.query.mockResolvedValueOnce({}) // COMMIT
+      mockPool.query.mockRejectedValueOnce(new Error('delete-failed'))
 
-    await expect(
-      taskLock.acquireTaskLock(mockPool, 'myTask', { timeoutMinutes: 1 })
-    ).rejects.toThrow('boom')
+      const fn = vi.fn().mockResolvedValue('ok')
 
-    expect(mockClient.release).toHaveBeenCalled()
-    // Ensure rollback was attempted (second resolved call after reject)
-    expect(mockClient.query).toHaveBeenCalled()
-  })
+      const { acquired, result } = await withTaskLock(mockPool, 't', fn, {
+        timeoutMinutes: 1
+      })
 
-  test('releaseTaskLock swallows errors', async () => {
-    mockPool.query.mockRejectedValueOnce(new Error('delete-failed'))
-
-    await expect(
-      taskLock.releaseTaskLock(mockPool, 'myTask')
-    ).resolves.toBeUndefined()
-  })
-
-  test('withTaskLock returns acquired false when lock not acquired', async () => {
-    // simulate DB flow where INSERT did not happen (rowCount 0)
-    mockClient.query.mockResolvedValueOnce({}) // BEGIN
-    mockClient.query.mockResolvedValueOnce({}) // DELETE expired
-    mockClient.query.mockResolvedValueOnce({ rowCount: 0 }) // INSERT did nothing
-    mockClient.query.mockResolvedValueOnce({}) // COMMIT
-
-    const fn = vi.fn()
-
-    const res = await taskLock.withTaskLock(mockPool, 't', fn)
-
-    expect(res.acquired).toBe(false)
-    expect(fn).not.toHaveBeenCalled()
+      expect(acquired).toBe(true)
+      expect(result).toBe('ok')
+    })
   })
 })

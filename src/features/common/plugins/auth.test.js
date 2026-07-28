@@ -1,11 +1,8 @@
 import Boom from '@hapi/boom'
 import crypto from 'node:crypto'
-import { auth, decryptToken, validateAuthToken } from './auth.js'
+import { auth } from './auth.js'
 import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
-import { logBusinessError } from '../helpers/logging/log-helpers.js'
-
-const mockLoggerError = vi.fn()
 
 vi.mock('~/src/config/index.js', () => ({
   config: { get: vi.fn() }
@@ -16,7 +13,7 @@ vi.mock('../helpers/logging/log-helpers.js', () => ({
 }))
 
 vi.mock('~/src/features/common/helpers/logging/logger.js', () => ({
-  createLogger: () => ({ error: (...args) => mockLoggerError(...args) })
+  createLogger: () => ({ error: vi.fn() })
 }))
 
 const VALID_TOKEN = 'my-service-token'
@@ -37,96 +34,24 @@ const createHMock = () => ({
   authenticated: vi.fn().mockReturnValue('ok')
 })
 
+function createAuthenticateFn() {
+  let authenticateFn
+  const fakeServer = {
+    auth: {
+      scheme: (name, impl) => {
+        const schemeImpl = impl()
+        authenticateFn = schemeImpl.authenticate
+      },
+      strategy: vi.fn(),
+      default: vi.fn()
+    }
+  }
+  auth.plugin.register(fakeServer)
+  return authenticateFn
+}
+
 describe('auth plugin', () => {
-  describe('decryptToken', () => {
-    it('decrypts a valid token successfully', async () => {
-      const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
-      config.get.mockReturnValueOnce(ENCRYPTION_KEY)
-
-      const decrypted = await decryptToken(encrypted)
-
-      expect(decrypted).toBe(VALID_TOKEN)
-    })
-
-    it('returns null and logs error when encryption key is missing', async () => {
-      config.get.mockReturnValueOnce(undefined)
-      const result = await decryptToken('irrelevant')
-
-      expect(result).toBeNull()
-      expect(logBusinessError).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          operation: 'Decrypt token'
-        })
-      )
-    })
-
-    it('returns null when token format is invalid', async () => {
-      config.get.mockReturnValue(ENCRYPTION_KEY)
-      const result = await decryptToken('invalid-format')
-      expect(result).toBeNull()
-      expect(logBusinessError).toHaveBeenCalled()
-    })
-  })
-
-  describe('validateAuthToken', () => {
-    it('returns false when Authorization header missing', async () => {
-      const result = await validateAuthToken(null)
-      expect(result.isValid).toBe(false)
-      expect(result.error).toMatch(/Missing/)
-    })
-
-    it('returns false when server token is missing', async () => {
-      config.get.mockImplementation((key) => {
-        if (key === 'auth.token') return undefined
-        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
-      })
-
-      const result = await validateAuthToken('Bearer xyz')
-      expect(result.isValid).toBe(false)
-      expect(result.error).toMatch(/not configured/i)
-    })
-
-    it('returns false when encryption key missing', async () => {
-      config.get.mockImplementation((key) => {
-        if (key === 'auth.token') return VALID_TOKEN
-        if (key === 'auth.encryptionKey') return undefined
-      })
-
-      const result = await validateAuthToken('Bearer xyz')
-      expect(result.isValid).toBe(false)
-      expect(result.error).toMatch(/encryption/i)
-    })
-
-    it('validates and returns true for a valid encrypted bearer token', async () => {
-      const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
-      const encodedHeader = Buffer.from(encrypted).toString('base64')
-      config.get.mockImplementation((key) => {
-        if (key === 'auth.token') return VALID_TOKEN
-        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
-      })
-
-      const result = await validateAuthToken(`Bearer ${encodedHeader}`)
-
-      expect(result.isValid).toBe(true)
-    })
-
-    it('returns false for invalid bearer token mismatch', async () => {
-      const encrypted = encryptToken('wrong-token', ENCRYPTION_KEY)
-      const encodedHeader = Buffer.from(encrypted).toString('base64')
-      config.get.mockImplementation((key) => {
-        if (key === 'auth.token') return VALID_TOKEN
-        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
-      })
-
-      const result = await validateAuthToken(`Bearer ${encodedHeader}`)
-
-      expect(result.isValid).toBe(false)
-      expect(result.error).toMatch(/Invalid bearer token/)
-    })
-  })
-
-  describe('Hapi auth plugin integration', () => {
+  describe('authenticate', () => {
     it('authenticates successfully with valid token', async () => {
       const encrypted = encryptToken(VALID_TOKEN, ENCRYPTION_KEY)
       const encodedHeader = Buffer.from(encrypted).toString('base64')
@@ -138,20 +63,7 @@ describe('auth plugin', () => {
 
       const request = { headers: { authorization: `Bearer ${encodedHeader}` } }
       const h = createHMock()
-
-      let authenticateFn
-      const fakeServer = {
-        auth: {
-          scheme: (name, impl) => {
-            const schemeImpl = impl()
-            authenticateFn = schemeImpl.authenticate
-          },
-          strategy: vi.fn(),
-          default: vi.fn()
-        }
-      }
-
-      auth.plugin.register(fakeServer)
+      const authenticateFn = createAuthenticateFn()
 
       const result = await authenticateFn(request, h)
       expect(result).toBe('ok')
@@ -160,24 +72,67 @@ describe('auth plugin', () => {
       })
     })
 
-    it('throws Boom.unauthorized for invalid token', async () => {
-      const request = { headers: { authorization: 'Bearer badtoken' } }
-      config.get.mockReturnValue(ENCRYPTION_KEY)
+    it('throws Boom.unauthorized when Authorization header is missing', async () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'auth.token') return VALID_TOKEN
+        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
+      })
+
+      const request = { headers: {} }
       const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
 
-      let authenticateFn
-      const fakeServer = {
-        auth: {
-          scheme: (name, impl) => {
-            const schemeImpl = impl()
-            authenticateFn = schemeImpl.authenticate
-          },
-          strategy: vi.fn(),
-          default: vi.fn()
-        }
-      }
+      await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
+    })
 
-      auth.plugin.register(fakeServer)
+    it('throws Boom.unauthorized when server token is not configured', async () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'auth.token') return undefined
+        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
+      })
+
+      const request = { headers: { authorization: 'Bearer xyz' } }
+      const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
+
+      await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
+    })
+
+    it('throws Boom.unauthorized when encryption key is not configured', async () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'auth.token') return VALID_TOKEN
+        if (key === 'auth.encryptionKey') return undefined
+      })
+
+      const request = { headers: { authorization: 'Bearer xyz' } }
+      const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
+
+      await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
+    })
+
+    it('throws Boom.unauthorized for token mismatch', async () => {
+      const encrypted = encryptToken('wrong-token', ENCRYPTION_KEY)
+      const encodedHeader = Buffer.from(encrypted).toString('base64')
+      config.get.mockImplementation((key) => {
+        if (key === 'auth.token') return VALID_TOKEN
+        if (key === 'auth.encryptionKey') return ENCRYPTION_KEY
+      })
+
+      const request = { headers: { authorization: `Bearer ${encodedHeader}` } }
+      const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
+
+      await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
+    })
+
+    it('throws Boom.unauthorized for malformed token', async () => {
+      config.get.mockReturnValue(ENCRYPTION_KEY)
+
+      const request = { headers: { authorization: 'Bearer badtoken' } }
+      const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
+
       await expect(authenticateFn(request, h)).rejects.toThrow(Boom.Boom)
     })
   })

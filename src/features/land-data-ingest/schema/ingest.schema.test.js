@@ -1,58 +1,7 @@
 import {
-  ingestSuccessResponseSchema,
   initiateLandDataUploadSuccessResponseSchema,
   initiateLandDataUploadRequestSchema
 } from './ingest.schema.js'
-
-describe('ingestScheduleSuccessResponseSchema', () => {
-  const validData = {
-    message: 'Ingest scheduled successfully',
-    taskId: 123
-  }
-
-  it('should validate valid data', () => {
-    const { error } = ingestSuccessResponseSchema.validate(validData)
-    expect(error).toBeUndefined()
-  })
-
-  it('should reject missing message', () => {
-    const data = {
-      taskId: 123
-    }
-    const { error } = ingestSuccessResponseSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('message')
-  })
-
-  it('should reject missing taskId', () => {
-    const data = {
-      message: 'Ingest scheduled successfully'
-    }
-    const { error } = ingestSuccessResponseSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('taskId')
-  })
-
-  it('should reject invalid taskId type', () => {
-    const data = {
-      message: 'Ingest scheduled successfully',
-      taskId: 'not-a-number'
-    }
-    const { error } = ingestSuccessResponseSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('number')
-  })
-
-  it('should reject non-integer taskId', () => {
-    const data = {
-      message: 'Ingest scheduled successfully',
-      taskId: 123.45
-    }
-    const { error } = ingestSuccessResponseSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('integer')
-  })
-})
 
 describe('initiateLandDataUploadSuccessResponseSchema', () => {
   const validData = {

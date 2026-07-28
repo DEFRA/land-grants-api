@@ -1,11 +1,10 @@
 import {
-  actionTransformer,
-  parcelActionsTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
   heferRequiredActionTransformer
 } from './parcelActions.transformer.js'
+import { actionTransformer } from './2.0.0/parcelActions.transformer.js'
 
 describe('sizeTransformer', () => {
   test('should transform area to correct format', () => {
@@ -161,59 +160,6 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 500
       }
-    })
-  })
-})
-
-describe('parcelActionsTransformer', () => {
-  test('should transform land parcel with actions using spread operator', () => {
-    const landParcel = {
-      parcel_id: 'P123',
-      sheet_id: 'S456',
-      area_sqm: 2000
-    }
-    const actions = [
-      {
-        code: 'ACTION1',
-        description: 'Test Action 1',
-        availableArea: {
-          unit: 'ha',
-          value: 1000
-        }
-      }
-    ]
-
-    const result = parcelActionsTransformer(landParcel, actions)
-
-    expect(result).toEqual({
-      parcelId: 'P123',
-      sheetId: 'S456',
-      size: {
-        unit: 'ha',
-        value: 2000
-      },
-      actions
-    })
-  })
-
-  test('should handle empty actions array', () => {
-    const landParcel = {
-      parcel_id: 'P123',
-      sheet_id: 'S456',
-      area_sqm: 2000
-    }
-    const actions = []
-
-    const result = parcelActionsTransformer(landParcel, actions)
-
-    expect(result).toEqual({
-      parcelId: 'P123',
-      sheetId: 'S456',
-      size: {
-        unit: 'ha',
-        value: 2000
-      },
-      actions: []
     })
   })
 })

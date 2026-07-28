@@ -1,11 +1,5 @@
 import { describe, test, expect, vi } from 'vitest'
-import {
-  getAgreementStartDate,
-  getAgreementEndDate,
-  transformPayments,
-  transformAgreementLevelItems,
-  wmpPaymentCalculateTransformer
-} from './wmp-payment-calculate.transformer.js'
+import { wmpPaymentCalculateTransformer } from './wmp-payment-calculate.transformer.js'
 
 const createWmpCalculationResult = () => ({
   eligibleArea: 78,
@@ -23,117 +17,7 @@ const createAction = () => ({
   durationYears: 3
 })
 
-describe('getAgreementStartDate', () => {
-  test('should return the first of next month from date passed in formatted as YYYY-MM-DD', () => {
-    expect(getAgreementStartDate('2024-06-15')).toBe('2024-07-01')
-  })
-
-  test('should return the 1st of next month when no startDate is provided', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2024-01-15'))
-
-    expect(getAgreementStartDate(undefined)).toBe('2024-02-01')
-
-    vi.useRealTimers()
-  })
-
-  test('should return the 1st of next month when no startDate is provided at end of year', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2024-12-20'))
-
-    expect(getAgreementStartDate(undefined)).toBe('2025-01-01')
-
-    vi.useRealTimers()
-  })
-})
-
-describe('getAgreementEndDate', () => {
-  test('should return the date durationYears after the agreementStartDate', () => {
-    expect(getAgreementEndDate('2024-01-01', 3)).toBe('2026-12-31')
-  })
-
-  test('should handle a 1-year duration', () => {
-    expect(getAgreementEndDate('2024-06-15', 1)).toBe('2025-06-14')
-  })
-})
-
-describe('transformPayments', () => {
-  test('should return a single payment entry with the payment amount converted to pence', () => {
-    const result = transformPayments(createWmpCalculationResult())
-
-    expect(result).toEqual([
-      {
-        totalPaymentPence: 234000,
-        paymentDate: null,
-        lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
-      }
-    ])
-  })
-})
-
-describe('transformAgreementLevelItems', () => {
-  test('should map active tier values from the payment result converting GBP to pence', () => {
-    const result = transformAgreementLevelItems(
-      ['SX067-99238'],
-      createAction(),
-      createWmpCalculationResult()
-    )
-
-    expect(result[1].activePaymentTier).toBe(2)
-    expect(result[1].quantityInActiveTier).toBe(28)
-    expect(result[1].activeTierRatePence).toBe(3000)
-    expect(result[1].activeTierFlatRatePence).toBe(150000)
-  })
-
-  test('should populate action metadata and eligible area on the agreement level item', () => {
-    const result = transformAgreementLevelItems(
-      ['SX067-99238', 'SX068-00001'],
-      createAction(),
-      createWmpCalculationResult()
-    )
-
-    expect(result[1]).toMatchObject({
-      code: 'PA3',
-      description: 'Woodland Management Plan',
-      version: '1.1.0',
-      parcelIds: ['SX067-99238', 'SX068-00001'],
-      agreementTotalPence: 234000,
-      unit: 'ha',
-      quantity: 78
-    })
-  })
-})
-
 describe('pence rounding', () => {
-  test('transformPayments produces integer pence when payment GBP has sub-cent precision', () => {
-    const result = transformPayments({
-      ...createWmpCalculationResult(),
-      payment: 10.001
-    })
-    expect(Number.isInteger(result[0].totalPaymentPence)).toBe(true)
-    expect(Number.isInteger(result[0].lineItems[0].paymentPence)).toBe(true)
-    expect(result[0].totalPaymentPence).toBe(1000)
-  })
-
-  test('transformAgreementLevelItems produces integer pence for all pence fields', () => {
-    const result = transformAgreementLevelItems(
-      ['SX067-99238'],
-      createAction(),
-      {
-        ...createWmpCalculationResult(),
-        payment: 10.001,
-        activeTierRatePence: 30.005,
-        activeTierFlatRatePence: 15.007
-      }
-    )
-    expect(Number.isInteger(result[1].agreementTotalPence)).toBe(true)
-    expect(Number.isInteger(result[1].activeTierRatePence)).toBe(true)
-    expect(Number.isInteger(result[1].activeTierFlatRatePence)).toBe(true)
-    expect(result[1].agreementTotalPence).toBe(1000)
-    expect(result[1].activeTierRatePence).toBe(3001)
-    expect(result[1].activeTierFlatRatePence).toBe(1501)
-  })
-
   test('wmpPaymentCalculateTransformer produces integer agreementTotalPence', () => {
     const result = wmpPaymentCalculateTransformer(
       ['SX067-99238'],

@@ -10,12 +10,7 @@ export const DATA_LAYER_TYPES = {
   historic_features: 3
 }
 
-export const DATA_LAYER_QUERY_TYPES = {
-  accumulated: 'accumulated',
-  union: 'union'
-}
-
-export const accumulatedIntersectionAreaQuery = `
+const accumulatedIntersectionAreaQuery = `
   SELECT
     COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0) as sqm,
       COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -33,7 +28,7 @@ export const accumulatedIntersectionAreaQuery = `
       p.geom
 `
 
-export const unionIntersectionAreaQuery = `
+const unionIntersectionAreaQuery = `
     WITH parcel AS (
     SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
   ),

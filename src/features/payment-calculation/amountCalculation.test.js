@@ -1,11 +1,8 @@
 import {
-  addAgreementItem,
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
-  findActionByCode,
-  reconcilePaymentAmounts,
-  roundPaymentAmountForPaymentLineItems
+  reconcilePaymentAmounts
 } from './amountCalculation.js'
 
 const mockEnabledActions = [
@@ -624,52 +621,6 @@ describe('createPaymentItems', () => {
 })
 
 describe('reconcilePaymentAmounts', () => {
-  it('should floor round line items payments from payments input', () => {
-    const payments = [
-      {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 123.88
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 555
-          },
-          {
-            parcelItemId: 3,
-            paymentPence: 19337.8
-          }
-        ],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 20016.68
-      }
-    ]
-
-    const result = roundPaymentAmountForPaymentLineItems(payments)
-
-    expect(result).toEqual([
-      {
-        lineItems: [
-          {
-            parcelItemId: 1,
-            paymentPence: 123
-          },
-          {
-            parcelItemId: 2,
-            paymentPence: 555
-          },
-          {
-            parcelItemId: 3,
-            paymentPence: 19337
-          }
-        ],
-        paymentDate: '2025-11-05',
-        totalPaymentPence: 20016.68
-      }
-    ])
-  })
-
   it('should return empty arrays if no payments are passed', () => {
     const result = reconcilePaymentAmounts([], [], [])
 
@@ -1289,55 +1240,5 @@ describe('calculateScheduledPayments', () => {
         lineItems
       }))
     )
-  })
-})
-
-describe('addAgreementItem', () => {
-  it('should handle null ratePerAgreementPerYearGbp in calculations', () => {
-    const paymentItems = {
-      agreementItems: {}
-    }
-    const action = { code: 'TEST1', quantity: 1.5 }
-    const explanations = []
-    const actionData = {
-      code: 'TEST1',
-      description: 'Test action',
-      durationYears: 3,
-      version: 1,
-      payment: {
-        ratePerUnitGbp: 10,
-        ratePerAgreementPerYearGbp: null
-      }
-    }
-    const total = 15
-    const agreementItemKey = 1
-    const ratePerAgreementPerYearGbp = null
-
-    addAgreementItem(
-      paymentItems,
-      action,
-      explanations,
-      actionData,
-      total,
-      agreementItemKey,
-      ratePerAgreementPerYearGbp
-    )
-
-    expect(explanations).toContain(
-      '- Payment: (1.5 * 10) + null = £15.00 per year'
-    )
-  })
-})
-
-describe('helper methods', () => {
-  it('findActionByCode should return the found action', () => {
-    const foundAction = { code: 'CMOR1' }
-    const actions = [foundAction]
-    expect(findActionByCode('CMOR1', actions)).toEqual(foundAction)
-  })
-
-  it('findActionByCode should handle undefined actions with default parameter', () => {
-    expect(findActionByCode('CMOR1')).toBeUndefined()
-    expect(findActionByCode('CMOR1', undefined)).toBeUndefined()
   })
 })
