@@ -7,7 +7,7 @@ import { logInfo, logBusinessError } from '../helpers/logging/log-helpers.js'
  * @param {string} workerPath - The path to the worker file
  * @param {{s3key: string, filename?: string, ingestId?: number}} data - The data to pass to the worker
  * @param {{title: string, category: string, taskId: number}} metadata
- * @returns {Promise<void>} Promise that resolves when the worker exits
+ * @returns {Promise<{dataChanged: boolean}>} Promise that resolves when the worker exits, with whether an entity's live table was updated
  */
 export const startWorker = (
   request,
@@ -24,7 +24,10 @@ export const startWorker = (
       }
     })
 
+    let dataChanged = false
+
     worker.on('message', (result) => {
+      dataChanged = Boolean(result.dataChanged)
       logInfo(request.logger, {
         category,
         operation: `${category}_completed`,
@@ -50,7 +53,7 @@ export const startWorker = (
           message: `${title} exited successfully`,
           context: { taskId, code, file: data.s3key }
         })
-        resolve()
+        resolve({ dataChanged })
       } else {
         const error = new Error(`${title} stopped with exit code ${code}`)
         logBusinessError(request.logger, {
