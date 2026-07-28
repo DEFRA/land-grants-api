@@ -1,10 +1,10 @@
-import Boom from '@hapi/boom'
-import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
-import { validateRequest } from '~/src/features/application/validation/application.validation.js'
+import Boom from '@hapi/boom';
+import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js';
+import { validateRequest } from '~/src/features/application/validation/application.validation.js';
 import {
   logValidationWarn,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * @import { Action } from '../../actions/action.d.js'
@@ -22,13 +22,13 @@ export const validateLandActionsPresent = (request, landActions) => {
     logValidationWarn(request.logger, {
       operation: 'Payment calculation request',
       errors: 'No land or actions data provided'
-    })
+    });
     return Boom.badRequest(
       'Error calculating payment land actions, no land or actions data provided'
-    )
+    );
   }
-  return null
-}
+  return null;
+};
 
 /**
  * Validate request data against enabled actions
@@ -46,18 +46,18 @@ export const validateRequestData = async (
     landActions,
     enabledActions,
     request
-  )
+  );
 
   if (validationErrors && validationErrors.length > 0) {
     logValidationWarn(request.logger, {
       operation: 'Payment calculation error',
       errors: validationErrors
-    })
-    return Boom.badRequest(validationErrors.join(', '))
+    });
+    return Boom.badRequest(validationErrors.join(', '));
   }
 
-  return null
-}
+  return null;
+};
 
 /**
  * Determine action duration from enabled actions
@@ -73,15 +73,15 @@ export const getTotalDurationInYears = (
 ) => {
   const landActionCodes = landActions.flatMap((landAction) =>
     landAction.actions.map((a) => a.code)
-  )
+  );
 
-  let totalDurationYears = 0
+  let totalDurationYears = 0;
   for (const enabledAction of enabledActions) {
     if (
       landActionCodes.includes(enabledAction.code) &&
       enabledAction.durationYears > totalDurationYears
     ) {
-      totalDurationYears = enabledAction.durationYears
+      totalDurationYears = enabledAction.durationYears;
     }
   }
 
@@ -92,12 +92,12 @@ export const getTotalDurationInYears = (
       context: {
         landActionCodes: landActionCodes.join(',')
       }
-    })
-    return Boom.badRequest('Error getting actions information')
+    });
+    return Boom.badRequest('Error getting actions information');
   }
 
-  return totalDurationYears
-}
+  return totalDurationYears;
+};
 
 /**
  * Calculate payment for land parcels
@@ -120,7 +120,7 @@ export const calculatePayment = (
     enabledActions,
     totalDurationYears,
     startDate
-  )
+  );
 
   if (!calculateResponse) {
     logBusinessError(request.logger, {
@@ -131,9 +131,9 @@ export const calculatePayment = (
         totalDurationYears,
         startDate
       }
-    })
-    return Boom.badRequest('Unable to calculate payment')
+    });
+    return Boom.badRequest('Unable to calculate payment');
   }
 
-  return calculateResponse
-}
+  return calculateResponse;
+};

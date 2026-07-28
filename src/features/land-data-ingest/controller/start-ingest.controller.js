@@ -1,12 +1,12 @@
-import Boom from '@hapi/boom'
+import Boom from '@hapi/boom';
 import {
   startIngestParamsSchema,
   startIngestRequestSchema,
   startIngestResponseSchema
-} from '../schema/start-ingest.schema.js'
-import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
-import { saveIngestStart } from '../service/start-ingest.service.js'
-import { logBusinessError } from '../../common/helpers/logging/log-helpers.js'
+} from '../schema/start-ingest.schema.js';
+import { internalServerErrorResponseSchema } from '../../common/schema/index.js';
+import { saveIngestStart } from '../service/start-ingest.service.js';
+import { logBusinessError } from '../../common/helpers/logging/log-helpers.js';
 
 export const StartIngestController = {
   options: {
@@ -31,13 +31,13 @@ export const StartIngestController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    const entity = request.params.entity
+    const entity = request.params.entity;
     const {
       logger,
       // @ts-expect-error - postgresDb, payload
       server: { postgresDb },
       payload
-    } = request
+    } = request;
 
     try {
       const ingestId = await saveIngestStart(
@@ -46,11 +46,11 @@ export const StartIngestController = {
         entity,
         postgresDb,
         logger
-      )
+      );
 
       return h.response({
         ingestId
-      })
+      });
     } catch (error) {
       logBusinessError(logger, {
         operation: 'start_ingest_endpoint',
@@ -59,8 +59,8 @@ export const StartIngestController = {
           payload
         },
         error
-      })
-      return Boom.internal('Error starting land data ingest')
+      });
+      return Boom.internal('Error starting land data ingest');
     }
   }
-}
+};

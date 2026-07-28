@@ -1,6 +1,6 @@
-import { readFile } from '../../common/helpers/read-file.js'
-import { from } from 'pg-copy-streams'
-import { pipeline } from 'node:stream/promises'
+import { readFile } from '../../common/helpers/read-file.js';
+import { from } from 'pg-copy-streams';
+import { pipeline } from 'node:stream/promises';
 import {
   createTempTable,
   copyDataToTempTable,
@@ -12,91 +12,91 @@ import {
   completeAndPromotePaired,
   failPairedAwaitingIngest,
   logDuplicateRows
-} from './data-helpers.js'
-import { vi } from 'vitest'
+} from './data-helpers.js';
+import { vi } from 'vitest';
 
 vi.mock('../../common/helpers/read-file.js', () => ({
   readFile: vi.fn()
-}))
+}));
 vi.mock('pg-copy-streams', () => ({
   from: vi.fn()
-}))
+}));
 vi.mock('node:stream/promises', () => ({
   pipeline: vi.fn()
-}))
+}));
 
 describe('Data helpers', () => {
-  let dbClient
+  let dbClient;
 
   beforeEach(() => {
     dbClient = {
       query: vi.fn().mockResolvedValue({ rowCount: 1 }),
       end: vi.fn()
-    }
-  })
+    };
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   test('getTableRowCount should return number of rows in a table', async () => {
-    dbClient.query.mockResolvedValueOnce({ rows: [{ count: '42' }] })
+    dbClient.query.mockResolvedValueOnce({ rows: [{ count: '42' }] });
 
-    const result = await getTableRowCount(dbClient, 'land_parcels_tmp')
+    const result = await getTableRowCount(dbClient, 'land_parcels_tmp');
 
-    expect(result).toBe(42)
+    expect(result).toBe(42);
     expect(dbClient.query).toHaveBeenCalledWith(
       'SELECT COUNT(*) as count FROM land_parcels_tmp'
-    )
-  })
+    );
+  });
 
   test('should create a temporary table', async () => {
-    await createTempTable(dbClient, 'agreements')
+    await createTempTable(dbClient, 'agreements');
 
-    expect(dbClient.query).toHaveBeenCalledTimes(2)
+    expect(dbClient.query).toHaveBeenCalledTimes(2);
     expect(dbClient.query.mock.calls[0][0]).toBe(
       'DROP TABLE IF EXISTS agreements_tmp CASCADE;'
-    )
+    );
     expect(dbClient.query.mock.calls[1][0]).toBe(
       await readFile(`/agreements/create_agreements_temp_table.sql`)
-    )
-  })
+    );
+  });
 
   test('should copy data to the temporary table', async () => {
-    const mockWritableStream = new WritableStream()
-    dbClient.query.mockReturnValue(mockWritableStream)
+    const mockWritableStream = new WritableStream();
+    dbClient.query.mockReturnValue(mockWritableStream);
     const dataStream = new ReadableStream({
       read: () =>
         Promise.resolve({
           value: 'test',
           done: true
         })
-    })
-    await copyDataToTempTable(dbClient, 'agreements', dataStream)
+    });
+    await copyDataToTempTable(dbClient, 'agreements', dataStream);
 
-    expect(dbClient.query).toHaveBeenCalledTimes(1)
+    expect(dbClient.query).toHaveBeenCalledTimes(1);
     expect(from).toHaveBeenCalledWith(
       "COPY agreements_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')"
-    )
-    expect(pipeline).toHaveBeenCalledTimes(1)
-    expect(pipeline.mock.calls[0][0]).toBe(dataStream)
-    expect(pipeline.mock.calls[0][1]).toBeInstanceOf(WritableStream)
+    );
+    expect(pipeline).toHaveBeenCalledTimes(1);
+    expect(pipeline.mock.calls[0][0]).toBe(dataStream);
+    expect(pipeline.mock.calls[0][1]).toBeInstanceOf(WritableStream);
 
     // pipeline is mocked, so the streams are never consumed; close them so the
     // open WritableStream does not leak pending work into later tests.
-    await mockWritableStream.close()
-    await dataStream.cancel()
-  })
+    await mockWritableStream.close();
+    await dataStream.cancel();
+  });
 
   test('should insert data into the table', async () => {
-    await insertData(dbClient, 'agreements', '123')
+    await insertData(dbClient, 'agreements', '123');
 
-    expect(dbClient.query).toHaveBeenCalledTimes(1)
+    expect(dbClient.query).toHaveBeenCalledTimes(1);
     expect(dbClient.query.mock.calls[0][0]).toBe(
       await readFile(`/agreements/insert_agreements.sql`)
-    )
-    expect(dbClient.query.mock.calls[0][1]).toEqual(['123'])
-  })
+    );
+    expect(dbClient.query.mock.calls[0][1]).toEqual(['123']);
+  });
 
   describe('truncateTableAndInsertData', () => {
     test('should truncate the table and insert data', async () => {
@@ -104,157 +104,159 @@ describe('Data helpers', () => {
         dbClient,
         'agreements',
         '123'
-      )
+      );
 
-      expect(result?.rowCount).toBe(1)
-      expect(dbClient.query).toHaveBeenCalledTimes(4)
-      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
-      expect(dbClient.query.mock.calls[1][0]).toBe('TRUNCATE TABLE agreements;')
+      expect(result?.rowCount).toBe(1);
+      expect(dbClient.query).toHaveBeenCalledTimes(4);
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN');
+      expect(dbClient.query.mock.calls[1][0]).toBe(
+        'TRUNCATE TABLE agreements;'
+      );
       expect(dbClient.query.mock.calls[2][0]).toBe(
         await readFile(`/agreements/insert_agreements.sql`)
-      )
-      expect(dbClient.query.mock.calls[2][1]).toEqual(['123'])
-      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT')
-    })
+      );
+      expect(dbClient.query.mock.calls[2][1]).toEqual(['123']);
+      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT');
+    });
 
     test('should handle error when truncating the table and inserting data', async () => {
-      dbClient.query.mockRejectedValue(new Error('Error truncating table'))
+      dbClient.query.mockRejectedValue(new Error('Error truncating table'));
       await expect(
         truncateTableAndInsertData(dbClient, 'agreements', '123')
-      ).rejects.toThrow('Error truncating table')
+      ).rejects.toThrow('Error truncating table');
 
-      expect(dbClient.query).toHaveBeenCalledTimes(2)
-      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
-      expect(dbClient.query.mock.calls[1][0]).toBe('ROLLBACK')
-    })
-  })
+      expect(dbClient.query).toHaveBeenCalledTimes(2);
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN');
+      expect(dbClient.query.mock.calls[1][0]).toBe('ROLLBACK');
+    });
+  });
 
   describe('isIngestComplete', () => {
     test('should return isComplete true when staging count matches the expected total rows', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rows: [{ count: '9' }] })
-        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] });
 
-      const result = await isIngestComplete('land_parcels', 123, dbClient)
+      const result = await isIngestComplete('land_parcels', 123, dbClient);
 
       expect(result).toEqual({
         isComplete: true,
         isOverCount: false,
         totalCount: 9
-      })
+      });
       expect(dbClient.query.mock.calls[0][0]).toBe(
         'SELECT count(*) as count FROM land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[1][1]).toEqual([123])
-    })
+      );
+      expect(dbClient.query.mock.calls[1][1]).toEqual([123]);
+    });
 
     test('should return isComplete false when staging count does not match the expected total rows', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rows: [{ count: '4' }] })
-        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] });
 
-      const result = await isIngestComplete('land_parcels', 123, dbClient)
+      const result = await isIngestComplete('land_parcels', 123, dbClient);
 
       expect(result).toEqual({
         isComplete: false,
         isOverCount: false,
         totalCount: 4
-      })
-    })
+      });
+    });
 
     test('should return isOverCount true when staging count exceeds the expected total rows', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rows: [{ count: '12' }] })
-        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] });
 
-      const result = await isIngestComplete('land_parcels', 123, dbClient)
+      const result = await isIngestComplete('land_parcels', 123, dbClient);
 
       expect(result).toEqual({
         isComplete: false,
         isOverCount: true,
         totalCount: 12
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe('logDuplicateRows', () => {
     test('logs and returns the number of duplicate rows found', async () => {
       dbClient.query.mockResolvedValueOnce({
         rows: [{ duplicate_count: '3' }]
-      })
-      const logger = { info: vi.fn() }
+      });
+      const logger = { info: vi.fn() };
 
       const result = await logDuplicateRows(
         dbClient,
         'land_parcels',
         ['SHEET_ID', 'PARCEL_ID'],
         logger
-      )
+      );
 
-      expect(result).toBe(3)
+      expect(result).toBe(3);
       expect(dbClient.query).toHaveBeenCalledWith(
         'SELECT COUNT(*) - COUNT(DISTINCT (SHEET_ID, PARCEL_ID)) AS duplicate_count FROM land_parcels_tmp'
-      )
-      expect(logger.info).toHaveBeenCalled()
-    })
+      );
+      expect(logger.info).toHaveBeenCalled();
+    });
 
     test('logs zero when there are no duplicates', async () => {
       dbClient.query.mockResolvedValueOnce({
         rows: [{ duplicate_count: '0' }]
-      })
-      const logger = { info: vi.fn() }
+      });
+      const logger = { info: vi.fn() };
 
       const result = await logDuplicateRows(
         dbClient,
         'land_parcels',
         ['SHEET_ID', 'PARCEL_ID'],
         logger
-      )
+      );
 
-      expect(result).toBe(0)
-      expect(logger.info).toHaveBeenCalled()
-    })
-  })
+      expect(result).toBe(0);
+      expect(logger.info).toHaveBeenCalled();
+    });
+  });
 
   describe('promoteStagingTable', () => {
-    const logger = { info: vi.fn() }
+    const logger = { info: vi.fn() };
 
     test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
-      await promoteStagingTable('land_parcels', dbClient, logger)
+      await promoteStagingTable('land_parcels', dbClient, logger);
 
-      expect(dbClient.query).toHaveBeenCalledTimes(5)
-      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(dbClient.query).toHaveBeenCalledTimes(5);
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN');
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'TRUNCATE TABLE land_parcels'
-      )
+      );
       expect(dbClient.query.mock.calls[2][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
-      )
+      );
       expect(dbClient.query.mock.calls[3][0]).toBe(
         'TRUNCATE TABLE land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
-      expect(logger.info).toHaveBeenCalledTimes(1)
-    })
+      );
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT');
+      expect(logger.info).toHaveBeenCalledTimes(1);
+    });
 
     test('should roll back and rethrow when promotion fails', async () => {
       dbClient.query
         .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
-        .mockRejectedValueOnce(new Error('truncate failed'))
+        .mockRejectedValueOnce(new Error('truncate failed'));
 
       await expect(
         promoteStagingTable('land_parcels', dbClient, logger)
-      ).rejects.toThrow('truncate failed')
+      ).rejects.toThrow('truncate failed');
 
-      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
-      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
-    })
-  })
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN');
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK');
+    });
+  });
 
   describe('completeAndPromotePaired', () => {
-    const logger = { info: vi.fn(), error: vi.fn() }
-    const ingestId = 123
-    const pairedIngestId = 456
+    const logger = { info: vi.fn(), error: vi.fn() };
+    const ingestId = 123;
+    const pairedIngestId = 456;
 
     test('marks this ingest staged and waits when the paired entity has not finished staging', async () => {
       dbClient.query
@@ -264,7 +266,7 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'in_progress' }]
         }) // paired ingest lookup
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged
-        .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}); // COMMIT
 
       const result = await completeAndPromotePaired(
         'land_parcels',
@@ -272,32 +274,32 @@ describe('Data helpers', () => {
         ingestId,
         dbClient,
         logger
-      )
+      );
 
-      expect(result).toBe(false)
-      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
+      expect(result).toBe(false);
+      expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN');
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'SELECT pg_advisory_xact_lock(hashtext($1))'
-      )
+      );
       expect(dbClient.query.mock.calls[1][1]).toEqual([
         'land_covers|land_parcels'
-      ])
+      ]);
       expect(dbClient.query.mock.calls[2][0]).toBe(
         'SELECT id, status FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1'
-      )
-      expect(dbClient.query.mock.calls[2][1]).toEqual(['land_covers'])
+      );
+      expect(dbClient.query.mock.calls[2][1]).toEqual(['land_covers']);
       expect(dbClient.query.mock.calls[3][0]).toBe(
         `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`
-      )
-      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged')
-      expect(dbClient.query.mock.calls[3][1][1]).toBeInstanceOf(Date)
-      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId)
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      );
+      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged');
+      expect(dbClient.query.mock.calls[3][1][1]).toBeInstanceOf(Date);
+      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId);
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT');
       expect(dbClient.query).not.toHaveBeenCalledWith(
         expect.stringContaining('TRUNCATE TABLE land_parcels')
-      )
-      expect(logger.info).toHaveBeenCalledTimes(1)
-    })
+      );
+      expect(logger.info).toHaveBeenCalledTimes(1);
+    });
 
     test('promotes both staging tables and marks both completed when the paired entity is staged', async () => {
       dbClient.query
@@ -314,7 +316,7 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // INSERT land_covers
         .mockResolvedValueOnce({}) // TRUNCATE land_covers_staging
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
-        .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}); // COMMIT
 
       const result = await completeAndPromotePaired(
         'land_parcels',
@@ -322,45 +324,47 @@ describe('Data helpers', () => {
         ingestId,
         dbClient,
         logger
-      )
+      );
 
-      expect(result).toBe(true)
+      expect(result).toBe(true);
       expect(dbClient.query.mock.calls[3][0]).toBe(
         `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`
-      )
-      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged')
-      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId)
-      const stagedDate = dbClient.query.mock.calls[3][1][1]
+      );
+      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged');
+      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId);
+      const stagedDate = dbClient.query.mock.calls[3][1][1];
 
       expect(dbClient.query.mock.calls[4][0]).toBe(
         'TRUNCATE TABLE land_parcels'
-      )
+      );
       expect(dbClient.query.mock.calls[5][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
-      )
+      );
       expect(dbClient.query.mock.calls[6][0]).toBe(
         'TRUNCATE TABLE land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[7][0]).toBe('TRUNCATE TABLE land_covers')
+      );
+      expect(dbClient.query.mock.calls[7][0]).toBe(
+        'TRUNCATE TABLE land_covers'
+      );
       expect(dbClient.query.mock.calls[8][0]).toBe(
         'INSERT INTO land_covers SELECT * FROM land_covers_staging'
-      )
+      );
       expect(dbClient.query.mock.calls[9][0]).toBe(
         'TRUNCATE TABLE land_covers_staging'
-      )
+      );
       expect(dbClient.query.mock.calls[10][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
-      )
-      expect(dbClient.query.mock.calls[10][1][0]).toBe('completed')
+      );
+      expect(dbClient.query.mock.calls[10][1][0]).toBe('completed');
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[10][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[10][1][1]).toBe(stagedDate);
       expect(dbClient.query.mock.calls[10][1][2]).toEqual([
         ingestId,
         pairedIngestId
-      ])
-      expect(dbClient.query.mock.calls[11][0]).toBe('COMMIT')
-      expect(logger.info).toHaveBeenCalledTimes(1)
-    })
+      ]);
+      expect(dbClient.query.mock.calls[11][0]).toBe('COMMIT');
+      expect(logger.info).toHaveBeenCalledTimes(1);
+    });
 
     test.each(['failed', 'cancelled'])(
       'fails this ingest and throws when the paired entity already %s',
@@ -372,7 +376,7 @@ describe('Data helpers', () => {
             rows: [{ id: pairedIngestId, status: pairedStatus }]
           }) // paired ingest already failed/cancelled
           .mockResolvedValueOnce({}) // UPDATE ingest SET status = failed
-          .mockResolvedValueOnce({}) // COMMIT
+          .mockResolvedValueOnce({}); // COMMIT
 
         await expect(
           completeAndPromotePaired(
@@ -384,25 +388,25 @@ describe('Data helpers', () => {
           )
         ).rejects.toThrow(
           'land_parcels cannot be promoted because its paired entity land_covers already failed'
-        )
+        );
 
         expect(dbClient.query.mock.calls[3][0]).toBe(
           'UPDATE ingest SET status = $1 WHERE id = $2'
-        )
-        expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', ingestId])
-        expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+        );
+        expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', ingestId]);
+        expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT');
         expect(dbClient.query).not.toHaveBeenCalledWith(
           expect.stringContaining('TRUNCATE')
-        )
-        expect(logger.error).toHaveBeenCalledTimes(1)
+        );
+        expect(logger.error).toHaveBeenCalledTimes(1);
       }
-    )
+    );
 
     test('rolls back and rethrows when the paired lookup fails', async () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
-        .mockRejectedValueOnce(new Error('lookup failed')) // SELECT paired ingest
+        .mockRejectedValueOnce(new Error('lookup failed')); // SELECT paired ingest
 
       await expect(
         completeAndPromotePaired(
@@ -412,14 +416,14 @@ describe('Data helpers', () => {
           dbClient,
           logger
         )
-      ).rejects.toThrow('lookup failed')
+      ).rejects.toThrow('lookup failed');
 
-      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
-    })
-  })
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK');
+    });
+  });
 
   describe('failPairedAwaitingIngest', () => {
-    const logger = { info: vi.fn(), error: vi.fn() }
+    const logger = { info: vi.fn(), error: vi.fn() };
 
     test('fails the paired ingest when it is staged and awaiting promotion', async () => {
       dbClient.query
@@ -427,47 +431,47 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // advisory lock
         .mockResolvedValueOnce({ rows: [{ id: 456, status: 'staged' }] }) // paired ingest awaiting
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = failed
-        .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}); // COMMIT
 
       await failPairedAwaitingIngest(
         'land_parcels',
         'land_covers',
         dbClient,
         logger
-      )
+      );
 
       expect(dbClient.query.mock.calls[3][0]).toBe(
         'UPDATE ingest SET status = $1 WHERE id = $2'
-      )
-      expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', 456])
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
-      expect(logger.error).toHaveBeenCalledTimes(1)
-    })
+      );
+      expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', 456]);
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT');
+      expect(logger.error).toHaveBeenCalledTimes(1);
+    });
 
     test('does nothing when the paired entity is not staged', async () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
         .mockResolvedValueOnce({ rows: [{ id: 456, status: 'in_progress' }] }) // not awaiting
-        .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}); // COMMIT
 
       await failPairedAwaitingIngest(
         'land_parcels',
         'land_covers',
         dbClient,
         logger
-      )
+      );
 
-      expect(dbClient.query).toHaveBeenCalledTimes(4)
-      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT')
-      expect(logger.error).not.toHaveBeenCalled()
-    })
+      expect(dbClient.query).toHaveBeenCalledTimes(4);
+      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT');
+      expect(logger.error).not.toHaveBeenCalled();
+    });
 
     test('rolls back and rethrows when the update fails', async () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
-        .mockRejectedValueOnce(new Error('lookup failed')) // SELECT paired ingest
+        .mockRejectedValueOnce(new Error('lookup failed')); // SELECT paired ingest
 
       await expect(
         failPairedAwaitingIngest(
@@ -476,9 +480,9 @@ describe('Data helpers', () => {
           dbClient,
           logger
         )
-      ).rejects.toThrow('lookup failed')
+      ).rejects.toThrow('lookup failed');
 
-      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
-    })
-  })
-})
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK');
+    });
+  });
+});

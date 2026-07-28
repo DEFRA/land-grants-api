@@ -1,21 +1,21 @@
-import hapi from '@hapi/hapi'
-import path from 'path'
+import hapi from '@hapi/hapi';
+import path from 'path';
 
-import { failAction } from '~/src/features/common/helpers/fail-action.js'
-import { requestLogger } from '~/src/features/common/helpers/logging/request-logger.js'
-import { pulse } from '~/src/features/common/helpers/pulse.js'
-import { requestTracing } from '~/src/features/common/helpers/request-tracing.js'
-import { secureContext } from '~/src/features/common/helpers/secure-context/index.js'
-import { swagger } from '~/src/features/common/plugins/swagger.js'
-import { router } from '~/src/routes/router.js'
-import { config } from '~/src/config/index.js'
-import { health } from '~/src/features/health/index.js'
-import { postgresDb } from '~/src/features/common/helpers/postgres.js'
-import { auth } from '~/src/features/common/plugins/auth.js'
-import { s3Client } from '~/src/features/common/plugins/s3-client.js'
-import { statistics } from '~/src/features/common/plugins/statistics.js'
-import { woodlandManagement } from '~/src/features/woodland-management/index.js'
-import { grantsConfigConsumer } from '~/src/features/grants-config/index.js'
+import { failAction } from '~/src/features/common/helpers/fail-action.js';
+import { requestLogger } from '~/src/features/common/helpers/logging/request-logger.js';
+import { pulse } from '~/src/features/common/helpers/pulse.js';
+import { requestTracing } from '~/src/features/common/helpers/request-tracing.js';
+import { secureContext } from '~/src/features/common/helpers/secure-context/index.js';
+import { swagger } from '~/src/features/common/plugins/swagger.js';
+import { router } from '~/src/routes/router.js';
+import { config } from '~/src/config/index.js';
+import { health } from '~/src/features/health/index.js';
+import { postgresDb } from '~/src/features/common/helpers/postgres.js';
+import { auth } from '~/src/features/common/plugins/auth.js';
+import { s3Client } from '~/src/features/common/plugins/s3-client.js';
+import { statistics } from '~/src/features/common/plugins/statistics.js';
+import { woodlandManagement } from '~/src/features/woodland-management/index.js';
+import { grantsConfigConsumer } from '~/src/features/grants-config/index.js';
 
 async function createServer() {
   const server = hapi.server({
@@ -44,7 +44,7 @@ async function createServer() {
     router: {
       stripTrailingSlash: true
     }
-  })
+  });
 
   // Hapi Plugins:
   // requestLogger       - automatically logs incoming requests
@@ -71,12 +71,12 @@ async function createServer() {
     statistics,
     woodlandManagement,
     grantsConfigConsumer
-  ])
+  ]);
 
   // Register swagger separately as it needs Inert and Vision plugins
-  await swagger.plugins.register(server)
+  await swagger.plugins.register(server);
 
-  return server
+  return server;
 }
 
-export { createServer }
+export { createServer };

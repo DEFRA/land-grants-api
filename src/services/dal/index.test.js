@@ -1,15 +1,15 @@
-import { GET_BUSINESS } from './queries.js'
+import { GET_BUSINESS } from './queries.js';
 import {
   PARCEL_ID,
   SHEET_ID,
   SIMPLE_BUSINESS
-} from '~/src/services/dal/fixtures/business.js'
-import { config } from '~/src/config/index.js'
-import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
-import { getAgreements } from './index.js'
+} from '~/src/services/dal/fixtures/business.js';
+import { config } from '~/src/config/index.js';
+import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js';
+import { getAgreements } from './index.js';
 
-const stubEndpoint = 'http://stub-dal/graphql'
-const dalResponse = { data: { business: SIMPLE_BUSINESS } }
+const stubEndpoint = 'http://stub-dal/graphql';
+const dalResponse = { data: { business: SIMPLE_BUSINESS } };
 const response404 = {
   errors: [
     {
@@ -19,30 +19,30 @@ const response404 = {
       extensions: { code: 'NOT FOUND' }
     }
   ]
-}
+};
 
-const mockLogger = { info: vi.fn() }
+const mockLogger = { info: vi.fn() };
 
 describe('getAgreements', () => {
-  const sbi = '123456789'
+  const sbi = '123456789';
 
   afterEach(() => {
-    config.set('dal.apiEndpoint', config.default('dal.apiEndpoint'))
-    config.set('featureFlags.useDal', config.default('featureFlags.useDal'))
-  })
+    config.set('dal.apiEndpoint', config.default('dal.apiEndpoint'));
+    config.set('featureFlags.useDal', config.default('featureFlags.useDal'));
+  });
 
   beforeEach(() => {
-    config.set('dal.apiEndpoint', stubEndpoint)
-    config.set('featureFlags.useDal', true)
-    vi.clearAllMocks()
-    global.fetch = vi.fn()
-  })
+    config.set('dal.apiEndpoint', stubEndpoint);
+    config.set('featureFlags.useDal', true);
+    vi.clearAllMocks();
+    global.fetch = vi.fn();
+  });
 
   it('should provide agreements from DAL', async () => {
     fetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(dalResponse)
-    })
+    });
 
     const result = await getAgreements(
       sbi,
@@ -50,7 +50,7 @@ describe('getAgreements', () => {
       SHEET_ID,
       'dummy',
       mockLogger
-    )
+    );
 
     expect(fetch).toHaveBeenCalledWith(
       stubEndpoint,
@@ -63,23 +63,23 @@ describe('getAgreements', () => {
         }),
         body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
       })
-    )
+    );
     expect(result).toEqual(
       dalBusinessToAgreements(dalResponse.data.business, PARCEL_ID, SHEET_ID)
-    )
-  })
+    );
+  });
 
   it('throws when the DAL response is not ok', async () => {
     fetch.mockResolvedValue({
       ok: false,
       status: 500,
       statusText: 'Internal Server Error'
-    })
+    });
 
     await expect(
       getAgreements(sbi, PARCEL_ID, SHEET_ID, 'dummy', mockLogger)
-    ).rejects.toThrow()
-  })
+    ).rejects.toThrow();
+  });
 
   it('returns an empty array when DAL 404s', async () => {
     fetch.mockResolvedValue({
@@ -87,31 +87,31 @@ describe('getAgreements', () => {
       status: 404,
       statusText: 'Not Found',
       json: () => Promise.resolve(response404)
-    })
+    });
     const result = await getAgreements(
       sbi,
       PARCEL_ID,
       SHEET_ID,
       'dummy',
       mockLogger
-    )
+    );
 
-    expect(result).toEqual([])
-  })
+    expect(result).toEqual([]);
+  });
 
   it('returns an empty array when feature flag is off', async () => {
-    config.set('featureFlags.useDal', false)
+    config.set('featureFlags.useDal', false);
     const result = await getAgreements(
       sbi,
       PARCEL_ID,
       SHEET_ID,
       'dummy',
       mockLogger
-    )
+    );
 
-    expect(fetch).not.toBeCalled()
-    expect(result).toEqual([])
-  })
+    expect(fetch).not.toBeCalled();
+    expect(result).toEqual([]);
+  });
 
   // TODO: replace with service-to-service auth in this scenario
   it('returns an empty array when missing a defra ID token', async () => {
@@ -121,9 +121,9 @@ describe('getAgreements', () => {
       SHEET_ID,
       null,
       mockLogger
-    )
+    );
 
-    expect(fetch).not.toBeCalled()
-    expect(result).toEqual([])
-  })
-})
+    expect(fetch).not.toBeCalled();
+    expect(result).toEqual([]);
+  });
+});

@@ -1,33 +1,33 @@
-import Boom from '@hapi/boom'
-import { applicationValidationSchema } from '~/src/features/application/schema/application-validation.schema.js'
-import { applicationValidationResponseSchemaV2 } from '~/src/features/application/schema/2.0.0/application-validation.schema.js'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import Boom from '@hapi/boom';
+import { applicationValidationSchema } from '~/src/features/application/schema/application-validation.schema.js';
+import { applicationValidationResponseSchemaV2 } from '~/src/features/application/schema/2.0.0/application-validation.schema.js';
+import { statusCodes } from '~/src/features/common/constants/status-codes.js';
 import {
   errorResponseSchema,
   unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js'
-import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
+} from '~/src/features/common/schema/index.js';
+import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js';
 import {
   applicationDataTransformer,
   actionValidationResultsTransformer
-} from '../../transformers/application.transformer.js'
-import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
+} from '../../transformers/application.transformer.js';
+import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js';
 import {
   logBusinessError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 import {
   validateRequestData,
   validateAllLandParcels
-} from '~/src/features/application/service/validation.service.js'
-import { getActions } from '~/src/features/actions/service/action.service.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
+} from '~/src/features/application/service/validation.service.js';
+import { getActions } from '~/src/features/actions/service/action.service.js';
+import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js';
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
-} from '~/src/features/common/helpers/audit-event.js'
+} from '~/src/features/common/helpers/audit-event.js';
 
 /**
  * Builds the shared portion of an application validation audit context.
@@ -42,7 +42,7 @@ const buildAuditContext = (request, { applicationId, sbi, applicantCrn }) => ({
   correlationId: getCorrelationId(request),
   applicationId,
   identifiers: { sbi, crn: applicantCrn }
-})
+});
 
 /**
  * Save application validation results
@@ -69,17 +69,17 @@ const saveValidationResults = async (
     requester,
     landActions,
     parcelResults
-  )
+  );
 
   const id = await saveApplication(request.logger, postgresDb, {
     application_id: applicationId,
     sbi,
     crn: applicantCrn,
     data: applicationData
-  })
+  });
 
-  return id
-}
+  return id;
+};
 
 /**
  * Build validation response
@@ -108,15 +108,15 @@ const buildValidationResponse = (
     requester,
     landActions,
     parcelResults
-  )
+  );
 
   return {
     message: 'Application validated successfully',
     valid: applicationData.hasPassed,
     actions: actionValidationResultsTransformer(parcelResults),
     id
-  }
-}
+  };
+};
 
 /**
  * Runs the application validation pipeline: resolves the enabled actions,
@@ -139,9 +139,9 @@ const runApplicationValidation = async (
 ) => {
   const defraIdToken = /** @type {string} */ (
     request.headers['x-forwarded-authorization']
-  )
+  );
   if (!defraIdToken) {
-    return Boom.unauthorized('X-Forwarded-Authorization is required')
+    return Boom.unauthorized('X-Forwarded-Authorization is required');
   }
 
   const actions = await getActions(
@@ -149,16 +149,16 @@ const runApplicationValidation = async (
     postgresDb,
     landActions,
     applicationId
-  )
+  );
 
   const validationError = await validateRequestData(request, {
     landActions,
     actions,
     applicationId,
     sbi
-  })
+  });
   if (validationError) {
-    return validationError
+    return validationError;
   }
 
   const parcelResults = await validateAllLandParcels(
@@ -170,7 +170,7 @@ const runApplicationValidation = async (
       landActions,
       actions
     }
-  )
+  );
 
   const id = await saveValidationResults(request, postgresDb, {
     applicationId,
@@ -179,7 +179,7 @@ const runApplicationValidation = async (
     requester,
     landActions,
     parcelResults
-  })
+  });
 
   return buildValidationResponse(
     applicationId,
@@ -189,8 +189,8 @@ const runApplicationValidation = async (
     landActions,
     parcelResults,
     id
-  )
-}
+  );
+};
 
 /**
  * Handles errors thrown during application validation.
@@ -200,10 +200,10 @@ const runApplicationValidation = async (
  */
 const handleValidationError = async (error, request) => {
   if (error instanceof InfeasibleAreaError) {
-    return Boom.boomify(error, { statusCode: 422 })
+    return Boom.boomify(error, { statusCode: 422 });
   }
   // @ts-expect-error - payload
-  const { landActions, applicationId, sbi, applicantCrn } = request.payload
+  const { landActions, applicationId, sbi, applicantCrn } = request.payload;
   logBusinessError(request.logger, {
     operation: 'Validate application',
     error,
@@ -212,7 +212,7 @@ const handleValidationError = async (error, request) => {
       applicationId,
       landActionsCount: landActions?.length ?? 0
     }
-  })
+  });
 
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -223,10 +223,10 @@ const handleValidationError = async (error, request) => {
     },
     'failure',
     request
-  )
+  );
 
-  return Boom.internal(`Error validating application: ${error.message}`)
-}
+  return Boom.internal(`Error validating application: ${error.message}`);
+};
 
 /**
  * Publishes the eligibility decision audit event for a completed application
@@ -253,8 +253,8 @@ const sendValidationAuditEvent = async (
     },
     'success',
     request
-  )
-}
+  );
+};
 
 const ApplicationValidationController = {
   options: {
@@ -285,13 +285,13 @@ const ApplicationValidationController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb
+      const postgresDb = request.server.postgresDb;
       // @ts-expect-error - payload
       const { landActions, applicationId, applicantCrn, requester } =
-        request.payload
+        request.payload;
 
       // @ts-expect-error - payload
-      const sbi = String(request.payload.sbi)
+      const sbi = String(request.payload.sbi);
 
       logInfo(request.logger, {
         category: 'application',
@@ -301,7 +301,7 @@ const ApplicationValidationController = {
           sbi,
           crn: applicantCrn
         }
-      })
+      });
 
       const validationResult = await runApplicationValidation(
         request,
@@ -313,11 +313,11 @@ const ApplicationValidationController = {
           applicantCrn,
           requester
         }
-      )
+      );
       if (Boom.isBoom(validationResult)) {
-        return validationResult
+        return validationResult;
       }
-      const responseData = validationResult
+      const responseData = validationResult;
 
       logInfo(request.logger, {
         category: 'application',
@@ -328,7 +328,7 @@ const ApplicationValidationController = {
           crn: applicantCrn,
           valid: responseData.valid
         }
-      })
+      });
 
       await sendValidationAuditEvent(request, {
         applicationId,
@@ -336,13 +336,13 @@ const ApplicationValidationController = {
         applicantCrn,
         landActions,
         responseData
-      })
+      });
 
-      return h.response(responseData).code(statusCodes.ok)
+      return h.response(responseData).code(statusCodes.ok);
     } catch (error) {
-      return handleValidationError(error, request)
+      return handleValidationError(error, request);
     }
   }
-}
+};
 
-export { ApplicationValidationController }
+export { ApplicationValidationController };

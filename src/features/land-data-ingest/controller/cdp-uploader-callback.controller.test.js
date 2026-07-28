@@ -1,56 +1,56 @@
-import Hapi from '@hapi/hapi'
-import { vi } from 'vitest'
-import { CDPUploaderCallbackController } from './cdp-uploader-callback.controller.js'
+import Hapi from '@hapi/hapi';
+import { vi } from 'vitest';
+import { CDPUploaderCallbackController } from './cdp-uploader-callback.controller.js';
 import {
   logInfo,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js'
-import { failedBucketPath } from '../../common/s3/s3.js'
-import { config } from '~/src/config/index.js'
-import { createS3Client } from '../../common/plugins/s3-client.js'
-import { processFile, createTaskInfo } from '../service/ingest.service.js'
-import { isValidIngestFile } from '../service/start-ingest.service.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
+import { failedBucketPath } from '../../common/s3/s3.js';
+import { config } from '~/src/config/index.js';
+import { createS3Client } from '../../common/plugins/s3-client.js';
+import { processFile, createTaskInfo } from '../service/ingest.service.js';
+import { isValidIngestFile } from '../service/start-ingest.service.js';
 
 // Mock dependencies
-vi.mock('~/src/features/common/helpers/logging/log-helpers.js')
-vi.mock('../../common/s3/s3.js')
-vi.mock('~/src/config/index.js')
-vi.mock('../../common/plugins/s3-client.js')
+vi.mock('~/src/features/common/helpers/logging/log-helpers.js');
+vi.mock('../../common/s3/s3.js');
+vi.mock('~/src/config/index.js');
+vi.mock('../../common/plugins/s3-client.js');
 vi.mock('../service/ingest.service.js', async () => ({
   ...(await vi.importActual('../service/ingest.service.js')),
   processFile: vi.fn(),
   createTaskInfo: vi.fn()
-}))
+}));
 vi.mock('../service/start-ingest.service.js', async () => ({
   ...(await vi.importActual('../service/start-ingest.service.js')),
   isValidIngestFile: vi.fn()
-}))
+}));
 
-const mockProcessFile = processFile
-const mockCreateTaskInfo = createTaskInfo
-const mockLogInfo = logInfo
-const mockFailedBucketPath = failedBucketPath
-const mockConfig = config
-const mockCreateS3Client = createS3Client
+const mockProcessFile = processFile;
+const mockCreateTaskInfo = createTaskInfo;
+const mockLogInfo = logInfo;
+const mockFailedBucketPath = failedBucketPath;
+const mockConfig = config;
+const mockCreateS3Client = createS3Client;
 
 describe('CDPUploaderCallbackController', () => {
-  const server = Hapi.server()
+  const server = Hapi.server();
 
   const mockLogger = {
     info: vi.fn(),
     debug: vi.fn(),
     error: vi.fn(),
     warn: vi.fn()
-  }
+  };
 
   const mockS3Client = {
     send: vi.fn()
-  }
+  };
 
-  const mockBucket = 'land-grants-bucket'
+  const mockBucket = 'land-grants-bucket';
   const mockPostgresDb = {
     query: vi.fn()
-  }
+  };
 
   const validPayload = {
     uploadStatus: 'ready',
@@ -71,11 +71,11 @@ describe('CDPUploaderCallbackController', () => {
         s3Bucket: 'land-grants-bucket'
       }
     }
-  }
+  };
 
   beforeAll(async () => {
-    server.decorate('request', 'logger', mockLogger)
-    server.decorate('server', 'postgresDb', mockPostgresDb)
+    server.decorate('request', 'logger', mockLogger);
+    server.decorate('server', 'postgresDb', mockPostgresDb);
     await server.register([
       {
         plugin: {
@@ -86,44 +86,44 @@ describe('CDPUploaderCallbackController', () => {
               path: '/land-data-ingest/callback',
               handler: CDPUploaderCallbackController.handler,
               options: CDPUploaderCallbackController.options
-            })
+            });
           }
         }
       }
-    ])
-    await server.initialize()
-  })
+    ]);
+    await server.initialize();
+  });
 
   afterAll(async () => {
-    await server.stop()
-  })
+    await server.stop();
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     // Setup mock implementations
-    mockCreateS3Client.mockReturnValue(mockS3Client)
+    mockCreateS3Client.mockReturnValue(mockS3Client);
     mockConfig.get.mockImplementation((key) => {
       const configMap = {
         's3.bucket': mockBucket
-      }
-      return configMap[key]
-    })
-    mockFailedBucketPath.mockImplementation((key) => `failed/${key}`)
-    mockProcessFile.mockResolvedValue(undefined)
+      };
+      return configMap[key];
+    });
+    mockFailedBucketPath.mockImplementation((key) => `failed/${key}`);
+    mockProcessFile.mockResolvedValue(undefined);
     // Mock createTaskInfo to return expected values
     mockCreateTaskInfo.mockImplementation((taskId, category) => {
       const title =
         category.charAt(0).toUpperCase() +
-        category.slice(1).replaceAll('_', ' ').trim()
+        category.slice(1).replaceAll('_', ' ').trim();
       return {
         category,
         title,
         taskId,
         bucket: mockBucket
-      }
-    })
-  })
+      };
+    });
+  });
 
   describe('POST /land-data-ingest/callback route', () => {
     test('should return 200 with success message when payload is valid', async () => {
@@ -131,16 +131,16 @@ describe('CDPUploaderCallbackController', () => {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload: validPayload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(200)
-      expect(message).toBe('Message received')
+      expect(statusCode).toBe(200);
+      expect(message).toBe('Message received');
 
       // Verify processFile was called with the correct parameters
       expect(mockProcessFile).toHaveBeenCalledWith(
@@ -151,7 +151,7 @@ describe('CDPUploaderCallbackController', () => {
         },
         expect.any(Object),
         expect.any(Object)
-      )
+      );
 
       // Verify logging was called with correct parameters
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
@@ -160,7 +160,7 @@ describe('CDPUploaderCallbackController', () => {
         context: {
           payload: JSON.stringify(validPayload)
         }
-      })
+      });
 
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'land-data-ingest',
@@ -170,8 +170,8 @@ describe('CDPUploaderCallbackController', () => {
           s3Key: validPayload.form.file.s3Key,
           s3Bucket: mockBucket
         }
-      })
-    })
+      });
+    });
 
     test('should return 200 with success message when payload includes ingestId and filename and file is valid', async () => {
       const payload = {
@@ -180,22 +180,22 @@ describe('CDPUploaderCallbackController', () => {
           ingestId: 'ingest-123',
           filename: 'land-data.csv'
         }
-      }
+      };
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload
-      }
-      isValidIngestFile.mockResolvedValue(true)
+      };
+      isValidIngestFile.mockResolvedValue(true);
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(200)
-      expect(message).toBe('Message received')
+      expect(statusCode).toBe(200);
+      expect(message).toBe('Message received');
 
       // Verify processFile was called with the correct parameters
       expect(mockProcessFile).toHaveBeenCalledWith(
@@ -206,7 +206,7 @@ describe('CDPUploaderCallbackController', () => {
         },
         expect.any(Object),
         expect.any(Object)
-      )
+      );
 
       // Verify logging was called with correct parameters
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
@@ -215,7 +215,7 @@ describe('CDPUploaderCallbackController', () => {
         context: {
           payload: JSON.stringify(payload)
         }
-      })
+      });
 
       expect(mockLogInfo).toHaveBeenCalledWith(mockLogger, {
         category: 'land-data-ingest',
@@ -225,46 +225,48 @@ describe('CDPUploaderCallbackController', () => {
           s3Key: validPayload.form.file.s3Key,
           s3Bucket: mockBucket
         }
-      })
-    })
+      });
+    });
 
     test('should return 400 when uploadStatus is invalid', async () => {
       const invalidPayload = {
         ...validPayload,
         uploadStatus: 'invalid-status'
-      }
+      };
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload: invalidPayload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid request payload input')
-    })
+      expect(statusCode).toBe(400);
+      expect(message).toBe('Invalid request payload input');
+    });
 
     test('should ignore error and return 200', async () => {
       // Mock processFile to throw an error
-      mockProcessFile.mockRejectedValueOnce(new Error('Failed to process file'))
+      mockProcessFile.mockRejectedValueOnce(
+        new Error('Failed to process file')
+      );
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload: validPayload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject(request)
+      const { statusCode } = await server.inject(request);
 
-      expect(statusCode).toBe(200)
-    })
+      expect(statusCode).toBe(200);
+    });
 
     test('should return 400 when file has error', async () => {
       const payload = {
@@ -275,23 +277,23 @@ describe('CDPUploaderCallbackController', () => {
             errorMessage: 'File has error'
           }
         }
-      }
+      };
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(400)
-      expect(message).toBe('File has error')
-    })
+      expect(statusCode).toBe(400);
+      expect(message).toBe('File has error');
+    });
 
     test('should return 400 when file is not ready', async () => {
       const payload = {
@@ -302,23 +304,23 @@ describe('CDPUploaderCallbackController', () => {
             fileStatus: 'pending'
           }
         }
-      }
+      };
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(400)
-      expect(message).toBe('File is not ready')
-    })
+      expect(statusCode).toBe(400);
+      expect(message).toBe('File is not ready');
+    });
 
     test('should return 400 when file is invalid', async () => {
       const payload = {
@@ -333,29 +335,29 @@ describe('CDPUploaderCallbackController', () => {
             fileStatus: 'complete'
           }
         }
-      }
-      isValidIngestFile.mockResolvedValue(false)
+      };
+      isValidIngestFile.mockResolvedValue(false);
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(400)
-      expect(message).toBe('Invalid ingest file')
+      expect(statusCode).toBe(400);
+      expect(message).toBe('Invalid ingest file');
       expect(logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'land-data-ingest_error',
         error: new Error('Invalid ingest file'),
         context: { payload }
-      })
-    })
+      });
+    });
 
     test('should return 500 when error thrown', async () => {
       const payload = {
@@ -370,23 +372,23 @@ describe('CDPUploaderCallbackController', () => {
             fileStatus: 'complete'
           }
         }
-      }
-      isValidIngestFile.mockRejectedValueOnce(new Error('Error in db'))
+      };
+      isValidIngestFile.mockRejectedValueOnce(new Error('Error in db'));
 
       const request = {
         method: 'POST',
         url: '/land-data-ingest/callback',
         payload
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request)
+      } = await server.inject(request);
 
-      expect(statusCode).toBe(500)
-      expect(message).toBe('An internal server error occurred')
+      expect(statusCode).toBe(500);
+      expect(message).toBe('An internal server error occurred');
       expect(logBusinessError).toHaveBeenCalledWith(mockLogger, {
         operation: 'land-data-ingest_error',
         error: new Error('Error in db'),
@@ -395,7 +397,7 @@ describe('CDPUploaderCallbackController', () => {
           s3Key: validPayload.form.file.s3Key,
           s3Bucket: mockBucket
         }
-      })
-    })
-  })
-})
+      });
+    });
+  });
+});

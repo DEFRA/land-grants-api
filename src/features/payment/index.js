@@ -1,4 +1,4 @@
-import { PaymentsCalculateControllerV2 } from './controllers/index.js'
+import { PaymentsCalculateControllerV2 } from './controllers/index.js';
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -13,12 +13,12 @@ const payments = {
           path: '/api/v2/payments/calculate',
           ...PaymentsCalculateControllerV2
         }
-      ])
+      ]);
     }
   }
-}
+};
 
-export { payments }
+export { payments };
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

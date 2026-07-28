@@ -1,7 +1,7 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * Get latest application validation runs
@@ -11,7 +11,7 @@ import {
  * @returns {Promise<ApplicationResult[] | null>} The application validation runs
  */
 async function getApplicationValidationRuns(logger, db, applicationId) {
-  let client
+  let client;
   try {
     logInfo(logger, {
       category: 'database',
@@ -19,29 +19,29 @@ async function getApplicationValidationRuns(logger, db, applicationId) {
       context: {
         applicationId
       }
-    })
-    client = await db.connect()
+    });
+    client = await db.connect();
 
     const query = `
       SELECT * FROM application_results WHERE application_id = $1 ORDER BY created_at DESC
-    `
-    const result = await client.query(query, [applicationId?.toLowerCase()])
+    `;
+    const result = await client.query(query, [applicationId?.toLowerCase()]);
 
-    return result.rows
+    return result.rows;
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get application validation runs',
       error
-    })
-    return null
+    });
+    return null;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
 
-export { getApplicationValidationRuns }
+export { getApplicationValidationRuns };
 
 /**
  * @import {ApplicationResult} from '../application.d.js'

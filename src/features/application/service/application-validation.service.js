@@ -1,10 +1,10 @@
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
-import { saveApplication } from '../mutations/saveApplication.mutation.js'
-import { applicationDataTransformer } from '../transformers/application.transformer.js'
-import { validateLandParcelActions } from './land-parcel-validation.service.js'
-import { validateRequest } from '../validation/application.validation.js'
-import { getActions } from '../../actions/service/action.service.js'
-import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js';
+import { saveApplication } from '../mutations/saveApplication.mutation.js';
+import { applicationDataTransformer } from '../transformers/application.transformer.js';
+import { validateLandParcelActions } from './land-parcel-validation.service.js';
+import { validateRequest } from '../validation/application.validation.js';
+import { getActions } from '../../actions/service/action.service.js';
+import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js';
 
 /**
  * Validate application
@@ -29,10 +29,10 @@ export const validateApplication = async (
     request.server.postgresDb,
     landAction,
     applicationId
-  )
+  );
 
   // Validate the entire request
-  const validationErrors = await validateRequest(landAction, actions, request)
+  const validationErrors = await validateRequest(landAction, actions, request);
 
   // If there are validation errors, return a bad request response
   if (validationErrors && validationErrors.length > 0) {
@@ -45,20 +45,20 @@ export const validateApplication = async (
         requesterUsername,
         applicationId
       }
-    })
+    });
 
     return {
       validationErrors,
       applicationData: null,
       applicationValidationRunId: null
-    }
+    };
   }
 
   // Create a compatibility check function
   const compatibilityCheckFn = await createCompatibilityMatrix(
     request.logger,
     request.server.postgresDb
-  )
+  );
 
   // Validate each land action
   const parcelResults = await Promise.all(
@@ -72,7 +72,7 @@ export const validateApplication = async (
         null
       )
     )
-  )
+  );
 
   // Transform the application data
   const applicationData = applicationDataTransformer(
@@ -82,7 +82,7 @@ export const validateApplication = async (
     requesterUsername,
     landAction,
     parcelResults
-  )
+  );
 
   // Save the application
   const applicationValidationRunId = await saveApplication(
@@ -95,7 +95,7 @@ export const validateApplication = async (
       crn,
       data: applicationData
     }
-  )
+  );
 
-  return { validationErrors, applicationData, applicationValidationRunId }
-}
+  return { validationErrors, applicationData, applicationValidationRunId };
+};

@@ -1,4 +1,4 @@
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js';
 
 /**
  * @import { ActionRequest, ApplicationValidationRun } from '~/src/features/application/application.d.js'
@@ -21,7 +21,7 @@ export const actionResultTransformer = (
   availableArea,
   ruleResult
 ) => {
-  const actionConfig = actions.find((a) => a.code === action.code)
+  const actionConfig = actions.find((a) => a.code === action.code);
 
   return {
     hasPassed: ruleResult.passed,
@@ -32,8 +32,8 @@ export const actionResultTransformer = (
       areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
     },
     rules: ruleResult.results
-  }
-}
+  };
+};
 
 /**
  * map rules for application validation v2
@@ -48,8 +48,8 @@ const mapRules = (rule) => {
     ...(rule?.description && { description: rule?.description }),
     ...(rule?.explanations && { explanations: rule?.explanations }),
     ...(rule?.caveat && { caveat: rule?.caveat })
-  }
-}
+  };
+};
 
 /**
  * Transform the action validation results for V2
@@ -66,10 +66,10 @@ export const actionValidationResultsTransformer = (parcelResults) => {
         hasPassed: action.rules.every((rule) => rule.passed),
         rules: action.rules?.map(mapRules) ?? [],
         version: action.actionConfigVersion
-      }
+      };
     })
-  )
-}
+  );
+};
 
 /**
  * Transform the application data
@@ -91,7 +91,7 @@ export const applicationDataTransformer = (
 ) => {
   const hasPassed = parcelResults.every((r) =>
     r.actions.every((a) => a.hasPassed)
-  )
+  );
 
   return {
     date: new Date(),
@@ -111,8 +111,8 @@ export const applicationDataTransformer = (
       }))
     },
     parcelLevelResults: parcelResults
-  }
-}
+  };
+};
 
 /**
  * Transform the application data
@@ -146,7 +146,7 @@ export function ruleEngineApplicationTransformer(
         historic_features: historicFeaturesDataLayerData
       }
     }
-  }
+  };
 }
 
 /**
@@ -159,5 +159,5 @@ export const applicationValidationRunTransformer = (
   return applicationValidationRuns.map((run) => ({
     id: run.id,
     created_at: run.created_at
-  }))
-}
+  }));
+};

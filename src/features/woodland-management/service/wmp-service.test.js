@@ -1,22 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { validateWoodlandManagementPlan } from './wmp-service.js'
-import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
-import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js'
-import { rules } from '~/src/features/rules-engine/rules/index.js'
-import { haToSqm } from '../../common/helpers/measurement.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { validateWoodlandManagementPlan } from './wmp-service.js';
+import { executeRules } from '~/src/features/rules-engine/rulesEngine.js';
+import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js';
+import { rules } from '~/src/features/rules-engine/rules/index.js';
+import { haToSqm } from '../../common/helpers/measurement.js';
 
-vi.mock('~/src/features/parcel/queries/getLandData.query.js')
-vi.mock('~/src/features/rules-engine/rulesEngine.js')
-vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }))
-vi.mock('../../actions/queries/getEnabledActions.query.js')
+vi.mock('~/src/features/parcel/queries/getLandData.query.js');
+vi.mock('~/src/features/rules-engine/rulesEngine.js');
+vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }));
+vi.mock('../../actions/queries/getEnabledActions.query.js');
 
-const mockParcels = [{ area: 100 }, { area: 100 }]
+const mockParcels = [{ area: 100 }, { area: 100 }];
 
 describe('validateWoodlandManagementPlan', () => {
-  let mockRequest
+  let mockRequest;
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
     mockRequest = {
       payload: {
         parcelIds: ['parcel1', 'parcel2'],
@@ -30,22 +30,22 @@ describe('validateWoodlandManagementPlan', () => {
       server: {
         postgresDb: {}
       }
-    }
-  })
+    };
+  });
 
   it('should calculate total area correctly and successfully validate woodland management plan', async () => {
-    getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
-    executeRules.mockReturnValue({ passed: true, results: [] })
+    getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }]);
+    executeRules.mockReturnValue({ passed: true, results: [] });
 
     const result = await validateWoodlandManagementPlan(
       mockParcels,
       mockRequest
-    )
+    );
 
     expect(getEnabledActions).toHaveBeenCalledWith(
       mockRequest.logger,
       mockRequest.server.postgresDb
-    )
+    );
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
@@ -55,24 +55,24 @@ describe('validateWoodlandManagementPlan', () => {
         totalParcelAreaSqm: 200
       },
       ['ruleA']
-    )
+    );
 
     expect(result).toEqual({
       action: { code: 'PA3', rules: ['ruleA'] },
       ruleResult: { passed: true, results: [] }
-    })
-  })
+    });
+  });
 
   it('should default total area to 0 when no parcels are provided', async () => {
-    getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }])
-    executeRules.mockReturnValue({ passed: true, results: [] })
+    getEnabledActions.mockResolvedValue([{ code: 'PA3', rules: ['ruleA'] }]);
+    executeRules.mockReturnValue({ passed: true, results: [] });
 
-    const result = await validateWoodlandManagementPlan(null, mockRequest)
+    const result = await validateWoodlandManagementPlan(null, mockRequest);
 
     expect(getEnabledActions).toHaveBeenCalledWith(
       mockRequest.logger,
       mockRequest.server.postgresDb
-    )
+    );
 
     expect(executeRules).toHaveBeenCalledWith(
       rules,
@@ -82,11 +82,11 @@ describe('validateWoodlandManagementPlan', () => {
         totalParcelAreaSqm: 0
       },
       ['ruleA']
-    )
+    );
 
     expect(result).toEqual({
       action: { code: 'PA3', rules: ['ruleA'] },
       ruleResult: { passed: true, results: [] }
-    })
-  })
-})
+    });
+  });
+});

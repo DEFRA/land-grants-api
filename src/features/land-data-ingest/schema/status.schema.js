@@ -1,9 +1,9 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 export const statusIngestQuery = Joi.object({
   ingestId: Joi.number().optional(),
   filename: Joi.string().optional()
-}).with('filename', 'ingestId')
+}).with('filename', 'ingestId');
 
 const statusFileResponseSchema = Joi.object({
   id: Joi.number().required(),
@@ -11,7 +11,7 @@ const statusFileResponseSchema = Joi.object({
   filename: Joi.string().required(),
   total_rows: Joi.number().required(),
   status: Joi.string().required()
-})
+});
 
 const statusIngestResponseSchema = Joi.object({
   id: Joi.number().required(),
@@ -21,10 +21,10 @@ const statusIngestResponseSchema = Joi.object({
   staged_date: Joi.date().allow(null).optional(),
   completed_date: Joi.date().allow(null).optional(),
   files: Joi.array().items(statusFileResponseSchema).optional()
-})
+});
 
 export const statusResponseSchema = Joi.alternatives().try(
   statusIngestResponseSchema,
   statusFileResponseSchema,
   Joi.array().items(statusIngestResponseSchema)
-)
+);

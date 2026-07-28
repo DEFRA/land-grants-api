@@ -1,5 +1,5 @@
-import Hapi from '@hapi/hapi'
-import { failAction } from '~/src/features/common/helpers/fail-action.js'
+import Hapi from '@hapi/hapi';
+import { failAction } from '~/src/features/common/helpers/fail-action.js';
 
 const createTestServer = (customFailAction = failAction) => {
   const server = Hapi.server({
@@ -13,8 +13,8 @@ const createTestServer = (customFailAction = failAction) => {
         failAction: customFailAction
       }
     }
-  })
-  return server
-}
+  });
+  return server;
+};
 
-export default createTestServer
+export default createTestServer;

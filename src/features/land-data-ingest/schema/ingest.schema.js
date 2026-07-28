@@ -1,9 +1,9 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 const initiateLandDataUploadSuccessResponseSchema = Joi.object({
   message: Joi.string().required(),
   uploadUrl: Joi.string().required()
-})
+});
 
 const initiateLandDataUploadRequestSchema = Joi.object({
   reference: Joi.string().required(),
@@ -25,9 +25,9 @@ const initiateLandDataUploadRequestSchema = Joi.object({
     ),
   ingestId: Joi.number(),
   filename: Joi.string()
-})
+});
 
 export {
   initiateLandDataUploadSuccessResponseSchema,
   initiateLandDataUploadRequestSchema
-}
+};

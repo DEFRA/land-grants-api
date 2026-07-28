@@ -22,7 +22,7 @@ export function actionConfigTransformer(action) {
     display_order,
     payment_method,
     ...actionObj
-  } = action
+  } = action;
   return {
     ...actionObj,
     applicationUnitOfMeasurement: application_unit_of_measurement,
@@ -39,5 +39,5 @@ export function actionConfigTransformer(action) {
     groupName: group_name,
     displayOrder: display_order,
     paymentMethod: payment_method
-  }
+  };
 }

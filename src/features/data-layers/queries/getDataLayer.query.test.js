@@ -1,14 +1,14 @@
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
-} from './getDataLayer.query.js'
+} from './getDataLayer.query.js';
 
 describe('getDataLayerQuery', () => {
-  let mockDb
-  let mockLogger
-  let mockClient
-  let mockResult
+  let mockDb;
+  let mockLogger;
+  let mockClient;
+  let mockResult;
 
   beforeEach(() => {
     mockResult = {
@@ -18,27 +18,27 @@ describe('getDataLayerQuery', () => {
           sqm: 1000
         }
       ]
-    }
+    };
 
     mockClient = {
       query: vi.fn().mockResolvedValue(mockResult),
       release: vi.fn()
-    }
+    };
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    }
+    };
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-  })
+    };
+  });
 
   test('should connect to the database', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
 
     await getDataLayerQueryAccumulated(
       sheetId,
@@ -46,16 +46,16 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1)
-  })
+    expect(mockDb.connect).toHaveBeenCalledTimes(1);
+  });
 
   test('should use accumulated query when queryType is accumulated', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-    const expectedValues = [sheetId, parcelId, dataLayerTypeId]
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
+    const expectedValues = [sheetId, parcelId, dataLayerTypeId];
 
     await getDataLayerQueryAccumulated(
       sheetId,
@@ -63,19 +63,19 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    const [actualQuery, actualValues] = mockClient.query.mock.calls[0]
-    expect(actualQuery).toContain('ST_Area(ST_Intersection')
-    expect(actualQuery).toContain('GROUP BY')
-    expect(actualValues).toEqual(expectedValues)
-  })
+    const [actualQuery, actualValues] = mockClient.query.mock.calls[0];
+    expect(actualQuery).toContain('ST_Area(ST_Intersection');
+    expect(actualQuery).toContain('GROUP BY');
+    expect(actualValues).toEqual(expectedValues);
+  });
 
   test('should use union query when queryType is union', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-    const expectedValues = [sheetId, parcelId, dataLayerTypeId]
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
+    const expectedValues = [sheetId, parcelId, dataLayerTypeId];
 
     await getDataLayerQueryUnion(
       sheetId,
@@ -83,17 +83,17 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    const [actualQuery, actualValues] = mockClient.query.mock.calls[0]
-    expect(actualQuery).toContain('ST_Union(m.geom)')
-    expect(actualValues).toEqual(expectedValues)
-  })
+    const [actualQuery, actualValues] = mockClient.query.mock.calls[0];
+    expect(actualQuery).toContain('ST_Union(m.geom)');
+    expect(actualValues).toEqual(expectedValues);
+  });
 
   test('should return the overlap percentage', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
 
     const result = await getDataLayerQueryAccumulated(
       sheetId,
@@ -101,19 +101,19 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
     expect(result).toStrictEqual({
       intersectingAreaPercentage: 50,
       intersectionAreaHa: 0.1
-    })
-  })
+    });
+  });
 
   test('should return 0 when no overlap', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-    mockResult.rows = []
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
+    mockResult.rows = [];
 
     const result = await getDataLayerQueryAccumulated(
       sheetId,
@@ -121,15 +121,15 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
-  })
+    expect(result).toBe(0);
+  });
 
   test('should release the client when done', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
 
     await getDataLayerQueryAccumulated(
       sheetId,
@@ -137,17 +137,17 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle errors and return 0', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-    const error = new Error('Database error')
-    mockClient.query = vi.fn().mockRejectedValue(error)
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
+    const error = new Error('Database error');
+    mockClient.query = vi.fn().mockRejectedValue(error);
 
     const result = await getDataLayerQueryAccumulated(
       sheetId,
@@ -155,9 +155,9 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
+    expect(result).toBe(0);
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -168,15 +168,15 @@ describe('getDataLayerQuery', () => {
         })
       }),
       expect.stringContaining('Database operation failed: Get data layer query')
-    )
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    );
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle client release if client is not defined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const dataLayerTypeId = 1
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const dataLayerTypeId = 1;
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'));
 
     const result = await getDataLayerQueryAccumulated(
       sheetId,
@@ -184,10 +184,10 @@ describe('getDataLayerQuery', () => {
       dataLayerTypeId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
-    expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
-})
+    expect(result).toBe(0);
+    expect(mockLogger.error).toHaveBeenCalled();
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
+});

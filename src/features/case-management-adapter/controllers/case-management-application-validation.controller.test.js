@@ -1,53 +1,53 @@
-import Hapi from '@hapi/hapi'
-import { caseManagementAdapter } from '../index.js'
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
-import { validateApplication } from '../../application/service/application-validation.service.js'
+import Hapi from '@hapi/hapi';
+import { caseManagementAdapter } from '../index.js';
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js';
+import { validateApplication } from '../../application/service/application-validation.service.js';
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js'
-import { vi } from 'vitest'
+} from '~/src/features/common/helpers/audit-event.js';
+import { vi } from 'vitest';
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js'
-)
-vi.mock('../../application/service/application-validation.service.js')
-vi.mock('~/src/features/common/helpers/audit-event.js')
+);
+vi.mock('../../application/service/application-validation.service.js');
+vi.mock('~/src/features/common/helpers/audit-event.js');
 
-const mockAuditEvent = auditEvent
+const mockAuditEvent = auditEvent;
 
 describe('Case Management Application Validation Controller', () => {
-  const server = Hapi.server()
+  const server = Hapi.server();
 
   const mockLogger = {
     info: vi.fn(),
     debug: vi.fn(),
     warn: vi.fn(),
     error: vi.fn()
-  }
+  };
 
   const mockPostgresDb = {
     connect: vi.fn().mockImplementation(() => ({
       query: vi.fn(),
       release: vi.fn()
     }))
-  }
+  };
 
   beforeAll(async () => {
-    server.decorate('request', 'logger', mockLogger)
-    server.decorate('server', 'postgresDb', mockPostgresDb)
+    server.decorate('request', 'logger', mockLogger);
+    server.decorate('server', 'postgresDb', mockPostgresDb);
 
-    await server.register([caseManagementAdapter])
-    await server.initialize()
-  })
+    await server.register([caseManagementAdapter]);
+    await server.initialize();
+  });
 
   afterAll(async () => {
-    await server.stop()
-  })
+    await server.stop();
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   describe('POST /case-management-adapter/application/validation-run/rerun', () => {
     const mockApplicationValidationRun = {
@@ -71,7 +71,7 @@ describe('Case Management Application Validation Controller', () => {
           ]
         }
       }
-    }
+    };
 
     const mockApplicationData = {
       date: new Date('2025-10-09T00:00:00.000Z'),
@@ -96,17 +96,17 @@ describe('Case Management Application Validation Controller', () => {
         ]
       },
       parcelLevelResults: []
-    }
+    };
 
     test('should return 200 when validation passes', async () => {
       vi.mocked(getApplicationValidationRun).mockResolvedValue(
         mockApplicationValidationRun
-      )
+      );
       vi.mocked(validateApplication).mockResolvedValue({
         validationErrors: null,
         applicationData: mockApplicationData,
         applicationValidationRunId: 1
-      })
+      });
 
       const request = {
         method: 'POST',
@@ -115,25 +115,25 @@ describe('Case Management Application Validation Controller', () => {
           requesterUsername: 'test.user@example.com',
           id: 1
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(200)
+      expect(statusCode).toBe(200);
       expect(result).toEqual({
         message: 'Application validated successfully',
         valid: true,
         id: 1,
         date: mockApplicationData.date.toISOString()
-      })
+      });
 
       expect(getApplicationValidationRun).toHaveBeenCalledWith(
         expect.any(Object),
         mockPostgresDb,
         1
-      )
+      );
 
       expect(validateApplication).toHaveBeenCalledWith(
         mockApplicationValidationRun.data.application.parcels,
@@ -145,7 +145,7 @@ describe('Case Management Application Validation Controller', () => {
           logger: expect.any(Object),
           server: expect.objectContaining({ postgresDb: expect.any(Object) })
         })
-      )
+      );
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -159,11 +159,11 @@ describe('Case Management Application Validation Controller', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
-      )
-    })
+      );
+    });
 
     test('should return 404 when application validation run is not found', async () => {
-      vi.mocked(getApplicationValidationRun).mockResolvedValue(null)
+      vi.mocked(getApplicationValidationRun).mockResolvedValue(null);
 
       const request = {
         method: 'POST',
@@ -172,24 +172,24 @@ describe('Case Management Application Validation Controller', () => {
           requesterUsername: 'test.user@example.com',
           id: 999
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(404)
-      expect(result.message).toBe('Application validation run not found')
+      expect(statusCode).toBe(404);
+      expect(result.message).toBe('Application validation run not found');
 
       expect(getApplicationValidationRun).toHaveBeenCalledWith(
         expect.any(Object),
         mockPostgresDb,
         999
-      )
+      );
 
-      expect(validateApplication).not.toHaveBeenCalled()
-      expect(mockAuditEvent).not.toHaveBeenCalled()
-    })
+      expect(validateApplication).not.toHaveBeenCalled();
+      expect(mockAuditEvent).not.toHaveBeenCalled();
+    });
 
     test('should return 400 when payload is missing requesterUsername', async () => {
       const request = {
@@ -198,15 +198,15 @@ describe('Case Management Application Validation Controller', () => {
         payload: {
           id: 1
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(400)
-      expect(result.message).toBe('Invalid request payload input')
-    })
+      expect(statusCode).toBe(400);
+      expect(result.message).toBe('Invalid request payload input');
+    });
 
     test('should return 400 when payload is missing id', async () => {
       const request = {
@@ -215,15 +215,15 @@ describe('Case Management Application Validation Controller', () => {
         payload: {
           requesterUsername: 'test.user@example.com'
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(400)
-      expect(result.message).toBe('Invalid request payload input')
-    })
+      expect(statusCode).toBe(400);
+      expect(result.message).toBe('Invalid request payload input');
+    });
 
     test('should return 400 when validation fails with errors', async () => {
       const validationErrors = [
@@ -237,16 +237,16 @@ describe('Case Management Application Validation Controller', () => {
           message: 'Parcel not found',
           code: 'PARCEL_NOT_FOUND'
         }
-      ]
+      ];
 
       getApplicationValidationRun.mockResolvedValue(
         mockApplicationValidationRun
-      )
+      );
       validateApplication.mockResolvedValue({
         validationErrors,
         applicationData: null,
         applicationValidationRunId: null
-      })
+      });
 
       const request = {
         method: 'POST',
@@ -255,18 +255,18 @@ describe('Case Management Application Validation Controller', () => {
           requesterUsername: 'test.user@example.com',
           id: 1
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(400)
+      expect(statusCode).toBe(400);
       expect(result).toEqual({
         message: validationErrors.map((err) => err.message).join(', '),
         error: 'Bad Request',
         statusCode: 400
-      })
+      });
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         {
@@ -278,18 +278,18 @@ describe('Case Management Application Validation Controller', () => {
           }
         },
         'Validation failed: Case management application validation [sbi=123456789 | crn=1234567890 | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
-      )
+      );
 
-      expect(mockAuditEvent).not.toHaveBeenCalled()
-    })
+      expect(mockAuditEvent).not.toHaveBeenCalled();
+    });
 
     test('should return 500 when validateApplication fails', async () => {
       getApplicationValidationRun.mockResolvedValue(
         mockApplicationValidationRun
-      )
+      );
       validateApplication.mockRejectedValue(
         new Error('Validation service failed')
-      )
+      );
 
       const request = {
         method: 'POST',
@@ -298,14 +298,14 @@ describe('Case Management Application Validation Controller', () => {
           requesterUsername: 'test.user@example.com',
           id: 1
         }
-      }
+      };
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request)
-      const result = JSON.parse(payload)
+      const { statusCode, payload } = await server.inject(request);
+      const result = JSON.parse(payload);
 
-      expect(statusCode).toBe(500)
-      expect(result.message).toBe('An internal server error occurred')
+      expect(statusCode).toBe(500);
+      expect(result.message).toBe('An internal server error occurred');
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -314,7 +314,7 @@ describe('Case Management Application Validation Controller', () => {
           })
         }),
         'Business operation failed: Case Management validation run [validationRunId=1 | requesterUsername=test.user@example.com]'
-      )
+      );
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -328,7 +328,7 @@ describe('Case Management Application Validation Controller', () => {
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});

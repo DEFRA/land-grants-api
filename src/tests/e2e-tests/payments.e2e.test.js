@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest'
-import { httpClient } from './setup/http-client.js'
-import { getAuthHeader } from './setup/auth-helpers.js'
+import { describe, test, expect } from 'vitest';
+import { httpClient } from './setup/http-client.js';
+import { getAuthHeader } from './setup/auth-helpers.js';
 
 describe('Payments Endpoints', () => {
   describe('POST /api/v2/payments/calculate', () => {
@@ -22,11 +22,11 @@ describe('Payments Endpoints', () => {
             }
           ]
         }
-      })
+      });
 
-      expect(response.status).toBe(200)
-      expect(response.data).toHaveProperty('message')
-      expect(response.data).toHaveProperty('payment')
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('message');
+      expect(response.data).toHaveProperty('payment');
       expect(response.data.payment).toMatchObject({
         agreementStartDate: expect.any(String),
         agreementEndDate: expect.any(String),
@@ -34,7 +34,7 @@ describe('Payments Endpoints', () => {
         agreementTotalPence: expect.any(Number),
         annualTotalPence: expect.any(Number),
         payments: expect.any(Array)
-      })
-    })
-  })
-})
+      });
+    });
+  });
+});

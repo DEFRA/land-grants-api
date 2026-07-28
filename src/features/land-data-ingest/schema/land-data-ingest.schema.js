@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 const cdpUploaderFileSchema = Joi.object({
   fileId: Joi.string(),
@@ -12,7 +12,7 @@ const cdpUploaderFileSchema = Joi.object({
   hasError: Joi.boolean(),
   errorMessage: Joi.string(),
   detectedContentType: Joi.string()
-})
+});
 
 const cdpUploaderCallbackSchema = Joi.object({
   uploadStatus: Joi.string().valid('initiated', 'pending', 'ready').required(),
@@ -21,10 +21,10 @@ const cdpUploaderCallbackSchema = Joi.object({
   form: Joi.object({
     file: cdpUploaderFileSchema
   })
-})
+});
 
 const cdpUploaderCallbackResponseSchema = Joi.object({
   message: Joi.string().required()
-}).required()
+}).required();
 
-export { cdpUploaderCallbackSchema, cdpUploaderCallbackResponseSchema }
+export { cdpUploaderCallbackSchema, cdpUploaderCallbackResponseSchema };

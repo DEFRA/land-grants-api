@@ -1,8 +1,8 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
-import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
+import { compatibilityMatrixTransformer } from '../transformers/compatibility-matrix.transformer.js';
 
 /**
  * @param {Logger} logger
@@ -11,33 +11,33 @@ import { compatibilityMatrixTransformer } from '../transformers/compatibility-ma
  * @returns {Promise<CompatibilityMatrix[]>}
  */
 async function getCompatibilityMatrix(logger, db, codes = null) {
-  let client
+  let client;
   try {
-    client = await db.connect()
+    client = await db.connect();
 
-    const query = `SELECT * FROM compatibility_matrix ${codes ? 'WHERE option_code = ANY ($1)' : ''}`
-    const result = await client.query(query, codes ? [codes] : null)
+    const query = `SELECT * FROM compatibility_matrix ${codes ? 'WHERE option_code = ANY ($1)' : ''}`;
+    const result = await client.query(query, codes ? [codes] : null);
 
     logInfo(logger, {
       category: 'database',
       message: 'Get compatibility matrix'
-    })
+    });
 
-    return result?.rows.map(compatibilityMatrixTransformer)
+    return result?.rows.map(compatibilityMatrixTransformer);
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get compatibility matrix',
       error
-    })
-    return []
+    });
+    return [];
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
 
-export { getCompatibilityMatrix }
+export { getCompatibilityMatrix };
 
 /**
  * @import { CompatibilityMatrix } from '../compatibility-matrix.d.js'

@@ -1,9 +1,9 @@
-import fs from 'fs'
-import path from 'path'
-import { config } from './config.js'
+import fs from 'fs';
+import path from 'path';
+import { config } from './config.js';
 
 // Important: configure these values for the ingestion
-const environments = ['dev'] //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
+const environments = ['dev']; //, 'test', 'perf-test', 'ext-test'] // dev, test, perf-test, ext-test, prod
 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
@@ -18,22 +18,22 @@ const resources = [
   'scheduled_monuments',
   'registered_parks_gardens',
   'action_sssi_hf_mapping'
-]
+];
 
-await transferAllResources()
+await transferAllResources();
 
 async function transferAllResources() {
   for (const environment of environments) {
     console.log(
       `\n########## Starting ingestion for environment: ${environment} ##########`
-    )
+    );
     for (const resource of resources) {
-      console.log(`\n=== Starting ingestion for resource: ${resource} ===`)
+      console.log(`\n=== Starting ingestion for resource: ${resource} ===`);
       try {
-        await transferResource(resource, environment)
+        await transferResource(resource, environment);
       } catch (error) {
-        console.error(`✗ Unhandled error: ${error.message}`)
-        process.exit(1)
+        console.error(`✗ Unhandled error: ${error.message}`);
+        process.exit(1);
       }
     }
   }
@@ -46,12 +46,12 @@ async function transferAllResources() {
  */
 async function getCognitoToken(environment) {
   try {
-    const envConfig = config[environment]
-    console.log(`✓ Getting Cognito token from ${envConfig.tokenUrl}`)
+    const envConfig = config[environment];
+    console.log(`✓ Getting Cognito token from ${envConfig.tokenUrl}`);
 
     const credentials = Buffer.from(
       `${envConfig.clientId}:${envConfig.clientSecret}`
-    ).toString('base64')
+    ).toString('base64');
 
     const response = await fetch(envConfig.tokenUrl, {
       method: 'POST',
@@ -60,41 +60,41 @@ async function getCognitoToken(environment) {
         Authorization: `Basic ${credentials}`
       },
       body: 'grant_type=client_credentials'
-    })
+    });
 
     if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Error: HTTP ${response.status}\n${body}`)
+      const body = await response.text();
+      throw new Error(`Error: HTTP ${response.status}\n${body}`);
     }
 
-    const data = await response.json()
-    return data.access_token
+    const data = await response.json();
+    return data.access_token;
   } catch (error) {
-    console.log(`✗ Get Cognito token failed - ${error}`)
-    throw error
+    console.log(`✗ Get Cognito token failed - ${error}`);
+    throw error;
   }
 }
 
-const RETRY_WAIT = 10000
+const RETRY_WAIT = 10000;
 
 async function fetchWithRetry(url, options = {}, retries = 3) {
   for (let i = 0; i < retries; i++) {
     // wait after first attempt
     if (i > 0) {
-      console.log(`Waiting for ${RETRY_WAIT * i}ms before retry...`)
-      await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT * i))
+      console.log(`Waiting for ${RETRY_WAIT * i}ms before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT * i));
     }
     try {
-      const response = await fetch(url, options)
+      const response = await fetch(url, options);
       if (!response.ok) {
-        continue
+        continue;
       }
-      return response
+      return response;
     } catch (error) {
-      console.warn(`Attempt ${i + 1} failed. Retrying...`, error)
+      console.warn(`Attempt ${i + 1} failed. Retrying...`, error);
     }
   }
-  throw new Error(`Failed to fetch with retries: ${url}`)
+  throw new Error(`Failed to fetch with retries: ${url}`);
 }
 
 /**
@@ -106,10 +106,10 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
  */
 async function initiateLandDataUpload(jsonData, accessToken, environment) {
   try {
-    const apiBaseUrl = config[environment].apiBaseUrl
+    const apiBaseUrl = config[environment].apiBaseUrl;
     console.log(
       `✓ Initiating land data upload to ${apiBaseUrl}/initiate-upload`
-    )
+    );
 
     const response = await fetchWithRetry(`${apiBaseUrl}/initiate-upload`, {
       method: 'POST',
@@ -118,45 +118,47 @@ async function initiateLandDataUpload(jsonData, accessToken, environment) {
         Authorization: `Bearer ${accessToken}`
       },
       body: JSON.stringify(jsonData)
-    })
+    });
 
     if (!response.ok) {
       console.log(
         `✗ Failed - Check if API is running at ${apiBaseUrl} - HTTP ${response.status}`
-      )
+      );
       throw new Error(
         `Failed to initiate land data upload - HTTP ${response.status}`
-      )
+      );
     }
 
-    return await response.json()
+    return await response.json();
   } catch (error) {
-    console.log(`✗ Failed to initiate land data upload - ${error.message}`)
-    throw error
+    console.log(`✗ Failed to initiate land data upload - ${error.message}`);
+    throw error;
   }
 }
 
 async function checkUploadStatus(uploadId, accessToken, environment) {
   try {
-    const apiBaseUrl = config[environment].cdpUrl
+    const apiBaseUrl = config[environment].cdpUrl;
     console.log(
       `✓ Getting CDP Uploader status from ${apiBaseUrl}/status/${uploadId}`
-    )
+    );
 
     const response = await fetch(`${apiBaseUrl}/status/${uploadId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
-    })
+    });
     if (!response.ok) {
-      console.log(`✗ Failed to check upload status - HTTP ${response.status}`)
-      throw new Error(`Failed to check upload status - HTTP ${response.status}`)
+      console.log(`✗ Failed to check upload status - HTTP ${response.status}`);
+      throw new Error(
+        `Failed to check upload status - HTTP ${response.status}`
+      );
     }
-    return await response.json()
+    return await response.json();
   } catch (error) {
-    console.log(`✗ Failed to check upload status - ${error}`)
-    throw error
+    console.log(`✗ Failed to check upload status - ${error}`);
+    throw error;
   }
 }
 
@@ -169,12 +171,12 @@ async function checkUploadStatus(uploadId, accessToken, environment) {
  */
 async function uploadFileToS3(uploadUrl, filePath, accessToken) {
   try {
-    console.log(`✓ Uploading file to S3 ${uploadUrl}`)
-    const fileContent = fs.readFileSync(filePath)
-    const fileName = path.basename(filePath)
+    console.log(`✓ Uploading file to S3 ${uploadUrl}`);
+    const fileContent = fs.readFileSync(filePath);
+    const fileName = path.basename(filePath);
     const contentType = filePath.endsWith('.csv')
       ? 'text/csv'
-      : 'application/zip'
+      : 'application/zip';
 
     await fetch(uploadUrl, {
       method: 'POST',
@@ -185,10 +187,10 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
       },
       body: fileContent,
       redirect: 'manual'
-    })
+    });
   } catch (error) {
-    console.log(`✗ Failed to upload file to S3 - ${error}`)
-    throw error
+    console.log(`✗ Failed to upload file to S3 - ${error}`);
+    throw error;
   }
 }
 
@@ -196,15 +198,15 @@ async function uploadFileToS3(uploadUrl, filePath, accessToken) {
  * Main function to run the ingestion process
  */
 async function transferResource(resource, environment) {
-  const { clientId, clientSecret } = config[environment]
+  const { clientId, clientSecret } = config[environment];
 
   const ingestionDataDirectory = path.join(
     process.cwd(),
     'ingestion-data/data/' + resource
-  )
+  );
 
   if (!clientId || !clientSecret) {
-    throw new Error('CLIENT_ID and CLIENT_SECRET must be set')
+    throw new Error('CLIENT_ID and CLIENT_SECRET must be set');
   }
 
   console.log(
@@ -219,37 +221,39 @@ async function transferResource(resource, environment) {
       null,
       2
     )}`
-  )
+  );
 
   // metadata for the ingestion, to identify who by and when the ingestion was performed
-  const reference = new Date().toISOString().replace('T', ':').slice(0, 19)
-  const customerId = 'DEV_TEAM'
+  const reference = new Date().toISOString().replace('T', ':').slice(0, 19);
+  const customerId = 'DEV_TEAM';
 
   // get the access token from cognito
-  const accessToken = await getCognitoToken(environment)
-  console.log(`${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`)
+  const accessToken = await getCognitoToken(environment);
+  console.log(
+    `${accessToken !== undefined ? '✓' : '✗'} Access token retrieved`
+  );
 
   // get the files to ingest from the directory
-  const currentfailedFiles = readFailedFiles(resource)
-  let files = []
+  const currentfailedFiles = readFailedFiles(resource);
+  let files = [];
   if (currentfailedFiles.length > 0) {
-    files = currentfailedFiles
+    files = currentfailedFiles;
   } else {
-    files = fs.readdirSync(ingestionDataDirectory)
+    files = fs.readdirSync(ingestionDataDirectory);
   }
-  console.log(`✓ ${files.length} files to ingest found`)
+  console.log(`✓ ${files.length} files to ingest found`);
 
-  const failedFiles = []
+  const failedFiles = [];
   // iterate over the files and ingest them
   for (const landDataFile of files) {
-    console.log(`✓ Start ingesting ${landDataFile}`)
+    console.log(`✓ Start ingesting ${landDataFile}`);
 
     // reject files that do not contain .csv or .zip extension
     if (!landDataFile.endsWith('.csv') && !landDataFile.endsWith('.zip')) {
       console.log(
         `✗ Skipping ${landDataFile} as it does not end with .csv or .zip`
-      )
-      continue
+      );
+      continue;
     }
 
     try {
@@ -261,71 +265,71 @@ async function transferResource(resource, environment) {
         },
         accessToken,
         environment
-      )
+      );
 
-      console.log(`✓ Initiate upload successful for ${landDataFile}`)
+      console.log(`✓ Initiate upload successful for ${landDataFile}`);
 
       // Upload the file to S3
       await uploadFileToS3(
         initiateUploadResponse.uploadUrl,
         path.join(ingestionDataDirectory, landDataFile),
         accessToken
-      )
+      );
 
       // Check the upload status, should be pending
       const uploadStatusResponse = await checkUploadStatus(
         initiateUploadResponse.uploadUrl.split('/').pop(),
         accessToken,
         environment
-      )
+      );
 
       if (uploadStatusResponse.uploadStatus === 'pending') {
         console.log(
           `✓ File upload successful and ${uploadStatusResponse.uploadStatus} status for ${landDataFile}`
-        )
+        );
       } else {
-        console.log(`✗ Upload status is not pending for ${landDataFile}`)
-        throw new Error(`Upload status is not pending`)
+        console.log(`✗ Upload status is not pending for ${landDataFile}`);
+        throw new Error(`Upload status is not pending`);
       }
     } catch (error) {
-      console.log(`✗ Failed to ingest ${landDataFile} - ${error}`)
-      failedFiles.push(landDataFile)
-      continue
+      console.log(`✗ Failed to ingest ${landDataFile} - ${error}`);
+      failedFiles.push(landDataFile);
+      continue;
     }
   }
 
-  saveResults(resource, failedFiles)
+  saveResults(resource, failedFiles);
   if (failedFiles.length === 0) {
-    deleteFailedFiles(resource)
+    deleteFailedFiles(resource);
   }
 
-  console.log('✓ Ingestion complete for : ' + resource)
+  console.log('✓ Ingestion complete for : ' + resource);
 }
 
 function saveResults(resource, filesCompleted) {
   if (filesCompleted.length > 0) {
-    const textString = filesCompleted.join('\n')
-    const datePart = new Date().toISOString().replace('T', ':').slice(0, 19)
-    fs.writeFileSync(`failed_files_${resource}_${datePart}.txt`, textString)
+    const textString = filesCompleted.join('\n');
+    const datePart = new Date().toISOString().replace('T', ':').slice(0, 19);
+    fs.writeFileSync(`failed_files_${resource}_${datePart}.txt`, textString);
   }
 }
 
 function readFailedFiles(resource) {
-  const currentDirectory = process.cwd()
+  const currentDirectory = process.cwd();
   const files = fs
     .readdirSync(currentDirectory)
-    .filter((file) => file.startsWith(`failed_files_${resource}`))
+    .filter((file) => file.startsWith(`failed_files_${resource}`));
   const fileContents = files.map((file) =>
     fs.readFileSync(path.join(currentDirectory, file), 'utf-8')
-  )
-  const failedFiles = fileContents.flatMap((d) => d.split('\n'))
-  return [...new Set(failedFiles)]
+  );
+  const failedFiles = fileContents.flatMap((d) => d.split('\n'));
+  return [...new Set(failedFiles)];
 }
 
 function deleteFailedFiles(resource) {
-  const currentDirectory = process.cwd()
+  const currentDirectory = process.cwd();
   const files = fs
     .readdirSync(currentDirectory)
-    .filter((file) => file.startsWith(`failed_files_${resource}`))
-  files.forEach((file) => fs.unlinkSync(path.join(currentDirectory, file)))
+    .filter((file) => file.startsWith(`failed_files_${resource}`));
+  files.forEach((file) => fs.unlinkSync(path.join(currentDirectory, file)));
 }

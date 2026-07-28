@@ -1,13 +1,13 @@
-import { applicationValidationRunToCaseManagement } from './application-validation.transformer.js'
+import { applicationValidationRunToCaseManagement } from './application-validation.transformer.js';
 
 describe('applicationValidationRunToCaseManagement', () => {
   test('should return null when input is null', () => {
-    expect(applicationValidationRunToCaseManagement(null)).toBeNull()
-  })
+    expect(applicationValidationRunToCaseManagement(null)).toBeNull();
+  });
 
   test('should return null when input is undefined', () => {
-    expect(applicationValidationRunToCaseManagement(undefined)).toBeNull()
-  })
+    expect(applicationValidationRunToCaseManagement(undefined)).toBeNull();
+  });
 
   test('should handle empty parcelLevelResults', () => {
     const input = {
@@ -16,9 +16,9 @@ describe('applicationValidationRunToCaseManagement', () => {
       hasPassed: true,
       parcelLevelResults: [],
       applicationLevelResults: {}
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
     expect(result).toEqual([
       {
@@ -27,8 +27,8 @@ describe('applicationValidationRunToCaseManagement', () => {
         level: 2,
         id: 'title'
       }
-    ])
-  })
+    ]);
+  });
 
   test('should handle multiple parcels', () => {
     const input = {
@@ -60,32 +60,32 @@ describe('applicationValidationRunToCaseManagement', () => {
         }
       ],
       applicationLevelResults: {}
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
-    expect(result).toHaveLength(5)
+    expect(result).toHaveLength(5);
     expect(result[0]).toEqual({
       component: 'heading',
       text: 'Land parcel rules checks',
       level: 2,
       id: 'title'
-    })
+    });
     expect(result[1]).toEqual({
       component: 'heading',
       text: 'Parcel ID: SD6743 8083 checks',
       level: 3,
       id: undefined
-    })
-    expect(result[2].summaryItems[0].text).toBe('ACTION1')
+    });
+    expect(result[2].summaryItems[0].text).toBe('ACTION1');
     expect(result[3]).toEqual({
       component: 'heading',
       text: 'Parcel ID: SD6744 8084 checks',
       level: 3,
       id: undefined
-    })
-    expect(result[4].summaryItems[0].text).toBe('ACTION2')
-  })
+    });
+    expect(result[4].summaryItems[0].text).toBe('ACTION2');
+  });
 
   test('should handle parcel with no actions', () => {
     const input = {
@@ -100,24 +100,24 @@ describe('applicationValidationRunToCaseManagement', () => {
         }
       ],
       applicationLevelResults: {}
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
-    expect(result).toHaveLength(2)
+    expect(result).toHaveLength(2);
     expect(result[0]).toEqual({
       component: 'heading',
       text: 'Land parcel rules checks',
       level: 2,
       id: 'title'
-    })
+    });
     expect(result[1]).toEqual({
       component: 'heading',
       text: 'Parcel ID: SD6743 8083 checks',
       level: 3,
       id: undefined
-    })
-  })
+    });
+  });
 
   test('should handle failed validation scenario', () => {
     const input = {
@@ -150,19 +150,19 @@ describe('applicationValidationRunToCaseManagement', () => {
         }
       ],
       applicationLevelResults: {}
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
-    expect(result).toHaveLength(3)
-    const failedAction = result[2]
+    expect(result).toHaveLength(3);
+    const failedAction = result[2];
     expect(failedAction.summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Failed',
       colour: 'red'
-    })
-  })
+    });
+  });
 
   test('should create heading components with correct structure', () => {
     const input = {
@@ -173,23 +173,23 @@ describe('applicationValidationRunToCaseManagement', () => {
           actions: []
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
     expect(result[0]).toEqual({
       component: 'heading',
       text: 'Land parcel rules checks',
       level: 2,
       id: 'title'
-    })
+    });
     expect(result[1]).toEqual({
       component: 'heading',
       text: 'Parcel ID: SD6743 8083 checks',
       level: 3,
       id: undefined
-    })
-  })
+    });
+  });
 
   test('should create status components for passed and failed actions', () => {
     const input = {
@@ -211,23 +211,23 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
     expect(result[2].summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Passed',
       colour: 'green'
-    })
+    });
     expect(result[3].summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Failed',
       colour: 'red'
-    })
-  })
+    });
+  });
 
   test('should create available area details with explanation sections', () => {
     const input = {
@@ -257,24 +257,24 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
-    const availableAreaDetails = actionDetails.items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
+    const availableAreaDetails = actionDetails.items[0];
 
-    expect(availableAreaDetails.component).toBe('details')
+    expect(availableAreaDetails.component).toBe('details');
     expect(availableAreaDetails.summaryItems[0].text).toBe(
       'Available area calculation explanation'
-    )
+    );
     expect(availableAreaDetails.items).toEqual([
       { component: 'paragraph', text: 'Section 1' },
       { component: 'paragraph', text: 'Line 1' },
       { component: 'paragraph', text: 'Line 2' },
       { component: 'paragraph', text: 'Section 2' },
       { component: 'paragraph', text: 'Line 3' }
-    ])
-  })
+    ]);
+  });
 
   test('should filter out null paragraph items from empty content strings', () => {
     const input = {
@@ -300,16 +300,16 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const availableAreaDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const availableAreaDetails = result[2].items[0];
 
     expect(availableAreaDetails.items).toEqual([
       { component: 'paragraph', text: 'Section' },
       { component: 'paragraph', text: 'Valid content' }
-    ])
-  })
+    ]);
+  });
 
   test('should handle available area with empty explanations array', () => {
     const input = {
@@ -330,15 +330,15 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
-    const availableAreaDetails = actionDetails.items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
+    const availableAreaDetails = actionDetails.items[0];
 
-    expect(availableAreaDetails.component).toBe('details')
-    expect(availableAreaDetails.items).toEqual([])
-  })
+    expect(availableAreaDetails.component).toBe('details');
+    expect(availableAreaDetails.items).toEqual([]);
+  });
 
   test('should handle available area with empty content arrays', () => {
     const input = {
@@ -364,15 +364,15 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const availableAreaDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const availableAreaDetails = result[2].items[0];
 
     expect(availableAreaDetails.items).toEqual([
       { component: 'paragraph', text: 'Empty Section' }
-    ])
-  })
+    ]);
+  });
 
   test('should create rule details with status and explanations', () => {
     const input = {
@@ -403,28 +403,28 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
-    expect(ruleDetails.component).toBe('details')
+    expect(ruleDetails.component).toBe('details');
     expect(ruleDetails.summaryItems[0].text).toBe(
       'Is this parcel on the moorland?'
-    )
+    );
     expect(ruleDetails.summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Passed',
       colour: 'green'
-    })
+    });
     expect(ruleDetails.items).toEqual([
       {
         component: 'paragraph',
         text: 'This parcel has a 99.99% intersection with the moorland layer.'
       }
-    ])
-  })
+    ]);
+  });
 
   test('should create rule details with failed status', () => {
     const input = {
@@ -453,18 +453,18 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
     expect(ruleDetails.summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Failed',
       colour: 'red'
-    })
-  })
+    });
+  });
 
   test('should handle rule with empty explanations array', () => {
     const input = {
@@ -488,13 +488,13 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
-    expect(ruleDetails.items).toHaveLength(0)
-  })
+    expect(ruleDetails.items).toHaveLength(0);
+  });
 
   test('should handle rule with empty lines array', () => {
     const input = {
@@ -523,13 +523,13 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
-    expect(ruleDetails.items).toHaveLength(0)
-  })
+    expect(ruleDetails.items).toHaveLength(0);
+  });
 
   test('should handle rule with multiple explanations and multiple lines', () => {
     const input = {
@@ -562,10 +562,10 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
     expect(ruleDetails.items).toEqual([
       { component: 'paragraph', text: 'Line 1' },
@@ -573,8 +573,8 @@ describe('applicationValidationRunToCaseManagement', () => {
       { component: 'paragraph', text: 'Line 3' },
       { component: 'paragraph', text: 'Line 4' },
       { component: 'paragraph', text: 'Line 5' }
-    ])
-  })
+    ]);
+  });
 
   test('should filter out empty lines in rule explanations', () => {
     const input = {
@@ -603,16 +603,16 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const ruleDetails = result[2].items[0]
+    const result = applicationValidationRunToCaseManagement(input);
+    const ruleDetails = result[2].items[0];
 
     expect(ruleDetails.items).toEqual([
       { component: 'paragraph', text: 'Valid line' },
       { component: 'paragraph', text: 'Another valid line' }
-    ])
-  })
+    ]);
+  });
 
   test('should create action details with available area and rules', () => {
     const input = {
@@ -652,21 +652,21 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
 
-    expect(actionDetails.component).toBe('details')
-    expect(actionDetails.summaryItems[0].text).toBe('SAM1')
+    expect(actionDetails.component).toBe('details');
+    expect(actionDetails.summaryItems[0].text).toBe('SAM1');
     expect(actionDetails.summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
       component: 'status',
       text: 'Passed',
       colour: 'green'
-    })
-    expect(actionDetails.items).toHaveLength(2)
-  })
+    });
+    expect(actionDetails.items).toHaveLength(2);
+  });
 
   test('should handle action with empty rules array', () => {
     const input = {
@@ -683,13 +683,13 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
 
-    expect(actionDetails.items).toEqual([])
-  })
+    expect(actionDetails.items).toEqual([]);
+  });
 
   test('should handle action without availableArea', () => {
     const input = {
@@ -718,14 +718,14 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
 
-    expect(actionDetails.items).toHaveLength(1)
-    expect(actionDetails.items[0].summaryItems[0].text).toBe('Test rule')
-  })
+    expect(actionDetails.items).toHaveLength(1);
+    expect(actionDetails.items[0].summaryItems[0].text).toBe('Test rule');
+  });
 
   test('should handle action with multiple rules', () => {
     const input = {
@@ -765,15 +765,15 @@ describe('applicationValidationRunToCaseManagement', () => {
           ]
         }
       ]
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
-    const actionDetails = result[2]
+    const result = applicationValidationRunToCaseManagement(input);
+    const actionDetails = result[2];
 
-    expect(actionDetails.items).toHaveLength(2)
-    expect(actionDetails.items[0].summaryItems[0].text).toBe('First rule')
-    expect(actionDetails.items[1].summaryItems[0].text).toBe('Second rule')
-  })
+    expect(actionDetails.items).toHaveLength(2);
+    expect(actionDetails.items[0].summaryItems[0].text).toBe('First rule');
+    expect(actionDetails.items[1].summaryItems[0].text).toBe('Second rule');
+  });
 
   test('should return response when input is valid', () => {
     const input = {
@@ -1032,9 +1032,9 @@ describe('applicationValidationRunToCaseManagement', () => {
       ],
       landGrantsApiVersion: 'unknown',
       applicationLevelResults: {}
-    }
+    };
 
-    const result = applicationValidationRunToCaseManagement(input)
+    const result = applicationValidationRunToCaseManagement(input);
 
     expect(result).toEqual([
       {
@@ -1540,6 +1540,6 @@ describe('applicationValidationRunToCaseManagement', () => {
           }
         ]
       }
-    ])
-  })
-})
+    ]);
+  });
+});

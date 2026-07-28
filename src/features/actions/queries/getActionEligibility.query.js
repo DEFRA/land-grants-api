@@ -1,4 +1,4 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * Get enabled action eligibility
@@ -7,9 +7,9 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * @returns {Promise<ActionEligibility[]>} The action eligibilty
  */
 export async function getActionEligibility(logger, db) {
-  let client
+  let client;
   try {
-    client = await db.connect()
+    client = await db.connect();
 
     const query = `
           SELECT
@@ -21,19 +21,19 @@ export async function getActionEligibility(logger, db) {
             ingest_id,
             last_updated
           FROM actions
-        `
-    const result = await client.query(query)
+        `;
+    const result = await client.query(query);
 
-    return result.rows
+    return result.rows;
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get actions eligibility',
       error
-    })
-    return []
+    });
+    return [];
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }

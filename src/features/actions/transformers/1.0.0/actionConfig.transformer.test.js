@@ -1,4 +1,4 @@
-import { actionConfigTransformer } from './actionConfig.transformer.js'
+import { actionConfigTransformer } from './actionConfig.transformer.js';
 
 describe('actionConfigTransformer', () => {
   test('should transform action config correctly', () => {
@@ -15,9 +15,9 @@ describe('actionConfigTransformer', () => {
       payment: { rate: 100 },
       rules: { minArea: 5 },
       semantic_version: '2.0.0'
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
     expect(result).toEqual({
       code: 'CMOR1',
@@ -32,8 +32,8 @@ describe('actionConfigTransformer', () => {
       payment: { rate: 100 },
       rules: { minArea: 5 },
       semanticVersion: '2.0.0'
-    })
-  })
+    });
+  });
 
   test('should convert duration_years to number', () => {
     const action = {
@@ -43,13 +43,13 @@ describe('actionConfigTransformer', () => {
       land_cover_class_codes: ['LC001'],
       start_date: '2024-01-01',
       last_updated: new Date('2024-01-01T00:00:00Z')
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.durationYears).toBe(5)
-    expect(typeof result.durationYears).toBe('number')
-  })
+    expect(result.durationYears).toBe(5);
+    expect(typeof result.durationYears).toBe('number');
+  });
 
   test('should handle null duration_years', () => {
     const action = {
@@ -59,12 +59,12 @@ describe('actionConfigTransformer', () => {
       land_cover_class_codes: ['LC001'],
       start_date: '2024-01-01',
       last_updated: new Date('2024-01-01T00:00:00Z')
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.durationYears).toBe(0)
-  })
+    expect(result.durationYears).toBe(0);
+  });
 
   test('should handle null land_cover_class_codes', () => {
     const action = {
@@ -74,12 +74,12 @@ describe('actionConfigTransformer', () => {
       land_cover_class_codes: null,
       start_date: '2024-01-01',
       last_updated: new Date('2024-01-01T00:00:00Z')
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.landCoverClassCodes).toBeNull()
-  })
+    expect(result.landCoverClassCodes).toBeNull();
+  });
 
   test('should not include original snake_case fields in result', () => {
     const action = {
@@ -89,16 +89,16 @@ describe('actionConfigTransformer', () => {
       land_cover_class_codes: ['LC001'],
       start_date: '2024-01-01',
       last_updated: new Date('2024-01-01T00:00:00Z')
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.duration_years).toBeUndefined()
-    expect(result.application_unit_of_measurement).toBeUndefined()
-    expect(result.land_cover_class_codes).toBeUndefined()
-    expect(result.start_date).toBeUndefined()
-    expect(result.last_updated).toBeUndefined()
-  })
+    expect(result.duration_years).toBeUndefined();
+    expect(result.application_unit_of_measurement).toBeUndefined();
+    expect(result.land_cover_class_codes).toBeUndefined();
+    expect(result.start_date).toBeUndefined();
+    expect(result.last_updated).toBeUndefined();
+  });
 
   test('should preserve other fields in action object', () => {
     const action = {
@@ -114,16 +114,16 @@ describe('actionConfigTransformer', () => {
       payment: { rate: 200, type: 'annual' },
       rules: { minArea: 10, maxArea: 100 },
       customField: 'custom value'
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.code).toBe('UPL1')
-    expect(result.name).toBe('Action Name')
-    expect(result.enabled).toBe(true)
-    expect(result.version).toBe(2)
-    expect(result.payment).toEqual({ rate: 200, type: 'annual' })
-    expect(result.rules).toEqual({ minArea: 10, maxArea: 100 })
-    expect(result.customField).toBe('custom value')
-  })
-})
+    expect(result.code).toBe('UPL1');
+    expect(result.name).toBe('Action Name');
+    expect(result.enabled).toBe(true);
+    expect(result.version).toBe(2);
+    expect(result.payment).toEqual({ rate: 200, type: 'annual' });
+    expect(result.rules).toEqual({ minArea: 10, maxArea: 100 });
+    expect(result.customField).toBe('custom value');
+  });
+});

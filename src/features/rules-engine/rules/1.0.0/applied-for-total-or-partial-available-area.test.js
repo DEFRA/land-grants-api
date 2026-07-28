@@ -1,5 +1,5 @@
-import { appliedForTotalOrPartialAvailableArea } from './applied-for-total-or-partial-available-area.js'
-import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import { appliedForTotalOrPartialAvailableArea } from './applied-for-total-or-partial-available-area.js';
+import { haToSqm } from '~/src/features/common/helpers/measurement.js';
 
 describe('appliedForTotalOrPartialAvailableArea', () => {
   const createApplication = (areaAppliedFor, parcelArea) => ({
@@ -7,22 +7,22 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
     landParcel: {
       availableAreaSqm: haToSqm(Number.parseFloat(parcelArea))
     }
-  })
+  });
 
   const createRule = (
     name = 'applied-for-total-or-partial-available-area'
   ) => ({
     name,
     config: {}
-  })
+  });
 
   test('should pass when area applied for is greater than 0 and within available area', () => {
-    const application = createApplication('1', '10.5')
-    const rule = createRule()
+    const application = createApplication('1', '10.5');
+    const rule = createRule();
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
-    )
+    );
 
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
@@ -37,16 +37,16 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
           ]
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should pass when area applied for is between zero and available area', () => {
-    const application = createApplication(5.25, '10.5')
-    const rule = createRule()
+    const application = createApplication(5.25, '10.5');
+    const rule = createRule();
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
-    )
+    );
 
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
@@ -61,8 +61,8 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
           ]
         }
       ]
-    })
-  })
+    });
+  });
 
   test.each([
     ['0', '0 ha'],
@@ -71,12 +71,12 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
   ])(
     'should fail for invalid or out of range appliedFor (%s)',
     (appliedFor, expectedDisplay) => {
-      const application = createApplication(appliedFor, '10.5')
-      const rule = createRule()
+      const application = createApplication(appliedFor, '10.5');
+      const rule = createRule();
       const result = appliedForTotalOrPartialAvailableArea.execute(
         application,
         rule
-      )
+      );
 
       expect(result).toEqual({
         name: 'applied-for-total-or-partial-available-area',
@@ -91,17 +91,17 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
             ]
           }
         ]
-      })
+      });
     }
-  )
+  );
 
   test('should fail when area applied for is above available area', () => {
-    const application = createApplication('11.5', '10.5')
-    const rule = createRule()
+    const application = createApplication('11.5', '10.5');
+    const rule = createRule();
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
-    )
+    );
 
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
@@ -116,16 +116,16 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
           ]
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should pass when area applied for equals available area', () => {
-    const application = createApplication('10.5', '10.5')
-    const rule = createRule()
+    const application = createApplication('10.5', '10.5');
+    const rule = createRule();
     const result = appliedForTotalOrPartialAvailableArea.execute(
       application,
       rule
-    )
+    );
 
     expect(result).toEqual({
       name: 'applied-for-total-or-partial-available-area',
@@ -140,6 +140,6 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
           ]
         }
       ]
-    })
-  })
-})
+    });
+  });
+});

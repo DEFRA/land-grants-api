@@ -1,7 +1,7 @@
 import {
   PaymentCalculateSchema,
   PaymentCalculateResponseSchemaV2
-} from './payment-calculate.schema.js'
+} from './payment-calculate.schema.js';
 
 describe('PaymentCalculateSchema (request)', () => {
   const validRequest = {
@@ -12,12 +12,12 @@ describe('PaymentCalculateSchema (request)', () => {
         actions: [{ code: 'CSAM1', quantity: 10.5 }]
       }
     ]
-  }
+  };
 
   it('should accept a valid request', () => {
-    const { error } = PaymentCalculateSchema.validate(validRequest)
-    expect(error).toBeUndefined()
-  })
+    const { error } = PaymentCalculateSchema.validate(validRequest);
+    expect(error).toBeUndefined();
+  });
 
   it('should accept an action with an optional version string', () => {
     const data = {
@@ -28,10 +28,10 @@ describe('PaymentCalculateSchema (request)', () => {
           actions: [{ code: 'CSAM1', quantity: 10.5, version: '2.1.0' }]
         }
       ]
-    }
-    const { error } = PaymentCalculateSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
+    };
+    const { error } = PaymentCalculateSchema.validate(data);
+    expect(error).toBeUndefined();
+  });
 
   it('should accept actions where some have version and some do not', () => {
     const data = {
@@ -45,10 +45,10 @@ describe('PaymentCalculateSchema (request)', () => {
           ]
         }
       ]
-    }
-    const { error } = PaymentCalculateSchema.validate(data)
-    expect(error).toBeUndefined()
-  })
+    };
+    const { error } = PaymentCalculateSchema.validate(data);
+    expect(error).toBeUndefined();
+  });
 
   it('should reject a non-string action version', () => {
     const data = {
@@ -59,17 +59,17 @@ describe('PaymentCalculateSchema (request)', () => {
           actions: [{ code: 'CSAM1', quantity: 10.5, version: 123 }]
         }
       ]
-    }
-    const { error } = PaymentCalculateSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('version')
-  })
+    };
+    const { error } = PaymentCalculateSchema.validate(data);
+    expect(error).toBeDefined();
+    expect(error.details[0].message).toContain('version');
+  });
 
   it('should require parcel array', () => {
-    const { error } = PaymentCalculateSchema.validate({})
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('parcel')
-  })
+    const { error } = PaymentCalculateSchema.validate({});
+    expect(error).toBeDefined();
+    expect(error.details[0].message).toContain('parcel');
+  });
 
   it('should require action code', () => {
     const data = {
@@ -80,11 +80,11 @@ describe('PaymentCalculateSchema (request)', () => {
           actions: [{ quantity: 10.5 }]
         }
       ]
-    }
-    const { error } = PaymentCalculateSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('code')
-  })
+    };
+    const { error } = PaymentCalculateSchema.validate(data);
+    expect(error).toBeDefined();
+    expect(error.details[0].message).toContain('code');
+  });
 
   it('should require positive action quantity', () => {
     const data = {
@@ -95,12 +95,12 @@ describe('PaymentCalculateSchema (request)', () => {
           actions: [{ code: 'CSAM1', quantity: -1 }]
         }
       ]
-    }
-    const { error } = PaymentCalculateSchema.validate(data)
-    expect(error).toBeDefined()
-    expect(error.details[0].message).toContain('quantity')
-  })
-})
+    };
+    const { error } = PaymentCalculateSchema.validate(data);
+    expect(error).toBeDefined();
+    expect(error.details[0].message).toContain('quantity');
+  });
+});
 
 describe('Payment Calculate Schema Validation V2', () => {
   describe('PaymentCalculateResponseSchemaV2', () => {
@@ -155,11 +155,11 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(validResponse)
-      expect(result.error).toBeUndefined()
-    })
+      const result = PaymentCalculateResponseSchemaV2.validate(validResponse);
+      expect(result.error).toBeUndefined();
+    });
 
     it('should reject missing message', () => {
       const invalidResponse = {
@@ -177,22 +177,22 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
-      expect(result.error.message).toContain('"message" is required')
-    })
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
+      expect(result.error.message).toContain('"message" is required');
+    });
 
     it('should reject missing payment object', () => {
       const invalidResponse = {
         message: 'Payment calculated successfully'
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
-      expect(result.error.message).toContain('"payment" is required')
-    })
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
+      expect(result.error.message).toContain('"payment" is required');
+    });
 
     it('should reject missing payment.agreementStartDate', () => {
       const invalidResponse = {
@@ -210,14 +210,14 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
       expect(result.error.message).toContain(
         '"payment.agreementStartDate" is required'
-      )
-    })
+      );
+    });
 
     it('should reject missing payment.payments array', () => {
       const invalidResponse = {
@@ -229,12 +229,12 @@ describe('Payment Calculate Schema Validation V2', () => {
           agreementTotalPence: 300000,
           annualTotalPence: 100000
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
-      expect(result.error.message).toContain('"payment.payments" is required')
-    })
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
+      expect(result.error.message).toContain('"payment.payments" is required');
+    });
 
     it('should reject invalid frequency', () => {
       const invalidResponse = {
@@ -253,14 +253,14 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
       expect(result.error.message).toContain(
         '"payment.frequency" must be one of [Monthly, Quarterly, Annually]'
-      )
-    })
+      );
+    });
 
     it('should reject invalid date format', () => {
       const invalidResponse = {
@@ -279,14 +279,14 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
       expect(result.error.message).toContain(
         '"payment.agreementStartDate" must be in iso format'
-      )
-    })
+      );
+    });
 
     it('should reject negative payment total', () => {
       const invalidResponse = {
@@ -305,13 +305,13 @@ describe('Payment Calculate Schema Validation V2', () => {
             }
           ]
         }
-      }
+      };
 
-      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse)
-      expect(result.error).toBeDefined()
+      const result = PaymentCalculateResponseSchemaV2.validate(invalidResponse);
+      expect(result.error).toBeDefined();
       expect(result.error.message).toContain(
         '"payment.payments[0].totalPaymentPence" must be greater than or equal to 0'
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});

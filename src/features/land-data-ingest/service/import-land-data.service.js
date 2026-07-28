@@ -1,10 +1,10 @@
-import { performance } from 'node:perf_hooks'
-import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js'
+import { performance } from 'node:perf_hooks';
+import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js';
 import {
   logInfo,
   logBusinessError
-} from '../../common/helpers/logging/log-helpers.js'
-import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
+} from '../../common/helpers/logging/log-helpers.js';
+import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js';
 import {
   copyDataToTempTable,
   createTempTable,
@@ -16,8 +16,8 @@ import {
   completeAndPromotePaired,
   failPairedAwaitingIngest,
   logDuplicateRows
-} from './data-helpers.js'
-import { metricsCounter } from '../../common/helpers/metrics.js'
+} from './data-helpers.js';
+import { metricsCounter } from '../../common/helpers/metrics.js';
 import {
   cancelPendingFiles,
   setFileCompleted,
@@ -26,21 +26,21 @@ import {
   setIngestCompleted,
   setIngestFailed,
   getFileExpectedRowCount
-} from './start-ingest.service.js'
+} from './start-ingest.service.js';
 
-const logCategory = 'land-data-ingest'
+const logCategory = 'land-data-ingest';
 
 const DEDUPE_COLUMNS_BY_ENTITY = {
   land_parcels: ['SHEET_ID', 'PARCEL_ID']
-}
+};
 
 function hasDBOptions(options, logger) {
   logInfo(logger, {
     category: logCategory,
     operation: 'hasDBOptions',
     message: 'Checking database options'
-  })
-  return options.user && options.database && options.host
+  });
+  return options.user && options.database && options.host;
 }
 
 /**
@@ -49,16 +49,16 @@ function hasDBOptions(options, logger) {
  * @returns {Promise<import('pg').PoolClient>} The connected client
  */
 async function connectToDb(logger) {
-  const dbOptions = getDBOptions()
+  const dbOptions = getDBOptions();
   if (!hasDBOptions(dbOptions, logger)) {
-    throw new Error('Database options are not set')
+    throw new Error('Database options are not set');
   }
   const client = createDBClient(dbOptions, {
     secureContext: createSecureContext(logger),
     logger
-  })
-  await client.connect()
-  return client
+  });
+  await client.connect();
+  return client;
 }
 
 /**
@@ -68,9 +68,9 @@ async function connectToDb(logger) {
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  */
 async function dedupeIfNeeded(dbClient, entityName, logger) {
-  const dedupeColumns = DEDUPE_COLUMNS_BY_ENTITY[entityName]
+  const dedupeColumns = DEDUPE_COLUMNS_BY_ENTITY[entityName];
   if (dedupeColumns) {
-    await logDuplicateRows(dbClient, entityName, dedupeColumns, logger)
+    await logDuplicateRows(dbClient, entityName, dedupeColumns, logger);
   }
 }
 
@@ -86,18 +86,18 @@ function assertExpectedCount({
   logger
 }) {
   if (!isOverCount) {
-    return
+    return;
   }
 
   const error = new Error(
     `Ingest row count does not match expected total for ${entityName}`
-  )
+  );
   logBusinessError(logger, {
     operation: `${entityName}_import_over_count`,
     error,
     context: { entityName, ingestId, totalCount }
-  })
-  throw error
+  });
+  throw error;
 }
 
 /**
@@ -115,23 +115,23 @@ async function assertFileRowCount(
   dbClient,
   logger
 ) {
-  const actualCount = await getTableRowCount(dbClient, `${entityName}_tmp`)
+  const actualCount = await getTableRowCount(dbClient, `${entityName}_tmp`);
   const expectedCount = await getFileExpectedRowCount(
     ingestId,
     filename,
     dbClient
-  )
+  );
 
   if (actualCount !== expectedCount) {
     const error = new Error(
       `File row count mismatch for ${filename}: expected ${expectedCount}, got ${actualCount}`
-    )
+    );
     logBusinessError(logger, {
       operation: `${entityName}_file_row_count_mismatch`,
       error,
       context: { entityName, filename, ingestId, expectedCount, actualCount }
-    })
-    throw error
+    });
+    throw error;
   }
 }
 
@@ -151,12 +151,12 @@ async function finalizeIfComplete({
   logger
 }) {
   if (!isComplete) {
-    return false
+    return false;
   }
 
-  const { name: entityName, pairedWith } = entityType
+  const { name: entityName, pairedWith } = entityType;
 
-  let promoted
+  let promoted;
   if (pairedWith) {
     promoted = await completeAndPromotePaired(
       entityName,
@@ -164,15 +164,15 @@ async function finalizeIfComplete({
       ingestId,
       dbClient,
       logger
-    )
+    );
   } else {
-    await promoteStagingTable(entityName, dbClient, logger)
-    await setIngestCompleted(ingestId, dbClient)
-    promoted = true
+    await promoteStagingTable(entityName, dbClient, logger);
+    await setIngestCompleted(ingestId, dbClient);
+    promoted = true;
   }
 
   if (!promoted) {
-    return false
+    return false;
   }
 
   logInfo(logger, {
@@ -180,10 +180,10 @@ async function finalizeIfComplete({
     operation: `${entityName}_import_completed`,
     message: `${entityName} imported successfully`,
     context: { totalCount }
-  })
-  await metricsCounter(`${entityName}_data_ingest_completed`, totalCount)
+  });
+  await metricsCounter(`${entityName}_data_ingest_completed`, totalCount);
 
-  return true
+  return true;
 }
 
 /**
@@ -210,11 +210,11 @@ export async function importData(
       ingestId,
       filename,
       logger
-    )
+    );
   }
 
-  await importDataAsIs(dataStream, entityType, ingestId, logger)
-  return true
+  await importDataAsIs(dataStream, entityType, ingestId, logger);
+  return true;
 }
 
 /**
@@ -225,52 +225,52 @@ export async function importData(
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  */
 async function importDataAsIs(dataStream, entityType, ingestId, logger) {
-  const startTime = performance.now()
+  const startTime = performance.now();
 
-  const { name: entityName, truncateTable } = entityType
+  const { name: entityName, truncateTable } = entityType;
   logInfo(logger, {
     category: logCategory,
     operation: `${entityName}_import_started`,
     message: `${entityName} import started`,
     context: { ingestId, truncateTable }
-  })
+  });
 
-  const client = await connectToDb(logger)
+  const client = await connectToDb(logger);
 
   try {
-    await createTempTable(client, entityName)
-    await copyDataToTempTable(client, entityName, dataStream)
+    await createTempTable(client, entityName);
+    await copyDataToTempTable(client, entityName, dataStream);
 
-    let result
+    let result;
     if (truncateTable) {
-      result = await truncateTableAndInsertData(client, entityName, ingestId)
+      result = await truncateTableAndInsertData(client, entityName, ingestId);
     } else {
-      result = await insertData(client, entityName, ingestId)
+      result = await insertData(client, entityName, ingestId);
     }
 
-    const endTime = performance.now()
-    const duration = endTime - startTime
+    const endTime = performance.now();
+    const duration = endTime - startTime;
     logInfo(logger, {
       category: logCategory,
       operation: `${entityName}_file_import_completed`,
       message: `${entityName} file imported successfully in ${duration}ms`,
       context: { rowCount: result?.rowCount, duration }
-    })
+    });
     await metricsCounter(
       `${entityName}_file_ingest_completed`,
       result?.rowCount
-    )
+    );
   } catch (error) {
     logBusinessError(logger, {
       operation: `${entityName}_import_failed`,
       error,
       context: { entityName }
-    })
-    await metricsCounter(`${entityName}_data_ingest_failed`, 1)
-    throw error
+    });
+    await metricsCounter(`${entityName}_data_ingest_failed`, 1);
+    throw error;
   } finally {
-    await client?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`)
-    await client?.end()
+    await client?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`);
+    await client?.end();
   }
 }
 
@@ -293,29 +293,35 @@ async function processValidatedFile(
   dbClient,
   logger
 ) {
-  const startTime = performance.now()
-  const { name: entityName } = entityType
+  const startTime = performance.now();
+  const { name: entityName } = entityType;
 
   // @ts-expect-error filename
-  await setFileInProgress(filename, ingestId, dbClient)
-  await createTempTable(dbClient, entityName)
-  await copyDataToTempTable(dbClient, entityName, dataStream)
-  await dedupeIfNeeded(dbClient, entityName, logger)
+  await setFileInProgress(filename, ingestId, dbClient);
+  await createTempTable(dbClient, entityName);
+  await copyDataToTempTable(dbClient, entityName, dataStream);
+  await dedupeIfNeeded(dbClient, entityName, logger);
 
   // @ts-expect-error filename
-  await assertFileRowCount(filename, ingestId, entityName, dbClient, logger)
+  await assertFileRowCount(filename, ingestId, entityName, dbClient, logger);
 
-  const { rowCount } = await insertData(dbClient, entityName, ingestId)
+  const { rowCount } = await insertData(dbClient, entityName, ingestId);
   // @ts-expect-error filename
-  await setFileCompleted(filename, ingestId, dbClient)
+  await setFileCompleted(filename, ingestId, dbClient);
 
   const { isComplete, isOverCount, totalCount } = await isIngestComplete(
     entityName,
     ingestId,
     dbClient
-  )
+  );
 
-  assertExpectedCount({ isOverCount, entityName, ingestId, totalCount, logger })
+  assertExpectedCount({
+    isOverCount,
+    entityName,
+    ingestId,
+    totalCount,
+    logger
+  });
   const promoted = await finalizeIfComplete({
     isComplete,
     entityType,
@@ -323,18 +329,18 @@ async function processValidatedFile(
     dbClient,
     totalCount,
     logger
-  })
+  });
 
-  const duration = performance.now() - startTime
+  const duration = performance.now() - startTime;
   logInfo(logger, {
     category: logCategory,
     operation: `${entityName}_file_import_completed`,
     message: `${entityName} file imported successfully in ${duration}ms`,
     context: { rowCount, duration }
-  })
-  await metricsCounter(`${entityName}_file_ingest_completed`, rowCount)
+  });
+  await metricsCounter(`${entityName}_file_ingest_completed`, rowCount);
 
-  return promoted
+  return promoted;
 }
 
 /**
@@ -355,21 +361,21 @@ async function handleImportFailure(
   dbClient,
   logger
 ) {
-  const { name: entityName, pairedWith } = entityType
+  const { name: entityName, pairedWith } = entityType;
 
   logBusinessError(logger, {
     operation: `${entityName}_import_failed`,
     error,
     context: { entityName, filename }
-  })
+  });
   // @ts-expect-error filename
-  await setFileFailed(filename, ingestId, dbClient)
-  await setIngestFailed(ingestId, dbClient)
-  await cancelPendingFiles(ingestId, dbClient)
+  await setFileFailed(filename, ingestId, dbClient);
+  await setIngestFailed(ingestId, dbClient);
+  await cancelPendingFiles(ingestId, dbClient);
   if (pairedWith) {
-    await failPairedAwaitingIngest(entityName, pairedWith, dbClient, logger)
+    await failPairedAwaitingIngest(entityName, pairedWith, dbClient, logger);
   }
-  await metricsCounter(`${entityName}_data_ingest_failed`, 1)
+  await metricsCounter(`${entityName}_data_ingest_failed`, 1);
 }
 
 /**
@@ -388,15 +394,15 @@ async function importDataValidate(
   filename,
   logger
 ) {
-  const { name: entityName, truncateTable } = entityType
+  const { name: entityName, truncateTable } = entityType;
   logInfo(logger, {
     category: logCategory,
     operation: `${entityName}_import_started`,
     message: `${entityName} import started`,
     context: { ingestId, truncateTable, filename }
-  })
+  });
 
-  const dbClient = await connectToDb(logger)
+  const dbClient = await connectToDb(logger);
 
   try {
     return await processValidatedFile(
@@ -406,7 +412,7 @@ async function importDataValidate(
       filename,
       dbClient,
       logger
-    )
+    );
   } catch (error) {
     await handleImportFailure(
       error,
@@ -415,11 +421,11 @@ async function importDataValidate(
       filename,
       dbClient,
       logger
-    )
-    throw error
+    );
+    throw error;
   } finally {
-    await dbClient?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`)
-    await dbClient?.end()
+    await dbClient?.query(`DROP TABLE IF EXISTS ${entityName}_tmp`);
+    await dbClient?.end();
   }
 }
 

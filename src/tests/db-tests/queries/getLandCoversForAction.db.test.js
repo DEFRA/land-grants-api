@@ -1,38 +1,38 @@
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 import {
   getLandCoversForAction,
   getLandCoversForActions
-} from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+} from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
 
 describe('Get Land Covers For Action Query', () => {
-  let logger, connection
+  let logger, connection;
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn(),
       warn: vi.fn()
-    }
-    connection = connectToTestDatabase()
-  })
+    };
+    connection = connectToTestDatabase();
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   test('should return empty object for missing action code', async () => {
     const landCovers = await getLandCoversForAction(
       'MISSING',
       connection,
       logger
-    )
-    expect(landCovers).toEqual([])
-  })
+    );
+    expect(landCovers).toEqual([]);
+  });
 
   test('should return all land cover codes for GRH8', async () => {
-    const landCovers = await getLandCoversForAction('GRH8', connection, logger)
-    expect(landCovers).toHaveLength(47)
+    const landCovers = await getLandCoversForAction('GRH8', connection, logger);
+    expect(landCovers).toHaveLength(47);
     expect(landCovers).toEqual(
       expect.arrayContaining([
         { landCoverCode: '111', landCoverClassCode: '110' },
@@ -41,12 +41,12 @@ describe('Get Land Covers For Action Query', () => {
         { landCoverCode: '118', landCoverClassCode: '110' },
         { landCoverCode: '131', landCoverClassCode: '130' }
       ])
-    )
-  })
+    );
+  });
 
   test('should return empty object for empty action codes array', async () => {
-    const landCovers = await getLandCoversForActions([], connection, logger)
-    expect(landCovers).toEqual({})
+    const landCovers = await getLandCoversForActions([], connection, logger);
+    expect(landCovers).toEqual({});
 
     expect(logger.warn).toHaveBeenCalledWith(
       {
@@ -58,12 +58,12 @@ describe('Get Land Covers For Action Query', () => {
         }
       },
       'Validation failed: Fetch land covers for actions'
-    )
-  })
+    );
+  });
 
   test('should return empty object for non-array input', async () => {
-    const landCovers = await getLandCoversForActions(null, connection, logger)
-    expect(landCovers).toEqual({})
+    const landCovers = await getLandCoversForActions(null, connection, logger);
+    expect(landCovers).toEqual({});
     expect(logger.warn).toHaveBeenCalledWith(
       {
         event: {
@@ -74,26 +74,26 @@ describe('Get Land Covers For Action Query', () => {
         }
       },
       'Validation failed: Fetch land covers for actions'
-    )
-  })
+    );
+  });
 
   test('should return empty object when we have missing action codes', async () => {
     const landCovers = await getLandCoversForActions(
       ['MISSING1', 'MISSING2'],
       connection,
       logger
-    )
-    expect(landCovers).toEqual({})
-  })
+    );
+    expect(landCovers).toEqual({});
+  });
 
   test('should return land cover codes for single action code in array', async () => {
     const landCovers = await getLandCoversForActions(
       ['GRH8'],
       connection,
       logger
-    )
-    expect(landCovers).toHaveProperty('GRH8')
-    expect(landCovers.GRH8).toHaveLength(47)
+    );
+    expect(landCovers).toHaveProperty('GRH8');
+    expect(landCovers.GRH8).toHaveLength(47);
     expect(landCovers.GRH8).toEqual(
       expect.arrayContaining([
         { landCoverCode: '111', landCoverClassCode: '110' },
@@ -102,30 +102,30 @@ describe('Get Land Covers For Action Query', () => {
         { landCoverCode: '118', landCoverClassCode: '110' },
         { landCoverCode: '131', landCoverClassCode: '130' }
       ])
-    )
-  })
+    );
+  });
 
   test('should return land cover codes for multiple action codes', async () => {
     const landCovers = await getLandCoversForActions(
       ['GRH8', 'CMOR1'],
       connection,
       logger
-    )
-    expect(landCovers).toHaveProperty('GRH8')
-    expect(landCovers).toHaveProperty('CMOR1')
-    expect(Array.isArray(landCovers.GRH8)).toBe(true)
-    expect(Array.isArray(landCovers.CMOR1)).toBe(true)
-  })
+    );
+    expect(landCovers).toHaveProperty('GRH8');
+    expect(landCovers).toHaveProperty('CMOR1');
+    expect(Array.isArray(landCovers.GRH8)).toBe(true);
+    expect(Array.isArray(landCovers.CMOR1)).toBe(true);
+  });
 
   test('should return mixed results for valid and invalid action codes', async () => {
     const landCovers = await getLandCoversForActions(
       ['GRH8', 'MISSING'],
       connection,
       logger
-    )
-    expect(landCovers).toHaveProperty('GRH8')
-    expect(landCovers).toHaveProperty('MISSING')
-    expect(landCovers.GRH8).toHaveLength(47)
+    );
+    expect(landCovers).toHaveProperty('GRH8');
+    expect(landCovers).toHaveProperty('MISSING');
+    expect(landCovers.GRH8).toHaveLength(47);
     expect(landCovers.GRH8).toEqual(
       expect.arrayContaining([
         { landCoverCode: '111', landCoverClassCode: '110' },
@@ -134,7 +134,7 @@ describe('Get Land Covers For Action Query', () => {
         { landCoverCode: '118', landCoverClassCode: '110' },
         { landCoverCode: '131', landCoverClassCode: '130' }
       ])
-    )
-    expect(landCovers.MISSING).toEqual([])
-  })
-})
+    );
+    expect(landCovers.MISSING).toEqual([]);
+  });
+});
