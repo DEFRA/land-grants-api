@@ -165,7 +165,7 @@ export const auditEvent = async (
         Message: auditPayload
       })
     )
-    logger.info(`Audit event successfully published: ${event}`)
+    logger.info(`Audit event successfully published: ${event} ${auditPayload}`)
   } catch (error) {
     logger.warn(
       error,
