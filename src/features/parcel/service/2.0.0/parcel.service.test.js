@@ -2,66 +2,66 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired,
   splitParcelId
-} from './parcel.service.js'
+} from './parcel.service.js';
 import {
   heferRequiredActionTransformer,
   sssiConsentRequiredActionTransformer
-} from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+} from '~/src/features/parcel/transformers/parcelActions.transformer.js';
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
-} from '~/src/features/data-layers/queries/getDataLayer.query.js'
-import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
-import { vi } from 'vitest'
+} from '~/src/features/data-layers/queries/getDataLayer.query.js';
+import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js';
+import { vi } from 'vitest';
 
-vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
-vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
-vi.mock('~/src/features/rules-engine/rulesEngine.js')
+vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js');
+vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js');
+vi.mock('~/src/features/rules-engine/rulesEngine.js');
 
 describe('Parcel Service 2.0.0', () => {
   const mockLogger = {
     error: vi.fn(),
     info: vi.fn()
-  }
+  };
 
   describe('splitParcelId', () => {
     test('should split valid parcel id into sheetId and parcelId', () => {
-      const result = splitParcelId('SX0679-9238', mockLogger)
+      const result = splitParcelId('SX0679-9238', mockLogger);
       expect(result).toEqual({
         sheetId: 'SX0679',
         parcelId: '9238'
-      })
-    })
+      });
+    });
 
     test('should throw error for invalid input', () => {
       expect(() => splitParcelId('SX0679-', mockLogger)).toThrow(
         'Unable to split parcel id'
-      )
-    })
+      );
+    });
 
     test('should throw error for empty input', () => {
       expect(() => splitParcelId(null, mockLogger)).toThrow(
         'Unable to split parcel id'
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe('getActionsForParcelWithSSSIConsentRequired', () => {
-    let mockParcelIds
-    let mockResponseParcels
-    let mockEnabledActions
-    let mockPostgresDb
-    let mockDataLayerResult
-    let mockSssiConsentRequiredAction
-    let mockTransformedParcels
+    let mockParcelIds;
+    let mockResponseParcels;
+    let mockEnabledActions;
+    let mockPostgresDb;
+    let mockDataLayerResult;
+    let mockSssiConsentRequiredAction;
+    let mockTransformedParcels;
 
     beforeEach(() => {
       // Reset all mocks
-      vi.clearAllMocks()
+      vi.clearAllMocks();
 
       // Setup test data
-      mockParcelIds = ['SX0679-9238']
+      mockParcelIds = ['SX0679-9238'];
 
       mockResponseParcels = [
         {
@@ -81,7 +81,7 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
       mockEnabledActions = [
         {
@@ -118,14 +118,14 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
-      mockPostgresDb = {}
+      mockPostgresDb = {};
 
       mockDataLayerResult = {
         intersectingAreaPercentage: 25.5,
         intersectionAreaHa: 0.25
-      }
+      };
 
       mockSssiConsentRequiredAction = {
         UPL1: {
@@ -147,7 +147,7 @@ describe('Parcel Service 2.0.0', () => {
           reason: 'No SSSI consent is required',
           caveat: null
         }
-      }
+      };
 
       mockTransformedParcels = [
         {
@@ -169,17 +169,17 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
       // Setup mock implementations
-      getDataLayerQueryAccumulated.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryAccumulated.mockResolvedValue(mockDataLayerResult);
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockSssiConsentRequiredAction
-      )
+      );
       sssiConsentRequiredActionTransformer.mockReturnValue(
         mockTransformedParcels
-      )
-    })
+      );
+    });
 
     test('should transform response parcels with SSSI consent required flags', async () => {
       const result = await getActionsForParcelWithSSSIConsentRequired(
@@ -188,7 +188,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActions,
         mockLogger,
         mockPostgresDb
-      )
+      );
 
       expect(getDataLayerQueryAccumulated).toHaveBeenCalledWith(
         'SX0679',
@@ -196,26 +196,26 @@ describe('Parcel Service 2.0.0', () => {
         DATA_LAYER_TYPES.sssi,
         mockPostgresDb,
         mockLogger
-      )
-      expect(executeSingleRuleForEnabledActions).toHaveBeenCalled()
-      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
-      expect(callArgs[0]).toEqual(mockEnabledActions)
+      );
+      expect(executeSingleRuleForEnabledActions).toHaveBeenCalled();
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0];
+      expect(callArgs[0]).toEqual(mockEnabledActions);
       expect(
         callArgs[1].landParcel.intersections.sssi.intersectingAreaPercentage
-      ).toBe(25.5)
-      expect(callArgs[2]).toBe('sssi-consent-required')
+      ).toBe(25.5);
+      expect(callArgs[2]).toBe('sssi-consent-required');
       expect(sssiConsentRequiredActionTransformer).toHaveBeenCalledWith(
         mockResponseParcels,
         mockSssiConsentRequiredAction
-      )
-      expect(result).toEqual(mockTransformedParcels)
-    })
+      );
+      expect(result).toEqual(mockTransformedParcels);
+    });
 
     test('should handle zero intersecting area percentage', async () => {
       getDataLayerQueryAccumulated.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
-      })
+      });
 
       await getActionsForParcelWithSSSIConsentRequired(
         mockParcelIds,
@@ -223,17 +223,17 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActions,
         mockLogger,
         mockPostgresDb
-      )
+      );
 
-      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0];
       expect(
         callArgs[1].landParcel.intersections.sssi.intersectingAreaPercentage
-      ).toBe(0)
-    })
+      ).toBe(0);
+    });
 
     test('should handle empty enabled actions array', async () => {
-      executeSingleRuleForEnabledActions.mockReturnValue({})
-      sssiConsentRequiredActionTransformer.mockReturnValue(mockResponseParcels)
+      executeSingleRuleForEnabledActions.mockReturnValue({});
+      sssiConsentRequiredActionTransformer.mockReturnValue(mockResponseParcels);
 
       const result = await getActionsForParcelWithSSSIConsentRequired(
         mockParcelIds,
@@ -241,18 +241,18 @@ describe('Parcel Service 2.0.0', () => {
         [],
         mockLogger,
         mockPostgresDb
-      )
+      );
 
       expect(sssiConsentRequiredActionTransformer).toHaveBeenCalledWith(
         mockResponseParcels,
         {}
-      )
-      expect(result).toEqual(mockResponseParcels)
-    })
+      );
+      expect(result).toEqual(mockResponseParcels);
+    });
 
     test('should propagate error from getDataLayerQueryAccumulated', async () => {
-      const dbError = new Error('Database connection failed')
-      getDataLayerQueryAccumulated.mockRejectedValue(dbError)
+      const dbError = new Error('Database connection failed');
+      getDataLayerQueryAccumulated.mockRejectedValue(dbError);
 
       await expect(
         getActionsForParcelWithSSSIConsentRequired(
@@ -262,23 +262,23 @@ describe('Parcel Service 2.0.0', () => {
           mockLogger,
           mockPostgresDb
         )
-      ).rejects.toThrow('Database connection failed')
-    })
-  })
+      ).rejects.toThrow('Database connection failed');
+    });
+  });
 
   describe('getActionsForParcelWithHEFERConsentRequired', () => {
-    let mockParcelIds
-    let mockResponseParcels
-    let mockEnabledActions
-    let mockPostgresDb
-    let mockDataLayerResult
-    let mockHeferConsentRequiredAction
-    let mockTransformedParcels
+    let mockParcelIds;
+    let mockResponseParcels;
+    let mockEnabledActions;
+    let mockPostgresDb;
+    let mockDataLayerResult;
+    let mockHeferConsentRequiredAction;
+    let mockTransformedParcels;
 
     beforeEach(() => {
-      vi.clearAllMocks()
+      vi.clearAllMocks();
 
-      mockParcelIds = ['SX0679-9238']
+      mockParcelIds = ['SX0679-9238'];
 
       mockResponseParcels = [
         {
@@ -298,7 +298,7 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
       mockEnabledActions = [
         {
@@ -335,14 +335,14 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
-      mockPostgresDb = {}
+      mockPostgresDb = {};
 
       mockDataLayerResult = {
         intersectingAreaPercentage: 15.2,
         intersectionAreaHa: 0.15
-      }
+      };
 
       mockHeferConsentRequiredAction = {
         UPL1: {
@@ -364,7 +364,7 @@ describe('Parcel Service 2.0.0', () => {
           reason: 'No hefer is needed from Historic England',
           caveat: null
         }
-      }
+      };
 
       mockTransformedParcels = [
         {
@@ -386,14 +386,14 @@ describe('Parcel Service 2.0.0', () => {
             }
           ]
         }
-      ]
+      ];
 
-      getDataLayerQueryUnion.mockResolvedValue(mockDataLayerResult)
+      getDataLayerQueryUnion.mockResolvedValue(mockDataLayerResult);
       executeSingleRuleForEnabledActions.mockReturnValue(
         mockHeferConsentRequiredAction
-      )
-      heferRequiredActionTransformer.mockReturnValue(mockTransformedParcels)
-    })
+      );
+      heferRequiredActionTransformer.mockReturnValue(mockTransformedParcels);
+    });
 
     test('should transform response parcels with HEFER consent required flags', async () => {
       const result = await getActionsForParcelWithHEFERConsentRequired(
@@ -402,7 +402,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActions,
         mockLogger,
         mockPostgresDb
-      )
+      );
 
       expect(getDataLayerQueryUnion).toHaveBeenCalledWith(
         'SX0679',
@@ -410,27 +410,27 @@ describe('Parcel Service 2.0.0', () => {
         DATA_LAYER_TYPES.historic_features,
         mockPostgresDb,
         mockLogger
-      )
-      expect(executeSingleRuleForEnabledActions).toHaveBeenCalled()
-      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
-      expect(callArgs[0]).toEqual(mockEnabledActions)
+      );
+      expect(executeSingleRuleForEnabledActions).toHaveBeenCalled();
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0];
+      expect(callArgs[0]).toEqual(mockEnabledActions);
       expect(
         callArgs[1].landParcel.intersections.historic_features
           .intersectingAreaPercentage
-      ).toBe(15.2)
-      expect(callArgs[2]).toBe('hefer-consent-required')
+      ).toBe(15.2);
+      expect(callArgs[2]).toBe('hefer-consent-required');
       expect(heferRequiredActionTransformer).toHaveBeenCalledWith(
         mockResponseParcels,
         mockHeferConsentRequiredAction
-      )
-      expect(result).toEqual(mockTransformedParcels)
-    })
+      );
+      expect(result).toEqual(mockTransformedParcels);
+    });
 
     test('should handle zero intersecting area percentage', async () => {
       getDataLayerQueryUnion.mockResolvedValue({
         intersectingAreaPercentage: 0,
         intersectionAreaHa: 0
-      })
+      });
 
       await getActionsForParcelWithHEFERConsentRequired(
         mockParcelIds,
@@ -438,18 +438,18 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActions,
         mockLogger,
         mockPostgresDb
-      )
+      );
 
-      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0]
+      const callArgs = executeSingleRuleForEnabledActions.mock.calls[0];
       expect(
         callArgs[1].landParcel.intersections.historic_features
           .intersectingAreaPercentage
-      ).toBe(0)
-    })
+      ).toBe(0);
+    });
 
     test('should handle empty enabled actions array', async () => {
-      executeSingleRuleForEnabledActions.mockReturnValue({})
-      heferRequiredActionTransformer.mockReturnValue(mockResponseParcels)
+      executeSingleRuleForEnabledActions.mockReturnValue({});
+      heferRequiredActionTransformer.mockReturnValue(mockResponseParcels);
 
       const result = await getActionsForParcelWithHEFERConsentRequired(
         mockParcelIds,
@@ -457,18 +457,18 @@ describe('Parcel Service 2.0.0', () => {
         [],
         mockLogger,
         mockPostgresDb
-      )
+      );
 
       expect(heferRequiredActionTransformer).toHaveBeenCalledWith(
         mockResponseParcels,
         {}
-      )
-      expect(result).toEqual(mockResponseParcels)
-    })
+      );
+      expect(result).toEqual(mockResponseParcels);
+    });
 
     test('should propagate error from getDataLayerQueryUnion', async () => {
-      const dbError = new Error('Database connection failed')
-      getDataLayerQueryUnion.mockRejectedValue(dbError)
+      const dbError = new Error('Database connection failed');
+      getDataLayerQueryUnion.mockRejectedValue(dbError);
 
       await expect(
         getActionsForParcelWithHEFERConsentRequired(
@@ -478,7 +478,7 @@ describe('Parcel Service 2.0.0', () => {
           mockLogger,
           mockPostgresDb
         )
-      ).rejects.toThrow('Database connection failed')
-    })
-  })
-})
+      ).rejects.toThrow('Database connection failed');
+    });
+  });
+});

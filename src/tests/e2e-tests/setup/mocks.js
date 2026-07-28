@@ -1,4 +1,4 @@
-import { config } from '~/src/config/index.js'
+import { config } from '~/src/config/index.js';
 
 const mocks = new Map([
   [
@@ -8,16 +8,16 @@ const mocks = new Map([
       json: () => Promise.resolve({ uploadUrl: '/upload/e2e-test' })
     }
   ]
-])
+]);
 
 export const mockApiCalls = () => {
-  const originalFetch = globalThis.fetch
+  const originalFetch = globalThis.fetch;
 
   globalThis.fetch = function (url, options) {
-    const mock = mocks.get(url)
+    const mock = mocks.get(url);
     if (mock) {
-      return Promise.resolve(mock)
+      return Promise.resolve(mock);
     }
-    return originalFetch.call(this, url, options)
-  }
-}
+    return originalFetch.call(this, url, options);
+  };
+};

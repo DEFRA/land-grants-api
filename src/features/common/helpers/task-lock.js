@@ -21,19 +21,19 @@
  * @returns {Promise<boolean>} True if the lock was acquired, false otherwise
  */
 async function acquireTaskLock(pool, taskName, { timeoutMinutes = 5 } = {}) {
-  const timeoutMs = Math.max(1, Number(timeoutMinutes)) * 60 * 1000
-  const expiresAt = new Date(Date.now() + timeoutMs).toISOString()
+  const timeoutMs = Math.max(1, Number(timeoutMinutes)) * 60 * 1000;
+  const expiresAt = new Date(Date.now() + timeoutMs).toISOString();
 
   // We use a transaction to remove expired locks and try to insert/update atomically.
-  const client = await pool.connect()
+  const client = await pool.connect();
   try {
-    await client.query('BEGIN')
+    await client.query('BEGIN');
 
     // Remove expired lock for this task so a new instance can acquire it.
     await client.query(
       'DELETE FROM task_lock WHERE task_name = $1 AND expires_at < now()',
       [taskName]
-    )
+    );
 
     // Try to insert a new lock. If task_name already exists, the ON CONFLICT
     // will only win if the existing row is expired (we deleted expired above),
@@ -43,22 +43,22 @@ async function acquireTaskLock(pool, taskName, { timeoutMinutes = 5 } = {}) {
       VALUES ($1, now(), $2)
       ON CONFLICT (task_name) DO NOTHING
       RETURNING task_name
-    `
+    `;
 
-    const res = await client.query(insertSql, [taskName, expiresAt])
+    const res = await client.query(insertSql, [taskName, expiresAt]);
 
-    await client.query('COMMIT')
+    await client.query('COMMIT');
 
-    return res.rowCount > 0
+    return res.rowCount > 0;
   } catch (err) {
     try {
-      await client.query('ROLLBACK')
+      await client.query('ROLLBACK');
     } catch (e) {
       // ignore
     }
-    throw err
+    throw err;
   } finally {
-    client.release()
+    client.release();
   }
 }
 
@@ -73,7 +73,7 @@ async function releaseTaskLock(pool, taskName) {
   // Best-effort cleanup of the lock row so other instances can run immediately.
   // Do not throw if deletion fails; caller may already be shutting down.
   try {
-    await pool.query('DELETE FROM task_lock WHERE task_name = $1', [taskName])
+    await pool.query('DELETE FROM task_lock WHERE task_name = $1', [taskName]);
   } catch (err) {
     // ignore
   }
@@ -89,15 +89,15 @@ async function releaseTaskLock(pool, taskName) {
  * @returns {Promise<{acquired: boolean, result?: any}>}
  */
 export async function withTaskLock(pool, taskName, fn, options = {}) {
-  const acquired = await acquireTaskLock(pool, taskName, options)
+  const acquired = await acquireTaskLock(pool, taskName, options);
   if (!acquired) {
-    return { acquired: false }
+    return { acquired: false };
   }
 
   try {
-    const result = await fn()
-    return { acquired: true, result }
+    const result = await fn();
+    return { acquired: true, result };
   } finally {
-    await releaseTaskLock(pool, taskName)
+    await releaseTaskLock(pool, taskName);
   }
 }

@@ -1,36 +1,36 @@
-import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/parcels.controller.js'
-import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { getAgreements } from '~/src/services/dal/index.js'
-import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
+import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/parcels.controller.js';
+import { actions } from '~/src/tests/db-tests/fixtures/actions.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js';
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js';
+import { getAgreements } from '~/src/services/dal/index.js';
+import { logger } from '~/src/tests/db-tests/setup/testLogger.js';
 
-vi.mock('~/src/services/dal/index.js')
+vi.mock('~/src/services/dal/index.js');
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-)
-const mockGetAgreements = getAgreements
-const mockGetEnabledActions = getActionsByLatestVersion
+);
+const mockGetAgreements = getAgreements;
+const mockGetEnabledActions = getActionsByLatestVersion;
 
 describe('Parcels Controller 2.0.0', () => {
-  let connection
+  let connection;
 
   beforeAll(() => {
-    connection = connectToTestDatabase()
-  })
+    connection = connectToTestDatabase();
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   beforeEach(() => {
-    mockGetAgreements.mockResolvedValue([])
-    mockGetEnabledActions.mockResolvedValue(actions)
-  })
+    mockGetAgreements.mockResolvedValue([]);
+    mockGetEnabledActions.mockResolvedValue(actions);
+  });
 
   test('should return a 200 status code with groups when groups field is requested', async () => {
-    const { h, getResponse } = createResponseCapture()
+    const { h, getResponse } = createResponseCapture();
 
     await ParcelsControllerV2.handler(
       {
@@ -46,22 +46,22 @@ describe('Parcels Controller 2.0.0', () => {
         }
       },
       h
-    )
+    );
 
-    const { data, statusCode } = getResponse()
-    expect(statusCode).toBe(200)
-    expect(data.message).toBe('success')
+    const { data, statusCode } = getResponse();
+    expect(statusCode).toBe(200);
+    expect(data.message).toBe('success');
     expect(data.groups).toEqual([
       { name: 'Assess moorland', actions: ['CMOR1'] },
       {
         name: 'Livestock grazing on moorland',
         actions: ['UPL1', 'UPL2', 'UPL3']
       }
-    ])
-  })
+    ]);
+  });
 
   test('should not return groups when groups field is not requested', async () => {
-    const { h, getResponse } = createResponseCapture()
+    const { h, getResponse } = createResponseCapture();
 
     await ParcelsControllerV2.handler(
       {
@@ -77,15 +77,15 @@ describe('Parcels Controller 2.0.0', () => {
         }
       },
       h
-    )
+    );
 
-    const { data, statusCode } = getResponse()
-    expect(statusCode).toBe(200)
-    expect(data.groups).toBeUndefined()
-  })
+    const { data, statusCode } = getResponse();
+    expect(statusCode).toBe(200);
+    expect(data.groups).toBeUndefined();
+  });
 
   test('should return a 200 status code and valid parcel when sssiConsentRequired is requested', async () => {
-    const { h, getResponse } = createResponseCapture()
+    const { h, getResponse } = createResponseCapture();
 
     await ParcelsControllerV2.handler(
       {
@@ -106,11 +106,11 @@ describe('Parcels Controller 2.0.0', () => {
         }
       },
       h
-    )
+    );
 
-    const { data, statusCode } = getResponse()
-    expect(statusCode).toBe(200)
-    expect(data.message).toBe('success')
+    const { data, statusCode } = getResponse();
+    expect(statusCode).toBe(200);
+    expect(data.message).toBe('success');
     expect(data.parcels).toEqual([
       {
         parcelId: '9215',
@@ -171,6 +171,6 @@ describe('Parcels Controller 2.0.0', () => {
           }
         ]
       }
-    ])
-  })
-})
+    ]);
+  });
+});

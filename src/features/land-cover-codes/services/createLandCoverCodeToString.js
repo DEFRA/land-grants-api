@@ -5,17 +5,17 @@
  */
 export function createLandCoverCodeToString(landCoverDefinitions) {
   /** @type {{[key:string]: LandCoverDefinition}} */
-  const byLandCoverCode = {}
+  const byLandCoverCode = {};
   /** @type {{[key:string]: LandCoverDefinition}} */
-  const byLandCoverClassCode = {}
+  const byLandCoverClassCode = {};
 
   for (const landCoverDefinition of landCoverDefinitions) {
-    byLandCoverCode[landCoverDefinition.landCoverCode] = landCoverDefinition
+    byLandCoverCode[landCoverDefinition.landCoverCode] = landCoverDefinition;
     byLandCoverClassCode[landCoverDefinition.landCoverClassCode] =
-      landCoverDefinition
+      landCoverDefinition;
   }
 
-  return makeLandCoverToString(byLandCoverCode, byLandCoverClassCode)
+  return makeLandCoverToString(byLandCoverCode, byLandCoverClassCode);
 }
 
 /**
@@ -26,20 +26,20 @@ export function createLandCoverCodeToString(landCoverDefinitions) {
  */
 function makeLandCoverToString(byLandCoverCode, byLandCoverClassCode) {
   return (landCoverCode) => {
-    const landCover = byLandCoverCode[landCoverCode]
+    const landCover = byLandCoverCode[landCoverCode];
 
     if (landCover != null) {
-      return `${landCover.landCoverDescription} (${landCover.landCoverCode})`
+      return `${landCover.landCoverDescription} (${landCover.landCoverCode})`;
     }
 
-    const landCoverClass = byLandCoverClassCode[landCoverCode]
+    const landCoverClass = byLandCoverClassCode[landCoverCode];
 
     if (landCoverClass != null) {
-      return `${landCoverClass.landCoverClassDescription} (${landCoverClass.landCoverClassCode})`
+      return `${landCoverClass.landCoverClassDescription} (${landCoverClass.landCoverClassCode})`;
     }
 
-    return `Unknown land cover code: ${landCoverCode}`
-  }
+    return `Unknown land cover code: ${landCoverCode}`;
+  };
 }
 
 /**

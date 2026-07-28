@@ -2,26 +2,26 @@ import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
-} from '~/src/features/data-layers/queries/getDataLayer.query.js'
-import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
-import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
+} from '~/src/features/data-layers/queries/getDataLayer.query.js';
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js';
+import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js';
 import {
   findMaximumAvailableArea,
   throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
-import { getAgreements } from '~/src/features/agreements/repo.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
+} from '~/src/features/available-area/availableArea.js';
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js';
+import { getAgreements } from '~/src/features/agreements/repo.js';
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js';
+import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js';
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer
-} from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
+} from '~/src/features/parcel/transformers/parcelActions.transformer.js';
+import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js';
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js';
+import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js';
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -38,21 +38,21 @@ import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sss
  */
 export function splitParcelId(id, logger) {
   try {
-    const parts = id?.split('-')
-    const sheetId = parts?.[0] || null
-    const parcelId = parts?.[1] || null
+    const parts = id?.split('-');
+    const sheetId = parts?.[0] || null;
+    const parcelId = parts?.[1] || null;
 
     if (!sheetId || !parcelId) {
-      throw new Error(`Unable to split parcel id ${id}`)
+      throw new Error(`Unable to split parcel id ${id}`);
     }
 
     return {
       sheetId,
       parcelId
-    }
+    };
   } catch (error) {
-    logger.error(`Unable to split parcel id ${id}`, error)
-    throw error
+    logger.error(`Unable to split parcel id ${id}`, error);
+    throw error;
   }
 }
 
@@ -76,10 +76,10 @@ async function getParcelActionsWithAvailableArea(
   postgresDb,
   logger
 ) {
-  const actionsWithAvailableArea = []
+  const actionsWithAvailableArea = [];
 
   for (const action of enabledActions.filter((a) => a.display)) {
-    const transformedActions = plannedActionsTransformer(actions)
+    const transformedActions = plannedActionsTransformer(actions);
 
     const aacDataRequirements = await getAvailableAreaDataRequirements(
       action.code,
@@ -88,16 +88,16 @@ async function getParcelActionsWithAvailableArea(
       transformedActions,
       postgresDb,
       logger
-    )
+    );
 
     const lpResult = findMaximumAvailableArea(
       action.code,
       transformedActions,
       compatibilityCheckFn,
       aacDataRequirements
-    )
+    );
 
-    throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
+    throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id);
 
     const availableArea = {
       ...lpResult,
@@ -108,18 +108,18 @@ async function getParcelActionsWithAvailableArea(
         landCoverToString: aacDataRequirements.landCoverToString,
         feasible: lpResult.feasible
       })
-    }
+    };
 
     const actionWithAvailableArea = actionTransformer(
       action,
       availableArea,
       showActionResults
-    )
+    );
 
-    actionsWithAvailableArea.push(actionWithAvailableArea)
+    actionsWithAvailableArea.push(actionWithAvailableArea);
   }
 
-  return actionsWithAvailableArea
+  return actionsWithAvailableArea;
 }
 
 export async function getActionsForParcel(
@@ -131,15 +131,15 @@ export async function getActionsForParcel(
   request,
   defraIdToken
 ) {
-  const { fields, plannedActions, sbi } = payload
+  const { fields, plannedActions, sbi } = payload;
 
   const parcelResponse = {
     parcelId: parcel.parcel_id,
     sheetId: parcel.sheet_id
-  }
+  };
 
   if (fields.includes('size')) {
-    parcelResponse.size = sizeTransformer(sqmToHaRounded(parcel.area_sqm))
+    parcelResponse.size = sizeTransformer(sqmToHaRounded(parcel.area_sqm));
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {
@@ -150,9 +150,12 @@ export async function getActionsForParcel(
       defraIdToken,
       request.server.postgresDb,
       request.logger
-    )
+    );
 
-    const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
+    const mergedActions = mergeAgreementsTransformer(
+      agreements,
+      plannedActions
+    );
 
     const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
       parcel,
@@ -162,11 +165,11 @@ export async function getActionsForParcel(
       compatibilityCheckFn,
       request.server.postgresDb,
       request.logger
-    )
+    );
 
-    parcelResponse.actions = actionsWithAvailableArea
+    parcelResponse.actions = actionsWithAvailableArea;
   }
-  return parcelResponse
+  return parcelResponse;
 }
 
 export async function getActionsForParcelWithSSSIConsentRequired(
@@ -176,7 +179,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
   logger,
   postgresDb
 ) {
-  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger);
 
   const { intersectingAreaPercentage } = await getDataLayerQueryAccumulated(
     sheetId,
@@ -184,7 +187,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
     DATA_LAYER_TYPES.sssi,
     postgresDb,
     logger
-  )
+  );
 
   const application = {
     areaAppliedFor: 0,
@@ -196,19 +199,19 @@ export async function getActionsForParcelWithSSSIConsentRequired(
         sssi: { intersectingAreaPercentage }
       }
     }
-  }
+  };
 
   const sssiConsentRequiredAction = executeSingleRuleForEnabledActions(
     enabledActions,
     application,
     'sssi-consent-required',
     sssiConsentRequired
-  )
+  );
 
   return sssiConsentRequiredActionTransformer(
     responseParcels,
     sssiConsentRequiredAction
-  )
+  );
 }
 
 export async function getActionsForParcelWithHEFERConsentRequired(
@@ -218,7 +221,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   logger,
   postgresDb
 ) {
-  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger);
 
   const { intersectingAreaPercentage } = await getDataLayerQueryUnion(
     sheetId,
@@ -226,7 +229,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
     DATA_LAYER_TYPES.historic_features,
     postgresDb,
     logger
-  )
+  );
 
   const application = {
     areaAppliedFor: 0,
@@ -238,14 +241,14 @@ export async function getActionsForParcelWithHEFERConsentRequired(
         historic_features: { intersectingAreaPercentage }
       }
     }
-  }
+  };
 
   const heferRequiredAction = executeSingleRuleForEnabledActions(
     enabledActions,
     application,
     'hefer-consent-required',
     heferConsentRequired
-  )
+  );
 
-  return heferRequiredActionTransformer(responseParcels, heferRequiredAction)
+  return heferRequiredActionTransformer(responseParcels, heferRequiredAction);
 }

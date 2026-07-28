@@ -11,4 +11,4 @@ export const statusCodes = {
   imATeapot: 418,
   unprocessableEntity: 422,
   internalServerError: 500
-}
+};

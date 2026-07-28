@@ -1,5 +1,5 @@
-import { ValidateWMPController } from './controller/validate-wmp.controller.js'
-import { PaymentsCalculateWMPControllerV2 } from './controller/payment-calculate-wmp.controller.js'
+import { ValidateWMPController } from './controller/validate-wmp.controller.js';
+import { PaymentsCalculateWMPControllerV2 } from './controller/payment-calculate-wmp.controller.js';
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -19,10 +19,10 @@ export const woodlandManagement = {
           path: '/api/v1/wmp/payments/calculate',
           ...PaymentsCalculateWMPControllerV2
         }
-      ])
+      ]);
     }
   }
-}
+};
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

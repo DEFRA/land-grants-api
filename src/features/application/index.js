@@ -1,6 +1,6 @@
-import { ApplicationValidationController as ApplicationValidationControllerV2 } from './controllers/2.0.0/application-validation.controller.js'
-import { ApplicationValidationRunController } from './controllers/1.0.0/application-validation-run.controller.js'
-import { ApplicationValidationRunsController } from './controllers/1.0.0/application-validation-runs.controller.js'
+import { ApplicationValidationController as ApplicationValidationControllerV2 } from './controllers/2.0.0/application-validation.controller.js';
+import { ApplicationValidationRunController } from './controllers/1.0.0/application-validation-run.controller.js';
+import { ApplicationValidationRunsController } from './controllers/1.0.0/application-validation-runs.controller.js';
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -25,12 +25,12 @@ const application = {
           path: '/application/{applicationId}/validation-run',
           ...ApplicationValidationRunsController
         }
-      ])
+      ]);
     }
   }
-}
+};
 
-export { application }
+export { application };
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

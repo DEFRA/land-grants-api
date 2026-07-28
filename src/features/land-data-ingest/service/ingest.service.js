@@ -1,8 +1,8 @@
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { startWorker } from '../../common/worker-thread/start-worker-thread.js'
-import { config } from '../../../config/index.js'
-import { logInfo } from '../../common/helpers/logging/log-helpers.js'
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { startWorker } from '../../common/worker-thread/start-worker-thread.js';
+import { config } from '../../../config/index.js';
+import { logInfo } from '../../common/helpers/logging/log-helpers.js';
 
 /**
  * Refreshes statistics after a successful ingest, logging (but not throwing on) failure.
@@ -10,18 +10,18 @@ import { logInfo } from '../../common/helpers/logging/log-helpers.js'
  */
 async function refreshStats(request) {
   // @ts-expect-error - statistics is not typed on server.plugins
-  const statistics = request.server.plugins.statistics
+  const statistics = request.server.plugins.statistics;
   if (!statistics?.loadAndLogStats) {
-    return
+    return;
   }
 
   try {
-    await statistics.loadAndLogStats()
+    await statistics.loadAndLogStats();
   } catch (error) {
     request.logger.error(
       { error },
       'Failed to run statistics after successful data ingestion'
-    )
+    );
   }
 }
 
@@ -29,8 +29,8 @@ async function refreshStats(request) {
  * @import { InitiateUploaderResponse, Task } from '../ingest.d.js'
  */
 
-let activeWorkers = 0
-const waitQueue = []
+let activeWorkers = 0;
+const waitQueue = [];
 
 /**
  * Reserves a worker slot, blocking if the maximum concurrency has been
@@ -38,15 +38,15 @@ const waitQueue = []
  * @returns {Promise<void>} Resolves when a slot is available
  */
 function acquireWorkerSlot() {
-  const maxWorkers = config.get('ingest.maxConcurrentWorkers')
+  const maxWorkers = config.get('ingest.maxConcurrentWorkers');
   return new Promise((resolve) => {
     if (activeWorkers < maxWorkers) {
-      activeWorkers++
-      resolve()
+      activeWorkers++;
+      resolve();
     } else {
-      waitQueue.push(resolve)
+      waitQueue.push(resolve);
     }
-  })
+  });
 }
 
 /**
@@ -54,11 +54,11 @@ function acquireWorkerSlot() {
  * (via {@link acquireWorkerSlot}), the next one is unblocked immediately.
  */
 function releaseWorkerSlot() {
-  activeWorkers--
+  activeWorkers--;
   if (waitQueue.length > 0) {
-    const next = waitQueue.shift()
-    activeWorkers++
-    next()
+    const next = waitQueue.shift();
+    activeWorkers++;
+    next();
   }
 }
 
@@ -80,28 +80,28 @@ export const processFile = async (
     operation: `${category}_process_file_started`,
     message: `${category} process file started`,
     context: { filepath: data.s3key }
-  })
-  const __dirname = dirname(fileURLToPath(import.meta.url))
-  const workerPath = join(__dirname, '../workers/ingest.worker.js')
+  });
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const workerPath = join(__dirname, '../workers/ingest.worker.js');
 
-  await acquireWorkerSlot()
-  let result
+  await acquireWorkerSlot();
+  let result;
   try {
     result = await startWorker(request, workerPath, data, {
       title,
       category,
       taskId
-    })
+    });
   } finally {
-    releaseWorkerSlot()
+    releaseWorkerSlot();
   }
 
   if (result?.dataChanged) {
-    await refreshStats(request)
+    await refreshStats(request);
   }
 
-  return result
-}
+  return result;
+};
 
 /**
  * Create task information
@@ -112,16 +112,16 @@ export const processFile = async (
 export const createTaskInfo = (taskId, category) => {
   const title =
     category.charAt(0).toUpperCase() +
-    category.slice(1).replaceAll('_', ' ').trim()
-  const bucket = config.get('s3.bucket')
+    category.slice(1).replaceAll('_', ' ').trim();
+  const bucket = config.get('s3.bucket');
 
   return {
     category,
     title,
     taskId,
     bucket
-  }
-}
+  };
+};
 
 /**
  * Initiate land data upload
@@ -149,13 +149,13 @@ export const initiateLandDataUpload = async (
       s3Path,
       metadata
     })
-  })
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(`Failed to initiate land data upload: ${data.message}`)
+    throw new Error(`Failed to initiate land data upload: ${data.message}`);
   }
 
-  return data
-}
+  return data;
+};

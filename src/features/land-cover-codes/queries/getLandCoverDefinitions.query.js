@@ -2,7 +2,7 @@ import {
   logDatabaseError,
   logInfo,
   logValidationWarn
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * Get all land cover codes for one or more action codes
@@ -12,18 +12,18 @@ import {
  * @returns {Promise<LandCoverDefinition[]>}>} The land cover codes object
  */
 export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
-  let client
+  let client;
 
   try {
     if (!Array.isArray(landCoverCodes) || landCoverCodes.length === 0) {
       logValidationWarn(logger, {
         operation: 'Fetch land cover definitions',
         errors: 'No land cover codes provided'
-      })
-      return []
+      });
+      return [];
     }
 
-    client = await db.connect()
+    client = await db.connect();
     const query = `
       SELECT DISTINCT land_cover_type_code,
             land_cover_type_description,
@@ -35,9 +35,9 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
             land_use_description
         FROM public.land_cover_codes
         WHERE land_cover_code = ANY ($1)
-        OR land_cover_class_code = ANY ($1)`
+        OR land_cover_class_code = ANY ($1)`;
 
-    const dbResponse = await client.query(query, [landCoverCodes])
+    const dbResponse = await client.query(query, [landCoverCodes]);
 
     if (!dbResponse || dbResponse?.rows?.length === 0) {
       logInfo(logger, {
@@ -45,20 +45,20 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
         operation: 'Get land cover definitions',
         message: 'No land cover codes found',
         context: { landCoverCodes: landCoverCodes.join(',') }
-      })
-      return []
+      });
+      return [];
     }
 
-    return transformLandCoverDefinitions(dbResponse.rows)
+    return transformLandCoverDefinitions(dbResponse.rows);
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get land cover definitions',
       error
-    })
-    throw error
+    });
+    throw error;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
@@ -69,7 +69,7 @@ export async function getLandCoverDefinitions(landCoverCodes, db, logger) {
  * @returns {LandCoverDefinition[]} The land cover definitions
  */
 function transformLandCoverDefinitions(rows) {
-  const landCoverDefinitions = []
+  const landCoverDefinitions = [];
 
   for (const row of rows) {
     const landCoverDefinition = {
@@ -79,12 +79,12 @@ function transformLandCoverDefinitions(rows) {
       landCoverTypeDescription: row.land_cover_type_description,
       landCoverClassDescription: row.land_cover_class_description,
       landCoverDescription: row.land_cover_description
-    }
+    };
 
-    landCoverDefinitions.push(landCoverDefinition)
+    landCoverDefinitions.push(landCoverDefinition);
   }
 
-  return landCoverDefinitions
+  return landCoverDefinitions;
 }
 
 /**

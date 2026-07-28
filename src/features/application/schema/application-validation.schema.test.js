@@ -3,7 +3,7 @@ import {
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema,
   applicationValidationRunsBodyRequestSchema
-} from './application-validation.schema.js'
+} from './application-validation.schema.js';
 
 describe('Application Validation Schema', () => {
   describe('applicationValidationSchema', () => {
@@ -22,66 +22,66 @@ describe('Application Validation Schema', () => {
           ]
         }
       ]
-    }
+    };
 
     it('should validate valid data', () => {
-      const { error } = applicationValidationSchema.validate(validData)
-      expect(error).toBeUndefined()
-    })
+      const { error } = applicationValidationSchema.validate(validData);
+      expect(error).toBeUndefined();
+    });
 
     it('should require applicationId', () => {
-      const data = { ...validData }
-      delete data.applicationId
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('applicationId')
-    })
+      const data = { ...validData };
+      delete data.applicationId;
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('applicationId');
+    });
 
     it('should require requester', () => {
-      const data = { ...validData }
-      delete data.requester
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('requester')
-    })
+      const data = { ...validData };
+      delete data.requester;
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('requester');
+    });
 
     it('should require applicantCrn', () => {
-      const data = { ...validData }
-      delete data.applicantCrn
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('applicantCrn')
-    })
+      const data = { ...validData };
+      delete data.applicantCrn;
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('applicantCrn');
+    });
 
     it('should require landActions array with minimum 1 item', () => {
-      const data = { ...validData, landActions: [] }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('landActions')
-    })
+      const data = { ...validData, landActions: [] };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('landActions');
+    });
 
     it('should require landActions to have sheetId', () => {
       const data = {
         ...validData,
         landActions: [{ parcelId: 'parcel-1', actions: [] }]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('sheetId')
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('sheetId');
+    });
 
     it('should require landActions to have parcelId', () => {
       const data = {
         ...validData,
         landActions: [{ sheetId: 'sheet-1', actions: [] }]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('parcelId')
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('parcelId');
+    });
 
     it('should require actions array in landActions', () => {
       const data = {
         ...validData,
         landActions: [{ sheetId: 'sheet-1', parcelId: 'parcel-1' }]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('actions')
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('actions');
+    });
 
     it('should require actions to have code', () => {
       const data = {
@@ -93,10 +93,10 @@ describe('Application Validation Schema', () => {
             actions: [{ quantity: 10 }]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('code')
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('code');
+    });
 
     it('should require actions to have quantity', () => {
       const data = {
@@ -108,10 +108,10 @@ describe('Application Validation Schema', () => {
             actions: [{ code: 'ACTION1' }]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error.details[0].message).toContain('quantity')
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error.details[0].message).toContain('quantity');
+    });
 
     it('should accept multiple landActions', () => {
       const data = {
@@ -128,10 +128,10 @@ describe('Application Validation Schema', () => {
             actions: [{ code: 'ACTION2', quantity: 5 }]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should accept an action with an optional version string', () => {
       const data = {
@@ -143,10 +143,10 @@ describe('Application Validation Schema', () => {
             actions: [{ code: 'ACTION1', quantity: 10, version: '2.1.0' }]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should accept actions where some have version and some do not', () => {
       const data = {
@@ -161,10 +161,10 @@ describe('Application Validation Schema', () => {
             ]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should reject a non-string action version', () => {
       const data = {
@@ -176,36 +176,36 @@ describe('Application Validation Schema', () => {
             actions: [{ code: 'ACTION1', quantity: 10, version: 123 }]
           }
         ]
-      }
-      const { error } = applicationValidationSchema.validate(data)
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('version')
-    })
-  })
+      };
+      const { error } = applicationValidationSchema.validate(data);
+      expect(error).toBeDefined();
+      expect(error.details[0].message).toContain('version');
+    });
+  });
 
   describe('applicationValidationRunRequestSchema', () => {
     const validData = {
       id: 123
-    }
+    };
 
     it('should validate valid data', () => {
       const { error } =
-        applicationValidationRunRequestSchema.validate(validData)
-      expect(error).toBeUndefined()
-    })
+        applicationValidationRunRequestSchema.validate(validData);
+      expect(error).toBeUndefined();
+    });
 
     it('should require id as integer', () => {
-      const data = { id: 'not-a-number' }
-      const { error } = applicationValidationRunRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('id')
-    })
+      const data = { id: 'not-a-number' };
+      const { error } = applicationValidationRunRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('id');
+    });
 
     it('should require id', () => {
-      const data = {}
-      const { error } = applicationValidationRunRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('id')
-    })
-  })
+      const data = {};
+      const { error } = applicationValidationRunRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('id');
+    });
+  });
 
   describe('applicationValidationRunResponseSchema', () => {
     const validData = {
@@ -218,27 +218,27 @@ describe('Application Validation Schema', () => {
         data: { some: 'data' },
         created_at: new Date()
       }
-    }
+    };
 
     it('should validate valid data', () => {
       const { error } =
-        applicationValidationRunResponseSchema.validate(validData)
-      expect(error).toBeUndefined()
-    })
+        applicationValidationRunResponseSchema.validate(validData);
+      expect(error).toBeUndefined();
+    });
 
     it('should require message', () => {
-      const data = { ...validData }
-      delete data.message
-      const { error } = applicationValidationRunResponseSchema.validate(data)
-      expect(error.details[0].message).toContain('message')
-    })
+      const data = { ...validData };
+      delete data.message;
+      const { error } = applicationValidationRunResponseSchema.validate(data);
+      expect(error.details[0].message).toContain('message');
+    });
 
     it('should allow missing applicationValidationRun', () => {
-      const data = { ...validData }
-      delete data.applicationValidationRun
-      const { error } = applicationValidationRunResponseSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+      const data = { ...validData };
+      delete data.applicationValidationRun;
+      const { error } = applicationValidationRunResponseSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should validate applicationValidationRun structure', () => {
       const data = {
@@ -251,63 +251,63 @@ describe('Application Validation Schema', () => {
           data: { some: 'data' },
           created_at: new Date()
         }
-      }
-      const { error } = applicationValidationRunResponseSchema.validate(data)
-      expect(error.details[0].message).toContain('id')
-    })
-  })
+      };
+      const { error } = applicationValidationRunResponseSchema.validate(data);
+      expect(error.details[0].message).toContain('id');
+    });
+  });
 
   describe('applicationValidationRunsBodyRequestSchema', () => {
     const validData = {
       fields: ['details']
-    }
+    };
 
     it('should validate valid data', () => {
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(validData)
-      expect(error).toBeUndefined()
-    })
+        applicationValidationRunsBodyRequestSchema.validate(validData);
+      expect(error).toBeUndefined();
+    });
 
     it('should require fields array', () => {
-      const data = {}
+      const data = {};
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('fields')
-    })
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('fields');
+    });
 
     it('should require fields to be an array', () => {
-      const data = { fields: 'not-an-array' }
+      const data = { fields: 'not-an-array' };
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('fields')
-    })
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('fields');
+    });
 
     it('should require fields array to contain only valid values', () => {
-      const data = { fields: ['invalid-value'] }
+      const data = { fields: ['invalid-value'] };
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('must be [details]')
-    })
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('must be [details]');
+    });
 
     it('should accept multiple valid field values', () => {
-      const data = { fields: ['details', 'details'] }
+      const data = { fields: ['details', 'details'] };
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should accept empty fields array', () => {
-      const data = { fields: [] }
+      const data = { fields: [] };
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error).toBeUndefined()
-    })
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error).toBeUndefined();
+    });
 
     it('should reject mixed valid and invalid values', () => {
-      const data = { fields: ['details', 'invalid-value'] }
+      const data = { fields: ['details', 'invalid-value'] };
       const { error } =
-        applicationValidationRunsBodyRequestSchema.validate(data)
-      expect(error.details[0].message).toContain('must be [details]')
-    })
-  })
-})
+        applicationValidationRunsBodyRequestSchema.validate(data);
+      expect(error.details[0].message).toContain('must be [details]');
+    });
+  });
+});

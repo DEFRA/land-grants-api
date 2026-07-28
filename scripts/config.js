@@ -1,13 +1,13 @@
-import { config as dotenvConfig } from 'dotenv'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { config as dotenvConfig } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Get the directory of this script file
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load .env from the parent directory (project root)
-dotenvConfig({ path: path.join(__dirname, '..', '.env') })
+dotenvConfig({ path: path.join(__dirname, '..', '.env') });
 
 const config = {
   dev: {
@@ -50,5 +50,5 @@ const config = {
     tokenUrl:
       'https://land-grants-api-75ee2.auth.eu-west-2.amazoncognito.com/oauth2/token'
   }
-}
-export { config }
+};
+export { config };

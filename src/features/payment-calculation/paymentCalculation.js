@@ -3,9 +3,9 @@ import {
   calculateScheduledPayments,
   createPaymentItems,
   reconcilePaymentAmounts
-} from './amountCalculation.js'
-import { generatePaymentSchedule } from './generateSchedule.js'
-import { createExplanationSection } from '~/src/features/available-area/explanations.js'
+} from './amountCalculation.js';
+import { generatePaymentSchedule } from './generateSchedule.js';
+import { createExplanationSection } from '~/src/features/available-area/explanations.js';
 
 /**
  * Returns the payment calculation for an array of parcels
@@ -21,14 +21,14 @@ export const getPaymentCalculationForParcels = (
   durationYears,
   startDate
 ) => {
-  const frequency = 'Quarterly'
+  const frequency = 'Quarterly';
 
   // generate parcel and agreement level items
   const {
     parcelItems,
     agreementItems,
     explanations: paymentItemsExplanations
-  } = createPaymentItems(parcels, actions)
+  } = createPaymentItems(parcels, actions);
 
   // calculate total amounts
   const { annualTotalPence, agreementTotalPence } =
@@ -36,18 +36,18 @@ export const getPaymentCalculationForParcels = (
       parcelItems,
       agreementItems,
       durationYears
-    )
+    );
 
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
-    generatePaymentSchedule(startDate ?? new Date(), durationYears, frequency)
+    generatePaymentSchedule(startDate ?? new Date(), durationYears, frequency);
 
   // calculate payments based on schedule and parcel/agreement items amounts
   const payments = calculateScheduledPayments(
     parcelItems,
     agreementItems,
     schedule
-  )
+  );
 
   // reconcile payment amounts (shift pennies and round final amounts after calculations)
   const {
@@ -55,7 +55,7 @@ export const getPaymentCalculationForParcels = (
     agreementLevelItems: revisedAgreementItems,
     payments: revisedPayments,
     explanations: reconciliationExplanations
-  } = reconcilePaymentAmounts(parcelItems, agreementItems, payments)
+  } = reconcilePaymentAmounts(parcelItems, agreementItems, payments);
 
   const explanations = [
     createExplanationSection('Schedule Information', [
@@ -73,7 +73,7 @@ export const getPaymentCalculationForParcels = (
       `First quarter payment: ${revisedPayments[0].totalPaymentPence} pence`,
       `Rest quarters payment: ${revisedPayments[1].totalPaymentPence} pence`
     ])
-  ]
+  ];
 
   return {
     explanations,
@@ -85,8 +85,8 @@ export const getPaymentCalculationForParcels = (
     parcelItems: revisedParcelItems,
     agreementLevelItems: revisedAgreementItems,
     payments: revisedPayments
-  }
-}
+  };
+};
 
 /**
  * @import { PaymentParcel, PaymentCalculationResponse } from './payment-calculation.d.js'

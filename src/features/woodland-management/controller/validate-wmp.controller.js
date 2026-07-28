@@ -1,26 +1,26 @@
-import Boom from '@hapi/boom'
+import Boom from '@hapi/boom';
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js'
+} from '~/src/features/common/schema/index.js';
 import {
   logInfo,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 import {
   validateWMPSchemaV2,
   validateWMPResponseSchemaV2
-} from '../schema/validate-wmp.schema.js'
-import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
-import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
-import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
-import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
+} from '../schema/validate-wmp.schema.js';
+import { validateWoodlandManagementPlan } from '../service/wmp-service.js';
+import { statusCodes } from '~/src/features/common/constants/status-codes.js';
+import { wmpResultTransformer } from '../transformer/wmp.transformer.js';
+import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js';
+import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js';
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
-} from '../../common/helpers/audit-event.js'
+} from '../../common/helpers/audit-event.js';
 
 /**
  * Builds the shared portion of a WMP validation audit context.
@@ -32,7 +32,7 @@ import {
 const buildAuditContext = (request, { parcelIds }) => ({
   correlationId: getCorrelationId(request),
   parcelIds
-})
+});
 
 export const ValidateWMPController = {
   options: {
@@ -60,7 +60,7 @@ export const ValidateWMPController = {
     try {
       /** @type {validateWMPSchemaV2} */
       // @ts-expect-error - payload
-      const { parcelIds } = request.payload
+      const { parcelIds } = request.payload;
 
       logInfo(request.logger, {
         category: 'wmp',
@@ -68,29 +68,29 @@ export const ValidateWMPController = {
         context: {
           parcelIds
         }
-      })
+      });
 
       const parcelSheetIds = parcelIds.map((parcelId) =>
         splitParcelId(parcelId, request.logger)
-      )
+      );
       const { parcels, errors } = await getAndValidateParcels(
         parcelSheetIds,
         request
-      )
+      );
 
       if (errors) {
-        return Boom.notFound(errors)
+        return Boom.notFound(errors);
       }
 
       const result = await validateWoodlandManagementPlan(
         parcels.filter((p) => p !== null),
         request
-      )
+      );
 
       const transformedResult = wmpResultTransformer(
         result.action,
         result.ruleResult
-      )
+      );
 
       await auditEvent(
         AuditEvent.WMP_VALIDATED,
@@ -100,19 +100,19 @@ export const ValidateWMPController = {
         },
         'success',
         request
-      )
+      );
 
       return h
         .response({
           message: 'success',
           result: transformedResult
         })
-        .code(statusCodes.ok)
+        .code(statusCodes.ok);
     } catch (error) {
       /** @type {validateWMPSchemaV2} */
       // @ts-expect-error - payload
       const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa } =
-        request.payload
+        request.payload;
 
       logBusinessError(request.logger, {
         operation: 'Validation failure for WMP',
@@ -122,7 +122,7 @@ export const ValidateWMPController = {
           oldWoodlandAreaHa,
           newWoodlandAreaHa
         }
-      })
+      });
 
       await auditEvent(
         AuditEvent.WMP_VALIDATED,
@@ -132,12 +132,12 @@ export const ValidateWMPController = {
         },
         'failure',
         request
-      )
+      );
 
-      return Boom.internal('Error validating WMP')
+      return Boom.internal('Error validating WMP');
     }
   }
-}
+};
 
 /**
  * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'

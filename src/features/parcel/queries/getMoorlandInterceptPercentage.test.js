@@ -1,10 +1,10 @@
-import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
+import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js';
 
 describe('getMoorlandInterceptPercentage', () => {
-  let mockDb
-  let mockLogger
-  let mockClient
-  let mockResult
+  let mockDb;
+  let mockLogger;
+  let mockClient;
+  let mockResult;
 
   beforeEach(() => {
     mockResult = {
@@ -15,35 +15,35 @@ describe('getMoorlandInterceptPercentage', () => {
           overlap_percent: 50
         }
       ]
-    }
+    };
 
     mockClient = {
       query: vi.fn().mockResolvedValue(mockResult),
       release: vi.fn()
-    }
+    };
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    }
+    };
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-  })
+    };
+  });
 
   test('should connect to the database', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1)
-  })
+    expect(mockDb.connect).toHaveBeenCalledTimes(1);
+  });
 
   test('should query with the correct parameters', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
     const expectedQuery = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -60,82 +60,85 @@ describe('getMoorlandInterceptPercentage', () => {
           m.data_layer_type_id = 2
       GROUP BY
           p.geom, m.metadata ->> 'ref_code';
-    `
+    `;
 
-    const expectedValues = [sheetId, parcelId]
+    const expectedValues = [sheetId, parcelId];
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
-  })
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expectedQuery,
+      expectedValues
+    );
+  });
 
   test('should return the moorland overlap percentage', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(50)
-  })
+    expect(result).toBe(50);
+  });
 
   test('should return 0 when no moorland overlap', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockResult.rows[0].overlap_percent = null
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    mockResult.rows[0].overlap_percent = null;
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
-  })
+    expect(result).toBe(0);
+  });
 
   test('should return 0 when query returns no rows', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockResult.rows = []
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    mockResult.rows = [];
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
-  })
+    expect(result).toBe(0);
+  });
 
   test('should release the client when done', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle errors and return undefined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const error = new Error('Database error')
-    mockClient.query = vi.fn().mockRejectedValue(error)
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const error = new Error('Database error');
+    mockClient.query = vi.fn().mockRejectedValue(error);
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
+    expect(result).toBe(0);
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -148,24 +151,24 @@ describe('getMoorlandInterceptPercentage', () => {
       expect.stringContaining(
         'Database operation failed: Get moorland intercept percentage'
       )
-    )
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    );
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle client release if client is not defined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'));
 
     const result = await getMoorlandInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toBe(0)
-    expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
-})
+    expect(result).toBe(0);
+    expect(mockLogger.error).toHaveBeenCalled();
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
+});

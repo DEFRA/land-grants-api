@@ -1,17 +1,17 @@
-import Boom from '@hapi/boom'
+import Boom from '@hapi/boom';
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js'
+} from '~/src/features/common/schema/index.js';
 import {
   applicationValidationRunsRequestSchema,
   applicationValidationRunsBodyRequestSchema,
   applicationValidationRunsResponseSchema
-} from '../../schema/application-validation.schema.js'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
-import { getApplicationValidationRuns } from '../../queries/getApplicationValidationRuns.query.js'
-import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js'
-import { logBusinessError } from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '../../schema/application-validation.schema.js';
+import { statusCodes } from '~/src/features/common/constants/status-codes.js';
+import { getApplicationValidationRuns } from '../../queries/getApplicationValidationRuns.query.js';
+import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js';
+import { logBusinessError } from '~/src/features/common/helpers/logging/log-helpers.js';
 
 export const ApplicationValidationRunsController = {
   options: {
@@ -39,30 +39,30 @@ export const ApplicationValidationRunsController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb
-      const { applicationId } = request.params
+      const postgresDb = request.server.postgresDb;
+      const { applicationId } = request.params;
       // @ts-expect-error - payload
-      const { fields } = request.payload
+      const { fields } = request.payload;
 
       const applicationValidationRuns = await getApplicationValidationRuns(
         request.logger,
         postgresDb,
         applicationId
-      )
+      );
 
       const response = fields.includes('details')
         ? applicationValidationRuns
-        : applicationValidationRunTransformer(applicationValidationRuns ?? [])
+        : applicationValidationRunTransformer(applicationValidationRuns ?? []);
 
       return h
         .response({
           message: 'Application validation runs retrieved successfully',
           applicationValidationRuns: response
         })
-        .code(statusCodes.ok)
+        .code(statusCodes.ok);
     } catch (error) {
       // @ts-expect-error - payload
-      const { fields } = request.payload
+      const { fields } = request.payload;
       logBusinessError(request.logger, {
         operation: 'retrieve application validation runs',
         error,
@@ -70,8 +70,8 @@ export const ApplicationValidationRunsController = {
           applicationId: request.params?.applicationId,
           fields: fields.join(',')
         }
-      })
-      return Boom.internal('Error getting application validation runs')
+      });
+      return Boom.internal('Error getting application validation runs');
     }
   }
-}
+};

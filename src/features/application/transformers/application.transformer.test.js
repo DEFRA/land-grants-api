@@ -3,30 +3,30 @@ import {
   applicationDataTransformer,
   ruleEngineApplicationTransformer,
   applicationValidationRunTransformer
-} from './application.transformer.js'
+} from './application.transformer.js';
 
 describe('actionResultTransformer', () => {
   test('should transform action result correctly', () => {
-    const action = { code: 'UPL1' }
+    const action = { code: 'UPL1' };
     const actions = [
       { code: 'UPL1', semanticVersion: '1.0.0' },
       { code: 'SPM4', semanticVersion: '2.0.0' }
-    ]
+    ];
     const availableArea = {
       explanations: ['explanation1', 'explanation2'],
       availableAreaSqm: 10000
-    }
+    };
     const ruleResult = {
       passed: true,
       results: [{ rule: 'test rule' }]
-    }
+    };
 
     const result = actionResultTransformer(
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    );
 
     expect(result).toEqual({
       hasPassed: true,
@@ -37,27 +37,27 @@ describe('actionResultTransformer', () => {
         areaInHa: 1
       },
       rules: [{ rule: 'test rule' }]
-    })
-  })
+    });
+  });
 
   test('should handle action not found in actions array', () => {
-    const action = { code: 'UNKNOWN' }
-    const actions = [{ code: 'UPL1', semanticVersion: '1.0.0' }]
+    const action = { code: 'UNKNOWN' };
+    const actions = [{ code: 'UPL1', semanticVersion: '1.0.0' }];
     const availableArea = {
       explanations: [],
       availableAreaSqm: 5000
-    }
+    };
     const ruleResult = {
       passed: false,
       results: [{ rule: 'test rule' }]
-    }
+    };
 
     const result = actionResultTransformer(
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    );
 
     expect(result).toEqual({
       hasPassed: false,
@@ -68,74 +68,74 @@ describe('actionResultTransformer', () => {
         areaInHa: 0.5
       },
       rules: [{ rule: 'test rule' }]
-    })
-  })
+    });
+  });
 
   test('should handle zero available area', () => {
-    const action = { code: 'UPL1' }
-    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const action = { code: 'UPL1' };
+    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }];
     const availableArea = {
       explanations: [],
       availableAreaSqm: 0
-    }
+    };
     const ruleResult = {
       passed: true,
       results: { rule: 'test rule' }
-    }
+    };
 
     const result = actionResultTransformer(
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    );
 
-    expect(result.availableArea.areaInHa).toBe(0)
-  })
+    expect(result.availableArea.areaInHa).toBe(0);
+  });
 
   test('should handle negative available area', () => {
-    const action = { code: 'UPL1' }
-    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }]
+    const action = { code: 'UPL1' };
+    const actions = [{ code: 'UPL1', actionConfigVersion: '1.0' }];
     const availableArea = {
       explanations: [],
       availableAreaSqm: -1000
-    }
+    };
     const ruleResult = {
       passed: true,
       results: { rule: 'test rule' }
-    }
+    };
 
     const result = actionResultTransformer(
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    );
 
-    expect(result.availableArea.areaInHa).toBe(-0.1)
-  })
-})
+    expect(result.availableArea.areaInHa).toBe(-0.1);
+  });
+});
 
 describe('applicationDataTransformer', () => {
-  const mockDate = new Date('2023-01-01T00:00:00.000Z')
-  const originalDate = Date
+  const mockDate = new Date('2023-01-01T00:00:00.000Z');
+  const originalDate = Date;
 
   beforeEach(() => {
     global.Date = vi.fn(function () {
-      return mockDate
-    })
-    global.Date.now = originalDate.now
-  })
+      return mockDate;
+    });
+    global.Date.now = originalDate.now;
+  });
 
   afterEach(() => {
-    global.Date = originalDate
-  })
+    global.Date = originalDate;
+  });
 
   test('should transform application data when all parcels pass', () => {
-    const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
-    const requester = 'test@example.com'
+    const applicationId = 'APP123';
+    const applicantCrn = 'CRN456';
+    const sbi = 'SBI789';
+    const requester = 'test@example.com';
     const landActions = [
       {
         sheetId: 'S1',
@@ -145,7 +145,7 @@ describe('applicationDataTransformer', () => {
           { code: 'SPM4', hasPassed: true }
         ]
       }
-    ]
+    ];
     const parcelResults = [
       {
         sheetId: 'S1',
@@ -155,7 +155,7 @@ describe('applicationDataTransformer', () => {
           { code: 'SPM4', hasPassed: true }
         ]
       }
-    ]
+    ];
 
     const result = applicationDataTransformer(
       applicationId,
@@ -164,7 +164,7 @@ describe('applicationDataTransformer', () => {
       requester,
       landActions,
       parcelResults
-    )
+    );
 
     expect(result).toEqual({
       date: mockDate,
@@ -189,14 +189,14 @@ describe('applicationDataTransformer', () => {
         ]
       },
       parcelLevelResults: parcelResults
-    })
-  })
+    });
+  });
 
   test('should transform application data when some parcels fail', () => {
-    const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
-    const requester = 'test@example.com'
+    const applicationId = 'APP123';
+    const applicantCrn = 'CRN456';
+    const sbi = 'SBI789';
+    const requester = 'test@example.com';
     const landActions = [
       {
         sheetId: 'S1',
@@ -206,7 +206,7 @@ describe('applicationDataTransformer', () => {
           { code: 'SPM4', hasPassed: false }
         ]
       }
-    ]
+    ];
     const parcelResults = [
       {
         sheetId: 'S1',
@@ -216,7 +216,7 @@ describe('applicationDataTransformer', () => {
           { code: 'SPM4', hasPassed: false }
         ]
       }
-    ]
+    ];
 
     const result = applicationDataTransformer(
       applicationId,
@@ -225,18 +225,18 @@ describe('applicationDataTransformer', () => {
       requester,
       landActions,
       parcelResults
-    )
+    );
 
-    expect(result.hasPassed).toBe(false)
-  })
+    expect(result.hasPassed).toBe(false);
+  });
 
   test('should handle empty landActions and parcelResults', () => {
-    const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
-    const requester = 'test@example.com'
-    const landActions = []
-    const parcelResults = []
+    const applicationId = 'APP123';
+    const applicantCrn = 'CRN456';
+    const sbi = 'SBI789';
+    const requester = 'test@example.com';
+    const landActions = [];
+    const parcelResults = [];
 
     const result = applicationDataTransformer(
       applicationId,
@@ -245,18 +245,18 @@ describe('applicationDataTransformer', () => {
       requester,
       landActions,
       parcelResults
-    )
+    );
 
-    expect(result.hasPassed).toBe(true)
-    expect(result.application.parcels).toEqual([])
-    expect(result.parcelLevelResults).toEqual([])
-  })
+    expect(result.hasPassed).toBe(true);
+    expect(result.application.parcels).toEqual([]);
+    expect(result.parcelLevelResults).toEqual([]);
+  });
 
   test('should handle multiple parcels with mixed results', () => {
-    const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
-    const requester = 'test@example.com'
+    const applicationId = 'APP123';
+    const applicantCrn = 'CRN456';
+    const sbi = 'SBI789';
+    const requester = 'test@example.com';
     const landActions = [
       {
         sheetId: 'S1',
@@ -268,7 +268,7 @@ describe('applicationDataTransformer', () => {
         parcelId: 'P2',
         actions: [{ code: 'SPM4', hasPassed: false }]
       }
-    ]
+    ];
     const parcelResults = [
       {
         sheetId: 'S1',
@@ -280,7 +280,7 @@ describe('applicationDataTransformer', () => {
         parcelId: 'P2',
         actions: [{ code: 'SPM4', hasPassed: false }]
       }
-    ]
+    ];
 
     const result = applicationDataTransformer(
       applicationId,
@@ -289,27 +289,27 @@ describe('applicationDataTransformer', () => {
       requester,
       landActions,
       parcelResults
-    )
+    );
 
-    expect(result.hasPassed).toBe(false)
-    expect(result.application.parcels).toHaveLength(2)
-  })
-})
+    expect(result.hasPassed).toBe(false);
+    expect(result.application.parcels).toHaveLength(2);
+  });
+});
 
 describe('ruleEngineApplicationTransformer', () => {
   test('should transform rule engine application correctly', () => {
-    const areaAppliedFor = 100
-    const code = 'UPL1'
-    const area = 500
-    const intersectingAreaPercentage = 25.5
-    const sssiIntersectingAreaPercentage = 10.0
-    const sssiIntersectionAreaSqm = 1000
-    const historicFeaturesIntersectingAreaPercentage = 5.0
-    const historicFeaturesIntersectionAreaHa = 0.05
+    const areaAppliedFor = 100;
+    const code = 'UPL1';
+    const area = 500;
+    const intersectingAreaPercentage = 25.5;
+    const sssiIntersectingAreaPercentage = 10.0;
+    const sssiIntersectionAreaSqm = 1000;
+    const historicFeaturesIntersectingAreaPercentage = 5.0;
+    const historicFeaturesIntersectionAreaHa = 0.05;
     const existingAgreements = [
       { id: 'AG1', type: 'agreement1' },
       { id: 'AG2', type: 'agreement2' }
-    ]
+    ];
 
     const result = ruleEngineApplicationTransformer(
       areaAppliedFor,
@@ -325,7 +325,7 @@ describe('ruleEngineApplicationTransformer', () => {
         intersectionAreaHa: historicFeaturesIntersectionAreaHa
       },
       existingAgreements
-    )
+    );
 
     expect(result).toEqual({
       areaAppliedFor: 100,
@@ -349,8 +349,8 @@ describe('ruleEngineApplicationTransformer', () => {
           }
         }
       }
-    })
-  })
+    });
+  });
 
   test('should handle zero values', () => {
     const result = ruleEngineApplicationTransformer(
@@ -367,7 +367,7 @@ describe('ruleEngineApplicationTransformer', () => {
         intersectionAreaHa: 0
       },
       []
-    )
+    );
 
     expect(result).toEqual({
       areaAppliedFor: 0,
@@ -384,8 +384,8 @@ describe('ruleEngineApplicationTransformer', () => {
           }
         }
       }
-    })
-  })
+    });
+  });
 
   test('should handle negative values', () => {
     const result = ruleEngineApplicationTransformer(
@@ -396,7 +396,7 @@ describe('ruleEngineApplicationTransformer', () => {
       { intersectingAreaPercentage: -10.0, intersectionAreaSqm: 1000 },
       { intersectingAreaPercentage: -5.0, intersectionAreaHa: 0.05 },
       []
-    )
+    );
 
     expect(result).toEqual({
       areaAppliedFor: -100,
@@ -416,8 +416,8 @@ describe('ruleEngineApplicationTransformer', () => {
           }
         }
       }
-    })
-  })
+    });
+  });
 
   test('should handle null and undefined values', () => {
     const result = ruleEngineApplicationTransformer(
@@ -428,7 +428,7 @@ describe('ruleEngineApplicationTransformer', () => {
       { intersectingAreaPercentage: null, intersectionAreaSqm: null },
       { intersectingAreaPercentage: null, intersectionAreaHa: null },
       null
-    )
+    );
 
     expect(result).toEqual({
       areaAppliedFor: null,
@@ -445,8 +445,8 @@ describe('ruleEngineApplicationTransformer', () => {
           }
         }
       }
-    })
-  })
+    });
+  });
 
   test('should handle empty existingAgreements array', () => {
     const result = ruleEngineApplicationTransformer(
@@ -457,10 +457,10 @@ describe('ruleEngineApplicationTransformer', () => {
       { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 },
       { intersectingAreaPercentage: 0, intersectionAreaHa: 0 },
       []
-    )
+    );
 
-    expect(result.landParcel.existingAgreements).toEqual([])
-  })
+    expect(result.landParcel.existingAgreements).toEqual([]);
+  });
 
   test('should handle complex existingAgreements', () => {
     const existingAgreements = [
@@ -471,7 +471,7 @@ describe('ruleEngineApplicationTransformer', () => {
         status: 'inactive',
         details: { amount: 1000 }
       }
-    ]
+    ];
 
     const result = ruleEngineApplicationTransformer(
       100,
@@ -481,11 +481,11 @@ describe('ruleEngineApplicationTransformer', () => {
       { intersectingAreaPercentage: 0, intersectionAreaSqm: 0 },
       { intersectingAreaPercentage: 0, intersectionAreaHa: 0 },
       existingAgreements
-    )
+    );
 
-    expect(result.landParcel.existingAgreements).toEqual(existingAgreements)
-  })
-})
+    expect(result.landParcel.existingAgreements).toEqual(existingAgreements);
+  });
+});
 
 describe('applicationValidationRunTransformer', () => {
   test('should transform simple detail validation run correctly', () => {
@@ -495,27 +495,27 @@ describe('applicationValidationRunTransformer', () => {
         created_at: '2024-01-15T10:30:00Z',
         ignore: true
       }
-    ]
+    ];
 
     const result = applicationValidationRunTransformer(
       applicationValidationRuns
-    )
+    );
 
     expect(result).toEqual([
       {
         id: 1,
         created_at: '2024-01-15T10:30:00Z'
       }
-    ])
-  })
+    ]);
+  });
 
   test('should handle empty array', () => {
-    const applicationValidationRuns = []
+    const applicationValidationRuns = [];
 
     const result = applicationValidationRunTransformer(
       applicationValidationRuns
-    )
+    );
 
-    expect(result).toEqual([])
-  })
-})
+    expect(result).toEqual([]);
+  });
+});
