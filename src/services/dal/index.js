@@ -2,7 +2,6 @@ import { GET_BUSINESS } from './queries.js'
 import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { proxyFetch } from '~/src/features/common/helpers/proxy.js'
 
 /**
  * Fetches existing Siti Agri agreements for a business from the DAL
@@ -32,7 +31,7 @@ export async function getAgreements(
 
   const endpoint = config.get('dal.apiEndpoint')
 
-  const response = await proxyFetch(endpoint, {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
