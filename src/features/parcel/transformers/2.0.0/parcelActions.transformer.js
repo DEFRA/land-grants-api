@@ -14,8 +14,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     availableArea: Number.isFinite(availableArea?.availableAreaHectares)
       ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
       : undefined,
-    ...action.payment,
-    ratePerAgreementPerYearGbp: action.payment?.ratePerAgreementPerYearGbp ?? 0
+    ...action.payment
   }
 
   if (showResults) {

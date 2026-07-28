@@ -20,8 +20,7 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'ha',
         value: 500
       },
-      version: '2.0.0',
-      ratePerAgreementPerYearGbp: 0
+      version: '2.0.0'
     })
   })
 
@@ -37,8 +36,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -53,8 +51,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -75,8 +72,7 @@ describe('actionTransformer 2.0.0', () => {
       availableArea: {
         unit: 'ha',
         value: 0
-      },
-      ratePerAgreementPerYearGbp: 0
+      }
     })
   })
 
@@ -94,8 +90,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -120,7 +115,6 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'ha',
         value: 500
       },
-      ratePerAgreementPerYearGbp: 0,
       results: {
         totalValidLandCoverSqm: 5000000,
         stacks: [{ stack: 'data' }],
@@ -149,31 +143,7 @@ describe('actionTransformer 2.0.0', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      },
-      ratePerAgreementPerYearGbp: 0
-    })
-  })
-
-  test('should use ratePerAgreementPerYearGbp from payment when available', () => {
-    const action = {
-      code: 'ACTION1',
-      description: 'Test Action',
-      semanticVersion: '2.0.0',
-      payment: {
-        ratePerUnitGbp: 10,
-        ratePerAgreementPerYearGbp: 272
       }
-    }
-
-    const result = actionTransformer(action)
-
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      version: '2.0.0',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 272,
-      ratePerUnitGbp: 10
     })
   })
 })

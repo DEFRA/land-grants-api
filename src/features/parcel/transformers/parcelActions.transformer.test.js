@@ -36,8 +36,7 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      },
-      ratePerAgreementPerYearGbp: 0
+      }
     })
   })
 
@@ -53,8 +52,7 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -69,8 +67,7 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -91,8 +88,7 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 0
-      },
-      ratePerAgreementPerYearGbp: 0
+      }
     })
   })
 
@@ -110,8 +106,7 @@ describe('actionTransformer', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
-      ratePerAgreementPerYearGbp: 0
+      availableArea: undefined
     })
   })
 
@@ -136,7 +131,6 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 500
       },
-      ratePerAgreementPerYearGbp: 0,
       results: {
         totalValidLandCoverSqm: 5000000,
         stacks: [{ stack: 'data' }],
@@ -165,8 +159,7 @@ describe('actionTransformer', () => {
       availableArea: {
         unit: 'ha',
         value: 500
-      },
-      ratePerAgreementPerYearGbp: 0
+      }
     })
   })
 })
