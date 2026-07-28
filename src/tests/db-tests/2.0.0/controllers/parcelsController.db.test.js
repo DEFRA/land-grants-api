@@ -141,6 +141,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             ratePerUnitGbp: 20,
+            ratePerAgreementPerYearGbp: 0,
             sssiConsentRequired: true,
             heferRequired: false,
             version: '2.0.0'
@@ -153,6 +154,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             ratePerUnitGbp: 53,
+            ratePerAgreementPerYearGbp: 0,
             sssiConsentRequired: true,
             heferRequired: false,
             version: '2.0.0'
@@ -165,6 +167,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             ratePerUnitGbp: 66,
+            ratePerAgreementPerYearGbp: 0,
             sssiConsentRequired: true,
             heferRequired: false,
             version: '2.0.0'
