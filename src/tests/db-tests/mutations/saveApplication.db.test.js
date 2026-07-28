@@ -1,21 +1,21 @@
-import { vi } from 'vitest'
-import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { vi } from 'vitest';
+import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
 
 describe('Save Application Mutation', () => {
-  let logger, connection
+  let logger, connection;
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-    connection = connectToTestDatabase()
-  })
+    };
+    connection = connectToTestDatabase();
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   test('should save application', async () => {
     const application = {
@@ -26,15 +26,15 @@ describe('Save Application Mutation', () => {
         sheetId: 'SX0679',
         parcelId: '9238'
       }
-    }
+    };
     const savedApplication = await saveApplication(
       logger,
       connection,
       application
-    )
+    );
 
-    expect(savedApplication).toBeGreaterThan(0)
-  })
+    expect(savedApplication).toBeGreaterThan(0);
+  });
 
   test('should release client in finally block when error occurs', async () => {
     const mockDb = {
@@ -42,7 +42,7 @@ describe('Save Application Mutation', () => {
         query: vi.fn().mockRejectedValue(new Error('Database error')),
         release: vi.fn()
       })
-    }
+    };
 
     const application = {
       application_id: '123456789',
@@ -52,13 +52,13 @@ describe('Save Application Mutation', () => {
         sheetId: 'SX0679',
         parcelId: '9238'
       }
-    }
+    };
 
-    const result = await saveApplication(logger, mockDb, application)
+    const result = await saveApplication(logger, mockDb, application);
 
-    expect(mockDb.connect).toHaveBeenCalled()
-    const client = await mockDb.connect()
-    expect(client.release).toHaveBeenCalled()
-    expect(result).toBeNull()
-  })
-})
+    expect(mockDb.connect).toHaveBeenCalled();
+    const client = await mockDb.connect();
+    expect(client.release).toHaveBeenCalled();
+    expect(result).toBeNull();
+  });
+});

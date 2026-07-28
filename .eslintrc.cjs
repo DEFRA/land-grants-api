@@ -212,7 +212,7 @@ module.exports = {
     }
   ],
   root: true
-}
+};
 
 /**
  * @import { ESLint } from 'eslint'

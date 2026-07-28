@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 const PaymentsSchema = Joi.array()
   .items(
@@ -15,14 +15,14 @@ const PaymentsSchema = Joi.array()
     })
   )
   .min(1)
-  .required()
+  .required();
 
 const ExplanationsSchema = Joi.array().items(
   Joi.object({
     title: Joi.string().required(),
     content: Joi.array().items(Joi.string()).required()
   })
-)
+);
 
 const PaymentCalculateSchema = Joi.object({
   startDate: Joi.date().optional(),
@@ -45,7 +45,7 @@ const PaymentCalculateSchema = Joi.object({
       })
     )
     .required()
-})
+});
 
 const parcelItemsSchemaV2 = Joi.object()
   .pattern(
@@ -63,7 +63,7 @@ const parcelItemsSchemaV2 = Joi.object()
       parcelId: Joi.string()
     })
   )
-  .optional()
+  .optional();
 
 const agreementLevelItemsSchemaV2 = Joi.object()
   .pattern(
@@ -76,7 +76,7 @@ const agreementLevelItemsSchemaV2 = Joi.object()
       annualPaymentPence: Joi.number().integer()
     })
   )
-  .optional()
+  .optional();
 
 const PaymentCalculateResponseSchemaV2 = Joi.object({
   message: Joi.string().required(),
@@ -93,6 +93,6 @@ const PaymentCalculateResponseSchemaV2 = Joi.object({
     agreementLevelItems: agreementLevelItemsSchemaV2,
     payments: PaymentsSchema
   }).required()
-})
+});
 
-export { PaymentCalculateSchema, PaymentCalculateResponseSchemaV2 }
+export { PaymentCalculateSchema, PaymentCalculateResponseSchemaV2 };

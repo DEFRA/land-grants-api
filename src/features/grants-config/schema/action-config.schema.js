@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 export const actionConfigInputSchema = Joi.object({
   code: Joi.string().required(),
@@ -17,4 +17,4 @@ export const actionConfigInputSchema = Joi.object({
   groupId: Joi.number().integer().allow(null).optional(),
   enabled: Joi.boolean().optional(),
   display: Joi.boolean().optional()
-}).options({ allowUnknown: true })
+}).options({ allowUnknown: true });

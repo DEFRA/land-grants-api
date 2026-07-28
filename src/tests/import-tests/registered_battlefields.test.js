@@ -3,34 +3,34 @@ import {
   uploadLandDataFixture,
   ensureBucketExists,
   deleteFiles
-} from '~/src/tests/import-tests/setup/s3-test-helpers.js'
+} from '~/src/tests/import-tests/setup/s3-test-helpers.js';
 
-import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
+import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js';
 
 const S3_KEYS = [
   'registered_battlefields/registeredBattlefields.csv',
   'registered_battlefields/registeredBattlefields.zip'
-]
+];
 
 describe('Registered battlefields import', () => {
-  let s3Client
-  let connection
+  let s3Client;
+  let connection;
 
   beforeAll(async () => {
-    connection = connectToTestDatabase()
-    s3Client = createTestS3Client()
-    await ensureBucketExists(s3Client)
-  })
+    connection = connectToTestDatabase();
+    s3Client = createTestS3Client();
+    await ensureBucketExists(s3Client);
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   afterEach(async () => {
-    await deleteFiles(s3Client, S3_KEYS)
-  })
+    await deleteFiles(s3Client, S3_KEYS);
+  });
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import registered battlefields data and return 200 ok (%s)',
@@ -39,24 +39,26 @@ describe('Registered battlefields import', () => {
         s3Client,
         'registered_battlefields_head.csv',
         s3key
-      )
+      );
 
-      const result = await importLandData({ s3key })
+      const result = await importLandData({ s3key });
 
       expect(result).toEqual({
         message: 'Land data imported successfully',
         dataChanged: true
-      })
+      });
 
       const allBattlefields = await getRecordsByQuery(
         connection,
         "SELECT * FROM data_layer WHERE data_layer_type_id = 3 and metadata->>'type' = 'registered_battlefields';",
         []
-      )
-      expect(allBattlefields).toHaveLength(2)
+      );
+      expect(allBattlefields).toHaveLength(2);
 
-      const battlefield = allBattlefields.find((b) => b.source_id === '1000000')
-      expect(battlefield.name).toBe('Battle of Adwalton Moor 1643')
+      const battlefield = allBattlefields.find(
+        (b) => b.source_id === '1000000'
+      );
+      expect(battlefield.name).toBe('Battle of Adwalton Moor 1643');
       expect(battlefield.metadata).toEqual({
         area_ha: 107.585931633297,
         ngr: 'SE2164428855',
@@ -66,13 +68,13 @@ describe('Registered battlefields import', () => {
         amend_date: '2017/09/29 13:55:59+00',
         capture_scale: '1:10000',
         type: 'registered_battlefields'
-      })
-      expect(battlefield.data_layer_type_id).toBe(3)
-      expect(battlefield.last_updated).toBeDefined()
-      expect(battlefield.ingest_date).toBeDefined()
-      expect(battlefield.ingest_id).toBeDefined()
-      expect(battlefield.geom).toBeDefined()
+      });
+      expect(battlefield.data_layer_type_id).toBe(3);
+      expect(battlefield.last_updated).toBeDefined();
+      expect(battlefield.ingest_date).toBeDefined();
+      expect(battlefield.ingest_id).toBeDefined();
+      expect(battlefield.geom).toBeDefined();
     },
     10000
-  )
-})
+  );
+});

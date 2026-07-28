@@ -4,15 +4,15 @@
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
 
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { stripTargetSuffix } from './explanation-derivation.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js';
+import { stripTargetSuffix } from './explanation-derivation.js';
 
 const ZONE_LABELS = {
   neither: 'no designation',
   sssi_only: 'SSSI only',
   hf_only: 'HF only',
   sssi_and_hf: 'SSSI and HF'
-}
+};
 
 /**
  * Formats a land cover name with an optional designation zone label.
@@ -22,9 +22,9 @@ const ZONE_LABELS = {
  */
 function formatLcWithZone(lcName, zone) {
   if (!zone || zone === 'neither') {
-    return lcName
+    return lcName;
   }
-  return `${lcName} [${ZONE_LABELS[zone]}]`
+  return `${lcName} [${ZONE_LABELS[zone]}]`;
 }
 
 /**
@@ -33,7 +33,7 @@ function formatLcWithZone(lcName, zone) {
  * @returns {ExplanationSection}
  */
 export function buildApplicationSection(targetAction) {
-  return { title: 'Application', content: [`Target action: ${targetAction}`] }
+  return { title: 'Application', content: [`Target action: ${targetAction}`] };
 }
 
 /**
@@ -46,8 +46,8 @@ export function buildLandCoversOnParcelSection(landCovers, landCoverToString) {
   const content = landCovers.map(
     (lc) =>
       `${landCoverToString(lc.landCoverClassCode)}: ${sqmToHaRounded(lc.areaSqm)} ha`
-  )
-  return { title: 'Land covers on the parcel', content }
+  );
+  return { title: 'Land covers on the parcel', content };
 }
 
 /**
@@ -67,31 +67,31 @@ export function buildDesignationAreasSection(
   sssiAndHfOverlap
 ) {
   const areaByClass = (overlaps) =>
-    new Map((overlaps ?? []).map((o) => [o.landCoverClassCode, o.areaSqm]))
-  const sssiByClass = areaByClass(sssiOverlap)
-  const hfByClass = areaByClass(hfOverlap)
-  const bothByClass = areaByClass(sssiAndHfOverlap)
+    new Map((overlaps ?? []).map((o) => [o.landCoverClassCode, o.areaSqm]));
+  const sssiByClass = areaByClass(sssiOverlap);
+  const hfByClass = areaByClass(hfOverlap);
+  const bothByClass = areaByClass(sssiAndHfOverlap);
 
-  const content = []
+  const content = [];
   for (const lc of originalLandCovers) {
-    const lcName = landCoverToString(lc.landCoverClassCode)
-    const sssi = sssiByClass.get(lc.landCoverClassCode) ?? 0
-    const hf = hfByClass.get(lc.landCoverClassCode) ?? 0
-    const both = bothByClass.get(lc.landCoverClassCode) ?? 0
+    const lcName = landCoverToString(lc.landCoverClassCode);
+    const sssi = sssiByClass.get(lc.landCoverClassCode) ?? 0;
+    const hf = hfByClass.get(lc.landCoverClassCode) ?? 0;
+    const both = bothByClass.get(lc.landCoverClassCode) ?? 0;
     if (sssi > 0 || hf > 0) {
-      const parts = []
-      parts.push(`${sqmToHaRounded(sssi)} ha SSSI`)
-      parts.push(`${sqmToHaRounded(hf)} ha HF`)
+      const parts = [];
+      parts.push(`${sqmToHaRounded(sssi)} ha SSSI`);
+      parts.push(`${sqmToHaRounded(hf)} ha HF`);
       if (both > 0) {
-        parts.push(`${sqmToHaRounded(both)} ha SSSI and HF overlap`)
+        parts.push(`${sqmToHaRounded(both)} ha SSSI and HF overlap`);
       }
-      content.push(`${lcName}: ${parts.join(', ')}`)
+      content.push(`${lcName}: ${parts.join(', ')}`);
     }
   }
   if (content.length === 0) {
-    content.push('No SSSI or HF designations on this parcel')
+    content.push('No SSSI or HF designations on this parcel');
   }
-  return { title: 'Designation areas', content }
+  return { title: 'Designation areas', content };
 }
 
 /**
@@ -108,21 +108,24 @@ export function buildDesignationEligibilitySection(
   sssiActionEligibility,
   hfActionEligibility
 ) {
-  const targetRealCode = stripTargetSuffix(targetLabel)
+  const targetRealCode = stripTargetSuffix(targetLabel);
 
-  const allCodes = [targetRealCode, ...existingActions.map((a) => a.actionCode)]
+  const allCodes = [
+    targetRealCode,
+    ...existingActions.map((a) => a.actionCode)
+  ];
 
   const content = allCodes.map((code) => {
     const sssi =
       sssiActionEligibility?.[code] !== false
         ? 'SSSI eligible'
-        : 'SSSI ineligible'
+        : 'SSSI ineligible';
     const hf =
-      hfActionEligibility?.[code] !== false ? 'HF eligible' : 'HF ineligible'
-    return `${code}: ${sssi}, ${hf}`
-  })
+      hfActionEligibility?.[code] !== false ? 'HF eligible' : 'HF ineligible';
+    return `${code}: ${sssi}, ${hf}`;
+  });
 
-  return { title: 'Designation eligibility per action', content }
+  return { title: 'Designation eligibility per action', content };
 }
 
 /**
@@ -136,23 +139,23 @@ export function buildEligibilitySection(
   landCoverToString,
   designationZones
 ) {
-  const content = []
+  const content = [];
 
   for (const [actionCode, entries] of Object.entries(
     explanations.eligibility
   )) {
     if (entries.length === 0) {
-      content.push(`${actionCode}: no eligible land covers on this parcel`)
+      content.push(`${actionCode}: no eligible land covers on this parcel`);
     } else {
       const landCoverList = entries
         .map((e) => {
-          const lcName = landCoverToString(e.landCoverClassCode)
-          const zone = designationZones?.[e.landCoverIndex]
-          const display = formatLcWithZone(lcName, zone)
-          return display
+          const lcName = landCoverToString(e.landCoverClassCode);
+          const zone = designationZones?.[e.landCoverIndex];
+          const display = formatLcWithZone(lcName, zone);
+          return display;
         })
-        .join(', ')
-      content.push(`${actionCode}: ${landCoverList}`)
+        .join(', ');
+      content.push(`${actionCode}: ${landCoverList}`);
     }
   }
 
@@ -161,7 +164,7 @@ export function buildEligibilitySection(
       ? 'Eligible land covers per action (with designation zones)'
       : 'Eligible land covers per action',
     content
-  }
+  };
 }
 
 /**
@@ -171,12 +174,12 @@ export function buildEligibilitySection(
 export function buildAdjustedActionsSection(explanations) {
   const content = explanations.adjustedActions.map(
     (adj) => `${adj.actionCode}: ${sqmToHaRounded(adj.areaSqm)} ha`
-  )
+  );
 
   return {
     title: 'Existing actions',
     content
-  }
+  };
 }
 
 /**
@@ -186,12 +189,12 @@ export function buildAdjustedActionsSection(explanations) {
 export function buildIncompatibilitySection(explanations) {
   const content = explanations.incompatibilityCliques.map(
     (clique) => `${clique.join(', ')} cannot share the same land`
-  )
+  );
 
   return {
     title: 'Incompatible action groups',
     content
-  }
+  };
 }
 
 /**
@@ -208,32 +211,32 @@ export function buildAllocationsSection(
   designationZones
 ) {
   /** @type {Map<string, {actionCode: string, landCoverIndex: number, areaSqm: number}[]>} */
-  const byAction = new Map()
+  const byAction = new Map();
   for (const alloc of explanations.allocations) {
     if (!byAction.has(alloc.actionCode)) {
-      byAction.set(alloc.actionCode, [])
+      byAction.set(alloc.actionCode, []);
     }
     const actionAllocs = /** @type {typeof explanations.allocations} */ (
       byAction.get(alloc.actionCode)
-    )
-    actionAllocs.push(alloc)
+    );
+    actionAllocs.push(alloc);
   }
 
-  const content = []
+  const content = [];
   for (const [actionCode, allocs] of byAction) {
     const parts = allocs.map((a) => {
-      const lc = landCoversForParcel[a.landCoverIndex]
-      const lcName = landCoverToString(lc.landCoverClassCode)
-      const zone = designationZones?.[a.landCoverIndex]
-      return `${sqmToHaRounded(a.areaSqm)} ha on ${formatLcWithZone(lcName, zone)}`
-    })
-    content.push(`${actionCode}: ${parts.join(', ')}`)
+      const lc = landCoversForParcel[a.landCoverIndex];
+      const lcName = landCoverToString(lc.landCoverClassCode);
+      const zone = designationZones?.[a.landCoverIndex];
+      return `${sqmToHaRounded(a.areaSqm)} ha on ${formatLcWithZone(lcName, zone)}`;
+    });
+    content.push(`${actionCode}: ${parts.join(', ')}`);
   }
 
   return {
     title: 'Optimal placement of existing actions',
     content
-  }
+  };
 }
 
 /**
@@ -252,17 +255,17 @@ export function buildTargetAvailabilitySection(
   designationZones
 ) {
   const content = explanations.targetAvailability.map((ta) => {
-    const lc = landCoversForParcel[ta.landCoverIndex]
-    const lcName = landCoverToString(lc.landCoverClassCode)
-    const zone = designationZones?.[ta.landCoverIndex]
-    const display = formatLcWithZone(lcName, zone)
-    return `${display}: ${sqmToHaRounded(ta.totalAreaSqm)} ha total, ${sqmToHaRounded(ta.usedByExistingSqm)} ha used by existing actions, ${sqmToHaRounded(ta.availableSqm)} ha available`
-  })
+    const lc = landCoversForParcel[ta.landCoverIndex];
+    const lcName = landCoverToString(lc.landCoverClassCode);
+    const zone = designationZones?.[ta.landCoverIndex];
+    const display = formatLcWithZone(lcName, zone);
+    return `${display}: ${sqmToHaRounded(ta.totalAreaSqm)} ha total, ${sqmToHaRounded(ta.usedByExistingSqm)} ha used by existing actions, ${sqmToHaRounded(ta.availableSqm)} ha available`;
+  });
 
   return {
     title: `Available land for ${targetAction}`,
     content
-  }
+  };
 }
 
 /**
@@ -282,7 +285,7 @@ export function buildResultSection(
       `Total eligible land cover for ${targetAction}: ${sqmToHaRounded(totalValidLandCoverSqm)} ha`,
       `Maximum available area for ${targetAction}: ${sqmToHaRounded(availableAreaSqm)} ha`
     ]
-  }
+  };
 }
 
 /**
@@ -299,18 +302,18 @@ export function buildStacksSection(
   designationZones
 ) {
   const content = explanations.stacks.map((stack) => {
-    let display = 'Land cover unknown'
+    let display = 'Land cover unknown';
     if (stack.landCoverIndex !== undefined) {
-      const lc = landCoversForParcel[stack.landCoverIndex]
-      const lcName = landCoverToString(lc.landCoverClassCode)
-      const zone = designationZones?.[stack.landCoverIndex]
-      display = formatLcWithZone(lcName, zone)
+      const lc = landCoversForParcel[stack.landCoverIndex];
+      const lcName = landCoverToString(lc.landCoverClassCode);
+      const zone = designationZones?.[stack.landCoverIndex];
+      display = formatLcWithZone(lcName, zone);
     }
-    return `Stack ${stack.stackNumber}: ${stack.actionCodes.join(' + ')} on ${display} (${sqmToHaRounded(stack.areaSqm)} ha)`
-  })
+    return `Stack ${stack.stackNumber}: ${stack.actionCodes.join(' + ')} on ${display} (${sqmToHaRounded(stack.areaSqm)} ha)`;
+  });
 
   return {
     title: 'Stacks',
     content
-  }
+  };
 }

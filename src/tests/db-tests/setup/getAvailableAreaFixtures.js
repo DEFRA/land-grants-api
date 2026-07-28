@@ -1,24 +1,24 @@
-import { parse } from 'csv-parse/sync'
-import { readFileSync } from 'node:fs'
-import path, { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { parse } from 'csv-parse/sync';
+import { readFileSync } from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export function getAvailableAreaFixtures() {
   const fixturePath = path.join(
     __dirname,
     '../fixtures',
     'availableAreaCalculationScenarios.csv'
-  )
-  const content = readFileSync(fixturePath, 'utf-8')
+  );
+  const content = readFileSync(fixturePath, 'utf-8');
   const fixtures = parse(content, {
     delimiter: ',',
     columns: true
-  })
+  });
 
   // @ts-expect-error - csv input isn't typed
-  return fixtures.map((fixture) => [fixture.scenarioName, fixture])
+  return fixtures.map((fixture) => [fixture.scenarioName, fixture]);
 }
 
 /**
@@ -30,25 +30,25 @@ export function getAvailableAreaComputedFixtures() {
     __dirname,
     '../fixtures',
     'available-area-computed.json'
-  )
+  );
 
   try {
-    const content = readFileSync(computedFixturePath, 'utf-8')
-    const data = JSON.parse(content)
+    const content = readFileSync(computedFixturePath, 'utf-8');
+    const data = JSON.parse(content);
 
     // Validate the fixture structure
     if (!data.metadata || !data.compatibilityMatrix || !data.scenarioData) {
-      throw new Error('Invalid computed fixture structure')
+      throw new Error('Invalid computed fixture structure');
     }
 
     // Create compatibility check function from compatible pairs
-    const compatibilityMatrix = data.compatibilityMatrix
+    const compatibilityMatrix = data.compatibilityMatrix;
     const pairSet = new Set(
       compatibilityMatrix.map((pair) => `${pair[0]}:${pair[1]}`)
-    )
+    );
     const compatibilityCheckFn = (actionA, actionB) => {
-      return pairSet.has(`${actionA}:${actionB}`)
-    }
+      return pairSet.has(`${actionA}:${actionB}`);
+    };
 
     // Convert scenario data into test.each format with computed data
     const fixtures = Object.entries(data.scenarioData).map(
@@ -68,16 +68,16 @@ export function getAvailableAreaComputedFixtures() {
           dataRequirements: scenarioData.dataRequirements
         }
       ]
-    )
+    );
 
-    return fixtures
+    return fixtures;
   } catch (error) {
-    console.error('Failed to load computed fixtures:', error)
+    console.error('Failed to load computed fixtures:', error);
     console.log(
       '💡 Run "npm run test:fixtures:generate" to create the computed fixtures'
-    )
+    );
     throw new Error(
       'Computed fixtures not available. Please generate them first.'
-    )
+    );
   }
 }

@@ -1,7 +1,7 @@
-import { GET_BUSINESS } from './queries.js'
-import { config } from '~/src/config/index.js'
-import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { GET_BUSINESS } from './queries.js';
+import { config } from '~/src/config/index.js';
+import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js';
+import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * Fetches existing Siti Agri agreements for a business from the DAL
@@ -22,14 +22,14 @@ export async function getAgreements(
   // TODO(GSPS-504): In this case we should authenticate differently with the DAL and use service
   // to service auth; this is not yet available so we'll return no results until implemented
   if (defraIdToken === null) {
-    return Promise.resolve([])
+    return Promise.resolve([]);
   }
 
   if (!config.get('featureFlags.useDal')) {
-    return Promise.resolve([])
+    return Promise.resolve([]);
   }
 
-  const endpoint = config.get('dal.apiEndpoint')
+  const endpoint = config.get('dal.apiEndpoint');
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -39,34 +39,38 @@ export async function getAgreements(
       'X-Forwarded-Authorization': defraIdToken
     },
     body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
-  })
+  });
 
   if (!response.ok) {
     if (response.status === 404) {
-      return Promise.resolve([])
+      return Promise.resolve([]);
     }
 
     throw new Error(
       `Failed to fetch existing DAL agreements for sbi=${sbi}: ${response.status} ${response.statusText}`
-    )
+    );
   }
 
-  const body = await response.json()
-  const results = dalBusinessToAgreements(body.data.business, parcelId, sheetId)
+  const body = await response.json();
+  const results = dalBusinessToAgreements(
+    body.data.business,
+    parcelId,
+    sheetId
+  );
 
   const summary = results.map(
     (a) =>
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `${a.actionCode}: ${a.quantity} ${a.unit}, ${a.startDate}-${a.endDate}`
-  )
+  );
   logInfo(logger, {
     category: 'agreements',
     operation: 'Fetch agreements from DAL',
     context: { parcelId, sheetId, sbi },
     message: `Retrieved ${results.length} agreements: [${summary.join(', ')}]`
-  })
+  });
 
-  return results
+  return results;
 }
 
 /**

@@ -1,5 +1,5 @@
-import { describe, test, expect, vi } from 'vitest'
-import { wmpPaymentCalculateTransformer } from './wmp-payment-calculate.transformer.js'
+import { describe, test, expect, vi } from 'vitest';
+import { wmpPaymentCalculateTransformer } from './wmp-payment-calculate.transformer.js';
 
 const createWmpCalculationResult = () => ({
   eligibleArea: 78,
@@ -8,14 +8,14 @@ const createWmpCalculationResult = () => ({
   quantityInActiveTier: 28,
   activeTierRatePence: 30,
   activeTierFlatRatePence: 1500
-})
+});
 
 const createAction = () => ({
   code: 'PA3',
   description: 'Woodland Management Plan',
   semanticVersion: '1.1.0',
   durationYears: 3
-})
+});
 
 describe('pence rounding', () => {
   test('wmpPaymentCalculateTransformer produces integer agreementTotalPence', () => {
@@ -24,11 +24,11 @@ describe('pence rounding', () => {
       { ...createWmpCalculationResult(), payment: 10.001 },
       createAction(),
       '2024-01-01'
-    )
-    expect(Number.isInteger(result.agreementTotalPence)).toBe(true)
-    expect(result.agreementTotalPence).toBe(1000)
-  })
-})
+    );
+    expect(Number.isInteger(result.agreementTotalPence)).toBe(true);
+    expect(result.agreementTotalPence).toBe(1000);
+  });
+});
 
 describe('wmpPaymentCalculateTransformer', () => {
   test('should return the full response shape with a fixed startDate', () => {
@@ -37,7 +37,7 @@ describe('wmpPaymentCalculateTransformer', () => {
       createWmpCalculationResult(),
       createAction(),
       '2024-01-01'
-    )
+    );
 
     expect(result).toEqual({
       explanations: [],
@@ -68,23 +68,23 @@ describe('wmpPaymentCalculateTransformer', () => {
           lineItems: [{ agreementLevelItemId: 1, paymentPence: 234000 }]
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should derive the startDate from the 1st of next month when not provided', () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date('2024-06-10'))
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2024-06-10'));
 
     const result = wmpPaymentCalculateTransformer(
       ['SX067-99238'],
       createWmpCalculationResult(),
       createAction(),
       undefined
-    )
+    );
 
-    expect(result.agreementStartDate).toBe('2024-07-01')
-    expect(result.agreementEndDate).toBe('2027-06-30')
+    expect(result.agreementStartDate).toBe('2024-07-01');
+    expect(result.agreementEndDate).toBe('2027-06-30');
 
-    vi.useRealTimers()
-  })
-})
+    vi.useRealTimers();
+  });
+});

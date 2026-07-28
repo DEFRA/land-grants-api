@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const showLogs = false
+const showLogs = false;
 
 /**
  * Logger for testing purposes
@@ -16,4 +16,4 @@ export const logger = {
   fatal: showLogs ? console.error : vi.fn(),
   trace: showLogs ? console.trace : vi.fn(),
   silent: showLogs ? console.info : vi.fn()
-}
+};

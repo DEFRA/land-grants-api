@@ -1,9 +1,9 @@
 import {
   executeRules,
   executeSingleRuleForEnabledActions
-} from '~/src/features/rules-engine/rulesEngine.js'
-import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
-import { vi, beforeEach } from 'vitest'
+} from '~/src/features/rules-engine/rulesEngine.js';
+import { mockActionConfig } from '~/src/features/actions/fixtures/index.js';
+import { vi, beforeEach } from 'vitest';
 
 const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0': {
@@ -12,7 +12,7 @@ const rules = {
         name: 'parcel-has-intersection-with-data-layer',
         passed: true,
         message: 'Success'
-      }
+      };
     }
   },
   'applied-for-total-available-area-1.0.0': {
@@ -21,10 +21,10 @@ const rules = {
         name: 'applied-for-total-available-area',
         passed: true,
         message: 'Success'
-      }
+      };
     }
   }
-}
+};
 
 const application = {
   areaAppliedFor: 100,
@@ -36,13 +36,13 @@ const application = {
       moorland: { intersectingAreaPercentage: 50 }
     }
   }
-}
+};
 
 describe('Rules Engine', function () {
   test('should return passed=true if a single rule is valid', function () {
     const result = executeRules(rules, application, [
       mockActionConfig[0].rules[0]
-    ])
+    ]);
 
     expect(result).toStrictEqual({
       passed: true,
@@ -53,11 +53,11 @@ describe('Rules Engine', function () {
           message: 'Success'
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should return passed=true if all rules are valid', function () {
-    const result = executeRules(rules, application, mockActionConfig[0].rules)
+    const result = executeRules(rules, application, mockActionConfig[0].rules);
 
     expect(result).toStrictEqual({
       passed: true,
@@ -73,27 +73,27 @@ describe('Rules Engine', function () {
           message: 'Success'
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should return passed=false if missing rules', function () {
     const result = executeRules(rules, application, [
       { name: 'missing-rule', config: {} }
-    ])
+    ]);
 
     expect(result).toStrictEqual({
       passed: false,
       results: [
         { name: 'missing-rule', passed: false, message: 'Rule not found' }
       ]
-    })
-  })
+    });
+  });
 
   test('should return passed=false if mixed response with valid and missing rules', function () {
     const result = executeRules(rules, application, [
       mockActionConfig[0].rules[0],
       { name: 'missing-rule', config: {} }
-    ])
+    ]);
 
     expect(result).toStrictEqual({
       passed: false,
@@ -105,17 +105,17 @@ describe('Rules Engine', function () {
         },
         { name: 'missing-rule', passed: false, message: 'Rule not found' }
       ]
-    })
-  })
+    });
+  });
 
   test('should return passed=false if no rules are provided', function () {
-    const result = executeRules(rules, application, [])
+    const result = executeRules(rules, application, []);
 
     expect(result).toStrictEqual({
       passed: false,
       results: []
-    })
-  })
+    });
+  });
 
   test('should return passed=false if a rule returns passed=false', function () {
     const rulesWithFailure = {
@@ -125,14 +125,14 @@ describe('Rules Engine', function () {
             name: 'parcel-has-intersection-with-data-layer',
             passed: false,
             message: 'Rule failed'
-          }
+          };
         }
       }
-    }
+    };
 
     const result = executeRules(rulesWithFailure, application, [
       mockActionConfig[0].rules[0]
-    ])
+    ]);
 
     expect(result).toStrictEqual({
       passed: false,
@@ -143,8 +143,8 @@ describe('Rules Engine', function () {
           message: 'Rule failed'
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should return passed=false if any rule returns passed=false', function () {
     const rulesWithMixedResults = {
@@ -154,7 +154,7 @@ describe('Rules Engine', function () {
             name: 'parcel-has-intersection-with-data-layer',
             passed: true,
             message: 'Success'
-          }
+          };
         }
       },
       'applied-for-total-available-area-1.0.0': {
@@ -163,16 +163,16 @@ describe('Rules Engine', function () {
             name: 'applied-for-total-available-area',
             passed: false,
             message: 'Failed'
-          }
+          };
         }
       }
-    }
+    };
 
     const result = executeRules(
       rulesWithMixedResults,
       application,
       mockActionConfig[0].rules
-    )
+    );
 
     expect(result).toStrictEqual({
       passed: false,
@@ -188,8 +188,8 @@ describe('Rules Engine', function () {
           message: 'Failed'
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should use custom version when provided in rule', function () {
     const rulesWithCustomVersion = {
@@ -199,14 +199,14 @@ describe('Rules Engine', function () {
             name: 'parcel-has-intersection-with-data-layer',
             passed: true,
             message: 'Success v2'
-          }
+          };
         }
       }
-    }
+    };
 
     const result = executeRules(rulesWithCustomVersion, application, [
       { name: 'parcel-has-intersection-with-data-layer', version: '2.0.0' }
-    ])
+    ]);
 
     expect(result).toStrictEqual({
       passed: true,
@@ -217,28 +217,28 @@ describe('Rules Engine', function () {
           message: 'Success v2'
         }
       ]
-    })
-  })
+    });
+  });
 
   test('should pass application and rule to execute function', function () {
     const mockExecute = vi.fn(() => ({
       name: 'test-rule',
       passed: true,
       message: 'Success'
-    }))
+    }));
 
     const rulesWithMock = {
       'test-rule-1.0.0': {
         execute: mockExecute
       }
-    }
+    };
 
-    const testRule = { name: 'test-rule', config: { test: 'config' } }
-    executeRules(rulesWithMock, application, [testRule])
+    const testRule = { name: 'test-rule', config: { test: 'config' } };
+    executeRules(rulesWithMock, application, [testRule]);
 
-    expect(mockExecute).toHaveBeenCalledTimes(1)
-    expect(mockExecute).toHaveBeenCalledWith(application, testRule)
-  })
+    expect(mockExecute).toHaveBeenCalledTimes(1);
+    expect(mockExecute).toHaveBeenCalledWith(application, testRule);
+  });
 
   describe('executeSingleRuleForEnabledActions', function () {
     const enabledActions = [
@@ -286,7 +286,7 @@ describe('Rules Engine', function () {
           }
         ]
       }
-    ]
+    ];
 
     const mockRuleExecutor = {
       execute: vi.fn(() => ({
@@ -297,11 +297,11 @@ describe('Rules Engine', function () {
         explanations: [],
         cavets: { isConsentRequired: false }
       }))
-    }
+    };
 
     beforeEach(function () {
-      mockRuleExecutor.execute.mockClear()
-    })
+      mockRuleExecutor.execute.mockClear();
+    });
 
     test('should return results for enabled and display actions only', function () {
       const result = executeSingleRuleForEnabledActions(
@@ -309,13 +309,13 @@ describe('Rules Engine', function () {
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
-      expect(result).toHaveProperty('CMOR1')
-      expect(result).toHaveProperty('UPL1')
-      expect(result).not.toHaveProperty('UPL2')
-      expect(result).not.toHaveProperty('DISABLED1')
-    })
+      expect(result).toHaveProperty('CMOR1');
+      expect(result).toHaveProperty('UPL1');
+      expect(result).not.toHaveProperty('UPL2');
+      expect(result).not.toHaveProperty('DISABLED1');
+    });
 
     test('should execute rule for each matching enabled action', function () {
       executeSingleRuleForEnabledActions(
@@ -323,18 +323,18 @@ describe('Rules Engine', function () {
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
-      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(2)
+      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(2);
       expect(mockRuleExecutor.execute).toHaveBeenCalledWith(
         application,
         enabledActions[0].rules[0]
-      )
+      );
       expect(mockRuleExecutor.execute).toHaveBeenCalledWith(
         application,
         enabledActions[1].rules[0]
-      )
-    })
+      );
+    });
 
     test('should return false for actions without matching rule', function () {
       const actionsWithoutRule = [
@@ -344,20 +344,20 @@ describe('Rules Engine', function () {
           display: true,
           rules: [{ name: 'other-rule', config: {} }]
         }
-      ]
+      ];
 
       const result = executeSingleRuleForEnabledActions(
         actionsWithoutRule,
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
       expect(result).toStrictEqual({
         NO_RULE1: false
-      })
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
-    })
+      });
+      expect(mockRuleExecutor.execute).not.toHaveBeenCalled();
+    });
 
     test('should return empty object for empty enabledActions array', function () {
       const result = executeSingleRuleForEnabledActions(
@@ -365,11 +365,11 @@ describe('Rules Engine', function () {
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
-      expect(result).toStrictEqual({})
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
-    })
+      expect(result).toStrictEqual({});
+      expect(mockRuleExecutor.execute).not.toHaveBeenCalled();
+    });
 
     test('should return empty object when no actions are enabled and display', function () {
       const allDisabledActions = [
@@ -395,18 +395,18 @@ describe('Rules Engine', function () {
             }
           ]
         }
-      ]
+      ];
 
       const result = executeSingleRuleForEnabledActions(
         allDisabledActions,
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
-      expect(result).toStrictEqual({})
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
-    })
+      expect(result).toStrictEqual({});
+      expect(mockRuleExecutor.execute).not.toHaveBeenCalled();
+    });
 
     test('should handle actions with no rules array', function () {
       const actionsWithoutRules = [
@@ -415,20 +415,20 @@ describe('Rules Engine', function () {
           enabled: true,
           display: true
         }
-      ]
+      ];
 
       const result = executeSingleRuleForEnabledActions(
         actionsWithoutRules,
         application,
         'sssi-consent-required',
         mockRuleExecutor
-      )
+      );
 
       expect(result).toStrictEqual({
         NO_RULES1: false
-      })
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
-    })
+      });
+      expect(mockRuleExecutor.execute).not.toHaveBeenCalled();
+    });
 
     test('should match rule name as string', function () {
       const actionsWithNumericRuleName = [
@@ -443,17 +443,17 @@ describe('Rules Engine', function () {
             }
           ]
         }
-      ]
+      ];
 
       const result = executeSingleRuleForEnabledActions(
         actionsWithNumericRuleName,
         application,
         '123',
         mockRuleExecutor
-      )
+      );
 
-      expect(result).toHaveProperty('NUMERIC_RULE1')
-      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(1)
-    })
-  })
-})
+      expect(result).toHaveProperty('NUMERIC_RULE1');
+      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(1);
+    });
+  });
+});

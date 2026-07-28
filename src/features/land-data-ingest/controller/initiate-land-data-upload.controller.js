@@ -1,18 +1,18 @@
-import Boom from '@hapi/boom'
-import { config } from '~/src/config/index.js'
+import Boom from '@hapi/boom';
+import { config } from '~/src/config/index.js';
 import {
   logBusinessError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
-import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
-import { statusCodes } from '../../common/constants/status-codes.js'
-import { initiateLandDataUpload } from '../service/ingest.service.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
+import { internalServerErrorResponseSchema } from '../../common/schema/index.js';
+import { statusCodes } from '../../common/constants/status-codes.js';
+import { initiateLandDataUpload } from '../service/ingest.service.js';
 import {
   initiateLandDataUploadRequestSchema,
   initiateLandDataUploadSuccessResponseSchema
-} from '../schema/ingest.schema.js'
-import { isValidIngestFile } from '../service/start-ingest.service.js'
-import { metricsCounter } from '../../common/helpers/metrics.js'
+} from '../schema/ingest.schema.js';
+import { isValidIngestFile } from '../service/start-ingest.service.js';
+import { metricsCounter } from '../../common/helpers/metrics.js';
 
 export const InitiateLandDataUploadController = {
   options: {
@@ -35,10 +35,10 @@ export const InitiateLandDataUploadController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    const category = 'initiate-land-data-upload'
-    const { logger, payload } = request
+    const category = 'initiate-land-data-upload';
+    const { logger, payload } = request;
     // @ts-expect-error - payload is validated by the schema
-    const { resource, ingestId, filename } = payload
+    const { resource, ingestId, filename } = payload;
 
     try {
       logInfo(logger, {
@@ -52,7 +52,7 @@ export const InitiateLandDataUploadController = {
           grantsUiHost: config.get('ingest.grantsUiHost'),
           frontendUrl: process.env.FRONTEND_URL
         }
-      })
+      });
 
       if (ingestId && filename) {
         const isValid = await isValidIngestFile(
@@ -60,7 +60,7 @@ export const InitiateLandDataUploadController = {
           filename,
           // @ts-expect-error - postgresDb
           request.server.postgresDb
-        )
+        );
         if (!isValid) {
           logBusinessError(request.logger, {
             operation: `${category}_error`,
@@ -68,8 +68,8 @@ export const InitiateLandDataUploadController = {
             context: {
               payload
             }
-          })
-          return Boom.badRequest('Invalid ingest file')
+          });
+          return Boom.badRequest('Invalid ingest file');
         }
       }
 
@@ -79,28 +79,28 @@ export const InitiateLandDataUploadController = {
         config.get('s3.bucket'),
         resource,
         payload
-      )
+      );
 
       logInfo(logger, {
         category,
         message: 'CDP uploader response',
         context: data ?? {}
-      })
+      });
 
-      const uploadUrl = `${config.get('ingest.grantsUiHost') || process.env.FRONTEND_URL}${data.uploadUrl}`
+      const uploadUrl = `${config.get('ingest.grantsUiHost') || process.env.FRONTEND_URL}${data.uploadUrl}`;
 
       logInfo(logger, {
         category,
         message: 'Upload URL',
         context: { uploadUrl }
-      })
+      });
 
       return h
         .response({
           message: 'Land data upload initiated',
           uploadUrl
         })
-        .code(statusCodes.ok)
+        .code(statusCodes.ok);
     } catch (error) {
       logBusinessError(request.logger, {
         operation: `${category}_error`,
@@ -108,9 +108,9 @@ export const InitiateLandDataUploadController = {
         context: {
           payload
         }
-      })
-      await metricsCounter('error_initiating_data_ingest', 1)
-      return Boom.internal('Error initiating land data upload')
+      });
+      await metricsCounter('error_initiating_data_ingest', 1);
+      return Boom.internal('Error initiating land data upload');
     }
   }
-}
+};

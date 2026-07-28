@@ -1,46 +1,46 @@
-import { vi } from 'vitest'
-import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { vi } from 'vitest';
+import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
 
 describe('Get Agreements For Parcel Query', () => {
-  let logger, connection
+  let logger, connection;
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-    connection = connectToTestDatabase()
-  })
+    };
+    connection = connectToTestDatabase();
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   test('should return 0 actions when parcel is missing', async () => {
-    const sheetId = 'Missing'
-    const parcelId = 'Missing'
+    const sheetId = 'Missing';
+    const parcelId = 'Missing';
 
     const actions = await getAgreementsForParcel(
       sheetId,
       parcelId,
       connection,
       logger
-    )
+    );
 
-    expect(actions).toStrictEqual([])
-  }, 10000)
+    expect(actions).toStrictEqual([]);
+  }, 10000);
 
   test('should return 1 action when parcel is present', async () => {
-    const sheetId = 'SE0034'
-    const parcelId = '3133'
+    const sheetId = 'SE0034';
+    const parcelId = '3133';
 
     const actions = await getAgreementsForParcel(
       sheetId,
       parcelId,
       connection,
       logger
-    )
+    );
 
     expect(actions).toStrictEqual([
       {
@@ -57,8 +57,8 @@ describe('Get Agreements For Parcel Query', () => {
         startDate: new Date('2019-01-01T00:00:00.000Z'),
         endDate: new Date('2028-12-31T00:00:00.000Z')
       }
-    ])
+    ]);
 
-    vi.restoreAllMocks()
-  }, 30000)
-})
+    vi.restoreAllMocks();
+  }, 30000);
+});

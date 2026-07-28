@@ -4,7 +4,7 @@
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
 
-import { TARGET_SUFFIX } from './availableArea.js'
+import { TARGET_SUFFIX } from './availableArea.js';
 
 /**
  * Strips the target suffix from an action code if present.
@@ -14,7 +14,7 @@ import { TARGET_SUFFIX } from './availableArea.js'
 export function stripTargetSuffix(code) {
   return code.endsWith(TARGET_SUFFIX)
     ? code.slice(0, -TARGET_SUFFIX.length)
-    : code
+    : code;
 }
 
 /**
@@ -31,34 +31,34 @@ export function deriveExplanations(aacContext) {
     eligibility,
     cliques,
     compatibilityCheckFn
-  } = aacContext
+  } = aacContext;
 
   // Eligibility: which land covers each action can use
   const eligibilityExplanation =
-    /** @type { Record<string, EligibilityEntry[]> } */ ({})
+    /** @type { Record<string, EligibilityEntry[]> } */ ({});
   for (const [actionCode, indices] of eligibility) {
-    const displayCode = stripTargetSuffix(actionCode)
+    const displayCode = stripTargetSuffix(actionCode);
     eligibilityExplanation[displayCode] = indices.map((lcIdx) => ({
       landCoverIndex: lcIdx,
       landCoverClassCode: landCoversForParcel[lcIdx].landCoverClassCode,
       areaSqm: landCoversForParcel[lcIdx].areaSqm
-    }))
+    }));
   }
 
   // Existing actions (always derived, even without a solution)
   const adjustedActions = existingActions.map((a) => ({
     actionCode: a.actionCode,
     areaSqm: a.areaSqm
-  }))
+  }));
 
   // Incompatibility cliques (only those with 2+ members)
   const incompatibilityCliques = cliques
     .filter((c) => c.length >= 2)
-    .map((c) => c.map(stripTargetSuffix))
+    .map((c) => c.map(stripTargetSuffix));
 
   // No solution means no LP was run or LP was infeasible
   if (!solution) {
-    const noSolutionTargetIndices = eligibility.get(targetLabel) ?? []
+    const noSolutionTargetIndices = eligibility.get(targetLabel) ?? [];
     return {
       eligibility: eligibilityExplanation,
       adjustedActions,
@@ -71,7 +71,7 @@ export function deriveExplanations(aacContext) {
         availableSqm: landCoversForParcel[lcIdx].areaSqm
       })),
       stacks: []
-    }
+    };
   }
 
   return {
@@ -95,7 +95,7 @@ export function deriveExplanations(aacContext) {
       eligibility,
       compatibilityCheckFn
     )
-  }
+  };
 }
 
 /**
@@ -112,17 +112,17 @@ function buildTargetAvailabilityFromSolution(
   solution,
   landCoversForParcel
 ) {
-  const targetIndices = eligibility.get(targetLabel) ?? []
+  const targetIndices = eligibility.get(targetLabel) ?? [];
   return targetIndices.map((lcIdx) => {
-    const availableSqm = solution[`t_${lcIdx}`] || 0
-    const totalAreaSqm = landCoversForParcel[lcIdx].areaSqm
+    const availableSqm = solution[`t_${lcIdx}`] || 0;
+    const totalAreaSqm = landCoversForParcel[lcIdx].areaSqm;
     return {
       landCoverIndex: lcIdx,
       totalAreaSqm,
       usedByExistingSqm: totalAreaSqm - availableSqm,
       availableSqm
-    }
-  })
+    };
+  });
 }
 
 /**
@@ -133,21 +133,21 @@ function buildTargetAvailabilityFromSolution(
  * @returns {{actionCode: string, landCoverIndex: number, areaSqm: number}[]}
  */
 function buildAllocationsFromSolution(existingActions, eligibility, solution) {
-  const allocations = []
+  const allocations = [];
   for (const action of existingActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
+    const eligibleIndices = eligibility.get(action.actionCode) ?? [];
     for (const lcIdx of eligibleIndices) {
-      const value = solution[`x_${action.actionCode}_${lcIdx}`] || 0
+      const value = solution[`x_${action.actionCode}_${lcIdx}`] || 0;
       if (value > 0.001) {
         allocations.push({
           actionCode: action.actionCode,
           landCoverIndex: lcIdx,
           areaSqm: value
-        })
+        });
       }
     }
   }
-  return allocations
+  return allocations;
 }
 
 /**
@@ -172,24 +172,24 @@ function buildStacksFromSolution(
     existingActions,
     eligibility,
     solution
-  )
-  const stacks = []
-  let stackNumber = 1
+  );
+  const stacks = [];
+  let stackNumber = 1;
 
   for (const [lcIdx, actions] of allocationsByLc) {
-    const lcStacks = buildStacksForLandCover(actions, compatibilityCheckFn)
+    const lcStacks = buildStacksForLandCover(actions, compatibilityCheckFn);
     for (const stack of lcStacks) {
       stacks.push({
         stackNumber,
         actionCodes: stack.actionCodes,
         areaSqm: stack.areaSqm,
         landCoverIndex: lcIdx
-      })
-      stackNumber++
+      });
+      stackNumber++;
     }
   }
 
-  return stacks
+  return stacks;
 }
 
 /**
@@ -202,32 +202,32 @@ function buildStacksFromSolution(
  * @returns {{ code: string, area: number }}
  */
 function findSmallestAction(remaining, compatibilityCheckFn) {
-  let smallestArea = Infinity
+  let smallestArea = Infinity;
   for (const [, area] of remaining) {
     if (area < smallestArea) {
-      smallestArea = area
+      smallestArea = area;
     }
   }
 
-  let bestCode = /** @type {string} */ ('')
-  let fewestCompatible = Infinity
+  let bestCode = /** @type {string} */ ('');
+  let fewestCompatible = Infinity;
   for (const [code, area] of remaining) {
     if (area - smallestArea > 0.001) {
-      continue
+      continue;
     }
-    let compatibleCount = 0
+    let compatibleCount = 0;
     for (const [other] of remaining) {
       if (other !== code && compatibilityCheckFn(code, other)) {
-        compatibleCount++
+        compatibleCount++;
       }
     }
     if (compatibleCount < fewestCompatible) {
-      fewestCompatible = compatibleCount
-      bestCode = code
+      fewestCompatible = compatibleCount;
+      bestCode = code;
     }
   }
 
-  return { code: bestCode, area: smallestArea }
+  return { code: bestCode, area: smallestArea };
 }
 
 /**
@@ -240,47 +240,48 @@ function findSmallestAction(remaining, compatibilityCheckFn) {
  */
 function buildStacksForLandCover(actions, compatibilityCheckFn) {
   /** @type {Map<string, number>} */
-  const remaining = new Map(actions.map((a) => [a.actionCode, a.areaSqm]))
-  const stacks = []
+  const remaining = new Map(actions.map((a) => [a.actionCode, a.areaSqm]));
+  const stacks = [];
 
   while (remaining.size > 0) {
     const { code: smallestCode, area: smallestArea } = findSmallestAction(
       remaining,
       compatibilityCheckFn
-    )
+    );
 
     // Build a maximal compatible group containing the smallest action
-    const group = [smallestCode]
+    const group = [smallestCode];
     const candidates = [...remaining.keys()]
       .filter((c) => c !== smallestCode)
       .sort(
         (a, b) =>
           /** @type {number} */ (remaining.get(b)) -
           /** @type {number} */ (remaining.get(a))
-      )
+      );
 
     for (const candidate of candidates) {
       if (group.every((g) => compatibilityCheckFn(g, candidate))) {
-        group.push(candidate)
+        group.push(candidate);
       }
     }
 
-    stacks.push({ actionCodes: group, areaSqm: smallestArea })
+    stacks.push({ actionCodes: group, areaSqm: smallestArea });
 
     // Subtract the peeled area from all group members
     for (const code of group) {
-      const newArea = /** @type {number} */ (remaining.get(code)) - smallestArea
+      const newArea =
+        /** @type {number} */ (remaining.get(code)) - smallestArea;
       if (newArea <= 0.001) {
-        remaining.delete(code)
+        remaining.delete(code);
       } else {
-        remaining.set(code, newArea)
+        remaining.set(code, newArea);
       }
     }
   }
 
   // Sort by area descending so the largest stacks appear first
-  stacks.sort((a, b) => b.areaSqm - a.areaSqm)
-  return stacks
+  stacks.sort((a, b) => b.areaSqm - a.areaSqm);
+  return stacks;
 }
 
 /**
@@ -290,22 +291,22 @@ function buildStacksForLandCover(actions, compatibilityCheckFn) {
  * @returns {Map<number, {actionCode: string, areaSqm: number}[]>}
  */
 function buildAllocationsByLandCover(existingActions, eligibility, solution) {
-  const allocations = new Map()
+  const allocations = new Map();
   for (const action of existingActions) {
-    const eligibleIndices = eligibility.get(action.actionCode) ?? []
+    const eligibleIndices = eligibility.get(action.actionCode) ?? [];
     for (const lcIdx of eligibleIndices) {
-      const value = solution[`x_${action.actionCode}_${lcIdx}`] || 0
+      const value = solution[`x_${action.actionCode}_${lcIdx}`] || 0;
       if (value <= 0.001) {
-        continue
+        continue;
       }
 
       if (!allocations.has(lcIdx)) {
-        allocations.set(lcIdx, [])
+        allocations.set(lcIdx, []);
       }
       allocations
         .get(lcIdx)
-        .push({ actionCode: action.actionCode, areaSqm: value })
+        .push({ actionCode: action.actionCode, areaSqm: value });
     }
   }
-  return allocations
+  return allocations;
 }

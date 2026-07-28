@@ -1,14 +1,14 @@
-import { getStats } from './stats.query.js'
+import { getStats } from './stats.query.js';
 
 describe('getStats', () => {
-  let mockDb
-  let mockLogger
-  let mockClient
+  let mockDb;
+  let mockLogger;
+  let mockClient;
 
   beforeEach(() => {
     const createMockResult = (key, count) => ({
       rows: [{ [key]: String(count) }]
-    })
+    });
 
     mockClient = {
       query: vi
@@ -46,32 +46,32 @@ describe('getStats', () => {
         .mockResolvedValueOnce(createMockResult('unlinkedCoversCount', 1))
         .mockResolvedValueOnce({ command: 'SET' }), // reset max_parallel_workers_per_gather
       release: vi.fn()
-    }
+    };
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    }
+    };
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-  })
+    };
+  });
 
   test('should connect to the database', async () => {
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1)
-  })
+    expect(mockDb.connect).toHaveBeenCalledTimes(1);
+  });
 
   test('should query all tables for counts', async () => {
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
-    expect(mockClient.query).toHaveBeenCalledTimes(22)
-  })
+    expect(mockClient.query).toHaveBeenCalledTimes(22);
+  });
 
   test('should log stats with all counts', async () => {
-    const stats = await getStats(mockLogger, mockDb)
+    const stats = await getStats(mockLogger, mockDb);
 
     expect(stats).toEqual({
       actionsCount: '10',
@@ -94,20 +94,20 @@ describe('getStats', () => {
       duplicateCoversCount: '15',
       unlinkedParcelsCount: '3',
       unlinkedCoversCount: '1'
-    })
-  })
+    });
+  });
 
   test('should release the client when done', async () => {
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle errors and log them', async () => {
-    const error = new Error('Database error')
-    mockClient.query = vi.fn().mockRejectedValue(error)
+    const error = new Error('Database error');
+    mockClient.query = vi.fn().mockRejectedValue(error);
 
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -121,16 +121,16 @@ describe('getStats', () => {
         })
       }),
       expect.stringContaining('Database operation failed: Get stats failed')
-    )
+    );
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle database connection error', async () => {
-    const connectionError = new Error('Connection failed')
-    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
+    const connectionError = new Error('Connection failed');
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError);
 
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -144,17 +144,17 @@ describe('getStats', () => {
         })
       }),
       expect.stringContaining('Database operation failed: Get stats failed')
-    )
+    );
 
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
 
   test('should handle client release if client is not defined', async () => {
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'));
 
-    await getStats(mockLogger, mockDb)
+    await getStats(mockLogger, mockDb);
 
-    expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
-})
+    expect(mockLogger.error).toHaveBeenCalled();
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
+});

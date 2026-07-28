@@ -1,14 +1,14 @@
-import Boom from '@hapi/boom'
-import { quantityValidationFailAction } from './joi-validations.js'
+import Boom from '@hapi/boom';
+import { quantityValidationFailAction } from './joi-validations.js';
 
 describe('quantityValidationFailAction', () => {
-  let mockRequest
-  let mockH
+  let mockRequest;
+  let mockH;
 
   beforeEach(() => {
-    mockRequest = {}
-    mockH = {}
-  })
+    mockRequest = {};
+    mockH = {};
+  });
 
   test('should throw 422 error when quantity is negative (number.positive)', () => {
     const validationError = {
@@ -19,14 +19,14 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be a positive number'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
-    }).toThrow(Boom.Boom)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
+    }).toThrow(Boom.Boom);
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -34,8 +34,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Quantity must be a positive number'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 422 error when quantity is a string (number.base)', () => {
     const validationError = {
@@ -46,14 +46,14 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be a number'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
-    }).toThrow(Boom.Boom)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
+    }).toThrow(Boom.Boom);
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -61,8 +61,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Quantity must be a positive number'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 422 error when quantity is zero (number.positive)', () => {
     const validationError = {
@@ -73,10 +73,10 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be a positive number'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -84,8 +84,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Quantity must be a positive number'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 400 with "Invalid request payload input" for non-quantity validation errors', () => {
     const validationError = {
@@ -96,10 +96,10 @@ describe('quantityValidationFailAction', () => {
           message: '"code" is not allowed to be empty'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -107,8 +107,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Invalid request payload input'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 400 with "Invalid request payload input" when quantity error is different type', () => {
     const validationError = {
@@ -119,10 +119,10 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be less than or equal to 100'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -130,14 +130,14 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Invalid request payload input'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 400 with "Invalid request payload input" when error has no details', () => {
-    const validationError = new Error('Generic validation error')
+    const validationError = new Error('Generic validation error');
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -145,16 +145,16 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Invalid request payload input'
       })
-    )
-  })
+    );
+  });
 
   test('should throw 400 with "Invalid request payload input" when details array is empty', () => {
     const validationError = {
       details: []
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -162,8 +162,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Invalid request payload input'
       })
-    )
-  })
+    );
+  });
 
   test('should handle multiple validation errors with quantity error present', () => {
     const validationError = {
@@ -179,10 +179,10 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be a positive number'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -190,8 +190,8 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Quantity must be a positive number'
       })
-    )
-  })
+    );
+  });
 
   test('should handle nested quantity path', () => {
     const validationError = {
@@ -202,18 +202,18 @@ describe('quantityValidationFailAction', () => {
           message: '"quantity" must be a number'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
           statusCode: 422
         })
       })
-    )
-  })
+    );
+  });
 
   test('should throw 400 with "Invalid request payload input" for landActions validation error', () => {
     const validationError = {
@@ -224,10 +224,10 @@ describe('quantityValidationFailAction', () => {
           message: '"landActions" must contain at least 1 items'
         }
       ]
-    }
+    };
 
     expect(() => {
-      quantityValidationFailAction(mockRequest, mockH, validationError)
+      quantityValidationFailAction(mockRequest, mockH, validationError);
     }).toThrow(
       expect.objectContaining({
         output: expect.objectContaining({
@@ -235,6 +235,6 @@ describe('quantityValidationFailAction', () => {
         }),
         message: 'Invalid request payload input'
       })
-    )
-  })
-})
+    );
+  });
+});

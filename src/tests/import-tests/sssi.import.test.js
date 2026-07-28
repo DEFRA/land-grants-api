@@ -3,68 +3,68 @@ import {
   uploadLandDataFixture,
   ensureBucketExists,
   deleteFiles
-} from '~/src/tests/import-tests/setup/s3-test-helpers.js'
+} from '~/src/tests/import-tests/setup/s3-test-helpers.js';
 
-import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
+import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js';
 
-const S3_KEYS = ['sssi/sssi.csv', 'sssi/sssi.zip']
+const S3_KEYS = ['sssi/sssi.csv', 'sssi/sssi.zip'];
 
 describe('SSSI import', () => {
-  let s3Client
-  let connection
+  let s3Client;
+  let connection;
 
   beforeAll(async () => {
-    connection = connectToTestDatabase()
-    s3Client = createTestS3Client()
-    await ensureBucketExists(s3Client)
-  })
+    connection = connectToTestDatabase();
+    s3Client = createTestS3Client();
+    await ensureBucketExists(s3Client);
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   afterEach(async () => {
-    await deleteFiles(s3Client, S3_KEYS)
-  })
+    await deleteFiles(s3Client, S3_KEYS);
+  });
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import sssi data and return 200 ok (%s)',
     async (s3key) => {
-      await uploadLandDataFixture(s3Client, 'sssi_head.csv', s3key)
+      await uploadLandDataFixture(s3Client, 'sssi_head.csv', s3key);
 
-      const result = await importLandData({ s3key })
+      const result = await importLandData({ s3key });
 
       expect(result).toEqual({
         message: 'Land data imported successfully',
         dataChanged: true
-      })
+      });
 
       const allSSSI = await getRecordsByQuery(
         connection,
         'SELECT * FROM data_layer WHERE data_layer_type_id = 1',
         []
-      )
-      expect(allSSSI).toHaveLength(102)
+      );
+      expect(allSSSI).toHaveLength(102);
 
       const sssi = await getRecordsByQuery(
         connection,
         'SELECT * FROM data_layer WHERE source_id = $1',
         ['{318ACB47-BB29-41E3-848E-BC27A7019C97}']
-      )
-      expect(sssi).toHaveLength(1)
-      expect(sssi[0].name).toBe('Freeholders Wood')
+      );
+      expect(sssi).toHaveLength(1);
+      expect(sssi[0].name).toBe('Freeholders Wood');
       expect(sssi[0].metadata).toEqual({
         ensis_id: 1001855,
         condition: 'FAVOURABLE'
-      })
-      expect(sssi[0].data_layer_type_id).toBe(1)
-      expect(sssi[0].last_updated).toBeDefined()
-      expect(sssi[0].ingest_date).toBeDefined()
-      expect(sssi[0].ingest_id).toBeDefined()
-      expect(sssi[0].geom).toBeDefined()
+      });
+      expect(sssi[0].data_layer_type_id).toBe(1);
+      expect(sssi[0].last_updated).toBeDefined();
+      expect(sssi[0].ingest_date).toBeDefined();
+      expect(sssi[0].ingest_id).toBeDefined();
+      expect(sssi[0].geom).toBeDefined();
     },
     10000
-  )
-})
+  );
+});

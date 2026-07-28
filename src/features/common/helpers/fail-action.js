@@ -1,6 +1,6 @@
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
+import { createLogger } from '~/src/features/common/helpers/logging/logger.js';
 
-const logger = createLogger()
+const logger = createLogger();
 
 /**
  *
@@ -10,6 +10,6 @@ const logger = createLogger()
  * @returns { never }
  */
 export function failAction(_request, _h, error) {
-  logger.warn(error, error?.message)
-  throw error
+  logger.warn(error, error?.message);
+  throw error;
 }

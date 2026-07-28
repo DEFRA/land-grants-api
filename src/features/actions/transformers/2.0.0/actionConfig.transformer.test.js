@@ -1,4 +1,4 @@
-import { actionConfigTransformer } from './actionConfig.transformer.js'
+import { actionConfigTransformer } from './actionConfig.transformer.js';
 
 describe('actionConfigTransformer', () => {
   test('should transform action config correctly', () => {
@@ -21,9 +21,9 @@ describe('actionConfigTransformer', () => {
       group_id: 1,
       group_name: 'Wetland',
       display_order: 5
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
     expect(result).toEqual({
       code: 'CMOR1',
@@ -44,8 +44,8 @@ describe('actionConfigTransformer', () => {
       groupId: 1,
       groupName: 'Wetland',
       displayOrder: 5
-    })
-  })
+    });
+  });
 
   test('should convert duration_years to number', () => {
     const action = {
@@ -58,13 +58,13 @@ describe('actionConfigTransformer', () => {
       major_version: 1,
       minor_version: 0,
       patch_version: 0
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.durationYears).toBe(5)
-    expect(typeof result.durationYears).toBe('number')
-  })
+    expect(result.durationYears).toBe(5);
+    expect(typeof result.durationYears).toBe('number');
+  });
 
   test('should handle null duration_years', () => {
     const action = {
@@ -77,12 +77,12 @@ describe('actionConfigTransformer', () => {
       major_version: 1,
       minor_version: 0,
       patch_version: 0
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.durationYears).toBe(0)
-  })
+    expect(result.durationYears).toBe(0);
+  });
 
   test('should handle null land_cover_class_codes', () => {
     const action = {
@@ -95,12 +95,12 @@ describe('actionConfigTransformer', () => {
       major_version: 1,
       minor_version: 0,
       patch_version: 0
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.landCoverClassCodes).toBeNull()
-  })
+    expect(result.landCoverClassCodes).toBeNull();
+  });
 
   test('should not include original snake_case fields in result', () => {
     const action = {
@@ -116,22 +116,22 @@ describe('actionConfigTransformer', () => {
       group_id: 1,
       group_name: 'Test Group',
       display_order: 3
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.duration_years).toBeUndefined()
-    expect(result.application_unit_of_measurement).toBeUndefined()
-    expect(result.land_cover_class_codes).toBeUndefined()
-    expect(result.start_date).toBeUndefined()
-    expect(result.last_updated).toBeUndefined()
-    expect(result.major_version).toBeUndefined()
-    expect(result.minor_version).toBeUndefined()
-    expect(result.patch_version).toBeUndefined()
-    expect(result.group_id).toBeUndefined()
-    expect(result.group_name).toBeUndefined()
-    expect(result.display_order).toBeUndefined()
-  })
+    expect(result.duration_years).toBeUndefined();
+    expect(result.application_unit_of_measurement).toBeUndefined();
+    expect(result.land_cover_class_codes).toBeUndefined();
+    expect(result.start_date).toBeUndefined();
+    expect(result.last_updated).toBeUndefined();
+    expect(result.major_version).toBeUndefined();
+    expect(result.minor_version).toBeUndefined();
+    expect(result.patch_version).toBeUndefined();
+    expect(result.group_id).toBeUndefined();
+    expect(result.group_name).toBeUndefined();
+    expect(result.display_order).toBeUndefined();
+  });
 
   test('should transform display_order to displayOrder', () => {
     const action = {
@@ -145,13 +145,13 @@ describe('actionConfigTransformer', () => {
       minor_version: 0,
       patch_version: 0,
       display_order: 7
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.displayOrder).toBe(7)
-    expect(result.display_order).toBeUndefined()
-  })
+    expect(result.displayOrder).toBe(7);
+    expect(result.display_order).toBeUndefined();
+  });
 
   test('should handle null display_order', () => {
     const action = {
@@ -165,12 +165,12 @@ describe('actionConfigTransformer', () => {
       minor_version: 0,
       patch_version: 0,
       display_order: null
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.displayOrder).toBeNull()
-  })
+    expect(result.displayOrder).toBeNull();
+  });
 
   test('should preserve other fields in action object', () => {
     const action = {
@@ -189,16 +189,16 @@ describe('actionConfigTransformer', () => {
       major_version: 1,
       minor_version: 0,
       patch_version: 0
-    }
+    };
 
-    const result = actionConfigTransformer(action)
+    const result = actionConfigTransformer(action);
 
-    expect(result.code).toBe('UPL1')
-    expect(result.name).toBe('Action Name')
-    expect(result.enabled).toBe(true)
-    expect(result.version).toBe(2)
-    expect(result.payment).toEqual({ rate: 200, type: 'annual' })
-    expect(result.rules).toEqual({ minArea: 10, maxArea: 100 })
-    expect(result.customField).toBe('custom value')
-  })
-})
+    expect(result.code).toBe('UPL1');
+    expect(result.name).toBe('Action Name');
+    expect(result.enabled).toBe(true);
+    expect(result.version).toBe(2);
+    expect(result.payment).toEqual({ rate: 200, type: 'annual' });
+    expect(result.rules).toEqual({ minArea: 10, maxArea: 100 });
+    expect(result.customField).toBe('custom value');
+  });
+});

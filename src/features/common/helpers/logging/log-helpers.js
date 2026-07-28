@@ -9,15 +9,15 @@ const formatContext = (context) => {
     typeof context !== 'object' ||
     Object.keys(context).length === 0
   ) {
-    return ''
+    return '';
   }
 
   const parts = Object.entries(context)
     .map(([key, value]) => `${key}=${value}`)
-    .join(' | ')
+    .join(' | ');
 
-  return ` [${parts}]`
-}
+  return ` [${parts}]`;
+};
 
 /**
  * Log an informational event
@@ -40,10 +40,10 @@ export const logInfo = (
       type: 'info',
       kind
     }
-  }
+  };
 
-  logger.info(logData, `${message}${formatContext(context)}`)
-}
+  logger.info(logData, `${message}${formatContext(context)}`);
+};
 
 /**
  * Log a database query error
@@ -65,13 +65,13 @@ export const logDatabaseError = (logger, { operation, error, context }) => {
       action: operation,
       type: 'error'
     }
-  }
+  };
 
   logger.error(
     logData,
     `Database operation failed: ${operation}${formatContext(context)}`
-  )
-}
+  );
+};
 
 /**
  * Log a validation error
@@ -82,7 +82,7 @@ export const logDatabaseError = (logger, { operation, error, context }) => {
  * @param {object} [options.context]
  */
 export const logValidationWarn = (logger, { operation, errors, context }) => {
-  const errorText = Array.isArray(errors) ? errors.join(', ') : String(errors)
+  const errorText = Array.isArray(errors) ? errors.join(', ') : String(errors);
 
   const logData = {
     event: {
@@ -91,13 +91,13 @@ export const logValidationWarn = (logger, { operation, errors, context }) => {
       type: 'warn',
       reason: errorText
     }
-  }
+  };
 
   logger.warn(
     logData,
     `Validation failed: ${operation}${formatContext(context)}`
-  )
-}
+  );
+};
 
 /**
  * Log a resource not found
@@ -116,8 +116,8 @@ export const logResourceNotFound = (logger, { resourceType, context }) => {
       }
     },
     `${resourceType} not found${formatContext(context)}`
-  )
-}
+  );
+};
 
 /**
  * Log a business logic error
@@ -139,13 +139,13 @@ export const logBusinessError = (logger, { operation, error, context }) => {
       action: operation,
       type: 'error'
     }
-  }
+  };
 
   logger.error(
     logData,
     `Business operation failed: ${operation}${formatContext(context)}`
-  )
-}
+  );
+};
 
 /**
  * @import {Logger} from '~/src/features/common/logger.d.js'

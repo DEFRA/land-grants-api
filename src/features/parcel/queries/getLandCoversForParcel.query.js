@@ -1,8 +1,8 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
-import { roundSqm } from '~/src/features/common/helpers/measurement.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
+import { roundSqm } from '~/src/features/common/helpers/measurement.js';
 
 /**
  * Get available area of a land parcel excluding specified land cover classes.
@@ -14,9 +14,9 @@ import { roundSqm } from '~/src/features/common/helpers/measurement.js'
  * @throws {Error} Throws error if something goes wrong
  */
 async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
-  let client
+  let client;
   try {
-    client = await db.connect()
+    client = await db.connect();
 
     const landCoversQuery = `
         SELECT
@@ -25,7 +25,7 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
         WHERE lc.sheet_id = $1
           AND lc.parcel_id = $2
         ORDER BY lc.land_cover_class_code, lc.area_sqm
-    `
+    `;
 
     logInfo(logger, {
       category: 'database',
@@ -34,16 +34,16 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
         parcelId,
         sheetId
       }
-    })
+    });
 
-    const result = await client.query(landCoversQuery, [sheetId, parcelId])
+    const result = await client.query(landCoversQuery, [sheetId, parcelId]);
 
     const landCovers = result.rows.map((row) => ({
       landCoverClassCode: row.land_cover_class_code,
       areaSqm: roundSqm(row.area_sqm)
-    }))
+    }));
 
-    return landCovers
+    return landCovers;
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get land covers for parcel',
@@ -52,16 +52,16 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
         parcelId,
         sheetId
       }
-    })
-    throw error
+    });
+    throw error;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
 
-export { getLandCoversForParcel }
+export { getLandCoversForParcel };
 
 /**
  * @import { LandCover } from '../parcel.d.js'

@@ -1,13 +1,13 @@
-import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js';
 
 const DAL_QUANTITY_UNITS = {
   actionArea: 'sqm',
   actionMTL: 'm',
   actionUnits: 'count'
-}
-const DAL_QUANTITY_KEYS = ['actionArea', 'actionMTL', 'actionUnits']
+};
+const DAL_QUANTITY_KEYS = ['actionArea', 'actionMTL', 'actionUnits'];
 
-const STATUS_SIGNED = 'SIGNED'
+const STATUS_SIGNED = 'SIGNED';
 
 /**
  * Transforms actions from DB format to AgreementAction format.
@@ -16,7 +16,7 @@ const STATUS_SIGNED = 'SIGNED'
  */
 export function agreementActionsTransformer(agreements) {
   if (!agreements || agreements.length === 0) {
-    return []
+    return [];
   }
 
   return agreements[0].actions?.map((action) => {
@@ -26,8 +26,8 @@ export function agreementActionsTransformer(agreements) {
       unit: action.unit,
       startDate: new Date(action.startDate),
       endDate: new Date(action.endDate)
-    }
-  })
+    };
+  });
 }
 
 /**
@@ -37,7 +37,7 @@ export function agreementActionsTransformer(agreements) {
  * @returns {AgreementAction[]}
  */
 export function mergeAgreementsTransformer(agreementActions, plannedActions) {
-  return [...(agreementActions || []), ...(plannedActions || [])]
+  return [...(agreementActions || []), ...(plannedActions || [])];
 }
 
 /**
@@ -52,22 +52,22 @@ export function mergeAgreementsTransformer(agreementActions, plannedActions) {
  * @returns {object}
  */
 function getDalQuantityFields(action) {
-  let key = null
+  let key = null;
   DAL_QUANTITY_KEYS.forEach((k) => {
-    const v = action[k]
+    const v = action[k];
     if (v !== undefined && v !== null) {
-      key = k
+      key = k;
     }
-  })
+  });
 
   if (key === null) {
-    return { quantity: null, units: null }
+    return { quantity: null, units: null };
   }
 
-  const quantity = key === 'actionArea' ? haToSqm(action[key]) : action[key]
-  const unit = DAL_QUANTITY_UNITS[key]
+  const quantity = key === 'actionArea' ? haToSqm(action[key]) : action[key];
+  const unit = DAL_QUANTITY_UNITS[key];
 
-  return { quantity, unit }
+  return { quantity, unit };
 }
 
 /**
@@ -96,7 +96,7 @@ export function dalBusinessToAgreements(business, parcelId, sheetId) {
       }))
       // Capital actions will have no quantity at all, we'll also filter these out
       .filter((a) => a.quantity !== null)
-  )
+  );
 }
 
 /**

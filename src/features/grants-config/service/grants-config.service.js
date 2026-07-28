@@ -1,7 +1,7 @@
-import { getFile } from '~/src/features/common/s3/s3.js'
-import { getActionConfigByVersion } from '~/src/features/grants-config/queries/getActionConfigByVersion.query.js'
-import { insertActionConfig } from '~/src/features/grants-config/queries/insertActionConfig.query.js'
-import { transformActionConfig } from '~/src/features/grants-config/transforms/action-config.transform.js'
+import { getFile } from '~/src/features/common/s3/s3.js';
+import { getActionConfigByVersion } from '~/src/features/grants-config/queries/getActionConfigByVersion.query.js';
+import { insertActionConfig } from '~/src/features/grants-config/queries/insertActionConfig.query.js';
+import { transformActionConfig } from '~/src/features/grants-config/transforms/action-config.transform.js';
 
 /**
  * Check if the action config version already exists in the DB; if not, download from S3 and insert.
@@ -13,10 +13,10 @@ import { transformActionConfig } from '~/src/features/grants-config/transforms/a
  * @returns {Promise<void>}
  */
 async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
-  logger.info(`Processing action config file: ${s3Key}`)
+  logger.info(`Processing action config file: ${s3Key}`);
 
-  const response = await getFile(s3Client, bucket, s3Key)
-  const json = JSON.parse(await response.Body.transformToString())
+  const response = await getFile(s3Client, bucket, s3Key);
+  const json = JSON.parse(await response.Body.transformToString());
 
   const {
     code,
@@ -32,12 +32,12 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     enabled,
     display,
     config
-  } = transformActionConfig(json)
+  } = transformActionConfig(json);
 
   if (!semanticVersion) {
     throw new Error(
       `Action config file is missing a valid semanticVersion: ${s3Key}`
-    )
+    );
   }
 
   const exists = await getActionConfigByVersion(
@@ -45,18 +45,18 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     db,
     code,
     semanticVersion
-  )
+  );
 
   if (exists) {
     logger.info(
       `Action config already exists: code=${code} semanticVersion=${semanticVersion} — skipping`
-    )
-    return
+    );
+    return;
   }
 
   logger.info(
     `Inserting new action config: code=${code} semanticVersion=${semanticVersion}`
-  )
+  );
 
   const inserted = await insertActionConfig(logger, db, {
     code,
@@ -71,17 +71,17 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     groupId,
     enabled,
     display
-  })
+  });
 
   if (!inserted) {
     throw new Error(
       `Failed to insert action config: code=${code} semanticVersion=${semanticVersion}`
-    )
+    );
   }
 
   logger.info(
     `Successfully inserted action config: code=${code} semanticVersion=${semanticVersion}`
-  )
+  );
 }
 
-export { processActionConfigFile }
+export { processActionConfigFile };

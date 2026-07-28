@@ -1,7 +1,7 @@
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns'
-import { config } from '~/src/config/index.js'
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
-import { extractIp } from '~/src/features/common/helpers/request-ip.js'
+import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
+import { config } from '~/src/config/index.js';
+import { createLogger } from '~/src/features/common/helpers/logging/logger.js';
+import { extractIp } from '~/src/features/common/helpers/request-ip.js';
 
 /**
  * Resolves the correlation id to record on audit events from the tracing header.
@@ -9,7 +9,7 @@ import { extractIp } from '~/src/features/common/helpers/request-ip.js'
  * @returns {string|string[]|undefined}
  */
 export const getCorrelationId = (request) =>
-  request.headers?.[config.get('tracing.header')]
+  request.headers?.[config.get('tracing.header')];
 
 /**
  * Audit event types. Populated by tickets as land-grants-api operations are
@@ -21,7 +21,7 @@ export const AuditEvent = Object.freeze({
   SFI_APPLICATION_VALIDATED: 'SFI_APPLICATION_VALIDATED',
   WMP_PAYMENT_CALCULATED: 'WMP_PAYMENT_CALCULATED',
   WMP_VALIDATED: 'WMP_VALIDATED'
-})
+});
 
 // Human-readable description for each audit event, used in security.details.message
 const eventMessages = {
@@ -30,14 +30,14 @@ const eventMessages = {
     'Application eligibility validation completed',
   [AuditEvent.WMP_PAYMENT_CALCULATED]: 'WMP payment calculation completed',
   [AuditEvent.WMP_VALIDATED]: 'WMP validation completed'
-}
+};
 
 // Transaction code for each audit event, used in security.details.transactioncode
-const eventTransactionCodes = {}
+const eventTransactionCodes = {};
 
 // PMC code for each audit event, used in security.pmccode. Neither event has
 // one yet - they are not forwarded to the SOC, so they carry no security block.
-const eventPmcCodes = {}
+const eventPmcCodes = {};
 
 // Audit event type for each audit event, used in audit.eventtype
 const eventTypes = {
@@ -45,7 +45,7 @@ const eventTypes = {
   [AuditEvent.SFI_APPLICATION_VALIDATED]: 'GrantsApplicationValidated',
   [AuditEvent.WMP_PAYMENT_CALCULATED]: 'GrantsWmpPaymentCalculated',
   [AuditEvent.WMP_VALIDATED]: 'GrantsWmpValidated'
-}
+};
 
 // Entities for each audit event, used in audit.entities
 // action must be one of: created, read, updated, deleted, submitted, accepted, rejected, withdrawn
@@ -70,7 +70,7 @@ const eventEntities = {
   [AuditEvent.WMP_VALIDATED]: (context) => [
     { entity: 'wmp', action: 'read', entityid: context.parcelIds?.join(',') }
   ]
-}
+};
 
 /**
  * Builds the full audit payload for a land-grants-api operation.
@@ -88,7 +88,7 @@ const buildAuditPayload = (
   // Events are only forwarded to the SOC once a pmc code has been agreed
   // with the security team; until then the payload carries no `security`
   // block at all (not just one with empty/undefined fields).
-  const hasSecurity = eventPmcCodes[event] != null
+  const hasSecurity = eventPmcCodes[event] != null;
 
   return {
     sessionid: context.sessionId,
@@ -124,21 +124,21 @@ const buildAuditPayload = (
         crn: context.identifiers?.crn
       }
     }
-  }
-}
+  };
+};
 
 /** @type {import('@aws-sdk/client-sns').SNSClient|null} */
-let snsClient = null
+let snsClient = null;
 
 const getSnsClient = () => {
   if (!snsClient) {
     snsClient = new SNSClient({
       region: config.get('aws.region'),
       endpoint: config.get('sns.endpoint')
-    })
+    });
   }
-  return snsClient
-}
+  return snsClient;
+};
 
 /**
  * Records a land-grants-api audit event by publishing it to the FCP
@@ -154,22 +154,22 @@ export const auditEvent = async (
   status = 'success',
   request = null
 ) => {
-  const logger = createLogger()
+  const logger = createLogger();
   const auditPayload = JSON.stringify(
     buildAuditPayload(event, context, status, request)
-  )
+  );
   try {
     await getSnsClient().send(
       new PublishCommand({
         TopicArn: config.get('sns.auditTopicArn'),
         Message: auditPayload
       })
-    )
-    logger.info(`Audit event successfully published: ${event}`)
+    );
+    logger.info(`Audit event successfully published: ${event}`);
   } catch (error) {
     logger.warn(
       error,
       `Failed to publish audit event: ${event} ${auditPayload}`
-    )
+    );
   }
-}
+};

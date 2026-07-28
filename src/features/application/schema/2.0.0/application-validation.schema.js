@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import Joi from 'joi';
 
 const applicationValidationResponseSchemaV2 = Joi.object({
   message: Joi.string().required(),
@@ -39,6 +39,6 @@ const applicationValidationResponseSchemaV2 = Joi.object({
     })
   ),
   valid: Joi.boolean().required()
-})
+});
 
-export { applicationValidationResponseSchemaV2 }
+export { applicationValidationResponseSchemaV2 };

@@ -1,12 +1,12 @@
-import Joi from 'joi'
-import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
+import Joi from 'joi';
+import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js';
 
-const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
+const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/);
 
 const availableAreaSchema = Joi.object({
   unit: Joi.string().required(),
   value: Joi.number().required()
-})
+});
 
 const actionSchema = Joi.object({
   code: Joi.string().required(),
@@ -22,7 +22,7 @@ const actionSchema = Joi.object({
   sssiConsentRequired: Joi.boolean().optional(),
   heferRequired: Joi.boolean().optional(),
   version: Joi.string().optional()
-})
+});
 
 const parcelSchema = Joi.object({
   parcelId: Joi.string().required(),
@@ -32,7 +32,7 @@ const parcelSchema = Joi.object({
     value: Joi.number().required()
   }).optional(),
   actions: Joi.array().items(actionSchema).optional()
-})
+});
 
 const parcelsSchema = Joi.object({
   sbi: Joi.string().required(),
@@ -60,17 +60,17 @@ const parcelsSchema = Joi.object({
       })
     )
     .optional()
-})
+});
 
 const groupSchema = Joi.object({
   name: Joi.string().required(),
   actions: Joi.array().items(Joi.string()).required()
-})
+});
 
 const parcelsSuccessResponseSchema = Joi.object({
   message: Joi.string().valid('success').required(),
   parcels: Joi.array().items(parcelSchema).required(),
   groups: Joi.array().items(groupSchema).optional()
-})
+});
 
-export { parcelsSchema, parcelsSuccessResponseSchema }
+export { parcelsSchema, parcelsSuccessResponseSchema };

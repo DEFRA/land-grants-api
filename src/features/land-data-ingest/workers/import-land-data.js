@@ -1,19 +1,19 @@
-import { Readable } from 'node:stream'
-import { failedBucketPath, getFile } from '../../common/s3/s3.js'
-import unzipper from 'unzipper'
-import { config } from '../../../config/index.js'
-import { createS3Client } from '../../common/plugins/s3-client.js'
-import { importData } from '../service/import-land-data.service.js'
-import { createLogger } from '../../common/helpers/logging/logger.js'
+import { Readable } from 'node:stream';
+import { failedBucketPath, getFile } from '../../common/s3/s3.js';
+import unzipper from 'unzipper';
+import { config } from '../../../config/index.js';
+import { createS3Client } from '../../common/plugins/s3-client.js';
+import { importData } from '../service/import-land-data.service.js';
+import { createLogger } from '../../common/helpers/logging/logger.js';
 import {
   logInfo,
   logBusinessError
-} from '../../common/helpers/logging/log-helpers.js'
-import { metricsCounter } from '../../common/helpers/metrics.js'
-import { getEntityByName } from '~/src/features/common/constants/entity_types.js'
-import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js'
-import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js'
-import { getEntityNameForIngest } from '../service/start-ingest.service.js'
+} from '../../common/helpers/logging/log-helpers.js';
+import { metricsCounter } from '../../common/helpers/metrics.js';
+import { getEntityByName } from '~/src/features/common/constants/entity_types.js';
+import { getDBOptions, createDBClient } from '../../common/helpers/postgres.js';
+import { createSecureContext } from '../../common/helpers/secure-context/secure-context.js';
+import { getEntityNameForIngest } from '../service/start-ingest.service.js';
 
 /**
  * Get resource by type
@@ -21,12 +21,12 @@ import { getEntityNameForIngest } from '../service/start-ingest.service.js'
  * @returns {object} The resource
  */
 const getEntityType = (entityName) => {
-  const entityType = getEntityByName(entityName)
+  const entityType = getEntityByName(entityName);
   if (!entityType) {
-    throw new Error(`Entity type ${entityName} not found`)
+    throw new Error(`Entity type ${entityName} not found`);
   }
-  return entityType
-}
+  return entityType;
+};
 
 /**
  * Resolve the entity type for an ingest by looking up its entity in the database
@@ -35,23 +35,23 @@ const getEntityType = (entityName) => {
  * @returns {Promise<object>} The resolved entity type
  */
 const getEntityTypeForIngest = async (ingestId, logger) => {
-  const dbOptions = getDBOptions()
+  const dbOptions = getDBOptions();
   const client = createDBClient(dbOptions, {
     secureContext: createSecureContext(logger),
     logger
-  })
-  await client.connect()
+  });
+  await client.connect();
 
   try {
-    const entityName = await getEntityNameForIngest(ingestId, client)
+    const entityName = await getEntityNameForIngest(ingestId, client);
     if (!entityName) {
-      throw new Error(`Ingest ${ingestId} not found`)
+      throw new Error(`Ingest ${ingestId} not found`);
     }
-    return getEntityType(entityName)
+    return getEntityType(entityName);
   } finally {
-    await client.end()
+    await client.end();
   }
-}
+};
 
 /**
  * Import a CSV response body directly into the database.
@@ -63,8 +63,8 @@ const getEntityTypeForIngest = async (ingestId, logger) => {
  * @returns {Promise<boolean>} true if the entity's live table was updated this run
  */
 async function handleCsvFile(response, entityType, ingestId, filename, logger) {
-  const stream = Readable.fromWeb(response.Body.transformToWebStream())
-  return importData(stream, entityType, ingestId, filename, logger)
+  const stream = Readable.fromWeb(response.Body.transformToWebStream());
+  return importData(stream, entityType, ingestId, filename, logger);
 }
 
 /**
@@ -80,15 +80,15 @@ async function handleCsvFile(response, entityType, ingestId, filename, logger) {
  */
 async function handleZipFile(response, entityType, ingestId, filename, logger) {
   try {
-    const stream = Readable.fromWeb(response.Body.transformToWebStream())
-    const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
+    const stream = Readable.fromWeb(response.Body.transformToWebStream());
+    const zip = stream.pipe(unzipper.Parse({ forceStream: true }));
     for await (const entry of zip) {
       if (entry.path.endsWith('.csv')) {
-        return await importData(entry, entityType, ingestId, filename, logger)
+        return await importData(entry, entityType, ingestId, filename, logger);
       }
-      entry.autodrain()
+      entry.autodrain();
     }
-    throw new Error('No CSV found in the ZIP')
+    throw new Error('No CSV found in the ZIP');
   } catch (error) {
     logBusinessError(logger, {
       operation: 'error importing land data',
@@ -98,8 +98,8 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
         ingestId,
         truncateTable: entityType.truncateTable
       }
-    })
-    throw error
+    });
+    throw error;
   }
 }
 
@@ -114,12 +114,12 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
  */
 function importFromResponse(response, entityType, ingestId, filename, logger) {
   if (response.ContentType === 'application/zip') {
-    return handleZipFile(response, entityType, ingestId, filename, logger)
+    return handleZipFile(response, entityType, ingestId, filename, logger);
   }
   if (response.ContentType === 'text/csv') {
-    return handleCsvFile(response, entityType, ingestId, filename, logger)
+    return handleCsvFile(response, entityType, ingestId, filename, logger);
   }
-  throw new Error(`Invalid content type: ${response.ContentType}`)
+  throw new Error(`Invalid content type: ${response.ContentType}`);
 }
 
 /**
@@ -128,16 +128,20 @@ function importFromResponse(response, entityType, ingestId, filename, logger) {
  * @returns {Promise<{message: string, dataChanged: boolean}>} The result message and whether an entity's live table was updated
  */
 export async function importLandData(data) {
-  const { s3key, filename: originalFilename, ingestId: providedIngestId } = data
+  const {
+    s3key,
+    filename: originalFilename,
+    ingestId: providedIngestId
+  } = data;
 
-  const category = 'import-land-data'
-  const logger = createLogger()
-  const s3Client = createS3Client()
-  const bucket = config.get('s3.bucket')
-  const [resourceType, ...rest] = s3key.split('/')
-  const ingestId = providedIngestId ?? rest?.[0] ?? ''
-  const filename = rest.join('/')
-  const s3Path = `${resourceType}/${filename}`
+  const category = 'import-land-data';
+  const logger = createLogger();
+  const s3Client = createS3Client();
+  const bucket = config.get('s3.bucket');
+  const [resourceType, ...rest] = s3key.split('/');
+  const ingestId = providedIngestId ?? rest?.[0] ?? '';
+  const filename = rest.join('/');
+  const s3Path = `${resourceType}/${filename}`;
 
   logInfo(logger, {
     category,
@@ -151,13 +155,13 @@ export async function importLandData(data) {
       s3Path,
       bucket
     }
-  })
+  });
 
   try {
-    const response = await getFile(s3Client, bucket, s3Path)
+    const response = await getFile(s3Client, bucket, s3Path);
     const resource = providedIngestId
       ? await getEntityTypeForIngest(providedIngestId, logger)
-      : getEntityType(resourceType)
+      : getEntityType(resourceType);
 
     const dataChanged = await importFromResponse(
       response,
@@ -165,7 +169,7 @@ export async function importLandData(data) {
       ingestId,
       originalFilename,
       logger
-    )
+    );
 
     logInfo(logger, {
       category,
@@ -174,12 +178,12 @@ export async function importLandData(data) {
       context: {
         data: `size: ${response.ContentLength} bytes, type: ${response.ContentType}`
       }
-    })
+    });
 
     return {
       message: 'Land data imported successfully',
       dataChanged: Boolean(dataChanged)
-    }
+    };
   } catch (error) {
     logBusinessError(logger, {
       operation: 'error importing land data',
@@ -191,10 +195,10 @@ export async function importLandData(data) {
         failedBucketPath: failedBucketPath(s3Path),
         bucket
       }
-    })
-    await metricsCounter('land_data_ingest_failed', 1)
+    });
+    await metricsCounter('land_data_ingest_failed', 1);
 
-    throw error
+    throw error;
   }
 }
 

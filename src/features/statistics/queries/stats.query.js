@@ -1,10 +1,10 @@
-import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
+import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js';
 
 const mergeResults = (results) =>
-  Object.assign({}, ...results.map((r) => r.rows[0]))
+  Object.assign({}, ...results.map((r) => r.rows[0]));
 
 const queryBatch = async (client, queries) =>
-  Promise.all(queries.map((sql) => client.query(sql)))
+  Promise.all(queries.map((sql) => client.query(sql)));
 
 const countTableRows = (client) =>
   queryBatch(client, [
@@ -38,17 +38,17 @@ const countTableRows = (client) =>
       FROM land_covers c
       LEFT JOIN land_parcels p ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
       WHERE p.sheet_id IS NULL`
-  ])
+  ]);
 
 const runStatsQuery = async (client) => {
-  await client.query('SET max_parallel_workers_per_gather = 0')
+  await client.query('SET max_parallel_workers_per_gather = 0');
 
-  const results = await countTableRows(client)
+  const results = await countTableRows(client);
 
-  await client.query('SET max_parallel_workers_per_gather = DEFAULT')
+  await client.query('SET max_parallel_workers_per_gather = DEFAULT');
 
-  return mergeResults(results)
-}
+  return mergeResults(results);
+};
 
 /**
  * Get stats
@@ -57,24 +57,24 @@ const runStatsQuery = async (client) => {
  * @returns {Promise<Record<string, string | number> | undefined>} The stats
  */
 async function getStats(logger, db) {
-  let client
+  let client;
   try {
-    client = await db.connect()
-    return await runStatsQuery(client)
+    client = await db.connect();
+    return await runStatsQuery(client);
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get stats failed',
       error
-    })
-    return undefined
+    });
+    return undefined;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
 
-export { getStats }
+export { getStats };
 
 /**
  * @import {Logger} from '~/src/features/common/logger.d.js'

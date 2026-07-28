@@ -1,10 +1,10 @@
-import { request } from 'undici'
-import { TEST_PORT } from './test-config.js'
+import { request } from 'undici';
+import { TEST_PORT } from './test-config.js';
 
-let baseUrl = `http://localhost:${TEST_PORT}`
+let baseUrl = `http://localhost:${TEST_PORT}`;
 
 export function setBaseUrl(url) {
-  baseUrl = url
+  baseUrl = url;
 }
 
 /**
@@ -14,28 +14,28 @@ export function setBaseUrl(url) {
  * @returns {Promise<{status: number, data: any, headers: object}>}
  */
 export async function get(path, options = { headers: {} }) {
-  const url = `${baseUrl}${path}`
+  const url = `${baseUrl}${path}`;
   const response = await request(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       ...options.headers
     }
-  })
+  });
 
-  const status = response.statusCode
-  const headers = response.headers
-  let data
+  const status = response.statusCode;
+  const headers = response.headers;
+  let data;
 
-  const body = await response.body.text()
+  const body = await response.body.text();
 
   try {
-    data = body ? JSON.parse(body) : null
+    data = body ? JSON.parse(body) : null;
   } catch {
-    data = body
+    data = body;
   }
 
-  return { status, data, headers }
+  return { status, data, headers };
 }
 
 /**
@@ -46,7 +46,7 @@ export async function get(path, options = { headers: {} }) {
  * @returns {Promise<{status: number, data: any, headers: object}>}
  */
 export async function post(path, options = { headers: {}, body: {} }) {
-  const url = `${baseUrl}${path}`
+  const url = `${baseUrl}${path}`;
   const response = await request(url, {
     method: 'POST',
     headers: {
@@ -54,25 +54,25 @@ export async function post(path, options = { headers: {}, body: {} }) {
       ...options.headers
     },
     body: options.body ? JSON.stringify(options.body) : undefined
-  })
+  });
 
-  const status = response.statusCode
-  const headers = response.headers
-  let data
+  const status = response.statusCode;
+  const headers = response.headers;
+  let data;
 
-  const body = await response.body.text()
+  const body = await response.body.text();
 
   try {
-    data = body ? JSON.parse(body) : null
+    data = body ? JSON.parse(body) : null;
   } catch {
-    data = body
+    data = body;
   }
 
-  return { status, data, headers }
+  return { status, data, headers };
 }
 
 export const httpClient = {
   get,
   post,
   setBaseUrl
-}
+};

@@ -1,34 +1,34 @@
-import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { vi } from 'vitest'
+import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { vi } from 'vitest';
 
 describe('Get Actions Query', () => {
-  let logger, connection
+  let logger, connection;
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-    connection = connectToTestDatabase()
-  })
+    };
+    connection = connectToTestDatabase();
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   test('should return all enabled actions', async () => {
-    const actions = await getEnabledActions(logger, connection)
+    const actions = await getEnabledActions(logger, connection);
 
-    expect(actions.length).toBeGreaterThan(0)
-  })
+    expect(actions.length).toBeGreaterThan(0);
+  });
 
   test('should return CMOR1', async () => {
-    const actions = await getEnabledActions(logger, connection)
+    const actions = await getEnabledActions(logger, connection);
 
     // eslint-disable-next-line
     const { lastUpdated, id, sssi_eligible, hf_eligible, ingest_id, ...cmor1 } =
-      actions.find((a) => a.code === 'CMOR1')
+      actions.find((a) => a.code === 'CMOR1');
 
     expect(cmor1).toEqual({
       version: 2,
@@ -85,20 +85,20 @@ describe('Get Actions Query', () => {
           }
         }
       ]
-    })
-    expect(id).toBeGreaterThan(0)
-    expect(lastUpdated).not.toBeNull()
-    expect(sssi_eligible).toBe(true)
-    expect(hf_eligible).toBe(true)
-    expect(ingest_id).not.toBeNull()
-  })
+    });
+    expect(id).toBeGreaterThan(0);
+    expect(lastUpdated).not.toBeNull();
+    expect(sssi_eligible).toBe(true);
+    expect(hf_eligible).toBe(true);
+    expect(ingest_id).not.toBeNull();
+  });
 
   test('should not return UPL4', async () => {
-    const actions = await getEnabledActions(logger, connection)
+    const actions = await getEnabledActions(logger, connection);
 
     // eslint-disable-next-line
-    const upl4 = actions.find((a) => a.code === 'UPL4')
+    const upl4 = actions.find((a) => a.code === 'UPL4');
 
-    expect(upl4).toBeUndefined()
-  })
-})
+    expect(upl4).toBeUndefined();
+  });
+});

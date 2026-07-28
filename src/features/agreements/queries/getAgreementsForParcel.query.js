@@ -1,8 +1,8 @@
-import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
+import { agreementActionsTransformer } from '../transformers/agreements.transformer.js';
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js'
+} from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * @import {AgreementAction} from '~/src/features/agreements/agreements.d.js'
@@ -18,29 +18,29 @@ import {
  * @returns {Promise<AgreementAction[]>} The agreements
  */
 async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
-  let client
+  let client;
 
   try {
-    client = await db.connect()
+    client = await db.connect();
 
-    const query = `SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2`
-    const values = [sheetId, parcelId]
-    const result = await client.query(query, values)
+    const query = `SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2`;
+    const values = [sheetId, parcelId];
+    const result = await client.query(query, values);
     logInfo(logger, {
       category: 'database',
       message: 'Get agreements for parcel'
-    })
-    return agreementActionsTransformer(result.rows)
+    });
+    return agreementActionsTransformer(result.rows);
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get agreements for parcel',
       error
-    })
-    return []
+    });
+    return [];
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
-export { getAgreementsForParcel }
+export { getAgreementsForParcel };

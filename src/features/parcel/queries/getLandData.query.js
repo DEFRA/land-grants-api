@@ -1,5 +1,5 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { roundSqm } from '~/src/features/common/helpers/measurement.js'
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
+import { roundSqm } from '~/src/features/common/helpers/measurement.js';
 
 /**
  * Get a land data
@@ -10,33 +10,33 @@ import { roundSqm } from '~/src/features/common/helpers/measurement.js'
  * @returns {Promise<LandParcelDb[] | null>} The land data
  */
 async function getLandData(sheetId, parcelId, db, logger) {
-  let client
+  let client;
 
   try {
-    client = await db.connect()
+    client = await db.connect();
     const query =
-      'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2'
-    const values = [sheetId, parcelId]
+      'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2';
+    const values = [sheetId, parcelId];
 
-    const result = await client.query(query, values)
+    const result = await client.query(query, values);
 
     return result.rows.map((row) => ({
       ...row,
       area: roundSqm(row.area_sqm)
-    }))
+    }));
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get land data for parcel',
       error
-    })
-    return null
+    });
+    return null;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
-export { getLandData }
+export { getLandData };
 
 /**
  * @import {Logger} from '~/src/features/common/logger.d.js'

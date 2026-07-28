@@ -1,4 +1,4 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
  * Insert a new action config version into the DB.
@@ -24,11 +24,11 @@ async function insertActionConfig(logger, db, params) {
     groupId,
     enabled,
     display
-  } = params
-  let client
+  } = params;
+  let client;
   try {
-    client = await db.connect()
-    await client.query('BEGIN')
+    client = await db.connect();
+    await client.query('BEGIN');
 
     await client.query(
       `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, last_updated)
@@ -39,7 +39,7 @@ async function insertActionConfig(logger, db, params) {
          display = EXCLUDED.display,
          last_updated = NOW()`,
       [code, enabled, display, description, sssiEligible, hfEligible]
-    )
+    );
 
     await client.query(
       `UPDATE actions_config
@@ -52,7 +52,7 @@ async function insertActionConfig(logger, db, params) {
            OR ($2 = major_version AND $3 = minor_version AND $4 > patch_version)
          )`,
       [code, major, minor, patch]
-    )
+    );
 
     await client.query(
       `INSERT INTO actions_config
@@ -65,24 +65,24 @@ async function insertActionConfig(logger, db, params) {
          NOW(), $3, $4, $5, $6, $7
        )`,
       [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
-    )
+    );
 
-    await client.query('COMMIT')
-    return true
+    await client.query('COMMIT');
+    return true;
   } catch (error) {
     if (client) {
-      await client.query('ROLLBACK').catch(() => undefined)
+      await client.query('ROLLBACK').catch(() => undefined);
     }
     logDatabaseError(logger, {
       operation: 'Insert action config',
       error
-    })
-    return false
+    });
+    return false;
   } finally {
     if (client) {
-      client.release()
+      client.release();
     }
   }
 }
 
-export { insertActionConfig }
+export { insertActionConfig };

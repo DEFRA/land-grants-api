@@ -4,7 +4,7 @@ import {
   haToSqm,
   roundTo4DecimalPlaces,
   sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
+} from '~/src/features/common/helpers/measurement.js';
 
 // There must be a minimum of 0.5ha of woodland over 10 years old on the holding. If this is not met,
 // the applicant is not eligible and the calculator should reflect this.
@@ -26,18 +26,18 @@ import {
  */
 export const woodlandMinimumEligibility = {
   execute: (application, rule) => {
-    const { oldWoodlandAreaSqm, newWoodlandAreaSqm = 0 } = application
-    const { minimumSize: minimumSizeHa, minOldWoodlandHa } = rule.config
-    const name = rule.name
-    const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
+    const { oldWoodlandAreaSqm, newWoodlandAreaSqm = 0 } = application;
+    const { minimumSize: minimumSizeHa, minOldWoodlandHa } = rule.config;
+    const name = rule.name;
+    const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm;
 
-    const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa))
+    const minimumSizeSqm = haToSqm(Number.parseFloat(minimumSizeHa));
     const roundedTotalWoodlandAreaHa = sqmToHaRounded(
       oldWoodlandAreaSqm + newWoodlandAreaSqm
-    )
+    );
     const roundedMinimumSizeHa = roundTo4DecimalPlaces(
       Number.parseFloat(minimumSizeHa)
-    )
+    );
 
     const explanations = [
       {
@@ -46,7 +46,7 @@ export const woodlandMinimumEligibility = {
           `The minimum required total woodland area is (${roundedMinimumSizeHa} ha), the holding has (${roundedTotalWoodlandAreaHa} ha)`
         ]
       }
-    ]
+    ];
 
     if (!oldWoodlandAreaSqm) {
       return {
@@ -55,7 +55,7 @@ export const woodlandMinimumEligibility = {
         description: rule.description,
         reason: 'No woodland area over 10 years old has been provided',
         explanations
-      }
+      };
     }
 
     if (oldWoodlandAreaSqm < haToSqm(minOldWoodlandHa)) {
@@ -65,7 +65,7 @@ export const woodlandMinimumEligibility = {
         description: rule.description,
         reason: `The area of woodland over 10 years old (${sqmToHaRounded(oldWoodlandAreaSqm)} ha) does not meet the minimum required area of (${minOldWoodlandHa} ha)`,
         explanations
-      }
+      };
     }
 
     if (totalWoodlandAreaSqm < minimumSizeSqm) {
@@ -75,7 +75,7 @@ export const woodlandMinimumEligibility = {
         description: rule.description,
         reason: `The total woodland area (${roundedTotalWoodlandAreaHa} ha) does not meet the minimum required area of (${roundedMinimumSizeHa} ha)`,
         explanations
-      }
+      };
     }
 
     return {
@@ -84,6 +84,6 @@ export const woodlandMinimumEligibility = {
       description: rule.description,
       reason: `The total woodland area (${roundedTotalWoodlandAreaHa} ha) meets the minimum required area of (${roundedMinimumSizeHa} ha)`,
       explanations
-    }
+    };
   }
-}
+};

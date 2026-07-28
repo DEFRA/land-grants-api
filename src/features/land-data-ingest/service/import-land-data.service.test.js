@@ -1,6 +1,6 @@
-import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest'
-import { importData } from './import-land-data.service.js'
-import { createDBClient, getDBOptions } from '../../common/helpers/postgres.js'
+import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest';
+import { importData } from './import-land-data.service.js';
+import { createDBClient, getDBOptions } from '../../common/helpers/postgres.js';
 import {
   createTempTable,
   copyDataToTempTable,
@@ -12,7 +12,7 @@ import {
   completeAndPromotePaired,
   failPairedAwaitingIngest,
   logDuplicateRows
-} from './data-helpers.js'
+} from './data-helpers.js';
 import {
   cancelPendingFiles,
   setFileInProgress,
@@ -21,73 +21,75 @@ import {
   setIngestCompleted,
   setIngestFailed,
   getFileExpectedRowCount
-} from './start-ingest.service.js'
-import { metricsCounter } from '../../common/helpers/metrics.js'
+} from './start-ingest.service.js';
+import { metricsCounter } from '../../common/helpers/metrics.js';
 
-import { ENTITY_TYPES } from '../../common/constants/entity_types.js'
+import { ENTITY_TYPES } from '../../common/constants/entity_types.js';
 
-vi.mock('../../common/helpers/postgres.js')
-vi.mock('./data-helpers.js')
-vi.mock('./start-ingest.service.js')
-vi.mock('../../common/helpers/metrics.js')
+vi.mock('../../common/helpers/postgres.js');
+vi.mock('./data-helpers.js');
+vi.mock('./start-ingest.service.js');
+vi.mock('../../common/helpers/metrics.js');
 
-const validateEntities = ENTITY_TYPES.filter((entity) => entity.ingest === true)
-const asIsEntities = ENTITY_TYPES.filter((entity) => entity.ingest !== true)
+const validateEntities = ENTITY_TYPES.filter(
+  (entity) => entity.ingest === true
+);
+const asIsEntities = ENTITY_TYPES.filter((entity) => entity.ingest !== true);
 
 describe('Import Land Data Service', () => {
-  let mockClient
-  let mockLogger
-  const ingestId = '1234567890'
+  let mockClient;
+  let mockLogger;
+  const ingestId = '1234567890';
 
   beforeEach(() => {
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    }
+    };
     mockClient = {
       query: vi.fn().mockImplementation((query) => {
         if (query.includes('SELECT COUNT(*)')) {
-          return Promise.resolve({ rows: [{ count: 1 }] })
+          return Promise.resolve({ rows: [{ count: 1 }] });
         }
-        return Promise.resolve({ rowCount: 1 })
+        return Promise.resolve({ rowCount: 1 });
       }),
       connect: vi.fn(),
       end: vi.fn()
-    }
-    createDBClient.mockReturnValue(mockClient)
+    };
+    createDBClient.mockReturnValue(mockClient);
     getDBOptions.mockReturnValue({
       user: 'test-user',
       database: 'test-db',
       host: 'test-host',
       port: 5432
-    })
-    createTempTable.mockResolvedValue()
-    copyDataToTempTable.mockResolvedValue()
-    insertData.mockResolvedValue({ rowCount: 1 })
-    truncateTableAndInsertData.mockResolvedValue({ rowCount: 1 })
+    });
+    createTempTable.mockResolvedValue();
+    copyDataToTempTable.mockResolvedValue();
+    insertData.mockResolvedValue({ rowCount: 1 });
+    truncateTableAndInsertData.mockResolvedValue({ rowCount: 1 });
     isIngestComplete.mockResolvedValue({
       isComplete: true,
       isOverCount: false,
       totalCount: 1
-    })
-    promoteStagingTable.mockResolvedValue()
-    completeAndPromotePaired.mockResolvedValue(true)
-    failPairedAwaitingIngest.mockResolvedValue()
-    setFileInProgress.mockResolvedValue()
-    setFileCompleted.mockResolvedValue()
-    setFileFailed.mockResolvedValue()
-    setIngestCompleted.mockResolvedValue()
-    setIngestFailed.mockResolvedValue()
-    cancelPendingFiles.mockResolvedValue()
-    getFileExpectedRowCount.mockResolvedValue(1)
-    getTableRowCount.mockResolvedValue(1)
-    metricsCounter.mockResolvedValue()
-    logDuplicateRows.mockResolvedValue(0)
-  })
+    });
+    promoteStagingTable.mockResolvedValue();
+    completeAndPromotePaired.mockResolvedValue(true);
+    failPairedAwaitingIngest.mockResolvedValue();
+    setFileInProgress.mockResolvedValue();
+    setFileCompleted.mockResolvedValue();
+    setFileFailed.mockResolvedValue();
+    setIngestCompleted.mockResolvedValue();
+    setIngestFailed.mockResolvedValue();
+    cancelPendingFiles.mockResolvedValue();
+    getFileExpectedRowCount.mockResolvedValue(1);
+    getTableRowCount.mockResolvedValue(1);
+    metricsCounter.mockResolvedValue();
+    logDuplicateRows.mockResolvedValue(0);
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   const makeStream = () =>
     new ReadableStream({
@@ -96,39 +98,39 @@ describe('Import Land Data Service', () => {
           value: 'test',
           done: true
         })
-    })
+    });
 
   describe.each(validateEntities)('import (validate) $name', (entity) => {
     it(`should import ${entity.name} and promote when ingest is complete`, async () => {
-      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger);
 
-      expect(mockClient.connect).toHaveBeenCalledTimes(1)
-      expect(mockClient.end).toHaveBeenCalledTimes(1)
-      expect(setFileInProgress).toHaveBeenCalledTimes(1)
-      expect(createTempTable).toHaveBeenCalledTimes(1)
-      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
-      expect(insertData).toHaveBeenCalledTimes(1)
-      expect(setFileCompleted).toHaveBeenCalledTimes(1)
-      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
-      expect(isIngestComplete).toHaveBeenCalledTimes(1)
+      expect(mockClient.connect).toHaveBeenCalledTimes(1);
+      expect(mockClient.end).toHaveBeenCalledTimes(1);
+      expect(setFileInProgress).toHaveBeenCalledTimes(1);
+      expect(createTempTable).toHaveBeenCalledTimes(1);
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1);
+      expect(insertData).toHaveBeenCalledTimes(1);
+      expect(setFileCompleted).toHaveBeenCalledTimes(1);
+      expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0);
+      expect(isIngestComplete).toHaveBeenCalledTimes(1);
       expect(completeAndPromotePaired).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
         ingestId,
         mockClient,
         mockLogger
-      )
-      expect(promoteStagingTable).not.toHaveBeenCalled()
-      expect(setIngestCompleted).not.toHaveBeenCalled()
+      );
+      expect(promoteStagingTable).not.toHaveBeenCalled();
+      expect(setIngestCompleted).not.toHaveBeenCalled();
 
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
         1
-      )
+      );
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
         1
-      )
+      );
 
       if (entity.name === 'land_parcels') {
         expect(logDuplicateRows).toHaveBeenCalledWith(
@@ -136,16 +138,16 @@ describe('Import Land Data Service', () => {
           'land_parcels',
           ['SHEET_ID', 'PARCEL_ID'],
           mockLogger
-        )
+        );
       } else {
-        expect(logDuplicateRows).not.toHaveBeenCalled()
+        expect(logDuplicateRows).not.toHaveBeenCalled();
       }
-    })
+    });
 
     it(`should stage ${entity.name} but not report completion when its paired entity has not finished`, async () => {
-      completeAndPromotePaired.mockResolvedValue(false)
+      completeAndPromotePaired.mockResolvedValue(false);
 
-      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger);
 
       expect(completeAndPromotePaired).toHaveBeenCalledWith(
         entity.name,
@@ -153,194 +155,194 @@ describe('Import Land Data Service', () => {
         ingestId,
         mockClient,
         mockLogger
-      )
+      );
       expect(metricsCounter).not.toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
         expect.anything()
-      )
+      );
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should not promote ${entity.name} when ingest is incomplete`, async () => {
       isIngestComplete.mockResolvedValue({
         isComplete: false,
         isOverCount: false,
         totalCount: 0
-      })
+      });
 
-      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
+      await importData(makeStream(), entity, ingestId, 'file.csv', mockLogger);
 
-      expect(promoteStagingTable).toHaveBeenCalledTimes(0)
-      expect(setIngestCompleted).not.toHaveBeenCalled()
+      expect(promoteStagingTable).toHaveBeenCalledTimes(0);
+      expect(setIngestCompleted).not.toHaveBeenCalled();
       expect(metricsCounter).not.toHaveBeenCalledWith(
         `${entity.name}_data_ingest_completed`,
         expect.anything()
-      )
+      );
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should fail ${entity.name} and not promote when per-file row count does not match`, async () => {
-      getTableRowCount.mockResolvedValue(5)
-      getFileExpectedRowCount.mockResolvedValue(3)
+      getTableRowCount.mockResolvedValue(5);
+      getFileExpectedRowCount.mockResolvedValue(3);
 
       await expect(
         importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
       ).rejects.toThrow(
         `File row count mismatch for file.csv: expected 3, got 5`
-      )
+      );
 
-      expect(promoteStagingTable).not.toHaveBeenCalled()
-      expect(setIngestCompleted).not.toHaveBeenCalled()
-      expect(setFileFailed).toHaveBeenCalledTimes(1)
-      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
-      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(promoteStagingTable).not.toHaveBeenCalled();
+      expect(setIngestCompleted).not.toHaveBeenCalled();
+      expect(setFileFailed).toHaveBeenCalledTimes(1);
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient);
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient);
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
         mockClient,
         mockLogger
-      )
+      );
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should fail ${entity.name} and not promote when ingest row count exceeds expected total`, async () => {
       isIngestComplete.mockResolvedValue({
         isComplete: false,
         isOverCount: true,
         totalCount: 99
-      })
+      });
 
       await expect(
         importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
       ).rejects.toThrow(
         `Ingest row count does not match expected total for ${entity.name}`
-      )
+      );
 
-      expect(promoteStagingTable).toHaveBeenCalledTimes(0)
-      expect(setIngestCompleted).not.toHaveBeenCalled()
-      expect(setFileFailed).toHaveBeenCalledTimes(1)
-      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
-      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(promoteStagingTable).toHaveBeenCalledTimes(0);
+      expect(setIngestCompleted).not.toHaveBeenCalled();
+      expect(setFileFailed).toHaveBeenCalledTimes(1);
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient);
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient);
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
         mockClient,
         mockLogger
-      )
-      expect(mockLogger.error).toHaveBeenCalledTimes(2)
+      );
+      expect(mockLogger.error).toHaveBeenCalledTimes(2);
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should handle error when importing ${entity.name}`, async () => {
       createTempTable.mockRejectedValue(
         new Error(`Failed to import ${entity.name}`)
-      )
+      );
 
       await expect(
         importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
-      ).rejects.toThrow(`Failed to import ${entity.name}`)
+      ).rejects.toThrow(`Failed to import ${entity.name}`);
 
-      expect(mockClient.end).toHaveBeenCalledTimes(1)
+      expect(mockClient.end).toHaveBeenCalledTimes(1);
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
         mockClient,
         mockLogger
-      )
-      expect(setFileFailed).toHaveBeenCalledTimes(1)
-      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
-      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
-      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      );
+      expect(setFileFailed).toHaveBeenCalledTimes(1);
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient);
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient);
+      expect(mockLogger.error).toHaveBeenCalledTimes(1);
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should fail ${entity.name} when its paired entity already failed`, async () => {
       const pairError = new Error(
         `${entity.name} cannot be promoted because its paired entity ${entity.pairedWith} already failed`
-      )
-      completeAndPromotePaired.mockRejectedValue(pairError)
+      );
+      completeAndPromotePaired.mockRejectedValue(pairError);
 
       await expect(
         importData(makeStream(), entity, ingestId, 'file.csv', mockLogger)
-      ).rejects.toThrow(pairError.message)
+      ).rejects.toThrow(pairError.message);
 
-      expect(setFileFailed).toHaveBeenCalledTimes(1)
-      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient)
-      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient)
+      expect(setFileFailed).toHaveBeenCalledTimes(1);
+      expect(setIngestFailed).toHaveBeenCalledWith(ingestId, mockClient);
+      expect(cancelPendingFiles).toHaveBeenCalledWith(ingestId, mockClient);
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
         mockClient,
         mockLogger
-      )
+      );
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
-      )
-    })
-  })
+      );
+    });
+  });
 
   describe.each(asIsEntities)('import (as is) $name', (entity) => {
     it(`should import ${entity.name}`, async () => {
-      await importData(makeStream(), entity, ingestId, '', mockLogger)
+      await importData(makeStream(), entity, ingestId, '', mockLogger);
 
-      expect(mockClient.connect).toHaveBeenCalledTimes(1)
-      expect(mockClient.end).toHaveBeenCalledTimes(1)
-      expect(createTempTable).toHaveBeenCalledTimes(1)
-      expect(copyDataToTempTable).toHaveBeenCalledTimes(1)
+      expect(mockClient.connect).toHaveBeenCalledTimes(1);
+      expect(mockClient.end).toHaveBeenCalledTimes(1);
+      expect(createTempTable).toHaveBeenCalledTimes(1);
+      expect(copyDataToTempTable).toHaveBeenCalledTimes(1);
 
       if (entity.truncateTable) {
-        expect(truncateTableAndInsertData).toHaveBeenCalledTimes(1)
-        expect(truncateTableAndInsertData.mock.calls[0][2]).toEqual(ingestId)
-        expect(insertData).toHaveBeenCalledTimes(0)
+        expect(truncateTableAndInsertData).toHaveBeenCalledTimes(1);
+        expect(truncateTableAndInsertData.mock.calls[0][2]).toEqual(ingestId);
+        expect(insertData).toHaveBeenCalledTimes(0);
       } else {
-        expect(insertData).toHaveBeenCalledTimes(1)
-        expect(insertData.mock.calls[0][2]).toEqual(ingestId)
-        expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0)
+        expect(insertData).toHaveBeenCalledTimes(1);
+        expect(insertData.mock.calls[0][2]).toEqual(ingestId);
+        expect(truncateTableAndInsertData).toHaveBeenCalledTimes(0);
       }
 
-      expect(setFileInProgress).toHaveBeenCalledTimes(0)
-      expect(isIngestComplete).toHaveBeenCalledTimes(0)
-      expect(promoteStagingTable).toHaveBeenCalledTimes(0)
+      expect(setFileInProgress).toHaveBeenCalledTimes(0);
+      expect(isIngestComplete).toHaveBeenCalledTimes(0);
+      expect(promoteStagingTable).toHaveBeenCalledTimes(0);
 
-      expect(metricsCounter).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledTimes(1);
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
         1
-      )
-    })
+      );
+    });
 
     it(`should handle error when importing ${entity.name}`, async () => {
       createTempTable.mockRejectedValue(
         new Error(`Failed to import ${entity.name}`)
-      )
+      );
 
       await expect(
         importData(makeStream(), entity, ingestId, '', mockLogger)
-      ).rejects.toThrow(`Failed to import ${entity.name}`)
+      ).rejects.toThrow(`Failed to import ${entity.name}`);
 
-      expect(mockClient.end).toHaveBeenCalledTimes(1)
-      expect(mockLogger.error).toHaveBeenCalledTimes(1)
-      expect(metricsCounter).toHaveBeenCalledTimes(1)
+      expect(mockClient.end).toHaveBeenCalledTimes(1);
+      expect(mockLogger.error).toHaveBeenCalledTimes(1);
+      expect(metricsCounter).toHaveBeenCalledTimes(1);
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         1
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});

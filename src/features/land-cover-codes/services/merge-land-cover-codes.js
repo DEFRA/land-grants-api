@@ -7,18 +7,18 @@ export function mergeLandCoverCodes(landCoverCodes) {
   if (!landCoverCodes || !Array.isArray(landCoverCodes)) {
     throw new Error(
       'No land cover codes passed to mergeLandCoverCodes function'
-    )
+    );
   }
 
-  const mergedCodes = new Set()
+  const mergedCodes = new Set();
 
   // eslint-disable-next-line camelcase
   for (const { landCoverCode, landCoverClassCode } of landCoverCodes) {
-    mergedCodes.add(landCoverCode)
-    mergedCodes.add(landCoverClassCode)
+    mergedCodes.add(landCoverCode);
+    mergedCodes.add(landCoverClassCode);
   }
 
-  return Array.from(mergedCodes).sort((a, b) => a.localeCompare(b))
+  return Array.from(mergedCodes).sort((a, b) => a.localeCompare(b));
 }
 
 /**

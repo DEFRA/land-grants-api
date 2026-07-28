@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import fs from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Reads a file
@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url'
  * @returns {Promise<string>} File content
  */
 export const readFile = async (path) => {
-  const __dirname = dirname(fileURLToPath(import.meta.url))
+  const __dirname = dirname(fileURLToPath(import.meta.url));
   return fs.readFile(
     join(__dirname, '../../land-data-ingest/sql', path),
     'utf8'
-  )
-}
+  );
+};

@@ -1,5 +1,5 @@
-import Joi from 'joi'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import Joi from 'joi';
+import { statusCodes } from '~/src/features/common/constants/status-codes.js';
 
 /**
  * @typedef {object} ErrorResponseSchema
@@ -11,7 +11,7 @@ const errorResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.notFound).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
-}).label('errorResponse')
+}).label('errorResponse');
 
 /**
  * @typedef {object} InternalServerErrorResponseSchema
@@ -29,16 +29,16 @@ const unprocessableEntityResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.unprocessableEntity).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
-}).label('unprocessableEntityResponse')
+}).label('unprocessableEntityResponse');
 
 const internalServerErrorResponseSchema = Joi.object({
   statusCode: Joi.number().valid(statusCodes.internalServerError).required(),
   error: Joi.string().required(),
   message: Joi.string().required()
-}).label('internalServerErrorResponse')
+}).label('internalServerErrorResponse');
 
 export {
   errorResponseSchema,
   unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
-}
+};

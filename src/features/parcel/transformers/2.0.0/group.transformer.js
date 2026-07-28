@@ -15,7 +15,7 @@
  */
 export function actionGroupsTransformer(actions) {
   if (!actions?.length) {
-    return []
+    return [];
   }
 
   const actionGroups = [
@@ -23,28 +23,28 @@ export function actionGroupsTransformer(actions) {
       .filter((action) => action.groupId)
       .reduce((map, { groupId, groupName }) => {
         if (!map.has(groupId)) {
-          map.set(groupId, { id: groupId, name: groupName })
+          map.set(groupId, { id: groupId, name: groupName });
         }
-        return map
+        return map;
       }, new Map())
       .values()
-  ]
+  ];
 
   const actionsByGroupId = actions.reduce((acc, { groupId, code }) => {
     if (!acc.has(groupId)) {
-      acc.set(groupId, [])
+      acc.set(groupId, []);
     }
-    acc.get(groupId).push(code)
-    return acc
-  }, new Map())
+    acc.get(groupId).push(code);
+    return acc;
+  }, new Map());
 
   return actionGroups
     .filter((actionGroup) => actionsByGroupId.has(actionGroup.id))
     .map((actionGroup) => {
-      const groupActions = actionsByGroupId.get(actionGroup.id)
+      const groupActions = actionsByGroupId.get(actionGroup.id);
       return {
         name: actionGroup.name,
         actions: groupActions
-      }
-    })
+      };
+    });
 }

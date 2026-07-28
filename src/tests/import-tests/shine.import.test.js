@@ -3,65 +3,67 @@ import {
   uploadLandDataFixture,
   ensureBucketExists,
   deleteFiles
-} from '~/src/tests/import-tests/setup/s3-test-helpers.js'
+} from '~/src/tests/import-tests/setup/s3-test-helpers.js';
 
-import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
+import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js';
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js';
 
-const S3_KEYS = ['shine/shine_head.csv', 'shine/shine_head.zip']
+const S3_KEYS = ['shine/shine_head.csv', 'shine/shine_head.zip'];
 
 describe('Shine import', () => {
-  let s3Client
-  let connection
+  let s3Client;
+  let connection;
 
   beforeAll(async () => {
-    connection = connectToTestDatabase()
-    s3Client = createTestS3Client()
-    await ensureBucketExists(s3Client)
-  })
+    connection = connectToTestDatabase();
+    s3Client = createTestS3Client();
+    await ensureBucketExists(s3Client);
+  });
 
   afterAll(async () => {
-    await connection.end()
-  })
+    await connection.end();
+  });
 
   afterEach(async () => {
-    await deleteFiles(s3Client, S3_KEYS)
-  })
+    await deleteFiles(s3Client, S3_KEYS);
+  });
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import shine data and return 200 ok (%s)',
     async (s3key) => {
-      await uploadLandDataFixture(s3Client, 'shine_head.csv', s3key)
+      await uploadLandDataFixture(s3Client, 'shine_head.csv', s3key);
 
-      const result = await importLandData({ s3key })
+      const result = await importLandData({ s3key });
 
       expect(result).toEqual({
         message: 'Land data imported successfully',
         dataChanged: true
-      })
+      });
 
       const allShine = await getRecordsByQuery(
         connection,
         "SELECT * FROM data_layer WHERE data_layer_type_id = 3 and metadata->>'type' = 'shine';",
         []
-      )
-      expect(allShine).toHaveLength(3)
+      );
+      expect(allShine).toHaveLength(3);
 
-      const shine1 = allShine.find((s) => s.source_id === 'KE23547')
-      expect(shine1.name).toBe('Post-medieval outfarm south east of Rocks Farm')
+      const shine1 = allShine.find((s) => s.source_id === 'KE23547');
+      expect(shine1.name).toBe(
+        'Post-medieval outfarm south east of Rocks Farm'
+      );
       expect(shine1.metadata).toEqual({
         significan: 'Medium',
         web_url: null,
         type: 'shine',
         shine_form: 'Below-ground feature(s)'
-      })
-      expect(shine1.data_layer_type_id).toBe(3)
-      expect(shine1.last_updated).toBeDefined()
-      expect(shine1.ingest_date).toBeDefined()
-      expect(shine1.ingest_id).toBeDefined()
-      expect(shine1.geom).toBeDefined()
+      });
+      expect(shine1.data_layer_type_id).toBe(3);
+      expect(shine1.last_updated).toBeDefined();
+      expect(shine1.ingest_date).toBeDefined();
+      expect(shine1.ingest_id).toBeDefined();
+      expect(shine1.geom).toBeDefined();
     },
     10000
-  )
-})
+  );
+});

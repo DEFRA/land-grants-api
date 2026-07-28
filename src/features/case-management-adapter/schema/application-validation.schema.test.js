@@ -2,33 +2,33 @@ import {
   caseManagementApplicationValidationReRunResponseSchema,
   caseManagementApplicationValidationRunRequestSchema,
   caseManagementApplicationValidationRunResponseSchema
-} from './application-validation.schema.js'
+} from './application-validation.schema.js';
 
 describe('applicationValidationRunRequestSchema', () => {
   const validData = {
     id: 123
-  }
+  };
 
   it('should validate valid data', () => {
     const { error } =
-      caseManagementApplicationValidationRunRequestSchema.validate(validData)
-    expect(error).toBeUndefined()
-  })
+      caseManagementApplicationValidationRunRequestSchema.validate(validData);
+    expect(error).toBeUndefined();
+  });
 
   it('should require id as integer', () => {
-    const data = { id: 'not-a-number' }
+    const data = { id: 'not-a-number' };
     const { error } =
-      caseManagementApplicationValidationRunRequestSchema.validate(data)
-    expect(error.details[0].message).toContain('id')
-  })
+      caseManagementApplicationValidationRunRequestSchema.validate(data);
+    expect(error.details[0].message).toContain('id');
+  });
 
   it('should require id', () => {
-    const data = {}
+    const data = {};
     const { error } =
-      caseManagementApplicationValidationRunRequestSchema.validate(data)
-    expect(error.details[0].message).toContain('id')
-  })
-})
+      caseManagementApplicationValidationRunRequestSchema.validate(data);
+    expect(error.details[0].message).toContain('id');
+  });
+});
 
 describe('caseManagementApplicationValidationRunResponseSchema', () => {
   describe('valid responses', () => {
@@ -84,14 +84,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate response with paragraph component', () => {
       const validResponse = {
@@ -102,14 +102,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             text: 'This is a paragraph'
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate response with empty paragraph text', () => {
       const validResponse = {
@@ -120,14 +120,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             text: ''
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate response with heading component (with id)', () => {
       const validResponse = {
@@ -140,14 +140,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             id: 'main-title'
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate response with heading component (without id)', () => {
       const validResponse = {
@@ -159,17 +159,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             level: 3
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate all valid status colours', () => {
-      const colours = ['red', 'green', 'yellow', 'blue', 'grey']
+      const colours = ['red', 'green', 'yellow', 'blue', 'grey'];
 
       colours.forEach((colour) => {
         const validResponse = {
@@ -192,15 +192,15 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
               ]
             }
           ]
-        }
+        };
 
         const { error } =
           caseManagementApplicationValidationRunResponseSchema.validate(
             validResponse
-          )
-        expect(error).toBeUndefined()
-      })
-    })
+          );
+        expect(error).toBeUndefined();
+      });
+    });
 
     it('should validate deeply nested details components', () => {
       const validResponse = {
@@ -244,14 +244,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate details with multiple summary items', () => {
       const validResponse = {
@@ -282,14 +282,14 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
+        );
+      expect(error).toBeUndefined();
+    });
 
     it('should validate details with multiple items', () => {
       const validResponse = {
@@ -320,42 +320,42 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           validResponse
-        )
-      expect(error).toBeUndefined()
-    })
-  })
+        );
+      expect(error).toBeUndefined();
+    });
+  });
 
   describe('invalid responses', () => {
     it('should reject response missing message', () => {
       const invalidResponse = {
         response: []
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('message')
-    })
+        );
+      expect(error).toBeDefined();
+      expect(error.details[0].message).toContain('message');
+    });
 
     it('should reject response missing response array', () => {
       const invalidResponse = {
         message: 'Test message'
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('response')
-    })
+        );
+      expect(error).toBeDefined();
+      expect(error.details[0].message).toContain('response');
+    });
 
     it('should reject paragraph missing text', () => {
       const invalidResponse = {
@@ -365,17 +365,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             component: 'paragraph'
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject heading with invalid level (too low)', () => {
       const invalidResponse = {
@@ -387,17 +387,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             level: 0
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject heading with invalid level (too high)', () => {
       const invalidResponse = {
@@ -409,17 +409,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             level: 7
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject heading missing level', () => {
       const invalidResponse = {
@@ -430,17 +430,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             text: 'Invalid heading'
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject status with invalid colour', () => {
       const invalidResponse = {
@@ -463,17 +463,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject status missing colour', () => {
       const invalidResponse = {
@@ -495,17 +495,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject details with empty summaryItems array', () => {
       const invalidResponse = {
@@ -522,17 +522,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject details with empty items array', () => {
       const invalidResponse = {
@@ -549,17 +549,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             items: []
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject details missing summaryItems', () => {
       const invalidResponse = {
@@ -575,17 +575,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject details missing items', () => {
       const invalidResponse = {
@@ -601,17 +601,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject summary item missing required classes', () => {
       const invalidResponse = {
@@ -632,17 +632,17 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             ]
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
+        );
+      expect(error).toBeDefined();
       expect(error.details[0].message).toContain(
         'does not match any of the allowed types'
-      )
-    })
+      );
+    });
 
     it('should reject component with invalid component type', () => {
       const invalidResponse = {
@@ -653,30 +653,30 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
             text: 'Some text'
           }
         ]
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
-    })
+        );
+      expect(error).toBeDefined();
+    });
 
     it('should reject response with non-array response field', () => {
       const invalidResponse = {
         message: 'Test message',
         response: 'not an array'
-      }
+      };
 
       const { error } =
         caseManagementApplicationValidationRunResponseSchema.validate(
           invalidResponse
-        )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toContain('response')
-    })
-  })
-})
+        );
+      expect(error).toBeDefined();
+      expect(error.details[0].message).toContain('response');
+    });
+  });
+});
 
 describe('caseManagementApplicationValidationReRunResponseSchema', () => {
   const validData = {
@@ -684,46 +684,48 @@ describe('caseManagementApplicationValidationReRunResponseSchema', () => {
     valid: true,
     id: 123,
     date: new Date()
-  }
+  };
 
   it('should validate valid data', () => {
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(validData)
-    expect(error).toBeUndefined()
-  })
+      caseManagementApplicationValidationReRunResponseSchema.validate(
+        validData
+      );
+    expect(error).toBeUndefined();
+  });
 
   it('should require message', () => {
-    const data = { ...validData, message: undefined }
+    const data = { ...validData, message: undefined };
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(data)
-    expect(error.details[0].message).toContain('message')
-  })
+      caseManagementApplicationValidationReRunResponseSchema.validate(data);
+    expect(error.details[0].message).toContain('message');
+  });
 
   it('should require valid', () => {
-    const data = { ...validData, valid: undefined }
+    const data = { ...validData, valid: undefined };
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(data)
-    expect(error.details[0].message).toContain('valid')
-  })
+      caseManagementApplicationValidationReRunResponseSchema.validate(data);
+    expect(error.details[0].message).toContain('valid');
+  });
 
   it('should require id as integer', () => {
-    const data = { ...validData, id: 'not-a-number' }
+    const data = { ...validData, id: 'not-a-number' };
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(data)
-    expect(error.details[0].message).toContain('id')
-  })
+      caseManagementApplicationValidationReRunResponseSchema.validate(data);
+    expect(error.details[0].message).toContain('id');
+  });
 
   it('should require id', () => {
-    const data = { ...validData, id: undefined }
+    const data = { ...validData, id: undefined };
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(data)
-    expect(error.details[0].message).toContain('id')
-  })
+      caseManagementApplicationValidationReRunResponseSchema.validate(data);
+    expect(error.details[0].message).toContain('id');
+  });
 
   it('should require date', () => {
-    const data = { ...validData, date: undefined }
+    const data = { ...validData, date: undefined };
     const { error } =
-      caseManagementApplicationValidationReRunResponseSchema.validate(data)
-    expect(error.details[0].message).toContain('date')
-  })
-})
+      caseManagementApplicationValidationReRunResponseSchema.validate(data);
+    expect(error.details[0].message).toContain('date');
+  });
+});

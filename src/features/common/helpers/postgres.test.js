@@ -1,48 +1,48 @@
-import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
-import { Signer } from '@aws-sdk/rds-signer'
-import { Pool, Client } from 'pg'
-import { config } from '../../../config/index.js'
+import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
+import { Signer } from '@aws-sdk/rds-signer';
+import { Pool, Client } from 'pg';
+import { config } from '../../../config/index.js';
 import {
   getDBOptions,
   createDBPool,
   createDBClient,
   postgresDb
-} from './postgres.js'
+} from './postgres.js';
 
 vi.mock('@aws-sdk/credential-providers', () => ({
   fromNodeProviderChain: vi.fn()
-}))
+}));
 
 vi.mock('@aws-sdk/rds-signer', () => ({
   Signer: vi.fn()
-}))
+}));
 
 vi.mock('pg', () => ({
   Pool: vi.fn(),
   Client: vi.fn()
-}))
+}));
 
 vi.mock('../../../config/index.js', () => ({
   config: {
     get: vi.fn()
   }
-}))
+}));
 
 describe('Postgres Helper', () => {
   beforeEach(() => {
-    config.get = vi.fn((value) => (value === 'isTest' ? false : 'test-value'))
-    vi.mocked(Pool).mockClear()
-    vi.mocked(Client).mockClear()
-  })
+    config.get = vi.fn((value) => (value === 'isTest' ? false : 'test-value'));
+    vi.mocked(Pool).mockClear();
+    vi.mocked(Client).mockClear();
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
   describe('getDBOptions', () => {
     test('should return database options from config', () => {
-      const result = getDBOptions()
+      const result = getDBOptions();
 
       expect(result).toEqual({
         user: 'test-value',
@@ -52,19 +52,19 @@ describe('Postgres Helper', () => {
         isLocal: 'test-value',
         region: 'test-value',
         loadPostgresData: 'test-value'
-      })
-      expect(config.get).toHaveBeenCalledWith('postgres.user')
-      expect(config.get).toHaveBeenCalledWith('postgres.database')
-      expect(config.get).toHaveBeenCalledWith('postgres.host')
-      expect(config.get).toHaveBeenCalledWith('postgres.passwordForLocalDev')
-      expect(config.get).toHaveBeenCalledWith('isLocal')
-      expect(config.get).toHaveBeenCalledWith('postgres.region')
-      expect(config.get).toHaveBeenCalledWith('loadPostgresData')
-    })
+      });
+      expect(config.get).toHaveBeenCalledWith('postgres.user');
+      expect(config.get).toHaveBeenCalledWith('postgres.database');
+      expect(config.get).toHaveBeenCalledWith('postgres.host');
+      expect(config.get).toHaveBeenCalledWith('postgres.passwordForLocalDev');
+      expect(config.get).toHaveBeenCalledWith('isLocal');
+      expect(config.get).toHaveBeenCalledWith('postgres.region');
+      expect(config.get).toHaveBeenCalledWith('loadPostgresData');
+    });
 
     test('should return database options from config for test environment', () => {
-      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
-      const result = getDBOptions()
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'));
+      const result = getDBOptions();
 
       expect(result).toEqual({
         user: 'test-value',
@@ -72,17 +72,17 @@ describe('Postgres Helper', () => {
         host: 'test-value',
         password: 'test-value',
         port: 5432
-      })
-      expect(config.get).toHaveBeenCalledWith('postgres.user')
-      expect(config.get).toHaveBeenCalledWith('postgres.database')
-      expect(config.get).toHaveBeenCalledWith('postgres.host')
-      expect(config.get).toHaveBeenCalledWith('postgres.passwordForLocalDev')
-    })
+      });
+      expect(config.get).toHaveBeenCalledWith('postgres.user');
+      expect(config.get).toHaveBeenCalledWith('postgres.database');
+      expect(config.get).toHaveBeenCalledWith('postgres.host');
+      expect(config.get).toHaveBeenCalledWith('postgres.passwordForLocalDev');
+    });
 
     test('should handle undefined config values', () => {
-      config.get = vi.fn(() => undefined)
+      config.get = vi.fn(() => undefined);
 
-      const result = getDBOptions()
+      const result = getDBOptions();
 
       expect(result).toEqual({
         user: undefined,
@@ -92,22 +92,22 @@ describe('Postgres Helper', () => {
         isLocal: undefined,
         region: undefined,
         loadPostgresData: undefined
-      })
-    })
-  })
+      });
+    });
+  });
 
   describe('createDBPool', () => {
-    let mockPool
+    let mockPool;
 
     beforeEach(() => {
       mockPool = {
         connect: vi.fn(),
         end: vi.fn()
-      }
+      };
       vi.mocked(Pool).mockImplementation(function () {
-        return mockPool
-      })
-    })
+        return mockPool;
+      });
+    });
 
     describe('local development', () => {
       test('should create pool with local password for local development', () => {
@@ -117,15 +117,15 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           passwordForLocalDev: 'local-password',
           isLocal: true
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn()
           }
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
         expect(Pool).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -135,8 +135,8 @@ describe('Postgres Helper', () => {
             database: 'test-db',
             maxLifetimeSeconds: 600
           })
-        )
-      })
+        );
+      });
 
       test('should create pool without SSL for local development', () => {
         const options = {
@@ -144,18 +144,18 @@ describe('Postgres Helper', () => {
           database: 'test-db',
           host: 'localhost',
           isLocal: true
-        }
+        };
 
         const mockServer = {
           logger: { info: vi.fn() },
           secureContext: {}
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
-        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
-        expect(poolConfig.ssl).toBeUndefined()
-      })
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0];
+        expect(poolConfig.ssl).toBeUndefined();
+      });
 
       test('should use password function that returns local password', async () => {
         const options = {
@@ -164,37 +164,37 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           passwordForLocalDev: 'my-local-password',
           isLocal: true
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn()
           }
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
-        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
-        const password = await poolConfig.password()
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0];
+        const password = await poolConfig.password();
 
-        expect(password).toBe('my-local-password')
+        expect(password).toBe('my-local-password');
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
-        )
-      })
-    })
+        );
+      });
+    });
 
     describe('not local development', () => {
       test('should create pool with token for remote environment', async () => {
-        const mockCredentials = { mock: 'credentials' }
-        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+        const mockCredentials = { mock: 'credentials' };
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials);
 
-        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token')
+        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token');
         vi.mocked(Signer).mockImplementation(function () {
           return {
             getAuthToken: mockGetAuthToken
-          }
-        })
+          };
+        });
 
         const options = {
           user: 'remote-user',
@@ -202,18 +202,18 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn()
           }
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
-        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
-        const password = await poolConfig.password()
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0];
+        const password = await poolConfig.password();
 
         expect(Signer).toHaveBeenCalledWith({
           hostname: 'remote-host',
@@ -221,11 +221,11 @@ describe('Postgres Helper', () => {
           username: 'remote-user',
           credentials: mockCredentials,
           region: 'eu-west-1'
-        })
-        expect(fromNodeProviderChain).toHaveBeenCalled()
-        expect(mockGetAuthToken).toHaveBeenCalled()
-        expect(password).toBe('rds-auth-token')
-      })
+        });
+        expect(fromNodeProviderChain).toHaveBeenCalled();
+        expect(mockGetAuthToken).toHaveBeenCalled();
+        expect(password).toBe('rds-auth-token');
+      });
 
       test('should create pool with SSL when secureContext is provided', () => {
         const options = {
@@ -234,33 +234,33 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
-        const mockSecureContext = { mock: 'context' }
+        const mockSecureContext = { mock: 'context' };
         const mockServer = {
           logger: { info: vi.fn() },
           secureContext: mockSecureContext
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
-        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0];
         expect(poolConfig.ssl).toEqual({
           secureContext: mockSecureContext
-        })
-      })
+        });
+      });
 
       test('should handle error when getting token fails', async () => {
-        const mockCredentials = { mock: 'credentials' }
-        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+        const mockCredentials = { mock: 'credentials' };
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials);
 
-        const tokenError = new Error('Failed to get auth token')
-        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError)
+        const tokenError = new Error('Failed to get auth token');
+        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError);
         vi.mocked(Signer).mockImplementation(function () {
           return {
             getAuthToken: mockGetAuthToken
-          }
-        })
+          };
+        });
 
         const options = {
           user: 'remote-user',
@@ -268,25 +268,25 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn(),
             error: vi.fn()
           }
-        }
+        };
 
-        createDBPool(options, mockServer)
+        createDBPool(options, mockServer);
 
-        const poolConfig = vi.mocked(Pool).mock.calls[0][0]
+        const poolConfig = vi.mocked(Pool).mock.calls[0][0];
         await expect(poolConfig.password()).rejects.toThrow(
           'Failed to get auth token'
-        )
+        );
 
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
-        )
+        );
         expect(mockServer.logger.error).toHaveBeenCalledWith(
           'Failed to get Postgres authentication token',
           {
@@ -294,9 +294,9 @@ describe('Postgres Helper', () => {
             user: 'remote-user',
             host: 'remote-host'
           }
-        )
-      })
-    })
+        );
+      });
+    });
 
     test('should create pool with no server', () => {
       const options = {
@@ -304,9 +304,9 @@ describe('Postgres Helper', () => {
         database: 'test-db',
         host: 'localhost',
         isLocal: true
-      }
+      };
 
-      createDBPool(options)
+      createDBPool(options);
 
       expect(Pool).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -314,20 +314,20 @@ describe('Postgres Helper', () => {
           user: 'test-user',
           database: 'test-db'
         })
-      )
-    })
+      );
+    });
 
     test('should create pool for test environment', () => {
-      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'));
       const options = {
         user: 'test-user',
         database: 'test-db',
         host: 'localhost',
         password: 'test-password',
         port: 5433
-      }
+      };
 
-      createDBPool(options)
+      createDBPool(options);
 
       expect(Pool).toHaveBeenCalledWith({
         port: 5433,
@@ -335,19 +335,19 @@ describe('Postgres Helper', () => {
         password: 'test-password',
         host: 'localhost',
         database: 'test-db'
-      })
-    })
+      });
+    });
 
     test('should use default port for test environment when port not provided', () => {
-      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'))
+      config.get = vi.fn((value) => (value === 'isTest' ? true : 'test-value'));
       const options = {
         user: 'test-user',
         database: 'test-db',
         host: 'localhost',
         password: 'test-password'
-      }
+      };
 
-      createDBPool(options)
+      createDBPool(options);
 
       expect(Pool).toHaveBeenCalledWith({
         port: 5432,
@@ -355,8 +355,8 @@ describe('Postgres Helper', () => {
         password: 'test-password',
         host: 'localhost',
         database: 'test-db'
-      })
-    })
+      });
+    });
 
     test('should handle server with missing logger gracefully', async () => {
       const options = {
@@ -365,46 +365,46 @@ describe('Postgres Helper', () => {
         host: 'localhost',
         passwordForLocalDev: 'password',
         isLocal: true
-      }
+      };
 
-      const mockServer = {}
+      const mockServer = {};
 
-      createDBPool(options, mockServer)
+      createDBPool(options, mockServer);
 
-      const poolConfig = vi.mocked(Pool).mock.calls[0][0]
-      const password = await poolConfig.password()
+      const poolConfig = vi.mocked(Pool).mock.calls[0][0];
+      const password = await poolConfig.password();
 
-      expect(password).toBe('password')
-    })
-  })
+      expect(password).toBe('password');
+    });
+  });
 
   describe('createDBClient', () => {
-    let mockClient
+    let mockClient;
 
     beforeEach(() => {
       mockClient = {
         connect: vi.fn(),
         end: vi.fn()
-      }
+      };
       vi.mocked(Client).mockImplementation(function () {
-        return mockClient
-      })
-    })
+        return mockClient;
+      });
+    });
 
     describe('test environment', () => {
       test('should create client with direct password for test environment', () => {
         config.get = vi.fn((value) =>
           value === 'isTest' ? true : 'test-value'
-        )
+        );
         const options = {
           user: 'test-user',
           database: 'test-db',
           host: 'localhost',
           password: 'test-password',
           port: 5433
-        }
+        };
 
-        createDBClient(options)
+        createDBClient(options);
 
         expect(Client).toHaveBeenCalledWith({
           port: 5433,
@@ -412,21 +412,21 @@ describe('Postgres Helper', () => {
           password: 'test-password',
           host: 'localhost',
           database: 'test-db'
-        })
-      })
+        });
+      });
 
       test('should use default port when port not provided', () => {
         config.get = vi.fn((value) =>
           value === 'isTest' ? true : 'test-value'
-        )
+        );
         const options = {
           user: 'test-user',
           database: 'test-db',
           host: 'localhost',
           password: 'test-password'
-        }
+        };
 
-        createDBClient(options)
+        createDBClient(options);
 
         expect(Client).toHaveBeenCalledWith({
           port: 5432,
@@ -434,9 +434,9 @@ describe('Postgres Helper', () => {
           password: 'test-password',
           host: 'localhost',
           database: 'test-db'
-        })
-      })
-    })
+        });
+      });
+    });
 
     describe('local development', () => {
       test('should create client with local password', async () => {
@@ -446,15 +446,15 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           passwordForLocalDev: 'local-password',
           isLocal: true
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn()
           }
-        }
+        };
 
-        createDBClient(options, mockServer)
+        createDBClient(options, mockServer);
 
         expect(Client).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -463,29 +463,29 @@ describe('Postgres Helper', () => {
             host: 'localhost',
             database: 'local-db'
           })
-        )
+        );
 
-        const clientConfig = vi.mocked(Client).mock.calls[0][0]
-        const password = await clientConfig.password()
+        const clientConfig = vi.mocked(Client).mock.calls[0][0];
+        const password = await clientConfig.password();
 
-        expect(password).toBe('local-password')
+        expect(password).toBe('local-password');
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
-        )
-      })
-    })
+        );
+      });
+    });
 
     describe('remote environment', () => {
       test('should create client with token for remote environment', async () => {
-        const mockCredentials = { mock: 'credentials' }
-        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+        const mockCredentials = { mock: 'credentials' };
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials);
 
-        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token')
+        const mockGetAuthToken = vi.fn().mockResolvedValue('rds-auth-token');
         vi.mocked(Signer).mockImplementation(function () {
           return {
             getAuthToken: mockGetAuthToken
-          }
-        })
+          };
+        });
 
         const options = {
           user: 'remote-user',
@@ -493,18 +493,18 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn()
           }
-        }
+        };
 
-        createDBClient(options, mockServer)
+        createDBClient(options, mockServer);
 
-        const clientConfig = vi.mocked(Client).mock.calls[0][0]
-        const password = await clientConfig.password()
+        const clientConfig = vi.mocked(Client).mock.calls[0][0];
+        const password = await clientConfig.password();
 
         expect(Signer).toHaveBeenCalledWith({
           hostname: 'remote-host',
@@ -512,9 +512,9 @@ describe('Postgres Helper', () => {
           username: 'remote-user',
           credentials: mockCredentials,
           region: 'eu-west-1'
-        })
-        expect(password).toBe('rds-auth-token')
-      })
+        });
+        expect(password).toBe('rds-auth-token');
+      });
 
       test('should create client with SSL when secureContext is provided', () => {
         const options = {
@@ -523,21 +523,21 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
-        const mockSecureContext = { mock: 'context' }
+        const mockSecureContext = { mock: 'context' };
         const mockServer = {
           logger: { info: vi.fn() },
           secureContext: mockSecureContext
-        }
+        };
 
-        createDBClient(options, mockServer)
+        createDBClient(options, mockServer);
 
-        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        const clientConfig = vi.mocked(Client).mock.calls[0][0];
         expect(clientConfig.ssl).toEqual({
           secureContext: mockSecureContext
-        })
-      })
+        });
+      });
 
       test('should not include SSL when secureContext is not provided', () => {
         const options = {
@@ -546,29 +546,29 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
         const mockServer = {
           logger: { info: vi.fn() }
-        }
+        };
 
-        createDBClient(options, mockServer)
+        createDBClient(options, mockServer);
 
-        const clientConfig = vi.mocked(Client).mock.calls[0][0]
-        expect(clientConfig.ssl).toBeUndefined()
-      })
+        const clientConfig = vi.mocked(Client).mock.calls[0][0];
+        expect(clientConfig.ssl).toBeUndefined();
+      });
 
       test('should handle error when getting token fails', async () => {
-        const mockCredentials = { mock: 'credentials' }
-        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials)
+        const mockCredentials = { mock: 'credentials' };
+        vi.mocked(fromNodeProviderChain).mockReturnValue(mockCredentials);
 
-        const tokenError = new Error('Failed to get auth token')
-        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError)
+        const tokenError = new Error('Failed to get auth token');
+        const mockGetAuthToken = vi.fn().mockRejectedValue(tokenError);
         vi.mocked(Signer).mockImplementation(function () {
           return {
             getAuthToken: mockGetAuthToken
-          }
-        })
+          };
+        });
 
         const options = {
           user: 'remote-user',
@@ -576,21 +576,21 @@ describe('Postgres Helper', () => {
           host: 'remote-host',
           isLocal: false,
           region: 'eu-west-1'
-        }
+        };
 
         const mockServer = {
           logger: {
             info: vi.fn(),
             error: vi.fn()
           }
-        }
+        };
 
-        createDBClient(options, mockServer)
+        createDBClient(options, mockServer);
 
-        const clientConfig = vi.mocked(Client).mock.calls[0][0]
+        const clientConfig = vi.mocked(Client).mock.calls[0][0];
         await expect(clientConfig.password()).rejects.toThrow(
           'Failed to get auth token'
-        )
+        );
 
         expect(mockServer.logger.error).toHaveBeenCalledWith(
           'Failed to get Postgres authentication token',
@@ -599,9 +599,9 @@ describe('Postgres Helper', () => {
             user: 'remote-user',
             host: 'remote-host'
           }
-        )
-      })
-    })
+        );
+      });
+    });
 
     test('should create client with no server', () => {
       const options = {
@@ -609,9 +609,9 @@ describe('Postgres Helper', () => {
         database: 'test-db',
         host: 'localhost',
         isLocal: true
-      }
+      };
 
-      createDBClient(options)
+      createDBClient(options);
 
       expect(Client).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -619,8 +619,8 @@ describe('Postgres Helper', () => {
           user: 'test-user',
           database: 'test-db'
         })
-      )
-    })
+      );
+    });
 
     test('should handle server with missing logger gracefully', async () => {
       const options = {
@@ -629,17 +629,17 @@ describe('Postgres Helper', () => {
         host: 'localhost',
         passwordForLocalDev: 'password',
         isLocal: true
-      }
+      };
 
-      const mockServer = {}
+      const mockServer = {};
 
-      createDBClient(options, mockServer)
+      createDBClient(options, mockServer);
 
-      const clientConfig = vi.mocked(Client).mock.calls[0][0]
-      const password = await clientConfig.password()
+      const clientConfig = vi.mocked(Client).mock.calls[0][0];
+      const password = await clientConfig.password();
 
-      expect(password).toBe('password')
-    })
+      expect(password).toBe('password');
+    });
 
     test('should include keepAlive settings', () => {
       const options = {
@@ -648,26 +648,26 @@ describe('Postgres Helper', () => {
         host: 'remote-host',
         isLocal: false,
         region: 'eu-west-1'
-      }
+      };
 
-      createDBClient(options)
+      createDBClient(options);
 
-      const clientConfig = vi.mocked(Client).mock.calls[0][0]
-      expect(clientConfig.keepAlive).toBe(true)
-      expect(clientConfig.keepAliveInitialDelayMillis).toBe(10000)
-    })
-  })
+      const clientConfig = vi.mocked(Client).mock.calls[0][0];
+      expect(clientConfig.keepAlive).toBe(true);
+      expect(clientConfig.keepAliveInitialDelayMillis).toBe(10000);
+    });
+  });
 
   describe('postgresDb plugin', () => {
-    let mockPool
-    let mockServer
-    let mockClient
+    let mockPool;
+    let mockServer;
+    let mockClient;
 
     beforeEach(() => {
       mockClient = {
         query: vi.fn().mockResolvedValue({ rows: [{ count: '0' }] }),
         release: vi.fn()
-      }
+      };
 
       mockPool = {
         query: vi.fn().mockResolvedValue({ rows: [] }),
@@ -675,11 +675,11 @@ describe('Postgres Helper', () => {
         end: vi.fn().mockResolvedValue(),
         on: vi.fn(),
         totalCount: 0
-      }
+      };
 
       vi.mocked(Pool).mockImplementation(function () {
-        return mockPool
-      })
+        return mockPool;
+      });
 
       mockServer = {
         logger: {
@@ -691,28 +691,28 @@ describe('Postgres Helper', () => {
         events: {
           on: vi.fn()
         }
-      }
-    })
+      };
+    });
 
     describe('plugin metadata', () => {
       test('should have correct plugin name and version', () => {
-        expect(postgresDb.plugin.name).toBe('postgres')
-        expect(postgresDb.plugin.version).toBe('1.0.0')
-      })
+        expect(postgresDb.plugin.name).toBe('postgres');
+        expect(postgresDb.plugin.version).toBe('1.0.0');
+      });
 
       test('should have options property', () => {
-        const options = postgresDb.options
+        const options = postgresDb.options;
 
-        expect(options).toBeDefined()
-        expect(typeof options).toBe('object')
-        expect(options).toHaveProperty('user')
-        expect(options).toHaveProperty('database')
-        expect(options).toHaveProperty('host')
-        expect(options).toHaveProperty('isLocal')
-        expect(options).toHaveProperty('region')
-        expect(options).toHaveProperty('loadPostgresData')
-      })
-    })
+        expect(options).toBeDefined();
+        expect(typeof options).toBe('object');
+        expect(options).toHaveProperty('user');
+        expect(options).toHaveProperty('database');
+        expect(options).toHaveProperty('host');
+        expect(options).toHaveProperty('isLocal');
+        expect(options).toHaveProperty('region');
+        expect(options).toHaveProperty('loadPostgresData');
+      });
+    });
 
     describe('plugin registration', () => {
       test('should successfully register and connect to postgres', () => {
@@ -722,29 +722,32 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Setting up postgres'
-        )
+        );
         expect(mockServer.decorate).toHaveBeenCalledWith(
           'server',
           'postgresDb',
           mockPool
-        )
-        expect(mockPool.on).toHaveBeenCalledWith('error', expect.any(Function))
+        );
+        expect(mockPool.on).toHaveBeenCalledWith('error', expect.any(Function));
         expect(mockPool.on).toHaveBeenCalledWith(
           'connect',
           expect.any(Function)
-        )
+        );
         expect(mockPool.on).toHaveBeenCalledWith(
           'acquire',
           expect.any(Function)
-        )
-        expect(mockPool.on).toHaveBeenCalledWith('remove', expect.any(Function))
-      })
+        );
+        expect(mockPool.on).toHaveBeenCalledWith(
+          'remove',
+          expect.any(Function)
+        );
+      });
 
       test('should register stop event handler', () => {
         const options = {
@@ -753,15 +756,15 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         expect(mockServer.events.on).toHaveBeenCalledWith(
           'stop',
           expect.any(Function)
-        )
-      })
+        );
+      });
 
       test('should close pool on server stop event', async () => {
         const options = {
@@ -770,26 +773,26 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         // Get the stop event handler
         const stopHandler = vi
           .mocked(mockServer.events.on)
-          .mock.calls.find((call) => call[0] === 'stop')[1]
+          .mock.calls.find((call) => call[0] === 'stop')[1];
 
         // Trigger the stop event
-        await stopHandler()
+        await stopHandler();
 
         expect(mockServer.logger.info).toHaveBeenCalledWith(
           'Closing Postgres pool'
-        )
-        expect(mockPool.end).toHaveBeenCalled()
-      })
+        );
+        expect(mockPool.end).toHaveBeenCalled();
+      });
 
       test('should not block startup when the database is unavailable', () => {
-        mockPool.connect.mockRejectedValue(new Error('Connection refused'))
+        mockPool.connect.mockRejectedValue(new Error('Connection refused'));
 
         const options = {
           user: 'test-user',
@@ -797,24 +800,24 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
         expect(() =>
           postgresDb.plugin.register(mockServer, options)
-        ).not.toThrow()
+        ).not.toThrow();
 
         expect(mockServer.decorate).toHaveBeenCalledWith(
           'server',
           'postgresDb',
           mockPool
-        )
-      })
+        );
+      });
 
       test('should swallow keep-alive query failures', async () => {
-        vi.useFakeTimers()
+        vi.useFakeTimers();
 
-        const keepAliveError = new Error('Connection refused')
-        mockPool.query.mockRejectedValue(keepAliveError)
+        const keepAliveError = new Error('Connection refused');
+        mockPool.query.mockRejectedValue(keepAliveError);
 
         const options = {
           user: 'test-user',
@@ -822,22 +825,22 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
-        await expect(vi.advanceTimersByTimeAsync(60000)).resolves.not.toThrow()
+        await expect(vi.advanceTimersByTimeAsync(60000)).resolves.not.toThrow();
 
         expect(mockServer.logger.debug).toHaveBeenCalledWith(
           { err: keepAliveError },
           'Postgres keep-alive query failed'
-        )
+        );
 
-        vi.useRealTimers()
-      })
+        vi.useRealTimers();
+      });
 
       test('should clear the keep-alive interval on server stop', async () => {
-        const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval')
+        const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
 
         const options = {
           user: 'test-user',
@@ -845,25 +848,25 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         const stopHandler = vi
           .mocked(mockServer.events.on)
-          .mock.calls.find((call) => call[0] === 'stop')[1]
+          .mock.calls.find((call) => call[0] === 'stop')[1];
 
-        await stopHandler()
+        await stopHandler();
 
-        expect(clearIntervalSpy).toHaveBeenCalled()
-        expect(mockPool.end).toHaveBeenCalled()
+        expect(clearIntervalSpy).toHaveBeenCalled();
+        expect(mockPool.end).toHaveBeenCalled();
 
-        clearIntervalSpy.mockRestore()
-      })
+        clearIntervalSpy.mockRestore();
+      });
 
       test('should log an error when closing the pool fails on stop', async () => {
-        const endError = new Error('Failed to close pool')
-        mockPool.end.mockRejectedValue(endError)
+        const endError = new Error('Failed to close pool');
+        mockPool.end.mockRejectedValue(endError);
 
         const options = {
           user: 'test-user',
@@ -871,21 +874,21 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         const stopHandler = vi
           .mocked(mockServer.events.on)
-          .mock.calls.find((call) => call[0] === 'stop')[1]
+          .mock.calls.find((call) => call[0] === 'stop')[1];
 
-        await expect(stopHandler()).resolves.not.toThrow()
+        await expect(stopHandler()).resolves.not.toThrow();
 
         expect(mockServer.logger.error).toHaveBeenCalledWith(
           { err: endError },
           'Error closing Postgres pool'
-        )
-      })
+        );
+      });
 
       test('should invoke error event handler', () => {
         const options = {
@@ -894,25 +897,25 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        let errorHandler
+        let errorHandler;
         mockPool.on.mockImplementation((event, handler) => {
           if (event === 'error') {
-            errorHandler = handler
+            errorHandler = handler;
           }
-        })
+        });
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
-        const poolError = new Error('Idle client error')
-        errorHandler(poolError)
+        const poolError = new Error('Idle client error');
+        errorHandler(poolError);
 
         expect(mockServer.logger.error).toHaveBeenCalledWith(
           { err: poolError },
           'Unexpected idle Postgres client error'
-        )
-      })
+        );
+      });
 
       test('should invoke connect event handler', () => {
         const options = {
@@ -921,23 +924,23 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        let connectHandler
+        let connectHandler;
         mockPool.on.mockImplementation((event, handler) => {
           if (event === 'connect') {
-            connectHandler = handler
+            connectHandler = handler;
           }
-        })
+        });
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
-        connectHandler()
+        connectHandler();
 
         expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'New client connected'
-        )
-      })
+        );
+      });
 
       test('should invoke acquire event handler', () => {
         const options = {
@@ -946,23 +949,23 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        let acquireHandler
+        let acquireHandler;
         mockPool.on.mockImplementation((event, handler) => {
           if (event === 'acquire') {
-            acquireHandler = handler
+            acquireHandler = handler;
           }
-        })
+        });
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
-        acquireHandler()
+        acquireHandler();
 
         expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'Client acquired from pool'
-        )
-      })
+        );
+      });
 
       test('should invoke remove event handler', () => {
         const options = {
@@ -971,26 +974,26 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        let removeHandler
+        let removeHandler;
         mockPool.on.mockImplementation((event, handler) => {
           if (event === 'remove') {
-            removeHandler = handler
+            removeHandler = handler;
           }
-        })
+        });
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
-        removeHandler()
+        removeHandler();
 
         expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'Client removed from pool'
-        )
-      })
+        );
+      });
 
       test('should execute setInterval callback to keep connections warm', async () => {
-        vi.useFakeTimers()
+        vi.useFakeTimers();
 
         const options = {
           user: 'test-user',
@@ -998,22 +1001,22 @@ describe('Postgres Helper', () => {
           host: 'localhost',
           isLocal: true,
           region: 'eu-west-2'
-        }
+        };
 
-        postgresDb.plugin.register(mockServer, options)
+        postgresDb.plugin.register(mockServer, options);
 
         // Clear previous calls
-        mockPool.query.mockClear()
+        mockPool.query.mockClear();
 
         // Advance time by 60 seconds to trigger the interval
-        await vi.advanceTimersByTimeAsync(60000)
+        await vi.advanceTimersByTimeAsync(60000);
 
         // Verify pool.query was called once with SELECT 1
-        expect(mockPool.query).toHaveBeenCalledTimes(1)
-        expect(mockPool.query).toHaveBeenCalledWith('SELECT 1')
+        expect(mockPool.query).toHaveBeenCalledTimes(1);
+        expect(mockPool.query).toHaveBeenCalledWith('SELECT 1');
 
-        vi.useRealTimers()
-      })
-    })
-  })
-})
+        vi.useRealTimers();
+      });
+    });
+  });
+});

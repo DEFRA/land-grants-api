@@ -1,51 +1,54 @@
-import { getAgreementsForParcel } from './getAgreementsForParcel.query.js'
-import { vi } from 'vitest'
+import { getAgreementsForParcel } from './getAgreementsForParcel.query.js';
+import { vi } from 'vitest';
 
 describe('getAgreementsForParcel', () => {
-  let mockDb
-  let mockLogger
-  let mockClient
+  let mockDb;
+  let mockLogger;
+  let mockClient;
 
   beforeEach(() => {
     mockClient = {
       query: vi.fn(),
       release: vi.fn()
-    }
+    };
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    }
+    };
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    }
-  })
+    };
+  });
 
   test('should connect to the database', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
 
-    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger)
+    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1)
-  })
+    expect(mockDb.connect).toHaveBeenCalledTimes(1);
+  });
 
   test('should query with the correct parameters', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
     const expectedQuery =
-      'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2'
-    const expectedValues = [sheetId, parcelId]
+      'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2';
+    const expectedValues = [sheetId, parcelId];
 
-    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger)
+    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
-  })
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expectedQuery,
+      expectedValues
+    );
+  });
 
   test('should return the transformed query results', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
     mockClient.query = vi.fn().mockResolvedValue({
       rows: [
         {
@@ -67,14 +70,14 @@ describe('getAgreementsForParcel', () => {
           ]
         }
       ]
-    })
+    });
 
     const result = await getAgreementsForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
     expect(result).toEqual([
       {
@@ -91,47 +94,47 @@ describe('getAgreementsForParcel', () => {
         startDate: new Date('2025-01-01'),
         endDate: new Date('2025-12-31')
       }
-    ])
-  })
+    ]);
+  });
 
   test('should return empty array when no agreements found', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockClient.query = vi.fn().mockResolvedValue({ rows: [] })
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    mockClient.query = vi.fn().mockResolvedValue({ rows: [] });
 
     const result = await getAgreementsForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toEqual([])
-  })
+    expect(result).toEqual([]);
+  });
 
   test('should release the client when done', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
 
-    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger)
+    await getAgreementsForParcel(sheetId, parcelId, mockDb, mockLogger);
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle errors and return undefined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const error = new Error('Database error')
-    mockClient.query = vi.fn().mockRejectedValue(error)
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const error = new Error('Database error');
+    mockClient.query = vi.fn().mockRejectedValue(error);
 
     const result = await getAgreementsForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toEqual([])
+    expect(result).toEqual([]);
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -141,25 +144,25 @@ describe('getAgreementsForParcel', () => {
       expect.stringContaining(
         'Database operation failed: Get agreements for parcel'
       )
-    )
+    );
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1)
-  })
+    expect(mockClient.release).toHaveBeenCalledTimes(1);
+  });
 
   test('should handle database connection error', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    const connectionError = new Error('Connection failed')
-    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    const connectionError = new Error('Connection failed');
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError);
 
     const result = await getAgreementsForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toEqual([])
+    expect(result).toEqual([]);
 
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,44 +173,44 @@ describe('getAgreementsForParcel', () => {
       expect.stringContaining(
         'Database operation failed: Get agreements for parcel'
       )
-    )
+    );
 
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
 
   test('should handle client release if client is not defined', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
+    const sheetId = 'SH123';
+    const parcelId = 'PA456';
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'));
 
     const result = await getAgreementsForParcel(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
-    )
+    );
 
-    expect(result).toEqual([])
-    expect(mockLogger.error).toHaveBeenCalled()
-    expect(mockClient.release).not.toHaveBeenCalled()
-  })
+    expect(result).toEqual([]);
+    expect(mockLogger.error).toHaveBeenCalled();
+    expect(mockClient.release).not.toHaveBeenCalled();
+  });
 
   test('should handle different parameter types correctly', async () => {
-    const numericSheetId = 123
-    const numericParcelId = 456
+    const numericSheetId = 123;
+    const numericParcelId = 456;
 
     await getAgreementsForParcel(
       numericSheetId,
       numericParcelId,
       mockDb,
       mockLogger
-    )
+    );
 
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2',
       [numericSheetId, numericParcelId]
-    )
-  })
+    );
+  });
 
   test('should handle null/undefined parameters', async () => {
     const result = await getAgreementsForParcel(
@@ -215,12 +218,12 @@ describe('getAgreementsForParcel', () => {
       undefined,
       mockDb,
       mockLogger
-    )
+    );
 
     expect(mockClient.query).toHaveBeenCalledWith(
       'SELECT * FROM agreements WHERE sheet_id = $1 and parcel_id = $2',
       [null, undefined]
-    )
-    expect(result).toEqual([])
-  })
-})
+    );
+    expect(result).toEqual([]);
+  });
+});

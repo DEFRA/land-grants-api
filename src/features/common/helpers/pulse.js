@@ -1,7 +1,7 @@
-import hapiPulse from 'hapi-pulse'
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
+import hapiPulse from 'hapi-pulse';
+import { createLogger } from '~/src/features/common/helpers/logging/logger.js';
 
-const tenSeconds = 10 * 1000
+const tenSeconds = 10 * 1000;
 
 /**
  * Plug-in to handle cleanly shutting down the service.
@@ -13,6 +13,6 @@ const pulse = {
     logger: createLogger(),
     timeout: tenSeconds
   }
-}
+};
 
-export { pulse }
+export { pulse };
