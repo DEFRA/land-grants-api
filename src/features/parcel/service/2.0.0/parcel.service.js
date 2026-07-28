@@ -67,7 +67,7 @@ export function splitParcelId(id, logger) {
  * @param {Logger} logger - The logger
  * @returns {Promise<any[]>} The parcel actions with available area
  */
-export async function getParcelActionsWithAvailableArea(
+async function getParcelActionsWithAvailableArea(
   parcel,
   actions,
   showActionResults,

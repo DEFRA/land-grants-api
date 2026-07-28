@@ -4,7 +4,7 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
-export const getIntersectionsExclusiveQuery = `
+const getIntersectionsExclusiveQuery = `
   WITH target_parcel AS (
     SELECT geom
     FROM land_parcels

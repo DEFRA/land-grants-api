@@ -17,7 +17,7 @@ const DATE_FORMAT = 'yyyy-MM-dd'
  * @param {string | Date | undefined} startDate - Optional start date override. Accepts an ISO string or a Date object (e.g. produced by Joi date() coercion)
  * @returns {string} The agreement start date in YYYY-MM-DD format
  */
-export const getAgreementStartDate = (startDate) => {
+const getAgreementStartDate = (startDate) => {
   if (startDate) {
     return format(
       startOfMonth(
@@ -39,7 +39,7 @@ export const getAgreementStartDate = (startDate) => {
  * @param {number} durationYears - The duration of the agreement in years
  * @returns {string} The agreement end date in YYYY-MM-DD format
  */
-export const getAgreementEndDate = (agreementStartDate, durationYears) => {
+const getAgreementEndDate = (agreementStartDate, durationYears) => {
   return format(
     addDays(addYears(parseISO(agreementStartDate), durationYears), -1),
     DATE_FORMAT
@@ -51,7 +51,7 @@ export const getAgreementEndDate = (agreementStartDate, durationYears) => {
  * @param {WmpCalculationResult} paymentResult - The WMP calculation result
  * @returns {WmpPayment[]} The payment schedule
  */
-export const transformPayments = (paymentResult) => {
+const transformPayments = (paymentResult) => {
   const paymentPence = gbpToPence(paymentResult.payment)
   return [
     {
@@ -74,11 +74,7 @@ export const transformPayments = (paymentResult) => {
  * @param {WmpCalculationResult} paymentResult - The WMP calculation result
  * @returns {{ [id: number]: WmpAgreementLevelItem }} Agreement level items keyed by ID
  */
-export const transformAgreementLevelItems = (
-  parcelIds,
-  action,
-  paymentResult
-) => {
+const transformAgreementLevelItems = (parcelIds, action, paymentResult) => {
   return {
     1: {
       code: action.code,

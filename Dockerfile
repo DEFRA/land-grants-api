@@ -11,7 +11,7 @@ ARG PORT_DEBUG
 ENV PORT=${PORT}
 EXPOSE ${PORT} ${PORT_DEBUG}
 
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node .npmrc package*.json ./
 RUN npm install --ignore-scripts
 COPY --chown=node:node . .
 RUN npm run build
@@ -29,7 +29,7 @@ RUN apk update && \
     apk add curl
 USER node
 
-COPY --from=development /home/node/package*.json ./
+COPY --from=development /home/node/.npmrc /home/node/package*.json ./
 COPY --from=development /home/node/.server ./.server/
 
 RUN npm ci --omit=dev --ignore-scripts

@@ -17,60 +17,6 @@ function sizeTransformer(area) {
 }
 
 /**
- * Transform parcel and actions to land parcel and actions
- * @param {Action} action - The actions to merge
- * @param {AvailableAreaForAction | null} availableArea - Total Available Area
- * @returns {object} The land action data with available area
- */
-function actionTransformer(action, availableArea = null, showResults = false) {
-  const response = {
-    code: action.code,
-    description: action.description,
-    availableArea: Number.isFinite(availableArea?.availableAreaHectares)
-      ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
-      : undefined,
-    ...action.payment
-  }
-
-  if (showResults) {
-    return {
-      ...response,
-      results: {
-        totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
-        stacks: availableArea?.stacks,
-        explanations: availableArea?.explanations
-      }
-    }
-  }
-
-  return response
-}
-
-/**
- * Transform parcel to land parcel
- * @param {object} landParcel - The parcel to merge
- */
-function landParcelTransformer(landParcel) {
-  return {
-    parcelId: landParcel?.parcel_id,
-    sheetId: landParcel?.sheet_id,
-    size: sizeTransformer(landParcel.area_sqm)
-  }
-}
-
-/**
- * Transform parcel and actions to land parcel and actions
- * @param {object} landParcel - The parcel to merge
- * @param {object} actions - The actions to merge
- */
-function parcelActionsTransformer(landParcel, actions) {
-  return {
-    ...landParcelTransformer(landParcel),
-    actions
-  }
-}
-
-/**
  * Transform current actions to actions with area in square meters
  * @param {AgreementAction[] | null} plannedActions - The planned actions to transform
  * @returns {ActionRequest[]} The transformed current actions
@@ -130,8 +76,6 @@ function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
 }
 
 export {
-  actionTransformer,
-  parcelActionsTransformer,
   plannedActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer,

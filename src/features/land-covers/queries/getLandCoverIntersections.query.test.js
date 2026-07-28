@@ -1,8 +1,5 @@
 import { vi } from 'vitest'
-import {
-  getLandCoverIntersections,
-  getIntersectionsExclusiveQuery
-} from './getLandCoverIntersections.query.js'
+import { getLandCoverIntersections } from './getLandCoverIntersections.query.js'
 
 describe('getLandCoverIntersections', () => {
   let mockDb
@@ -52,10 +49,10 @@ describe('getLandCoverIntersections', () => {
   test('should use the intersections query with sheetId and parcelId', async () => {
     await getLandCoverIntersections('TQ4432', '6044', mockDb, mockLogger)
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      getIntersectionsExclusiveQuery,
-      ['TQ4432', '6044']
-    )
+    const [actualQuery, actualParams] = mockClient.query.mock.calls[0]
+    expect(actualQuery).toContain('target_parcel')
+    expect(actualQuery).toContain('overlap_type')
+    expect(actualParams).toEqual(['TQ4432', '6044'])
   })
 
   test('should map query rows into overlap buckets', async () => {

@@ -1,646 +1,4 @@
-import {
-  applicationValidationRunToCaseManagement,
-  createHeadingComponent,
-  createParagraphComponent,
-  createAvailableAreaDetails,
-  createStatusComponent,
-  createRuleDetails,
-  createActionDetails
-} from './application-validation.transformer.js'
-
-describe('createHeadingComponent', () => {
-  test('should create heading component with text and level', () => {
-    const result = createHeadingComponent('Test Heading', 2)
-
-    expect(result).toEqual({
-      component: 'heading',
-      text: 'Test Heading',
-      level: 2,
-      id: undefined
-    })
-  })
-
-  test('should create heading component with text, level, and id', () => {
-    const result = createHeadingComponent('Test Heading', 2, 'test-id')
-
-    expect(result).toEqual({
-      component: 'heading',
-      text: 'Test Heading',
-      level: 2,
-      id: 'test-id'
-    })
-  })
-})
-
-describe('createParagraphComponent', () => {
-  test('should create paragraph component with text', () => {
-    const result = createParagraphComponent('This is a paragraph.')
-
-    expect(result).toEqual({
-      component: 'paragraph',
-      text: 'This is a paragraph.'
-    })
-  })
-
-  test('should return null when text is empty string', () => {
-    const result = createParagraphComponent('')
-
-    expect(result).toBeNull()
-  })
-})
-
-describe('createAvailableAreaDetails', () => {
-  test('should create details component with explanation sections', () => {
-    const explanations = [
-      {
-        title: 'Section 1',
-        content: ['Line 1', 'Line 2']
-      },
-      {
-        title: 'Section 2',
-        content: ['Line 3']
-      },
-      {
-        title: 'Section 3',
-        content: ['Line 4', 'Line 5', 'Line 6']
-      }
-    ]
-
-    const result = createAvailableAreaDetails(explanations)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Available area calculation explanation',
-          classes: 'govuk-details__summary-text'
-        }
-      ],
-      items: [
-        { component: 'paragraph', text: 'Section 1' },
-        { component: 'paragraph', text: 'Line 1' },
-        { component: 'paragraph', text: 'Line 2' },
-        { component: 'paragraph', text: 'Section 2' },
-        { component: 'paragraph', text: 'Line 3' },
-        { component: 'paragraph', text: 'Section 3' },
-        { component: 'paragraph', text: 'Line 4' },
-        { component: 'paragraph', text: 'Line 5' },
-        { component: 'paragraph', text: 'Line 6' }
-      ]
-    })
-  })
-
-  test('should handle empty content array', () => {
-    const explanations = [
-      {
-        title: 'Empty Section',
-        content: []
-      }
-    ]
-
-    const result = createAvailableAreaDetails(explanations)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Available area calculation explanation',
-          classes: 'govuk-details__summary-text'
-        }
-      ],
-      items: [{ component: 'paragraph', text: 'Empty Section' }]
-    })
-  })
-
-  test('should handle empty explanations array', () => {
-    const explanations = []
-
-    const result = createAvailableAreaDetails(explanations)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Available area calculation explanation',
-          classes: 'govuk-details__summary-text'
-        }
-      ],
-      items: []
-    })
-  })
-
-  test('should filter out null items from empty content strings', () => {
-    const explanations = [
-      {
-        title: 'Section',
-        content: ['', 'Valid content', '']
-      }
-    ]
-
-    const result = createAvailableAreaDetails(explanations)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Available area calculation explanation',
-          classes: 'govuk-details__summary-text'
-        }
-      ],
-      items: [
-        { component: 'paragraph', text: 'Section' },
-        { component: 'paragraph', text: 'Valid content' }
-      ]
-    })
-  })
-})
-
-describe('createRuleDetails', () => {
-  const rule = {
-    name: 'parcel-has-intersection-with-data-layer-moorland',
-    description: 'Is this parcel on the moorland?',
-    passed: true,
-    explanations: [
-      {
-        title: 'moorland check',
-        lines: [
-          'This parcel has a 99.99% intersection with the moorland layer.'
-        ]
-      }
-    ]
-  }
-
-  test('should create rule details component for passed rule', () => {
-    const result = createRuleDetails({ ...rule, passed: true })
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Is this parcel on the moorland?',
-          classes: 'govuk-details__summary-text'
-        },
-        {
-          classes: 'govuk-!-margin-left-8',
-          component: 'status',
-          text: 'Passed',
-          colour: 'green'
-        }
-      ],
-      items: [
-        {
-          component: 'paragraph',
-          text: 'This parcel has a 99.99% intersection with the moorland layer.'
-        }
-      ]
-    })
-  })
-
-  test('should create rule details component for failed rule', () => {
-    const result = createRuleDetails({ ...rule, passed: false })
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'Is this parcel on the moorland?',
-          classes: 'govuk-details__summary-text'
-        },
-        {
-          classes: 'govuk-!-margin-left-8',
-          component: 'status',
-          text: 'Failed',
-          colour: 'red'
-        }
-      ],
-      items: [
-        {
-          component: 'paragraph',
-          text: 'This parcel has a 99.99% intersection with the moorland layer.'
-        }
-      ]
-    })
-  })
-
-  test('should handle empty explanations array', () => {
-    const rule = {
-      name: 'test-rule',
-      passed: true,
-      explanations: []
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.items).toHaveLength(0)
-  })
-
-  test('should handle explanation with empty lines array', () => {
-    const rule = {
-      name: 'test-rule',
-      passed: false,
-      explanations: [
-        {
-          title: 'Empty explanation',
-          lines: []
-        }
-      ]
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.items).toHaveLength(0)
-  })
-
-  test('should use friendly title for known rule names', () => {
-    const rule = {
-      name: 'applied-for-total-available-area',
-      description: 'Has the total available area been applied for?',
-      passed: true,
-      explanations: []
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.summaryItems[0].text).toBe(
-      'Has the total available area been applied for?'
-    )
-  })
-
-  test('should use original name for unknown rule names', () => {
-    const rule = {
-      name: 'unknown-custom-rule',
-      description: 'unknown-custom-rule',
-      passed: true,
-      explanations: []
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.summaryItems[0].text).toBe('unknown-custom-rule')
-    expect(result.summaryItems[1]).toEqual({
-      classes: 'govuk-!-margin-left-8',
-      component: 'status',
-      text: 'Passed',
-      colour: 'green'
-    })
-  })
-
-  test('should handle multiple explanations with multiple lines', () => {
-    const rule = {
-      name: 'test-rule',
-      description: 'Test rule description',
-      passed: true,
-      explanations: [
-        {
-          title: 'First explanation',
-          lines: ['Line 1', 'Line 2']
-        },
-        {
-          title: 'Second explanation',
-          lines: ['Line 3', 'Line 4', 'Line 5']
-        }
-      ]
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.items).toEqual([
-      { component: 'paragraph', text: 'Line 1' },
-      { component: 'paragraph', text: 'Line 2' },
-      { component: 'paragraph', text: 'Line 3' },
-      { component: 'paragraph', text: 'Line 4' },
-      { component: 'paragraph', text: 'Line 5' }
-    ])
-  })
-
-  test('should filter out empty line explanations', () => {
-    const rule = {
-      name: 'test-rule',
-      description: 'Test rule',
-      passed: false,
-      explanations: [
-        {
-          title: 'Explanation',
-          lines: ['Valid line', '', 'Another valid line']
-        }
-      ]
-    }
-
-    const result = createRuleDetails(rule)
-
-    expect(result.items).toEqual([
-      { component: 'paragraph', text: 'Valid line' },
-      { component: 'paragraph', text: 'Another valid line' }
-    ])
-  })
-})
-
-describe('createStatusComponent', () => {
-  test('should create passed status component when hasPassed is true', () => {
-    const result = createStatusComponent(true)
-
-    expect(result).toEqual({
-      classes: 'govuk-!-margin-left-8',
-      component: 'status',
-      text: 'Passed',
-      colour: 'green'
-    })
-  })
-
-  test('should create failed status component when hasPassed is false', () => {
-    const result = createStatusComponent(false)
-
-    expect(result).toEqual({
-      classes: 'govuk-!-margin-left-8',
-      component: 'status',
-      text: 'Failed',
-      colour: 'red'
-    })
-  })
-})
-
-describe('createActionDetails', () => {
-  test('should create action details component with available area and rules', () => {
-    const action = {
-      code: 'SAM1',
-      hasPassed: true,
-      availableArea: {
-        areaInHa: 10.5,
-        explanations: [
-          {
-            title: 'Total valid land cover',
-            content: ['Applied for: 10.50 ha', 'Available: 10.50 ha']
-          }
-        ]
-      },
-      rules: [
-        {
-          name: 'parcel-has-intersection-with-data-layer-moorland',
-          description: 'Is this parcel on the moorland?',
-          passed: true,
-          explanations: [
-            {
-              title: 'moorland check',
-              lines: [
-                'This parcel has a 99.99% intersection with the moorland layer.'
-              ]
-            }
-          ]
-        }
-      ]
-    }
-
-    const result = createActionDetails(action)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'SAM1',
-          classes: 'govuk-details__summary-text'
-        },
-        {
-          classes: 'govuk-!-margin-left-8',
-          component: 'status',
-          text: 'Passed',
-          colour: 'green'
-        }
-      ],
-      items: [
-        {
-          component: 'details',
-          summaryItems: [
-            {
-              text: 'Available area calculation explanation',
-              classes: 'govuk-details__summary-text'
-            }
-          ],
-          items: [
-            {
-              component: 'paragraph',
-              text: 'Total valid land cover'
-            },
-            {
-              component: 'paragraph',
-              text: 'Applied for: 10.50 ha'
-            },
-            {
-              component: 'paragraph',
-              text: 'Available: 10.50 ha'
-            }
-          ]
-        },
-        {
-          component: 'details',
-          summaryItems: [
-            {
-              text: 'Is this parcel on the moorland?',
-              classes: 'govuk-details__summary-text'
-            },
-            {
-              classes: 'govuk-!-margin-left-8',
-              component: 'status',
-              text: 'Passed',
-              colour: 'green'
-            }
-          ],
-          items: [
-            {
-              component: 'paragraph',
-              text: 'This parcel has a 99.99% intersection with the moorland layer.'
-            }
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should handle action with empty rules array', () => {
-    const action = {
-      code: 'SAM4',
-      hasPassed: true,
-      rules: []
-    }
-
-    const result = createActionDetails(action)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'SAM4',
-          classes: 'govuk-details__summary-text'
-        },
-        {
-          classes: 'govuk-!-margin-left-8',
-          component: 'status',
-          text: 'Passed',
-          colour: 'green'
-        }
-      ],
-      items: []
-    })
-  })
-
-  test('should handle action without availableArea', () => {
-    const action = {
-      code: 'TEST1',
-      hasPassed: true,
-      rules: [
-        {
-          name: 'test-rule',
-          description: 'Test rule',
-          passed: true,
-          explanations: [
-            {
-              title: 'Test',
-              lines: ['Test line']
-            }
-          ]
-        }
-      ]
-    }
-
-    const result = createActionDetails(action)
-
-    expect(result).toEqual({
-      component: 'details',
-      summaryItems: [
-        {
-          text: 'TEST1',
-          classes: 'govuk-details__summary-text'
-        },
-        {
-          classes: 'govuk-!-margin-left-8',
-          component: 'status',
-          text: 'Passed',
-          colour: 'green'
-        }
-      ],
-      items: [
-        {
-          component: 'details',
-          summaryItems: [
-            {
-              text: 'Test rule',
-              classes: 'govuk-details__summary-text'
-            },
-            {
-              classes: 'govuk-!-margin-left-8',
-              component: 'status',
-              text: 'Passed',
-              colour: 'green'
-            }
-          ],
-          items: [
-            {
-              component: 'paragraph',
-              text: 'Test line'
-            }
-          ]
-        }
-      ]
-    })
-  })
-
-  test('should handle action with failed status', () => {
-    const action = {
-      code: 'FAILED1',
-      hasPassed: false,
-      availableArea: {
-        areaInHa: 5.0,
-        explanations: [
-          {
-            title: 'Area Information',
-            content: ['Total area: 5.0 ha']
-          }
-        ]
-      },
-      rules: [
-        {
-          name: 'failed-rule',
-          description: 'This rule failed',
-          passed: false,
-          explanations: [
-            {
-              title: 'Failure reason',
-              lines: ['Insufficient area']
-            }
-          ]
-        }
-      ]
-    }
-
-    const result = createActionDetails(action)
-
-    expect(result.summaryItems[1]).toEqual({
-      classes: 'govuk-!-margin-left-8',
-      component: 'status',
-      text: 'Failed',
-      colour: 'red'
-    })
-    expect(result.items).toHaveLength(2) // available area details + 1 rule
-  })
-
-  test('should handle action with multiple rules', () => {
-    const action = {
-      code: 'MULTI1',
-      hasPassed: true,
-      rules: [
-        {
-          name: 'rule-1',
-          description: 'First rule',
-          passed: true,
-          explanations: [
-            {
-              title: 'Rule 1',
-              lines: ['Rule 1 passed']
-            }
-          ]
-        },
-        {
-          name: 'rule-2',
-          description: 'Second rule',
-          passed: true,
-          explanations: [
-            {
-              title: 'Rule 2',
-              lines: ['Rule 2 passed']
-            }
-          ]
-        }
-      ]
-    }
-
-    const result = createActionDetails(action)
-
-    expect(result.items).toHaveLength(2)
-    expect(result.items[0].summaryItems[0].text).toBe('First rule')
-    expect(result.items[1].summaryItems[0].text).toBe('Second rule')
-  })
-
-  test('should handle action with availableArea but empty explanations', () => {
-    const action = {
-      code: 'EMPTY_EXPLAIN',
-      hasPassed: true,
-      availableArea: {
-        areaInHa: 10.0,
-        explanations: []
-      },
-      rules: []
-    }
-
-    const result = createActionDetails(action)
-
-    // Should have the availableArea details component even with empty explanations
-    expect(result.items).toHaveLength(1)
-    expect(result.items[0].component).toBe('details')
-    expect(result.items[0].summaryItems[0].text).toBe(
-      'Available area calculation explanation'
-    )
-    expect(result.items[0].items).toEqual([])
-  })
-})
+import { applicationValidationRunToCaseManagement } from './application-validation.transformer.js'
 
 describe('applicationValidationRunToCaseManagement', () => {
   test('should return null when input is null', () => {
@@ -706,7 +64,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
     const result = applicationValidationRunToCaseManagement(input)
 
-    expect(result).toHaveLength(5) // 1 title + 2 parcel headings + 2 actions
+    expect(result).toHaveLength(5)
     expect(result[0]).toEqual({
       component: 'heading',
       text: 'Land parcel rules checks',
@@ -746,7 +104,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
     const result = applicationValidationRunToCaseManagement(input)
 
-    expect(result).toHaveLength(2) // 1 title + 1 parcel heading
+    expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       component: 'heading',
       text: 'Land parcel rules checks',
@@ -796,7 +154,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
     const result = applicationValidationRunToCaseManagement(input)
 
-    expect(result).toHaveLength(3) // title + parcel heading + failed action
+    expect(result).toHaveLength(3)
     const failedAction = result[2]
     expect(failedAction.summaryItems[1]).toEqual({
       classes: 'govuk-!-margin-left-8',
@@ -804,6 +162,617 @@ describe('applicationValidationRunToCaseManagement', () => {
       text: 'Failed',
       colour: 'red'
     })
+  })
+
+  test('should create heading components with correct structure', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'SD6743',
+          parcelId: '8083',
+          actions: []
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result[0]).toEqual({
+      component: 'heading',
+      text: 'Land parcel rules checks',
+      level: 2,
+      id: 'title'
+    })
+    expect(result[1]).toEqual({
+      component: 'heading',
+      text: 'Parcel ID: SD6743 8083 checks',
+      level: 3,
+      id: undefined
+    })
+  })
+
+  test('should create status components for passed and failed actions', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'PASS1',
+              hasPassed: true,
+              rules: []
+            },
+            {
+              code: 'FAIL1',
+              hasPassed: false,
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+
+    expect(result[2].summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Passed',
+      colour: 'green'
+    })
+    expect(result[3].summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Failed',
+      colour: 'red'
+    })
+  })
+
+  test('should create available area details with explanation sections', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 10.5,
+                explanations: [
+                  {
+                    title: 'Section 1',
+                    content: ['Line 1', 'Line 2']
+                  },
+                  {
+                    title: 'Section 2',
+                    content: ['Line 3']
+                  }
+                ]
+              },
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+    const availableAreaDetails = actionDetails.items[0]
+
+    expect(availableAreaDetails.component).toBe('details')
+    expect(availableAreaDetails.summaryItems[0].text).toBe(
+      'Available area calculation explanation'
+    )
+    expect(availableAreaDetails.items).toEqual([
+      { component: 'paragraph', text: 'Section 1' },
+      { component: 'paragraph', text: 'Line 1' },
+      { component: 'paragraph', text: 'Line 2' },
+      { component: 'paragraph', text: 'Section 2' },
+      { component: 'paragraph', text: 'Line 3' }
+    ])
+  })
+
+  test('should filter out null paragraph items from empty content strings', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 10.0,
+                explanations: [
+                  {
+                    title: 'Section',
+                    content: ['', 'Valid content', '']
+                  }
+                ]
+              },
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const availableAreaDetails = result[2].items[0]
+
+    expect(availableAreaDetails.items).toEqual([
+      { component: 'paragraph', text: 'Section' },
+      { component: 'paragraph', text: 'Valid content' }
+    ])
+  })
+
+  test('should handle available area with empty explanations array', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 10.0,
+                explanations: []
+              },
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+    const availableAreaDetails = actionDetails.items[0]
+
+    expect(availableAreaDetails.component).toBe('details')
+    expect(availableAreaDetails.items).toEqual([])
+  })
+
+  test('should handle available area with empty content arrays', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 10.0,
+                explanations: [
+                  {
+                    title: 'Empty Section',
+                    content: []
+                  }
+                ]
+              },
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const availableAreaDetails = result[2].items[0]
+
+    expect(availableAreaDetails.items).toEqual([
+      { component: 'paragraph', text: 'Empty Section' }
+    ])
+  })
+
+  test('should create rule details with status and explanations', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              rules: [
+                {
+                  name: 'parcel-has-intersection-with-data-layer-moorland',
+                  description: 'Is this parcel on the moorland?',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'moorland check',
+                      lines: [
+                        'This parcel has a 99.99% intersection with the moorland layer.'
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.component).toBe('details')
+    expect(ruleDetails.summaryItems[0].text).toBe(
+      'Is this parcel on the moorland?'
+    )
+    expect(ruleDetails.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Passed',
+      colour: 'green'
+    })
+    expect(ruleDetails.items).toEqual([
+      {
+        component: 'paragraph',
+        text: 'This parcel has a 99.99% intersection with the moorland layer.'
+      }
+    ])
+  })
+
+  test('should create rule details with failed status', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: false,
+              rules: [
+                {
+                  name: 'failed-rule',
+                  description: 'This rule failed',
+                  passed: false,
+                  explanations: [
+                    {
+                      title: 'Failure reason',
+                      lines: ['Insufficient area']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Failed',
+      colour: 'red'
+    })
+  })
+
+  test('should handle rule with empty explanations array', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: true,
+              rules: [
+                {
+                  name: 'test-rule',
+                  description: 'Test rule',
+                  passed: true,
+                  explanations: []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.items).toHaveLength(0)
+  })
+
+  test('should handle rule with empty lines array', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: false,
+              rules: [
+                {
+                  name: 'test-rule',
+                  description: 'Test rule',
+                  passed: false,
+                  explanations: [
+                    {
+                      title: 'Empty explanation',
+                      lines: []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.items).toHaveLength(0)
+  })
+
+  test('should handle rule with multiple explanations and multiple lines', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: true,
+              rules: [
+                {
+                  name: 'test-rule',
+                  description: 'Test rule description',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'First explanation',
+                      lines: ['Line 1', 'Line 2']
+                    },
+                    {
+                      title: 'Second explanation',
+                      lines: ['Line 3', 'Line 4', 'Line 5']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.items).toEqual([
+      { component: 'paragraph', text: 'Line 1' },
+      { component: 'paragraph', text: 'Line 2' },
+      { component: 'paragraph', text: 'Line 3' },
+      { component: 'paragraph', text: 'Line 4' },
+      { component: 'paragraph', text: 'Line 5' }
+    ])
+  })
+
+  test('should filter out empty lines in rule explanations', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: false,
+              rules: [
+                {
+                  name: 'test-rule',
+                  description: 'Test rule',
+                  passed: false,
+                  explanations: [
+                    {
+                      title: 'Explanation',
+                      lines: ['Valid line', '', 'Another valid line']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const ruleDetails = result[2].items[0]
+
+    expect(ruleDetails.items).toEqual([
+      { component: 'paragraph', text: 'Valid line' },
+      { component: 'paragraph', text: 'Another valid line' }
+    ])
+  })
+
+  test('should create action details with available area and rules', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM1',
+              hasPassed: true,
+              availableArea: {
+                areaInHa: 10.5,
+                explanations: [
+                  {
+                    title: 'Total valid land cover',
+                    content: ['Applied for: 10.50 ha', 'Available: 10.50 ha']
+                  }
+                ]
+              },
+              rules: [
+                {
+                  name: 'parcel-has-intersection-with-data-layer-moorland',
+                  description: 'Is this parcel on the moorland?',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'moorland check',
+                      lines: [
+                        'This parcel has a 99.99% intersection with the moorland layer.'
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+
+    expect(actionDetails.component).toBe('details')
+    expect(actionDetails.summaryItems[0].text).toBe('SAM1')
+    expect(actionDetails.summaryItems[1]).toEqual({
+      classes: 'govuk-!-margin-left-8',
+      component: 'status',
+      text: 'Passed',
+      colour: 'green'
+    })
+    expect(actionDetails.items).toHaveLength(2)
+  })
+
+  test('should handle action with empty rules array', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'SAM4',
+              hasPassed: true,
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+
+    expect(actionDetails.items).toEqual([])
+  })
+
+  test('should handle action without availableArea', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'TEST1',
+              hasPassed: true,
+              rules: [
+                {
+                  name: 'test-rule',
+                  description: 'Test rule',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'Test',
+                      lines: ['Test line']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+
+    expect(actionDetails.items).toHaveLength(1)
+    expect(actionDetails.items[0].summaryItems[0].text).toBe('Test rule')
+  })
+
+  test('should handle action with multiple rules', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'MULTI1',
+              hasPassed: true,
+              rules: [
+                {
+                  name: 'rule-1',
+                  description: 'First rule',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'Rule 1',
+                      lines: ['Rule 1 passed']
+                    }
+                  ]
+                },
+                {
+                  name: 'rule-2',
+                  description: 'Second rule',
+                  passed: true,
+                  explanations: [
+                    {
+                      title: 'Rule 2',
+                      lines: ['Rule 2 passed']
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+
+    expect(actionDetails.items).toHaveLength(2)
+    expect(actionDetails.items[0].summaryItems[0].text).toBe('First rule')
+    expect(actionDetails.items[1].summaryItems[0].text).toBe('Second rule')
   })
 
   test('should return response when input is valid', () => {

@@ -25,7 +25,7 @@ const findNonInternalIPv4 = (interfaces) =>
  * @returns {string}
  */
 let cachedServiceIp = null
-export const getServiceIp = () => {
+const getServiceIp = () => {
   if (cachedServiceIp) {
     return cachedServiceIp
   }
@@ -51,7 +51,7 @@ export const getServiceIp = () => {
  * @param {string} raw
  * @returns {string}
  */
-export const sanitiseIp = (raw) => {
+const sanitiseIp = (raw) => {
   if (!raw || typeof raw !== 'string') {
     return ''
   }

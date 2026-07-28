@@ -1,6 +1,6 @@
 import Joi from 'joi'
 
-export const ruleResultsSchema = Joi.object({
+const ruleResultsSchema = Joi.object({
   hasPassed: Joi.boolean().required(),
   code: Joi.string().required(),
   actionConfigVersion: Joi.string().required(),

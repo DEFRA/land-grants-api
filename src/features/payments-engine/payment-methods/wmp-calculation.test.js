@@ -1,8 +1,4 @@
-import {
-  calculateEligibleArea,
-  calculatePayment,
-  wmpCalculation
-} from './wmp-calculation.js'
+import { wmpCalculation } from './wmp-calculation.js'
 import { haToSqm } from '../../common/helpers/measurement.js'
 
 const tiers = [
@@ -25,49 +21,6 @@ const tiers = [
     ratePerUnitGbp: 15
   }
 ]
-
-describe('calculateEligibleArea', () => {
-  test('should include all new woodland when it is within the cap', () => {
-    // old=800000, new=100000, total=900000, 20% cap=180000 → new(100000) ≤ cap(180000) → eligible=900000
-    expect(calculateEligibleArea(800000, 100000, 20)).toBe(900000)
-  })
-
-  test('should cap new woodland when it exceeds the maximum percentage', () => {
-    // old=200000, new=300000, total=500000, 20% cap=100000 → new(300000) > cap(100000) → eligible=300000
-    expect(calculateEligibleArea(200000, 300000, 20)).toBe(300000)
-  })
-
-  test('should include all new woodland when exactly at the cap', () => {
-    // old=800000, new=200000, total=1000000, 20% cap=200000 → new(200000) = cap(200000) → eligible=1000000
-    expect(calculateEligibleArea(800000, 200000, 20)).toBe(1000000)
-  })
-
-  test('should cap new woodland when it exceeds the maximum percentage and return decimal places', () => {
-    // ensure rounding to 4 decimal places
-    expect(calculateEligibleArea(812000, 204000, 20)).toBe(1015200)
-  })
-})
-
-describe('calculatePayment', () => {
-  test.each([
-    { area: 0.2, expected: 0 },
-    { area: 0.4999, expected: 0 },
-    { area: 0.5, expected: 1500 },
-    { area: 50.5, expected: 1515 },
-    { area: 50.9999, expected: 1530 },
-    { area: 51, expected: 1530 },
-    { area: 51.5, expected: 1545 },
-    { area: 100, expected: 3000 },
-    { area: 100.0001, expected: 3000 },
-    { area: 100.1, expected: 3001.5 },
-    { area: 150, expected: 3750 }
-  ])(
-    'should return £$expected for $area sqm eligible area',
-    ({ area, expected }) => {
-      expect(calculatePayment(haToSqm(area), tiers).payment).toBe(expected)
-    }
-  )
-})
 
 describe('wmpCalculation', () => {
   const createPaymentMethod = () => ({

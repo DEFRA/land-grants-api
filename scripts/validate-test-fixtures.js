@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { existsSync, readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
@@ -10,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 /**
  * Validate that computed fixtures are in sync with CSV scenarios
  */
-async function validateTestFixtures() {
+function validateTestFixtures() {
   console.log('🔍 Validating test fixtures...')
 
   try {
@@ -153,10 +151,10 @@ async function validateTestFixtures() {
 
 // Run validation if called directly
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  validateTestFixtures().catch((error) => {
+  try {
+    validateTestFixtures()
+  } catch (error) {
     console.error('❌ Fatal error:', error)
     process.exit(1)
-  })
+  }
 }
-
-export { validateTestFixtures }

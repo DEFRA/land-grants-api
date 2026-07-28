@@ -224,7 +224,7 @@ export async function importData(
  * @param {string | number} ingestId - The ingest ID
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  */
-export async function importDataAsIs(dataStream, entityType, ingestId, logger) {
+async function importDataAsIs(dataStream, entityType, ingestId, logger) {
   const startTime = performance.now()
 
   const { name: entityName, truncateTable } = entityType
@@ -381,7 +381,7 @@ async function handleImportFailure(
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
  * @returns {Promise<boolean>} true if the entity's table(s) were promoted to live this call
  */
-export async function importDataValidate(
+async function importDataValidate(
   dataStream,
   entityType,
   ingestId,

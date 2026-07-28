@@ -20,11 +20,7 @@
  * @param {{timeoutMinutes?: number}} [options] - Lock options
  * @returns {Promise<boolean>} True if the lock was acquired, false otherwise
  */
-export async function acquireTaskLock(
-  pool,
-  taskName,
-  { timeoutMinutes = 5 } = {}
-) {
+async function acquireTaskLock(pool, taskName, { timeoutMinutes = 5 } = {}) {
   const timeoutMs = Math.max(1, Number(timeoutMinutes)) * 60 * 1000
   const expiresAt = new Date(Date.now() + timeoutMs).toISOString()
 
@@ -73,7 +69,7 @@ export async function acquireTaskLock(
  * @param {string} taskName - The task name to release
  * @returns {Promise<void>}
  */
-export async function releaseTaskLock(pool, taskName) {
+async function releaseTaskLock(pool, taskName) {
   // Best-effort cleanup of the lock row so other instances can run immediately.
   // Do not throw if deletion fails; caller may already be shutting down.
   try {
@@ -104,10 +100,4 @@ export async function withTaskLock(pool, taskName, fn, options = {}) {
   } finally {
     await releaseTaskLock(pool, taskName)
   }
-}
-
-export default {
-  acquireTaskLock,
-  releaseTaskLock,
-  withTaskLock
 }

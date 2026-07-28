@@ -1,7 +1,6 @@
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { executeRulesForPaymentCalculationWMP } from '../service/wmp-payment-calculate.service.js'
 import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import createTestServer from '~/src/tests/test-server.js'
@@ -30,8 +29,6 @@ vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockGetLandData = getLandData
 const mockGetActionsByLatestVersion = getActionsByLatestVersion
-const mockExecuteRulesForPaymentCalculationWMP =
-  executeRulesForPaymentCalculationWMP
 const mockExecutePaymentMethod = executePaymentMethod
 const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
 const mockAuditEvent = auditEvent
@@ -156,10 +153,6 @@ describe('Payment calculate WMP controller', () => {
     vi.clearAllMocks()
     mockGetLandData.mockResolvedValue([createMockParcel()])
     mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
-    mockExecuteRulesForPaymentCalculationWMP.mockReturnValue({
-      ruleResult: { passed: true, results: [] },
-      totalParcelAreaSqm: 8
-    })
     mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult())
     mockWmpPaymentCalculateTransformer.mockReturnValue(
       createMockPaymentResponse()
