@@ -1,26 +1,13 @@
-import { isAfter, isBefore, isSameDay } from 'date-fns'
+import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
 import {
   logDatabaseError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { agreementActionsTransformer } from '../transformers/agreements.transformer.js'
 
 /**
  * @import {AgreementAction} from '~/src/features/agreements/agreements.d.js'
  * @import {Logger} from '~/src/features/common/logger.d.js'
  */
-
-/**
- * Filter expired actions
- * @param {AgreementAction} action - The action to filter
- * @returns {boolean} True if the action is not expired, false otherwise
- */
-function filterExpiredActions({ startDate, endDate }) {
-  return (
-    (isBefore(startDate, new Date()) || isSameDay(startDate, new Date())) &&
-    isAfter(endDate, new Date())
-  )
-}
 
 /**
  * Get agreements for a parcel
@@ -43,7 +30,7 @@ async function getAgreementsForParcel(sheetId, parcelId, db, logger) {
       category: 'database',
       message: 'Get agreements for parcel'
     })
-    return agreementActionsTransformer(result.rows).filter(filterExpiredActions)
+    return agreementActionsTransformer(result.rows)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get agreements for parcel',

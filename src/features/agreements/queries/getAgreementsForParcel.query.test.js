@@ -20,11 +20,6 @@ describe('getAgreementsForParcel', () => {
       info: vi.fn(),
       error: vi.fn()
     }
-    vi.useFakeTimers().setSystemTime(new Date('2025-12-01T00:00:00.000Z'))
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
   })
 
   test('should connect to the database', async () => {
@@ -88,126 +83,6 @@ describe('getAgreementsForParcel', () => {
         quantity: 0.5,
         startDate: new Date('2025-01-01'),
         endDate: new Date('2025-12-31')
-      },
-      {
-        actionCode: 'CMOR1',
-        unit: 'ha',
-        quantity: 1.2,
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31')
-      }
-    ])
-  })
-
-  test.each([
-    {
-      scenario: 'expired actions',
-      filteredAction: {
-        actionCode: 'UPL1',
-        unit: 'ha',
-        quantity: 0.5,
-        startDate: '2025-01-01',
-        endDate: '2025-11-30'
-      }
-    },
-    {
-      scenario: 'actions not yet started',
-      filteredAction: {
-        actionCode: 'UPL1',
-        unit: 'ha',
-        quantity: 0.5,
-        startDate: '2026-01-01',
-        endDate: '2026-12-31'
-      }
-    },
-    {
-      scenario: 'actions where end date is today',
-      filteredAction: {
-        actionCode: 'UPL1',
-        unit: 'ha',
-        quantity: 0.5,
-        startDate: '2025-01-01',
-        endDate: '2025-12-01'
-      }
-    }
-  ])('should exclude $scenario', async ({ filteredAction }) => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockClient.query = vi.fn().mockResolvedValue({
-      rows: [
-        {
-          actions: [
-            filteredAction,
-            {
-              actionCode: 'CMOR1',
-              unit: 'ha',
-              quantity: 1.2,
-              startDate: '2025-01-01',
-              endDate: '2025-12-31'
-            }
-          ]
-        }
-      ]
-    })
-
-    const result = await getAgreementsForParcel(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
-
-    expect(result).toEqual([
-      {
-        actionCode: 'CMOR1',
-        unit: 'ha',
-        quantity: 1.2,
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31')
-      }
-    ])
-  })
-
-  test('should include action when starting today', async () => {
-    const sheetId = 'SH123'
-    const parcelId = 'PA456'
-    mockClient.query = vi.fn().mockResolvedValue({
-      rows: [
-        {
-          actions: [
-            {
-              actionCode: 'UPL1',
-              unit: 'ha',
-              quantity: 0.5,
-              startDate: '2025-12-01',
-              endDate: '2026-12-31'
-            },
-            {
-              actionCode: 'CMOR1',
-              unit: 'ha',
-              quantity: 1.2,
-              startDate: '2025-01-01',
-              endDate: '2025-12-31'
-            }
-          ]
-        }
-      ]
-    })
-
-    const result = await getAgreementsForParcel(
-      sheetId,
-      parcelId,
-      mockDb,
-      mockLogger
-    )
-
-    expect(result).toEqual([
-      {
-        actionCode: 'UPL1',
-        unit: 'ha',
-        quantity: 0.5,
-        startDate: new Date('2025-12-01'),
-        endDate: new Date('2026-12-31')
       },
       {
         actionCode: 'CMOR1',
