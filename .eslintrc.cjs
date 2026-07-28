@@ -77,10 +77,7 @@ module.exports = {
           'error',
           {
             unusedExports: true,
-            src: [
-              'src/**/!(*.test|*fixtures|testUtils|testLandCoverToString).js',
-              'scripts/**/*.js'
-            ]
+            src: ['src/**/!(*.test|*fixtures).js', 'scripts/**/*.js']
           }
         ],
 
@@ -208,12 +205,7 @@ module.exports = {
       }
     },
     {
-      files: [
-        'src/tests/**',
-        'src/**/fixtures/**',
-        'src/**/testUtils.js',
-        'src/**/testLandCoverToString.js'
-      ],
+      files: ['src/tests/**', 'src/**/test*.js', 'src/**/fixtures/**'],
       rules: {
         'import-x/no-unused-modules': 'off'
       }
