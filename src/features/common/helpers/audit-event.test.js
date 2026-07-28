@@ -240,8 +240,10 @@ describe('auditEvent', () => {
 
     await auditEvent(UNMAPPED_EVENT, context)
 
+    const publishedMessage = mockSend.mock.calls[0][0].input.Message
+
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `Audit event successfully published: ${UNMAPPED_EVENT}`
+      `Audit event successfully published: ${UNMAPPED_EVENT} ${publishedMessage}`
     )
   })
 })
