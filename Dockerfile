@@ -29,7 +29,7 @@ RUN apk update && \
     apk add curl
 USER node
 
-COPY --from=development /home/node/package*.json ./
+COPY --from=development /home/node/.npmrc /home/node/package*.json ./
 COPY --from=development /home/node/.server ./.server/
 
 RUN npm ci --omit=dev --ignore-scripts
