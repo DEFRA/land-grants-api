@@ -60,14 +60,16 @@ export const getEntityTypeForIngest = async (ingestId, logger) => {
  * @param {boolean} success - Whether the task was successful
  * @param {string | null} result - The result of the task
  * @param {string | null} error - The error message
+ * @param {boolean} [dataChanged] - Whether an entity's live table was updated this run
  */
-const postMessage = (taskId, success, result, error) => {
+const postMessage = (taskId, success, result, error, dataChanged = false) => {
   parentPort?.postMessage({
     taskId,
     completedAt: new Date().toISOString(),
     success,
     result,
-    error
+    error,
+    dataChanged
   })
 }
 
@@ -78,11 +80,11 @@ const postMessage = (taskId, success, result, error) => {
  * @param {string | number} ingestId - The ingest ID
  * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} true if the entity's live table was updated this run
  */
 async function handleCsvFile(response, entityType, ingestId, filename, logger) {
   const stream = Readable.fromWeb(response.Body.transformToWebStream())
-  await importData(stream, entityType, ingestId, filename, logger)
+  return importData(stream, entityType, ingestId, filename, logger)
 }
 
 /**
@@ -94,7 +96,7 @@ async function handleCsvFile(response, entityType, ingestId, filename, logger) {
  * @param {string | number} ingestId - The ingest ID
  * @param {string | undefined} filename
  * @param {import('../../common/logger.d.js').Logger} logger - The logger
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} true if the entity's live table was updated this run
  */
 async function handleZipFile(response, entityType, ingestId, filename, logger) {
   try {
@@ -102,8 +104,7 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
     const zip = stream.pipe(unzipper.Parse({ forceStream: true }))
     for await (const entry of zip) {
       if (entry.path.endsWith('.csv')) {
-        await importData(entry, entityType, ingestId, filename, logger)
-        return
+        return await importData(entry, entityType, ingestId, filename, logger)
       }
       entry.autodrain()
     }
@@ -123,9 +124,28 @@ async function handleZipFile(response, entityType, ingestId, filename, logger) {
 }
 
 /**
+ * Imports data from a fetched S3 response based on its content type.
+ * @param {object} response - The S3 response object
+ * @param {EntityType} entityType - The table name to import data into
+ * @param {string | number} ingestId - The ingest ID
+ * @param {string | undefined} filename
+ * @param {import('../../common/logger.d.js').Logger} logger - The logger
+ * @returns {Promise<boolean>} true if the entity's live table was updated this run
+ */
+function importFromResponse(response, entityType, ingestId, filename, logger) {
+  if (response.ContentType === 'application/zip') {
+    return handleZipFile(response, entityType, ingestId, filename, logger)
+  }
+  if (response.ContentType === 'text/csv') {
+    return handleCsvFile(response, entityType, ingestId, filename, logger)
+  }
+  throw new Error(`Invalid content type: ${response.ContentType}`)
+}
+
+/**
  * Import land data from S3 bucket
  * @param {{s3key: string, filename?: string, ingestId?: number}} data
- * @returns {Promise<string>} The string representation of the file
+ * @returns {Promise<{message: string, dataChanged: boolean}>} The result message and whether an entity's live table was updated
  */
 export async function importLandData(data) {
   const { s3key, filename: originalFilename, ingestId: providedIngestId } = data
@@ -159,25 +179,13 @@ export async function importLandData(data) {
       ? await getEntityTypeForIngest(providedIngestId, logger)
       : getEntityType(resourceType)
 
-    if (response.ContentType === 'application/zip') {
-      await handleZipFile(
-        response,
-        resource,
-        ingestId,
-        originalFilename,
-        logger
-      )
-    } else if (response.ContentType === 'text/csv') {
-      await handleCsvFile(
-        response,
-        resource,
-        ingestId,
-        originalFilename,
-        logger
-      )
-    } else {
-      throw new Error(`Invalid content type: ${response.ContentType}`)
-    }
+    const dataChanged = await importFromResponse(
+      response,
+      resource,
+      ingestId,
+      originalFilename,
+      logger
+    )
 
     logInfo(logger, {
       category,
@@ -188,7 +196,10 @@ export async function importLandData(data) {
       }
     })
 
-    return 'Land data imported successfully'
+    return {
+      message: 'Land data imported successfully',
+      dataChanged: Boolean(dataChanged)
+    }
   } catch (error) {
     logBusinessError(logger, {
       operation: 'error importing land data',
@@ -213,8 +224,8 @@ export async function importLandData(data) {
  */
 export async function ingestLandData(landData) {
   try {
-    const result = await importLandData(landData.data)
-    postMessage(landData.taskId, true, result, null)
+    const { message, dataChanged } = await importLandData(landData.data)
+    postMessage(landData.taskId, true, message, null, dataChanged)
   } catch (error) {
     postMessage(landData.taskId, false, null, error.message)
     throw error

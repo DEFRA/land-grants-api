@@ -229,6 +229,76 @@ describe('Ingest Service', () => {
     })
   })
 
+  describe('processFile statistics refresh', () => {
+    const mockFilepath = '/tmp/test-file.csv'
+    const mockCategory = 'land_parcels'
+    const mockTitle = 'Land Parcels Upload'
+    const mockTaskId = 12345
+    let mockLoadAndLogStats
+
+    beforeEach(() => {
+      mockLoadAndLogStats = vi.fn().mockResolvedValue(undefined)
+      mockRequest.server.plugins = {
+        statistics: { loadAndLogStats: mockLoadAndLogStats }
+      }
+    })
+
+    it('should refresh stats when the worker updates an entity live table', async () => {
+      workerThread.startWorker.mockResolvedValue({ dataChanged: true })
+
+      await processFile({ s3key: mockFilepath }, mockRequest, {
+        category: mockCategory,
+        title: mockTitle,
+        taskId: mockTaskId
+      })
+
+      expect(mockLoadAndLogStats).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not refresh stats when the worker does not update an entity live table', async () => {
+      workerThread.startWorker.mockResolvedValue({ dataChanged: false })
+
+      await processFile({ s3key: mockFilepath }, mockRequest, {
+        category: mockCategory,
+        title: mockTitle,
+        taskId: mockTaskId
+      })
+
+      expect(mockLoadAndLogStats).not.toHaveBeenCalled()
+    })
+
+    it('should not throw when refreshing stats fails after a successful ingest', async () => {
+      workerThread.startWorker.mockResolvedValue({ dataChanged: true })
+      mockLoadAndLogStats.mockRejectedValue(new Error('stats refresh failed'))
+
+      await expect(
+        processFile({ s3key: mockFilepath }, mockRequest, {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        })
+      ).resolves.not.toThrow()
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({ error: expect.any(Error) }),
+        'Failed to run statistics after successful data ingestion'
+      )
+    })
+
+    it('should not attempt to refresh stats when the statistics plugin is not registered', async () => {
+      mockRequest.server.plugins = {}
+      workerThread.startWorker.mockResolvedValue({ dataChanged: true })
+
+      await expect(
+        processFile({ s3key: mockFilepath }, mockRequest, {
+          category: mockCategory,
+          title: mockTitle,
+          taskId: mockTaskId
+        })
+      ).resolves.not.toThrow()
+    })
+  })
+
   describe('Create Task Info', () => {
     beforeEach(() => {
       config.get.mockReturnValue('test-bucket-name')

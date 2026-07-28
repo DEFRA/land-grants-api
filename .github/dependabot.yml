@@ -66,8 +66,8 @@ updates:
       - dependency-name: 'eslint-*'
       - dependency-name: 'eslint'
       - dependency-name: '@typescript-eslint/*'
-      - dependency-name: "@types/node"
-        versions: [">=25"]
+      - dependency-name: '@types/node'
+        versions: ['>=25']
 
     # Schedule run every Monday, local time
     schedule:
@@ -91,8 +91,8 @@ updates:
     directory: /
 
     ignore:
-      - dependency-name: "node"
-        versions: [">=25"]
+      - dependency-name: 'node'
+        versions: ['>=25']
 
     # Schedule run every Monday, local time
     schedule:
@@ -110,8 +110,8 @@ updates:
     directory: /
 
     ignore:
-      - dependency-name: "node"
-        versions: [">=25"]
+      - dependency-name: 'node'
+        versions: ['>=25']
 
     # Schedule run every Monday, local time
     schedule:
