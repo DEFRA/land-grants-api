@@ -209,6 +209,26 @@ module.exports = {
       rules: {
         'import-x/no-unused-modules': 'off'
       }
+    },
+    {
+      env: {
+        node: true
+      },
+      files: ['src/tests/load-tests/**'],
+      rules: {
+        'import/no-unresolved': [
+          'error',
+          {
+            ignore: ['^k6']
+          }
+        ],
+        'n/no-unpublished-import': [
+          'error',
+          {
+            allowModules: ['k6']
+          }
+        ]
+      }
     }
   ],
   root: true

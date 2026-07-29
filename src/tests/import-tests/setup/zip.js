@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PassThrough } from 'node:stream';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Create a zip Buffer containing a fixture CSV file
@@ -23,7 +23,7 @@ export function createZipFromFixture(csvFilename) {
     archive.on('error', reject);
     archive.pipe(passThrough);
 
-    const fixturePath = path.resolve(__dirname, '../fixtures', csvFilename);
+    const fixturePath = path.resolve(_dirname, '../fixtures', csvFilename);
     archive.file(fixturePath, { name: csvFilename });
     archive.finalize();
   });

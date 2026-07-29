@@ -12,7 +12,6 @@ export function mergeLandCoverCodes(landCoverCodes) {
 
   const mergedCodes = new Set();
 
-  // eslint-disable-next-line camelcase
   for (const { landCoverCode, landCoverClassCode } of landCoverCodes) {
     mergedCodes.add(landCoverCode);
     mergedCodes.add(landCoverClassCode);
