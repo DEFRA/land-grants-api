@@ -303,6 +303,12 @@ const config = convict({
       format: String,
       default: '',
       env: 'DAL_API_ENDPOINT'
+    },
+    serviceAccount: {
+      doc: 'Robot account email address to use for service to service auth',
+      format: String,
+      default: 'land-grants-api@defra.gov.uk',
+      env: 'DAL_SERVICE_ACCOUNT'
     }
   },
   featureFlags: {
