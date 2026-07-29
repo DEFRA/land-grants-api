@@ -79,9 +79,10 @@ export function buildDesignationAreasSection(
     const hf = hfByClass.get(lc.landCoverClassCode) ?? 0;
     const both = bothByClass.get(lc.landCoverClassCode) ?? 0;
     if (sssi > 0 || hf > 0) {
-      const parts = [];
-      parts.push(`${sqmToHaRounded(sssi)} ha SSSI`);
-      parts.push(`${sqmToHaRounded(hf)} ha HF`);
+      const parts = [
+        `${sqmToHaRounded(sssi)} ha SSSI`,
+        `${sqmToHaRounded(hf)} ha HF`
+      ];
       if (both > 0) {
         parts.push(`${sqmToHaRounded(both)} ha SSSI and HF overlap`);
       }
