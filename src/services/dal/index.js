@@ -19,24 +19,31 @@ export async function getAgreements(
   defraIdToken,
   logger
 ) {
-  // TODO(GSPS-504): In this case we should authenticate differently with the DAL and use service
-  // to service auth; this is not yet available so we'll return no results until implemented
-  if (defraIdToken === null) {
-    return Promise.resolve([]);
-  }
-
   if (!config.get('featureFlags.useDal')) {
     return Promise.resolve([]);
   }
 
   const endpoint = config.get('dal.apiEndpoint');
 
+  // Use X-Forwarded-Authorization to pass along the end user's defra ID token if available.
+  // For requests without an end user present, we use our "robot" service account auth instead
+  /** @type {object} */
+  const authHeaders =
+    defraIdToken !== null
+      ? {
+          'Gateway-Type': 'external',
+          'X-Forwarded-Authorization': defraIdToken
+        }
+      : {
+          'Gateway-Type': 'internal',
+          Email: config.get('dal.serviceAccount')
+        };
+
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Gateway-Type': 'external',
-      'X-Forwarded-Authorization': defraIdToken
+      ...authHeaders
     },
     body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
   });

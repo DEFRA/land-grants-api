@@ -27,13 +27,18 @@ describe('getAgreements', () => {
   const sbi = '123456789';
 
   afterEach(() => {
-    config.set('dal.apiEndpoint', config.default('dal.apiEndpoint'));
-    config.set('featureFlags.useDal', config.default('featureFlags.useDal'));
+    ['dal.apiEndpoint', 'dal.serviceAccount', 'featureFlags.useDal'].forEach(
+      (v) => {
+        config.set(v, config.default(v));
+      }
+    );
   });
 
   beforeEach(() => {
     config.set('dal.apiEndpoint', stubEndpoint);
+    config.set('dal.serviceAccount', 'land-grants-api@defra.gov.uk');
     config.set('featureFlags.useDal', true);
+
     vi.clearAllMocks();
     global.fetch = vi.fn();
   });
@@ -113,8 +118,12 @@ describe('getAgreements', () => {
     expect(result).toEqual([]);
   });
 
-  // TODO: replace with service-to-service auth in this scenario
-  it('returns an empty array when missing a defra ID token', async () => {
+  it('uses the robot service account for auth when missing a defra ID token', async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(dalResponse)
+    });
+
     const result = await getAgreements(
       sbi,
       PARCEL_ID,
@@ -123,7 +132,20 @@ describe('getAgreements', () => {
       mockLogger
     );
 
-    expect(fetch).not.toBeCalled();
-    expect(result).toEqual([]);
+    expect(fetch).toHaveBeenCalledWith(
+      stubEndpoint,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'Gateway-Type': 'internal',
+          Email: 'land-grants-api@defra.gov.uk'
+        }),
+        body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
+      })
+    );
+    expect(result).toEqual(
+      dalBusinessToAgreements(dalResponse.data.business, PARCEL_ID, SHEET_ID)
+    );
   });
 });
