@@ -9,8 +9,11 @@ import { haToSqm } from '../../common/helpers/measurement.js';
 import { calculateWMPPayment } from '../service/wmp-service.js';
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
 import { paymentCalculateWMPResponseSchema } from '../schema/payment-calculate-wmp.schema.js';
-import { AuditEvent, auditEvent, getCorrelationId } from '../../common/helpers/audit-event.js';
-
+import {
+  AuditEvent,
+  auditEvent,
+  getCorrelationId
+} from '../../common/helpers/audit-event.js';
 
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
@@ -53,12 +56,11 @@ export const PaymentsCalculateTotalWMPController = {
     try {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb;
-      const logger = request.logger
+      const logger = request.logger;
 
       /** @type {paymentCalculateTotalWMPSchema} */
       // @ts-expect-error - payload
-      const { totalAreaHa, applicationId, sbi, crn } =
-        request.payload;
+      const { totalAreaHa, applicationId, sbi, crn } = request.payload;
 
       logInfo(logger, {
         category: 'wmp',
@@ -66,8 +68,17 @@ export const PaymentsCalculateTotalWMPController = {
         context: { totalAreaHa, applicationId, sbi, crn }
       });
 
-      const { result: paymentResult, action } = await calculateWMPPayment(logger, postgresDb, { totalWoodlandAreaSqm: haToSqm(totalAreaHa) })
-      const transformedPaymentResult = wmpPaymentCalculateTransformer([], paymentResult, action, undefined)
+      const { result: paymentResult, action } = await calculateWMPPayment(
+        logger,
+        postgresDb,
+        { totalWoodlandAreaSqm: haToSqm(totalAreaHa) }
+      );
+      const transformedPaymentResult = wmpPaymentCalculateTransformer(
+        [],
+        paymentResult,
+        action,
+        undefined
+      );
 
       await auditEvent(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
@@ -81,15 +92,14 @@ export const PaymentsCalculateTotalWMPController = {
       );
 
       return h.response({
-        message: "success",
+        message: 'success',
         payment: transformedPaymentResult
-      })
+      });
     } catch (error) {
-      return Boom.internal("Whoops")
+      return Boom.internal('Whoops');
     }
   }
-}
-
+};
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'

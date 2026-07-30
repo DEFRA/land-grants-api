@@ -97,20 +97,16 @@ describe('wmpCalculation', () => {
       expect(result.activeTierRatePence).toBe(15);
       expect(result.activeTierFlatRatePence).toBe(3000);
     });
-
   });
 
   describe('execute with total woodland area', () => {
     test('should return £0 and no active tier when eligible area is below the minimum threshold', () => {
       // totalWoodlandAreaSqm=0.3ha → eligible=0.3ha (< 0.5) → no tier
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        {
-          data: {
-            totalWoodlandAreaSqm: 3000
-          }
+      const result = wmpCalculation.execute(createPaymentMethod(), {
+        data: {
+          totalWoodlandAreaSqm: 3000
         }
-      );
+      });
 
       expect(result.eligibleArea).toBe(0.3);
       expect(result.payment).toBe(0);
@@ -122,14 +118,11 @@ describe('wmpCalculation', () => {
 
     test('should apply to all woodland area and calculate a tier 1 payment', () => {
       // totalWoodlandAreaSqm=400000 → eligible=40ha → tier 1 → flat £1500, rate £0/ha
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        {
-          data: {
-            totalWoodlandAreaSqm: 400000
-          }
+      const result = wmpCalculation.execute(createPaymentMethod(), {
+        data: {
+          totalWoodlandAreaSqm: 400000
         }
-      );
+      });
 
       expect(result.eligibleArea).toBe(40);
       expect(result.payment).toBe(1500);
@@ -141,13 +134,11 @@ describe('wmpCalculation', () => {
 
     test('should apply to all woodland area and calculate a tier 2 payment', () => {
       // totalWoodlandAreaSqm=780000 → eligible=78ha → tier 2 → £1500 + 30*(78-50)=£2340
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        {
-          data: {
-            totalWoodlandAreaSqm: 780000
-          }
-        });
+      const result = wmpCalculation.execute(createPaymentMethod(), {
+        data: {
+          totalWoodlandAreaSqm: 780000
+        }
+      });
 
       expect(result.eligibleArea).toBe(78);
       expect(result.payment).toBe(2340);
@@ -159,11 +150,9 @@ describe('wmpCalculation', () => {
 
     test('should apply to all woodland area and calculate a tier 3 payment', () => {
       // totalWoodlandAreaSqm=1500000 → eligible=150ha → tier 3 → £3000 + 15*(150-100)=£3750
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        {
-          data: { totalWoodlandAreaSqm: 1500000 }
-        });
+      const result = wmpCalculation.execute(createPaymentMethod(), {
+        data: { totalWoodlandAreaSqm: 1500000 }
+      });
 
       expect(result.eligibleArea).toBe(150);
       expect(result.payment).toBe(3750);

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { validateWoodlandManagementPlan, calculateWMPPayment } from './wmp-service.js';
+import {
+  validateWoodlandManagementPlan,
+  calculateWMPPayment
+} from './wmp-service.js';
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js';
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js';
 import { rules } from '~/src/features/rules-engine/rules/index.js';
@@ -12,7 +15,7 @@ vi.mock('~/src/features/rules-engine/rules/index.js', () => ({ rules: [] }));
 vi.mock('../../actions/queries/getEnabledActions.query.js');
 vi.mock('../../actions/queries/2.0.0/getActionsByLatestVersion.query.js');
 
-const mockGetActionsByLatestVersion = getActionsByLatestVersion
+const mockGetActionsByLatestVersion = getActionsByLatestVersion;
 const mockParcels = [{ area: 100 }, { area: 100 }];
 
 describe('validateWoodlandManagementPlan', () => {
@@ -95,7 +98,6 @@ describe('validateWoodlandManagementPlan', () => {
 });
 
 describe('calculateWMPPayment', () => {
-
   const createMockAction = () => ({
     id: 1,
     code: 'PA3',
@@ -136,23 +138,27 @@ describe('calculateWMPPayment', () => {
     vi.clearAllMocks();
   });
 
-  it("should fail as action not found", async () => {
-    mockGetActionsByLatestVersion.mockResolvedValue([])
+  it('should fail as action not found', async () => {
+    mockGetActionsByLatestVersion.mockResolvedValue([]);
 
-    await expect(calculateWMPPayment({}, {}, {})).rejects.toThrow()
-  })
+    await expect(calculateWMPPayment({}, {}, {})).rejects.toThrow();
+  });
 
-  it("should return payment result and action", async () => {
-    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
+  it('should return payment result and action', async () => {
+    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()]);
 
-    const { result, action } = await calculateWMPPayment({}, {}, {
-      totalWoodlandAreaSqm: 10000
-    })
+    const { result, action } = await calculateWMPPayment(
+      {},
+      {},
+      {
+        totalWoodlandAreaSqm: 10000
+      }
+    );
 
     expect(result).not.toBeNull();
     expect(result.eligibleArea).toBe(1);
     expect(result.payment).toBe(1500);
     expect(action).not.toBeNull();
     expect(action.code).toBe('PA3');
-  })
-})
+  });
+});

@@ -209,9 +209,7 @@ describe('Payment calculate total WMP controller', () => {
       });
 
       expect(statusCode).toBe(400);
-      expect(message).toBe(
-        '"totalAreaHa" must be greater than or equal to 0'
-      );
+      expect(message).toBe('"totalAreaHa" must be greater than or equal to 0');
     });
 
     test('should return 400 when applicationId is missing', async () => {
@@ -242,7 +240,7 @@ describe('Payment calculate total WMP controller', () => {
         url: '/api/v1/wmp/payments/calculate-total',
         payload: {
           totalAreaHa: 8,
-          applicationId: 'app-123',
+          applicationId: 'app-123'
         }
       });
 

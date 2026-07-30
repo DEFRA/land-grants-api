@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi from 'joi';
 
 export const paymentCalculateTotalWMPSchema = Joi.object({
   totalAreaHa: Joi.number().min(0).required(),
@@ -6,7 +6,3 @@ export const paymentCalculateTotalWMPSchema = Joi.object({
   sbi: Joi.string().required(),
   crn: Joi.number().optional()
 });
-
-export const paymentCalculateTotalWMPResponse = Joi.object({
-  totalAreaHa: Joi.number().min(0).required(),
-})

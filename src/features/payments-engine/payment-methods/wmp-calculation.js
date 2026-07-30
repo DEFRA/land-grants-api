@@ -54,8 +54,8 @@ const calculatePayment = (eligibleAreaSqm, tiers) => {
   const tier = tiers[tierIndex];
   const payment = roundTo2DecimalPlaces(
     tier.flatRateGbp +
-    tier.ratePerUnitGbp *
-    (sqmToHaRounded(eligibleAreaSqm) - tier.lowerLimitHa)
+      tier.ratePerUnitGbp *
+        (sqmToHaRounded(eligibleAreaSqm) - tier.lowerLimitHa)
   );
 
   return { payment, tierIndex };
@@ -73,13 +73,16 @@ export const wmpCalculation = {
   execute: (paymentMethod, data) => {
     const { config } = paymentMethod;
     const { tiers, newWoodlandMaxPercent } = config;
-    const { oldWoodlandAreaSqm, newWoodlandAreaSqm, totalWoodlandAreaSqm } = data.data;
+    const { oldWoodlandAreaSqm, newWoodlandAreaSqm, totalWoodlandAreaSqm } =
+      data.data;
 
-    const eligibleAreaSqm = totalWoodlandAreaSqm ?? calculateEligibleArea(
-      oldWoodlandAreaSqm,
-      newWoodlandAreaSqm,
-      newWoodlandMaxPercent
-    );
+    const eligibleAreaSqm =
+      totalWoodlandAreaSqm ??
+      calculateEligibleArea(
+        oldWoodlandAreaSqm,
+        newWoodlandAreaSqm,
+        newWoodlandMaxPercent
+      );
 
     const { payment, tierIndex } = calculatePayment(eligibleAreaSqm, tiers);
     const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null;
@@ -89,8 +92,8 @@ export const wmpCalculation = {
 
     const quantityInActiveTierHa = activeTier
       ? roundTo4DecimalPlaces(
-        sqmToHaRounded(eligibleAreaSqm) - quantityToRemove
-      )
+          sqmToHaRounded(eligibleAreaSqm) - quantityToRemove
+        )
       : 0;
 
     return {

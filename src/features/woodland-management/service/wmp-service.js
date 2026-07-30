@@ -66,8 +66,8 @@ export const calculateWMPPayment = async (logger, dbClient, data) => {
     }
   );
 
-  return { result: paymentResult, action }
-}
+  return { result: paymentResult, action };
+};
 
 /**
  * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
