@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const _dirname = dirname(fileURLToPath(import.meta.url));
 
 export function getAvailableAreaFixtures() {
   const fixturePath = path.join(
-    __dirname,
+    _dirname,
     '../fixtures',
     'availableAreaCalculationScenarios.csv'
   );
@@ -27,7 +27,7 @@ export function getAvailableAreaFixtures() {
  */
 export function getAvailableAreaComputedFixtures() {
   const computedFixturePath = path.join(
-    __dirname,
+    _dirname,
     '../fixtures',
     'available-area-computed.json'
   );

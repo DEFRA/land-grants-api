@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { vi } from 'vitest';
 import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/features/payment/controllers/2.0.0/payment-calculate.controller.js';
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';

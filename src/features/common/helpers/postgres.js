@@ -186,15 +186,12 @@ export const postgresDb = {
       }, keepAliveInterval);
       keepAlive.unref();
 
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      server.events.on('stop', async () => {
+      server.events.on('stop', () => {
         server.logger.info('Closing Postgres pool');
         clearInterval(keepAlive);
-        try {
-          await pool.end();
-        } catch (err) {
+        pool.end().catch((err) => {
           server.logger.error({ err }, 'Error closing Postgres pool');
-        }
+        });
       });
 
       pool.on('connect', () => {

@@ -1,6 +1,7 @@
 import { GET_BUSINESS } from './queries.js';
 import { config } from '~/src/config/index.js';
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js';
+import { statusCodes } from '~/src/features/common/constants/status-codes.js';
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js';
 
 /**
@@ -20,7 +21,7 @@ export async function getAgreements(
   logger
 ) {
   if (!config.get('featureFlags.useDal')) {
-    return Promise.resolve([]);
+    return [];
   }
 
   const endpoint = config.get('dal.apiEndpoint');
@@ -49,8 +50,8 @@ export async function getAgreements(
   });
 
   if (!response.ok) {
-    if (response.status === 404) {
-      return Promise.resolve([]);
+    if (response.status === statusCodes.notFound) {
+      return [];
     }
 
     throw new Error(
@@ -67,8 +68,7 @@ export async function getAgreements(
 
   const summary = results.map(
     (a) =>
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `${a.actionCode}: ${a.quantity} ${a.unit}, ${a.startDate}-${a.endDate}`
+      `${a.actionCode}: ${a.quantity} ${a.unit}, ${a.startDate.toISOString().split('T')[0]}-${a.endDate.toISOString().split('T')[0]}`
   );
   logInfo(logger, {
     category: 'agreements',
