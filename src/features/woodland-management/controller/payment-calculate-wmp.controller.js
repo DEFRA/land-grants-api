@@ -23,6 +23,7 @@ import {
   auditEvent,
   getCorrelationId
 } from '../../common/helpers/audit-event.js';
+import { WMP_ACTION_CODE } from '../constants.js';
 
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
@@ -67,7 +68,7 @@ const runWmpPaymentCalculation = async (
   }
 
   const actions = await getActionsByLatestVersion(request.logger, postgresDb);
-  const action = actions.find((a) => a.code === 'PA3');
+  const action = actions.find((a) => a.code === WMP_ACTION_CODE);
 
   if (!action) {
     return Boom.badRequest('Action not found');
@@ -129,7 +130,7 @@ const handleWmpPaymentCalculationError = async (request, error) => {
   return Boom.internal('Error calculating wmp payment');
 };
 
-export const PaymentsCalculateWMPControllerV2 = {
+export const PaymentsCalculateWMPController = {
   options: {
     tags: ['api'],
     description: 'Calculate WMP payment',
