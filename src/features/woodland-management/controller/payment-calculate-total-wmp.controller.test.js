@@ -278,7 +278,7 @@ describe('Payment calculate total WMP controller', () => {
       expect(statusCode).toBe(500);
     });
 
-    test('should not publish an audit event when calculation fails', async () => {
+    test('should publish a failure audit event when calculation fails', async () => {
       mockCalculateWMPPayment.mockRejectedValue(new Error('Action not found'));
 
       await server.inject({
@@ -287,7 +287,21 @@ describe('Payment calculate total WMP controller', () => {
         payload: validPayload
       });
 
-      expect(mockAuditEvent).not.toHaveBeenCalled();
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
+        expect.objectContaining({
+          sbi: '123456789',
+          request: {
+            totalAreaHa: 8,
+            applicationId: 'app-123',
+            sbi: '123456789',
+            crn: undefined
+          },
+          error: 'Action not found'
+        }),
+        'failure',
+        expect.objectContaining({ method: 'post' })
+      );
     });
   });
 });

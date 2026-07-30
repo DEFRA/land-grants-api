@@ -4,7 +4,10 @@ import {
   errorResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js';
-import { logInfo } from '../../common/helpers/logging/log-helpers.js';
+import {
+  logBusinessError,
+  logInfo
+} from '../../common/helpers/logging/log-helpers.js';
 import { haToSqm } from '../../common/helpers/measurement.js';
 import { calculateWMPPayment } from '../service/wmp-service.js';
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
@@ -15,6 +18,35 @@ import {
   getCorrelationId
 } from '../../common/helpers/audit-event.js';
 
+const handleWmpPaymentTotalCalculationError = async (request, error) => {
+  /** @type {paymentCalculateTotalWMPSchema} */
+  // @ts-expect-error - payload
+  const { totalAreaHa, applicationId, sbi, crn } = request.payload;
+
+  logBusinessError(request.logger, {
+    operation: 'Payment calculation: calculate total wmp payment',
+    error,
+    context: {
+      totalAreaHa,
+      applicationId,
+      sbi,
+      crn
+    }
+  });
+
+  await auditEvent(
+    AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
+    {
+      ...buildAuditContext(request, sbi),
+      request: { totalAreaHa, applicationId, sbi, crn },
+      error: error.message
+    },
+    'failure',
+    request
+  );
+
+  return Boom.internal('Error calculating wmp total payment');
+};
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
  * @param {import('@hapi/hapi').Request} request
@@ -96,7 +128,7 @@ export const PaymentsCalculateTotalWMPController = {
         payment: transformedPaymentResult
       });
     } catch (error) {
-      return Boom.internal('Whoops');
+      return handleWmpPaymentTotalCalculationError(request, error);
     }
   }
 };
