@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 // k6 run src/tests/load-tests/health.js
 
 import http from 'k6/http';

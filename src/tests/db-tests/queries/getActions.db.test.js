@@ -26,9 +26,14 @@ describe('Get Actions Query', () => {
   test('should return CMOR1', async () => {
     const actions = await getEnabledActions(logger, connection);
 
-    // eslint-disable-next-line
-    const { lastUpdated, id, sssi_eligible, hf_eligible, ingest_id, ...cmor1 } =
-      actions.find((a) => a.code === 'CMOR1');
+    const {
+      lastUpdated,
+      id,
+      sssi_eligible: sssiEligible,
+      hf_eligible: hfEligible,
+      ingest_id: ingestId,
+      ...cmor1
+    } = actions.find((a) => a.code === 'CMOR1');
 
     expect(cmor1).toEqual({
       version: 2,
@@ -88,15 +93,14 @@ describe('Get Actions Query', () => {
     });
     expect(id).toBeGreaterThan(0);
     expect(lastUpdated).not.toBeNull();
-    expect(sssi_eligible).toBe(true);
-    expect(hf_eligible).toBe(true);
-    expect(ingest_id).not.toBeNull();
+    expect(sssiEligible).toBe(true);
+    expect(hfEligible).toBe(true);
+    expect(ingestId).not.toBeNull();
   });
 
   test('should not return UPL4', async () => {
     const actions = await getEnabledActions(logger, connection);
 
-    // eslint-disable-next-line
     const upl4 = actions.find((a) => a.code === 'UPL4');
 
     expect(upl4).toBeUndefined();

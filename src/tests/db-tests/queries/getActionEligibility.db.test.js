@@ -26,7 +26,6 @@ describe('Get Action Eligibility Query', () => {
   test('should return CMOR1', async () => {
     const actions = await getActionEligibility(logger, connection);
 
-    // eslint-disable-next-line
     const cmor1 = actions.find((a) => a.code === 'CMOR1');
 
     expect(cmor1.id).toBe(1);

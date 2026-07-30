@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 /**
  * Transform action config
  * @param {object} action - db action config
@@ -7,23 +5,23 @@
  */
 export function actionConfigTransformer(action) {
   const {
-    application_unit_of_measurement,
-    land_cover_class_codes,
-    start_date,
-    last_updated,
-    duration_years,
+    application_unit_of_measurement: applicationUnitOfMeasurement,
+    land_cover_class_codes: landCoverClassCodes,
+    start_date: startDate,
+    last_updated: lastUpdated,
+    duration_years: durationYears,
     version,
-    semantic_version,
+    semantic_version: semanticVersion,
     ...actionObj
   } = action;
   return {
     ...actionObj,
-    applicationUnitOfMeasurement: application_unit_of_measurement,
-    durationYears: Number(duration_years),
-    landCoverClassCodes: land_cover_class_codes,
-    startDate: start_date,
-    lastUpdated: last_updated,
+    applicationUnitOfMeasurement,
+    durationYears: Number(durationYears),
+    landCoverClassCodes,
+    startDate,
+    lastUpdated,
     version: Number(version),
-    semanticVersion: semantic_version
+    semanticVersion
   };
 }

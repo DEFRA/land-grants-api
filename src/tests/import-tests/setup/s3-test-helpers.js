@@ -38,7 +38,6 @@ export async function ensureBucketExists(s3Client, bucket = S3_CONFIG.bucket) {
   } catch (error) {
     if (error.name === 'NotFound') {
       await s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
-      /* eslint-disable no-console */
       console.log(`Created test bucket: ${bucket}`);
     } else {
       throw error;
@@ -86,8 +85,8 @@ export async function uploadFixtureFile(
   bucket = S3_CONFIG.bucket,
   contentType = 'text/csv'
 ) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const fixturePath = path.resolve(__dirname, '../fixtures', fixtureFilename);
+  const _dirname = path.dirname(fileURLToPath(import.meta.url));
+  const fixturePath = path.resolve(_dirname, '../fixtures', fixtureFilename);
 
   const content = await readFile(fixturePath);
   await uploadTestFile(s3Client, s3Filename, content, bucket, contentType);

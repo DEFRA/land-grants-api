@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 /**
  * Get compatibility matrix
  * @param {object} cm - db compatibility matrix

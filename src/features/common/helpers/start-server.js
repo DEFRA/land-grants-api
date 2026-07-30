@@ -18,8 +18,7 @@ async function startServer() {
     const logger = createLogger();
     logger.info('Server failed to start :(');
     logger.error(error);
-    // eslint-disable-next-line n/no-process-exit
-    process.exit(1);
+    throw error;
   }
 
   return server;

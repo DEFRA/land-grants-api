@@ -882,7 +882,7 @@ describe('Postgres Helper', () => {
           .mocked(mockServer.events.on)
           .mock.calls.find((call) => call[0] === 'stop')[1];
 
-        await expect(stopHandler()).resolves.not.toThrow();
+        await stopHandler();
 
         expect(mockServer.logger.error).toHaveBeenCalledWith(
           { err: endError },

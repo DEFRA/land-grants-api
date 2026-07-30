@@ -1,12 +1,9 @@
-/* eslint-disable no-console */
 const showLogs = false;
 
 /**
  * Logger for testing purposes
  * @type {import('pino').Logger}
  */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 export const logger = {
   level: 'info',
   info: showLogs ? console.info : vi.fn(),

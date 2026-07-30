@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 import Boom from '@hapi/boom';
 import {
   cdpUploaderCallbackResponseSchema,

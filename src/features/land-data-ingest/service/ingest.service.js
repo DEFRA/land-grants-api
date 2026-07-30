@@ -81,8 +81,8 @@ export const processFile = async (
     message: `${category} process file started`,
     context: { filepath: data.s3key }
   });
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const workerPath = join(__dirname, '../workers/ingest.worker.js');
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  const workerPath = join(currentDir, '../workers/ingest.worker.js');
 
   await acquireWorkerSlot();
   let result;

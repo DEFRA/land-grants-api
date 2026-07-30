@@ -365,7 +365,7 @@ const addAgreementItem = (
 ) => {
   const hasAgreementItemBeenAdded = Object.values(
     paymentItems.agreementItems
-  ).find((item) => item.code === action.code);
+  ).some((item) => item.code === action.code);
 
   if (hasAgreementItemBeenAdded) {
     explanations.push(

@@ -89,7 +89,6 @@ export const validateApplication = async (
     request.logger,
     request.server.postgresDb,
     {
-      // eslint-disable-next-line camelcase
       application_id: applicationId,
       sbi,
       crn,

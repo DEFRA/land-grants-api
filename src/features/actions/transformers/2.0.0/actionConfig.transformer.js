@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 /**
  * Transform action config
  * @param {object} action - db action config
@@ -7,37 +5,37 @@
  */
 export function actionConfigTransformer(action) {
   const {
-    application_unit_of_measurement,
-    land_cover_class_codes,
-    start_date,
-    last_updated,
-    duration_years,
-    major_version,
-    minor_version,
-    patch_version,
+    application_unit_of_measurement: applicationUnitOfMeasurement,
+    land_cover_class_codes: landCoverClassCodes,
+    start_date: startDate,
+    last_updated: lastUpdated,
+    duration_years: durationYears,
+    major_version: majorVersion,
+    minor_version: minorVersion,
+    patch_version: patchVersion,
     version,
-    semantic_version,
-    group_id,
-    group_name,
-    display_order,
-    payment_method,
+    semantic_version: semanticVersion,
+    group_id: groupId,
+    group_name: groupName,
+    display_order: displayOrder,
+    payment_method: paymentMethod,
     ...actionObj
   } = action;
   return {
     ...actionObj,
-    applicationUnitOfMeasurement: application_unit_of_measurement,
-    durationYears: Number(duration_years),
-    landCoverClassCodes: land_cover_class_codes,
-    startDate: start_date,
-    lastUpdated: last_updated,
+    applicationUnitOfMeasurement,
+    durationYears: Number(durationYears),
+    landCoverClassCodes,
+    startDate,
+    lastUpdated,
     version: Number(version),
-    majorVersion: Number(major_version),
-    minorVersion: Number(minor_version),
-    patchVersion: Number(patch_version),
-    semanticVersion: semantic_version,
-    groupId: group_id,
-    groupName: group_name,
-    displayOrder: display_order,
-    paymentMethod: payment_method
+    majorVersion: Number(majorVersion),
+    minorVersion: Number(minorVersion),
+    patchVersion: Number(patchVersion),
+    semanticVersion,
+    groupId,
+    groupName,
+    displayOrder,
+    paymentMethod
   };
 }
