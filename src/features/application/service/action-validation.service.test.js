@@ -115,7 +115,8 @@ describe('Action Validation Service', () => {
 
   const mockLandAction = {
     sheetId: 'SX0679',
-    parcelId: '9238'
+    parcelId: '9238',
+    actions: [mockAction]
   };
 
   const mockAgreements = [
@@ -269,6 +270,46 @@ describe('Action Validation Service', () => {
         mockActionConfig,
         mockAvailableAreaResult,
         mockRuleResult
+      );
+    });
+
+    test('should include other actions requested for the same parcel as existing area demand', async () => {
+      const siblingAction = { code: 'UPL1', quantity: 5 };
+      const landActionWithSiblings = {
+        ...mockLandAction,
+        actions: [mockAction, siblingAction]
+      };
+      mockPlannedActionsTransformer.mockReturnValue([
+        { actionCode: 'LIG2', areaSqm: 1000000 }
+      ]);
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        landActionWithSiblings,
+        mockRequest
+      );
+
+      const expectedExistingActions = [
+        { actionCode: 'LIG2', areaSqm: 1000000 },
+        { actionCode: 'UPL1', areaSqm: 50000 }
+      ];
+
+      expect(mockGetAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        mockAction.code,
+        landActionWithSiblings.sheetId,
+        landActionWithSiblings.parcelId,
+        expectedExistingActions,
+        mockPostgresDb,
+        mockLogger
+      );
+      expect(mockFindMaximumAvailableArea).toHaveBeenCalledWith(
+        mockAction.code,
+        expectedExistingActions,
+        mockCompatibilityCheckFn,
+        mockAvailableAreaDataRequirements
       );
     });
 

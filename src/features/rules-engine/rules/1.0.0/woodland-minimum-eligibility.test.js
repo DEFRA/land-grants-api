@@ -21,8 +21,7 @@ describe('woodlandMinimumEligibility', () => {
 
   test.each([
     [0.5, 0.5],
-    [1.2, 1.2],
-    [0.5, 0.5]
+    [1.2, 1.2]
   ])(
     'should pass when woodland area over 10 years is %s',
     (oldWoodlandArea, expectedTotal) => {

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { vi } from 'vitest';
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
 import { getDataLayerScenariosFixtures } from '~/src/tests/db-tests/setup/getDataLayerScenariosFixtures.js';
@@ -27,17 +26,24 @@ describe('Data Layer Scenarios', () => {
 
   test.each(fixtures)(
     `%s`,
-    async (_name, { sheet_id, parcel_id, overlap_percent }) => {
+    async (
+      _name,
+      {
+        sheet_id: sheetId,
+        parcel_id: parcelId,
+        overlap_percent: overlapPercent
+      }
+    ) => {
       const result = await getDataLayerQueryUnion(
-        sheet_id,
-        parcel_id,
+        sheetId,
+        parcelId,
         DATA_LAYER_TYPES.historic_features,
         connection,
         logger
       );
 
       expect(result.intersectingAreaPercentage).toEqual(
-        parseFloat(overlap_percent)
+        parseFloat(overlapPercent)
       );
     }
   );

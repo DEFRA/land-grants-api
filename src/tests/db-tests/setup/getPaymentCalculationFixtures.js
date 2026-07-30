@@ -1,10 +1,13 @@
-import { parse } from 'csv-parse/sync'; // eslint-disable-line
-import { readFileSync } from 'fs';
-import path from 'path';
+import { parse } from 'csv-parse/sync';
+import { readFileSync } from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const _dirname = dirname(fileURLToPath(import.meta.url));
 
 export function getPaymentCalculationFixtures() {
   const fixturePath = path.join(
-    __dirname, // eslint-disable-line
+    _dirname,
     '../fixtures',
     'paymentCalculationScenarios.csv'
   );

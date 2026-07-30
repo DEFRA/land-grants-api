@@ -26,18 +26,14 @@ describe('Get Actions By Latest Version Query', () => {
   test('should return CMOR1', async () => {
     const actions = await getActionsByLatestVersion(logger, connection);
 
-    // eslint-disable-next-line
     const {
       lastUpdated,
       id,
       groupId,
       groupName,
-      // eslint-disable-next-line
-      sssi_eligible,
-      // eslint-disable-next-line
-      hf_eligible,
-      // eslint-disable-next-line
-      ingest_id,
+      sssi_eligible: sssiEligible,
+      hf_eligible: hfEligible,
+      ingest_id: ingestId,
       ...cmor1
     } = actions.find((a) => a.code === 'CMOR1');
 
@@ -113,15 +109,14 @@ describe('Get Actions By Latest Version Query', () => {
     });
     expect(id).toBeGreaterThan(0);
     expect(lastUpdated).not.toBeNull();
-    expect(sssi_eligible).toBe(true);
-    expect(hf_eligible).toBe(true);
-    expect(ingest_id).not.toBeNull();
+    expect(sssiEligible).toBe(true);
+    expect(hfEligible).toBe(true);
+    expect(ingestId).not.toBeNull();
   });
 
   test('should not return UPL4', async () => {
     const actions = await getActionsByLatestVersion(logger, connection);
 
-    // eslint-disable-next-line
     const upl4 = actions.find((a) => a.code === 'UPL4');
 
     expect(upl4).toBeUndefined();

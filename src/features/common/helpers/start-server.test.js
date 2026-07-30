@@ -25,7 +25,6 @@ vi.mock('~/src/features/common/helpers/logging/logger.js', () => ({
 describe('startServer', () => {
   let mockServer;
   let mockLogger;
-  let processExitSpy;
 
   beforeEach(() => {
     mockServer = {
@@ -41,14 +40,10 @@ describe('startServer', () => {
     };
     createServer.mockResolvedValue(mockServer);
     createLogger.mockReturnValue(mockLogger);
-    processExitSpy = vi
-      .spyOn(process, 'exit')
-      .mockImplementation(() => undefined);
   });
 
   afterEach(() => {
     vi.clearAllMocks();
-    processExitSpy.mockRestore();
   });
 
   test('successfully starts the server', async () => {
@@ -62,7 +57,6 @@ describe('startServer', () => {
     expect(mockServer.logger.info).toHaveBeenCalledWith(
       'Access your backend on http://localhost:3000'
     );
-    expect(processExitSpy).not.toHaveBeenCalled();
     expect(server).toBe(mockServer);
   });
 
@@ -70,26 +64,24 @@ describe('startServer', () => {
     const testError = new Error('Server creation failed');
     createServer.mockRejectedValueOnce(testError);
 
-    await startServer();
+    await expect(startServer()).rejects.toThrow(testError);
 
     expect(createServer).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledTimes(1);
     expect(mockLogger.info).toHaveBeenCalledWith('Server failed to start :(');
     expect(mockLogger.error).toHaveBeenCalledWith(testError);
-    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 
   test('handles server start error', async () => {
     const testError = new Error('Server start failed');
     mockServer.start.mockRejectedValueOnce(testError);
 
-    await startServer();
+    await expect(startServer()).rejects.toThrow(testError);
 
     expect(createServer).toHaveBeenCalledTimes(1);
     expect(mockServer.start).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledTimes(1);
     expect(mockLogger.info).toHaveBeenCalledWith('Server failed to start :(');
     expect(mockLogger.error).toHaveBeenCalledWith(testError);
-    expect(processExitSpy).toHaveBeenCalledWith(1);
   });
 });

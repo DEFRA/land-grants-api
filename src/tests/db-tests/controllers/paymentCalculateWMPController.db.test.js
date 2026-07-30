@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { vi } from 'vitest';
 import { PaymentsCalculateWMPController } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js';
 import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js';
@@ -99,7 +98,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       expect(data.payment.agreementStartDate).toBe('2025-02-01');
       expect(data.payment.agreementEndDate).toBe('2028-01-31');
       expect(data.payment.payments[0].totalPaymentPence).toBe(150000);
-      expect(data.payment.payments[0].paymentDate).toBe(null);
+      expect(data.payment.payments[0].paymentDate).toBeNull();
       expect(item.activePaymentTier).toBe(1);
       expect(item.quantityInActiveTier).toBe(12);
       expect(item.activeTierRatePence).toBe(0);

@@ -120,8 +120,7 @@ const mockValidationRunToCaseManagementResult = [
   }
 ];
 
-/* eslint-disable no-unused-vars, @typescript-eslint/require-await */
-const mockValidateApplicationResult = async (_, applicationId) => {
+const mockValidateApplicationResult = (_, applicationId) => {
   const validationErrors = applicationId === 456 ? [{ error: 'error' }] : [];
   return {
     validationErrors,
