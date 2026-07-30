@@ -8,6 +8,7 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { rules } from '~/src/features/rules-engine/rules/index.js';
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js';
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js';
+import { haToSqm } from '~/src/features/common/helpers/measurement.js';
 import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
@@ -40,18 +41,30 @@ export const validateLandAction = async (
     throw new Error('Unable to validate land action');
   }
 
+  // Other actions requested for this same parcel in this submission also
+  // compete for the parcel's area, alongside persisted agreements - both
+  // are treated as "existing" demand when computing this action's available area.
+  const siblingActions = landAction.actions
+    .filter((a) => a !== action)
+    .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }));
+
+  const existingActions = [
+    ...plannedActionsTransformer(agreements),
+    ...siblingActions
+  ];
+
   const aacDataRequirements = await getAvailableAreaDataRequirements(
     action.code,
     landAction.sheetId,
     landAction.parcelId,
-    plannedActionsTransformer(agreements),
+    existingActions,
     request.server.postgresDb,
     request.logger
   );
 
   const lpResult = findMaximumAvailableArea(
     action.code,
-    plannedActionsTransformer(agreements),
+    existingActions,
     compatibilityCheckFn,
     aacDataRequirements
   );
