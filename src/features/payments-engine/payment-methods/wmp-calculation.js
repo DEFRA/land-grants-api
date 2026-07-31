@@ -73,20 +73,24 @@ export const wmpCalculation = {
   execute: (paymentMethod, data) => {
     const { config } = paymentMethod;
     const { tiers, newWoodlandMaxPercent } = config;
-    const { oldWoodlandAreaSqm, newWoodlandAreaSqm } = data.data;
+    const { oldWoodlandAreaSqm, newWoodlandAreaSqm, totalWoodlandAreaSqm } =
+      data.data;
 
-    const eligibleAreaSqm = calculateEligibleArea(
-      oldWoodlandAreaSqm,
-      newWoodlandAreaSqm,
-      newWoodlandMaxPercent
-    );
+    const eligibleAreaSqm =
+      totalWoodlandAreaSqm ??
+      calculateEligibleArea(
+        oldWoodlandAreaSqm,
+        newWoodlandAreaSqm,
+        newWoodlandMaxPercent
+      );
 
     const { payment, tierIndex } = calculatePayment(eligibleAreaSqm, tiers);
     const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null;
 
     const quantityToRemove =
       tierIndex > 0 ? (activeTier?.lowerLimitHa ?? 0) : 0;
-    const quantityInActiveTier = activeTier
+
+    const quantityInActiveTierHa = activeTier
       ? roundTo4DecimalPlaces(
           sqmToHaRounded(eligibleAreaSqm) - quantityToRemove
         )
@@ -96,7 +100,7 @@ export const wmpCalculation = {
       eligibleArea: sqmToHaRounded(eligibleAreaSqm),
       payment,
       activePaymentTier: tierIndex + 1,
-      quantityInActiveTier,
+      quantityInActiveTier: quantityInActiveTierHa,
       activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
       activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
     };
