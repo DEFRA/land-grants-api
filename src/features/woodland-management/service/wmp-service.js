@@ -2,6 +2,9 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js';
 import { rules } from '~/src/features/rules-engine/rules/index.js';
 import { getEnabledActions } from '../../actions/queries/getEnabledActions.query.js';
 import { haToSqm } from '../../common/helpers/measurement.js';
+import { WMP_ACTION_CODE } from '../constants.js';
+import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js';
+import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js';
 
 /**
  * @param {LandParcelDb[]|null} parcels - The parcels
@@ -20,7 +23,7 @@ export const validateWoodlandManagementPlan = async (parcels, request) => {
 
   const totalParcelAreaSqm = getTotalLandAreaSqm(parcels);
   const actions = await getEnabledActions(logger, postgresDb);
-  const action = actions.find((a) => a.code === 'PA3');
+  const action = actions.find((a) => a.code === WMP_ACTION_CODE);
   const ruleResult = executeRules(
     rules,
     /** @type {import('~/src/features/rules-engine/rules.d.js').RuleEngineApplication} */
@@ -44,5 +47,29 @@ const getTotalLandAreaSqm = (parcels) => {
 };
 
 /**
+ * @param {Logger} logger
+ * @param {object} dbClient
+ * @param {{totalWoodlandAreaSqm: number} | {oldWoodlandAreaSqm: number, newWoodlandAreaSqm: number}} data
+ */
+export const calculateWMPPayment = async (logger, dbClient, data) => {
+  const actions = await getActionsByLatestVersion(logger, dbClient);
+  const action = actions.find((a) => a.code === WMP_ACTION_CODE);
+
+  if (!action) {
+    throw new Error('Action not found');
+  }
+
+  const paymentResult = executePaymentMethod(
+    { ...action?.paymentMethod },
+    {
+      data
+    }
+  );
+
+  return { result: paymentResult, action };
+};
+
+/**
  * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
+ * @import {Logger} from '~/src/features/common/logger.d.js'
  */

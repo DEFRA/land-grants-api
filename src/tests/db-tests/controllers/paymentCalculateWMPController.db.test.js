@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { PaymentsCalculateWMPControllerV2 } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js';
+import { PaymentsCalculateWMPController } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js';
 import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js';
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js';
@@ -74,7 +74,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       // old=10ha, new=2ha → eligible=12ha → tier 1: flat £1500 (150000p), rate £0/ha
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -115,7 +115,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -153,7 +153,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -191,7 +191,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -219,7 +219,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -254,7 +254,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
       const { h, getResponse } = createResponseCapture();
 
-      await PaymentsCalculateWMPControllerV2.handler(
+      await PaymentsCalculateWMPController.handler(
         createRequest(
           {
             parcelIds: ['SX067-99238'],
@@ -284,7 +284,7 @@ describe('Payment Calculate WMP Controller (DB)', () => {
 
         const { h } = createResponseCapture();
 
-        const result = await PaymentsCalculateWMPControllerV2.handler(
+        const result = await PaymentsCalculateWMPController.handler(
           createRequest(
             {
               parcelIds: ['SX067-99238'],
