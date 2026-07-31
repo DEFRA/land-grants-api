@@ -1,0 +1,23 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/index.js",
+    "scripts/**/*.js",
+    "src/tests/load-tests/*.js",
+    "src/**/*.d.js",
+    "src/tests/e2e-tests/setup/teardown.js",
+    "vitest.db.teardown.js",
+    "src/features/land-data-ingest/workers/ingest.worker.js"
+  ],
+  "ignoreDependencies": ["k6", "pino-pretty"],
+  "ignoreIssues": {
+    "src/features/parcel/fixtures/index.js": ["exports"],
+    "src/tests/db-tests/fixtures/actions.js": ["exports"],
+    "src/tests/db-tests/setup/s3-test-helpers.js": ["exports"],
+    "src/tests/db-tests/setup/utils.js": ["exports"],
+    "src/tests/e2e-tests/setup/http-client.js": ["exports"],
+    "src/tests/e2e-tests/setup/server.js": ["exports"],
+    "src/tests/e2e-tests/setup/test-config.js": ["exports"],
+    "src/tests/import-tests/setup/s3-test-helpers.js": ["exports"]
+  }
+}
