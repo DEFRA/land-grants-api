@@ -127,7 +127,7 @@ describe('Payment calculate total WMP controller', () => {
         result: { message, payment }
       } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
       });
 
@@ -166,7 +166,7 @@ describe('Payment calculate total WMP controller', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           totalAreaHa: 8,
           applicationId: 'app-123',
@@ -186,7 +186,7 @@ describe('Payment calculate total WMP controller', () => {
         result: { message }
       } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           applicationId: 'app-123',
           sbi: '123456789'
@@ -204,7 +204,7 @@ describe('Payment calculate total WMP controller', () => {
         result: { message }
       } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: { ...validPayload, totalAreaHa: -1 }
       });
 
@@ -219,7 +219,7 @@ describe('Payment calculate total WMP controller', () => {
         result: { message }
       } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           totalAreaHa: 8,
           sbi: '123456789'
@@ -237,7 +237,7 @@ describe('Payment calculate total WMP controller', () => {
         result: { message }
       } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           totalAreaHa: 8,
           applicationId: 'app-123'
@@ -256,7 +256,7 @@ describe('Payment calculate total WMP controller', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
       });
 
@@ -271,7 +271,7 @@ describe('Payment calculate total WMP controller', () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
       });
 
@@ -283,7 +283,7 @@ describe('Payment calculate total WMP controller', () => {
 
       await server.inject({
         method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-total',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
       });
 
