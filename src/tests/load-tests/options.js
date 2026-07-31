@@ -1,4 +1,4 @@
-import { accessTokenLocal } from './config.js'; // eslint-disable-line import/no-unresolved
+import { accessTokenLocal } from './config.js';
 
 const { AUTH_HEADER_TOKEN } = process.env;
 

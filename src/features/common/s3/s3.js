@@ -20,7 +20,8 @@ export async function getFile(s3Client, bucket, key) {
     return response;
   } catch (error) {
     throw new Error(
-      `Failed to get file "${key}" from S3 bucket "${bucket}": ${error.message}`
+      `Failed to get file "${key}" from S3 bucket "${bucket}": ${error.message}`,
+      { cause: error }
     );
   }
 }
