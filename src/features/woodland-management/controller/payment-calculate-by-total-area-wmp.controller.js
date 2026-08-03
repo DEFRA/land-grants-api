@@ -51,7 +51,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
  * Builds the shared portion of a WMP payment calculation audit context.
  * @param {import('@hapi/hapi').Request} request
  * @param {string} sbi
- * @param {string} crn
+ * @param {string} [crn]
  * @returns {object}
  */
 const buildAuditContext = (request, sbi, crn) => ({
