@@ -1,12 +1,12 @@
 // k6 run src/tests/load-tests/application-validate.js
 
-import http from 'k6/http';
-import { check } from 'k6';
-import { defaultOptions, url, accessToken } from './options.js';
+import http from 'k6/http'
+import { check } from 'k6'
+import { defaultOptions, url, accessToken } from './options.js'
 
 export const options = {
   ...defaultOptions
-};
+}
 
 const payload = JSON.stringify({
   applicationId: 'app-validation-test1',
@@ -25,16 +25,16 @@ const payload = JSON.stringify({
       ]
     }
   ]
-});
+})
 
 const params = {
   headers: {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${accessToken}`
   }
-};
+}
 
 export default function () {
-  const res = http.post(`${url}/application/validate`, payload, params);
-  check(res, { 'status is 200': (r) => r.status === 200 });
+  const res = http.post(`${url}/application/validate`, payload, params)
+  check(res, { 'status is 200': (r) => r.status === 200 })
 }

@@ -1,17 +1,17 @@
-import Boom from '@hapi/boom';
-import { logBusinessError } from '../../common/helpers/logging/log-helpers.js';
+import Boom from '@hapi/boom'
+import { logBusinessError } from '../../common/helpers/logging/log-helpers.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '../../common/schema/index.js';
+} from '../../common/schema/index.js'
 import {
   statusIngestQuery,
   statusResponseSchema
-} from '../schema/status.schema.js';
+} from '../schema/status.schema.js'
 import {
   getIngestById,
   getLatestEntityStatuses
-} from '../service/start-ingest.service.js';
+} from '../service/start-ingest.service.js'
 
 export const StatusIngestController = {
   options: {
@@ -34,28 +34,28 @@ export const StatusIngestController = {
       logger,
       server: { postgresDb },
       query
-    } = request;
-    const { ingestId, filename } = query;
+    } = request
+    const { ingestId, filename } = query
 
     try {
       if (!ingestId) {
-        const latestIngest = await getLatestEntityStatuses(postgresDb);
-        return h.response(latestIngest);
+        const latestIngest = await getLatestEntityStatuses(postgresDb)
+        return h.response(latestIngest)
       }
 
-      const ingest = await getIngestById(ingestId, postgresDb);
+      const ingest = await getIngestById(ingestId, postgresDb)
       if (!ingest) {
-        return Boom.notFound('Ingest not found');
+        return Boom.notFound('Ingest not found')
       }
 
       if (filename) {
-        const fileStatus = ingest.files.find((f) => f.filename === filename);
+        const fileStatus = ingest.files.find((f) => f.filename === filename)
         if (!fileStatus) {
-          return Boom.notFound('Ingest file not found');
+          return Boom.notFound('Ingest file not found')
         }
-        return h.response(fileStatus);
+        return h.response(fileStatus)
       }
-      return h.response(ingest);
+      return h.response(ingest)
     } catch (error) {
       logBusinessError(logger, {
         operation: 'status_ingest_endpoint',
@@ -63,8 +63,8 @@ export const StatusIngestController = {
           query
         },
         error
-      });
-      return Boom.internal('Error getting land data ingest status');
+      })
+      return Boom.internal('Error getting land data ingest status')
     }
   }
-};
+}

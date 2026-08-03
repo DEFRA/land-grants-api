@@ -1,14 +1,14 @@
-import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js';
-import { haToSqm } from '~/src/features/common/helpers/measurement.js';
+import { woodlandMinimumEligibility } from './woodland-minimum-eligibility.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 const ruleDescription =
-  'Is the parcel eligible for the woodland management plan action?';
+  'Is the parcel eligible for the woodland management plan action?'
 
 describe('woodlandMinimumEligibility', () => {
   const createApplication = (oldWoodlandAreaHa, newWoodlandAreaHa = 0) => ({
     oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
     newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
-  });
+  })
 
   const createRule = (name = 'woodland-minimum-eligibility') => ({
     name,
@@ -17,7 +17,7 @@ describe('woodlandMinimumEligibility', () => {
       minOldWoodlandHa: 0.4
     },
     description: ruleDescription
-  });
+  })
 
   test.each([
     [0.5, 0.5],
@@ -25,9 +25,9 @@ describe('woodlandMinimumEligibility', () => {
   ])(
     'should pass when woodland area over 10 years is %s',
     (oldWoodlandArea, expectedTotal) => {
-      const application = createApplication(oldWoodlandArea);
-      const rule = createRule();
-      const result = woodlandMinimumEligibility.execute(application, rule);
+      const application = createApplication(oldWoodlandArea)
+      const rule = createRule()
+      const result = woodlandMinimumEligibility.execute(application, rule)
 
       expect(result).toEqual({
         name: 'woodland-minimum-eligibility',
@@ -42,14 +42,14 @@ describe('woodlandMinimumEligibility', () => {
             ]
           }
         ]
-      });
+      })
     }
-  );
+  )
 
   test('should fail when total woodland area is below the minimum of 0.5ha', () => {
-    const application = createApplication(0.4, 0.05);
-    const rule = createRule();
-    const result = woodlandMinimumEligibility.execute(application, rule);
+    const application = createApplication(0.4, 0.05)
+    const rule = createRule()
+    const result = woodlandMinimumEligibility.execute(application, rule)
 
     expect(result).toEqual({
       name: 'woodland-minimum-eligibility',
@@ -65,13 +65,13 @@ describe('woodlandMinimumEligibility', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should fail when no woodland area is provided', () => {
-    const application = createApplication(undefined, undefined);
-    const rule = createRule();
-    const result = woodlandMinimumEligibility.execute(application, rule);
+    const application = createApplication(undefined, undefined)
+    const rule = createRule()
+    const result = woodlandMinimumEligibility.execute(application, rule)
 
     expect(result).toEqual({
       name: 'woodland-minimum-eligibility',
@@ -86,13 +86,13 @@ describe('woodlandMinimumEligibility', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should pass when total woodland area exceeds the minimum of 0.5ha and old woodland area is equal to minimum', () => {
-    const application = createApplication(0.4, 1);
-    const rule = createRule();
-    const result = woodlandMinimumEligibility.execute(application, rule);
+    const application = createApplication(0.4, 1)
+    const rule = createRule()
+    const result = woodlandMinimumEligibility.execute(application, rule)
 
     expect(result).toEqual({
       name: 'woodland-minimum-eligibility',
@@ -108,13 +108,13 @@ describe('woodlandMinimumEligibility', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should fail when woodland area over 10 years is less than the minimum', () => {
-    const application = createApplication(0.3, 1);
-    const rule = createRule();
-    const result = woodlandMinimumEligibility.execute(application, rule);
+    const application = createApplication(0.3, 1)
+    const rule = createRule()
+    const result = woodlandMinimumEligibility.execute(application, rule)
 
     expect(result).toEqual({
       name: 'woodland-minimum-eligibility',
@@ -130,6 +130,6 @@ describe('woodlandMinimumEligibility', () => {
           ]
         }
       ]
-    });
-  });
-});
+    })
+  })
+})

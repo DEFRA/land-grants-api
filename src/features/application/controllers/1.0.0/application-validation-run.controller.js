@@ -1,18 +1,18 @@
-import Boom from '@hapi/boom';
+import Boom from '@hapi/boom'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
-import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js';
+} from '~/src/features/common/schema/index.js'
+import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 import {
   applicationValidationRunRequestSchema,
   applicationValidationRunResponseSchema
-} from '../../schema/application-validation.schema.js';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
+} from '../../schema/application-validation.schema.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   logResourceNotFound,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 
 export const ApplicationValidationRunController = {
   options: {
@@ -39,13 +39,13 @@ export const ApplicationValidationRunController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
-      const { id } = request.params;
+      const postgresDb = request.server.postgresDb
+      const { id } = request.params
       const applicationValidationRun = await getApplicationValidationRun(
         request.logger,
         postgresDb,
         id
-      );
+      )
 
       if (!applicationValidationRun) {
         logResourceNotFound(request.logger, {
@@ -53,8 +53,8 @@ export const ApplicationValidationRunController = {
           context: {
             validationRunId: id
           }
-        });
-        return Boom.notFound('Application validation run not found');
+        })
+        return Boom.notFound('Application validation run not found')
       }
 
       return h
@@ -62,17 +62,17 @@ export const ApplicationValidationRunController = {
           message: 'Application validation run retrieved successfully',
           applicationValidationRun
         })
-        .code(statusCodes.ok);
+        .code(statusCodes.ok)
     } catch (error) {
-      const { id } = request.params;
+      const { id } = request.params
       logBusinessError(request.logger, {
         operation: 'retrieve application validation run',
         error,
         context: {
           validationRunId: id
         }
-      });
-      return Boom.internal('Error getting application validation run');
+      })
+      return Boom.internal('Error getting application validation run')
     }
   }
-};
+}

@@ -1,25 +1,22 @@
-import convict from 'convict';
-import 'dotenv/config';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import convict from 'convict'
+import 'dotenv/config'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
+const dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const isProduction = process.env.NODE_ENV === 'production';
-const isDev = process.env.NODE_ENV === 'development';
-const isTest = process.env.NODE_ENV === 'test';
-const isLocal = process.env.NODE_ENV === 'local';
+const isProduction = process.env.NODE_ENV === 'production'
+const isDev = process.env.NODE_ENV === 'development'
+const isTest = process.env.NODE_ENV === 'test'
+const isLocal = process.env.NODE_ENV === 'local'
 
-let defaultServiceVersion = '0.0.0';
+let defaultServiceVersion = '0.0.0'
 
 if (isTest) {
-  const file = readFileSync(
-    path.resolve(dirname, '../../package.json'),
-    'utf8'
-  );
-  const json = JSON.parse(file);
-  defaultServiceVersion = json.version;
+  const file = readFileSync(path.resolve(dirname, '../../package.json'), 'utf8')
+  const json = JSON.parse(file)
+  defaultServiceVersion = json.version
 }
 
 const config = convict({
@@ -319,8 +316,8 @@ const config = convict({
       env: 'FEATURE_USE_DAL'
     }
   }
-});
+})
 
-config.validate({ allowed: 'strict' });
+config.validate({ allowed: 'strict' })
 
-export { config };
+export { config }

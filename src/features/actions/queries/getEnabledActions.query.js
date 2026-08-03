@@ -1,5 +1,5 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
-import { actionConfigTransformer } from '~/src/features/actions/transformers/1.0.0/actionConfig.transformer.js';
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { actionConfigTransformer } from '~/src/features/actions/transformers/1.0.0/actionConfig.transformer.js'
 
 /**
  * Get enabled action configs
@@ -8,9 +8,9 @@ import { actionConfigTransformer } from '~/src/features/actions/transformers/1.0
  * @returns {Promise<Action[]>} The action configs
  */
 async function getEnabledActions(logger, db) {
-  let client;
+  let client
   try {
-    client = await db.connect();
+    client = await db.connect()
 
     const query = `
       SELECT
@@ -27,24 +27,24 @@ async function getEnabledActions(logger, db) {
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE AND ac.is_active = TRUE
-    `;
-    const result = await client.query(query);
+    `
+    const result = await client.query(query)
 
-    return result.rows.map(actionConfigTransformer);
+    return result.rows.map(actionConfigTransformer)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get enabled actions',
       error
-    });
-    return [];
+    })
+    return []
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getEnabledActions };
+export { getEnabledActions }
 
 /**
  * @import {Action} from '../action.d.js'

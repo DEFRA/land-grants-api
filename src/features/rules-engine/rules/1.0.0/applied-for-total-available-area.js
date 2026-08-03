@@ -1,7 +1,7 @@
 import {
   haToSqm,
   sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -18,13 +18,13 @@ export const appliedForTotalAvailableArea = {
     const {
       areaAppliedFor,
       landParcel: { availableAreaSqm }
-    } = application;
+    } = application
 
-    const areaAppliedForHa = Number.parseFloat(areaAppliedFor);
-    const availableAreaHa = sqmToHaRounded(availableAreaSqm);
-    const areaAppliedForSqm = haToSqm(areaAppliedForHa);
+    const areaAppliedForHa = Number.parseFloat(areaAppliedFor)
+    const availableAreaHa = sqmToHaRounded(availableAreaSqm)
+    const areaAppliedForSqm = haToSqm(areaAppliedForHa)
 
-    const name = rule.name;
+    const name = rule.name
     const explanations = [
       {
         title: 'Total valid land cover',
@@ -32,7 +32,7 @@ export const appliedForTotalAvailableArea = {
           `The available area was (${availableAreaHa} ha) the applicant applied for (${areaAppliedFor} ha)`
         ]
       }
-    ];
+    ]
 
     if (areaAppliedForSqm !== availableAreaSqm) {
       return {
@@ -41,7 +41,7 @@ export const appliedForTotalAvailableArea = {
         description: rule.description,
         reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
         explanations
-      };
+      }
     }
 
     return {
@@ -50,6 +50,6 @@ export const appliedForTotalAvailableArea = {
       description: rule.description,
       reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
       explanations
-    };
+    }
   }
-};
+}

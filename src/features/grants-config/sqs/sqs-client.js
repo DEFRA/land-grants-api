@@ -1,19 +1,19 @@
-import { SQSClient } from '@aws-sdk/client-sqs';
-import { Consumer } from 'sqs-consumer';
-import { config } from '~/src/config/index.js';
-import { processMessage } from '~/src/features/grants-config/handlers/grants-config-update.handler.js';
+import { SQSClient } from '@aws-sdk/client-sqs'
+import { Consumer } from 'sqs-consumer'
+import { config } from '~/src/config/index.js'
+import { processMessage } from '~/src/features/grants-config/handlers/grants-config-update.handler.js'
 
 export const grantsConfigSqsPlugin = {
   plugin: {
     name: 'grantsConfigSqs',
     version: '1.0.0',
     register(server, options) {
-      server.logger.info('Setting up grants-config-broker SQS consumer');
+      server.logger.info('Setting up grants-config-broker SQS consumer')
 
       const sqsClient = new SQSClient({
         region: options.sqsRegion,
         endpoint: options.sqsEndpoint
-      });
+      })
 
       const app = Consumer.create({
         queueUrl: options.queueUrl,
@@ -27,18 +27,18 @@ export const grantsConfigSqsPlugin = {
               {
                 grantsConfigBucket: options.grantsConfigBucket
               }
-            );
+            )
             server.logger.info(
               `Successfully processed grants-config-broker message: ${message.MessageId}`
-            );
+            )
 
-            return message;
+            return message
           } catch (err) {
             server.logger.error(
               err,
               'Failed to process grants-config-broker message'
-            );
-            throw err;
+            )
+            throw err
           }
         },
         sqs: sqsClient,
@@ -48,31 +48,31 @@ export const grantsConfigSqsPlugin = {
         handleMessageTimeout: 30000,
         attributeNames: ['All'],
         messageAttributeNames: ['All']
-      });
+      })
 
       app.on('error', (err) => {
-        server.logger.error(err, 'grants-config-broker SQS Consumer error');
-      });
+        server.logger.error(err, 'grants-config-broker SQS Consumer error')
+      })
 
       app.on('processing_error', (err) => {
         server.logger.error(
           err,
           'grants-config-broker SQS message processing error'
-        );
-      });
+        )
+      })
 
       app.on('started', () => {
-        server.logger.info('grants-config-broker SQS Consumer started');
-      });
+        server.logger.info('grants-config-broker SQS Consumer started')
+      })
 
-      app.start();
+      app.start()
 
       server.events.on('stop', () => {
-        server.logger.info('Stopping grants-config-broker SQS consumer');
-        app.stop();
-        server.logger.info('Closing grants-config-broker SQS client');
-        sqsClient.destroy();
-      });
+        server.logger.info('Stopping grants-config-broker SQS consumer')
+        app.stop()
+        server.logger.info('Closing grants-config-broker SQS client')
+        sqsClient.destroy()
+      })
     }
   },
   options: {
@@ -81,4 +81,4 @@ export const grantsConfigSqsPlugin = {
     queueUrl: config.get('sqs.queueUrl'),
     grantsConfigBucket: config.get('grantsConfig.s3Bucket')
   }
-};
+}

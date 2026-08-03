@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 const applicationValidationSchema = Joi.object({
   applicationId: Joi.string().required(),
@@ -23,7 +23,7 @@ const applicationValidationSchema = Joi.object({
     )
     .min(1)
     .required()
-});
+})
 
 const applicationValidationRunSchema = Joi.object({
   id: Joi.number().integer().required(),
@@ -32,24 +32,24 @@ const applicationValidationRunSchema = Joi.object({
   crn: Joi.string().required(),
   data: Joi.object().required(),
   created_at: Joi.date().required()
-});
+})
 
 const applicationValidationRunResponseSchema = Joi.object({
   message: Joi.string().required(),
   applicationValidationRun: applicationValidationRunSchema
-});
+})
 
 const applicationValidationRunRequestSchema = Joi.object({
   id: Joi.number().integer().required()
-});
+})
 
 const applicationValidationRunsRequestSchema = Joi.object({
   applicationId: Joi.string().required()
-});
+})
 
 const applicationValidationRunsBodyRequestSchema = Joi.object({
   fields: Joi.array().items(Joi.string().valid('details')).required()
-});
+})
 
 const applicationValidationRunsResponseSchema = Joi.alternatives(
   Joi.object({
@@ -63,7 +63,7 @@ const applicationValidationRunsResponseSchema = Joi.alternatives(
       created_at: Joi.date().required()
     })
   })
-);
+)
 
 export {
   applicationValidationSchema,
@@ -72,4 +72,4 @@ export {
   applicationValidationRunsRequestSchema,
   applicationValidationRunsResponseSchema,
   applicationValidationRunsBodyRequestSchema
-};
+}

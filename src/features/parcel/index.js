@@ -1,4 +1,4 @@
-import { ParcelsControllerV2 } from './controllers/index.js';
+import { ParcelsControllerV2 } from './controllers/index.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -13,12 +13,12 @@ const parcel = {
           path: '/api/v2/parcels',
           ...ParcelsControllerV2
         }
-      ]);
+      ])
     }
   }
-};
+}
 
-export { parcel };
+export { parcel }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

@@ -1,8 +1,8 @@
-import { GET_BUSINESS } from './queries.js';
-import { config } from '~/src/config/index.js';
-import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js';
+import { GET_BUSINESS } from './queries.js'
+import { config } from '~/src/config/index.js'
+import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
  * Fetches existing Siti Agri agreements for a business from the DAL
@@ -21,10 +21,10 @@ export async function getAgreements(
   logger
 ) {
   if (!config.get('featureFlags.useDal')) {
-    return [];
+    return []
   }
 
-  const endpoint = config.get('dal.apiEndpoint');
+  const endpoint = config.get('dal.apiEndpoint')
 
   // Use X-Forwarded-Authorization to pass along the end user's defra ID token if available.
   // For requests without an end user present, we use our "robot" service account auth instead
@@ -38,7 +38,7 @@ export async function getAgreements(
       : {
           'Gateway-Type': 'internal',
           Email: config.get('dal.serviceAccount')
-        };
+        }
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -47,37 +47,33 @@ export async function getAgreements(
       ...authHeaders
     },
     body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
-  });
+  })
 
   if (!response.ok) {
     if (response.status === statusCodes.notFound) {
-      return [];
+      return []
     }
 
     throw new Error(
       `Failed to fetch existing DAL agreements for sbi=${sbi}: ${response.status} ${response.statusText}`
-    );
+    )
   }
 
-  const body = await response.json();
-  const results = dalBusinessToAgreements(
-    body.data.business,
-    parcelId,
-    sheetId
-  );
+  const body = await response.json()
+  const results = dalBusinessToAgreements(body.data.business, parcelId, sheetId)
 
   const summary = results.map(
     (a) =>
       `${a.actionCode}: ${a.quantity} ${a.unit}, ${a.startDate.toISOString().split('T')[0]}-${a.endDate.toISOString().split('T')[0]}`
-  );
+  )
   logInfo(logger, {
     category: 'agreements',
     operation: 'Fetch agreements from DAL',
     context: { parcelId, sheetId, sbi },
     message: `Retrieved ${results.length} agreements: [${summary.join(', ')}]`
-  });
+  })
 
-  return results;
+  return results
 }
 
 /**

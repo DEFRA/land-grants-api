@@ -3,4 +3,4 @@
  * @param {number} gbp
  * @returns {number}
  */
-export const gbpToPence = (gbp = 0) => Math.round(gbp * 100);
+export const gbpToPence = (gbp = 0) => Math.round(gbp * 100)

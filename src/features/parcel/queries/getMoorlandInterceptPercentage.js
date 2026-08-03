@@ -1,14 +1,14 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js';
-import { roundSqm } from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
 async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
-  let client;
+  let client
 
   try {
-    client = await db.connect();
+    client = await db.connect()
     const query = `
       SELECT
           COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
@@ -25,18 +25,18 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
           m.data_layer_type_id = 2
       GROUP BY
           p.geom, m.metadata ->> 'ref_code';
-    `;
+    `
 
-    const values = [sheetId, parcelId];
-    const result = await client.query(query, values);
+    const values = [sheetId, parcelId]
+    const result = await client.query(query, values)
 
     if (result?.rows?.length === 0) {
-      return 0;
+      return 0
     }
 
     const roundedMoorlandOverlapPercent = Math.max(
       ...(result.rows.map((row) => roundSqm(row.overlap_percent || 0)) || 0)
-    );
+    )
 
     logInfo(logger, {
       category: 'database',
@@ -46,8 +46,8 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
         sheetId,
         roundedMoorlandOverlapPercent
       }
-    });
-    return roundedMoorlandOverlapPercent;
+    })
+    return roundedMoorlandOverlapPercent
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get moorland intercept percentage',
@@ -56,13 +56,13 @@ async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
         parcelId,
         sheetId
       }
-    });
-    return 0;
+    })
+    return 0
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getMoorlandInterceptPercentage };
+export { getMoorlandInterceptPercentage }

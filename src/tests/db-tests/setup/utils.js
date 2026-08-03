@@ -1,24 +1,24 @@
 export const createResponseCapture = () => {
-  let responseData = null;
-  let statusCode = null;
+  let responseData = null
+  let statusCode = null
 
   const h = {
     response: (data) => {
-      responseData = data;
+      responseData = data
       return {
         code: (code) => {
-          statusCode = code;
-          return { data: responseData, statusCode };
+          statusCode = code
+          return { data: responseData, statusCode }
         }
-      };
+      }
     }
-  };
+  }
 
   return {
     h,
     getResponse: () => ({ data: responseData, statusCode })
-  };
-};
+  }
+}
 
 export const createHandler = (
   parcelIds,
@@ -37,5 +37,5 @@ export const createHandler = (
     server: {
       postgresDb: connection
     }
-  };
-};
+  }
+}

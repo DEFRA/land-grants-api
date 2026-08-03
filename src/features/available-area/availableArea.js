@@ -4,14 +4,14 @@
  * @import { LandCover } from '~/src/features/parcel/parcel.d.js'
  */
 
-import _solver from 'javascript-lp-solver';
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js';
-import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js';
+import _solver from 'javascript-lp-solver'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
+import { mergeLandCoverCodes } from '~/src/features/land-cover-codes/services/merge-land-cover-codes.js'
 
 /** @type {import('javascript-lp-solver').SolverAPI} */
-const solver = /** @type {any} */ (_solver);
+const solver = /** @type {any} */ (_solver)
 
-export const TARGET_SUFFIX = '__target';
+export const TARGET_SUFFIX = '__target'
 
 export class InfeasibleAreaError extends Error {
   /**
@@ -21,8 +21,8 @@ export class InfeasibleAreaError extends Error {
   constructor(sheetId, parcelId) {
     super(
       `For land parcel ${sheetId}-${parcelId}, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message.`
-    );
-    this.name = 'InfeasibleAreaError';
+    )
+    this.name = 'InfeasibleAreaError'
   }
 }
 
@@ -34,7 +34,7 @@ export class InfeasibleAreaError extends Error {
  */
 export function throwIfInfeasible(lpResult, sheetId, parcelId) {
   if (!lpResult.feasible) {
-    throw new InfeasibleAreaError(sheetId, parcelId);
+    throw new InfeasibleAreaError(sheetId, parcelId)
   }
 }
 
@@ -62,35 +62,35 @@ export function findMaximumAvailableArea(
     sssiAndHfOverlap,
     sssiActionEligibility,
     hfActionEligibility
-  } = dataRequirements;
+  } = dataRequirements
 
   // Consolidate duplicate action codes by summing their areas
-  existingActions = consolidateActions(existingActions);
+  existingActions = consolidateActions(existingActions)
 
   const targetEligibleCodes = mergeLandCoverCodes(
     landCoverCodesForAppliedForAction
-  );
+  )
 
   // Determine if any action is ineligible for a designation,
   // which triggers land cover splitting into designation zones
-  const hasDesignationData = sssiOverlap && hfOverlap && sssiAndHfOverlap;
+  const hasDesignationData = sssiOverlap && hfOverlap && sssiAndHfOverlap
   const allActionCodes = [
     applyingForAction,
     ...existingActions.map((a) => a.actionCode)
-  ];
+  ]
   const needsSplitting =
     hasDesignationData &&
     allActionCodes.some(
       (code) =>
         sssiActionEligibility?.[code] === false ||
         hfActionEligibility?.[code] === false
-    );
+    )
 
   // When designation constraints apply, split land covers into
   // designation zones so the LP can optimally place actions
-  let effectiveLandCovers = landCoversForParcel;
+  let effectiveLandCovers = landCoversForParcel
   /** @type {DesignationZone[] | undefined} */
-  let designationZones;
+  let designationZones
 
   if (needsSplitting) {
     const split = splitLandCoversByDesignation(
@@ -98,19 +98,19 @@ export function findMaximumAvailableArea(
       sssiOverlap,
       hfOverlap,
       sssiAndHfOverlap
-    );
-    effectiveLandCovers = split.effectiveLandCovers;
-    designationZones = split.designationZones;
+    )
+    effectiveLandCovers = split.effectiveLandCovers
+    designationZones = split.designationZones
   }
 
   // Calculate total valid land cover area for the target action
   // taking into account designation zone restrictions
   const targetSssiEligible =
-    sssiActionEligibility?.[applyingForAction] !== false;
-  const targetHfEligible = hfActionEligibility?.[applyingForAction] !== false;
+    sssiActionEligibility?.[applyingForAction] !== false
+  const targetHfEligible = hfActionEligibility?.[applyingForAction] !== false
 
   const totalValidLandCoverSqm = effectiveLandCovers.reduce((sum, lc, i) => {
-    if (!targetEligibleCodes.includes(lc.landCoverClassCode)) return sum;
+    if (!targetEligibleCodes.includes(lc.landCoverClassCode)) return sum
     if (
       designationZones &&
       !isEligibleForZone(
@@ -119,9 +119,9 @@ export function findMaximumAvailableArea(
         targetHfEligible
       )
     )
-      return sum;
-    return sum + lc.areaSqm;
-  }, 0);
+      return sum
+    return sum + lc.areaSqm
+  }, 0)
 
   // If no eligible land covers for the target, available area is 0
   if (totalValidLandCoverSqm === 0) {
@@ -131,12 +131,12 @@ export function findMaximumAvailableArea(
       availableAreaSqm: 0,
       totalValidLandCoverSqm: 0,
       context: null
-    };
+    }
   }
 
   // If no existing actions, available area = total valid land cover
   if (existingActions.length === 0) {
-    const targetLabel = applyingForAction + TARGET_SUFFIX;
+    const targetLabel = applyingForAction + TARGET_SUFFIX
     const eligibility = buildEligibilityMap(
       targetLabel,
       [],
@@ -146,7 +146,7 @@ export function findMaximumAvailableArea(
       designationZones,
       sssiActionEligibility,
       hfActionEligibility
-    );
+    )
     return {
       feasible: true,
       availableAreaHectares: sqmToHaRounded(totalValidLandCoverSqm),
@@ -170,12 +170,12 @@ export function findMaximumAvailableArea(
           hfActionEligibility
         })
       }
-    };
+    }
   }
 
   // Use a distinct label for the target action so it doesn't collide with
   // an existing action that has the same code
-  const targetLabel = applyingForAction + TARGET_SUFFIX;
+  const targetLabel = applyingForAction + TARGET_SUFFIX
 
   // Build eligibility map: actionCode -> set of parcel land cover class codes it can use
   const eligibility = buildEligibilityMap(
@@ -187,29 +187,29 @@ export function findMaximumAvailableArea(
     designationZones,
     sssiActionEligibility,
     hfActionEligibility
-  );
+  )
 
   // All action codes involved (existing + target) — for clique detection
   const allLabelledCodes = [
     targetLabel,
     ...existingActions.map((a) => a.actionCode)
-  ];
+  ]
 
   // Find all maximal cliques in the incompatibility graph
   // Wrap the compatibility check to map the target label back to the real code
   const wrappedCompatibilityCheck = (a, b) => {
     const realA = a.endsWith(TARGET_SUFFIX)
       ? a.slice(0, -TARGET_SUFFIX.length)
-      : a;
+      : a
     const realB = b.endsWith(TARGET_SUFFIX)
       ? b.slice(0, -TARGET_SUFFIX.length)
-      : b;
-    return compatibilityCheckFn(realA, realB);
-  };
+      : b
+    return compatibilityCheckFn(realA, realB)
+  }
   const cliques = findMaximalCliques(
     allLabelledCodes,
     wrappedCompatibilityCheck
-  );
+  )
 
   // Build and solve the LP model
   const model = buildLpModel(
@@ -218,11 +218,11 @@ export function findMaximumAvailableArea(
     effectiveLandCovers,
     eligibility,
     cliques
-  );
+  )
 
   const result = /** @type {import('javascript-lp-solver').SolveResult} */ (
     solver.Solve(model)
-  );
+  )
 
   const context = {
     solution: result.feasible ? result : null,
@@ -241,7 +241,7 @@ export function findMaximumAvailableArea(
       sssiActionEligibility,
       hfActionEligibility
     })
-  };
+  }
 
   if (!result.feasible) {
     return {
@@ -250,10 +250,10 @@ export function findMaximumAvailableArea(
       availableAreaSqm: 0,
       totalValidLandCoverSqm,
       context
-    };
+    }
   }
 
-  const availableAreaSqm = Math.max(0, result.result ?? 0);
+  const availableAreaSqm = Math.max(0, result.result ?? 0)
 
   return {
     feasible: true,
@@ -261,7 +261,7 @@ export function findMaximumAvailableArea(
     availableAreaSqm,
     totalValidLandCoverSqm,
     context
-  };
+  }
 }
 
 /**
@@ -270,17 +270,17 @@ export function findMaximumAvailableArea(
  * @returns {ActionWithArea[]}
  */
 function consolidateActions(existingActions) {
-  const grouped = new Map();
+  const grouped = new Map()
   for (const action of existingActions) {
     grouped.set(
       action.actionCode,
       (grouped.get(action.actionCode) ?? 0) + action.areaSqm
-    );
+    )
   }
   return Array.from(grouped.entries()).map(([actionCode, areaSqm]) => ({
     actionCode,
     areaSqm
-  }));
+  }))
 }
 
 /**
@@ -293,15 +293,15 @@ function consolidateActions(existingActions) {
 function isEligibleForZone(zone, sssiEligible, hfEligible) {
   switch (zone) {
     case 'neither':
-      return true;
+      return true
     case 'sssi_only':
-      return sssiEligible;
+      return sssiEligible
     case 'hf_only':
-      return hfEligible;
+      return hfEligible
     case 'sssi_and_hf':
-      return sssiEligible && hfEligible;
+      return sssiEligible && hfEligible
     default:
-      return true;
+      return true
   }
 }
 
@@ -319,10 +319,10 @@ function filterIndicesByDesignation(
   sssiEligible,
   hfEligible
 ) {
-  if (!designationZones) return baseIndices;
+  if (!designationZones) return baseIndices
   return baseIndices.filter((i) =>
     isEligibleForZone(designationZones[i], sssiEligible, hfEligible)
-  );
+  )
 }
 
 /**
@@ -349,22 +349,22 @@ function buildEligibilityMap(
   sssiActionEligibility,
   hfActionEligibility
 ) {
-  const eligibility = new Map();
+  const eligibility = new Map()
 
   // Resolve the real action code from the target label
   const targetRealCode = targetLabel.endsWith(TARGET_SUFFIX)
     ? targetLabel.slice(0, -TARGET_SUFFIX.length)
-    : targetLabel;
+    : targetLabel
 
   // Build for target action (stored under the target label to avoid collisions)
-  const targetMerged = mergeLandCoverCodes(landCoverCodesForAppliedForAction);
+  const targetMerged = mergeLandCoverCodes(landCoverCodesForAppliedForAction)
   const targetIndices = getEligibleLandCoverIndices(
     targetMerged,
     landCoversForParcel
-  );
+  )
 
-  const targetSssiEligible = sssiActionEligibility?.[targetRealCode] !== false;
-  const targetHfEligible = hfActionEligibility?.[targetRealCode] !== false;
+  const targetSssiEligible = sssiActionEligibility?.[targetRealCode] !== false
+  const targetHfEligible = hfActionEligibility?.[targetRealCode] !== false
 
   eligibility.set(
     targetLabel,
@@ -374,18 +374,17 @@ function buildEligibilityMap(
       targetSssiEligible,
       targetHfEligible
     )
-  );
+  )
 
   // Build for each existing action
   for (const action of existingActions) {
-    const actionLandCoverCodes =
-      landCoversForExistingActions[action.actionCode];
+    const actionLandCoverCodes = landCoversForExistingActions[action.actionCode]
     if (actionLandCoverCodes) {
-      const merged = mergeLandCoverCodes(actionLandCoverCodes);
-      const indices = getEligibleLandCoverIndices(merged, landCoversForParcel);
+      const merged = mergeLandCoverCodes(actionLandCoverCodes)
+      const indices = getEligibleLandCoverIndices(merged, landCoversForParcel)
 
-      const sssiEligible = sssiActionEligibility?.[action.actionCode] !== false;
-      const hfEligible = hfActionEligibility?.[action.actionCode] !== false;
+      const sssiEligible = sssiActionEligibility?.[action.actionCode] !== false
+      const hfEligible = hfActionEligibility?.[action.actionCode] !== false
 
       eligibility.set(
         action.actionCode,
@@ -395,13 +394,13 @@ function buildEligibilityMap(
           sssiEligible,
           hfEligible
         )
-      );
+      )
     } else {
-      eligibility.set(action.actionCode, []);
+      eligibility.set(action.actionCode, [])
     }
   }
 
-  return eligibility;
+  return eligibility
 }
 
 /**
@@ -411,13 +410,13 @@ function buildEligibilityMap(
  * @returns {number[]}
  */
 function getEligibleLandCoverIndices(mergedCodes, landCoversForParcel) {
-  const indices = [];
+  const indices = []
   for (let i = 0; i < landCoversForParcel.length; i++) {
     if (mergedCodes.includes(landCoversForParcel[i].landCoverClassCode)) {
-      indices.push(i);
+      indices.push(i)
     }
   }
-  return indices;
+  return indices
 }
 
 /**
@@ -438,30 +437,30 @@ function splitLandCoversByDesignation(
   sssiAndHfOverlap
 ) {
   /** @type {LandCover[]} */
-  const effectiveLandCovers = [];
+  const effectiveLandCovers = []
   /** @type {DesignationZone[]} */
-  const designationZones = [];
+  const designationZones = []
 
   for (const lc of landCoversForParcel) {
     // Derive four zones via inclusion-exclusion
     const sssi =
       sssiOverlap.find(
         (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
-      )?.areaSqm ?? 0;
+      )?.areaSqm ?? 0
 
     const hf =
       hfOverlap.find((lcl) => lcl.landCoverClassCode === lc.landCoverClassCode)
-        ?.areaSqm ?? 0;
+        ?.areaSqm ?? 0
 
     const both =
       sssiAndHfOverlap.find(
         (lcl) => lcl.landCoverClassCode === lc.landCoverClassCode
-      )?.areaSqm ?? 0;
+      )?.areaSqm ?? 0
 
-    const bothArea = Math.max(0, both);
-    const sssiOnlyArea = Math.max(0, sssi - both);
-    const hfOnlyArea = Math.max(0, hf - both);
-    const neitherArea = Math.max(0, lc.areaSqm - sssi - hf + both);
+    const bothArea = Math.max(0, both)
+    const sssiOnlyArea = Math.max(0, sssi - both)
+    const hfOnlyArea = Math.max(0, hf - both)
+    const neitherArea = Math.max(0, lc.areaSqm - sssi - hf + both)
 
     /** @type {[DesignationZone, number][]} */
     const zones = [
@@ -469,20 +468,20 @@ function splitLandCoversByDesignation(
       ['sssi_only', sssiOnlyArea],
       ['hf_only', hfOnlyArea],
       ['sssi_and_hf', bothArea]
-    ];
+    ]
 
     for (const [zone, area] of zones) {
       if (area > 0) {
         effectiveLandCovers.push({
           landCoverClassCode: lc.landCoverClassCode,
           areaSqm: area
-        });
-        designationZones.push(zone);
+        })
+        designationZones.push(zone)
       }
     }
   }
 
-  return { effectiveLandCovers, designationZones };
+  return { effectiveLandCovers, designationZones }
 }
 
 /**
@@ -494,70 +493,70 @@ function splitLandCoversByDesignation(
  */
 function findMaximalCliques(actionCodes, compatibilityCheckFn) {
   // Build adjacency list for the incompatibility graph
-  const neighbors = new Map();
+  const neighbors = new Map()
   for (const code of actionCodes) {
-    neighbors.set(code, new Set());
+    neighbors.set(code, new Set())
   }
 
   for (let i = 0; i < actionCodes.length; i++) {
     for (let j = i + 1; j < actionCodes.length; j++) {
-      const a = actionCodes[i];
-      const b = actionCodes[j];
+      const a = actionCodes[i]
+      const b = actionCodes[j]
       if (!compatibilityCheckFn(a, b)) {
-        neighbors.get(a).add(b);
-        neighbors.get(b).add(a);
+        neighbors.get(a).add(b)
+        neighbors.get(b).add(a)
       }
     }
   }
 
-  const cliques = [];
+  const cliques = []
 
   // Bron-Kerbosch with pivot
   function bronKerbosch(R, P, X) {
     if (P.size === 0 && X.size === 0) {
       if (R.size >= 2) {
-        cliques.push([...R]);
+        cliques.push([...R])
       }
-      return;
+      return
     }
 
     // Choose pivot as the vertex in P union X with the most neighbors in P
-    const union = new Set([...P, ...X]);
-    let pivot = null;
-    let maxNeighborsInP = -1;
+    const union = new Set([...P, ...X])
+    let pivot = null
+    let maxNeighborsInP = -1
     for (const u of union) {
-      const count = [...P].filter((v) => neighbors.get(u).has(v)).length;
+      const count = [...P].filter((v) => neighbors.get(u).has(v)).length
       if (count > maxNeighborsInP) {
-        maxNeighborsInP = count;
-        pivot = u;
+        maxNeighborsInP = count
+        pivot = u
       }
     }
 
     const candidates = [...P].filter(
       (v) => !pivot || !neighbors.get(pivot).has(v)
-    );
+    )
 
     for (const v of candidates) {
-      const vNeighbors = neighbors.get(v);
+      const vNeighbors = neighbors.get(v)
       bronKerbosch(
         new Set([...R, v]),
         new Set([...P].filter((u) => vNeighbors.has(u))),
         new Set([...X].filter((u) => vNeighbors.has(u)))
-      );
-      P.delete(v);
-      X.add(v);
+      )
+      P.delete(v)
+      X.add(v)
     }
   }
 
-  bronKerbosch(new Set(), new Set(actionCodes), new Set());
+  bronKerbosch(new Set(), new Set(actionCodes), new Set())
 
   // Also add individual actions as singleton "cliques" for capacity constraints
   // (each action alone can't exceed land cover area)
   for (const code of actionCodes) {
-    cliques.push([code]);
+    cliques.push([code])
   }
 
-  return cliques;
+  return cliques
 }
 
 /**
@@ -568,7 +567,7 @@ function findMaximalCliques(actionCodes, compatibilityCheckFn) {
 function buildDemandConstraints(existingActions) {
   return Object.fromEntries(
     existingActions.map((a) => [`demand_${a.actionCode}`, { equal: a.areaSqm }])
-  );
+  )
 }
 
 /**
@@ -585,7 +584,7 @@ function buildExistingActionVariables(existingActions, eligibility) {
         { [`demand_${action.actionCode}`]: 1 }
       ])
     )
-  );
+  )
 }
 
 /**
@@ -600,7 +599,7 @@ function buildTargetVariables(targetAction, eligibility) {
       `t_${lcIdx}`,
       { availableArea: 1 }
     ])
-  );
+  )
 }
 
 /**
@@ -622,32 +621,32 @@ function buildCliqueCapacityConstraints(
   variables
 ) {
   /** @type {{[key: string]: {max: number}}} */
-  const constraints = {};
+  const constraints = {}
 
   const getVarName = (code, lcIdx) =>
-    code === targetAction ? `t_${lcIdx}` : `x_${code}_${lcIdx}`;
+    code === targetAction ? `t_${lcIdx}` : `x_${code}_${lcIdx}`
 
   const getEligibleMembers = (clique, lcIdx) =>
-    clique.filter((code) => (eligibility.get(code) ?? []).includes(lcIdx));
+    clique.filter((code) => (eligibility.get(code) ?? []).includes(lcIdx))
 
   cliques.forEach((clique, cliqueIdx) => {
     for (let lcIdx = 0; lcIdx < landCoversForParcel.length; lcIdx++) {
-      const membersOnLc = getEligibleMembers(clique, lcIdx);
-      if (membersOnLc.length === 0) continue;
+      const membersOnLc = getEligibleMembers(clique, lcIdx)
+      if (membersOnLc.length === 0) continue
 
-      const constraintKey = `clique_${cliqueIdx}_lc_${lcIdx}`;
-      constraints[constraintKey] = { max: landCoversForParcel[lcIdx].areaSqm };
+      const constraintKey = `clique_${cliqueIdx}_lc_${lcIdx}`
+      constraints[constraintKey] = { max: landCoversForParcel[lcIdx].areaSqm }
 
       for (const code of membersOnLc) {
-        const varName = getVarName(code, lcIdx);
+        const varName = getVarName(code, lcIdx)
         if (variables[varName]) {
-          variables[varName][constraintKey] = 1;
+          variables[varName][constraintKey] = 1
         }
       }
     }
-  });
+  })
 
-  return constraints;
+  return constraints
 }
 
 /**
@@ -669,7 +668,7 @@ function buildLpModel(
   const variables = {
     ...buildExistingActionVariables(existingActions, eligibility),
     ...buildTargetVariables(targetAction, eligibility)
-  };
+  }
 
   const constraints = {
     ...buildDemandConstraints(existingActions),
@@ -680,12 +679,12 @@ function buildLpModel(
       cliques,
       variables
     )
-  };
+  }
 
   return {
     optimize: 'availableArea',
     opType: 'max',
     constraints,
     variables
-  };
+  }
 }

@@ -8,10 +8,10 @@ import {
   setDate,
   startOfMonth,
   subDays
-} from 'date-fns';
+} from 'date-fns'
 
-const PAYMENT_DAY_OF_MONTH = 15;
-const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd';
+const PAYMENT_DAY_OF_MONTH = 15
+const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd'
 
 /**
  * Get the payment date of the month set by date, adjusted for weekends
@@ -19,7 +19,7 @@ const SCHEDULE_DATE_FORMAT = 'yyyy-MM-dd';
  * @returns {Date} the PAYMENT_DAY_OF_MONTH of the month (or adjusted if weekend)
  */
 function getPaymentDayForDate(date) {
-  return setDate(date, PAYMENT_DAY_OF_MONTH);
+  return setDate(date, PAYMENT_DAY_OF_MONTH)
 }
 
 /**
@@ -27,7 +27,7 @@ function getPaymentDayForDate(date) {
  * @returns the first of next month
  */
 function getFirstDayOfNextMonth(startDate) {
-  return format(startOfMonth(addMonths(startDate, 1)), SCHEDULE_DATE_FORMAT);
+  return format(startOfMonth(addMonths(startDate, 1)), SCHEDULE_DATE_FORMAT)
 }
 
 /**
@@ -38,7 +38,7 @@ function getAgreementEndDate(startDate, agreementYears) {
   return format(
     subDays(addYears(startDate, agreementYears), 1),
     SCHEDULE_DATE_FORMAT
-  );
+  )
 }
 
 /**
@@ -49,8 +49,8 @@ function getAgreementEndDate(startDate, agreementYears) {
 function getFrequencyIntervalMonths(frequency = 'quarterly') {
   const intervals = {
     quarterly: 3
-  };
-  return intervals[frequency.toLowerCase()] || intervals.quarterly;
+  }
+  return intervals[frequency.toLowerCase()] || intervals.quarterly
 }
 
 /**
@@ -59,7 +59,7 @@ function getFrequencyIntervalMonths(frequency = 'quarterly') {
  * @returns {string} the last payment date of the agreement
  */
 function getLastPaymentDate(agreementEndDate) {
-  return format(endOfMonth(addDays(agreementEndDate, 1)), SCHEDULE_DATE_FORMAT);
+  return format(endOfMonth(addDays(agreementEndDate, 1)), SCHEDULE_DATE_FORMAT)
 }
 
 /**
@@ -74,36 +74,36 @@ export function generatePaymentSchedule(
   lengthYears,
   frequency = 'quarterly'
 ) {
-  const schedule = [];
+  const schedule = []
   if (!lengthYears || Number.isNaN(Number(lengthYears))) {
     return {
       schedule,
       agreementEndDate: '',
       agreementStartDate: ''
-    };
+    }
   }
 
-  const agreementStartDate = getFirstDayOfNextMonth(startDate);
-  const agreementEndDate = getAgreementEndDate(agreementStartDate, lengthYears);
+  const agreementStartDate = getFirstDayOfNextMonth(startDate)
+  const agreementEndDate = getAgreementEndDate(agreementStartDate, lengthYears)
 
-  const intervalMonths = getFrequencyIntervalMonths(frequency);
+  const intervalMonths = getFrequencyIntervalMonths(frequency)
 
   let currentPaymentDate = getPaymentDayForDate(
     addMonths(agreementStartDate, intervalMonths)
-  );
-  const lastPaymentDate = getLastPaymentDate(agreementEndDate);
+  )
+  const lastPaymentDate = getLastPaymentDate(agreementEndDate)
 
   while (isBefore(currentPaymentDate, lastPaymentDate)) {
-    schedule.push(format(currentPaymentDate, SCHEDULE_DATE_FORMAT));
-    const nextMonth = addMonths(currentPaymentDate, intervalMonths);
-    currentPaymentDate = getPaymentDayForDate(nextMonth);
+    schedule.push(format(currentPaymentDate, SCHEDULE_DATE_FORMAT))
+    const nextMonth = addMonths(currentPaymentDate, intervalMonths)
+    currentPaymentDate = getPaymentDayForDate(nextMonth)
   }
 
   return {
     agreementStartDate,
     agreementEndDate,
     schedule
-  };
+  }
 }
 
 /**
