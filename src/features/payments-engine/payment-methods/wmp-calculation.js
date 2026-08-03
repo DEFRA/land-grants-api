@@ -3,7 +3,7 @@ import {
   roundTo2DecimalPlaces,
   roundTo4DecimalPlaces,
   sqmToHaRounded
-} from '../../common/helpers/measurement.js';
+} from '../../common/helpers/measurement.js'
 
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
@@ -19,15 +19,11 @@ const calculateEligibleArea = (
   newWoodlandAreaSqm,
   newWoodlandMaxPercent
 ) => {
-  const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm;
-  const maxNewWoodlandSqm =
-    (newWoodlandMaxPercent / 100) * totalWoodlandAreaSqm;
-  const eligibleNewWoodlandSqm = Math.min(
-    newWoodlandAreaSqm,
-    maxNewWoodlandSqm
-  );
-  return Math.round(oldWoodlandAreaSqm + eligibleNewWoodlandSqm);
-};
+  const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
+  const maxNewWoodlandSqm = (newWoodlandMaxPercent / 100) * totalWoodlandAreaSqm
+  const eligibleNewWoodlandSqm = Math.min(newWoodlandAreaSqm, maxNewWoodlandSqm)
+  return Math.round(oldWoodlandAreaSqm + eligibleNewWoodlandSqm)
+}
 
 /**
  * Selects the applicable payment tier and calculates the payment for the given eligible area.
@@ -40,26 +36,26 @@ const calculateEligibleArea = (
  */
 const calculatePayment = (eligibleAreaSqm, tiers) => {
   if (eligibleAreaSqm < haToSqm(tiers[0].lowerLimitHa)) {
-    return { payment: 0, tierIndex: -1 };
+    return { payment: 0, tierIndex: -1 }
   }
 
   const tierIndex = tiers.findIndex(
     (t) => t.upperLimitHa === null || eligibleAreaSqm < haToSqm(t.upperLimitHa)
-  );
+  )
 
   if (tierIndex === -1) {
-    return { payment: 0, tierIndex: -1 };
+    return { payment: 0, tierIndex: -1 }
   }
 
-  const tier = tiers[tierIndex];
+  const tier = tiers[tierIndex]
   const payment = roundTo2DecimalPlaces(
     tier.flatRateGbp +
       tier.ratePerUnitGbp *
         (sqmToHaRounded(eligibleAreaSqm) - tier.lowerLimitHa)
-  );
+  )
 
-  return { payment, tierIndex };
-};
+  return { payment, tierIndex }
+}
 
 export const wmpCalculation = {
   /**
@@ -71,10 +67,10 @@ export const wmpCalculation = {
    * @returns {WmpCalculationResult} The eligible area and payment amount
    */
   execute: (paymentMethod, data) => {
-    const { config } = paymentMethod;
-    const { tiers, newWoodlandMaxPercent } = config;
+    const { config } = paymentMethod
+    const { tiers, newWoodlandMaxPercent } = config
     const { oldWoodlandAreaSqm, newWoodlandAreaSqm, totalWoodlandAreaSqm } =
-      data.data;
+      data.data
 
     const eligibleAreaSqm =
       totalWoodlandAreaSqm ??
@@ -82,19 +78,18 @@ export const wmpCalculation = {
         oldWoodlandAreaSqm,
         newWoodlandAreaSqm,
         newWoodlandMaxPercent
-      );
+      )
 
-    const { payment, tierIndex } = calculatePayment(eligibleAreaSqm, tiers);
-    const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null;
+    const { payment, tierIndex } = calculatePayment(eligibleAreaSqm, tiers)
+    const activeTier = tierIndex >= 0 ? tiers[tierIndex] : null
 
-    const quantityToRemove =
-      tierIndex > 0 ? (activeTier?.lowerLimitHa ?? 0) : 0;
+    const quantityToRemove = tierIndex > 0 ? (activeTier?.lowerLimitHa ?? 0) : 0
 
     const quantityInActiveTierHa = activeTier
       ? roundTo4DecimalPlaces(
           sqmToHaRounded(eligibleAreaSqm) - quantityToRemove
         )
-      : 0;
+      : 0
 
     return {
       eligibleArea: sqmToHaRounded(eligibleAreaSqm),
@@ -103,9 +98,9 @@ export const wmpCalculation = {
       quantityInActiveTier: quantityInActiveTierHa,
       activeTierRatePence: activeTier?.ratePerUnitGbp ?? 0,
       activeTierFlatRatePence: activeTier?.flatRateGbp ?? 0
-    };
+    }
   }
-};
+}
 
 /**
  * @import { WmpTier, WmpPaymentMethod, WmpCalculationInput, WmpCalculationResult } from './wmp-calculation.d.js'

@@ -1,37 +1,37 @@
-import { woodlandManagement } from '~/src/features/woodland-management/index.js';
-import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js';
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js';
-import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js';
-import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
-import createTestServer from '~/src/tests/test-server.js';
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
+import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import createTestServer from '~/src/tests/test-server.js'
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js';
+} from '~/src/features/common/helpers/audit-event.js'
 
-vi.mock('~/src/features/parcel/queries/getLandData.query.js');
+vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-);
+)
 vi.mock(
   '../service/wmp-payment-calculate.service.js',
   async (importOriginal) => {
-    const actual = await importOriginal();
+    const actual = await importOriginal()
     return {
       ...actual,
       executeRulesForPaymentCalculationWMP: vi.fn()
-    };
+    }
   }
-);
-vi.mock('../../payments-engine/paymentsEngine.js');
-vi.mock('../transformer/wmp-payment-calculate.transformer.js');
-vi.mock('~/src/features/common/helpers/audit-event.js');
+)
+vi.mock('../../payments-engine/paymentsEngine.js')
+vi.mock('../transformer/wmp-payment-calculate.transformer.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockGetLandData = getLandData;
-const mockGetActionsByLatestVersion = getActionsByLatestVersion;
-const mockExecutePaymentMethod = executePaymentMethod;
-const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer;
-const mockAuditEvent = auditEvent;
+const mockGetLandData = getLandData
+const mockGetActionsByLatestVersion = getActionsByLatestVersion
+const mockExecutePaymentMethod = executePaymentMethod
+const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
+const mockAuditEvent = auditEvent
 
 const createMockParcel = () => ({
   id: 1,
@@ -41,7 +41,7 @@ const createMockParcel = () => ({
   area: 8,
   geom: 'POLYGON((0 0,1 0,1 1,0 1,0 0))',
   last_updated: new Date('2024-01-01')
-});
+})
 
 const createMockAction = () => ({
   id: 1,
@@ -77,7 +77,7 @@ const createMockAction = () => ({
       ]
     }
   }
-});
+})
 
 const createMockCalculationResult = () => ({
   eligibleArea: 8,
@@ -86,7 +86,7 @@ const createMockCalculationResult = () => ({
   quantityInActiveTier: 7.5,
   activeTierRatePence: 0,
   activeTierFlatRatePence: 1500
-});
+})
 
 const createMockPaymentResponse = () => ({
   explanations: [],
@@ -117,17 +117,17 @@ const createMockPaymentResponse = () => ({
       lineItems: [{ agreementLevelItemId: 1, paymentPence: 1500 }]
     }
   ]
-});
+})
 
 const validPayload = {
   parcelIds: ['SX067-99238'],
   oldWoodlandAreaHa: 5,
   newWoodlandAreaHa: 3,
   startDate: '2024-01-01'
-};
+}
 
 describe('Payment calculate WMP controller', () => {
-  const server = createTestServer();
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -135,29 +135,29 @@ describe('Payment calculate WMP controller', () => {
       debug: vi.fn(),
       error: vi.fn(),
       warn: vi.fn()
-    });
+    })
     server.decorate('server', 'postgresDb', {
       connect: vi.fn(),
       query: vi.fn()
-    });
+    })
 
-    await server.register([woodlandManagement]);
-    await server.initialize();
-  });
+    await server.register([woodlandManagement])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetLandData.mockResolvedValue([createMockParcel()]);
-    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()]);
-    mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult());
+    vi.clearAllMocks()
+    mockGetLandData.mockResolvedValue([createMockParcel()])
+    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
+    mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult())
     mockWmpPaymentCalculateTransformer.mockReturnValue(
       createMockPaymentResponse()
-    );
-  });
+    )
+  })
 
   describe('successful calculation', () => {
     test('should return 200 with payment response when all inputs are valid', async () => {
@@ -169,11 +169,11 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('success');
-      expect(payment).toEqual(createMockPaymentResponse());
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(payment).toEqual(createMockPaymentResponse())
       expect(mockExecutePaymentMethod).toHaveBeenCalledWith(
         createMockAction().paymentMethod,
         {
@@ -182,13 +182,13 @@ describe('Payment calculate WMP controller', () => {
             newWoodlandAreaSqm: 3 * 10000
           }
         }
-      );
+      )
       expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
         ['SX067-99238'],
         createMockCalculationResult(),
         expect.objectContaining({ code: 'PA3' }),
         expect.any(Date)
-      );
+      )
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_CALCULATED,
         expect.objectContaining({
@@ -202,8 +202,8 @@ describe('Payment calculate WMP controller', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
-      );
-    });
+      )
+    })
 
     test('should return 200 when startDate is not provided, defaulting to next month', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -215,15 +215,15 @@ describe('Payment calculate WMP controller', () => {
           oldWoodlandAreaHa: 5,
           newWoodlandAreaHa: 3
         }
-      });
+      })
 
-      expect(statusCode).toBe(200);
-    });
-  });
+      expect(statusCode).toBe(200)
+    })
+  })
 
   describe('validation errors', () => {
     test('should return 400 when land parcels are not found', async () => {
-      mockGetLandData.mockResolvedValue([]);
+      mockGetLandData.mockResolvedValue([])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -233,15 +233,15 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Land parcels not found: SX067-99238');
-      expect(mockAuditEvent).not.toHaveBeenCalled();
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Land parcels not found: SX067-99238')
+      expect(mockAuditEvent).not.toHaveBeenCalled()
+    })
 
     test('should return 400 when no PA3 action exists', async () => {
-      mockGetActionsByLatestVersion.mockResolvedValue([]);
+      mockGetActionsByLatestVersion.mockResolvedValue([])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -251,16 +251,16 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Action not found');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Action not found')
+    })
 
     test('should return 400 when actions do not include PA3', async () => {
       mockGetActionsByLatestVersion.mockResolvedValue([
         { ...createMockAction(), code: 'PA1' }
-      ]);
+      ])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -270,12 +270,12 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Action not found');
-    });
-  });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Action not found')
+    })
+  })
 
   describe('schema validation', () => {
     test('should return Joi validation details when woodland area fields are missing', async () => {
@@ -290,18 +290,18 @@ describe('Payment calculate WMP controller', () => {
           parcelIds: ['SX067-99238'],
           startDate: '2025-08-05'
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(error).toBe('Bad Request');
+      expect(statusCode).toBe(400)
+      expect(error).toBe('Bad Request')
       expect(message).toBe(
         '"oldWoodlandAreaHa" is required. "newWoodlandAreaHa" is required'
-      );
+      )
       expect(validation).toEqual({
         source: 'payload',
         keys: ['oldWoodlandAreaHa', 'newWoodlandAreaHa']
-      });
-    });
+      })
+    })
 
     test('should return 400 when parcelIds is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -312,11 +312,11 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"parcelIds" is required');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"parcelIds" is required')
+    })
 
     test('should return 400 when parcelIds is an empty array', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -327,11 +327,11 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: [], oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"parcelIds" must contain at least 1 items');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"parcelIds" must contain at least 1 items')
+    })
 
     test('should return 400 when oldWoodlandAreaHa is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -342,11 +342,11 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: ['SX067-99238'], newWoodlandAreaHa: 3 }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"oldWoodlandAreaHa" is required');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"oldWoodlandAreaHa" is required')
+    })
 
     test('should return 400 when oldWoodlandAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -361,13 +361,13 @@ describe('Payment calculate WMP controller', () => {
           oldWoodlandAreaHa: -1,
           newWoodlandAreaHa: 3
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
+      expect(statusCode).toBe(400)
       expect(message).toBe(
         '"oldWoodlandAreaHa" must be greater than or equal to 0'
-      );
-    });
+      )
+    })
 
     test('should return 400 when newWoodlandAreaHa is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -378,11 +378,11 @@ describe('Payment calculate WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: { parcelIds: ['SX067-99238'], oldWoodlandAreaHa: 5 }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"newWoodlandAreaHa" is required');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"newWoodlandAreaHa" is required')
+    })
 
     test('should return 400 when newWoodlandAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -397,59 +397,59 @@ describe('Payment calculate WMP controller', () => {
           oldWoodlandAreaHa: 5,
           newWoodlandAreaHa: -1
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
+      expect(statusCode).toBe(400)
       expect(message).toBe(
         '"newWoodlandAreaHa" must be greater than or equal to 0'
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('error handling', () => {
     test('should return 500 when getActionsByLatestVersion throws', async () => {
       mockGetActionsByLatestVersion.mockRejectedValue(
         new Error('Database error')
-      );
+      )
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(500);
-    });
+      expect(statusCode).toBe(500)
+    })
 
     test('should return 500 when executePaymentMethod throws', async () => {
       mockExecutePaymentMethod.mockImplementation(() => {
-        throw new Error('Calculation error');
-      });
+        throw new Error('Calculation error')
+      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(500);
-    });
+      expect(statusCode).toBe(500)
+    })
 
     test('should return 500 with catch message when an unexpected error is thrown', async () => {
       mockWmpPaymentCalculateTransformer.mockImplementation(() => {
-        throw new Error('Unexpected transformer error');
-      });
+        throw new Error('Unexpected transformer error')
+      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(500);
+      expect(statusCode).toBe(500)
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_CALCULATED,
         expect.objectContaining({
@@ -458,7 +458,7 @@ describe('Payment calculate WMP controller', () => {
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})

@@ -1,45 +1,45 @@
-import { vi } from 'vitest';
-import Hapi from '@hapi/hapi';
-import { caseManagementAdapter } from '../index.js';
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js';
+import { vi } from 'vitest'
+import Hapi from '@hapi/hapi'
+import { caseManagementAdapter } from '../index.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
   () => ({
     getApplicationValidationRun: vi.fn()
   })
-);
+)
 
-const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun);
+const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun)
 
 describe('Case Management Application Validation Run Controller', () => {
-  const server = Hapi.server();
+  const server = Hapi.server()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
       info: vi.fn(),
       debug: vi.fn(),
       error: vi.fn()
-    });
+    })
 
     server.decorate('server', 'postgresDb', {
       connect: vi.fn().mockImplementation(() => ({
         query: vi.fn(),
         release: vi.fn()
       }))
-    });
+    })
 
-    await server.register([caseManagementAdapter]);
-    await server.initialize();
-  });
+    await server.register([caseManagementAdapter])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   describe('GET /application/{id}/validation-run', () => {
     test('should return 200 and application validation run', async () => {
@@ -313,21 +313,21 @@ describe('Case Management Application Validation Run Controller', () => {
           landGrantsApiVersion: 'unknown',
           applicationLevelResults: {}
         }
-      };
+      }
 
       mockGetApplicationValidationRun.mockResolvedValue(
         applicationValidationRun
-      );
+      )
 
       const request = {
         method: 'GET',
         url: '/case-management-adapter/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
-      expect(statusCode).toBe(200);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
+      expect(statusCode).toBe(200)
 
       expect(result).toEqual({
         message: 'Application validation run retrieved successfully',
@@ -844,41 +844,41 @@ describe('Case Management Application Validation Run Controller', () => {
             ]
           }
         ]
-      });
-    });
+      })
+    })
 
     test('should return 404 if application validation run does not exist', async () => {
-      mockGetApplicationValidationRun.mockResolvedValue(null);
+      mockGetApplicationValidationRun.mockResolvedValue(null)
 
       const request = {
         method: 'GET',
         url: '/case-management-adapter/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      expect(statusCode).toBe(404);
-      expect(result.message).toBe('Application validation run not found');
-    });
+      expect(statusCode).toBe(404)
+      expect(result.message).toBe('Application validation run not found')
+    })
 
     test('should return 500 if application validation run query fails', async () => {
       mockGetApplicationValidationRun.mockRejectedValue(
         new Error('Error getting application validation run')
-      );
+      )
 
       const request = {
         method: 'GET',
         url: '/case-management-adapter/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      expect(statusCode).toBe(500);
-      expect(result.message).toBe('An internal server error occurred');
-    });
-  });
-});
+      expect(statusCode).toBe(500)
+      expect(result.message).toBe('An internal server error occurred')
+    })
+  })
+})

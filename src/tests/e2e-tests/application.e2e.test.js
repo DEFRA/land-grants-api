@@ -1,11 +1,11 @@
-import { describe, test, expect } from 'vitest';
-import { httpClient } from './setup/http-client.js';
-import { getAuthHeader } from './setup/auth-helpers.js';
+import { describe, test, expect } from 'vitest'
+import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 const headers = {
   Authorization: getAuthHeader(),
   'X-Forwarded-Authorization': 'dummy'
-};
+}
 
 describe('Application Validation Endpoints', () => {
   describe('POST /api/v2/application/validate', () => {
@@ -30,16 +30,16 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('id');
-      expect(response.data).toHaveProperty('valid');
-      expect(response.data).toHaveProperty('actions');
-      expect(typeof response.data.valid).toBe('boolean');
-      expect(typeof response.data.id).toBe('number');
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('id')
+      expect(response.data).toHaveProperty('valid')
+      expect(response.data).toHaveProperty('actions')
+      expect(typeof response.data.valid).toBe('boolean')
+      expect(typeof response.data.id).toBe('number')
+    })
 
     test('should return 401 without authentication', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -62,10 +62,10 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(401);
-    });
+      expect(response.status).toBe(401)
+    })
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -74,10 +74,10 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-3',
           requester: 'test-user'
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-    });
+      expect(response.status).toBe(400)
+    })
 
     test('should return 422 for negative quantity', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -100,10 +100,10 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(422);
-    });
+      expect(response.status).toBe(422)
+    })
 
     test('should validate multiple parcels with multiple actions', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -140,16 +140,16 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data.actions).toBeInstanceOf(Array);
-      expect(response.data.actions.length).toBeGreaterThan(0);
-    });
-  });
+      expect(response.status).toBe(200)
+      expect(response.data.actions).toBeInstanceOf(Array)
+      expect(response.data.actions.length).toBeGreaterThan(0)
+    })
+  })
 
   describe('POST /application/validation-run/{id}', () => {
-    let validationRunId;
+    let validationRunId
 
     test('should create validation run for retrieval test', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -172,11 +172,11 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      validationRunId = response.data.id;
-    });
+      expect(response.status).toBe(200)
+      validationRunId = response.data.id
+    })
 
     test('should retrieve validation run by id with authentication', async () => {
       const response = await httpClient.post(
@@ -184,11 +184,11 @@ describe('Application Validation Endpoints', () => {
         {
           headers: { Authorization: getAuthHeader() }
         }
-      );
+      )
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('applicationValidationRun');
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('applicationValidationRun')
       expect(response.data.applicationValidationRun).toMatchObject({
         id: validationRunId,
         application_id: 'appid-run-1',
@@ -196,29 +196,29 @@ describe('Application Validation Endpoints', () => {
         crn: expect.any(String),
         data: expect.any(Object),
         created_at: expect.any(String)
-      });
-    });
+      })
+    })
 
     test('should return 401 without authentication', async () => {
       const response = await httpClient.post(
         `/application/validation-run/${validationRunId}`
-      );
+      )
 
-      expect(response.status).toBe(401);
-    });
+      expect(response.status).toBe(401)
+    })
 
     test('should return 404 for non-existent validation run id', async () => {
       const response = await httpClient.post(
         '/application/validation-run/999999999',
         { headers }
-      );
+      )
 
-      expect(response.status).toBe(404);
-    });
-  });
+      expect(response.status).toBe(404)
+    })
+  })
 
   describe('POST /application/{applicationId}/validation-run', () => {
-    const testApplicationId = 'appid-11';
+    const testApplicationId = 'appid-11'
 
     test('should create validation run', async () => {
       const response = await httpClient.post('/api/v2/application/validate', {
@@ -241,10 +241,10 @@ describe('Application Validation Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-    });
+      expect(response.status).toBe(200)
+    })
 
     test('should retrieve validation runs for application with authentication', async () => {
       const response = await httpClient.post(
@@ -255,14 +255,14 @@ describe('Application Validation Endpoints', () => {
             fields: []
           }
         }
-      );
+      )
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('applicationValidationRuns');
-      expect(response.data.applicationValidationRuns).toBeInstanceOf(Array);
-      expect(response.data.applicationValidationRuns.length).toBeGreaterThan(0);
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('applicationValidationRuns')
+      expect(response.data.applicationValidationRuns).toBeInstanceOf(Array)
+      expect(response.data.applicationValidationRuns.length).toBeGreaterThan(0)
+    })
 
     test('should return 401 without authentication', async () => {
       const response = await httpClient.post(
@@ -273,9 +273,9 @@ describe('Application Validation Endpoints', () => {
             fields: []
           }
         }
-      );
+      )
 
-      expect(response.status).toBe(401);
-    });
-  });
-});
+      expect(response.status).toBe(401)
+    })
+  })
+})

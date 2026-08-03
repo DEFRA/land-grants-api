@@ -11,7 +11,7 @@ export const landCoverClassCodes = [
   '620',
   '640',
   '650'
-];
+]
 
 export const rules = [
   {
@@ -50,7 +50,7 @@ export const rules = [
       caveatDescription: 'A consent is required from Natural England'
     }
   }
-];
+]
 
 export const actions = [
   {
@@ -144,4 +144,4 @@ export const actions = [
     description: 'Conservation support for moorland',
     semanticVersion: '2.0.0'
   }
-];
+]

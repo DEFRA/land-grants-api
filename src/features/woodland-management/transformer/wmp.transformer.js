@@ -10,5 +10,5 @@ export const wmpResultTransformer = (action, ruleResult) => {
     code: action?.code ?? '',
     actionConfigVersion: action?.semanticVersion ?? '',
     rules: ruleResult.results
-  };
-};
+  }
+}

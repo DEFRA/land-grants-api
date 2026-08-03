@@ -1,29 +1,29 @@
-import tls from 'node:tls';
-import { config } from '../../../../config/index.js';
+import tls from 'node:tls'
+import { config } from '../../../../config/index.js'
 
-import { getTrustStoreCerts } from './get-trust-store-certs.js';
+import { getTrustStoreCerts } from './get-trust-store-certs.js'
 
 export const createSecureContext = (logger) => {
-  const originalTlsCreateSecureContext = tls.createSecureContext;
+  const originalTlsCreateSecureContext = tls.createSecureContext
 
   tls.createSecureContext = function (options = {}) {
-    const trustStoreCerts = getTrustStoreCerts(process.env);
+    const trustStoreCerts = getTrustStoreCerts(process.env)
 
     if (!trustStoreCerts.length) {
-      logger.info('Could not find any TRUSTSTORE_ certificates');
+      logger.info('Could not find any TRUSTSTORE_ certificates')
     }
 
-    const tlsSecureContext = originalTlsCreateSecureContext(options);
+    const tlsSecureContext = originalTlsCreateSecureContext(options)
 
     trustStoreCerts.forEach((cert) => {
-      tlsSecureContext.context.addCACert(cert);
-    });
+      tlsSecureContext.context.addCACert(cert)
+    })
 
-    return tlsSecureContext;
-  };
+    return tlsSecureContext
+  }
 
-  return tls.createSecureContext();
-};
+  return tls.createSecureContext()
+}
 
 /**
  * Creates a new secure context loaded from Base64 encoded certs
@@ -34,31 +34,31 @@ export const secureContext = {
     name: 'secure-context',
     register(server) {
       if (config.get('isSecureContextEnabled')) {
-        const originalTlsCreateSecureContext = tls.createSecureContext;
+        const originalTlsCreateSecureContext = tls.createSecureContext
 
         tls.createSecureContext = function (options = {}) {
-          const trustStoreCerts = getTrustStoreCerts(process.env);
+          const trustStoreCerts = getTrustStoreCerts(process.env)
 
           if (!trustStoreCerts.length) {
-            server.logger.info('Could not find any TRUSTSTORE_ certificates');
+            server.logger.info('Could not find any TRUSTSTORE_ certificates')
           }
 
-          const tlsSecureContext = originalTlsCreateSecureContext(options);
+          const tlsSecureContext = originalTlsCreateSecureContext(options)
 
           trustStoreCerts.forEach((cert) => {
-            tlsSecureContext.context.addCACert(cert);
-          });
+            tlsSecureContext.context.addCACert(cert)
+          })
 
-          return tlsSecureContext;
-        };
+          return tlsSecureContext
+        }
 
-        server.decorate('server', 'secureContext', tls.createSecureContext());
+        server.decorate('server', 'secureContext', tls.createSecureContext())
       } else {
-        server.logger.info('Custom secure context is disabled');
+        server.logger.info('Custom secure context is disabled')
       }
     }
   }
-};
+}
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

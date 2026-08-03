@@ -1,19 +1,19 @@
-import { woodlandManagement } from '~/src/features/woodland-management/index.js';
-import { calculateWMPPayment } from '../service/wmp-service.js';
-import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
-import createTestServer from '~/src/tests/test-server.js';
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
+import { calculateWMPPayment } from '../service/wmp-service.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import createTestServer from '~/src/tests/test-server.js'
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js';
+} from '~/src/features/common/helpers/audit-event.js'
 
-vi.mock('../service/wmp-service.js');
-vi.mock('../transformer/wmp-payment-calculate.transformer.js');
-vi.mock('~/src/features/common/helpers/audit-event.js');
+vi.mock('../service/wmp-service.js')
+vi.mock('../transformer/wmp-payment-calculate.transformer.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockCalculateWMPPayment = calculateWMPPayment;
-const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer;
-const mockAuditEvent = auditEvent;
+const mockCalculateWMPPayment = calculateWMPPayment
+const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
+const mockAuditEvent = auditEvent
 
 const createMockAction = () => ({
   id: 1,
@@ -37,7 +37,7 @@ const createMockAction = () => ({
       ]
     }
   }
-});
+})
 
 const createMockCalculationResult = () => ({
   eligibleArea: 8,
@@ -46,7 +46,7 @@ const createMockCalculationResult = () => ({
   quantityInActiveTier: 7.5,
   activeTierRatePence: 0,
   activeTierFlatRatePence: 1500
-});
+})
 
 const createMockPaymentResponse = () => ({
   explanations: [],
@@ -77,16 +77,16 @@ const createMockPaymentResponse = () => ({
       lineItems: [{ agreementLevelItemId: 1, paymentPence: 1500 }]
     }
   ]
-});
+})
 
 const validPayload = {
   totalAreaHa: 8,
   applicationId: 'app-123',
   sbi: '123456789'
-};
+}
 
 describe('Payment calculate total WMP controller', () => {
-  const server = createTestServer();
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -94,30 +94,30 @@ describe('Payment calculate total WMP controller', () => {
       debug: vi.fn(),
       error: vi.fn(),
       warn: vi.fn()
-    });
+    })
     server.decorate('server', 'postgresDb', {
       connect: vi.fn(),
       query: vi.fn()
-    });
+    })
 
-    await server.register([woodlandManagement]);
-    await server.initialize();
-  });
+    await server.register([woodlandManagement])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks()
     mockCalculateWMPPayment.mockResolvedValue({
       result: createMockCalculationResult(),
       action: createMockAction()
-    });
+    })
     mockWmpPaymentCalculateTransformer.mockReturnValue(
       createMockPaymentResponse()
-    );
-  });
+    )
+  })
 
   describe('successful calculation', () => {
     test('should return 200 with payment response when all inputs are valid', async () => {
@@ -129,22 +129,22 @@ describe('Payment calculate total WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('success');
-      expect(payment).toEqual(createMockPaymentResponse());
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(payment).toEqual(createMockPaymentResponse())
       expect(mockCalculateWMPPayment).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         { totalWoodlandAreaSqm: 8 * 10000 }
-      );
+      )
       expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
         [],
         createMockCalculationResult(),
         createMockAction(),
         undefined
-      );
+      )
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         expect.objectContaining({
@@ -159,8 +159,8 @@ describe('Payment calculate total WMP controller', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
-      );
-    });
+      )
+    })
 
     test('should return 200 when crn is not provided', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -172,11 +172,11 @@ describe('Payment calculate total WMP controller', () => {
           applicationId: 'app-123',
           sbi: '123456789'
         }
-      });
+      })
 
-      expect(statusCode).toBe(200);
-    });
-  });
+      expect(statusCode).toBe(200)
+    })
+  })
 
   describe('schema validation', () => {
     test('should return 400 when totalAreaHa is missing', async () => {
@@ -191,11 +191,11 @@ describe('Payment calculate total WMP controller', () => {
           applicationId: 'app-123',
           sbi: '123456789'
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"totalAreaHa" is required');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"totalAreaHa" is required')
+    })
 
     test('should return 400 when totalAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -206,11 +206,11 @@ describe('Payment calculate total WMP controller', () => {
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: { ...validPayload, totalAreaHa: -1 }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"totalAreaHa" must be greater than or equal to 0');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"totalAreaHa" must be greater than or equal to 0')
+    })
 
     test('should return 400 when applicationId is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -224,11 +224,11 @@ describe('Payment calculate total WMP controller', () => {
           totalAreaHa: 8,
           sbi: '123456789'
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"applicationId" is required');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"applicationId" is required')
+    })
 
     test('should return 400 when sbi is missing', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -242,50 +242,50 @@ describe('Payment calculate total WMP controller', () => {
           totalAreaHa: 8,
           applicationId: 'app-123'
         }
-      });
+      })
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('"sbi" is required');
-    });
-  });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('"sbi" is required')
+    })
+  })
 
   describe('error handling', () => {
     test('should return 500 when calculateWMPPayment throws', async () => {
-      mockCalculateWMPPayment.mockRejectedValue(new Error('Action not found'));
+      mockCalculateWMPPayment.mockRejectedValue(new Error('Action not found'))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(500);
-    });
+      expect(statusCode).toBe(500)
+    })
 
     test('should return 500 when wmpPaymentCalculateTransformer throws', async () => {
       mockWmpPaymentCalculateTransformer.mockImplementation(() => {
-        throw new Error('Unexpected transformer error');
-      });
+        throw new Error('Unexpected transformer error')
+      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
-      });
+      })
 
-      expect(statusCode).toBe(500);
-    });
+      expect(statusCode).toBe(500)
+    })
 
     test('should publish a failure audit event when calculation fails', async () => {
-      mockCalculateWMPPayment.mockRejectedValue(new Error('Action not found'));
+      mockCalculateWMPPayment.mockRejectedValue(new Error('Action not found'))
 
       await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: validPayload
-      });
+      })
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
@@ -301,7 +301,7 @@ describe('Payment calculate total WMP controller', () => {
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})

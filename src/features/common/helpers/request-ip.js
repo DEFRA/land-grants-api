@@ -1,10 +1,10 @@
-import { networkInterfaces } from 'node:os';
+import { networkInterfaces } from 'node:os'
 
 /**
  * Sentinel audit schema constraint: `ip` must be present and at most 20
  * characters long (covers IPv4 and standard IPv6, but not multi-IP strings).
  */
-const MAX_IP_LENGTH = 20;
+const MAX_IP_LENGTH = 20
 
 /**
  * Finds the first non-internal IPv4 address across all network interfaces.
@@ -14,7 +14,7 @@ const MAX_IP_LENGTH = 20;
 const findNonInternalIPv4 = (interfaces) =>
   Object.values(interfaces)
     .flat()
-    .find((addr) => addr?.family === 'IPv4' && !addr?.internal);
+    .find((addr) => addr?.family === 'IPv4' && !addr?.internal)
 
 /**
  * Resolves and caches this service's own non-internal IPv4 address, used as
@@ -24,23 +24,23 @@ const findNonInternalIPv4 = (interfaces) =>
  * payload always satisfies the mandatory `ip` field.
  * @returns {string}
  */
-let cachedServiceIp = null;
+let cachedServiceIp = null
 const getServiceIp = () => {
   if (cachedServiceIp) {
-    return cachedServiceIp;
+    return cachedServiceIp
   }
   try {
-    const found = findNonInternalIPv4(networkInterfaces());
+    const found = findNonInternalIPv4(networkInterfaces())
     if (found) {
-      cachedServiceIp = found.address;
-      return cachedServiceIp;
+      cachedServiceIp = found.address
+      return cachedServiceIp
     }
   } catch {
     // ignore — fall through to loopback default
   }
-  cachedServiceIp = '127.0.0.1';
-  return cachedServiceIp;
-};
+  cachedServiceIp = '127.0.0.1'
+  return cachedServiceIp
+}
 
 /**
  * Normalises a raw IP string to a single, schema-compliant address.
@@ -53,20 +53,20 @@ const getServiceIp = () => {
  */
 const sanitiseIp = (raw) => {
   if (!raw || typeof raw !== 'string') {
-    return '';
+    return ''
   }
-  let ip = raw.split(',')[0].trim();
+  let ip = raw.split(',')[0].trim()
   // strip IPv6 zone id
-  ip = ip.split('%')[0];
+  ip = ip.split('%')[0]
   // strip :port from IPv4 (an IPv6 address contains multiple colons, leave it alone)
   if ((ip.match(/:/g) ?? []).length === 1) {
-    ip = ip.split(':')[0];
+    ip = ip.split(':')[0]
   }
   if (ip.length === 0 || ip.length > MAX_IP_LENGTH) {
-    return '';
+    return ''
   }
-  return ip;
-};
+  return ip
+}
 
 /**
  * Resolve the IP to record on the audit event.
@@ -79,13 +79,13 @@ const sanitiseIp = (raw) => {
  * @returns {string}
  */
 export const extractIp = (request) => {
-  const forwarded = sanitiseIp(request?.headers?.['x-forwarded-for']);
+  const forwarded = sanitiseIp(request?.headers?.['x-forwarded-for'])
   if (forwarded) {
-    return forwarded;
+    return forwarded
   }
-  const remote = sanitiseIp(request?.info?.remoteAddress);
+  const remote = sanitiseIp(request?.info?.remoteAddress)
   if (remote) {
-    return remote;
+    return remote
   }
-  return getServiceIp();
-};
+  return getServiceIp()
+}

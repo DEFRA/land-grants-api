@@ -6,12 +6,12 @@ import {
   DeleteObjectsCommand,
   CreateBucketCommand,
   HeadBucketCommand
-} from '@aws-sdk/client-s3';
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'url';
-import { S3_CONFIG } from './test-config.js';
-import { config } from '~/src/config/index.js';
+} from '@aws-sdk/client-s3'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'url'
+import { S3_CONFIG } from './test-config.js'
+import { config } from '~/src/config/index.js'
 
 /**
  * Create S3 client for testing
@@ -23,7 +23,7 @@ export function createTestS3Client() {
     endpoint: config.get('s3.endpoint'),
     forcePathStyle: true,
     credentials: S3_CONFIG.credentials
-  });
+  })
 }
 
 /**
@@ -33,13 +33,13 @@ export function createTestS3Client() {
  */
 export async function ensureBucketExists(s3Client, bucket = S3_CONFIG.bucket) {
   try {
-    await s3Client.send(new HeadBucketCommand({ Bucket: bucket }));
+    await s3Client.send(new HeadBucketCommand({ Bucket: bucket }))
   } catch (error) {
     if (error.name === 'NotFound') {
-      await s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
-      console.log(`Created test bucket: ${bucket}`);
+      await s3Client.send(new CreateBucketCommand({ Bucket: bucket }))
+      console.log(`Created test bucket: ${bucket}`)
     } else {
-      throw error;
+      throw error
     }
   }
 }
@@ -62,9 +62,9 @@ export async function uploadTestFile(
     Key: filename,
     Body: content,
     ContentType: 'text/csv'
-  });
+  })
 
-  await s3Client.send(command);
+  await s3Client.send(command)
 }
 
 /**
@@ -80,11 +80,11 @@ export async function uploadFixtureFile(
   s3Filename = fixtureFilename,
   bucket = S3_CONFIG.bucket
 ) {
-  const _dirname = path.dirname(fileURLToPath(import.meta.url));
-  const fixturePath = path.resolve(_dirname, '../fixtures', fixtureFilename);
+  const _dirname = path.dirname(fileURLToPath(import.meta.url))
+  const fixturePath = path.resolve(_dirname, '../fixtures', fixtureFilename)
 
-  const content = await readFile(fixturePath);
-  await uploadTestFile(s3Client, s3Filename, content, bucket);
+  const content = await readFile(fixturePath)
+  await uploadTestFile(s3Client, s3Filename, content, bucket)
 }
 
 /**
@@ -94,16 +94,16 @@ export async function uploadFixtureFile(
  * @returns {Promise<string[]>} Array of file keys
  */
 export async function listTestFiles(s3Client, bucket = S3_CONFIG.bucket) {
-  const command = new ListObjectsV2Command({ Bucket: bucket });
-  const response = await s3Client.send(command);
+  const command = new ListObjectsV2Command({ Bucket: bucket })
+  const response = await s3Client.send(command)
 
   if (!response.Contents || response.Contents.length === 0) {
-    return [];
+    return []
   }
 
   return response.Contents.map((item) => item.Key).filter(
     (key) => key !== undefined
-  );
+  )
 }
 
 /**
@@ -120,9 +120,9 @@ export async function deleteTestFile(
   const command = new DeleteObjectCommand({
     Bucket: bucket,
     Key: filename
-  });
+  })
 
-  await s3Client.send(command);
+  await s3Client.send(command)
 }
 
 /**
@@ -131,10 +131,10 @@ export async function deleteTestFile(
  * @param {string} bucket
  */
 export async function clearTestBucket(s3Client, bucket = S3_CONFIG.bucket) {
-  const files = await listTestFiles(s3Client, bucket);
+  const files = await listTestFiles(s3Client, bucket)
 
   if (files.length === 0) {
-    return;
+    return
   }
 
   const command = new DeleteObjectsCommand({
@@ -142,7 +142,7 @@ export async function clearTestBucket(s3Client, bucket = S3_CONFIG.bucket) {
     Delete: {
       Objects: files.map((key) => ({ Key: key }))
     }
-  });
+  })
 
-  await s3Client.send(command);
+  await s3Client.send(command)
 }

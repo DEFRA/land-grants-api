@@ -1,4 +1,4 @@
-import { sizeTransformer } from '../parcelActions.transformer.js';
+import { sizeTransformer } from '../parcelActions.transformer.js'
 
 /**
  * Transform parcel and actions to land parcel and actions for v2
@@ -15,7 +15,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
       ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
       : undefined,
     ...action.payment
-  };
+  }
 
   if (showResults) {
     return {
@@ -25,13 +25,13 @@ function actionTransformer(action, availableArea = null, showResults = false) {
         stacks: availableArea?.stacks,
         explanations: availableArea?.explanations
       }
-    };
+    }
   }
 
-  return response;
+  return response
 }
 
-export { actionTransformer };
+export { actionTransformer }
 
 /**
  * @import { AvailableAreaForAction } from "~/src/features/available-area/available-area.d.js"

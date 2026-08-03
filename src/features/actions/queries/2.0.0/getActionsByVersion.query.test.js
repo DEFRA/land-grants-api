@@ -1,12 +1,12 @@
-import { getActionsByVersion } from './getActionsByVersion.query.js';
-import { vi } from 'vitest';
+import { getActionsByVersion } from './getActionsByVersion.query.js'
+import { vi } from 'vitest'
 
 describe('getActionsByVersion', () => {
-  let mockDb;
-  let mockLogger;
-  let mockClient;
-  let mockResult;
-  let expectedTransformedResult;
+  let mockDb
+  let mockLogger
+  let mockClient
+  let mockResult
+  let expectedTransformedResult
 
   beforeEach(() => {
     mockResult = {
@@ -54,7 +54,7 @@ describe('getActionsByVersion', () => {
           display_order: 2
         }
       ]
-    };
+    }
 
     expectedTransformedResult = [
       {
@@ -99,44 +99,44 @@ describe('getActionsByVersion', () => {
         groupName: 'Moorland',
         displayOrder: 2
       }
-    ];
+    ]
 
     mockClient = {
       query: vi.fn().mockResolvedValue(mockResult),
       release: vi.fn()
-    };
+    }
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    };
+    }
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    };
-  });
+    }
+  })
 
   test('should connect to the database', async () => {
     await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1);
-  });
+    expect(mockDb.connect).toHaveBeenCalledTimes(1)
+  })
 
   test('should query with the correct SQL and pass serialised actions as parameter', async () => {
     const actions = [
       { code: 'UPL1', version: '2.0.0' },
       { code: 'CMOR1', version: '3.1.0' }
-    ];
+    ]
 
-    await getActionsByVersion(mockLogger, mockDb, actions);
+    await getActionsByVersion(mockLogger, mockDb, actions)
 
-    const [actualQuery, actualParams] = mockClient.query.mock.calls[0];
-    expect(actualQuery).toContain('requested');
-    expect(actualQuery).toContain('actions_config');
-    expect(actualParams).toEqual([JSON.stringify(actions)]);
-  });
+    const [actualQuery, actualParams] = mockClient.query.mock.calls[0]
+    expect(actualQuery).toContain('requested')
+    expect(actualQuery).toContain('actions_config')
+    expect(actualParams).toEqual([JSON.stringify(actions)])
+  })
 
   test('should return all actions including those not in the requested list', async () => {
     mockResult.rows = [
@@ -162,32 +162,32 @@ describe('getActionsByVersion', () => {
         group_name: 'Other',
         display_order: 3
       }
-    ];
+    ]
 
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(result).toHaveLength(3);
-    expect(result.map((r) => r.code)).toEqual(['UPL1', 'CMOR1', 'OTHER1']);
-  });
+    expect(result).toHaveLength(3)
+    expect(result.map((r) => r.code)).toEqual(['UPL1', 'CMOR1', 'OTHER1'])
+  })
 
   test('should return the transformed query results', async () => {
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' },
       { code: 'CMOR1', version: '3.1.0' }
-    ]);
+    ])
 
-    expect(result).toEqual(expectedTransformedResult);
-  });
+    expect(result).toEqual(expectedTransformedResult)
+  })
 
   test('should return the latest version when no version is provided for a code', async () => {
-    await getActionsByVersion(mockLogger, mockDb, [{ code: 'CMOR1' }]);
+    await getActionsByVersion(mockLogger, mockDb, [{ code: 'CMOR1' }])
 
     expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
       JSON.stringify([{ code: 'CMOR1' }])
-    ]);
-  });
+    ])
+  })
 
   test('should return the latest patch version when major and minor are matched', async () => {
     mockResult.rows = [
@@ -212,44 +212,44 @@ describe('getActionsByVersion', () => {
         group_name: 'Upland',
         display_order: 1
       }
-    ];
+    ]
 
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(result).toHaveLength(1);
-    expect(result[0].patchVersion).toBe(3);
-    expect(result[0].semanticVersion).toBe('2.0.3');
-  });
+    expect(result).toHaveLength(1)
+    expect(result[0].patchVersion).toBe(3)
+    expect(result[0].semanticVersion).toBe('2.0.3')
+  })
 
   test('should return empty array when no matching action configs are found', async () => {
-    mockResult.rows = [];
+    mockResult.rows = []
 
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UNKNOWN' }
-    ]);
+    ])
 
-    expect(result).toEqual([]);
-  });
+    expect(result).toEqual([])
+  })
 
   test('should release the client when done', async () => {
     await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1);
-  });
+    expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
 
   test('should handle errors and return empty array', async () => {
-    const error = new Error('Database error');
-    mockClient.query = vi.fn().mockRejectedValue(error);
+    const error = new Error('Database error')
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(result).toEqual([]);
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -259,20 +259,20 @@ describe('getActionsByVersion', () => {
       expect.stringContaining(
         'Database operation failed: Get action configs by code and version'
       )
-    );
+    )
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1);
-  });
+    expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
 
   test('should handle database connection error', async () => {
-    const connectionError = new Error('Connection failed');
-    mockDb.connect = vi.fn().mockRejectedValue(connectionError);
+    const connectionError = new Error('Connection failed')
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
     const result = await getActionsByVersion(mockLogger, mockDb, [
       { code: 'UPL1', version: '2.0.0' }
-    ]);
+    ])
 
-    expect(result).toEqual([]);
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -282,8 +282,8 @@ describe('getActionsByVersion', () => {
       expect.stringContaining(
         'Database operation failed: Get action configs by code and version'
       )
-    );
+    )
 
-    expect(mockClient.release).not.toHaveBeenCalled();
-  });
-});
+    expect(mockClient.release).not.toHaveBeenCalled()
+  })
+})

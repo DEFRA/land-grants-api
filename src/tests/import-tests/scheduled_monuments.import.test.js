@@ -3,34 +3,34 @@ import {
   uploadLandDataFixture,
   ensureBucketExists,
   deleteFiles
-} from '~/src/tests/import-tests/setup/s3-test-helpers.js';
+} from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 
-import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
-import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js';
+import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 
 const S3_KEYS = [
   'scheduled_monuments/scheduled_monuments.csv',
   'scheduled_monuments/scheduled_monuments.zip'
-];
+]
 
 describe('Scheduled monuments import', () => {
-  let s3Client;
-  let connection;
+  let s3Client
+  let connection
 
   beforeAll(async () => {
-    connection = connectToTestDatabase();
-    s3Client = createTestS3Client();
-    await ensureBucketExists(s3Client);
-  });
+    connection = connectToTestDatabase()
+    s3Client = createTestS3Client()
+    await ensureBucketExists(s3Client)
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   afterEach(async () => {
-    await deleteFiles(s3Client, S3_KEYS);
-  });
+    await deleteFiles(s3Client, S3_KEYS)
+  })
 
   test.each(S3_KEYS.map((key) => [key]))(
     'should import scheduled monuments data and return 200 ok (%s)',
@@ -39,26 +39,26 @@ describe('Scheduled monuments import', () => {
         s3Client,
         'scheduled_monuments_head.csv',
         s3key
-      );
+      )
 
-      const result = await importLandData({ s3key });
+      const result = await importLandData({ s3key })
 
       expect(result).toEqual({
         message: 'Land data imported successfully',
         dataChanged: true
-      });
+      })
 
       const allScheduledMonuments = await getRecordsByQuery(
         connection,
         "SELECT * FROM data_layer WHERE data_layer_type_id = 3 and metadata->>'type' = 'scheduled_monuments'",
         []
-      );
-      expect(allScheduledMonuments).toHaveLength(3);
+      )
+      expect(allScheduledMonuments).toHaveLength(3)
 
       const scheduledMonument = allScheduledMonuments.find(
         (sm) => sm.source_id === '1001718'
-      );
-      expect(scheduledMonument.name).toBe('Mound S of Woodbrook');
+      )
+      expect(scheduledMonument.name).toBe('Mound S of Woodbrook')
       expect(scheduledMonument.metadata).toEqual({
         SchedDate: null,
         CaptureScale: '1:10000',
@@ -69,13 +69,13 @@ describe('Scheduled monuments import', () => {
         Easting: 330447,
         Northing: 254456,
         type: 'scheduled_monuments'
-      });
-      expect(scheduledMonument.data_layer_type_id).toBe(3);
-      expect(scheduledMonument.last_updated).toBeDefined();
-      expect(scheduledMonument.ingest_date).toBeDefined();
-      expect(scheduledMonument.ingest_id).toBeDefined();
-      expect(scheduledMonument.geom).toBeDefined();
+      })
+      expect(scheduledMonument.data_layer_type_id).toBe(3)
+      expect(scheduledMonument.last_updated).toBeDefined()
+      expect(scheduledMonument.ingest_date).toBeDefined()
+      expect(scheduledMonument.ingest_id).toBeDefined()
+      expect(scheduledMonument.geom).toBeDefined()
     },
     10000
-  );
-});
+  )
+})

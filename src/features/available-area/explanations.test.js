@@ -1,7 +1,7 @@
-import { findMaximumAvailableArea } from './availableArea.js';
-import { formatExplanationSections } from './explanations.js';
-import { makeCompatibilityCheckFn } from './testUtils.js';
-import { landCoverToString } from './testLandCoverToString.js';
+import { findMaximumAvailableArea } from './availableArea.js'
+import { formatExplanationSections } from './explanations.js'
+import { makeCompatibilityCheckFn } from './testUtils.js'
+import { landCoverToString } from './testLandCoverToString.js'
 
 /**
  * Helper to create land cover codes entries for an action.
@@ -12,7 +12,7 @@ function makeLandCoverCodes(classCodes) {
   return classCodes.map((code) => ({
     landCoverClassCode: code,
     landCoverCode: code
-  }));
+  }))
 }
 
 /**
@@ -33,7 +33,7 @@ function makeDataRequirements({
       ])
     ),
     landCoverToString
-  };
+  }
 }
 
 /**
@@ -52,7 +52,7 @@ function runAndFormat({
     existingActions,
     makeCompatibilityCheckFn(compatibilityMap),
     makeDataRequirements({ targetCodes, parcelLandCovers, existingActionCodes })
-  );
+  )
 
   const sections = formatExplanationSections(result.context, {
     targetAction: applyingForAction,
@@ -60,17 +60,17 @@ function runAndFormat({
     totalValidLandCoverSqm: result.totalValidLandCoverSqm,
     landCoverToString,
     feasible: result.feasible
-  });
+  })
 
-  return { result, sections };
+  return { result, sections }
 }
 
 describe('formatExplanationSections', () => {
   describe('doc example: CMOR1/AA1/AA2', () => {
-    let sections;
+    let sections
 
     beforeAll(() => {
-      ({ sections } = runAndFormat({
+      ;({ sections } = runAndFormat({
         applyingForAction: 'CMOR1',
         existingActions: [
           { actionCode: 'AA1', areaSqm: 25000 },
@@ -87,27 +87,27 @@ describe('formatExplanationSections', () => {
           AA1: ['240', '110'],
           AA2: ['240', '130']
         }
-      }));
-    });
+      }))
+    })
 
     it('returns an array of ExplanationSection objects', () => {
       for (const section of sections) {
-        expect(section).toHaveProperty('title');
-        expect(section).toHaveProperty('content');
-        expect(typeof section.title).toBe('string');
-        expect(Array.isArray(section.content)).toBe(true);
+        expect(section).toHaveProperty('title')
+        expect(section).toHaveProperty('content')
+        expect(typeof section.title).toBe('string')
+        expect(Array.isArray(section.content)).toBe(true)
         for (const line of section.content) {
-          expect(typeof line).toBe('string');
+          expect(typeof line).toBe('string')
         }
       }
-    });
+    })
 
     it.each([
       {
         name: 'Application section listing the target action',
         title: 'Application',
         assertContent: (content) => {
-          expect(content).toEqual(['Target action: CMOR1']);
+          expect(content).toEqual(['Target action: CMOR1'])
         }
       },
       {
@@ -118,91 +118,91 @@ describe('formatExplanationSections', () => {
             'Permanent grassland (130): 3.1 ha',
             'Water/irrigation features (240): 2.5 ha',
             'Half Hedge Adjacent NON-EFA (110): 1 ha'
-          ]);
+          ])
         }
       },
       {
         name: 'eligibility section with land cover descriptions but no areas',
         title: 'Eligible land covers per action',
         assertContent: (content) => {
-          expect(content).toContainEqual('CMOR1: Permanent grassland (130)');
-          expect(content).toContainEqual(expect.stringContaining('AA1'));
+          expect(content).toContainEqual('CMOR1: Permanent grassland (130)')
+          expect(content).toContainEqual(expect.stringContaining('AA1'))
           expect(content).toContainEqual(
             expect.stringContaining('Water/irrigation features (240)')
-          );
+          )
           // Areas should not be present (they are in the Land covers section)
           for (const line of content) {
-            expect(line).not.toMatch(/\d+ ha/);
+            expect(line).not.toMatch(/\d+ ha/)
           }
         }
       }
     ])('includes a $name', ({ title, assertContent }) => {
-      const section = sections.find((s) => s.title === title);
-      expect(section).toBeDefined();
-      assertContent(section.content);
-    });
+      const section = sections.find((s) => s.title === title)
+      expect(section).toBeDefined()
+      assertContent(section.content)
+    })
 
     it('includes an adjusted actions section', () => {
-      const section = sections.find((s) => s.title === 'Existing actions');
-      expect(section).toBeDefined();
-      expect(section.content).toEqual(['AA1: 2.5 ha', 'AA2: 3 ha']);
-    });
+      const section = sections.find((s) => s.title === 'Existing actions')
+      expect(section).toBeDefined()
+      expect(section.content).toEqual(['AA1: 2.5 ha', 'AA2: 3 ha'])
+    })
 
     it('includes an incompatibility section', () => {
       const section = sections.find(
         (s) => s.title === 'Incompatible action groups'
-      );
-      expect(section).toBeDefined();
+      )
+      expect(section).toBeDefined()
       expect(section.content).toEqual([
         'CMOR1, AA1, AA2 cannot share the same land'
-      ]);
-    });
+      ])
+    })
 
     it('includes an allocations section showing how existing actions were placed', () => {
       const section = sections.find(
         (s) => s.title === 'Optimal placement of existing actions'
-      );
-      expect(section).toBeDefined();
-      const aa1Line = section.content.find((l) => l.startsWith('AA1:'));
-      expect(aa1Line).toContain('Half Hedge Adjacent NON-EFA (110)');
-      expect(aa1Line).toContain('Water/irrigation features (240)');
-      const aa2Line = section.content.find((l) => l.startsWith('AA2:'));
-      expect(aa2Line).toContain('Water/irrigation features (240)');
-      expect(aa2Line).toContain('Permanent grassland (130)');
-    });
+      )
+      expect(section).toBeDefined()
+      const aa1Line = section.content.find((l) => l.startsWith('AA1:'))
+      expect(aa1Line).toContain('Half Hedge Adjacent NON-EFA (110)')
+      expect(aa1Line).toContain('Water/irrigation features (240)')
+      const aa2Line = section.content.find((l) => l.startsWith('AA2:'))
+      expect(aa2Line).toContain('Water/irrigation features (240)')
+      expect(aa2Line).toContain('Permanent grassland (130)')
+    })
 
     it('includes a target availability section', () => {
       const section = sections.find(
         (s) => s.title === 'Available land for CMOR1'
-      );
-      expect(section).toBeDefined();
+      )
+      expect(section).toBeDefined()
       expect(section.content).toEqual([
         'Permanent grassland (130): 3.1 ha total, 2 ha used by existing actions, 1.1 ha available'
-      ]);
-    });
+      ])
+    })
 
     it('includes a result section', () => {
-      const section = sections.find((s) => s.title === 'Result');
-      expect(section).toBeDefined();
+      const section = sections.find((s) => s.title === 'Result')
+      expect(section).toBeDefined()
       expect(section.content).toEqual([
         'Total eligible land cover for CMOR1: 3.1 ha',
         'Maximum available area for CMOR1: 1.1 ha'
-      ]);
-    });
+      ])
+    })
 
     it('includes a stacks section with land cover names', () => {
-      const section = sections.find((s) => s.title === 'Stacks');
-      expect(section).toBeDefined();
+      const section = sections.find((s) => s.title === 'Stacks')
+      expect(section).toBeDefined()
       expect(section.content).toContainEqual(
         expect.stringContaining(
           'AA1 on Half Hedge Adjacent NON-EFA (110) (1 ha)'
         )
-      );
+      )
       expect(section.content).toContainEqual(
         expect.stringContaining('AA2 on Permanent grassland (130) (2 ha)')
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('no existing actions', () => {
     it('shows full area available with no allocations or stacks sections', () => {
@@ -215,39 +215,39 @@ describe('formatExplanationSections', () => {
           { landCoverClassCode: '130', landCoverCode: '130', areaSqm: 50000 }
         ],
         existingActionCodes: {}
-      });
+      })
 
-      const appSection = sections.find((s) => s.title === 'Application');
-      expect(appSection).toBeDefined();
-      expect(appSection.content).toEqual(['Target action: TARGET']);
+      const appSection = sections.find((s) => s.title === 'Application')
+      expect(appSection).toBeDefined()
+      expect(appSection.content).toEqual(['Target action: TARGET'])
 
       expect(
         sections.find((s) => s.title === 'Land covers on the parcel')
-      ).toBeDefined();
+      ).toBeDefined()
 
       expect(
         sections.find((s) => s.title === 'Existing actions')
-      ).toBeUndefined();
+      ).toBeUndefined()
       expect(
         sections.find((s) => s.title === 'Incompatible action groups')
-      ).toBeUndefined();
+      ).toBeUndefined()
       expect(
         sections.find(
           (s) => s.title === 'Optimal placement of existing actions'
         )
-      ).toBeUndefined();
-      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined();
+      ).toBeUndefined()
+      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined()
 
       expect(
         sections.find((s) => s.title === 'Eligible land covers per action')
-      ).toBeDefined();
+      ).toBeDefined()
 
-      const result = sections.find((s) => s.title === 'Result');
+      const result = sections.find((s) => s.title === 'Result')
       expect(result.content).toContainEqual(
         'Maximum available area for TARGET: 5 ha'
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('multiple target land covers', () => {
     it('shows per-land-cover breakdown in target availability', () => {
@@ -263,21 +263,21 @@ describe('formatExplanationSections', () => {
         existingActionCodes: {
           EX1: ['130', '110']
         }
-      });
+      })
 
       const section = sections.find(
         (s) => s.title === 'Available land for TARGET'
-      );
-      expect(section).toBeDefined();
+      )
+      expect(section).toBeDefined()
       // The LP will optimally place EX1 to maximize target availability
       // Total target availability should be 50000 - 15000 = 35000
       const totalAvailable = section.content.reduce((sum, line) => {
-        const match = line.match(/([\d.]+) ha available/);
-        return sum + (match ? Number.parseFloat(match[1]) : 0);
-      }, 0);
-      expect(totalAvailable).toBeCloseTo(3.5, 1);
-    });
-  });
+        const match = line.match(/([\d.]+) ha available/)
+        return sum + (match ? Number.parseFloat(match[1]) : 0)
+      }, 0)
+      expect(totalAvailable).toBeCloseTo(3.5, 1)
+    })
+  })
 
   describe('null context (no eligible land covers)', () => {
     it('returns only a result section', () => {
@@ -292,7 +292,7 @@ describe('formatExplanationSections', () => {
           ],
           existingActionCodes: {}
         })
-      );
+      )
 
       const sections = formatExplanationSections(result.context, {
         targetAction: 'TARGET',
@@ -300,15 +300,15 @@ describe('formatExplanationSections', () => {
         totalValidLandCoverSqm: 0,
         landCoverToString,
         feasible: result.feasible
-      });
+      })
 
-      expect(sections).toHaveLength(1);
-      expect(sections[0].title).toBe('Result');
+      expect(sections).toHaveLength(1)
+      expect(sections[0].title).toBe('Result')
       expect(sections[0].content).toContainEqual(
         'Maximum available area for TARGET: 0 ha'
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('compatible actions stacking', () => {
     it('shows compatible actions sharing land cover without reducing target availability', () => {
@@ -331,19 +331,19 @@ describe('formatExplanationSections', () => {
           C1: ['130'],
           C2: ['130']
         }
-      });
+      })
 
       // All compatible with target, so full area available
-      expect(result.availableAreaSqm).toBe(50000);
+      expect(result.availableAreaSqm).toBe(50000)
 
       // Stacks section should exist and reference land covers
-      const stackSection = sections.find((s) => s.title === 'Stacks');
-      expect(stackSection).toBeDefined();
+      const stackSection = sections.find((s) => s.title === 'Stacks')
+      expect(stackSection).toBeDefined()
       for (const line of stackSection.content) {
-        expect(line).toContain('Permanent grassland (130)');
+        expect(line).toContain('Permanent grassland (130)')
       }
-    });
-  });
+    })
+  })
 
   describe('enhanced stacks with land cover info', () => {
     it('includes land cover names in stack descriptions', () => {
@@ -359,17 +359,17 @@ describe('formatExplanationSections', () => {
         existingActionCodes: {
           EX1: ['110']
         }
-      });
+      })
 
-      const stackSection = sections.find((s) => s.title === 'Stacks');
-      expect(stackSection).toBeDefined();
-      expect(stackSection.content.length).toBeGreaterThan(0);
+      const stackSection = sections.find((s) => s.title === 'Stacks')
+      expect(stackSection).toBeDefined()
+      expect(stackSection.content.length).toBeGreaterThan(0)
       // EX1 is placed on Half Hedge Adjacent NON-EFA (110)
       expect(stackSection.content[0]).toContain(
         'Half Hedge Adjacent NON-EFA (110)'
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('infeasible case', () => {
     it('shows error section when existing actions exceed available land', () => {
@@ -384,39 +384,37 @@ describe('formatExplanationSections', () => {
         existingActionCodes: {
           EX1: ['130']
         }
-      });
+      })
 
-      expect(sections.find((s) => s.title === 'Application')).toBeDefined();
-      expect(
-        sections.find((s) => s.title === 'Existing actions')
-      ).toBeDefined();
+      expect(sections.find((s) => s.title === 'Application')).toBeDefined()
+      expect(sections.find((s) => s.title === 'Existing actions')).toBeDefined()
       expect(
         sections.find((s) => s.title === 'Land covers on the parcel')
-      ).toBeDefined();
+      ).toBeDefined()
       expect(
         sections.find((s) => s.title === 'Eligible land covers per action')
-      ).toBeDefined();
+      ).toBeDefined()
 
       const errorSection = sections.find(
         (s) => s.title === 'Error - AAC not possible'
-      );
-      expect(errorSection).toBeDefined();
+      )
+      expect(errorSection).toBeDefined()
       expect(errorSection.content).toEqual([
         'It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting.'
-      ]);
+      ])
 
-      expect(sections.find((s) => s.title === 'Result')).toBeDefined();
+      expect(sections.find((s) => s.title === 'Result')).toBeDefined()
 
       // Should NOT have sections that depend on a feasible solution
       expect(
         sections.find(
           (s) => s.title === 'Optimal placement of existing actions'
         )
-      ).toBeUndefined();
-      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined();
+      ).toBeUndefined()
+      expect(sections.find((s) => s.title === 'Stacks')).toBeUndefined()
       expect(
         sections.find((s) => s.title === 'Available land for TARGET')
-      ).toBeUndefined();
-    });
-  });
-});
+      ).toBeUndefined()
+    })
+  })
+})

@@ -1,33 +1,33 @@
-import { createServer } from '~/src/routes/index.js';
-import { config } from '~/src/config/index.js';
-import { TEST_PORT } from './test-config.js';
+import { createServer } from '~/src/routes/index.js'
+import { config } from '~/src/config/index.js'
+import { TEST_PORT } from './test-config.js'
 
-let serverInstance = null;
+let serverInstance = null
 
 export async function startTestServer() {
   if (serverInstance) {
-    return serverInstance;
+    return serverInstance
   }
 
-  config.load({ port: TEST_PORT });
+  config.load({ port: TEST_PORT })
 
-  serverInstance = await createServer();
-  await serverInstance.start();
+  serverInstance = await createServer()
+  await serverInstance.start()
 
-  return serverInstance;
+  return serverInstance
 }
 
 export async function stopTestServer() {
   if (serverInstance) {
-    await serverInstance.stop();
-    serverInstance = null;
+    await serverInstance.stop()
+    serverInstance = null
   }
 }
 
 export function getTestServer() {
-  return serverInstance;
+  return serverInstance
 }
 
 export function getBaseUrl() {
-  return `http://localhost:${TEST_PORT}`;
+  return `http://localhost:${TEST_PORT}`
 }

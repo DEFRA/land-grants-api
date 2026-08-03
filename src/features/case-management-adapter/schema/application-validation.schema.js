@@ -1,17 +1,17 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 const caseManagementApplicationValidationRunRequestSchema = Joi.object({
   id: Joi.number().integer().required()
-});
+})
 
-const MIN_LEVEL = 1;
-const MAX_LEVEL = 6;
+const MIN_LEVEL = 1
+const MAX_LEVEL = 6
 
 // Schema for paragraph component
 const paragraphComponentSchema = Joi.object({
   component: Joi.string().valid('paragraph').required(),
   text: Joi.string().allow('').required()
-});
+})
 
 // Schema for status component
 const statusComponentSchema = Joi.object({
@@ -21,7 +21,7 @@ const statusComponentSchema = Joi.object({
     .valid('red', 'green', 'yellow', 'blue', 'grey')
     .required(),
   classes: Joi.string().optional()
-});
+})
 
 // Schema for heading component
 const headingComponentSchema = Joi.object({
@@ -29,7 +29,7 @@ const headingComponentSchema = Joi.object({
   text: Joi.string().required(),
   level: Joi.number().integer().min(MIN_LEVEL).max(MAX_LEVEL).required(),
   id: Joi.string().optional()
-});
+})
 
 // Schema for summary items (can be text items or status components)
 const summaryItemSchema = Joi.alternatives().try(
@@ -38,14 +38,14 @@ const summaryItemSchema = Joi.alternatives().try(
     classes: Joi.string().required()
   }),
   statusComponentSchema
-);
+)
 
 // Forward reference for details component (for recursive structure)
 const detailsComponentSchema = Joi.object({
   component: Joi.string().valid('details').required(),
   summaryItems: Joi.array().items(summaryItemSchema).min(MIN_LEVEL).required(),
   items: Joi.array().items(Joi.link('#component')).min(MIN_LEVEL).required()
-}).id('details');
+}).id('details')
 
 // Combined component schema (for use in details items)
 const componentSchema = Joi.alternatives()
@@ -55,29 +55,29 @@ const componentSchema = Joi.alternatives()
     detailsComponentSchema,
     statusComponentSchema
   )
-  .id('component');
+  .id('component')
 
 // Response schema for application validation run
 const caseManagementApplicationValidationRunResponseSchema = Joi.object({
   message: Joi.string().required(),
   response: Joi.array().items(componentSchema).required()
-});
+})
 
 const caseManagementApplicationValidationRerunRequestSchema = Joi.object({
   requesterUsername: Joi.string().required(),
   id: Joi.number().integer().required()
-});
+})
 
 const caseManagementApplicationValidationReRunResponseSchema = Joi.object({
   message: Joi.string().required(),
   valid: Joi.boolean().required(),
   id: Joi.number().integer().required(),
   date: Joi.date().required()
-});
+})
 
 export {
   caseManagementApplicationValidationRunRequestSchema,
   caseManagementApplicationValidationRunResponseSchema,
   caseManagementApplicationValidationRerunRequestSchema,
   caseManagementApplicationValidationReRunResponseSchema
-};
+}

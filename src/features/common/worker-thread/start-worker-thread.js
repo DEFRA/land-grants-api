@@ -1,5 +1,5 @@
-import { Worker } from 'node:worker_threads';
-import { logInfo, logBusinessError } from '../helpers/logging/log-helpers.js';
+import { Worker } from 'node:worker_threads'
+import { logInfo, logBusinessError } from '../helpers/logging/log-helpers.js'
 
 /**
  * Start a worker
@@ -22,28 +22,28 @@ export const startWorker = (
         taskId,
         data
       }
-    });
+    })
 
-    let dataChanged = false;
+    let dataChanged = false
 
     worker.on('message', (result) => {
-      dataChanged = Boolean(result.dataChanged);
+      dataChanged = Boolean(result.dataChanged)
       logInfo(request.logger, {
         category,
         operation: `${category}_completed`,
         message: `${title} completed ${result.success ? 'successfully' : 'with errors'}`,
         context: { result: result.success, file: data.s3key }
-      });
-    });
+      })
+    })
 
     worker.on('error', (/** @type {Error} */ error) => {
       logBusinessError(request.logger, {
         operation: `${category}_error`,
         error,
         context: { taskId, file: data.s3key }
-      });
-      reject(error);
-    });
+      })
+      reject(error)
+    })
 
     worker.on('exit', (code) => {
       if (code === 0) {
@@ -52,17 +52,17 @@ export const startWorker = (
           operation: `${category}_exit`,
           message: `${title} exited successfully`,
           context: { taskId, code, file: data.s3key }
-        });
-        resolve({ dataChanged });
+        })
+        resolve({ dataChanged })
       } else {
-        const error = new Error(`${title} stopped with exit code ${code}`);
+        const error = new Error(`${title} stopped with exit code ${code}`)
         logBusinessError(request.logger, {
           operation: `${category}_exit`,
           error,
           context: { taskId, code, file: data.s3key }
-        });
-        reject(error);
+        })
+        reject(error)
       }
-    });
-  });
-};
+    })
+  })
+}

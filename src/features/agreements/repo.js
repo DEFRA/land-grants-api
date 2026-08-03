@@ -1,6 +1,6 @@
-import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js';
-import { getAgreementsForParcel as getFromDb } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js';
-import { getAgreements as getFromDal } from '~/src/services/dal/index.js';
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
+import { getAgreementsForParcel as getFromDb } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreements as getFromDal } from '~/src/services/dal/index.js'
 
 /**
  * Retrieve agreements for a parcel, from multiple sources
@@ -27,12 +27,12 @@ export async function getAgreements(
   const results = await Promise.all([
     getFromDb(sheetId, parcelId, db, logger),
     getFromDal(sbi, parcelId, sheetId, defraIdToken, logger)
-  ]);
+  ])
 
   return results
     .flat()
     .filter((a) => a.unit === 'sqm')
-    .filter(expiredActionsFilter);
+    .filter(expiredActionsFilter)
 }
 
 /**

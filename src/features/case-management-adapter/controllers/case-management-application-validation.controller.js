@@ -1,25 +1,25 @@
-import Boom from '@hapi/boom';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
+import Boom from '@hapi/boom'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js';
+} from '~/src/features/common/schema/index.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import {
   caseManagementApplicationValidationRerunRequestSchema,
   caseManagementApplicationValidationReRunResponseSchema
-} from '../schema/application-validation.schema.js';
-import { validateApplication } from '../../application/service/application-validation.service.js';
+} from '../schema/application-validation.schema.js'
+import { validateApplication } from '../../application/service/application-validation.service.js'
 import {
   logResourceNotFound,
   logValidationWarn,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
-} from '~/src/features/common/helpers/audit-event.js';
+} from '~/src/features/common/helpers/audit-event.js'
 
 /**
  * Builds the shared portion of a case management application validation
@@ -35,7 +35,7 @@ const buildAuditContext = (request, { applicationId, sbi, crn }) => ({
   correlationId: getCorrelationId(request),
   applicationId,
   identifiers: { sbi, crn }
-});
+})
 
 /**
  * Fetches the application validation run to re-run, returning a 404 Boom
@@ -50,18 +50,18 @@ const fetchApplicationValidationRun = async (request, postgresDb, id) => {
     request.logger,
     postgresDb,
     id
-  );
+  )
 
   if (!applicationValidationRun) {
     logResourceNotFound(request.logger, {
       resourceType: 'Application validation run',
       context: { validationRunId: id }
-    });
-    return Boom.notFound('Application validation run not found');
+    })
+    return Boom.notFound('Application validation run not found')
   }
 
-  return applicationValidationRun;
-};
+  return applicationValidationRun
+}
 
 /**
  * Runs the eligibility re-validation for a case management validation run,
@@ -83,7 +83,7 @@ const runCaseManagementValidation = async (
     crn,
     application_id: applicationId,
     data
-  } = applicationValidationRun;
+  } = applicationValidationRun
 
   const { validationErrors, applicationData, applicationValidationRunId } =
     await validateApplication(
@@ -93,7 +93,7 @@ const runCaseManagementValidation = async (
       sbi,
       requesterUsername,
       request
-    );
+    )
 
   if (validationErrors && validationErrors.length > 0) {
     logValidationWarn(request.logger, {
@@ -106,10 +106,10 @@ const runCaseManagementValidation = async (
         requesterUsername,
         applicationId
       }
-    });
+    })
     return Boom.badRequest(
       validationErrors.map((err) => err.message).join(', ')
-    );
+    )
   }
 
   await auditEvent(
@@ -128,15 +128,15 @@ const runCaseManagementValidation = async (
     },
     'success',
     request
-  );
+  )
 
   return {
     message: 'Application validated successfully',
     valid: applicationData.hasPassed,
     id: applicationValidationRunId,
     date: applicationData.date
-  };
-};
+  }
+}
 
 /**
  * Handles unexpected errors thrown while re-running a case management
@@ -153,12 +153,12 @@ const handleCaseManagementValidationError = async (
   applicationValidationRun
 ) => {
   // @ts-expect-error - payload
-  const { requesterUsername, id } = request.payload;
+  const { requesterUsername, id } = request.payload
   logBusinessError(request.logger, {
     operation: 'Case Management validation run',
     error,
     context: { validationRunId: id, requesterUsername }
-  });
+  })
 
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -175,10 +175,10 @@ const handleCaseManagementValidationError = async (
     },
     'failure',
     request
-  );
+  )
 
-  return Boom.internal('Error validating application');
-};
+  return Boom.internal('Error validating application')
+}
 
 const CaseManagementApplicationValidationController = {
   options: {
@@ -205,40 +205,40 @@ const CaseManagementApplicationValidationController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    let applicationValidationRun;
+    let applicationValidationRun
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
+      const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
-      const { requesterUsername, id } = request.payload;
+      const { requesterUsername, id } = request.payload
 
       applicationValidationRun = await fetchApplicationValidationRun(
         request,
         postgresDb,
         id
-      );
+      )
       if (Boom.isBoom(applicationValidationRun)) {
-        return applicationValidationRun;
+        return applicationValidationRun
       }
 
       const validationResult = await runCaseManagementValidation(
         request,
         applicationValidationRun,
         { requesterUsername, id }
-      );
+      )
       if (Boom.isBoom(validationResult)) {
-        return validationResult;
+        return validationResult
       }
 
-      return h.response(validationResult).code(statusCodes.ok);
+      return h.response(validationResult).code(statusCodes.ok)
     } catch (error) {
       return handleCaseManagementValidationError(
         error,
         request,
         applicationValidationRun
-      );
+      )
     }
   }
-};
+}
 
-export { CaseManagementApplicationValidationController };
+export { CaseManagementApplicationValidationController }

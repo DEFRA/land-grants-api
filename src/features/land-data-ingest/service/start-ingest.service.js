@@ -1,9 +1,9 @@
-import { ENTITY_TYPES } from '../../common/constants/entity_types.js';
+import { ENTITY_TYPES } from '../../common/constants/entity_types.js'
 import {
   logBusinessError,
   logInfo
-} from '../../common/helpers/logging/log-helpers.js';
-import { INGEST_STATUS } from './ingest-status.js';
+} from '../../common/helpers/logging/log-helpers.js'
+import { INGEST_STATUS } from './ingest-status.js'
 
 /**
  * Saves the ingest start data to the database
@@ -15,21 +15,21 @@ import { INGEST_STATUS } from './ingest-status.js';
  */
 export const saveIngestStart = async (data, entity, dbClient, logger) => {
   try {
-    const { files } = data;
-    const ingestId = await cancelAndCreateNewIngest(entity, dbClient, logger);
+    const { files } = data
+    const ingestId = await cancelAndCreateNewIngest(entity, dbClient, logger)
 
     for (const file of files) {
-      const { filename, rows } = file;
+      const { filename, rows } = file
 
       await dbClient.query(
         `INSERT INTO ingest_files (ingest_id, filename, total_rows, status) VALUES ($1, $2, $3, $4)`,
         [ingestId, filename, rows, INGEST_STATUS.PENDING]
-      );
+      )
     }
 
-    await truncateStagingTable(entity, dbClient);
+    await truncateStagingTable(entity, dbClient)
 
-    return ingestId;
+    return ingestId
   } catch (error) {
     logBusinessError(logger, {
       operation: 'start_ingest',
@@ -38,10 +38,10 @@ export const saveIngestStart = async (data, entity, dbClient, logger) => {
         data
       },
       error
-    });
-    throw error;
+    })
+    throw error
   }
-};
+}
 
 /**
  * Cancels existing in progress ingests and creates a new ingest record
@@ -65,10 +65,10 @@ const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
       entity,
       [INGEST_STATUS.IN_PROGRESS, INGEST_STATUS.STAGED]
     ]
-  );
+  )
 
   if (rows.length > 0) {
-    const cancelledIds = rows.map((row) => row.id);
+    const cancelledIds = rows.map((row) => row.id)
 
     logInfo(logger, {
       category: 'ingest',
@@ -77,12 +77,12 @@ const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
         ids: cancelledIds,
         entity
       }
-    });
+    })
 
     await dbClient.query(
       `UPDATE ingest_files SET status = $1 WHERE ingest_id = ANY($2) AND status = $3`,
       [INGEST_STATUS.CANCELLED, cancelledIds, INGEST_STATUS.PENDING]
-    );
+    )
   }
 
   const {
@@ -90,10 +90,10 @@ const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
   } = await dbClient.query(
     `INSERT INTO ingest (entity, status) VALUES ($1, $2) RETURNING id`,
     [entity, INGEST_STATUS.IN_PROGRESS]
-  );
+  )
 
-  return ingest.id;
-};
+  return ingest.id
+}
 
 /**
  * Truncates the pre-existing staging table for the given entity
@@ -102,8 +102,8 @@ const cancelAndCreateNewIngest = async (entity, dbClient, logger) => {
  * @returns {Promise<void>}
  */
 const truncateStagingTable = async (entity, dbClient) => {
-  await dbClient.query(`TRUNCATE TABLE ${entity}_staging`);
-};
+  await dbClient.query(`TRUNCATE TABLE ${entity}_staging`)
+}
 
 /**
  * Gets the entity name associated with an ingest
@@ -115,10 +115,10 @@ export const getEntityNameForIngest = async (ingestId, dbClient) => {
   const { rows } = await dbClient.query(
     `SELECT entity FROM ingest WHERE id = $1`,
     [ingestId]
-  );
+  )
 
-  return rows?.[0]?.entity;
-};
+  return rows?.[0]?.entity
+}
 
 /**
  * Sets the status of a file
@@ -132,8 +132,8 @@ const setFileStatus = async (status, filename, ingestId, dbClient) => {
   await dbClient.query(
     `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND filename = $3`,
     [status, ingestId, filename]
-  );
-};
+  )
+}
 
 /**
  * Sets the status of a file to in progress
@@ -143,8 +143,8 @@ const setFileStatus = async (status, filename, ingestId, dbClient) => {
  * @returns {Promise<void>} Promise that resolves when the file status is set
  */
 export const setFileInProgress = async (filename, ingestId, dbClient) => {
-  await setFileStatus(INGEST_STATUS.IN_PROGRESS, filename, ingestId, dbClient);
-};
+  await setFileStatus(INGEST_STATUS.IN_PROGRESS, filename, ingestId, dbClient)
+}
 
 /**
  * Sets the status of a file to completed
@@ -154,8 +154,8 @@ export const setFileInProgress = async (filename, ingestId, dbClient) => {
  * @returns {Promise<void>} Promise that resolves when the file status is set
  */
 export const setFileCompleted = async (filename, ingestId, dbClient) => {
-  await setFileStatus(INGEST_STATUS.COMPLETED, filename, ingestId, dbClient);
-};
+  await setFileStatus(INGEST_STATUS.COMPLETED, filename, ingestId, dbClient)
+}
 
 /**
  * Sets the status of a file to completed
@@ -165,8 +165,8 @@ export const setFileCompleted = async (filename, ingestId, dbClient) => {
  * @returns {Promise<void>} Promise that resolves when the file status is set
  */
 export const setFileFailed = async (filename, ingestId, dbClient) => {
-  await setFileStatus(INGEST_STATUS.FAILED, filename, ingestId, dbClient);
-};
+  await setFileStatus(INGEST_STATUS.FAILED, filename, ingestId, dbClient)
+}
 
 /**
  * Marks an ingest as completed and records the completion timestamp
@@ -178,8 +178,8 @@ export const setIngestCompleted = async (ingestId, dbClient) => {
   await dbClient.query(
     `UPDATE ingest SET status = $1, completed_date = NOW() WHERE id = $2`,
     [INGEST_STATUS.COMPLETED, ingestId]
-  );
-};
+  )
+}
 
 /**
  * Marks an ingest as failed
@@ -191,8 +191,8 @@ export const setIngestFailed = async (ingestId, dbClient) => {
   await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
     INGEST_STATUS.FAILED,
     ingestId
-  ]);
-};
+  ])
+}
 
 /**
  * Cancels all pending files for a given ingest
@@ -204,8 +204,8 @@ export const cancelPendingFiles = async (ingestId, dbClient) => {
   await dbClient.query(
     `UPDATE ingest_files SET status = $1 WHERE ingest_id = $2 AND status = $3`,
     [INGEST_STATUS.CANCELLED, ingestId, INGEST_STATUS.PENDING]
-  );
-};
+  )
+}
 
 /**
  * Returns the expected row count for a specific file in an ingest
@@ -218,9 +218,9 @@ export const getFileExpectedRowCount = async (ingestId, filename, dbClient) => {
   const { rows } = await dbClient.query(
     `SELECT total_rows FROM ingest_files WHERE ingest_id = $1 AND filename = $2`,
     [ingestId, filename]
-  );
-  return Number(rows[0]?.total_rows);
-};
+  )
+  return Number(rows[0]?.total_rows)
+}
 
 /**
  * Validates that the file is part of the ingest and is in a pending state
@@ -238,10 +238,10 @@ export const isValidIngestFile = async (ingestId, filename, dbClient) => {
       INNER JOIN ingest i ON i.id = f.ingest_id
     WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
     [ingestId, filename, INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
-  );
+  )
 
-  return rows.length > 0;
-};
+  return rows.length > 0
+}
 
 /**
  * Retrieves all files for a given ingest
@@ -253,10 +253,10 @@ const getIngestFiles = async (ingestId, dbClient) => {
   const { rows } = await dbClient.query(
     `SELECT * FROM ingest_files WHERE ingest_id = $1`,
     [ingestId]
-  );
+  )
 
-  return rows;
-};
+  return rows
+}
 
 /**
  * Retrieves all files for a given ingest
@@ -267,15 +267,15 @@ const getIngestFiles = async (ingestId, dbClient) => {
 export const getIngestById = async (ingestId, dbClient) => {
   const {
     rows: [ingest]
-  } = await dbClient.query(`SELECT * FROM ingest WHERE id = $1`, [ingestId]);
+  } = await dbClient.query(`SELECT * FROM ingest WHERE id = $1`, [ingestId])
 
   if (!ingest) {
-    return ingest;
+    return ingest
   }
 
-  const files = await getIngestFiles(ingestId, dbClient);
-  return { ...ingest, files };
-};
+  const files = await getIngestFiles(ingestId, dbClient)
+  return { ...ingest, files }
+}
 
 /**
  * Retrieves the latest ingest for a specific entity.
@@ -289,15 +289,15 @@ const getLatestIngestForEntity = async (entityName, dbClient) => {
   } = await dbClient.query(
     `SELECT * FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1`,
     [entityName]
-  );
+  )
 
   if (!ingest) {
-    return null;
+    return null
   }
 
-  const files = await getIngestFiles(ingest.id, dbClient);
-  return { ...ingest, files };
-};
+  const files = await getIngestFiles(ingest.id, dbClient)
+  return { ...ingest, files }
+}
 
 /**
  * Retrieves the status of all entities.
@@ -305,14 +305,14 @@ const getLatestIngestForEntity = async (entityName, dbClient) => {
  * @returns {Promise<IngestWithFiles[]>} The status of all entities.
  */
 export const getLatestEntityStatuses = async (dbClient) => {
-  const validEntities = ENTITY_TYPES.filter((e) => e.ingest);
+  const validEntities = ENTITY_TYPES.filter((e) => e.ingest)
   const status = await Promise.all(
     validEntities.map((entity) =>
       getLatestIngestForEntity(entity.name, dbClient)
     )
-  );
-  return status.filter((s) => s !== null);
-};
+  )
+  return status.filter((s) => s !== null)
+}
 
 /**
  * @import {IngestWithFiles} from '../ingest.d.js'

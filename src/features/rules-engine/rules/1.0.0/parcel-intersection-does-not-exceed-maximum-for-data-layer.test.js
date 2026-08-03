@@ -1,4 +1,4 @@
-import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './parcel-intersection-does-not-exceed-maximum-for-data-layer.js';
+import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
 
 describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
   const createApplication = (intersectionValue) => ({
@@ -10,7 +10,7 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
             : undefined
       }
     }
-  });
+  })
 
   const rule = {
     config: {
@@ -18,14 +18,14 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
       maximumIntersectionPercent: 0,
       tolerancePercent: 1
     }
-  };
+  }
 
   test('should pass when intersection is exactly at maximumIntersectionPercent + tolerancePercent', () => {
-    const application = createApplication(1);
+    const application = createApplication(1)
     const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
       application,
       rule
-    );
+    )
 
     expect(result).toEqual({
       name: 'undefined-moorland',
@@ -40,15 +40,15 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should fail when intersection is greater than maximumIntersectionPercent + tolerancePercent', () => {
-    const application = createApplication(2);
+    const application = createApplication(2)
     const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
       application,
       rule
-    );
+    )
 
     expect(result).toEqual({
       name: 'undefined-moorland',
@@ -63,23 +63,23 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should use configurable maximumIntersectionPercent with tolerancePercent', () => {
-    const application = createApplication(12);
+    const application = createApplication(12)
     const customRule = {
       config: {
         layerName: 'moorland',
         maximumIntersectionPercent: 10,
         tolerancePercent: 2
       }
-    };
+    }
 
     const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
       application,
       customRule
-    );
+    )
 
     expect(result).toEqual({
       name: 'undefined-moorland',
@@ -94,15 +94,15 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should fail when the specified layer does not exist in intersections', () => {
-    const application = createApplication(undefined);
+    const application = createApplication(undefined)
     const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
       application,
       rule
-    );
+    )
 
     expect(result).toEqual({
       name: 'undefined-moorland',
@@ -117,6 +117,6 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
           ]
         }
       ]
-    });
-  });
-});
+    })
+  })
+})

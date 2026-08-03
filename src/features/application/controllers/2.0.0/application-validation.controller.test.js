@@ -1,57 +1,57 @@
-import { vi } from 'vitest';
-import Hapi from '@hapi/hapi';
-import Boom from '@hapi/boom';
-import { ApplicationValidationController } from './application-validation.controller.js';
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js';
-import { saveApplication } from '../../mutations/saveApplication.mutation.js';
-import { getActions } from '~/src/features/actions/service/action.service.js';
+import { vi } from 'vitest'
+import Hapi from '@hapi/hapi'
+import Boom from '@hapi/boom'
+import { ApplicationValidationController } from './application-validation.controller.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { saveApplication } from '../../mutations/saveApplication.mutation.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
   validateRequestData,
   validateAllLandParcels
-} from '~/src/features/application/service/validation.service.js';
+} from '~/src/features/application/service/validation.service.js'
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js';
+} from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/actions/service/action.service.js', () => ({
   getActions: vi.fn()
-}));
+}))
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
   createCompatibilityMatrix: vi.fn()
-}));
+}))
 vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
-}));
+}))
 vi.mock('~/src/features/application/service/validation.service.js', () => ({
   validateRequestData: vi.fn(),
   validateAllLandParcels: vi.fn()
-}));
-vi.mock('~/src/features/common/helpers/audit-event.js');
+}))
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockGetActions = vi.mocked(getActions);
-const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix);
-const mockSaveApplication = vi.mocked(saveApplication);
-const mockValidateRequestData = vi.mocked(validateRequestData);
-const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels);
-const mockAuditEvent = vi.mocked(auditEvent);
+const mockGetActions = vi.mocked(getActions)
+const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
+const mockSaveApplication = vi.mocked(saveApplication)
+const mockValidateRequestData = vi.mocked(validateRequestData)
+const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
+const mockAuditEvent = vi.mocked(auditEvent)
 
-const sbi = '123456789';
+const sbi = '123456789'
 
 describe('ApplicationValidationController', () => {
-  const server = Hapi.server();
+  const server = Hapi.server()
 
   const mockLogger = {
     info: vi.fn(),
     debug: vi.fn(),
     error: vi.fn(),
     warn: vi.fn()
-  };
+  }
 
   const mockPostgresDb = {
     connect: vi.fn(),
     query: vi.fn()
-  };
+  }
 
   const mockActions = [
     {
@@ -82,7 +82,7 @@ describe('ApplicationValidationController', () => {
         ratePerAgreementPerYearGbp: 300
       }
     }
-  ];
+  ]
 
   const mockLandActions = [
     {
@@ -99,7 +99,7 @@ describe('ApplicationValidationController', () => {
         }
       ]
     }
-  ];
+  ]
 
   const mockActionValidationResults = [
     {
@@ -141,13 +141,13 @@ describe('ApplicationValidationController', () => {
         }
       ]
     }
-  ];
+  ]
 
-  const mockCompatibilityCheckFn = vi.fn();
+  const mockCompatibilityCheckFn = vi.fn()
 
   beforeAll(async () => {
-    server.decorate('request', 'logger', mockLogger);
-    server.decorate('server', 'postgresDb', mockPostgresDb);
+    server.decorate('request', 'logger', mockLogger)
+    server.decorate('server', 'postgresDb', mockPostgresDb)
     await server.register([
       {
         plugin: {
@@ -158,31 +158,31 @@ describe('ApplicationValidationController', () => {
               path: '/api/v2/application/validate',
               handler: ApplicationValidationController.handler,
               options: ApplicationValidationController.options
-            });
+            })
           }
         }
       }
-    ]);
-    await server.initialize();
-  });
+    ])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetActions.mockResolvedValue(mockActions);
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn);
-    mockValidateRequestData.mockResolvedValue(null);
-    mockValidateAllLandParcels.mockResolvedValue(mockActionValidationResults);
-    mockSaveApplication.mockResolvedValue(1);
-    mockAuditEvent.mockResolvedValue(undefined);
-  });
+    vi.clearAllMocks()
+    mockGetActions.mockResolvedValue(mockActions)
+    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockValidateRequestData.mockResolvedValue(null)
+    mockValidateAllLandParcels.mockResolvedValue(mockActionValidationResults)
+    mockSaveApplication.mockResolvedValue(1)
+    mockAuditEvent.mockResolvedValue(undefined)
+  })
 
   describe('POST /applications/validate route', () => {
     test('should return 200 with valid application when validation passes', async () => {
-      const applicationId = 'APP-123';
+      const applicationId = 'APP-123'
       const request = {
         method: 'POST',
         headers: { 'x-forwarded-authorization': 'dummy-token' },
@@ -194,18 +194,18 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message, valid, actions, id }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('Application validated successfully');
-      expect(valid).toBe(true);
-      expect(id).toBe(1);
+      expect(statusCode).toBe(200)
+      expect(message).toBe('Application validated successfully')
+      expect(valid).toBe(true)
+      expect(id).toBe(1)
       expect(actions).toEqual([
         {
           actionCode: 'BND1',
@@ -232,7 +232,7 @@ describe('ApplicationValidationController', () => {
           ],
           sheetId: 'SX0679'
         }
-      ]);
+      ])
 
       // Verify all dependencies were called correctly
       expect(mockGetActions).toHaveBeenCalledWith(
@@ -240,7 +240,7 @@ describe('ApplicationValidationController', () => {
         mockPostgresDb,
         mockLandActions,
         'APP-123'
-      );
+      )
       expect(mockValidateRequestData).toHaveBeenCalledWith(
         expect.objectContaining({ logger: expect.any(Object) }),
         {
@@ -249,18 +249,18 @@ describe('ApplicationValidationController', () => {
           applicationId,
           sbi: String(sbi)
         }
-      );
+      )
       expect(mockValidateAllLandParcels).toHaveBeenCalledWith(
         expect.objectContaining({ logger: expect.any(Object) }),
         mockPostgresDb,
         String(sbi),
         'dummy-token',
         { landActions: mockLandActions, actions: mockActions }
-      );
-    });
+      )
+    })
 
     test('should allow number for SBI', async () => {
-      const applicationId = 'APP-123';
+      const applicationId = 'APP-123'
       const request = {
         method: 'POST',
         headers: { 'x-forwarded-authorization': 'dummy-token' },
@@ -272,21 +272,21 @@ describe('ApplicationValidationController', () => {
           sbi: 123456789,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { valid, id }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(valid).toBe(true);
-      expect(id).toBe(1);
-    });
+      expect(statusCode).toBe(200)
+      expect(valid).toBe(true)
+      expect(id).toBe(1)
+    })
 
     test('should send an audit event with the eligibility decisions and explanations', async () => {
-      const applicationId = 'APP-123';
+      const applicationId = 'APP-123'
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
@@ -298,9 +298,9 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
-      await server.inject(request);
+      await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -325,11 +325,11 @@ describe('ApplicationValidationController', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
-      );
-    });
+      )
+    })
 
     test('should send a failure audit event when an unexpected error occurs', async () => {
-      mockGetActions.mockRejectedValue(new Error('Database connection failed'));
+      mockGetActions.mockRejectedValue(new Error('Database connection failed'))
 
       const request = {
         method: 'POST',
@@ -342,9 +342,9 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
-      await server.inject(request);
+      await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_APPLICATION_VALIDATED,
@@ -356,11 +356,11 @@ describe('ApplicationValidationController', () => {
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
-      );
-    });
+      )
+    })
 
     test('should return 401 when missing X-Forwarded-Authorization header', async () => {
-      const applicationId = 'APP-123';
+      const applicationId = 'APP-123'
       const request = {
         method: 'POST',
         url: '/api/v2/application/validate',
@@ -371,20 +371,20 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject(request);
+      const { statusCode } = await server.inject(request)
 
-      expect(statusCode).toBe(401);
-    });
+      expect(statusCode).toBe(401)
+    })
 
     test('should return 400 when validation errors exist', async () => {
       const validationErrors = [
         'Land parcels not found: SX0679-9999',
         'Actions not found: INVALID1'
-      ];
-      mockValidateRequestData.mockResolvedValue(validationErrors);
+      ]
+      mockValidateRequestData.mockResolvedValue(validationErrors)
 
       const request = {
         method: 'POST',
@@ -397,22 +397,22 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(404);
-      expect(message).toBe('Not Found');
-    });
+      expect(statusCode).toBe(404)
+      expect(message).toBe('Not Found')
+    })
 
     test('should return 400 when validation errors are null but array is not empty', async () => {
       mockValidateRequestData.mockResolvedValue(
         Boom.badRequest('Some validation error')
-      );
+      )
 
       const request = {
         method: 'POST',
@@ -425,20 +425,20 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Some validation error');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Some validation error')
+    })
 
     test('should return 500 when getActions fails', async () => {
-      mockGetActions.mockRejectedValue(new Error('Database connection failed'));
+      mockGetActions.mockRejectedValue(new Error('Database connection failed'))
 
       const request = {
         method: 'POST',
@@ -451,16 +451,16 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(500);
-      expect(message).toBe('An internal server error occurred');
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -471,13 +471,13 @@ describe('ApplicationValidationController', () => {
         expect.stringContaining(
           'Business operation failed: Validate application'
         )
-      );
-    });
+      )
+    })
 
     test('should return 500 when createCompatibilityMatrix fails', async () => {
       mockValidateAllLandParcels.mockRejectedValue(
         new Error('Compatibility matrix creation failed')
-      );
+      )
 
       const request = {
         method: 'POST',
@@ -490,22 +490,22 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(500);
-      expect(message).toBe('An internal server error occurred');
-    });
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
 
     test('should return 500 when validateLandParcelActions fails', async () => {
       mockValidateAllLandParcels.mockRejectedValue(
         new Error('Land parcel validation failed')
-      );
+      )
 
       const request = {
         method: 'POST',
@@ -518,17 +518,17 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(500);
-      expect(message).toBe('An internal server error occurred');
-    });
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
 
     test('should return 422 when quantity is not a valid number', async () => {
       const request = {
@@ -553,17 +553,17 @@ describe('ApplicationValidationController', () => {
             }
           ]
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(422);
-      expect(message).toBe('Quantity must be a positive number');
-    });
+      expect(statusCode).toBe(422)
+      expect(message).toBe('Quantity must be a positive number')
+    })
 
     test('should return 400 when land actions array is empty', async () => {
       const request = {
@@ -577,20 +577,20 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: []
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Invalid request payload input');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
 
     test('should handle null validation errors', async () => {
-      mockValidateRequestData.mockResolvedValue(null);
+      mockValidateRequestData.mockResolvedValue(null)
 
       const request = {
         method: 'POST',
@@ -603,21 +603,21 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message, valid }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('Application validated successfully');
-      expect(valid).toBe(true);
-    });
+      expect(statusCode).toBe(200)
+      expect(message).toBe('Application validated successfully')
+      expect(valid).toBe(true)
+    })
 
     test('should handle undefined validation errors', async () => {
-      mockValidateRequestData.mockResolvedValue(undefined);
+      mockValidateRequestData.mockResolvedValue(undefined)
 
       const request = {
         method: 'POST',
@@ -630,23 +630,23 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message, valid }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('Application validated successfully');
-      expect(valid).toBe(true);
-    });
+      expect(statusCode).toBe(200)
+      expect(message).toBe('Application validated successfully')
+      expect(valid).toBe(true)
+    })
 
     test('should return 400 and call validateRequestData when validation errors exist', async () => {
       mockValidateRequestData.mockResolvedValue(
         Boom.badRequest('Test validation error')
-      );
+      )
 
       const request = {
         method: 'POST',
@@ -659,13 +659,13 @@ describe('ApplicationValidationController', () => {
           sbi,
           landActions: mockLandActions
         }
-      };
+      }
 
-      const { statusCode } = await server.inject(request);
+      const { statusCode } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(mockValidateRequestData).toHaveBeenCalled();
-      expect(mockValidateAllLandParcels).not.toHaveBeenCalled();
-    });
-  });
-});
+      expect(statusCode).toBe(400)
+      expect(mockValidateRequestData).toHaveBeenCalled()
+      expect(mockValidateAllLandParcels).not.toHaveBeenCalled()
+    })
+  })
+})

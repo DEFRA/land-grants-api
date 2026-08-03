@@ -1,27 +1,27 @@
-import Boom from '@hapi/boom';
-import { paymentCalculateTotalWMPSchema } from '../schema/payment-calculate-total-wmp.schema.js';
+import Boom from '@hapi/boom'
+import { paymentCalculateTotalWMPSchema } from '../schema/payment-calculate-total-wmp.schema.js'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
+} from '~/src/features/common/schema/index.js'
 import {
   logBusinessError,
   logInfo
-} from '../../common/helpers/logging/log-helpers.js';
-import { haToSqm } from '../../common/helpers/measurement.js';
-import { calculateWMPPayment } from '../service/wmp-service.js';
-import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
-import { paymentCalculateWMPResponseSchema } from '../schema/payment-calculate-wmp.schema.js';
+} from '../../common/helpers/logging/log-helpers.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
+import { calculateWMPPayment } from '../service/wmp-service.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import { paymentCalculateWMPResponseSchema } from '../schema/payment-calculate-wmp.schema.js'
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
-} from '../../common/helpers/audit-event.js';
+} from '../../common/helpers/audit-event.js'
 
 const handleWmpPaymentTotalCalculationError = async (request, error) => {
   /** @type {paymentCalculateTotalWMPSchema} */
   // @ts-expect-error - payload
-  const { totalAreaHa, applicationId, sbi, crn } = request.payload;
+  const { totalAreaHa, applicationId, sbi, crn } = request.payload
 
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate total wmp payment',
@@ -32,7 +32,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
       sbi,
       crn
     }
-  });
+  })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
@@ -43,10 +43,10 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
     },
     'failure',
     request
-  );
+  )
 
-  return Boom.internal('Error calculating wmp total payment');
-};
+  return Boom.internal('Error calculating wmp total payment')
+}
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
  * @param {import('@hapi/hapi').Request} request
@@ -56,7 +56,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
 const buildAuditContext = (request, sbi) => ({
   correlationId: getCorrelationId(request),
   sbi
-});
+})
 
 /**
  *
@@ -87,30 +87,30 @@ export const PaymentsCalculateTotalWMPController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
-      const logger = request.logger;
+      const postgresDb = request.server.postgresDb
+      const logger = request.logger
 
       /** @type {paymentCalculateTotalWMPSchema} */
       // @ts-expect-error - payload
-      const { totalAreaHa, applicationId, sbi, crn } = request.payload;
+      const { totalAreaHa, applicationId, sbi, crn } = request.payload
 
       logInfo(logger, {
         category: 'wmp',
         message: 'Payment Calculate total WMP',
         context: { totalAreaHa, applicationId, sbi, crn }
-      });
+      })
 
       const { result: paymentResult, action } = await calculateWMPPayment(
         logger,
         postgresDb,
         { totalWoodlandAreaSqm: haToSqm(totalAreaHa) }
-      );
+      )
       const transformedPaymentResult = wmpPaymentCalculateTransformer(
         [],
         paymentResult,
         action,
         undefined
-      );
+      )
 
       await auditEvent(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
@@ -121,17 +121,17 @@ export const PaymentsCalculateTotalWMPController = {
         },
         'success',
         request
-      );
+      )
 
       return h.response({
         message: 'success',
         payment: transformedPaymentResult
-      });
+      })
     } catch (error) {
-      return handleWmpPaymentTotalCalculationError(request, error);
+      return handleWmpPaymentTotalCalculationError(request, error)
     }
   }
-};
+}
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'

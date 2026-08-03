@@ -4,7 +4,7 @@
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  */
 
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
  * Get latest application validation run
@@ -14,30 +14,30 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * @returns {Promise<ApplicationResult | null>} The application validation run
  */
 async function getApplicationValidationRun(logger, db, id) {
-  let client;
+  let client
   try {
     logger.info(
       `Connecting to DB to fetch latest application validation run by id`
-    );
-    client = await db.connect();
+    )
+    client = await db.connect()
 
     const query = `
       SELECT * FROM application_results WHERE id = $1 ORDER BY created_at DESC LIMIT 1
-    `;
-    const result = await client.query(query, [id]);
+    `
+    const result = await client.query(query, [id])
 
-    return result.rows[0];
+    return result.rows[0]
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get application validation run',
       error
-    });
-    return null;
+    })
+    return null
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getApplicationValidationRun };
+export { getApplicationValidationRun }

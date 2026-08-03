@@ -63,7 +63,7 @@ const pactVerifierOptions = {
   publishVerificationResult: false
 
   // ... rest of config
-};
+}
 ```
 
 3. **Run the tests**:

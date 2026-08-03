@@ -1,5 +1,5 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
-import { actionConfigTransformer } from '~/src/features/actions/transformers/2.0.0/actionConfig.transformer.js';
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { actionConfigTransformer } from '~/src/features/actions/transformers/2.0.0/actionConfig.transformer.js'
 
 const getActionsByVersionSql = `
        WITH requested AS (
@@ -42,7 +42,7 @@ const getActionsByVersionSql = `
         ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
       ) subq
       ORDER BY display_order ASC
-    `;
+    `
 
 /**
  * Get all action configs, returning a version-matched config for any codes passed in.
@@ -55,29 +55,29 @@ const getActionsByVersionSql = `
  * @returns {Promise<Action[]>} All action configs, with requested codes at the latest patch of their specified major/minor version
  */
 async function getActionsByVersion(logger, db, actions) {
-  let client;
+  let client
   try {
-    client = await db.connect();
+    client = await db.connect()
 
     const result = await client.query(getActionsByVersionSql, [
       JSON.stringify(actions)
-    ]);
+    ])
 
-    return result.rows.map(actionConfigTransformer);
+    return result.rows.map(actionConfigTransformer)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get action configs by code and version',
       error
-    });
-    return [];
+    })
+    return []
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getActionsByVersion };
+export { getActionsByVersion }
 
 /**
  * @import {Action} from '../../action.d.js'

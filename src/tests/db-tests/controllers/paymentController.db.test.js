@@ -1,25 +1,25 @@
-import { vi } from 'vitest';
-import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/features/payment/controllers/2.0.0/payment-calculate.controller.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
-import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js';
-import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js';
-import { validateRequest } from '~/src/features/application/validation/application.validation.js';
-import { actions } from '../fixtures/actions.js';
-import { getActions } from '~/src/features/actions/service/action.service.js';
-import { auditEvent } from '~/src/features/common/helpers/audit-event.js';
+import { vi } from 'vitest'
+import { PaymentsCalculateControllerV2 as PaymentsCalculateController } from '~/src/features/payment/controllers/2.0.0/payment-calculate.controller.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
+import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
+import { validateRequest } from '~/src/features/application/validation/application.validation.js'
+import { actions } from '../fixtures/actions.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
+import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 
-vi.mock('~/src/features/application/validation/application.validation.js');
-vi.mock('~/src/features/actions/service/action.service.js');
-vi.mock('~/src/features/common/helpers/audit-event.js');
+vi.mock('~/src/features/application/validation/application.validation.js')
+vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockValidateRequest = validateRequest;
-const mockGetActions = getActions;
-const mockAuditEvent = auditEvent;
+const mockValidateRequest = validateRequest
+const mockGetActions = getActions
+const mockAuditEvent = auditEvent
 
 describe('Payment Controller', () => {
-  let logger, connection;
-  const fixtures = getPaymentCalculationFixtures();
-  const { h, getResponse } = createResponseCapture();
+  let logger, connection
+  const fixtures = getPaymentCalculationFixtures()
+  const { h, getResponse } = createResponseCapture()
 
   beforeAll(() => {
     logger = {
@@ -27,19 +27,19 @@ describe('Payment Controller', () => {
       error: vi.fn(),
       warn: vi.fn(),
       debug: vi.fn()
-    };
-    connection = connectToTestDatabase();
-  });
+    }
+    connection = connectToTestDatabase()
+  })
 
   beforeEach(() => {
-    mockValidateRequest.mockResolvedValue([]);
-    mockGetActions.mockResolvedValue(actions);
-    mockAuditEvent.mockResolvedValue(undefined);
-  });
+    mockValidateRequest.mockResolvedValue([])
+    mockGetActions.mockResolvedValue(actions)
+    mockAuditEvent.mockResolvedValue(undefined)
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   test.each(fixtures)(
     `%s`,
@@ -56,7 +56,7 @@ describe('Payment Controller', () => {
     ) => {
       vi.useFakeTimers({
         doNotFake: ['nextTick']
-      }).setSystemTime(new Date(dateToday));
+      }).setSystemTime(new Date(dateToday))
 
       await PaymentsCalculateController.handler(
         {
@@ -67,22 +67,22 @@ describe('Payment Controller', () => {
           }
         },
         h
-      );
+      )
 
       const {
         data: { payment, message },
         statusCode
-      } = getResponse();
+      } = getResponse()
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('success');
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
 
-      expect(payment.agreementStartDate).toEqual(expectedStartDate);
-      expect(payment.agreementEndDate).toEqual(expectedEndDate);
-      expect(payment.annualTotalPence).toEqual(Number(expectedPaymentAnnual));
+      expect(payment.agreementStartDate).toEqual(expectedStartDate)
+      expect(payment.agreementEndDate).toEqual(expectedEndDate)
+      expect(payment.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
       expect(payment.agreementTotalPence).toEqual(
         Number(expectedPaymentAgreement)
-      );
+      )
     }
-  );
-});
+  )
+})

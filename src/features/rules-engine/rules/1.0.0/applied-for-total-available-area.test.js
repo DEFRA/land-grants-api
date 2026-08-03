@@ -1,5 +1,5 @@
-import { appliedForTotalAvailableArea } from './applied-for-total-available-area.js';
-import { haToSqm } from '~/src/features/common/helpers/measurement.js';
+import { appliedForTotalAvailableArea } from './applied-for-total-available-area.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 describe('appliedForTotalAvailableArea', () => {
   const createApplication = (areaAppliedFor, parcelArea) => ({
@@ -7,16 +7,16 @@ describe('appliedForTotalAvailableArea', () => {
     landParcel: {
       availableAreaSqm: haToSqm(Number.parseFloat(parcelArea))
     }
-  });
+  })
 
   const createRule = (name = 'applied-for-total-available-area') => ({
     name
-  });
+  })
 
   test('should pass when area applied for matches parcel area', () => {
-    const application = createApplication('10.5', '10.5');
-    const rule = createRule();
-    const result = appliedForTotalAvailableArea.execute(application, rule);
+    const application = createApplication('10.5', '10.5')
+    const rule = createRule()
+    const result = appliedForTotalAvailableArea.execute(application, rule)
 
     expect(result).toEqual({
       name: 'applied-for-total-available-area',
@@ -31,13 +31,13 @@ describe('appliedForTotalAvailableArea', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should pass when area applied for matches parcel area with different types but same value', () => {
-    const application = createApplication(10.5, '10.5');
-    const rule = createRule();
-    const result = appliedForTotalAvailableArea.execute(application, rule);
+    const application = createApplication(10.5, '10.5')
+    const rule = createRule()
+    const result = appliedForTotalAvailableArea.execute(application, rule)
 
     expect(result).toEqual({
       name: 'applied-for-total-available-area',
@@ -52,13 +52,13 @@ describe('appliedForTotalAvailableArea', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should fail when area applied for does not match parcel area', () => {
-    const application = createApplication('9.5', '10.5');
-    const rule = createRule();
-    const result = appliedForTotalAvailableArea.execute(application, rule);
+    const application = createApplication('9.5', '10.5')
+    const rule = createRule()
+    const result = appliedForTotalAvailableArea.execute(application, rule)
 
     expect(result).toEqual({
       name: 'applied-for-total-available-area',
@@ -73,13 +73,13 @@ describe('appliedForTotalAvailableArea', () => {
           ]
         }
       ]
-    });
-  });
+    })
+  })
 
   test('should handle string and number comparison correctly', () => {
-    const application = createApplication(10.1, '10.1');
-    const rule = createRule();
-    const result = appliedForTotalAvailableArea.execute(application, rule);
+    const application = createApplication(10.1, '10.1')
+    const rule = createRule()
+    const result = appliedForTotalAvailableArea.execute(application, rule)
 
     expect(result).toEqual({
       name: 'applied-for-total-available-area',
@@ -94,6 +94,6 @@ describe('appliedForTotalAvailableArea', () => {
           ]
         }
       ]
-    });
-  });
-});
+    })
+  })
+})

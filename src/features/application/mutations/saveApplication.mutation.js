@@ -1,7 +1,7 @@
 import {
   logDatabaseError,
   logInfo
-} from '../../common/helpers/logging/log-helpers.js';
+} from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Save application
@@ -11,7 +11,7 @@ import {
  * @returns {Promise<string | null>} The application or null if an error occurs
  */
 async function saveApplication(logger, db, application) {
-  let client;
+  let client
   try {
     logInfo(logger, {
       category: 'application',
@@ -21,34 +21,34 @@ async function saveApplication(logger, db, application) {
         sbi: application.sbi,
         crn: application.crn
       }
-    });
-    client = await db.connect();
+    })
+    client = await db.connect()
 
     const query = `
       INSERT INTO application_results (application_id, sbi, crn, data)
       VALUES ($1, $2, $3, $4)
       RETURNING *
-    `;
+    `
 
     const result = await client.query(query, [
       application.application_id,
       application.sbi,
       application.crn,
       application.data
-    ]);
+    ])
 
-    return result.rows[0].id;
+    return result.rows[0].id
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Save application validation run',
       error
-    });
-    return null;
+    })
+    return null
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { saveApplication };
+export { saveApplication }

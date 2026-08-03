@@ -1,11 +1,11 @@
-import { vi } from 'vitest';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
-import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js';
-import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js';
+import { vi } from 'vitest'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
+import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'
 
 describe('Payment Calculation Service', () => {
-  let logger, connection;
-  const fixtures = getPaymentCalculationFixtures();
+  let logger, connection
+  const fixtures = getPaymentCalculationFixtures()
 
   beforeAll(() => {
     logger = {
@@ -13,17 +13,17 @@ describe('Payment Calculation Service', () => {
       warn: vi.fn(),
       info: vi.fn(),
       error: vi.fn()
-    };
-    connection = connectToTestDatabase();
-  });
+    }
+    connection = connectToTestDatabase()
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   afterEach(() => {
-    vi.useRealTimers();
-  });
+    vi.useRealTimers()
+  })
 
   test.each(fixtures)(
     `%p`,
@@ -43,13 +43,13 @@ describe('Payment Calculation Service', () => {
     ) => {
       vi.useFakeTimers({
         doNotFake: ['nextTick']
-      }).setSystemTime(new Date(dateToday));
+      }).setSystemTime(new Date(dateToday))
 
-      let parcels = [];
+      let parcels = []
       try {
-        parcels = JSON.parse(parcelsStr);
+        parcels = JSON.parse(parcelsStr)
       } catch (e) {
-        logger.error(`Error parsing parcels in CSV file`);
+        logger.error(`Error parsing parcels in CSV file`)
       }
 
       const landCoverClassCodes = [
@@ -65,7 +65,7 @@ describe('Payment Calculation Service', () => {
         '141',
         '142',
         '143'
-      ];
+      ]
 
       const enabledActions = [
         {
@@ -115,49 +115,45 @@ describe('Payment Calculation Service', () => {
           durationYears: 3,
           startDate: '2025-01-01'
         }
-      ];
+      ]
 
-      const result = getPaymentCalculationForParcels(
-        parcels,
-        enabledActions,
-        3
-      );
+      const result = getPaymentCalculationForParcels(parcels, enabledActions, 3)
 
-      const firstPayment = result.payments[0];
-      const secondPayment = result.payments[1];
+      const firstPayment = result.payments[0]
+      const secondPayment = result.payments[1]
 
-      expect(result.annualTotalPence).toEqual(Number(expectedPaymentAnnual));
+      expect(result.annualTotalPence).toEqual(Number(expectedPaymentAnnual))
       expect(result.agreementTotalPence).toEqual(
         Number(expectedPaymentAgreement)
-      );
+      )
 
       expect(firstPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentFirstQuarter)
-      );
+      )
       expect(secondPayment.totalPaymentPence).toEqual(
         Number(expectedPaymentOtherQuarters)
-      );
+      )
 
       // does the sum of individual payment line items match the totalPaymentPence for the instalment?
       for (const payment of result.payments) {
         const sumOfTotalLineItems = payment.lineItems.reduce(
           (acc, item) => acc + item.paymentPence,
           0
-        );
-        expect(sumOfTotalLineItems).toEqual(payment.totalPaymentPence);
+        )
+        expect(sumOfTotalLineItems).toEqual(payment.totalPaymentPence)
       }
 
       // does the sum of total payments match the agreement total during the agreement length?
       const sumOfTotalsForInstalments = result.payments.reduce(
         (acc, p) => acc + p.totalPaymentPence,
         0
-      );
-      expect(sumOfTotalsForInstalments).toEqual(result.agreementTotalPence);
+      )
+      expect(sumOfTotalsForInstalments).toEqual(result.agreementTotalPence)
 
       // dates
-      expect(result.agreementStartDate).toEqual(expectedStartDate);
-      expect(result.agreementEndDate).toEqual(expectedEndDate);
-      expect(firstPayment.paymentDate).toEqual(expectedFirstPaymentDate);
+      expect(result.agreementStartDate).toEqual(expectedStartDate)
+      expect(result.agreementEndDate).toEqual(expectedEndDate)
+      expect(firstPayment.paymentDate).toEqual(expectedFirstPaymentDate)
     }
-  );
-});
+  )
+})

@@ -1,8 +1,8 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js';
-import { roundSqm } from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { roundSqm } from '~/src/features/common/helpers/measurement.js'
 
 const getIntersectionsExclusiveQuery = `
   WITH target_parcel AS (
@@ -90,7 +90,7 @@ const getIntersectionsExclusiveQuery = `
   WHERE area_sqm > 0
   GROUP BY land_cover_class_code, overlap_type
   ORDER BY land_cover_class_code, overlap_type
-`;
+`
 
 /**
  * Get SSSI/HF intersections grouped by land cover class.
@@ -101,32 +101,32 @@ const getIntersectionsExclusiveQuery = `
  * @returns {Promise<{sssiOverlap: DesignationOverlap[], hfOverlap: DesignationOverlap[], sssiAndHfOverlap: DesignationOverlap[]}>} Intersections grouped for AAC.
  */
 export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
-  let client;
+  let client
 
   try {
-    client = await db.connect();
+    client = await db.connect()
 
     const result = await client.query(getIntersectionsExclusiveQuery, [
       sheetId,
       parcelId
-    ]);
+    ])
 
-    const sssiOverlap = [];
-    const hfOverlap = [];
-    const sssiAndHfOverlap = [];
+    const sssiOverlap = []
+    const hfOverlap = []
+    const sssiAndHfOverlap = []
 
     for (const row of result.rows ?? []) {
       const overlap = {
         landCoverClassCode: row.land_cover_class_code,
         areaSqm: roundSqm(row.area_sqm)
-      };
+      }
 
       if (row.overlap_type === 'sssi') {
-        sssiOverlap.push(overlap);
+        sssiOverlap.push(overlap)
       } else if (row.overlap_type === 'hf') {
-        hfOverlap.push(overlap);
+        hfOverlap.push(overlap)
       } else if (row.overlap_type === 'sssi_and_hf') {
-        sssiAndHfOverlap.push(overlap);
+        sssiAndHfOverlap.push(overlap)
       } else {
         logInfo(logger, {
           category: 'database',
@@ -137,7 +137,7 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
             overlapType: row.overlap_type,
             landCoverClassCode: row.land_cover_class_code
           }
-        });
+        })
       }
     }
 
@@ -149,13 +149,13 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
         sheetId,
         rowCount: result.rows?.length ?? 0
       }
-    });
+    })
 
     return {
       sssiOverlap,
       hfOverlap,
       sssiAndHfOverlap
-    };
+    }
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get land cover intersections',
@@ -164,16 +164,16 @@ export async function getLandCoverIntersections(sheetId, parcelId, db, logger) {
         parcelId,
         sheetId
       }
-    });
+    })
 
     return {
       sssiOverlap: [],
       hfOverlap: [],
       sssiAndHfOverlap: []
-    };
+    }
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }

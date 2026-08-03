@@ -1,16 +1,16 @@
-import Boom from '@hapi/boom';
+import Boom from '@hapi/boom'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js';
+} from '~/src/features/common/schema/index.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import {
   caseManagementApplicationValidationRunRequestSchema,
   caseManagementApplicationValidationRunResponseSchema
-} from '~/src/features/case-management-adapter/schema/application-validation.schema.js';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
-import { applicationValidationRunToCaseManagement } from '../transformers/application-validation.transformer.js';
-import { logBusinessError } from '../../common/helpers/logging/log-helpers.js';
+} from '~/src/features/case-management-adapter/schema/application-validation.schema.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { applicationValidationRunToCaseManagement } from '../transformers/application-validation.transformer.js'
+import { logBusinessError } from '../../common/helpers/logging/log-helpers.js'
 
 /** @typedef {import('~/src/features/application/application.d.js').ApplicationValidationRun} ApplicationValidationRun */
 
@@ -39,40 +39,40 @@ export const CaseManagementApplicationValidationRunController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
-      const { id } = request.params;
+      const postgresDb = request.server.postgresDb
+      const { id } = request.params
       const applicationValidationRun = await getApplicationValidationRun(
         request.logger,
         postgresDb,
         id
-      );
+      )
 
       if (!applicationValidationRun) {
-        return Boom.notFound('Application validation run not found');
+        return Boom.notFound('Application validation run not found')
       }
 
       /** @type {ApplicationValidationRun} */
-      const applicationValidationRunData = applicationValidationRun.data;
+      const applicationValidationRunData = applicationValidationRun.data
       const response = applicationValidationRunToCaseManagement(
         applicationValidationRunData
-      );
+      )
 
       return h
         .response({
           message: 'Application validation run retrieved successfully',
           response
         })
-        .code(statusCodes.ok);
+        .code(statusCodes.ok)
     } catch (error) {
-      const errorMessage = 'Error getting application validation run';
-      const { id } = request.params;
+      const errorMessage = 'Error getting application validation run'
+      const { id } = request.params
 
       logBusinessError(request.logger, {
         operation: 'Application validation run',
         error,
         context: { id }
-      });
-      return Boom.internal(errorMessage);
+      })
+      return Boom.internal(errorMessage)
     }
   }
-};
+}

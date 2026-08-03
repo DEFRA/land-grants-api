@@ -1,6 +1,6 @@
-import { splitParcelId } from '../../service/2.0.0/parcel.service.js';
-import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js';
-import { getLandData } from '../../queries/getLandData.query.js';
+import { splitParcelId } from '../../service/2.0.0/parcel.service.js'
+import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { getLandData } from '../../queries/getLandData.query.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -20,26 +20,26 @@ export const getAndValidateParcels = async (sheetParcelIds, request) => {
         sheetParcelId.parcelId,
         request.server.postgresDb,
         request.logger
-      );
+      )
 
       return {
         parcel: parcel?.[0] ?? null,
         sheetId: sheetParcelId.sheetId,
         parcelId: sheetParcelId.parcelId
-      };
+      }
     })
-  );
+  )
 
   const errors = parcels
     .map((p) => {
-      return p.parcel ? null : `${p.sheetId}-${p.parcelId}`;
+      return p.parcel ? null : `${p.sheetId}-${p.parcelId}`
     })
-    .filter((error) => error !== null);
+    .filter((error) => error !== null)
 
   return errors && errors.length > 0
     ? { errors: `Land parcels not found: ${errors.join(', ')}`, parcels: [] }
-    : { errors: null, parcels: parcels.map((p) => p.parcel) };
-};
+    : { errors: null, parcels: parcels.map((p) => p.parcel) }
+}
 
 /**
  * Get data and validate request
@@ -53,34 +53,34 @@ export const getDataAndValidateRequest = async (
   request,
   validateActions = true
 ) => {
-  const errors = [];
+  const errors = []
 
   const parcels = parcelIds.map((parcel) => {
-    const { sheetId, parcelId } = splitParcelId(parcel, request.logger);
-    return { sheetId, parcelId };
-  });
+    const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+    return { sheetId, parcelId }
+  })
 
-  const response = await getAndValidateParcels(parcels, request);
+  const response = await getAndValidateParcels(parcels, request)
 
-  let enabledActions = [];
+  let enabledActions = []
 
   if (validateActions) {
     enabledActions = await getActionsByLatestVersion(
       request.logger,
       request.server.postgresDb
-    );
+    )
 
     if (!enabledActions || enabledActions?.length === 0) {
-      errors.push('Actions not found');
+      errors.push('Actions not found')
     }
   }
 
   if (response?.errors) {
-    errors.push(response.errors);
+    errors.push(response.errors)
   }
   if (errors.length > 0) {
-    return { errors, enabledActions: [], parcels: [] };
+    return { errors, enabledActions: [], parcels: [] }
   }
 
-  return { errors: null, enabledActions, parcels: response?.parcels };
-};
+  return { errors: null, enabledActions, parcels: response?.parcels }
+}

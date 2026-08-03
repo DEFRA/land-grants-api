@@ -1,7 +1,7 @@
 import {
   cdpUploaderCallbackSchema,
   cdpUploaderCallbackResponseSchema
-} from './land-data-ingest.schema.js';
+} from './land-data-ingest.schema.js'
 
 describe('cdpUploaderCallbackSchema', () => {
   const validData = {
@@ -18,67 +18,67 @@ describe('cdpUploaderCallbackSchema', () => {
         hasError: false
       }
     }
-  };
+  }
 
   it('should validate valid data', () => {
-    const { error } = cdpUploaderCallbackSchema.validate(validData);
-    expect(error).toBeUndefined();
-  });
+    const { error } = cdpUploaderCallbackSchema.validate(validData)
+    expect(error).toBeUndefined()
+  })
 
   it('should allow optional fields to be omitted', () => {
     const { error } = cdpUploaderCallbackSchema.validate({
       uploadStatus: 'ready'
-    });
-    expect(error).toBeUndefined();
-  });
+    })
+    expect(error).toBeUndefined()
+  })
 
   it('should reject missing uploadStatus', () => {
-    const { numberOfRejectedFiles, metadata, form } = validData;
+    const { numberOfRejectedFiles, metadata, form } = validData
     const { error } = cdpUploaderCallbackSchema.validate({
       numberOfRejectedFiles,
       metadata,
       form
-    });
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('uploadStatus');
-  });
+    })
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('uploadStatus')
+  })
 
   it('should reject invalid uploadStatus value', () => {
     const { error } = cdpUploaderCallbackSchema.validate({
       ...validData,
       uploadStatus: 'unknown'
-    });
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('uploadStatus');
-  });
+    })
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('uploadStatus')
+  })
 
   it('should accept all valid uploadStatus values', () => {
     for (const uploadStatus of ['initiated', 'pending', 'ready']) {
       const { error } = cdpUploaderCallbackSchema.validate({
         ...validData,
         uploadStatus
-      });
-      expect(error).toBeUndefined();
+      })
+      expect(error).toBeUndefined()
     }
-  });
+  })
 
   it('should reject non-integer numberOfRejectedFiles', () => {
     const { error } = cdpUploaderCallbackSchema.validate({
       ...validData,
       numberOfRejectedFiles: 1.5
-    });
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('integer');
-  });
+    })
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('integer')
+  })
 
   it('should reject invalid numberOfRejectedFiles type', () => {
     const { error } = cdpUploaderCallbackSchema.validate({
       ...validData,
       numberOfRejectedFiles: 'not-a-number'
-    });
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('number');
-  });
+    })
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('number')
+  })
 
   describe('form.file', () => {
     it('should validate a fully populated file object', () => {
@@ -99,9 +99,9 @@ describe('cdpUploaderCallbackSchema', () => {
             detectedContentType: 'text/csv'
           }
         }
-      });
-      expect(error).toBeUndefined();
-    });
+      })
+      expect(error).toBeUndefined()
+    })
 
     it('should reject invalid fileStatus value', () => {
       const { error } = cdpUploaderCallbackSchema.validate({
@@ -112,10 +112,10 @@ describe('cdpUploaderCallbackSchema', () => {
             fileStatus: 'invalid-status'
           }
         }
-      });
-      expect(error).toBeDefined();
-      expect(error.details[0].message).toContain('fileStatus');
-    });
+      })
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('fileStatus')
+    })
 
     it('should accept all valid fileStatus values', () => {
       for (const fileStatus of ['pending', 'complete', 'rejected']) {
@@ -127,10 +127,10 @@ describe('cdpUploaderCallbackSchema', () => {
               fileStatus
             }
           }
-        });
-        expect(error).toBeUndefined();
+        })
+        expect(error).toBeUndefined()
       }
-    });
+    })
 
     it('should reject non-integer contentLength', () => {
       const { error } = cdpUploaderCallbackSchema.validate({
@@ -141,10 +141,10 @@ describe('cdpUploaderCallbackSchema', () => {
             contentLength: 1024.5
           }
         }
-      });
-      expect(error).toBeDefined();
-      expect(error.details[0].message).toContain('integer');
-    });
+      })
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('integer')
+    })
 
     it('should reject invalid hasError type', () => {
       const { error } = cdpUploaderCallbackSchema.validate({
@@ -155,32 +155,32 @@ describe('cdpUploaderCallbackSchema', () => {
             hasError: 'yes'
           }
         }
-      });
-      expect(error).toBeDefined();
-      expect(error.details[0].message).toContain('boolean');
-    });
-  });
-});
+      })
+      expect(error).toBeDefined()
+      expect(error.details[0].message).toContain('boolean')
+    })
+  })
+})
 
 describe('cdpUploaderCallbackResponseSchema', () => {
   it('should validate valid data', () => {
     const { error } = cdpUploaderCallbackResponseSchema.validate({
       message: 'Upload received'
-    });
-    expect(error).toBeUndefined();
-  });
+    })
+    expect(error).toBeUndefined()
+  })
 
   it('should reject missing message', () => {
-    const { error } = cdpUploaderCallbackResponseSchema.validate({});
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('message');
-  });
+    const { error } = cdpUploaderCallbackResponseSchema.validate({})
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('message')
+  })
 
   it('should reject invalid message type', () => {
     const { error } = cdpUploaderCallbackResponseSchema.validate({
       message: 123
-    });
-    expect(error).toBeDefined();
-    expect(error.details[0].message).toContain('string');
-  });
-});
+    })
+    expect(error).toBeDefined()
+    expect(error.details[0].message).toContain('string')
+  })
+})

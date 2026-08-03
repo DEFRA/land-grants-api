@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
-import unitConfig from './vitest.unit.config.js';
+import { defineConfig } from 'vitest/config'
+import { resolve } from 'path'
+import unitConfig from './vitest.unit.config.js'
 
 export default defineConfig({
   ...unitConfig,
@@ -31,4 +31,4 @@ export default defineConfig({
       reportsDirectory: 'coverage/e2e'
     }
   }
-});
+})

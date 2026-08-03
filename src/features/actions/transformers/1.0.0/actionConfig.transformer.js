@@ -13,7 +13,7 @@ export function actionConfigTransformer(action) {
     version,
     semantic_version: semanticVersion,
     ...actionObj
-  } = action;
+  } = action
   return {
     ...actionObj,
     applicationUnitOfMeasurement,
@@ -23,5 +23,5 @@ export function actionConfigTransformer(action) {
     lastUpdated,
     version: Number(version),
     semanticVersion
-  };
+  }
 }

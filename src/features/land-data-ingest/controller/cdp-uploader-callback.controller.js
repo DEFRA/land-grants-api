@@ -1,17 +1,17 @@
-import Boom from '@hapi/boom';
+import Boom from '@hapi/boom'
 import {
   cdpUploaderCallbackResponseSchema,
   cdpUploaderCallbackSchema
-} from '../schema/land-data-ingest.schema.js';
+} from '../schema/land-data-ingest.schema.js'
 import {
   logBusinessError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js';
-import { internalServerErrorResponseSchema } from '../../common/schema/index.js';
-import { statusCodes } from '../../common/constants/status-codes.js';
-import { config } from '../../../config/index.js';
-import { createTaskInfo, processFile } from '../service/ingest.service.js';
-import { isValidIngestFile } from '../service/start-ingest.service.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { internalServerErrorResponseSchema } from '../../common/schema/index.js'
+import { statusCodes } from '../../common/constants/status-codes.js'
+import { config } from '../../../config/index.js'
+import { createTaskInfo, processFile } from '../service/ingest.service.js'
+import { isValidIngestFile } from '../service/start-ingest.service.js'
 
 /**
  * Validates that the uploaded file has no errors and is complete
@@ -20,15 +20,15 @@ import { isValidIngestFile } from '../service/start-ingest.service.js';
  */
 const validateFileStatus = (payload) => {
   if (payload.form.file?.hasError) {
-    return Boom.badRequest(payload.form.file.errorMessage);
+    return Boom.badRequest(payload.form.file.errorMessage)
   }
 
   if (payload.form.file?.fileStatus !== 'complete') {
-    return Boom.badRequest('File is not ready');
+    return Boom.badRequest('File is not ready')
   }
 
-  return null;
-};
+  return null
+}
 
 /**
  * Validates that the file belongs to the given ingest, if an ingest is referenced
@@ -44,22 +44,22 @@ const validateIngestFile = async ({
   payload
 }) => {
   if (!ingestId || !filename) {
-    return null;
+    return null
   }
 
-  const isValid = await isValidIngestFile(ingestId, filename, postgresDb);
+  const isValid = await isValidIngestFile(ingestId, filename, postgresDb)
   if (isValid) {
-    return null;
+    return null
   }
 
   logBusinessError(logger, {
     operation: `${category}_error`,
     error: new Error('Invalid ingest file'),
     context: { payload }
-  });
+  })
 
-  return Boom.badRequest('Invalid ingest file');
-};
+  return Boom.badRequest('Invalid ingest file')
+}
 
 /**
  * Starts background processing of the uploaded file, logging any failure
@@ -85,9 +85,9 @@ const startFileProcessing = (
         s3Key: payload.form.file.s3Key,
         s3Bucket: config.get('s3.bucket')
       }
-    });
-  });
-};
+    })
+  })
+}
 
 export const CDPUploaderCallbackController = {
   options: {
@@ -110,17 +110,17 @@ export const CDPUploaderCallbackController = {
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
-    const category = 'land-data-ingest';
+    const category = 'land-data-ingest'
     const {
       logger,
       // @ts-expect-error - postgresDb, payload
       server: { postgresDb }
-    } = request;
+    } = request
     /** @type { CDPUploaderRequest } */
     // @ts-expect-error - payload
-    const payload = request.payload;
-    const ingestId = payload?.metadata?.ingestId;
-    const filename = payload?.metadata?.filename;
+    const payload = request.payload
+    const ingestId = payload?.metadata?.ingestId
+    const filename = payload?.metadata?.filename
 
     try {
       logInfo(logger, {
@@ -129,11 +129,11 @@ export const CDPUploaderCallbackController = {
         context: {
           payload: JSON.stringify(payload ?? {})
         }
-      });
+      })
 
-      const statusError = validateFileStatus(payload);
+      const statusError = validateFileStatus(payload)
       if (statusError) {
-        return statusError;
+        return statusError
       }
 
       const ingestError = await validateIngestFile({
@@ -143,12 +143,12 @@ export const CDPUploaderCallbackController = {
         logger,
         category,
         payload
-      });
+      })
       if (ingestError) {
-        return ingestError;
+        return ingestError
       }
 
-      const { title, taskId } = createTaskInfo(Date.now(), category);
+      const { title, taskId } = createTaskInfo(Date.now(), category)
 
       startFileProcessing(payload, request, {
         category,
@@ -156,7 +156,7 @@ export const CDPUploaderCallbackController = {
         taskId,
         filename,
         ingestId
-      });
+      })
 
       logInfo(logger, {
         category,
@@ -166,9 +166,9 @@ export const CDPUploaderCallbackController = {
           s3Key: payload.form.file.s3Key,
           s3Bucket: config.get('s3.bucket')
         }
-      });
+      })
 
-      return h.response({ message: 'Message received' }).code(statusCodes.ok);
+      return h.response({ message: 'Message received' }).code(statusCodes.ok)
     } catch (error) {
       logBusinessError(request.logger, {
         operation: `${category}_error`,
@@ -178,12 +178,12 @@ export const CDPUploaderCallbackController = {
           s3Key: payload.form.file.s3Key,
           s3Bucket: config.get('s3.bucket')
         }
-      });
+      })
 
-      return Boom.internal('Error processing land data');
+      return Boom.internal('Error processing land data')
     }
   }
-};
+}
 
 /**
  * @import {CDPUploaderRequest} from '../land-data-ingest.d.js'

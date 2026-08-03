@@ -1,11 +1,11 @@
-import { describe, test, expect } from 'vitest';
-import { httpClient } from './setup/http-client.js';
-import { getAuthHeader } from './setup/auth-helpers.js';
+import { describe, test, expect } from 'vitest'
+import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 const headers = {
   Authorization: getAuthHeader(),
   'X-Forwarded-Authorization': 'dummy'
-};
+}
 
 describe('Parcels Endpoints', () => {
   describe('POST /api/v2/parcels', () => {
@@ -17,11 +17,11 @@ describe('Parcels Endpoints', () => {
           parcelIds: ['SD5649-9215'],
           fields: ['size', 'actions']
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data.message).toBe('success');
-      expect(response.data.parcels).toHaveLength(1);
+      expect(response.status).toBe(200)
+      expect(response.data.message).toBe('success')
+      expect(response.data.parcels).toHaveLength(1)
       expect(response.data.parcels[0]).toMatchObject({
         parcelId: '9215',
         sheetId: 'SD5649',
@@ -39,7 +39,7 @@ describe('Parcels Endpoints', () => {
             })
           })
         ])
-      });
-    });
-  });
-});
+      })
+    })
+  })
+})

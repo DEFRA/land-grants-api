@@ -14,12 +14,12 @@
 
 export const executeRules = (rules, application, actionRules = []) => {
   const results = actionRules.map((rule) => {
-    const version = rule.version ?? '1.0.0';
-    const ruleKey = `${rule.name}-${version}`;
+    const version = rule.version ?? '1.0.0'
+    const ruleKey = `${rule.name}-${version}`
     return rules[ruleKey]
       ? { ...rules[ruleKey].execute(application, rule) }
-      : { name: rule.name, passed: false, message: 'Rule not found' };
-  });
+      : { name: rule.name, passed: false, message: 'Rule not found' }
+  })
 
   return {
     results,
@@ -27,8 +27,8 @@ export const executeRules = (rules, application, actionRules = []) => {
       results.length > 0
         ? results.every((result) => result?.passed === true)
         : false
-  };
-};
+  }
+}
 
 /**
  * Executes a single rule for the given enabled actions and application.
@@ -50,12 +50,12 @@ export const executeSingleRuleForEnabledActions = (
       .map((action) => {
         const matchingRule = action.rules?.find(
           (rule) => String(rule.name) === ruleName
-        );
+        )
         const result = matchingRule
           ? ruleToExecute.execute(application, matchingRule)
-          : false;
+          : false
 
-        return [action.code, result];
+        return [action.code, result]
       })
-  );
-};
+  )
+}

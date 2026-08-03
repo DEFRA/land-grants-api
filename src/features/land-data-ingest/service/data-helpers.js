@@ -1,14 +1,14 @@
-import { performance } from 'node:perf_hooks';
-import { readFile } from '../../common/helpers/read-file.js';
-import { from } from 'pg-copy-streams';
-import { pipeline } from 'node:stream/promises';
+import { performance } from 'node:perf_hooks'
+import { readFile } from '../../common/helpers/read-file.js'
+import { from } from 'pg-copy-streams'
+import { pipeline } from 'node:stream/promises'
 import {
   logInfo,
   logBusinessError
-} from '../../common/helpers/logging/log-helpers.js';
-import { INGEST_STATUS } from './ingest-status.js';
+} from '../../common/helpers/logging/log-helpers.js'
+import { INGEST_STATUS } from './ingest-status.js'
 
-const LOG_CATEGORY = 'land-data-ingest';
+const LOG_CATEGORY = 'land-data-ingest'
 
 /**
  * Returns the number of rows in a table
@@ -19,8 +19,8 @@ const LOG_CATEGORY = 'land-data-ingest';
 export async function getTableRowCount(dbClient, tableName) {
   const {
     rows: [{ count }]
-  } = await dbClient.query(`SELECT COUNT(*) as count FROM ${tableName}`);
-  return Number(count);
+  } = await dbClient.query(`SELECT COUNT(*) as count FROM ${tableName}`)
+  return Number(count)
 }
 
 /**
@@ -29,10 +29,10 @@ export async function getTableRowCount(dbClient, tableName) {
  * @param {string} tableName
  */
 export async function createTempTable(dbClient, tableName) {
-  await dbClient.query(`DROP TABLE IF EXISTS ${tableName}_tmp CASCADE;`);
+  await dbClient.query(`DROP TABLE IF EXISTS ${tableName}_tmp CASCADE;`)
   await dbClient.query(
     await readFile(`/${tableName}/create_${tableName}_temp_table.sql`)
-  );
+  )
 }
 
 /**
@@ -46,8 +46,8 @@ export async function copyDataToTempTable(dbClient, tableName, dataStream) {
     from(
       `COPY ${tableName}_tmp FROM STDIN WITH (FORMAT csv, HEADER true, DELIMITER ',')`
     )
-  );
-  await pipeline(dataStream, pgStream);
+  )
+  await pipeline(dataStream, pgStream)
 }
 
 /**
@@ -61,7 +61,7 @@ export async function insertData(dbClient, tableName, ingestId) {
   return dbClient.query(
     await readFile(`/${tableName}/insert_${tableName}.sql`),
     [ingestId]
-  );
+  )
 }
 
 /**
@@ -77,14 +77,14 @@ export async function truncateTableAndInsertData(
   ingestId
 ) {
   try {
-    await dbClient.query(`BEGIN`);
-    await dbClient.query(`TRUNCATE TABLE ${tableName};`);
-    const result = await insertData(dbClient, tableName, ingestId);
-    await dbClient.query(`COMMIT`);
-    return result;
+    await dbClient.query(`BEGIN`)
+    await dbClient.query(`TRUNCATE TABLE ${tableName};`)
+    const result = await insertData(dbClient, tableName, ingestId)
+    await dbClient.query(`COMMIT`)
+    return result
   } catch (error) {
-    await dbClient.query(`ROLLBACK`);
-    throw error;
+    await dbClient.query(`ROLLBACK`)
+    throw error
   }
 }
 
@@ -101,7 +101,7 @@ export async function isIngestComplete(tableName, ingestId, dbClient) {
     rows: [{ count }]
   } = await dbClient.query(
     `SELECT count(*) as count FROM ${tableName + '_staging'}`
-  );
+  )
 
   // sum up file count
   const {
@@ -115,16 +115,16 @@ export async function isIngestComplete(tableName, ingestId, dbClient) {
     WHERE
         i.id = $1`,
     [ingestId]
-  );
+  )
 
-  const totalCount = Number(count);
-  const expectedCount = Number(totalRows);
+  const totalCount = Number(count)
+  const expectedCount = Number(totalRows)
 
   return {
     isComplete: totalCount === expectedCount,
     isOverCount: totalCount > expectedCount,
     totalCount
-  };
+  }
 }
 
 /**
@@ -141,24 +141,24 @@ export async function logDuplicateRows(
   dedupeColumns,
   logger
 ) {
-  const columns = dedupeColumns.join(', ');
+  const columns = dedupeColumns.join(', ')
 
   const {
     rows: [{ duplicate_count: duplicateCount }]
   } = await dbClient.query(
     `SELECT COUNT(*) - COUNT(DISTINCT (${columns})) AS duplicate_count FROM ${tableName}_tmp`
-  );
+  )
 
-  const count = Number(duplicateCount);
+  const count = Number(duplicateCount)
 
   logInfo(logger, {
     category: LOG_CATEGORY,
     operation: `${tableName}_duplicate_check`,
     message: `${count} duplicate rows found in ${tableName}_tmp on (${columns})`,
     context: { tableName, dedupeColumns, duplicateCount: count }
-  });
+  })
 
-  return count;
+  return count
 }
 
 /**
@@ -171,11 +171,11 @@ export async function logDuplicateRows(
  * @param {import('pg').Client} dbClient
  */
 async function promoteStagingTableStatements(tableName, dbClient) {
-  await dbClient.query(`TRUNCATE TABLE ${tableName}`);
+  await dbClient.query(`TRUNCATE TABLE ${tableName}`)
   await dbClient.query(
     `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
-  );
-  await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`);
+  )
+  await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
 }
 
 /**
@@ -184,23 +184,23 @@ async function promoteStagingTableStatements(tableName, dbClient) {
  * @param {import('pg').Client} dbClient
  */
 export async function promoteStagingTable(tableName, dbClient, logger) {
-  const startTime = performance.now();
+  const startTime = performance.now()
 
   try {
-    await dbClient.query('BEGIN');
-    await promoteStagingTableStatements(tableName, dbClient);
-    await dbClient.query('COMMIT');
+    await dbClient.query('BEGIN')
+    await promoteStagingTableStatements(tableName, dbClient)
+    await dbClient.query('COMMIT')
 
-    const duration = performance.now() - startTime;
+    const duration = performance.now() - startTime
     logInfo(logger, {
       category: LOG_CATEGORY,
       operation: `${tableName}_staging_promoted`,
       message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
       context: { tableName, duration }
-    });
+    })
   } catch (error) {
-    await dbClient.query('ROLLBACK');
-    throw error;
+    await dbClient.query('ROLLBACK')
+    throw error
   }
 }
 
@@ -217,8 +217,8 @@ async function getLatestIngestStatus(entityName, dbClient) {
   } = await dbClient.query(
     `SELECT id, status FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1`,
     [entityName]
-  );
-  return ingest;
+  )
+  return ingest
 }
 
 /**
@@ -231,14 +231,14 @@ async function getLatestIngestStatus(entityName, dbClient) {
 async function acquirePairLock(entityName, pairedEntityName, dbClient) {
   const lockKey = [entityName, pairedEntityName]
     .sort((a, b) => a.localeCompare(b))
-    .join('|');
-  await dbClient.query('SELECT pg_advisory_xact_lock(hashtext($1))', [lockKey]);
+    .join('|')
+  await dbClient.query('SELECT pg_advisory_xact_lock(hashtext($1))', [lockKey])
 }
 
 const TERMINAL_FAILURE_STATUSES = new Set([
   INGEST_STATUS.FAILED,
   INGEST_STATUS.CANCELLED
-]);
+])
 
 /**
  * This entity has finished staging. If its paired entity has already conclusively failed
@@ -263,77 +263,74 @@ export async function completeAndPromotePaired(
   dbClient,
   logger
 ) {
-  const startTime = performance.now();
-  const now = new Date();
-  let promoted = false;
-  let pairAlreadyFailedError;
+  const startTime = performance.now()
+  const now = new Date()
+  let promoted = false
+  let pairAlreadyFailedError
 
   try {
-    await dbClient.query('BEGIN');
-    await acquirePairLock(entityName, pairedEntityName, dbClient);
+    await dbClient.query('BEGIN')
+    await acquirePairLock(entityName, pairedEntityName, dbClient)
 
-    const pairedIngest = await getLatestIngestStatus(
-      pairedEntityName,
-      dbClient
-    );
+    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
 
     if (pairedIngest && TERMINAL_FAILURE_STATUSES.has(pairedIngest.status)) {
       await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
         INGEST_STATUS.FAILED,
         ingestId
-      ]);
+      ])
 
       pairAlreadyFailedError = new Error(
         `${entityName} cannot be promoted because its paired entity ${pairedEntityName} already failed`
-      );
+      )
       logBusinessError(logger, {
         operation: `${entityName}_paired_ingest_failed`,
         error: pairAlreadyFailedError,
         context: { entityName, pairedEntityName, ingestId }
-      });
+      })
     } else {
       await dbClient.query(
         `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`,
         [INGEST_STATUS.STAGED, now, ingestId]
-      );
+      )
 
       if (pairedIngest?.status === INGEST_STATUS.STAGED) {
-        await promoteStagingTableStatements(entityName, dbClient);
-        await promoteStagingTableStatements(pairedEntityName, dbClient);
+        await promoteStagingTableStatements(entityName, dbClient)
+        await promoteStagingTableStatements(pairedEntityName, dbClient)
         await dbClient.query(
           `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`,
           [INGEST_STATUS.COMPLETED, now, [ingestId, pairedIngest.id]]
-        );
-        promoted = true;
+        )
+        promoted = true
 
-        const duration = performance.now() - startTime;
+        const duration = performance.now() - startTime
         logInfo(logger, {
           category: LOG_CATEGORY,
           operation: `${entityName}_paired_promotion_completed`,
           message: `${entityName} and ${pairedEntityName} promoted to live together in ${duration.toFixed(0)}ms`,
           context: { entityName, pairedEntityName, duration }
-        });
+        })
       } else {
         logInfo(logger, {
           category: LOG_CATEGORY,
           operation: `${entityName}_awaiting_pair`,
           message: `${entityName} finished staging; waiting for ${pairedEntityName} before promoting`,
           context: { entityName, pairedEntityName, ingestId }
-        });
+        })
       }
     }
 
-    await dbClient.query('COMMIT');
+    await dbClient.query('COMMIT')
   } catch (error) {
-    await dbClient.query('ROLLBACK');
-    throw error;
+    await dbClient.query('ROLLBACK')
+    throw error
   }
 
   if (pairAlreadyFailedError) {
-    throw pairAlreadyFailedError;
+    throw pairAlreadyFailedError
   }
 
-  return promoted;
+  return promoted
 }
 
 /**
@@ -351,19 +348,16 @@ export async function failPairedAwaitingIngest(
   logger
 ) {
   try {
-    await dbClient.query('BEGIN');
-    await acquirePairLock(entityName, pairedEntityName, dbClient);
+    await dbClient.query('BEGIN')
+    await acquirePairLock(entityName, pairedEntityName, dbClient)
 
-    const pairedIngest = await getLatestIngestStatus(
-      pairedEntityName,
-      dbClient
-    );
+    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
 
     if (pairedIngest?.status === INGEST_STATUS.STAGED) {
       await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
         INGEST_STATUS.FAILED,
         pairedIngest.id
-      ]);
+      ])
 
       logBusinessError(logger, {
         operation: `${pairedEntityName}_paired_ingest_failed`,
@@ -375,12 +369,12 @@ export async function failPairedAwaitingIngest(
           pairedEntityName,
           pairedIngestId: pairedIngest.id
         }
-      });
+      })
     }
 
-    await dbClient.query('COMMIT');
+    await dbClient.query('COMMIT')
   } catch (error) {
-    await dbClient.query('ROLLBACK');
-    throw error;
+    await dbClient.query('ROLLBACK')
+    throw error
   }
 }

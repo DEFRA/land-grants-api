@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 const agreementLevelItemSchema = Joi.object({
   code: Joi.string().required(),
@@ -12,18 +12,18 @@ const agreementLevelItemSchema = Joi.object({
   agreementTotalPence: Joi.number().required(),
   unit: Joi.string().required(),
   quantity: Joi.number().required()
-});
+})
 
 const lineItemSchema = Joi.object({
   agreementLevelItemId: Joi.number().integer().required(),
   paymentPence: Joi.number().required()
-});
+})
 
 const paymentSchema = Joi.object({
   totalPaymentPence: Joi.number().required(),
   paymentDate: Joi.string().allow(null).required(),
   lineItems: Joi.array().items(lineItemSchema).required()
-});
+})
 
 export const paymentCalculateWMPResponseSchema = Joi.object({
   message: Joi.string().required(),
@@ -41,11 +41,11 @@ export const paymentCalculateWMPResponseSchema = Joi.object({
     payments: Joi.array().items(paymentSchema).required()
   }),
   result: Joi.object()
-});
+})
 
 export const paymentCalculateWMPSchemaV2 = Joi.object({
   parcelIds: Joi.array().items(Joi.string()).min(1).required(),
   oldWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   newWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   startDate: Joi.date().optional()
-});
+})

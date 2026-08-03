@@ -1,4 +1,4 @@
-import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js';
+import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js'
 
 const mockParcel = {
   sheet_id: 'SX0679',
@@ -21,7 +21,7 @@ const mockParcel = {
       name: 'Moorland'
     }
   }
-};
+}
 
 const mockParcelWithActions = {
   parcel: {
@@ -46,6 +46,6 @@ const mockParcelWithActions = {
       }
     ]
   }
-};
+}
 
-export { mockParcel, mockParcelWithActions };
+export { mockParcel, mockParcelWithActions }

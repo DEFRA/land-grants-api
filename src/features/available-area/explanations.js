@@ -4,7 +4,7 @@
  * @import { ExplanationSection } from './explanations.d.js'
  */
 
-import { deriveExplanations } from './explanation-derivation.js';
+import { deriveExplanations } from './explanation-derivation.js'
 import {
   buildApplicationSection,
   buildAdjustedActionsSection,
@@ -17,7 +17,7 @@ import {
   buildTargetAvailabilitySection,
   buildResultSection,
   buildStacksSection
-} from './explanation-sections.js';
+} from './explanation-sections.js'
 
 /**
  * Creates basic explanation section
@@ -28,7 +28,7 @@ import {
 export const createExplanationSection = (title, content) => ({
   title,
   content
-});
+})
 
 /**
  * Formats AAC context into human-readable explanation sections that walk
@@ -49,15 +49,15 @@ export function formatExplanationSections(aacContext, displayContext) {
     totalValidLandCoverSqm,
     landCoverToString,
     feasible
-  } = displayContext;
+  } = displayContext
 
   if (!aacContext) {
     return [
       buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
-    ];
+    ]
   }
 
-  const explanations = deriveExplanations(aacContext);
+  const explanations = deriveExplanations(aacContext)
 
   const sections = [
     ...buildContextSections(
@@ -66,7 +66,7 @@ export function formatExplanationSections(aacContext, displayContext) {
       targetAction,
       landCoverToString
     )
-  ];
+  ]
 
   // Early return if infeasible
   if (!feasible) {
@@ -75,8 +75,8 @@ export function formatExplanationSections(aacContext, displayContext) {
         'It was not possible to allocate the existing actions to valid land covers. This requires a manual review and existing agreements may need adjusting.'
       ]),
       buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
-    );
-    return sections;
+    )
+    return sections
   }
 
   sections.push(
@@ -88,9 +88,9 @@ export function formatExplanationSections(aacContext, displayContext) {
       totalValidLandCoverSqm,
       landCoverToString
     )
-  );
+  )
 
-  return sections;
+  return sections
 }
 
 /**
@@ -119,16 +119,16 @@ function buildContextSections(
     hfActionEligibility,
     targetLabel,
     existingActions
-  } = aacContext;
+  } = aacContext
 
-  const hasDesignationSplitting = !!(originalLandCovers && designationZones);
+  const hasDesignationSplitting = !!(originalLandCovers && designationZones)
 
-  const sections = [];
+  const sections = []
 
-  sections.push(buildApplicationSection(targetAction));
+  sections.push(buildApplicationSection(targetAction))
 
   if (explanations.adjustedActions.length > 0) {
-    sections.push(buildAdjustedActionsSection(explanations));
+    sections.push(buildAdjustedActionsSection(explanations))
   }
 
   sections.push(
@@ -136,7 +136,7 @@ function buildContextSections(
       hasDesignationSplitting ? originalLandCovers : landCoversForParcel,
       landCoverToString
     )
-  );
+  )
 
   if (hasDesignationSplitting) {
     sections.push(
@@ -153,7 +153,7 @@ function buildContextSections(
         sssiActionEligibility,
         hfActionEligibility
       )
-    );
+    )
   }
 
   sections.push(
@@ -162,13 +162,13 @@ function buildContextSections(
       landCoverToString,
       hasDesignationSplitting ? designationZones : undefined
     )
-  );
+  )
 
   if (explanations.incompatibilityCliques.length > 0) {
-    sections.push(buildIncompatibilitySection(explanations));
+    sections.push(buildIncompatibilitySection(explanations))
   }
 
-  return sections;
+  return sections
 }
 
 /**
@@ -189,8 +189,8 @@ function buildFeasibleSolutionSections(
   totalValidLandCoverSqm,
   landCoverToString
 ) {
-  const { landCoversForParcel, designationZones } = aacContext;
-  const sections = [];
+  const { landCoversForParcel, designationZones } = aacContext
+  const sections = []
 
   if (explanations.allocations.length > 0) {
     sections.push(
@@ -200,7 +200,7 @@ function buildFeasibleSolutionSections(
         landCoverToString,
         designationZones
       )
-    );
+    )
   }
 
   sections.push(
@@ -212,7 +212,7 @@ function buildFeasibleSolutionSections(
       designationZones
     ),
     buildResultSection(targetAction, availableAreaSqm, totalValidLandCoverSqm)
-  );
+  )
 
   if (explanations.stacks.length > 0) {
     sections.push(
@@ -222,8 +222,8 @@ function buildFeasibleSolutionSections(
         landCoverToString,
         designationZones
       )
-    );
+    )
   }
 
-  return sections;
+  return sections
 }

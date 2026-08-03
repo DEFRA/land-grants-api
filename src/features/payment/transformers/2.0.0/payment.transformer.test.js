@@ -1,4 +1,4 @@
-import { paymentCalculationTransformerV2 } from './payment.transformer.js';
+import { paymentCalculationTransformerV2 } from './payment.transformer.js'
 
 describe('paymentCalculationTransformerV2', () => {
   test('should transform parcelItems with semanticVersion to version', () => {
@@ -34,9 +34,9 @@ describe('paymentCalculationTransformerV2', () => {
       },
       annualTotalPence: 36268,
       agreementTotalPence: 27200
-    };
+    }
 
-    const result = paymentCalculationTransformerV2(response);
+    const result = paymentCalculationTransformerV2(response)
 
     expect(result.parcelItems[1]).toEqual({
       code: 'UPL1',
@@ -49,10 +49,10 @@ describe('paymentCalculationTransformerV2', () => {
       annualPaymentPence: 9068,
       sheetId: 'SD6162',
       parcelId: '1911'
-    });
-    expect(result.parcelItems[1].semanticVersion).toBeUndefined();
-    expect(result.parcelItems[2].version).toBe('1.5.0');
-    expect(result.parcelItems[2].semanticVersion).toBeUndefined();
+    })
+    expect(result.parcelItems[1].semanticVersion).toBeUndefined()
+    expect(result.parcelItems[2].version).toBe('1.5.0')
+    expect(result.parcelItems[2].semanticVersion).toBeUndefined()
     expect(result.agreementLevelItems[1]).toEqual({
       code: 'CMOR1',
       description:
@@ -60,9 +60,9 @@ describe('paymentCalculationTransformerV2', () => {
       durationYears: 1,
       version: '2.0.0',
       annualPaymentPence: 27200
-    });
-    expect(result.agreementLevelItems[1].semanticVersion).toBeUndefined();
-    expect(result.annualTotalPence).toBe(36268);
-    expect(result.agreementTotalPence).toBe(27200);
-  });
-});
+    })
+    expect(result.agreementLevelItems[1].semanticVersion).toBeUndefined()
+    expect(result.annualTotalPence).toBe(36268)
+    expect(result.agreementTotalPence).toBe(27200)
+  })
+})

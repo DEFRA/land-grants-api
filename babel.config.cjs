@@ -1,4 +1,4 @@
-const { NODE_ENV } = process.env;
+const { NODE_ENV } = process.env
 
 module.exports = {
   presets: [
@@ -23,4 +23,4 @@ module.exports = {
       }
     ]
   ]
-};
+}

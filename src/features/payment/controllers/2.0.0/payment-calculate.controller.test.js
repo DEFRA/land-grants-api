@@ -1,22 +1,22 @@
-import { payments } from '~/src/features/payment/index.js';
-import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js';
-import { validateRequest } from '~/src/features/application/validation/application.validation.js';
-import { getActions } from '~/src/features/actions/service/action.service.js';
+import { payments } from '~/src/features/payment/index.js'
+import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
+import { validateRequest } from '~/src/features/application/validation/application.validation.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js';
-import { vi } from 'vitest';
-import createTestServer from '~/src/tests/test-server.js';
-import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js';
+} from '~/src/features/common/helpers/audit-event.js'
+import { vi } from 'vitest'
+import createTestServer from '~/src/tests/test-server.js'
+import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 
-vi.mock('~/src/features/application/validation/application.validation.js');
-vi.mock('~/src/features/actions/service/action.service.js');
-vi.mock('~/src/features/common/helpers/audit-event.js');
+vi.mock('~/src/features/application/validation/application.validation.js')
+vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockValidateRequest = validateRequest;
-const mockGetActions = getActions;
-const mockAuditEvent = auditEvent;
+const mockValidateRequest = validateRequest
+const mockGetActions = getActions
+const mockAuditEvent = auditEvent
 
 const mockLandActions = {
   sbi: '123456789',
@@ -36,11 +36,11 @@ const mockLandActions = {
       ]
     }
   ]
-};
+}
 
-vi.mock('~/src/features/payment-calculation/paymentCalculation.js');
+vi.mock('~/src/features/payment-calculation/paymentCalculation.js')
 
-const mockGetPaymentCalculationForParcels = getPaymentCalculationForParcels;
+const mockGetPaymentCalculationForParcels = getPaymentCalculationForParcels
 const validResponse = {
   agreementStartDate: '2025-08-01',
   agreementEndDate: '2028-08-01',
@@ -84,10 +84,10 @@ const validResponse = {
       ]
     }
   ]
-};
+}
 
 describe('Payment calculate controller V2', () => {
-  const server = createTestServer(quantityValidationFailAction);
+  const server = createTestServer(quantityValidationFailAction)
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -95,26 +95,26 @@ describe('Payment calculate controller V2', () => {
       debug: vi.fn(),
       error: vi.fn(),
       warn: vi.fn()
-    });
+    })
     server.decorate('server', 'postgresDb', {
       connect: vi.fn(),
       query: vi.fn()
-    });
+    })
 
-    await server.register([payments]);
-    await server.initialize();
-  });
+    await server.register([payments])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks()
 
-    mockValidateRequest.mockResolvedValue([]);
-    mockGetPaymentCalculationForParcels.mockReturnValue(validResponse);
-    mockAuditEvent.mockResolvedValue(undefined);
+    mockValidateRequest.mockResolvedValue([])
+    mockGetPaymentCalculationForParcels.mockReturnValue(validResponse)
+    mockAuditEvent.mockResolvedValue(undefined)
     mockGetActions.mockResolvedValue([
       {
         version: 1,
@@ -130,8 +130,8 @@ describe('Payment calculate controller V2', () => {
           ratePerAgreementPerYearGbp: 272
         }
       }
-    ]);
-  });
+    ])
+  })
 
   describe('POST /api/v2/payments/calculate route', () => {
     test('should return 200 if the request has a valid parcel payload', async () => {
@@ -142,17 +142,17 @@ describe('Payment calculate controller V2', () => {
           ...mockLandActions,
           applicationId: 'application-1'
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(message).toBe('success');
-    });
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+    })
 
     test('should send an audit event with all relevant payment calculation information', async () => {
       const request = {
@@ -162,9 +162,9 @@ describe('Payment calculate controller V2', () => {
           ...mockLandActions,
           applicationId: 'application-1'
         }
-      };
+      }
 
-      await server.inject(request);
+      await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_PAYMENT_CALCULATED,
@@ -176,8 +176,8 @@ describe('Payment calculate controller V2', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
-      );
-    });
+      )
+    })
 
     test('should not send an audit event when the calculation fails', async () => {
       const request = {
@@ -186,12 +186,12 @@ describe('Payment calculate controller V2', () => {
         payload: {
           parcel: null
         }
-      };
+      }
 
-      await server.inject(request);
+      await server.inject(request)
 
-      expect(mockAuditEvent).not.toHaveBeenCalled();
-    });
+      expect(mockAuditEvent).not.toHaveBeenCalled()
+    })
 
     test('should return 400 if the request has an invalid parcel payload', async () => {
       const request = {
@@ -200,17 +200,17 @@ describe('Payment calculate controller V2', () => {
         payload: {
           parcel: null
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Invalid request payload input');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
 
     test('should return 422 if the request has invalid quantity', async () => {
       const request = {
@@ -231,17 +231,17 @@ describe('Payment calculate controller V2', () => {
             }
           ]
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(422);
-      expect(message).toBe('Quantity must be a positive number');
-    });
+      expect(statusCode).toBe(422)
+      expect(message).toBe('Quantity must be a positive number')
+    })
 
     test('should return 400 if the request has no land actions in payload', async () => {
       const request = {
@@ -252,35 +252,35 @@ describe('Payment calculate controller V2', () => {
             actions: []
           }
         }
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Invalid request payload input');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Invalid request payload input')
+    })
 
     test('should return 400 if there is an error validating land data', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: mockLandActions
-      };
+      }
 
-      mockValidateRequest.mockResolvedValue(['Error validating data']);
+      mockValidateRequest.mockResolvedValue(['Error validating data'])
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Error validating data');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Error validating data')
+    })
 
     test('should return 400 if the request has an invalid land action', async () => {
       const request = {
@@ -289,28 +289,28 @@ describe('Payment calculate controller V2', () => {
         payload: {
           parcel: []
         }
-      };
+      }
 
-      mockGetPaymentCalculationForParcels.mockReturnValue(null);
+      mockGetPaymentCalculationForParcels.mockReturnValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
+      expect(statusCode).toBe(400)
       expect(message).toBe(
         'Error calculating payment land actions, no land or actions data provided'
-      );
-    });
+      )
+    })
 
     test('should return 400 if totalDurationYears is 0 (no enabled actions match)', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: mockLandActions
-      };
+      }
 
       // Mock enabledActions with no matching action codes
       mockGetActions.mockResolvedValue([
@@ -328,68 +328,68 @@ describe('Payment calculate controller V2', () => {
             ratePerAgreementPerYearGbp: 272
           }
         }
-      ]);
+      ])
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Error getting actions information');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Error getting actions information')
+    })
 
     test('should return 400 if getPaymentCalculationForParcels returns null', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: mockLandActions
-      };
+      }
 
-      mockGetPaymentCalculationForParcels.mockReturnValue(null);
+      mockGetPaymentCalculationForParcels.mockReturnValue(null)
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(400);
-      expect(message).toBe('Unable to calculate payment');
-    });
+      expect(statusCode).toBe(400)
+      expect(message).toBe('Unable to calculate payment')
+    })
 
     test('should return 500 if an unexpected error occurs', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: mockLandActions
-      };
+      }
 
-      const errorMessage = 'Database connection failed';
-      mockGetActions.mockRejectedValue(new Error(errorMessage));
+      const errorMessage = 'Database connection failed'
+      mockGetActions.mockRejectedValue(new Error(errorMessage))
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
         statusCode,
         result: { message }
-      } = await server.inject(request);
+      } = await server.inject(request)
 
-      expect(statusCode).toBe(500);
-      expect(message).toBe('An internal server error occurred');
-    });
+      expect(statusCode).toBe(500)
+      expect(message).toBe('An internal server error occurred')
+    })
 
     test('should send a failure audit event when an unexpected error occurs', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: { ...mockLandActions, applicationId: 'application-1' }
-      };
+      }
 
-      const errorMessage = 'Database connection failed';
-      mockGetActions.mockRejectedValue(new Error(errorMessage));
+      const errorMessage = 'Database connection failed'
+      mockGetActions.mockRejectedValue(new Error(errorMessage))
 
-      await server.inject(request);
+      await server.inject(request)
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.SFI_PAYMENT_CALCULATED,
@@ -401,7 +401,7 @@ describe('Payment calculate controller V2', () => {
         }),
         'failure',
         expect.objectContaining({ method: 'post' })
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})

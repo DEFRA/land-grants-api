@@ -39,5 +39,5 @@ server.route({
   handler: (request, h) => {
     // handler code
   }
-});
+})
 ```

@@ -5,15 +5,15 @@
  * @import { Logger } from '~/src/features/common/logger.d.js'
  */
 
-import { getLandCoverDefinitions } from '~/src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js';
+import { getLandCoverDefinitions } from '~/src/features/land-cover-codes/queries/getLandCoverDefinitions.query.js'
 import {
   getLandCoversForAction,
   getLandCoversForActions
-} from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js';
-import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js';
-import { createLandCoverCodeToString } from '~/src/features/land-cover-codes/services/createLandCoverCodeToString.js';
-import { getLandCoverIntersections } from '~/src/features/land-covers/queries/getLandCoverIntersections.query.js';
-import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js';
+} from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
+import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
+import { createLandCoverCodeToString } from '~/src/features/land-cover-codes/services/createLandCoverCodeToString.js'
+import { getLandCoverIntersections } from '~/src/features/land-covers/queries/getLandCoverIntersections.query.js'
+import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
 
 /**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
@@ -38,55 +38,55 @@ export async function getAvailableAreaDataRequirements(
     actionCodeAppliedFor,
     postgresDb,
     logger
-  );
+  )
 
   const landCoversForParcel = await getLandCoversForParcel(
     sheetId,
     parcelId,
     postgresDb,
     logger
-  );
+  )
 
   const landCoversForExistingActions = await getLandCoversForActions(
     existingActions.map((a) => a.actionCode),
     postgresDb,
     logger
-  );
+  )
 
   const landCoverCodesForExistingActions = Object.keys(
     landCoversForExistingActions
-  ).flatMap((k) => landCoversForExistingActions[k].map((c) => c.landCoverCode));
+  ).flatMap((k) => landCoversForExistingActions[k].map((c) => c.landCoverCode))
 
   const allLandCoverCodes = new Set([
     ...landCoverCodesForAppliedForAction.map((c) => c.landCoverCode),
     ...landCoversForParcel.map((c) => c.landCoverClassCode),
     ...landCoverCodesForExistingActions
-  ]);
+  ])
 
   const landCoverDefinitions = await getLandCoverDefinitions(
     Array.from(allLandCoverCodes),
     postgresDb,
     logger
-  );
+  )
 
-  const landCoverToString = createLandCoverCodeToString(landCoverDefinitions);
+  const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
-  const aggregatedLandCovers = aggregateLandCovers(landCoversForParcel);
+  const aggregatedLandCovers = aggregateLandCovers(landCoversForParcel)
 
   const { sssiOverlap, hfOverlap, sssiAndHfOverlap } =
-    await getLandCoverIntersections(sheetId, parcelId, postgresDb, logger);
+    await getLandCoverIntersections(sheetId, parcelId, postgresDb, logger)
 
-  const actionEligibility = await getActionEligibility(logger, postgresDb);
+  const actionEligibility = await getActionEligibility(logger, postgresDb)
 
   const sssiActionEligibility = createActionEligibilityMap(
     actionEligibility,
     'sssi_eligible'
-  );
+  )
 
   const hfActionEligibility = createActionEligibilityMap(
     actionEligibility,
     'hf_eligible'
-  );
+  )
 
   return {
     landCoverCodesForAppliedForAction,
@@ -98,7 +98,7 @@ export async function getAvailableAreaDataRequirements(
     sssiAndHfOverlap,
     sssiActionEligibility,
     hfActionEligibility
-  };
+  }
 }
 
 /**
@@ -110,17 +110,17 @@ export async function getAvailableAreaDataRequirements(
  */
 function aggregateLandCovers(landCovers) {
   /** @type {Map<string, number>} */
-  const grouped = new Map();
+  const grouped = new Map()
   for (const landCover of landCovers) {
     grouped.set(
       landCover.landCoverClassCode,
       (grouped.get(landCover.landCoverClassCode) ?? 0) + landCover.areaSqm
-    );
+    )
   }
   return Array.from(grouped.entries()).map(([landCoverClassCode, areaSqm]) => ({
     landCoverClassCode,
     areaSqm
-  }));
+  }))
 }
 
 /**
@@ -131,7 +131,7 @@ function aggregateLandCovers(landCovers) {
  */
 function createActionEligibilityMap(actionEligibility, eligibilityKey) {
   return actionEligibility.reduce((acc, curr) => {
-    acc[curr.code] = Boolean(curr[eligibilityKey]);
-    return acc;
-  }, {});
+    acc[curr.code] = Boolean(curr[eligibilityKey])
+    return acc
+  }, {})
 }

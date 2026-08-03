@@ -1,7 +1,7 @@
-import { CDPUploaderCallbackController } from './controller/cdp-uploader-callback.controller.js';
-import { InitiateLandDataUploadController } from './controller/initiate-land-data-upload.controller.js';
-import { StartIngestController } from './controller/start-ingest.controller.js';
-import { StatusIngestController } from './controller/status-ingest.controller.js';
+import { CDPUploaderCallbackController } from './controller/cdp-uploader-callback.controller.js'
+import { InitiateLandDataUploadController } from './controller/initiate-land-data-upload.controller.js'
+import { StartIngestController } from './controller/start-ingest.controller.js'
+import { StatusIngestController } from './controller/status-ingest.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -47,12 +47,12 @@ const landDataIngest = {
             auth: false
           }
         }
-      ]);
+      ])
     }
   }
-};
+}
 
-export { landDataIngest };
+export { landDataIngest }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

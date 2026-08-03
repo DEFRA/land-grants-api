@@ -1,46 +1,46 @@
-import createTestServer from '~/src/tests/test-server.js';
-import { StatusIngestController } from './status-ingest.controller.js';
+import createTestServer from '~/src/tests/test-server.js'
+import { StatusIngestController } from './status-ingest.controller.js'
 import {
   getIngestById,
   getLatestEntityStatuses
-} from '../service/start-ingest.service.js';
+} from '../service/start-ingest.service.js'
 
-vi.mock('../service/start-ingest.service.js');
-const mockGetIngestById = getIngestById;
-const mockGetLatestEntityStatus = getLatestEntityStatuses;
+vi.mock('../service/start-ingest.service.js')
+const mockGetIngestById = getIngestById
+const mockGetLatestEntityStatus = getLatestEntityStatuses
 
 describe('StatusIngestController', () => {
-  const server = createTestServer();
+  const server = createTestServer()
   const mockLogger = {
     info: vi.fn(),
     debug: vi.fn(),
     error: vi.fn(),
     warn: vi.fn()
-  };
+  }
 
   beforeAll(async () => {
-    server.decorate('request', 'logger', mockLogger);
+    server.decorate('request', 'logger', mockLogger)
     server.decorate('server', 'postgresDb', {
       query: vi.fn()
-    });
+    })
 
     server.route({
       method: 'GET',
       path: '/ingest/status',
       handler: StatusIngestController.handler,
       options: StatusIngestController.options
-    });
+    })
 
-    await server.initialize();
-  });
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   describe('GET /ingest/status', () => {
     it('Should return latest ingest status', async () => {
@@ -77,19 +77,19 @@ describe('StatusIngestController', () => {
             }
           ]
         }
-      ];
-      mockGetLatestEntityStatus.mockResolvedValueOnce(ingestResponse);
+      ]
+      mockGetLatestEntityStatus.mockResolvedValueOnce(ingestResponse)
 
       const request = {
         method: 'GET',
         url: '/ingest/status'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
-      expect(result).toEqual(ingestResponse);
-    });
+      expect(statusCode).toBe(200)
+      expect(result).toEqual(ingestResponse)
+    })
 
     it('Should return ingest status for ingest id', async () => {
       const ingestResponse = {
@@ -107,17 +107,17 @@ describe('StatusIngestController', () => {
             status: 'completed'
           }
         ]
-      };
-      mockGetIngestById.mockResolvedValueOnce(ingestResponse);
+      }
+      mockGetIngestById.mockResolvedValueOnce(ingestResponse)
 
       const request = {
         method: 'GET',
         url: '/ingest/status?ingestId=1'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
+      expect(statusCode).toBe(200)
       expect(result).toEqual({
         id: 1,
         entity: 'land_parcels',
@@ -133,8 +133,8 @@ describe('StatusIngestController', () => {
             status: 'completed'
           }
         ]
-      });
-    });
+      })
+    })
 
     it('Should return file status only when filename provided', async () => {
       const ingestResponse = {
@@ -152,43 +152,43 @@ describe('StatusIngestController', () => {
             status: 'completed'
           }
         ]
-      };
-      mockGetIngestById.mockResolvedValueOnce(ingestResponse);
+      }
+      mockGetIngestById.mockResolvedValueOnce(ingestResponse)
 
       const request = {
         method: 'GET',
         url: '/ingest/status?ingestId=1&filename=file1.csv'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(200);
+      expect(statusCode).toBe(200)
       expect(result).toEqual({
         id: 1,
         ingest_id: 1,
         filename: 'file1.csv',
         total_rows: 10,
         status: 'completed'
-      });
-    });
+      })
+    })
 
     it('Should return not found when ingest not found', async () => {
-      mockGetIngestById.mockResolvedValueOnce(null);
+      mockGetIngestById.mockResolvedValueOnce(null)
 
       const request = {
         method: 'GET',
         url: '/ingest/status?ingestId=1'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(404);
+      expect(statusCode).toBe(404)
       expect(result).toEqual({
         statusCode: 404,
         error: 'Not Found',
         message: 'Ingest not found'
-      });
-    });
+      })
+    })
 
     it('Should return not found when ingest file not found', async () => {
       mockGetIngestById.mockResolvedValueOnce({
@@ -206,39 +206,39 @@ describe('StatusIngestController', () => {
             status: 'completed'
           }
         ]
-      });
+      })
 
       const request = {
         method: 'GET',
         url: '/ingest/status?ingestId=1&filename=file2.csv'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(404);
+      expect(statusCode).toBe(404)
       expect(result).toEqual({
         statusCode: 404,
         error: 'Not Found',
         message: 'Ingest file not found'
-      });
-    });
+      })
+    })
 
     it('Should return server error when error thrown', async () => {
-      mockGetIngestById.mockRejectedValueOnce(new Error('Database error'));
+      mockGetIngestById.mockRejectedValueOnce(new Error('Database error'))
 
       const request = {
         method: 'GET',
         url: '/ingest/status?ingestId=1'
-      };
+      }
 
-      const { statusCode, result } = await server.inject(request);
+      const { statusCode, result } = await server.inject(request)
 
-      expect(statusCode).toBe(500);
+      expect(statusCode).toBe(500)
       expect(result).toEqual({
         statusCode: 500,
         error: 'Internal Server Error',
         message: 'An internal server error occurred'
-      });
-    });
-  });
-});
+      })
+    })
+  })
+})

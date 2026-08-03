@@ -1,14 +1,14 @@
-import { describe, test, expect, beforeAll } from 'vitest';
-import { httpClient } from './setup/http-client.js';
-import { getAuthHeader } from './setup/auth-helpers.js';
+import { describe, test, expect, beforeAll } from 'vitest'
+import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 const headers = {
   Authorization: getAuthHeader(),
   'X-Forwarded-Authorization': 'dummy'
-};
+}
 
 describe('Case Management Adapter Endpoints', () => {
-  let validationRunId;
+  let validationRunId
 
   beforeAll(async () => {
     const response = await httpClient.post('/api/v2/application/validate', {
@@ -31,28 +31,28 @@ describe('Case Management Adapter Endpoints', () => {
           }
         ]
       }
-    });
+    })
 
-    expect(response.status).toBe(200);
-    validationRunId = response.data.id;
-  });
+    expect(response.status).toBe(200)
+    validationRunId = response.data.id
+  })
 
   describe('GET /case-management-adapter/application/validation-run/{id}', () => {
     test('should retrieve validation run by id with authentication', async () => {
       const response = await httpClient.get(
         `/case-management-adapter/application/validation-run/${validationRunId}`,
         { headers }
-      );
+      )
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('response');
-      expect(response.data.response).toBeInstanceOf(Array);
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('response')
+      expect(response.data.response).toBeInstanceOf(Array)
       expect(response.data.message).toBe(
         'Application validation run retrieved successfully'
-      );
-    });
-  });
+      )
+    })
+  })
 
   describe('POST /case-management-adapter/application/validation-run/rerun', () => {
     test('should rerun validation with authentication', async () => {
@@ -65,16 +65,16 @@ describe('Case Management Adapter Endpoints', () => {
             id: validationRunId
           }
         }
-      );
+      )
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('valid');
-      expect(response.data).toHaveProperty('id');
-      expect(response.data).toHaveProperty('date');
-      expect(typeof response.data.valid).toBe('boolean');
-      expect(response.data.message).toBe('Application validated successfully');
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('valid')
+      expect(response.data).toHaveProperty('id')
+      expect(response.data).toHaveProperty('date')
+      expect(typeof response.data.valid).toBe('boolean')
+      expect(response.data.message).toBe('Application validated successfully')
+    })
 
     test('should return 404 for non-existent validation run id', async () => {
       const response = await httpClient.post(
@@ -86,9 +86,9 @@ describe('Case Management Adapter Endpoints', () => {
             id: 999999999
           }
         }
-      );
+      )
 
-      expect(response.status).toBe(404);
-    });
-  });
-});
+      expect(response.status).toBe(404)
+    })
+  })
+})

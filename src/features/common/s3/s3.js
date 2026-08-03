@@ -1,5 +1,5 @@
-import { GetObjectCommand } from '@aws-sdk/client-s3';
-import { s3IngestFolders } from '../../land-data-ingest/s3-folders.js';
+import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { s3IngestFolders } from '../../land-data-ingest/s3-folders.js'
 
 /**
  * Get a file from S3 bucket
@@ -13,15 +13,15 @@ export async function getFile(s3Client, bucket, key) {
     const command = new GetObjectCommand({
       Bucket: bucket,
       Key: key
-    });
+    })
 
-    const response = await s3Client.send(command);
+    const response = await s3Client.send(command)
 
-    return response;
+    return response
   } catch (error) {
     throw new Error(
       `Failed to get file "${key}" from S3 bucket "${bucket}": ${error.message}`
-    );
+    )
   }
 }
 
@@ -31,5 +31,5 @@ export async function getFile(s3Client, bucket, key) {
  * @returns {string} The configured S3 key
  */
 export const failedBucketPath = (key) => {
-  return `${s3IngestFolders.FAILED}/${key}`;
-};
+  return `${s3IngestFolders.FAILED}/${key}`
+}

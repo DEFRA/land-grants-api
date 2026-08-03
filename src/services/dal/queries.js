@@ -16,4 +16,4 @@ export const GET_BUSINESS = `
       }
     }
   }
-`;
+`
