@@ -93,7 +93,8 @@ export const PaymentsCalculateTotalWMPController = {
 
       /** @type {paymentCalculateTotalWMPSchema} */
       // @ts-expect-error - payload
-      const { totalAreaHa, applicationId, sbi, crn } = request.payload
+      const { totalAreaHa, applicationId, sbi, crn, startDate } =
+        request.payload
 
       logInfo(logger, {
         category: 'wmp',
@@ -110,7 +111,7 @@ export const PaymentsCalculateTotalWMPController = {
         [],
         paymentResult,
         action,
-        undefined
+        startDate
       )
 
       await auditEvent(

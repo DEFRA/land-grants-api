@@ -176,6 +176,23 @@ describe('Payment calculate total WMP controller', () => {
 
       expect(statusCode).toBe(200)
     })
+
+    test('should pass startDate to the payment transformer when provided', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
+        payload: { ...validPayload, startDate: '2024-06-01' }
+      })
+
+      expect(statusCode).toBe(200)
+      expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
+        [],
+        createMockCalculationResult(),
+        createMockAction(),
+        new Date('2024-06-01')
+      )
+    })
   })
 
   describe('schema validation', () => {
