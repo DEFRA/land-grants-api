@@ -60,24 +60,24 @@ export function splitParcelId(id, logger) {
  * Get parcel actions with available area
  * @param {LandParcelDb} parcel - The parcel
  * @param {AgreementAction[]} actions - The actions to get
- * @param {boolean} showActionResults - Whether to show action results
  * @param {Action[]} enabledActions - The enabled actions
  * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {Pool} postgresDb - The postgres database
  * @param {Logger} logger - The logger
- * @param {boolean} showActionMetadata - Whether to show action metadata
+ * @param {{ showActionResults?: boolean, showActionMetadata?: boolean }} displayOptions - Response field toggles
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 async function getParcelActionsWithAvailableArea(
   parcel,
   actions,
-  showActionResults,
   enabledActions,
   compatibilityCheckFn,
   postgresDb,
   logger,
-  showActionMetadata = false
+  displayOptions = {}
 ) {
+  const { showActionResults = false, showActionMetadata = false } =
+    displayOptions
   const actionsWithAvailableArea = []
 
   for (const action of enabledActions.filter((a) => a.display)) {
@@ -125,15 +125,25 @@ async function getParcelActionsWithAvailableArea(
   return actionsWithAvailableArea
 }
 
+/**
+ * Get a parcel merged with its requested fields (size, actions, etc.)
+ * @param {LandParcelDb} parcel - The parcel
+ * @param {object} payload - The request payload
+ * @param {Action[]} enabledActions - The enabled actions
+ * @param {Function} compatibilityCheckFn - The compatibility check function
+ * @param {object} request - The Hapi request
+ * @param {string} defraIdToken - The Defra ID token
+ * @param {{ showActionResults?: boolean, showActionMetadata?: boolean }} displayOptions - Response field toggles
+ * @returns {Promise<object>} The parcel response
+ */
 export async function getActionsForParcel(
   parcel,
   payload,
-  showActionResults,
   enabledActions,
   compatibilityCheckFn,
   request,
   defraIdToken,
-  showActionMetadata = false
+  displayOptions = {}
 ) {
   const { fields, plannedActions, sbi } = payload
 
@@ -161,12 +171,11 @@ export async function getActionsForParcel(
     const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
       parcel,
       mergedActions,
-      showActionResults,
       enabledActions,
       compatibilityCheckFn,
       request.server.postgresDb,
       request.logger,
-      showActionMetadata
+      displayOptions
     )
 
     parcelResponse.actions = actionsWithAvailableArea

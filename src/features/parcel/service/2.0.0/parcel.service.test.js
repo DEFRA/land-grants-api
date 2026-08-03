@@ -1,10 +1,13 @@
 import {
+  getActionsForParcel,
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired,
   splitParcelId
 } from './parcel.service.js'
 import {
   heferRequiredActionTransformer,
+  plannedActionsTransformer,
+  sizeTransformer,
   sssiConsentRequiredActionTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import {
@@ -13,11 +16,26 @@ import {
   getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
+import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
+import {
+  findMaximumAvailableArea,
+  throwIfInfeasible
+} from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
 vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
+vi.mock('~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js')
+vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-area/explanations.js')
+vi.mock('~/src/features/agreements/repo.js')
+vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
+vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 
 describe('Parcel Service 2.0.0', () => {
   const mockLogger = {
@@ -479,6 +497,196 @@ describe('Parcel Service 2.0.0', () => {
           mockPostgresDb
         )
       ).rejects.toThrow('Database connection failed')
+    })
+  })
+
+  describe('getActionsForParcel', () => {
+    let mockParcel
+    let mockPayload
+    let mockEnabledActionsForParcel
+    let mockRequest
+    let mockCompatibilityCheckFn
+
+    beforeEach(() => {
+      vi.clearAllMocks()
+
+      mockParcel = {
+        parcel_id: '9238',
+        sheet_id: 'SX0679',
+        area_sqm: 100000
+      }
+
+      mockPayload = {
+        fields: ['size', 'actions'],
+        plannedActions: [],
+        sbi: '123456789'
+      }
+
+      mockEnabledActionsForParcel = [
+        { code: 'UPL1', description: 'Action 1', display: true },
+        { code: 'UPL2', description: 'Action 2', display: false }
+      ]
+
+      mockRequest = {
+        server: { postgresDb: {} },
+        logger: mockLogger
+      }
+
+      mockCompatibilityCheckFn = vi.fn()
+
+      getAgreements.mockResolvedValue([])
+      mergeAgreementsTransformer.mockReturnValue([])
+      plannedActionsTransformer.mockReturnValue([])
+      sizeTransformer.mockImplementation((value) => ({ unit: 'ha', value }))
+      getAvailableAreaDataRequirements.mockResolvedValue({
+        landCoverToString: 'grass'
+      })
+      findMaximumAvailableArea.mockReturnValue({
+        context: {},
+        availableAreaSqm: 5000,
+        totalValidLandCoverSqm: 5000,
+        feasible: true
+      })
+      throwIfInfeasible.mockImplementation(() => undefined)
+      formatExplanationSections.mockReturnValue([])
+      actionTransformer.mockImplementation((action) => ({
+        code: action.code,
+        description: action.description
+      }))
+    })
+
+    test('should return parcelId and sheetId', async () => {
+      const result = await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, fields: [] },
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(result).toEqual({
+        parcelId: '9238',
+        sheetId: 'SX0679'
+      })
+    })
+
+    test('should include size when size field is requested', async () => {
+      const result = await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, fields: ['size'] },
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(result.size).toEqual({ unit: 'ha', value: 10 })
+    })
+
+    test('should only process actions with display=true', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        'UPL1',
+        'SX0679',
+        '9238',
+        [],
+        mockRequest.server.postgresDb,
+        mockRequest.logger
+      )
+    })
+
+    test('should include actions in the response when actions field is requested', async () => {
+      const result = await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(result.actions).toEqual([
+        { code: 'UPL1', description: 'Action 1' }
+      ])
+    })
+
+    test('should pass showActionResults and showActionMetadata through to actionTransformer', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token',
+        { showActionResults: true, showActionMetadata: true }
+      )
+
+      expect(actionTransformer).toHaveBeenCalledWith(
+        mockEnabledActionsForParcel[0],
+        expect.objectContaining({ availableAreaSqm: 5000 }),
+        true,
+        true
+      )
+    })
+
+    test('should default displayOptions to showing neither results nor metadata', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(actionTransformer).toHaveBeenCalledWith(
+        mockEnabledActionsForParcel[0],
+        expect.objectContaining({ availableAreaSqm: 5000 }),
+        false,
+        false
+      )
+    })
+
+    test('should not fetch agreements or actions when actions field is not requested', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, fields: ['size'] },
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(getAgreements).not.toHaveBeenCalled()
+      expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+    })
+
+    test('should propagate error when the available area is infeasible', async () => {
+      const infeasibleError = new Error('Infeasible area')
+      throwIfInfeasible.mockImplementation(() => {
+        throw infeasibleError
+      })
+
+      await expect(
+        getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          mockEnabledActionsForParcel,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          'token'
+        )
+      ).rejects.toThrow('Infeasible area')
     })
   })
 })

@@ -292,12 +292,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions.results']
         }),
-        true, // showActionResults should be true
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        false
+        { showActionResults: true, showActionMetadata: false }
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -367,12 +366,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions.metadata']
         }),
-        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        true // showActionMetadata should be true
+        { showActionResults: false, showActionMetadata: true }
       )
     })
 
@@ -396,12 +394,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }),
-        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        false // showActionMetadata should be false
+        { showActionResults: false, showActionMetadata: false }
       )
     })
 
@@ -711,12 +708,11 @@ describe('Parcels Controller 2.0.0', () => {
             }
           ]
         }),
-        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        false
+        { showActionResults: false, showActionMetadata: false }
       )
     })
 
@@ -1239,12 +1235,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }),
-        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        false
+        { showActionResults: false, showActionMetadata: false }
       )
     })
 

@@ -1,81 +1,110 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
+ * Upsert the core actions row.
+ * @param {import('~/src/features/common/postgres.d.js').DbClient} client
+ * @param {{ code: string, enabled: boolean, display: boolean, description: string|null, sssiEligible: boolean, hfEligible: boolean, metadata: object|null }} params
+ * @returns {Promise<void>}
+ */
+async function upsertAction(client, params) {
+  const {
+    code,
+    enabled,
+    display,
+    description,
+    sssiEligible,
+    hfEligible,
+    metadata
+  } = params
+
+  await client.query(
+    `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, metadata, last_updated)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+     ON CONFLICT (code) DO UPDATE SET
+       description = COALESCE(EXCLUDED.description, actions.description),
+       enabled = EXCLUDED.enabled,
+       display = EXCLUDED.display,
+       metadata = COALESCE(EXCLUDED.metadata, actions.metadata),
+       last_updated = NOW()`,
+    [
+      code,
+      enabled,
+      display,
+      description,
+      sssiEligible,
+      hfEligible,
+      metadata ? JSON.stringify(metadata) : null
+    ]
+  )
+}
+
+/**
+ * Deactivate the existing active config row only when the new semantic version is strictly higher.
+ * @param {import('~/src/features/common/postgres.d.js').DbClient} client
+ * @param {{ code: string, major: number, minor: number, patch: number }} params
+ * @returns {Promise<void>}
+ */
+async function deactivateSupersededConfig(
+  client,
+  { code, major, minor, patch }
+) {
+  await client.query(
+    `UPDATE actions_config
+     SET is_active = FALSE
+     WHERE code = $1
+       AND is_active = TRUE
+       AND (
+         $2 > major_version
+         OR ($2 = major_version AND $3 > minor_version)
+         OR ($2 = major_version AND $3 = minor_version AND $4 > patch_version)
+       )`,
+    [code, major, minor, patch]
+  )
+}
+
+/**
+ * Insert the new action config version row.
+ * is_active is TRUE only if no active row remains after deactivateSupersededConfig.
+ * @param {import('~/src/features/common/postgres.d.js').DbClient} client
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, groupId: number|null }} params
+ * @returns {Promise<void>}
+ */
+async function insertConfigVersion(
+  client,
+  { code, config, major, minor, patch, displayOrder, groupId }
+) {
+  await client.query(
+    `INSERT INTO actions_config
+       (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id)
+     VALUES (
+       $1,
+       (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
+       $2,
+       NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE),
+       NOW(), $3, $4, $5, $6, $7
+     )`,
+    [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
+  )
+}
+
+/**
  * Insert a new action config version into the DB.
  * Wraps in a transaction: deactivates the existing active row only when the
  * new semantic version is strictly higher, then inserts the new row.
- * is_active on the new row is TRUE only if no active row remains after the UPDATE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
  * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, metadata: object|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
-  const {
-    code,
-    config,
-    major,
-    minor,
-    patch,
-    displayOrder,
-    description,
-    sssiEligible,
-    hfEligible,
-    groupId,
-    enabled,
-    display,
-    metadata
-  } = params
   let client
   try {
     client = await db.connect()
     await client.query('BEGIN')
 
-    await client.query(
-      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, metadata, last_updated)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-       ON CONFLICT (code) DO UPDATE SET
-         description = COALESCE(EXCLUDED.description, actions.description),
-         enabled = EXCLUDED.enabled,
-         display = EXCLUDED.display,
-         metadata = COALESCE(EXCLUDED.metadata, actions.metadata),
-         last_updated = NOW()`,
-      [
-        code,
-        enabled,
-        display,
-        description,
-        sssiEligible,
-        hfEligible,
-        metadata ? JSON.stringify(metadata) : null
-      ]
-    )
-
-    await client.query(
-      `UPDATE actions_config
-       SET is_active = FALSE
-       WHERE code = $1
-         AND is_active = TRUE
-         AND (
-           $2 > major_version
-           OR ($2 = major_version AND $3 > minor_version)
-           OR ($2 = major_version AND $3 = minor_version AND $4 > patch_version)
-         )`,
-      [code, major, minor, patch]
-    )
-
-    await client.query(
-      `INSERT INTO actions_config
-         (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id)
-       VALUES (
-         $1,
-         (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
-         $2,
-         NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE),
-         NOW(), $3, $4, $5, $6, $7
-       )`,
-      [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
-    )
+    await upsertAction(client, params)
+    await deactivateSupersededConfig(client, params)
+    await insertConfigVersion(client, params)
 
     await client.query('COMMIT')
     return true
