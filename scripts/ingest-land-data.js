@@ -231,12 +231,10 @@ async function transferResource(resource, environment) {
 
   // get the files to ingest from the directory
   const currentfailedFiles = readFailedFiles(resource)
-  let files = []
-  if (currentfailedFiles.length > 0) {
-    files = currentfailedFiles
-  } else {
-    files = fs.readdirSync(ingestionDataDirectory)
-  }
+  const files =
+    currentfailedFiles.length > 0
+      ? currentfailedFiles
+      : fs.readdirSync(ingestionDataDirectory)
   console.log(`✓ ${files.length} files to ingest found`)
 
   const failedFiles = []
