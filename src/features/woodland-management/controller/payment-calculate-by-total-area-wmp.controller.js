@@ -37,7 +37,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
   await auditEvent(
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
     {
-      ...buildAuditContext(request, sbi),
+      ...buildAuditContext(request, sbi, crn),
       request: { totalAreaHa, applicationId, sbi, crn },
       error: error.message
     },
@@ -51,11 +51,12 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
  * Builds the shared portion of a WMP payment calculation audit context.
  * @param {import('@hapi/hapi').Request} request
  * @param {string} sbi
+ * @param {string} crn
  * @returns {object}
  */
-const buildAuditContext = (request, sbi) => ({
+const buildAuditContext = (request, sbi, crn) => ({
   correlationId: getCorrelationId(request),
-  sbi
+  identifiers: { sbi, crn }
 });
 
 /**
@@ -115,7 +116,7 @@ export const PaymentsCalculateTotalWMPController = {
       await auditEvent(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         {
-          ...buildAuditContext(request, sbi),
+          ...buildAuditContext(request, sbi, crn),
           request: { totalAreaHa, applicationId, sbi, crn },
           response: transformedPaymentResult
         },

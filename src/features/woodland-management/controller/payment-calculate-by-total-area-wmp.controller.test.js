@@ -148,7 +148,7 @@ describe('Payment calculate total WMP controller', () => {
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         expect.objectContaining({
-          sbi: '123456789',
+          identifiers: { sbi: '123456789', crn: undefined },
           request: {
             totalAreaHa: 8,
             applicationId: 'app-123',
@@ -290,7 +290,7 @@ describe('Payment calculate total WMP controller', () => {
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         expect.objectContaining({
-          sbi: '123456789',
+          identifiers: { sbi: '123456789', crn: undefined },
           request: {
             totalAreaHa: 8,
             applicationId: 'app-123',
