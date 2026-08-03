@@ -267,11 +267,11 @@ describe('transformActionConfig', () => {
 
     test.each(['total', 'partial', 'limited'])(
       'does not throw for a valid metadata.available_area_type %s',
-      (available_area_type) => {
+      (availableAreaType) => {
         expect(() =>
           transformActionConfig({
             ...pa3Json,
-            metadata: { available_area_type }
+            metadata: { available_area_type: availableAreaType }
           })
         ).not.toThrow()
       }
