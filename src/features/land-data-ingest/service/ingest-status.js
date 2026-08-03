@@ -5,4 +5,4 @@ export const INGEST_STATUS = {
   COMPLETED: 'completed',
   FAILED: 'failed',
   CANCELLED: 'cancelled'
-};
+}

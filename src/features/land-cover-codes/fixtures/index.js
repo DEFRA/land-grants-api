@@ -11,6 +11,6 @@ const mockLandCoverCodes = [
     landCoverClassCode: '110',
     landCoverCode: '110'
   }
-];
+]
 
-export { mockLandCoverCodes };
+export { mockLandCoverCodes }

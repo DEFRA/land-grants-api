@@ -1,5 +1,5 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js';
-import { actionConfigTransformer } from '~/src/features/actions/transformers/2.0.0/actionConfig.transformer.js';
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { actionConfigTransformer } from '~/src/features/actions/transformers/2.0.0/actionConfig.transformer.js'
 
 /**
  * Get action configs by latest version - returns the latest version for each action
@@ -8,9 +8,9 @@ import { actionConfigTransformer } from '~/src/features/actions/transformers/2.0
  * @returns {Promise<Action[]>} The action configs
  */
 async function getActionsByLatestVersion(logger, db) {
-  let client;
+  let client
   try {
-    client = await db.connect();
+    client = await db.connect()
 
     const query = `
       SELECT * FROM (
@@ -39,24 +39,24 @@ async function getActionsByLatestVersion(logger, db) {
         ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
       ) subq
       ORDER BY display_order ASC
-    `;
-    const result = await client.query(query);
+    `
+    const result = await client.query(query)
 
-    return result.rows.map(actionConfigTransformer);
+    return result.rows.map(actionConfigTransformer)
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get actions by latest version',
       error
-    });
-    return [];
+    })
+    return []
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getActionsByLatestVersion };
+export { getActionsByLatestVersion }
 
 /**
  * @import {Action} from '../../action.d.js'

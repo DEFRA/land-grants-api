@@ -20,7 +20,7 @@ export function actionConfigTransformer(action) {
     display_order: displayOrder,
     payment_method: paymentMethod,
     ...actionObj
-  } = action;
+  } = action
   return {
     ...actionObj,
     applicationUnitOfMeasurement,
@@ -37,5 +37,5 @@ export function actionConfigTransformer(action) {
     groupName,
     displayOrder,
     paymentMethod
-  };
+  }
 }

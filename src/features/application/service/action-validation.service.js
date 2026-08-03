@@ -1,23 +1,23 @@
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js';
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js';
+import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
   findMaximumAvailableArea,
   throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js';
-import { formatExplanationSections } from '~/src/features/available-area/explanations.js';
-import { rules } from '~/src/features/rules-engine/rules/index.js';
-import { executeRules } from '~/src/features/rules-engine/rulesEngine.js';
-import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js';
-import { haToSqm } from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { rules } from '~/src/features/rules-engine/rules/index.js'
+import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
+import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
-} from '../transformers/application.transformer.js';
+} from '../transformers/application.transformer.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
-} from '../../data-layers/queries/getDataLayer.query.js';
+} from '../../data-layers/queries/getDataLayer.query.js'
 
 /**
  * Validate a land action
@@ -38,7 +38,7 @@ export const validateLandAction = async (
   request
 ) => {
   if (!landAction || !actions || !compatibilityCheckFn) {
-    throw new Error('Unable to validate land action');
+    throw new Error('Unable to validate land action')
   }
 
   // Other actions requested for this same parcel in this submission also
@@ -46,12 +46,12 @@ export const validateLandAction = async (
   // are treated as "existing" demand when computing this action's available area.
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }));
+    .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
   const existingActions = [
     ...plannedActionsTransformer(agreements),
     ...siblingActions
-  ];
+  ]
 
   const aacDataRequirements = await getAvailableAreaDataRequirements(
     action.code,
@@ -60,16 +60,16 @@ export const validateLandAction = async (
     existingActions,
     request.server.postgresDb,
     request.logger
-  );
+  )
 
   const lpResult = findMaximumAvailableArea(
     action.code,
     existingActions,
     compatibilityCheckFn,
     aacDataRequirements
-  );
+  )
 
-  throwIfInfeasible(lpResult, landAction.sheetId, landAction.parcelId);
+  throwIfInfeasible(lpResult, landAction.sheetId, landAction.parcelId)
 
   const availableArea = {
     ...lpResult,
@@ -80,7 +80,7 @@ export const validateLandAction = async (
       landCoverToString: aacDataRequirements.landCoverToString,
       feasible: lpResult.feasible
     })
-  };
+  }
 
   const application = await buildRuleEngineApplication(
     action,
@@ -88,9 +88,9 @@ export const validateLandAction = async (
     availableArea,
     agreements,
     request
-  );
+  )
 
-  const ruleToExecute = actions.find((a) => a.code === action.code);
+  const ruleToExecute = actions.find((a) => a.code === action.code)
   const ruleResult = executeRules(
     rules,
     {
@@ -100,9 +100,9 @@ export const validateLandAction = async (
       actionCode: action.code
     },
     ruleToExecute?.rules
-  );
-  return actionResultTransformer(action, actions, availableArea, ruleResult);
-};
+  )
+  return actionResultTransformer(action, actions, availableArea, ruleResult)
+}
 
 /**
  * Fetches parcel data layers and builds the rule engine application object.
@@ -125,7 +125,7 @@ const buildRuleEngineApplication = async (
     landAction.parcelId,
     request.server.postgresDb,
     request.logger
-  );
+  )
 
   const sssiDataLayerData = await getDataLayerQueryAccumulated(
     landAction.sheetId,
@@ -133,7 +133,7 @@ const buildRuleEngineApplication = async (
     DATA_LAYER_TYPES.sssi,
     request.server.postgresDb,
     request.logger
-  );
+  )
 
   const historicFeaturesDataLayerData = await getDataLayerQueryUnion(
     landAction.sheetId,
@@ -141,7 +141,7 @@ const buildRuleEngineApplication = async (
     DATA_LAYER_TYPES.historic_features,
     request.server.postgresDb,
     request.logger
-  );
+  )
 
   return ruleEngineApplicationTransformer(
     action.quantity,
@@ -151,8 +151,8 @@ const buildRuleEngineApplication = async (
     sssiDataLayerData,
     historicFeaturesDataLayerData,
     agreements
-  );
-};
+  )
+}
 
 /**
  * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'

@@ -10,16 +10,16 @@
  */
 export const sssiConsentRequired = {
   execute: (application, rule) => {
-    const { layerName, caveatDescription, tolerancePercent } = rule.config;
-    const name = `${rule.name}`;
+    const { layerName, caveatDescription, tolerancePercent } = rule.config
+    const name = `${rule.name}`
 
     const explanations = [
       {
         title: `${layerName} check`,
         lines: []
       }
-    ];
-    let caveat = null;
+    ]
+    let caveat = null
 
     if (application?.landParcel?.intersections?.[layerName] == null) {
       return {
@@ -28,18 +28,18 @@ export const sssiConsentRequired = {
         description: rule.description,
         reason: `An intersection with the ${layerName} layer was not provided in the application data`,
         explanations
-      };
+      }
     }
 
     const { intersectingAreaPercentage = 0, intersectionAreaHa = 0 } =
-      application.landParcel.intersections[layerName];
+      application.landParcel.intersections[layerName]
 
     const isConsentRequired =
       intersectingAreaPercentage != null &&
-      intersectingAreaPercentage - tolerancePercent > 0;
+      intersectingAreaPercentage - tolerancePercent > 0
 
     if (isConsentRequired) {
-      const { parcelId, sheetId, actionCode } = application;
+      const { parcelId, sheetId, actionCode } = application
       caveat = {
         code: 'ne-consent-required',
         description: caveatDescription,
@@ -50,13 +50,13 @@ export const sssiConsentRequired = {
           percentageOverlap: intersectingAreaPercentage,
           overlapAreaHectares: intersectionAreaHa
         }
-      };
+      }
     }
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
       `This parcel has a ${intersectingAreaPercentage}% intersection with the sssi layer. The tolerance is ${tolerancePercent}%.`
-    );
+    )
 
     return {
       name,
@@ -67,6 +67,6 @@ export const sssiConsentRequired = {
       description: rule.description,
       explanations,
       ...(caveat && { caveat })
-    };
+    }
   }
-};
+}

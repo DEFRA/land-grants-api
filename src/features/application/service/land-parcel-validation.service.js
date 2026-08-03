@@ -1,5 +1,5 @@
-import { getAgreements } from '~/src/features/agreements/repo.js';
-import { validateLandAction } from './action-validation.service.js';
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { validateLandAction } from './action-validation.service.js'
 
 /**
  * Validate land parcel actions
@@ -19,7 +19,7 @@ export const validateLandParcelActions = async (
   defraIdToken
 ) => {
   if (!landAction || !actions || !compatibilityCheckFn) {
-    throw new Error('Unable to validate land parcel actions');
+    throw new Error('Unable to validate land parcel actions')
   }
 
   // Get agreements and filter them to only area-based actions, as only
@@ -31,7 +31,7 @@ export const validateLandParcelActions = async (
     defraIdToken,
     request.server.postgresDb,
     request.logger
-  );
+  )
 
   const actionResults = await Promise.all(
     landAction.actions.map(async (action) => {
@@ -42,13 +42,13 @@ export const validateLandParcelActions = async (
         compatibilityCheckFn,
         landAction,
         request
-      );
+      )
     })
-  );
+  )
 
   return {
     sheetId: landAction.sheetId,
     parcelId: landAction.parcelId,
     actions: actionResults
-  };
-};
+  }
+}

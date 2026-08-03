@@ -1,19 +1,19 @@
-import { vi } from 'vitest';
-import { application } from '../../index.js';
-import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js';
-import createTestServer from '~/src/tests/test-server.js';
+import { vi } from 'vitest'
+import { application } from '../../index.js'
+import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
+import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
   () => ({
     getApplicationValidationRun: vi.fn()
   })
-);
+)
 
-const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun);
+const mockGetApplicationValidationRun = vi.mocked(getApplicationValidationRun)
 
 describe('Application Validation Run Controller', () => {
-  const server = createTestServer();
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -21,26 +21,26 @@ describe('Application Validation Run Controller', () => {
       debug: vi.fn(),
       warn: vi.fn(),
       error: vi.fn()
-    });
+    })
 
     server.decorate('server', 'postgresDb', {
       connect: vi.fn().mockImplementation(() => ({
         query: vi.fn(),
         release: vi.fn()
       }))
-    });
+    })
 
-    await server.register([application]);
-    await server.initialize();
-  });
+    await server.register([application])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   describe('GET /application/{id}/validation-run', () => {
     test('should return 200 and application validation run', async () => {
@@ -124,59 +124,59 @@ describe('Application Validation Run Controller', () => {
             ]
           }
         }
-      };
+      }
       mockGetApplicationValidationRun.mockResolvedValue(
         applicationValidationRun
-      );
+      )
 
       const request = {
         method: 'POST',
         url: '/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      expect(statusCode).toBe(200);
+      expect(statusCode).toBe(200)
       expect(result.message).toBe(
         'Application validation run retrieved successfully'
-      );
-      expect(result.applicationValidationRun).toEqual(applicationValidationRun);
-    });
+      )
+      expect(result.applicationValidationRun).toEqual(applicationValidationRun)
+    })
 
     test('should return 404 if application validation run does not exist', async () => {
-      mockGetApplicationValidationRun.mockResolvedValue(null);
+      mockGetApplicationValidationRun.mockResolvedValue(null)
 
       const request = {
         method: 'POST',
         url: '/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      expect(statusCode).toBe(404);
-      expect(result.message).toBe('Application validation run not found');
-    });
+      expect(statusCode).toBe(404)
+      expect(result.message).toBe('Application validation run not found')
+    })
 
     test('should return 500 if application validation run query fails', async () => {
       mockGetApplicationValidationRun.mockRejectedValue(
         new Error('Error getting application validation run')
-      );
+      )
 
       const request = {
         method: 'POST',
         url: '/application/validation-run/123'
-      };
+      }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, payload } = await server.inject(request);
-      const result = JSON.parse(payload);
+      const { statusCode, payload } = await server.inject(request)
+      const result = JSON.parse(payload)
 
-      expect(statusCode).toBe(500);
-      expect(result.message).toBe('An internal server error occurred');
-    });
-  });
-});
+      expect(statusCode).toBe(500)
+      expect(result.message).toBe('An internal server error occurred')
+    })
+  })
+})

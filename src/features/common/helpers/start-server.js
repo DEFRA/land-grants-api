@@ -1,27 +1,27 @@
-import { config } from '~/src/config/index.js';
+import { config } from '~/src/config/index.js'
 
-import { createServer } from '~/src/routes/index.js';
-import { createLogger } from '~/src/features/common/helpers/logging/logger.js';
+import { createServer } from '~/src/routes/index.js'
+import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
 
 async function startServer() {
-  let server;
+  let server
 
   try {
-    server = await createServer();
-    await server.start();
+    server = await createServer()
+    await server.start()
 
-    server.logger.info('Server started successfully');
+    server.logger.info('Server started successfully')
     server.logger.info(
       `Access your backend on http://localhost:${config.get('port')}`
-    );
+    )
   } catch (error) {
-    const logger = createLogger();
-    logger.info('Server failed to start :(');
-    logger.error(error);
-    throw error;
+    const logger = createLogger()
+    logger.info('Server failed to start :(')
+    logger.error(error)
+    throw error
   }
 
-  return server;
+  return server
 }
 
-export { startServer };
+export { startServer }

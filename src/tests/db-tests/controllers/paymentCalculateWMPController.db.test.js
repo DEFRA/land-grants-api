@@ -1,14 +1,14 @@
-import { vi } from 'vitest';
-import { PaymentsCalculateWMPController } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js';
-import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
-import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js';
+import { vi } from 'vitest'
+import { PaymentsCalculateWMPController } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js'
+import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 
 vi.mock(
   '~/src/features/woodland-management/validation/payment-calculation.validation.js'
-);
+)
 
-const mockValidatePaymentCalculationRequest = validatePaymentCalculationRequest;
+const mockValidatePaymentCalculationRequest = validatePaymentCalculationRequest
 
 /**
  * Creates a mock parcel with the given area in square metres.
@@ -23,7 +23,7 @@ const createMockParcel = (areaSqm = 200000) => ({
   area: areaSqm,
   geom: 'POLYGON((0 0,1 0,1 1,0 1,0 0))',
   last_updated: new Date('2024-01-01')
-});
+})
 
 /**
  * Builds the handler request object with the given payload.
@@ -38,12 +38,12 @@ const createRequest = (payload, logger, connection) => ({
   server: {
     postgresDb: connection
   }
-});
+})
 
-const mockDate = new Date(2026, 4, 1);
+const mockDate = new Date(2026, 4, 1)
 
 describe('Payment Calculate WMP Controller (DB)', () => {
-  let logger, connection;
+  let logger, connection
 
   beforeAll(() => {
     logger = {
@@ -51,28 +51,28 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       error: vi.fn(),
       warn: vi.fn(),
       debug: vi.fn()
-    };
-    connection = connectToTestDatabase();
-    vi.setSystemTime(mockDate);
-  });
+    }
+    connection = connectToTestDatabase()
+    vi.setSystemTime(mockDate)
+  })
 
   afterAll(async () => {
-    await connection.end();
-    vi.useRealTimers();
-  });
+    await connection.end()
+    vi.useRealTimers()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks()
     mockValidatePaymentCalculationRequest.mockResolvedValue({
       errors: null,
       parcels: [createMockParcel()]
-    });
-  });
+    })
+  })
 
   describe('successful calculation using PA3 action from database', () => {
     test('should return 200 with flat rate 150000p when eligible area falls in tier 1 (0.5–51ha)', async () => {
       // old=10ha, new=2ha → eligible=12ha → tier 1: flat £1500 (150000p), rate £0/ha
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -86,24 +86,24 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
-      const item = data.payment.agreementLevelItems[1];
+      const { data, statusCode } = getResponse()
+      const item = data.payment.agreementLevelItems[1]
 
-      expect(statusCode).toBe(200);
-      expect(data.message).toBe('success');
-      expect(data.payment.agreementTotalPence).toBe(150000);
-      expect(data.payment.frequency).toBe('Single');
-      expect(data.payment.agreementStartDate).toBe('2025-02-01');
-      expect(data.payment.agreementEndDate).toBe('2028-01-31');
-      expect(data.payment.payments[0].totalPaymentPence).toBe(150000);
-      expect(data.payment.payments[0].paymentDate).toBeNull();
-      expect(item.activePaymentTier).toBe(1);
-      expect(item.quantityInActiveTier).toBe(12);
-      expect(item.activeTierRatePence).toBe(0);
-      expect(item.activeTierFlatRatePence).toBe(150000);
-    });
+      expect(statusCode).toBe(200)
+      expect(data.message).toBe('success')
+      expect(data.payment.agreementTotalPence).toBe(150000)
+      expect(data.payment.frequency).toBe('Single')
+      expect(data.payment.agreementStartDate).toBe('2025-02-01')
+      expect(data.payment.agreementEndDate).toBe('2028-01-31')
+      expect(data.payment.payments[0].totalPaymentPence).toBe(150000)
+      expect(data.payment.payments[0].paymentDate).toBeNull()
+      expect(item.activePaymentTier).toBe(1)
+      expect(item.quantityInActiveTier).toBe(12)
+      expect(item.activeTierRatePence).toBe(0)
+      expect(item.activeTierFlatRatePence).toBe(150000)
+    })
 
     test('should return 200 with 240000p when eligible area falls in tier 2 (51–100ha)', async () => {
       // old=75ha, new=5ha → eligible=80ha → tier 2: 1500 + 30*(80-50) = £2400 (240000p)
@@ -111,9 +111,9 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(900000)]
-      });
+      })
 
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -127,20 +127,20 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
-      const item = data.payment.agreementLevelItems[1];
+      const { data, statusCode } = getResponse()
+      const item = data.payment.agreementLevelItems[1]
 
-      expect(statusCode).toBe(200);
-      expect(data.payment.agreementTotalPence).toBe(240000);
-      expect(data.payment.agreementStartDate).toBe('2025-07-01');
-      expect(data.payment.agreementEndDate).toBe('2028-06-30');
-      expect(item.activePaymentTier).toBe(2);
-      expect(item.quantityInActiveTier).toBe(30);
-      expect(item.activeTierRatePence).toBe(3000);
-      expect(item.activeTierFlatRatePence).toBe(150000);
-    });
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementTotalPence).toBe(240000)
+      expect(data.payment.agreementStartDate).toBe('2025-07-01')
+      expect(data.payment.agreementEndDate).toBe('2028-06-30')
+      expect(item.activePaymentTier).toBe(2)
+      expect(item.quantityInActiveTier).toBe(30)
+      expect(item.activeTierRatePence).toBe(3000)
+      expect(item.activeTierFlatRatePence).toBe(150000)
+    })
 
     test('should return 200 with 315000p when eligible area falls in tier 3 (over 100ha)', async () => {
       // old=90ha, new=20ha, total=110ha, 20% cap=22ha → new(20)≤cap(22) → eligible=110ha
@@ -149,9 +149,9 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(1200000)]
-      });
+      })
 
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -165,20 +165,20 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
-      const item = data.payment.agreementLevelItems[1];
+      const { data, statusCode } = getResponse()
+      const item = data.payment.agreementLevelItems[1]
 
-      expect(statusCode).toBe(200);
-      expect(data.payment.agreementTotalPence).toBe(315000);
-      expect(data.payment.agreementStartDate).toBe('2025-04-01');
-      expect(data.payment.agreementEndDate).toBe('2028-03-31');
-      expect(item.activePaymentTier).toBe(3);
-      expect(item.quantityInActiveTier).toBe(10);
-      expect(item.activeTierRatePence).toBe(1500);
-      expect(item.activeTierFlatRatePence).toBe(300000);
-    });
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementTotalPence).toBe(315000)
+      expect(data.payment.agreementStartDate).toBe('2025-04-01')
+      expect(data.payment.agreementEndDate).toBe('2028-03-31')
+      expect(item.activePaymentTier).toBe(3)
+      expect(item.quantityInActiveTier).toBe(10)
+      expect(item.activeTierRatePence).toBe(1500)
+      expect(item.activeTierFlatRatePence).toBe(300000)
+    })
 
     test('should return 200 and cap new woodland when it exceeds 20% of total woodland area', async () => {
       // old=20ha, new=30ha, total=50ha, 20% cap=10ha → eligible = 20+10 = 30ha
@@ -187,9 +187,9 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(600000)]
-      });
+      })
 
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -203,21 +203,21 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
+      const { data, statusCode } = getResponse()
 
-      expect(statusCode).toBe(200);
-      expect(data.payment.agreementTotalPence).toBe(150000);
-    });
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementTotalPence).toBe(150000)
+    })
 
     test('should return 200 when eligible area falls in tier 3 (over 100ha) and round quantity active tier', async () => {
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(900000)]
-      });
+      })
 
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -231,28 +231,28 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
-      const item = data.payment.agreementLevelItems[1];
+      const { data, statusCode } = getResponse()
+      const item = data.payment.agreementLevelItems[1]
 
-      expect(statusCode).toBe(200);
-      expect(data.payment.agreementTotalPence).toBe(300150);
-      expect(data.payment.agreementStartDate).toBe('2025-07-01');
-      expect(data.payment.agreementEndDate).toBe('2028-06-30');
-      expect(item.activePaymentTier).toBe(3);
-      expect(item.quantityInActiveTier).toBe(0.1);
-      expect(item.activeTierRatePence).toBe(1500);
-      expect(item.activeTierFlatRatePence).toBe(300000);
-    });
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementTotalPence).toBe(300150)
+      expect(data.payment.agreementStartDate).toBe('2025-07-01')
+      expect(data.payment.agreementEndDate).toBe('2028-06-30')
+      expect(item.activePaymentTier).toBe(3)
+      expect(item.quantityInActiveTier).toBe(0.1)
+      expect(item.activeTierRatePence).toBe(1500)
+      expect(item.activeTierFlatRatePence).toBe(300000)
+    })
 
     test('should return 200 with correct end date and start is not sent', async () => {
       mockValidatePaymentCalculationRequest.mockResolvedValue({
         errors: null,
         parcels: [createMockParcel(600000)]
-      });
+      })
 
-      const { h, getResponse } = createResponseCapture();
+      const { h, getResponse } = createResponseCapture()
 
       await PaymentsCalculateWMPController.handler(
         createRequest(
@@ -265,14 +265,14 @@ describe('Payment Calculate WMP Controller (DB)', () => {
           connection
         ),
         h
-      );
+      )
 
-      const { data, statusCode } = getResponse();
+      const { data, statusCode } = getResponse()
 
-      expect(statusCode).toBe(200);
-      expect(data.payment.agreementEndDate).toBe('2029-05-31');
-    });
-  });
+      expect(statusCode).toBe(200)
+      expect(data.payment.agreementEndDate).toBe('2029-05-31')
+    })
+  })
 
   describe('eligibility rule failures', () => {
     describe('validation errors', () => {
@@ -280,9 +280,9 @@ describe('Payment Calculate WMP Controller (DB)', () => {
         mockValidatePaymentCalculationRequest.mockResolvedValue({
           errors: ['Land parcels not found: SX067-99238'],
           parcels: []
-        });
+        })
 
-        const { h } = createResponseCapture();
+        const { h } = createResponseCapture()
 
         const result = await PaymentsCalculateWMPController.handler(
           createRequest(
@@ -296,12 +296,12 @@ describe('Payment Calculate WMP Controller (DB)', () => {
             connection
           ),
           h
-        );
+        )
 
-        expect(result.isBoom).toBe(true);
-        expect(result.output.statusCode).toBe(400);
-        expect(result.message).toBe('Land parcels not found: SX067-99238');
-      });
-    });
-  });
-});
+        expect(result.isBoom).toBe(true)
+        expect(result.output.statusCode).toBe(400)
+        expect(result.message).toBe('Land parcels not found: SX067-99238')
+      })
+    })
+  })
+})

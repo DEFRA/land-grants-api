@@ -1,11 +1,11 @@
-import { parcelHasIntersectionWithDataLayer } from './1.0.0/parcel-has-intersection-with-data-layer.js';
-import { appliedForTotalAvailableArea } from './1.0.0/applied-for-total-available-area.js';
-import { appliedForTotalOrPartialAvailableArea } from './1.0.0/applied-for-total-or-partial-available-area.js';
-import { sssiConsentRequired } from './1.0.0/sssi-consent-required.js';
-import { heferConsentRequired } from './1.0.0/hefer-consent-required.js';
-import { woodlandMinimumEligibility } from './1.0.0/woodland-minimum-eligibility.js';
-import { woodlandTotalArea } from './1.0.0/woodland-total-area.js';
-import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js';
+import { parcelHasIntersectionWithDataLayer } from './1.0.0/parcel-has-intersection-with-data-layer.js'
+import { appliedForTotalAvailableArea } from './1.0.0/applied-for-total-available-area.js'
+import { appliedForTotalOrPartialAvailableArea } from './1.0.0/applied-for-total-or-partial-available-area.js'
+import { sssiConsentRequired } from './1.0.0/sssi-consent-required.js'
+import { heferConsentRequired } from './1.0.0/hefer-consent-required.js'
+import { woodlandMinimumEligibility } from './1.0.0/woodland-minimum-eligibility.js'
+import { woodlandTotalArea } from './1.0.0/woodland-total-area.js'
+import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
 
 export const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0':
@@ -21,4 +21,4 @@ export const rules = {
     woodlandTotalArea,
   'parcel-intersection-does-not-exceed-maximum-for-data-layer-1.0.0':
     parcelIntersectionDoesNotExceedMaximumForDataLayer
-};
+}

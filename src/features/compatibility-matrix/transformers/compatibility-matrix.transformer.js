@@ -9,5 +9,5 @@ export function compatibilityMatrixTransformer(cm) {
     optionCode: cm.option_code,
     optionCodeCompat: cm.option_code_compat,
     year: cm.year
-  };
+  }
 }

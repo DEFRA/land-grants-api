@@ -20,7 +20,7 @@ export const ENTITY_TYPES = [
   { name: 'scheduled_monuments', truncateTable: false },
   { name: 'registered_parks_gardens', truncateTable: false },
   { name: 'action_sssi_hf_mapping', truncateTable: false }
-];
+]
 
 /**
  * Get entity by name
@@ -28,5 +28,5 @@ export const ENTITY_TYPES = [
  * @returns {{name: string, truncateTable: boolean, ingest?: boolean, pairedWith?: string} | undefined} The entity
  */
 export const getEntityByName = (name) => {
-  return ENTITY_TYPES.find((entity) => entity.name === name);
-};
+  return ENTITY_TYPES.find((entity) => entity.name === name)
+}

@@ -1,20 +1,20 @@
-import { vi } from 'vitest';
-import { CDPUploaderCallbackController } from '~/src/features/land-data-ingest/controller/cdp-uploader-callback.controller.js';
-import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js';
+import { vi } from 'vitest'
+import { CDPUploaderCallbackController } from '~/src/features/land-data-ingest/controller/cdp-uploader-callback.controller.js'
+import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import {
   createTestS3Client,
   uploadFixtureFile,
   ensureBucketExists,
   listTestFiles,
   clearTestBucket
-} from '~/src/tests/db-tests/setup/s3-test-helpers.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+} from '~/src/tests/db-tests/setup/s3-test-helpers.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('CDP Uploader Callback Controller', () => {
-  const { h, getResponse } = createResponseCapture();
-  let s3Client;
-  let connection;
-  let logger;
+  const { h, getResponse } = createResponseCapture()
+  let s3Client
+  let connection
+  let logger
 
   beforeAll(async () => {
     logger = {
@@ -22,23 +22,23 @@ describe('CDP Uploader Callback Controller', () => {
       error: vi.fn(),
       warn: vi.fn(),
       debug: vi.fn()
-    };
-    connection = connectToTestDatabase();
-    s3Client = createTestS3Client();
-    await ensureBucketExists(s3Client);
-    await clearTestBucket(s3Client);
-  });
+    }
+    connection = connectToTestDatabase()
+    s3Client = createTestS3Client()
+    await ensureBucketExists(s3Client)
+    await clearTestBucket(s3Client)
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   test('should return 200 with success message when payload is valid', async () => {
     await uploadFixtureFile(
       s3Client,
       'parcels_head.csv',
       'parcels/parcels_head.csv'
-    );
+    )
 
     const request = {
       payload: {
@@ -53,15 +53,15 @@ describe('CDP Uploader Callback Controller', () => {
       server: {
         s3: s3Client
       }
-    };
+    }
 
-    await CDPUploaderCallbackController.handler(request, h);
+    await CDPUploaderCallbackController.handler(request, h)
 
-    const { statusCode } = getResponse();
+    const { statusCode } = getResponse()
 
-    const files = await listTestFiles(s3Client);
-    expect(statusCode).toBe(200);
-    expect(files).toHaveLength(1);
-    expect(files[0]).toBe('parcels/parcels_head.csv');
-  }, 10000);
-});
+    const files = await listTestFiles(s3Client)
+    expect(statusCode).toBe(200)
+    expect(files).toHaveLength(1)
+    expect(files[0]).toBe('parcels/parcels_head.csv')
+  }, 10000)
+})

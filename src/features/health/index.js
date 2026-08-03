@@ -1,4 +1,4 @@
-import { healthController } from '~/src/features/health/controller.js';
+import { healthController } from '~/src/features/health/controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -11,12 +11,12 @@ const health = {
         method: 'GET',
         path: '/health',
         ...healthController
-      });
+      })
     }
   }
-};
+}
 
-export { health };
+export { health }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

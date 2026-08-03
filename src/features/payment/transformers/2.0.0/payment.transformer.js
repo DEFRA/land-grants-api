@@ -4,11 +4,11 @@
  * @returns {object} The transformed item with version instead of semanticVersion
  */
 function transformSemanticVersionToVersion(item) {
-  const { semanticVersion, ...rest } = item;
+  const { semanticVersion, ...rest } = item
   return {
     ...rest,
     version: semanticVersion
-  };
+  }
 }
 
 /**
@@ -17,14 +17,14 @@ function transformSemanticVersionToVersion(item) {
  * @returns {object} A new response object with semanticVersion converted to version in parcelItems and agreementLevelItems
  */
 export function paymentCalculationTransformerV2(response) {
-  const transformedResponse = structuredClone(response);
+  const transformedResponse = structuredClone(response)
 
   // Transform semanticVersion to version in parcelItems
   for (const [key, parcelItem] of Object.entries(
     transformedResponse.parcelItems
   )) {
     transformedResponse.parcelItems[key] =
-      transformSemanticVersionToVersion(parcelItem);
+      transformSemanticVersionToVersion(parcelItem)
   }
 
   // Transform semanticVersion to version in agreementLevelItems
@@ -32,8 +32,8 @@ export function paymentCalculationTransformerV2(response) {
     transformedResponse.agreementLevelItems
   )) {
     transformedResponse.agreementLevelItems[key] =
-      transformSemanticVersionToVersion(agreementLevelItem);
+      transformSemanticVersionToVersion(agreementLevelItem)
   }
 
-  return transformedResponse;
+  return transformedResponse
 }

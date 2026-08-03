@@ -1,8 +1,8 @@
 import {
   applicationUnitOfMeasurement,
   haToSqm
-} from '~/src/features/common/helpers/measurement.js';
-import { HECTARES } from '~/src/features/common/constants/unit_type.js';
+} from '~/src/features/common/helpers/measurement.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 
 /**
  * Transform size to application unit of measurement
@@ -13,7 +13,7 @@ function sizeTransformer(area) {
   return {
     unit: applicationUnitOfMeasurement,
     value: area
-  };
+  }
 }
 
 /**
@@ -26,8 +26,8 @@ function plannedActionsTransformer(plannedActions) {
     return {
       actionCode: a.actionCode,
       areaSqm: a.unit === HECTARES ? haToSqm(a.quantity) : a.quantity
-    };
-  });
+    }
+  })
 }
 
 /**
@@ -41,7 +41,7 @@ function sssiConsentRequiredActionTransformer(
   sssiConsentRequiredAction
 ) {
   if (!responseParcels || !sssiConsentRequiredAction) {
-    return responseParcels;
+    return responseParcels
   }
 
   return responseParcels.map((parcel) => ({
@@ -51,7 +51,7 @@ function sssiConsentRequiredActionTransformer(
       sssiConsentRequired:
         sssiConsentRequiredAction[action.code]?.caveat?.metadata !== undefined
     }))
-  }));
+  }))
 }
 
 /**
@@ -62,7 +62,7 @@ function sssiConsentRequiredActionTransformer(
  */
 function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
   if (!responseParcels || !heferRequiredAction) {
-    return responseParcels;
+    return responseParcels
   }
 
   return responseParcels.map((parcel) => ({
@@ -72,7 +72,7 @@ function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
       heferRequired:
         heferRequiredAction[action.code]?.caveat?.metadata !== undefined
     }))
-  }));
+  }))
 }
 
 export {
@@ -80,7 +80,7 @@ export {
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
   heferRequiredActionTransformer
-};
+}
 
 /**
  * @import { AgreementAction } from "../../agreements/agreements.d.js"

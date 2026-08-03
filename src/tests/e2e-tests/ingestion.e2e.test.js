@@ -1,6 +1,6 @@
-import { describe, test, expect } from 'vitest';
-import { httpClient } from './setup/http-client.js';
-import { getAuthHeader } from './setup/auth-helpers.js';
+import { describe, test, expect } from 'vitest'
+import { httpClient } from './setup/http-client.js'
+import { getAuthHeader } from './setup/auth-helpers.js'
 
 describe('Ingestion Endpoints', () => {
   describe('POST /initiate-upload', () => {
@@ -11,23 +11,23 @@ describe('Ingestion Endpoints', () => {
           customerId: 'CUST-e2e-1',
           resource: 'land_parcels'
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data).toHaveProperty('uploadUrl');
-      expect(response.data.message).toBe('Land data upload initiated');
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data).toHaveProperty('uploadUrl')
+      expect(response.data.message).toBe('Land data upload initiated')
+    })
 
     test('should return 400 for missing required fields', async () => {
       const response = await httpClient.post('/initiate-upload', {
         body: {
           reference: 'REF-e2e-2'
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-    });
+      expect(response.status).toBe(400)
+    })
 
     test('should return 400 for invalid resource', async () => {
       const response = await httpClient.post('/initiate-upload', {
@@ -36,11 +36,11 @@ describe('Ingestion Endpoints', () => {
           customerId: 'CUST-e2e-3',
           resource: 'invalid_resource'
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-    });
-  });
+      expect(response.status).toBe(400)
+    })
+  })
 
   describe('POST /cdp-uploader-callback', () => {
     const validPayload = {
@@ -59,17 +59,17 @@ describe('Ingestion Endpoints', () => {
           hasError: false
         }
       }
-    };
+    }
 
     test('should return 200 with success message for valid payload', async () => {
       const response = await httpClient.post('/cdp-uploader-callback', {
         body: validPayload
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('message');
-      expect(response.data.message).toBe('Message received');
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('message')
+      expect(response.data.message).toBe('Message received')
+    })
 
     test('should return 400 when file has error', async () => {
       const response = await httpClient.post('/cdp-uploader-callback', {
@@ -83,11 +83,11 @@ describe('Ingestion Endpoints', () => {
             }
           }
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-      expect(response.data.message).toBe('File validation failed');
-    });
+      expect(response.status).toBe(400)
+      expect(response.data.message).toBe('File validation failed')
+    })
 
     test('should return 400 when file is not ready', async () => {
       const response = await httpClient.post('/cdp-uploader-callback', {
@@ -100,11 +100,11 @@ describe('Ingestion Endpoints', () => {
             }
           }
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-      expect(response.data.message).toBe('File is not ready');
-    });
+      expect(response.status).toBe(400)
+      expect(response.data.message).toBe('File is not ready')
+    })
 
     test('should return 400 for invalid uploadStatus', async () => {
       const response = await httpClient.post('/cdp-uploader-callback', {
@@ -112,12 +112,12 @@ describe('Ingestion Endpoints', () => {
           ...validPayload,
           uploadStatus: 'invalid-status'
         }
-      });
+      })
 
-      expect(response.status).toBe(400);
-      expect(response.data).toHaveProperty('message');
-    });
-  });
+      expect(response.status).toBe(400)
+      expect(response.data).toHaveProperty('message')
+    })
+  })
 
   describe('POST /ingest/{entity}/start', () => {
     test('should return new ingestId for valid payload', async () => {
@@ -131,11 +131,11 @@ describe('Ingestion Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      expect(response.status).toBe(200);
-      expect(response.data).toHaveProperty('ingestId');
-    });
+      expect(response.status).toBe(200)
+      expect(response.data).toHaveProperty('ingestId')
+    })
 
     test('should return status for ingestId', async () => {
       const response = await httpClient.post('/ingest/land_parcels/start', {
@@ -148,20 +148,20 @@ describe('Ingestion Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      const { ingestId } = response.data;
+      const { ingestId } = response.data
 
       const statusResponse = await httpClient.get(
         `/ingest/status?ingestId=${ingestId}`,
         {
           headers: { Authorization: getAuthHeader() }
         }
-      );
+      )
 
-      expect(statusResponse.status).toBe(200);
-      expect(statusResponse.data).toHaveProperty('status');
-    });
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('status')
+    })
 
     test('should return status for ingestId and filename', async () => {
       const response = await httpClient.post('/ingest/land_parcels/start', {
@@ -174,21 +174,21 @@ describe('Ingestion Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
-      const { ingestId } = response.data;
+      const { ingestId } = response.data
 
       const statusResponse = await httpClient.get(
         `/ingest/status?ingestId=${ingestId}&filename=land-data.csv`,
         {
           headers: { Authorization: getAuthHeader() }
         }
-      );
+      )
 
-      expect(statusResponse.status).toBe(200);
-      expect(statusResponse.data).toHaveProperty('filename');
-      expect(statusResponse.data.filename).toBe('land-data.csv');
-    });
+      expect(statusResponse.status).toBe(200)
+      expect(statusResponse.data).toHaveProperty('filename')
+      expect(statusResponse.data.filename).toBe('land-data.csv')
+    })
 
     test('should return 400 when filename is provided without ingestId', async () => {
       const statusResponse = await httpClient.get(
@@ -196,11 +196,11 @@ describe('Ingestion Endpoints', () => {
         {
           headers: { Authorization: getAuthHeader() }
         }
-      );
+      )
 
-      expect(statusResponse.status).toBe(400);
-    });
-  });
+      expect(statusResponse.status).toBe(400)
+    })
+  })
 
   describe('GET /status', () => {
     test('should return latest status for each entity type', async () => {
@@ -216,7 +216,7 @@ describe('Ingestion Endpoints', () => {
             }
           ]
         }
-      });
+      })
       const {
         data: { ingestId: coversIngestId }
       } = await httpClient.post('/ingest/land_covers/start', {
@@ -229,21 +229,21 @@ describe('Ingestion Endpoints', () => {
             }
           ]
         }
-      });
+      })
 
       const statusResponse = await httpClient.get('/ingest/status', {
         headers: { Authorization: getAuthHeader() }
-      });
+      })
 
-      const { status, data: statuses } = statusResponse;
-      expect(status).toBe(200);
-      expect(statuses).toHaveLength(2);
-      const parcelsStatus = statuses.find((s) => s.id === parcelIngestId);
-      const coversStatus = statuses.find((s) => s.id === coversIngestId);
-      expect(parcelsStatus.entity).toBe('land_parcels');
-      expect(coversStatus.entity).toBe('land_covers');
-      expect(parcelsStatus.status).toBe('in_progress');
-      expect(coversStatus.status).toBe('in_progress');
-    });
-  });
-});
+      const { status, data: statuses } = statusResponse
+      expect(status).toBe(200)
+      expect(statuses).toHaveLength(2)
+      const parcelsStatus = statuses.find((s) => s.id === parcelIngestId)
+      const coversStatus = statuses.find((s) => s.id === coversIngestId)
+      expect(parcelsStatus.entity).toBe('land_parcels')
+      expect(coversStatus.entity).toBe('land_covers')
+      expect(parcelsStatus.status).toBe('in_progress')
+      expect(coversStatus.status).toBe('in_progress')
+    })
+  })
+})

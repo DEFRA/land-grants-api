@@ -1,19 +1,19 @@
-import { woodlandManagement } from '~/src/features/woodland-management/index.js';
-import { validateWoodlandManagementPlan } from '../service/wmp-service.js';
-import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js';
-import createTestServer from '~/src/tests/test-server.js';
+import { woodlandManagement } from '~/src/features/woodland-management/index.js'
+import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
+import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
+import createTestServer from '~/src/tests/test-server.js'
 import {
   AuditEvent,
   auditEvent
-} from '~/src/features/common/helpers/audit-event.js';
+} from '~/src/features/common/helpers/audit-event.js'
 
-vi.mock('../service/wmp-service.js');
-vi.mock('../../parcel/validation/2.0.0/parcel.validation.js');
-vi.mock('~/src/features/common/helpers/audit-event.js');
+vi.mock('../service/wmp-service.js')
+vi.mock('../../parcel/validation/2.0.0/parcel.validation.js')
+vi.mock('~/src/features/common/helpers/audit-event.js')
 
-const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan;
-const mockGetAndValidateParcels = getAndValidateParcels;
-const mockAuditEvent = auditEvent;
+const mockValidateWoodlandManagementPlan = validateWoodlandManagementPlan
+const mockGetAndValidateParcels = getAndValidateParcels
+const mockAuditEvent = auditEvent
 
 const mockRuleResult = [
   {
@@ -32,7 +32,7 @@ const mockRuleResult = [
       }
     ]
   }
-];
+]
 
 const mockValidateResult = {
   action: {
@@ -41,22 +41,22 @@ const mockValidateResult = {
     semanticVersion: '1.1.0'
   },
   ruleResult: { results: mockRuleResult, passed: true }
-};
+}
 
 const mockTransformedResult = {
   hasPassed: true,
   code: 'PA3',
   actionConfigVersion: '1.1.0',
   rules: mockRuleResult
-};
+}
 
 const mockParcelValidationResult = {
   parcels: [{ area_sqm: 10000 }, { area_sqm: 5000 }],
   errors: null
-};
+}
 
 describe('Validate WMP controller', () => {
-  const server = createTestServer();
+  const server = createTestServer()
 
   beforeAll(async () => {
     server.decorate('request', 'logger', {
@@ -64,23 +64,23 @@ describe('Validate WMP controller', () => {
       debug: vi.fn(),
       error: vi.fn(),
       warn: vi.fn()
-    });
+    })
     server.decorate('server', 'postgresDb', {
       connect: vi.fn(),
       query: vi.fn()
-    });
+    })
 
-    await server.register([woodlandManagement]);
-    await server.initialize();
-  });
+    await server.register([woodlandManagement])
+    await server.initialize()
+  })
 
   afterAll(async () => {
-    await server.stop();
-  });
+    await server.stop()
+  })
 
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   test('should return success with validation results', async () => {
     const request = {
@@ -91,19 +91,19 @@ describe('Validate WMP controller', () => {
         oldWoodlandAreaHa: 3,
         newWoodlandAreaHa: 1
       }
-    };
-    mockValidateWoodlandManagementPlan.mockResolvedValue(mockValidateResult);
-    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult);
+    }
+    mockValidateWoodlandManagementPlan.mockResolvedValue(mockValidateResult)
+    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult)
 
     /** @type { Hapi.ServerInjectResponse<object> } */
     const {
       statusCode,
       result: { message, result }
-    } = await server.inject(request);
+    } = await server.inject(request)
 
-    expect(statusCode).toBe(200);
-    expect(message).toBe('success');
-    expect(result).toEqual(mockTransformedResult);
+    expect(statusCode).toBe(200)
+    expect(message).toBe('success')
+    expect(result).toEqual(mockTransformedResult)
     expect(mockAuditEvent).toHaveBeenCalledWith(
       AuditEvent.WMP_VALIDATED,
       expect.objectContaining({
@@ -112,8 +112,8 @@ describe('Validate WMP controller', () => {
       }),
       'success',
       expect.objectContaining({ method: 'post' })
-    );
-  });
+    )
+  })
 
   test('should handle error', async () => {
     const request = {
@@ -124,17 +124,17 @@ describe('Validate WMP controller', () => {
         oldWoodlandAreaHa: 3,
         newWoodlandAreaHa: 1
       }
-    };
-    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult);
+    }
+    mockGetAndValidateParcels.mockResolvedValue(mockParcelValidationResult)
     mockValidateWoodlandManagementPlan.mockRejectedValue(
       new Error('Something went wrong')
-    );
+    )
 
     /** @type { Hapi.ServerInjectResponse<object> } */
-    const result = await server.inject(request);
+    const result = await server.inject(request)
 
-    expect(result.statusCode).toBe(500);
-    expect(result.result.message).toBe('An internal server error occurred');
+    expect(result.statusCode).toBe(500)
+    expect(result.result.message).toBe('An internal server error occurred')
     expect(mockAuditEvent).toHaveBeenCalledWith(
       AuditEvent.WMP_VALIDATED,
       expect.objectContaining({
@@ -143,8 +143,8 @@ describe('Validate WMP controller', () => {
       }),
       'failure',
       expect.objectContaining({ method: 'post' })
-    );
-  });
+    )
+  })
 
   test('should return not found when a parcel is not found', async () => {
     const request = {
@@ -155,19 +155,19 @@ describe('Validate WMP controller', () => {
         oldWoodlandAreaHa: 3,
         newWoodlandAreaHa: 1
       }
-    };
+    }
     mockGetAndValidateParcels.mockResolvedValue({
       parcels: [],
       errors: ['Land parcels not found: SX067-99238']
-    });
+    })
 
     /** @type { Hapi.ServerInjectResponse<object> } */
-    const result = await server.inject(request);
+    const result = await server.inject(request)
 
-    expect(result.statusCode).toBe(404);
-    expect(result.result.message).toBe('Land parcels not found: SX067-99238');
-    expect(mockAuditEvent).not.toHaveBeenCalled();
-  });
+    expect(result.statusCode).toBe(404)
+    expect(result.result.message).toBe('Land parcels not found: SX067-99238')
+    expect(mockAuditEvent).not.toHaveBeenCalled()
+  })
 
   test('should return bad request when no oldWoodlandAreaHa', async () => {
     const request = {
@@ -177,14 +177,14 @@ describe('Validate WMP controller', () => {
         parcelIds: ['SX067-99238'],
         newWoodlandAreaHa: 1
       }
-    };
+    }
 
     /** @type { Hapi.ServerInjectResponse<object> } */
-    const result = await server.inject(request);
+    const result = await server.inject(request)
 
-    expect(result.statusCode).toBe(400);
-    expect(result.result.message).toBe('"oldWoodlandAreaHa" is required');
-  });
+    expect(result.statusCode).toBe(400)
+    expect(result.result.message).toBe('"oldWoodlandAreaHa" is required')
+  })
 
   test('should return bad request when oldWoodlandAreaHa is negative', async () => {
     const request = {
@@ -195,16 +195,16 @@ describe('Validate WMP controller', () => {
         newWoodlandAreaHa: 1,
         oldWoodlandAreaHa: -1
       }
-    };
+    }
 
     /** @type { Hapi.ServerInjectResponse<object> } */
-    const result = await server.inject(request);
+    const result = await server.inject(request)
 
-    expect(result.statusCode).toBe(400);
+    expect(result.statusCode).toBe(400)
     expect(result.result.message).toBe(
       '"oldWoodlandAreaHa" must be greater than or equal to 0'
-    );
-  });
+    )
+  })
 
   test('should return bad request when newWoodlandAreaHa is negative', async () => {
     const request = {
@@ -215,14 +215,14 @@ describe('Validate WMP controller', () => {
         newWoodlandAreaHa: -1,
         oldWoodlandAreaHa: 1
       }
-    };
+    }
 
     /** @type { Hapi.ServerInjectResponse<object> } */
-    const result = await server.inject(request);
+    const result = await server.inject(request)
 
-    expect(result.statusCode).toBe(400);
+    expect(result.statusCode).toBe(400)
     expect(result.result.message).toBe(
       '"newWoodlandAreaHa" must be greater than or equal to 0'
-    );
-  });
-});
+    )
+  })
+})

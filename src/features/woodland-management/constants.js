@@ -1,1 +1,1 @@
-export const WMP_ACTION_CODE = 'PA3';
+export const WMP_ACTION_CODE = 'PA3'

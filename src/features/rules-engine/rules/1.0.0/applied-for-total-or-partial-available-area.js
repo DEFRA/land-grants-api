@@ -1,7 +1,7 @@
 import {
   haToSqm,
   sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -20,15 +20,15 @@ export const appliedForTotalOrPartialAvailableArea = {
     const {
       areaAppliedFor: areaAppliedForHa,
       landParcel: { availableAreaSqm }
-    } = application;
-    const name = rule.name;
+    } = application
+    const name = rule.name
 
-    const parsedAppliedAreaHa = Number.parseFloat(areaAppliedForHa) || 0;
-    const parsedAvailableAreaHa = sqmToHaRounded(availableAreaSqm) || 0;
-    const maximumAllowedAppliedAreaHa = parsedAvailableAreaHa;
+    const parsedAppliedAreaHa = Number.parseFloat(areaAppliedForHa) || 0
+    const parsedAvailableAreaHa = sqmToHaRounded(availableAreaSqm) || 0
+    const maximumAllowedAppliedAreaHa = parsedAvailableAreaHa
 
-    const parsedAppliedAreaSqm = haToSqm(parsedAppliedAreaHa);
-    const maximumAllowedAppliedAreaSqm = haToSqm(maximumAllowedAppliedAreaHa);
+    const parsedAppliedAreaSqm = haToSqm(parsedAppliedAreaHa)
+    const maximumAllowedAppliedAreaSqm = haToSqm(maximumAllowedAppliedAreaHa)
 
     const explanations = [
       {
@@ -37,7 +37,7 @@ export const appliedForTotalOrPartialAvailableArea = {
           `The available area is (${parsedAvailableAreaHa} ha), and the applicant applied for (${parsedAppliedAreaHa} ha).`
         ]
       }
-    ];
+    ]
 
     if (
       parsedAppliedAreaSqm <= 0 ||
@@ -49,7 +49,7 @@ export const appliedForTotalOrPartialAvailableArea = {
         description: rule.description,
         reason: `The amount of land must be the same as or less than the available area`,
         explanations
-      };
+      }
     }
 
     return {
@@ -58,6 +58,6 @@ export const appliedForTotalOrPartialAvailableArea = {
       description: rule.description,
       reason: `The applied figure (${parsedAppliedAreaHa} ha) is within the allowed range (greater than 0 ha and up to ${maximumAllowedAppliedAreaHa} ha)`,
       explanations
-    };
+    }
   }
-};
+}

@@ -1,5 +1,5 @@
-import { vi } from 'vitest';
-import { getPaymentCalculationForParcels } from './paymentCalculation.js';
+import { vi } from 'vitest'
+import { getPaymentCalculationForParcels } from './paymentCalculation.js'
 
 const mockEnabledActions = [
   {
@@ -36,13 +36,13 @@ const mockEnabledActions = [
       ratePerAgreementPerYearGbp: 97
     }
   }
-];
+]
 
 describe('getPaymentCalculationForParcels', () => {
   it('should return a valid payload for valid parcel data', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2025, 6, 2));
-    const durationYears = 1;
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2025, 6, 2))
+    const durationYears = 1
 
     const parcels = [
       {
@@ -65,7 +65,7 @@ describe('getPaymentCalculationForParcels', () => {
           }
         ]
       }
-    ];
+    ]
 
     const firstPaymentLineItems = [
       {
@@ -84,7 +84,7 @@ describe('getPaymentCalculationForParcels', () => {
         agreementLevelItemId: 2,
         paymentPence: 2425
       }
-    ];
+    ]
     const otherPaymentLineItems = [
       {
         parcelItemId: 1,
@@ -102,7 +102,7 @@ describe('getPaymentCalculationForParcels', () => {
         agreementLevelItemId: 2,
         paymentPence: 2425
       }
-    ];
+    ]
     const expectedResponse = {
       agreementStartDate: '2025-08-01',
       agreementEndDate: '2026-07-31',
@@ -176,22 +176,22 @@ describe('getPaymentCalculationForParcels', () => {
         }
       ],
       explanations: expect.any(Array)
-    };
+    }
 
     const response = getPaymentCalculationForParcels(
       parcels,
       mockEnabledActions,
       durationYears
-    );
+    )
 
-    expect(response).toEqual(expectedResponse);
-    vi.useRealTimers();
-  });
+    expect(response).toEqual(expectedResponse)
+    vi.useRealTimers()
+  })
 
   it('should return a response based on startDate if provided', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2025, 6, 2));
-    const durationYears = 1;
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2025, 6, 2))
+    const durationYears = 1
 
     const parcels = [
       {
@@ -214,7 +214,7 @@ describe('getPaymentCalculationForParcels', () => {
           }
         ]
       }
-    ];
+    ]
 
     const firstPaymentLineItems = [
       {
@@ -233,7 +233,7 @@ describe('getPaymentCalculationForParcels', () => {
         agreementLevelItemId: 2,
         paymentPence: 2425
       }
-    ];
+    ]
     const otherPaymentLineItems = [
       {
         parcelItemId: 1,
@@ -251,7 +251,7 @@ describe('getPaymentCalculationForParcels', () => {
         agreementLevelItemId: 2,
         paymentPence: 2425
       }
-    ];
+    ]
     const expectedResponse = {
       agreementStartDate: '2026-02-01',
       agreementEndDate: '2027-01-31',
@@ -325,16 +325,16 @@ describe('getPaymentCalculationForParcels', () => {
         }
       ],
       explanations: expect.any(Array)
-    };
+    }
 
     const response = getPaymentCalculationForParcels(
       parcels,
       mockEnabledActions,
       durationYears,
       '2026-01-01'
-    );
+    )
 
-    expect(response).toEqual(expectedResponse);
-    vi.useRealTimers();
-  });
-});
+    expect(response).toEqual(expectedResponse)
+    vi.useRealTimers()
+  })
+})
