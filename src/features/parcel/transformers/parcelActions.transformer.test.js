@@ -3,32 +3,32 @@ import {
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
   heferRequiredActionTransformer
-} from './parcelActions.transformer.js';
-import { actionTransformer } from './2.0.0/parcelActions.transformer.js';
+} from './parcelActions.transformer.js'
+import { actionTransformer } from './2.0.0/parcelActions.transformer.js'
 
 describe('sizeTransformer', () => {
   test('should transform area to correct format', () => {
-    const area = 1000;
-    const result = sizeTransformer(area);
+    const area = 1000
+    const result = sizeTransformer(area)
 
     expect(result).toEqual({
       unit: 'ha',
       value: 1000
-    });
-  });
-});
+    })
+  })
+})
 
 describe('actionTransformer', () => {
   test('should transform action with available area', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
     const availableArea = {
       availableAreaHectares: 500
-    };
+    }
 
-    const result = actionTransformer(action, availableArea);
+    const result = actionTransformer(action, availableArea)
 
     expect(result).toEqual({
       code: 'ACTION1',
@@ -37,50 +37,50 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 500
       }
-    });
-  });
+    })
+  })
 
   test('should transform action without available area when availableArea is null', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
-    const availableArea = null;
+    }
+    const availableArea = null
 
-    const result = actionTransformer(action, availableArea);
+    const result = actionTransformer(action, availableArea)
 
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined
-    });
-  });
+    })
+  })
 
   test('should transform action without available area when availableArea is undefined', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
 
-    const result = actionTransformer(action);
+    const result = actionTransformer(action)
 
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined
-    });
-  });
+    })
+  })
 
   test('should transform action with available area when availableAreaHectares is 0', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
     const availableArea = {
       availableAreaHectares: 0
-    };
+    }
 
-    const result = actionTransformer(action, availableArea);
+    const result = actionTransformer(action, availableArea)
 
     expect(result).toEqual({
       code: 'ACTION1',
@@ -89,40 +89,40 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 0
       }
-    });
-  });
+    })
+  })
 
   test('should transform action without available area when availableArea object exists but no availableAreaHectares', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
     const availableArea = {
       someOtherProperty: 'value'
-    };
+    }
 
-    const result = actionTransformer(action, availableArea);
+    const result = actionTransformer(action, availableArea)
 
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined
-    });
-  });
+    })
+  })
 
   test('should include results when showResults is true', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
     const availableArea = {
       availableAreaHectares: 500,
       totalValidLandCoverSqm: 5000000,
       stacks: [{ stack: 'data' }],
       explanations: ['explanation1', 'explanation2']
-    };
+    }
 
-    const result = actionTransformer(action, availableArea, true);
+    const result = actionTransformer(action, availableArea, true)
 
     expect(result).toEqual({
       code: 'ACTION1',
@@ -136,22 +136,22 @@ describe('actionTransformer', () => {
         stacks: [{ stack: 'data' }],
         explanations: ['explanation1', 'explanation2']
       }
-    });
-  });
+    })
+  })
 
   test('should not include results when showResults is false', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
-    };
+    }
     const availableArea = {
       availableAreaHectares: 500,
       totalValidLandCoverSqm: 5000000,
       stacks: [{ stack: 'data' }],
       explanations: ['explanation1', 'explanation2']
-    };
+    }
 
-    const result = actionTransformer(action, availableArea, false);
+    const result = actionTransformer(action, availableArea, false)
 
     expect(result).toEqual({
       code: 'ACTION1',
@@ -160,47 +160,45 @@ describe('actionTransformer', () => {
         unit: 'ha',
         value: 500
       }
-    });
-  });
-});
+    })
+  })
+})
 
 describe('plannedActionsTransformer', () => {
   test('should transform current actions to actions with sqm', () => {
-    const plannedActions = [{ actionCode: 'UPL1', quantity: 190, unit: 'sqm' }];
+    const plannedActions = [{ actionCode: 'UPL1', quantity: 190, unit: 'sqm' }]
 
-    const result = plannedActionsTransformer(plannedActions);
+    const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 190 }]);
-  });
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 190 }])
+  })
 
   test('should transform current actions to actions with ha', () => {
     const plannedActions = [
       { actionCode: 'UPL1', quantity: 5.1267, unit: 'ha' }
-    ];
+    ]
 
-    const result = plannedActionsTransformer(plannedActions);
+    const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 51267 }]);
-  });
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 51267 }])
+  })
 
   test('should return empty array when plannedActions is null', () => {
-    const plannedActions = null;
+    const plannedActions = null
 
-    const result = plannedActionsTransformer(plannedActions);
+    const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([]);
-  });
+    expect(result).toEqual([])
+  })
 
   test('should transform current actions to actions when area is already sqm', () => {
-    const plannedActions = [
-      { actionCode: 'UPL1', quantity: 1000, unit: 'sqm' }
-    ];
+    const plannedActions = [{ actionCode: 'UPL1', quantity: 1000, unit: 'sqm' }]
 
-    const result = plannedActionsTransformer(plannedActions);
+    const result = plannedActionsTransformer(plannedActions)
 
-    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 1000 }]);
-  });
-});
+    expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 1000 }])
+  })
+})
 
 describe('sssiConsentRequiredActionTransformer', () => {
   test('should add sssiConsentRequired property to actions based on action code', () => {
@@ -213,16 +211,16 @@ describe('sssiConsentRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
+    ]
     const sssiConsentRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
       ACTION2: {}
-    };
+    }
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -241,8 +239,8 @@ describe('sssiConsentRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle multiple parcels with multiple actions', () => {
     const responseParcels = [
@@ -262,17 +260,17 @@ describe('sssiConsentRequiredActionTransformer', () => {
           { code: 'ACTION1', description: 'Action 1' }
         ]
       }
-    ];
+    ]
     const sssiConsentRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
       ACTION2: {},
       ACTION3: { caveat: { metadata: { percentageOverlap: 15 } } }
-    };
+    }
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -307,8 +305,8 @@ describe('sssiConsentRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should set sssiConsentRequired to false when action code is not in map', () => {
     const responseParcels = [
@@ -320,15 +318,15 @@ describe('sssiConsentRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
+    ]
     const sssiConsentRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -347,8 +345,8 @@ describe('sssiConsentRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle empty actions array', () => {
     const responseParcels = [
@@ -357,15 +355,15 @@ describe('sssiConsentRequiredActionTransformer', () => {
         sheetId: 'S456',
         actions: []
       }
-    ];
+    ]
     const sssiConsentRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -373,22 +371,22 @@ describe('sssiConsentRequiredActionTransformer', () => {
         sheetId: 'S456',
         actions: []
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle empty parcels array', () => {
-    const responseParcels = [];
+    const responseParcels = []
     const sssiConsentRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
-    expect(result).toEqual([]);
-  });
+    expect(result).toEqual([])
+  })
 
   test('should handle empty sssiConsentRequiredAction map', () => {
     const responseParcels = [
@@ -400,13 +398,13 @@ describe('sssiConsentRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
-    const sssiConsentRequiredAction = {};
+    ]
+    const sssiConsentRequiredAction = {}
 
     const result = sssiConsentRequiredActionTransformer(
       responseParcels,
       sssiConsentRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -425,9 +423,9 @@ describe('sssiConsentRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
-});
+    ])
+  })
+})
 
 describe('heferRequiredActionTransformer', () => {
   test('should add heferRequired property to actions based on action code', () => {
@@ -440,16 +438,16 @@ describe('heferRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
+    ]
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
       ACTION2: {}
-    };
+    }
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -468,8 +466,8 @@ describe('heferRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle multiple parcels with multiple actions', () => {
     const responseParcels = [
@@ -489,17 +487,17 @@ describe('heferRequiredActionTransformer', () => {
           { code: 'ACTION1', description: 'Action 1' }
         ]
       }
-    ];
+    ]
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } },
       ACTION2: {},
       ACTION3: { caveat: { metadata: { percentageOverlap: 15 } } }
-    };
+    }
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -534,8 +532,8 @@ describe('heferRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should set heferRequired to false when action code is not in map', () => {
     const responseParcels = [
@@ -547,15 +545,15 @@ describe('heferRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
+    ]
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -574,8 +572,8 @@ describe('heferRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle empty actions array', () => {
     const responseParcels = [
@@ -584,15 +582,15 @@ describe('heferRequiredActionTransformer', () => {
         sheetId: 'S456',
         actions: []
       }
-    ];
+    ]
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -600,22 +598,22 @@ describe('heferRequiredActionTransformer', () => {
         sheetId: 'S456',
         actions: []
       }
-    ]);
-  });
+    ])
+  })
 
   test('should handle empty parcels array', () => {
-    const responseParcels = [];
+    const responseParcels = []
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
-    expect(result).toEqual([]);
-  });
+    expect(result).toEqual([])
+  })
 
   test('should handle empty heferRequiredAction map', () => {
     const responseParcels = [
@@ -627,13 +625,13 @@ describe('heferRequiredActionTransformer', () => {
           { code: 'ACTION2', description: 'Action 2' }
         ]
       }
-    ];
-    const heferRequiredAction = {};
+    ]
+    const heferRequiredAction = {}
 
     const result = heferRequiredActionTransformer(
       responseParcels,
       heferRequiredAction
-    );
+    )
 
     expect(result).toEqual([
       {
@@ -652,18 +650,18 @@ describe('heferRequiredActionTransformer', () => {
           }
         ]
       }
-    ]);
-  });
+    ])
+  })
 
   test('should return responseParcels when responseParcels is null', () => {
     const heferRequiredAction = {
       ACTION1: { caveat: { metadata: { percentageOverlap: 10 } } }
-    };
+    }
 
-    const result = heferRequiredActionTransformer(null, heferRequiredAction);
+    const result = heferRequiredActionTransformer(null, heferRequiredAction)
 
-    expect(result).toBeNull();
-  });
+    expect(result).toBeNull()
+  })
 
   test('should return responseParcels when heferRequiredAction is null', () => {
     const responseParcels = [
@@ -672,10 +670,10 @@ describe('heferRequiredActionTransformer', () => {
         sheetId: 'S456',
         actions: [{ code: 'ACTION1', description: 'Action 1' }]
       }
-    ];
+    ]
 
-    const result = heferRequiredActionTransformer(responseParcels, null);
+    const result = heferRequiredActionTransformer(responseParcels, null)
 
-    expect(result).toEqual(responseParcels);
-  });
-});
+    expect(result).toEqual(responseParcels)
+  })
+})

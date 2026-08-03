@@ -5,4 +5,4 @@ export const s3IngestFolders = {
   PROCESSING: 'processing',
   COMPLETED: 'completed',
   FAILED: 'failed'
-};
+}

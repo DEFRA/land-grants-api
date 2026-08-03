@@ -1,11 +1,11 @@
-import { getEnabledActions } from './getEnabledActions.query.js';
+import { getEnabledActions } from './getEnabledActions.query.js'
 
 describe('getEnabledActions', () => {
-  let mockDb;
-  let mockLogger;
-  let mockClient;
-  let mockResult;
-  let expectedTransformedResult;
+  let mockDb
+  let mockLogger
+  let mockClient
+  let mockResult
+  let expectedTransformedResult
 
   beforeEach(() => {
     mockResult = {
@@ -41,7 +41,7 @@ describe('getEnabledActions', () => {
           semantic_version: '2.0.0'
         }
       ]
-    };
+    }
 
     // Expected result after transformation
     expectedTransformedResult = [
@@ -75,31 +75,31 @@ describe('getEnabledActions', () => {
         lastUpdated: '2024-02-10T12:00:00Z',
         semanticVersion: '2.0.0'
       }
-    ];
+    ]
 
     mockClient = {
       query: vi.fn().mockResolvedValue(mockResult),
       release: vi.fn()
-    };
+    }
 
     mockDb = {
       connect: vi.fn().mockResolvedValue(mockClient)
-    };
+    }
 
     mockLogger = {
       info: vi.fn(),
       error: vi.fn()
-    };
-  });
+    }
+  })
 
   test('should connect to the database', async () => {
-    await getEnabledActions(mockLogger, mockDb);
+    await getEnabledActions(mockLogger, mockDb)
 
-    expect(mockDb.connect).toHaveBeenCalledTimes(1);
-  });
+    expect(mockDb.connect).toHaveBeenCalledTimes(1)
+  })
 
   test('should query with the correct SQL', async () => {
-    await getEnabledActions(mockLogger, mockDb);
+    await getEnabledActions(mockLogger, mockDb)
 
     const expectedQuery = `
       SELECT
@@ -116,38 +116,38 @@ describe('getEnabledActions', () => {
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
       WHERE a.enabled = TRUE AND ac.is_active = TRUE
-    `;
+    `
 
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery);
-  });
+    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery)
+  })
 
   test('should return the transformed query results', async () => {
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result).toEqual(expectedTransformedResult);
-  });
+    expect(result).toEqual(expectedTransformedResult)
+  })
 
   test('should return empty array when no enabled actions found', async () => {
-    mockResult.rows = [];
+    mockResult.rows = []
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result).toEqual([]);
-  });
+    expect(result).toEqual([])
+  })
 
   test('should release the client when done', async () => {
-    await getEnabledActions(mockLogger, mockDb);
+    await getEnabledActions(mockLogger, mockDb)
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1);
-  });
+    expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
 
   test('should handle errors and return empty array', async () => {
-    const error = new Error('Database error');
-    mockClient.query = vi.fn().mockRejectedValue(error);
+    const error = new Error('Database error')
+    mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result).toEqual([]);
+    expect(result).toEqual([])
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -155,18 +155,18 @@ describe('getEnabledActions', () => {
         })
       }),
       expect.stringContaining('Database operation failed: Get enabled actions')
-    );
+    )
 
-    expect(mockClient.release).toHaveBeenCalledTimes(1);
-  });
+    expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
 
   test('should handle database connection error', async () => {
-    const connectionError = new Error('Connection failed');
-    mockDb.connect = vi.fn().mockRejectedValue(connectionError);
+    const connectionError = new Error('Connection failed')
+    mockDb.connect = vi.fn().mockRejectedValue(connectionError)
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result).toEqual([]);
+    expect(result).toEqual([])
 
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -175,20 +175,20 @@ describe('getEnabledActions', () => {
         })
       }),
       expect.stringContaining('Database operation failed: Get enabled actions')
-    );
+    )
 
-    expect(mockClient.release).not.toHaveBeenCalled();
-  });
+    expect(mockClient.release).not.toHaveBeenCalled()
+  })
 
   test('should handle client release if client is not defined', async () => {
-    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'));
+    mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result).toEqual([]);
-    expect(mockLogger.error).toHaveBeenCalled();
-    expect(mockClient.release).not.toHaveBeenCalled();
-  });
+    expect(result).toEqual([])
+    expect(mockLogger.error).toHaveBeenCalled()
+    expect(mockClient.release).not.toHaveBeenCalled()
+  })
 
   test('should correctly transform action configs with numeric duration_years', async () => {
     mockResult.rows = [
@@ -206,13 +206,13 @@ describe('getEnabledActions', () => {
         rules: {},
         last_updated: '2024-01-01T00:00:00Z'
       }
-    ];
+    ]
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result[0].durationYears).toBe(10);
-    expect(typeof result[0].durationYears).toBe('number');
-  });
+    expect(result[0].durationYears).toBe(10)
+    expect(typeof result[0].durationYears).toBe('number')
+  })
 
   test('should handle actions with different versions', async () => {
     mockResult.rows = [
@@ -230,12 +230,12 @@ describe('getEnabledActions', () => {
         rules: {},
         last_updated: '2024-01-01T00:00:00Z'
       }
-    ];
+    ]
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result[0].version).toBe(99);
-  });
+    expect(result[0].version).toBe(99)
+  })
 
   test('should handle null payment and rules', async () => {
     mockResult.rows = [
@@ -253,12 +253,12 @@ describe('getEnabledActions', () => {
         rules: null,
         last_updated: '2024-01-01T00:00:00Z'
       }
-    ];
+    ]
 
-    const result = await getEnabledActions(mockLogger, mockDb);
+    const result = await getEnabledActions(mockLogger, mockDb)
 
-    expect(result[0].payment).toBeNull();
-    expect(result[0].landCoverClassCodes).toBeNull();
-    expect(result[0].rules).toBeNull();
-  });
-});
+    expect(result[0].payment).toBeNull()
+    expect(result[0].landCoverClassCodes).toBeNull()
+    expect(result[0].rules).toBeNull()
+  })
+})

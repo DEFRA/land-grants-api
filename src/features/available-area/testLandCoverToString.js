@@ -165,7 +165,7 @@ const LAND_COVER_LOOKUP = {
   710: 'Peripheral Land (710)',
   711: 'Non-Utilised Bank (711)',
   712: 'Uncropped (712)'
-};
+}
 
 /**
  * Hardcoded landCoverToString for tests. Generated from land-cover-codes-data.sql
@@ -173,4 +173,4 @@ const LAND_COVER_LOOKUP = {
  * @type {import('~/src/features/available-area/available-area.d.js').CodeToString}
  */
 export const landCoverToString = (code) =>
-  LAND_COVER_LOOKUP[code] ?? `Unknown land cover code: ${code}`;
+  LAND_COVER_LOOKUP[code] ?? `Unknown land cover code: ${code}`

@@ -10,7 +10,7 @@ function getTrustStoreCerts(envs) {
       /** @returns {envValue is string} */
       (envValue) => Boolean(envValue)
     )
-    .map((envValue) => Buffer.from(envValue, 'base64').toString().trim());
+    .map((envValue) => Buffer.from(envValue, 'base64').toString().trim())
 }
 
-export { getTrustStoreCerts };
+export { getTrustStoreCerts }

@@ -1,30 +1,30 @@
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
-import { vi } from 'vitest';
+import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import { vi } from 'vitest'
 
 describe('Get Actions By Latest Version Query', () => {
-  let logger, connection;
+  let logger, connection
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
-    };
-    connection = connectToTestDatabase();
-  });
+    }
+    connection = connectToTestDatabase()
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   test('should return all actions by latest version', async () => {
-    const actions = await getActionsByLatestVersion(logger, connection);
+    const actions = await getActionsByLatestVersion(logger, connection)
 
-    expect(actions.length).toBeGreaterThan(0);
-  });
+    expect(actions.length).toBeGreaterThan(0)
+  })
 
   test('should return CMOR1', async () => {
-    const actions = await getActionsByLatestVersion(logger, connection);
+    const actions = await getActionsByLatestVersion(logger, connection)
 
     const {
       lastUpdated,
@@ -35,10 +35,10 @@ describe('Get Actions By Latest Version Query', () => {
       hf_eligible: hfEligible,
       ingest_id: ingestId,
       ...cmor1
-    } = actions.find((a) => a.code === 'CMOR1');
+    } = actions.find((a) => a.code === 'CMOR1')
 
-    expect(groupId).toBe(1);
-    expect(groupName).toBe('Assess moorland');
+    expect(groupId).toBe(1)
+    expect(groupName).toBe('Assess moorland')
     expect(cmor1).toEqual({
       version: 2,
       semanticVersion: '2.0.0',
@@ -106,19 +106,19 @@ describe('Get Actions By Latest Version Query', () => {
           }
         }
       ]
-    });
-    expect(id).toBeGreaterThan(0);
-    expect(lastUpdated).not.toBeNull();
-    expect(sssiEligible).toBe(true);
-    expect(hfEligible).toBe(true);
-    expect(ingestId).not.toBeNull();
-  });
+    })
+    expect(id).toBeGreaterThan(0)
+    expect(lastUpdated).not.toBeNull()
+    expect(sssiEligible).toBe(true)
+    expect(hfEligible).toBe(true)
+    expect(ingestId).not.toBeNull()
+  })
 
   test('should not return UPL4', async () => {
-    const actions = await getActionsByLatestVersion(logger, connection);
+    const actions = await getActionsByLatestVersion(logger, connection)
 
-    const upl4 = actions.find((a) => a.code === 'UPL4');
+    const upl4 = actions.find((a) => a.code === 'UPL4')
 
-    expect(upl4).toBeUndefined();
-  });
-});
+    expect(upl4).toBeUndefined()
+  })
+})

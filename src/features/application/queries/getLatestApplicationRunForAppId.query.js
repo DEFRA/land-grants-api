@@ -1,7 +1,7 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
  * Get the latest application validation run for a given application id
@@ -11,7 +11,7 @@ import {
  * @returns {Promise<ApplicationResult | null>} The latest application validation run, or null if not found or on error
  */
 async function getLatestApplicationRunForAppId(logger, db, applicationId) {
-  let client;
+  let client
   try {
     logInfo(logger, {
       category: 'database',
@@ -19,29 +19,29 @@ async function getLatestApplicationRunForAppId(logger, db, applicationId) {
       context: {
         applicationId
       }
-    });
-    client = await db.connect();
+    })
+    client = await db.connect()
 
     const query = `
       SELECT * FROM application_results WHERE application_id = $1 ORDER BY created_at DESC LIMIT 1
-    `;
-    const result = await client.query(query, [applicationId?.toLowerCase()]);
+    `
+    const result = await client.query(query, [applicationId?.toLowerCase()])
 
-    return result.rows[0] ?? null;
+    return result.rows[0] ?? null
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get latest application run for application id',
       error
-    });
-    return null;
+    })
+    return null
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }
 
-export { getLatestApplicationRunForAppId };
+export { getLatestApplicationRunForAppId }
 
 /**
  * @import {ApplicationResult} from '../application.d.js'

@@ -1,4 +1,4 @@
-import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js';
+import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js'
 
 const mockActionConfig = [
   {
@@ -133,7 +133,7 @@ const mockActionConfig = [
       }
     ]
   }
-];
+]
 
 const mockWoodlandManagementActionConfig = [
   {
@@ -193,6 +193,6 @@ const mockWoodlandManagementActionConfig = [
       version: '1.0.0'
     }
   }
-];
+]
 
-export { mockActionConfig, mockWoodlandManagementActionConfig };
+export { mockActionConfig, mockWoodlandManagementActionConfig }

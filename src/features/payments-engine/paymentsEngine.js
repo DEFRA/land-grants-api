@@ -1,4 +1,4 @@
-import { paymentMethods } from './payment-methods/index.js';
+import { paymentMethods } from './payment-methods/index.js'
 
 /**
  * Looks up and executes a registered payment method by name and version.
@@ -8,18 +8,18 @@ import { paymentMethods } from './payment-methods/index.js';
  * @returns {object} The result produced by the payment method, or a not-found fallback object
  */
 export const executePaymentMethod = (paymentMethod, data) => {
-  const version = paymentMethod.version ?? '1.0.0';
-  const paymentMethodKey = `${paymentMethod.name}-${version}`;
+  const version = paymentMethod.version ?? '1.0.0'
+  const paymentMethodKey = `${paymentMethod.name}-${version}`
   const result = paymentMethods[paymentMethodKey]
     ? paymentMethods[paymentMethodKey].execute(paymentMethod, data)
     : {
         name: paymentMethod.name,
         scheduledPayments: {},
         message: 'Payment method not found'
-      };
+      }
 
-  return result;
-};
+  return result
+}
 
 /**
  * @import { PaymentMethod } from './paymentsEngine.d.js'

@@ -1,29 +1,29 @@
-import * as dal from '~/src/services/dal/index.js';
-import * as db from '~/src/features/agreements/queries/getAgreementsForParcel.query.js';
-import { getAgreements } from '~/src/features/agreements/repo.js';
+import * as dal from '~/src/services/dal/index.js'
+import * as db from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
 
-vi.mock('~/src/features/agreements/queries/getAgreementsForParcel.query.js');
-vi.mock('~/src/services/dal/index.js');
+vi.mock('~/src/features/agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('~/src/services/dal/index.js')
 
-const sbi = '012345678';
-const sheetId = 'dummy-sheet';
-const parcelId = 'dummy-parcel';
-const token = 'dummy-defra-id-token';
-const mockLogger = { info: vi.fn() };
+const sbi = '012345678'
+const sheetId = 'dummy-sheet'
+const parcelId = 'dummy-parcel'
+const token = 'dummy-defra-id-token'
+const mockLogger = { info: vi.fn() }
 
 // Default dates which are valid for today (with fake timer)
-const startDate = new Date('2025-01-01');
-const endDate = new Date('2027-01-01');
+const startDate = new Date('2025-01-01')
+const endDate = new Date('2027-01-01')
 
 describe('getAgreements', () => {
   beforeEach(() => {
-    vi.useFakeTimers().setSystemTime(new Date('2025-12-01T00:00:00.000Z'));
-    vi.clearAllMocks();
-  });
+    vi.useFakeTimers().setSystemTime(new Date('2025-12-01T00:00:00.000Z'))
+    vi.clearAllMocks()
+  })
 
   afterEach(() => {
-    vi.useRealTimers();
-  });
+    vi.useRealTimers()
+  })
 
   it('should fetch agreements from both the DB and the DAL', async () => {
     const dbAgreements = [
@@ -41,7 +41,7 @@ describe('getAgreements', () => {
         startDate,
         endDate
       }
-    ];
+    ]
     const dalAgreements = [
       {
         actionCode: 'CMOR1',
@@ -57,10 +57,10 @@ describe('getAgreements', () => {
         startDate,
         endDate
       }
-    ];
+    ]
 
-    db.getAgreementsForParcel.mockResolvedValue(dbAgreements);
-    dal.getAgreements.mockResolvedValue(dalAgreements);
+    db.getAgreementsForParcel.mockResolvedValue(dbAgreements)
+    dal.getAgreements.mockResolvedValue(dalAgreements)
 
     const result = await getAgreements(
       sbi,
@@ -69,24 +69,24 @@ describe('getAgreements', () => {
       token,
       null,
       mockLogger
-    );
+    )
 
     expect(db.getAgreementsForParcel).toHaveBeenCalledWith(
       sheetId,
       parcelId,
       null,
       mockLogger
-    );
+    )
     expect(dal.getAgreements).toHaveBeenCalledWith(
       sbi,
       parcelId,
       sheetId,
       token,
       mockLogger
-    );
+    )
 
-    expect(result).toEqual([...dbAgreements, ...dalAgreements]);
-  });
+    expect(result).toEqual([...dbAgreements, ...dalAgreements])
+  })
 
   it('should filter out non-area agreements', async () => {
     const dbAgreementCount = {
@@ -95,7 +95,7 @@ describe('getAgreements', () => {
       unit: 'count',
       startDate,
       endDate
-    };
+    }
 
     const dbAgreementArea = {
       actionCode: 'UPL1',
@@ -103,7 +103,7 @@ describe('getAgreements', () => {
       unit: 'sqm',
       startDate,
       endDate
-    };
+    }
 
     const dalAgreementLength = {
       actionCode: 'SPM4',
@@ -111,20 +111,20 @@ describe('getAgreements', () => {
       unit: 'm',
       startDate,
       endDate
-    };
+    }
     const dalAgreementArea = {
       actionCode: 'CMOR1',
       quantity: 15000,
       unit: 'sqm',
       startDate,
       endDate
-    };
+    }
 
     db.getAgreementsForParcel.mockResolvedValue([
       dbAgreementCount,
       dbAgreementArea
-    ]);
-    dal.getAgreements.mockResolvedValue([dalAgreementLength, dalAgreementArea]);
+    ])
+    dal.getAgreements.mockResolvedValue([dalAgreementLength, dalAgreementArea])
 
     const result = await getAgreements(
       sbi,
@@ -133,24 +133,24 @@ describe('getAgreements', () => {
       token,
       null,
       mockLogger
-    );
+    )
 
     expect(db.getAgreementsForParcel).toHaveBeenCalledWith(
       sheetId,
       parcelId,
       null,
       mockLogger
-    );
+    )
     expect(dal.getAgreements).toHaveBeenCalledWith(
       sbi,
       parcelId,
       sheetId,
       token,
       mockLogger
-    );
+    )
 
-    expect(result).toEqual([dbAgreementArea, dalAgreementArea]);
-  });
+    expect(result).toEqual([dbAgreementArea, dalAgreementArea])
+  })
 
   test.each([
     {
@@ -184,8 +184,8 @@ describe('getAgreements', () => {
       }
     }
   ])('should exclude $scenario', async ({ filteredAction }) => {
-    const sheetId = 'SH123';
-    const parcelId = 'PA456';
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
 
     const goodAction = {
       actionCode: 'UPL1',
@@ -193,10 +193,10 @@ describe('getAgreements', () => {
       unit: 'sqm',
       startDate: new Date('2025-01-01'),
       endDate: new Date('2030-11-31')
-    };
+    }
 
-    db.getAgreementsForParcel.mockResolvedValue([goodAction, filteredAction]);
-    dal.getAgreements.mockResolvedValue([filteredAction]);
+    db.getAgreementsForParcel.mockResolvedValue([goodAction, filteredAction])
+    dal.getAgreements.mockResolvedValue([filteredAction])
 
     const result = await getAgreements(
       sbi,
@@ -205,10 +205,10 @@ describe('getAgreements', () => {
       token,
       null,
       mockLogger
-    );
+    )
 
-    expect(result).toEqual([goodAction]);
-  });
+    expect(result).toEqual([goodAction])
+  })
 
   test('should include actions starting today', async () => {
     const goodAction = {
@@ -217,10 +217,10 @@ describe('getAgreements', () => {
       unit: 'sqm',
       startDate: new Date('2025-12-01'),
       endDate
-    };
+    }
 
-    db.getAgreementsForParcel.mockResolvedValue([goodAction]);
-    dal.getAgreements.mockResolvedValue([goodAction]);
+    db.getAgreementsForParcel.mockResolvedValue([goodAction])
+    dal.getAgreements.mockResolvedValue([goodAction])
 
     const result = await getAgreements(
       sbi,
@@ -229,8 +229,8 @@ describe('getAgreements', () => {
       token,
       null,
       mockLogger
-    );
+    )
 
-    expect(result).toEqual([goodAction, goodAction]);
-  });
-});
+    expect(result).toEqual([goodAction, goodAction])
+  })
+})

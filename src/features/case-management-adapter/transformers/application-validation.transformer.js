@@ -4,8 +4,8 @@
  * @import { ExplanationSection } from '~/src/features/available-area/explanations.d.js'
  */
 
-const DETAILS_SUMMARY_TEXT_CLASSES = 'govuk-details__summary-text';
-const LEVEL_3 = 3;
+const DETAILS_SUMMARY_TEXT_CLASSES = 'govuk-details__summary-text'
+const LEVEL_3 = 3
 
 /**
  * Creates a heading component
@@ -20,8 +20,8 @@ const createHeadingComponent = (text, level, id) => {
     text,
     level,
     id: id ?? undefined
-  };
-};
+  }
+}
 
 /**
  * Creates a paragraph component
@@ -30,14 +30,14 @@ const createHeadingComponent = (text, level, id) => {
  */
 const createParagraphComponent = (text) => {
   if (text === '') {
-    return null;
+    return null
   }
 
   return {
     component: 'paragraph',
     text
-  };
-};
+  }
+}
 
 /**
  * Creates a status component (Passed/Failed)
@@ -50,8 +50,8 @@ const createStatusComponent = (hasPassed) => {
     component: 'status',
     text: hasPassed ? 'Passed' : 'Failed',
     colour: hasPassed ? 'green' : 'red'
-  };
-};
+  }
+}
 
 /**
  * Creates a details component
@@ -70,7 +70,7 @@ const createDetailsComponent = (
   component: 'details',
   summaryItems: [{ text, classes }, ...summaryItems],
   items
-});
+})
 
 /**
  * Creates available area calculation details component
@@ -81,13 +81,13 @@ const createAvailableAreaDetails = (explanations) => {
   const items = explanations.flatMap((explanation) => [
     createParagraphComponent(explanation.title),
     ...explanation.content.map((line) => createParagraphComponent(line))
-  ]);
+  ])
 
   return createDetailsComponent(
     'Available area calculation explanation',
     items.filter((item) => item !== null)
-  );
-};
+  )
+}
 
 /**
  * Creates rule validation details component
@@ -99,14 +99,14 @@ const createRuleDetails = (rule) => {
     .flatMap((explanation) =>
       explanation.lines.map((line) => createParagraphComponent(line))
     )
-    .filter((item) => item !== null);
+    .filter((item) => item !== null)
   return createDetailsComponent(
     rule.description,
     items,
     DETAILS_SUMMARY_TEXT_CLASSES,
     [createStatusComponent(rule.passed)]
-  );
-};
+  )
+}
 
 /**
  * Creates action details component with all sub-components
@@ -115,19 +115,19 @@ const createRuleDetails = (rule) => {
  */
 const createActionDetails = (action) => {
   /** @type {ValidationComponent[]} */
-  const actionItems = [];
+  const actionItems = []
 
   // Add available area explanation details
   if (action.availableArea) {
     const availableAreaDetails = createAvailableAreaDetails(
       action.availableArea.explanations
-    );
+    )
 
-    actionItems.push(availableAreaDetails);
+    actionItems.push(availableAreaDetails)
   }
 
   for (const rule of action.rules) {
-    actionItems.push(createRuleDetails(rule));
+    actionItems.push(createRuleDetails(rule))
   }
 
   return createDetailsComponent(
@@ -135,8 +135,8 @@ const createActionDetails = (action) => {
     actionItems,
     DETAILS_SUMMARY_TEXT_CLASSES,
     [createStatusComponent(action.hasPassed)]
-  );
-};
+  )
+}
 
 /**
  * Transform the application validation run to case management format
@@ -147,7 +147,7 @@ export const applicationValidationRunToCaseManagement = (
   applicationValidationRun
 ) => {
   if (!applicationValidationRun) {
-    return null;
+    return null
   }
 
   const parcelComponents = applicationValidationRun.parcelLevelResults.flatMap(
@@ -158,10 +158,10 @@ export const applicationValidationRunToCaseManagement = (
       ),
       ...parcel.actions.map((action) => createActionDetails(action))
     ]
-  );
+  )
 
   return [
     createHeadingComponent('Land parcel rules checks', 2, 'title'),
     ...parcelComponents
-  ];
-};
+  ]
+}

@@ -1,11 +1,11 @@
-import HapiSwagger from 'hapi-swagger';
-import Inert from '@hapi/inert';
-import Vision from '@hapi/vision';
+import HapiSwagger from 'hapi-swagger'
+import Inert from '@hapi/inert'
+import Vision from '@hapi/vision'
 
-import { config } from '~/src/config/index.js';
+import { config } from '~/src/config/index.js'
 
-const isProduction = config.get('isProduction');
-const serviceVersion = config.get('serviceVersion');
+const isProduction = config.get('isProduction')
+const serviceVersion = config.get('serviceVersion')
 
 /**
  * Registers Swagger UI plugins (Inert, Vision, and HapiSwagger)
@@ -28,13 +28,13 @@ const swagger = {
             documentationPage: !isProduction
           }
         }
-      ]);
+      ])
     },
     name: 'swagger-documentation'
   }
-};
+}
 
-export { swagger };
+export { swagger }
 
 /**
  * @import { ServerRegisterPluginObject } from '@hapi/hapi'

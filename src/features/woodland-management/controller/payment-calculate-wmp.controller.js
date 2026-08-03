@@ -1,29 +1,29 @@
-import Boom from '@hapi/boom';
+import Boom from '@hapi/boom'
 import {
   errorResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
+} from '~/src/features/common/schema/index.js'
 import {
   paymentCalculateWMPSchemaV2,
   paymentCalculateWMPResponseSchema
-} from '../schema/payment-calculate-wmp.schema.js';
+} from '../schema/payment-calculate-wmp.schema.js'
 import {
   logInfo,
   logValidationWarn,
   logBusinessError
-} from '~/src/features/common/helpers/logging/log-helpers.js';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
-import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js';
-import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js';
-import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js';
-import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js';
-import { haToSqm } from '../../common/helpers/measurement.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
+import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
+import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
+import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
+import { haToSqm } from '../../common/helpers/measurement.js'
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
-} from '../../common/helpers/audit-event.js';
-import { WMP_ACTION_CODE } from '../constants.js';
+} from '../../common/helpers/audit-event.js'
+import { WMP_ACTION_CODE } from '../constants.js'
 
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
@@ -35,7 +35,7 @@ import { WMP_ACTION_CODE } from '../constants.js';
 const buildAuditContext = (request, { parcelIds }) => ({
   correlationId: getCorrelationId(request),
   parcelIds
-});
+})
 
 /**
  * Runs the WMP payment calculation pipeline for a validated request.
@@ -56,22 +56,22 @@ const runWmpPaymentCalculation = async (
   const validationResponse = await validatePaymentCalculationRequest(
     parcelIds,
     request
-  );
+  )
 
   if (validationResponse.errors && validationResponse.errors.length > 0) {
     logValidationWarn(request.logger, {
       operation: 'Payment Calculate WMP validation',
       errors: validationResponse.errors,
       context: { parcelIds: parcelIds.join(',') }
-    });
-    return Boom.badRequest(validationResponse.errors.join(', '));
+    })
+    return Boom.badRequest(validationResponse.errors.join(', '))
   }
 
-  const actions = await getActionsByLatestVersion(request.logger, postgresDb);
-  const action = actions.find((a) => a.code === WMP_ACTION_CODE);
+  const actions = await getActionsByLatestVersion(request.logger, postgresDb)
+  const action = actions.find((a) => a.code === WMP_ACTION_CODE)
 
   if (!action) {
-    return Boom.badRequest('Action not found');
+    return Boom.badRequest('Action not found')
   }
 
   const paymentResult = executePaymentMethod(
@@ -82,15 +82,15 @@ const runWmpPaymentCalculation = async (
         newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
       }
     }
-  );
+  )
 
   return wmpPaymentCalculateTransformer(
     parcelIds,
     paymentResult,
     action,
     startDate
-  );
-};
+  )
+}
 
 /**
  * Handles unexpected errors thrown during WMP payment calculation: logs the
@@ -104,7 +104,7 @@ const handleWmpPaymentCalculationError = async (request, error) => {
   /** @type {paymentCalculateWMPSchemaV2} */
   // @ts-expect-error - payload
   const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
-    request.payload;
+    request.payload
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate wmp payment',
     error,
@@ -114,7 +114,7 @@ const handleWmpPaymentCalculationError = async (request, error) => {
       newWoodlandAreaHa,
       startDate
     }
-  });
+  })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_CALCULATED,
@@ -125,10 +125,10 @@ const handleWmpPaymentCalculationError = async (request, error) => {
     },
     'failure',
     request
-  );
+  )
 
-  return Boom.internal('Error calculating wmp payment');
-};
+  return Boom.internal('Error calculating wmp payment')
+}
 
 export const PaymentsCalculateWMPController = {
   options: {
@@ -156,12 +156,12 @@ export const PaymentsCalculateWMPController = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
+      const postgresDb = request.server.postgresDb
 
       /** @type {paymentCalculateWMPSchemaV2} */
       // @ts-expect-error - payload
       const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
-        request.payload;
+        request.payload
 
       logInfo(request.logger, {
         category: 'wmp',
@@ -172,15 +172,15 @@ export const PaymentsCalculateWMPController = {
           newWoodlandAreaHa,
           startDate
         }
-      });
+      })
 
       const transformedPayment = await runWmpPaymentCalculation(
         request,
         postgresDb,
         { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate }
-      );
+      )
       if (Boom.isBoom(transformedPayment)) {
-        return transformedPayment;
+        return transformedPayment
       }
 
       await auditEvent(
@@ -192,19 +192,19 @@ export const PaymentsCalculateWMPController = {
         },
         'success',
         request
-      );
+      )
 
       return h
         .response({
           message: 'success',
           payment: transformedPayment
         })
-        .code(statusCodes.ok);
+        .code(statusCodes.ok)
     } catch (error) {
-      return handleWmpPaymentCalculationError(request, error);
+      return handleWmpPaymentCalculationError(request, error)
     }
   }
-};
+}
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'

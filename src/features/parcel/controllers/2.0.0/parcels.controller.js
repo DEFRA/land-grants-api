@@ -1,28 +1,28 @@
-import Boom from '@hapi/boom';
-import { statusCodes } from '~/src/features/common/constants/status-codes.js';
+import Boom from '@hapi/boom'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
   unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js';
+} from '~/src/features/common/schema/index.js'
 import {
   parcelsSchema,
   parcelsSuccessResponseSchema
-} from '~/src/features/parcel/schema/2.0.0/parcel.schema.js';
-import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js';
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js';
+} from '~/src/features/parcel/schema/2.0.0/parcel.schema.js'
+import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
   logInfo,
   logValidationWarn
-} from '~/src/features/common/helpers/logging/log-helpers.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   getActionsForParcel,
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
-} from '../../service/2.0.0/parcel.service.js';
-import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js';
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js';
+} from '../../service/2.0.0/parcel.service.js'
+import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
+import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 
 /**
  * Validate SSSI consent required
@@ -34,10 +34,10 @@ const validateSSSIConsentRequired = (parcelIds, fields) => {
   if (parcelIds.length > 1 && fields.includes('actions.sssiConsentRequired')) {
     return Boom.badRequest(
       'SSSI consent required is not supported for multiple parcels.'
-    );
+    )
   }
-  return undefined;
-};
+  return undefined
+}
 
 /**
  * Validate HEFER consent required
@@ -49,10 +49,10 @@ const validateHEFERConsentRequired = (parcelIds, fields) => {
   if (parcelIds.length > 1 && fields.includes('actions.heferRequired')) {
     return Boom.badRequest(
       'HEFER required is not supported for multiple parcels.'
-    );
+    )
   }
-  return undefined;
-};
+  return undefined
+}
 
 /**
  * ParcelsController
@@ -87,9 +87,9 @@ const ParcelsControllerV2 = {
   handler: async (request, h) => {
     try {
       // @ts-expect-error - postgresDb
-      const postgresDb = request.server.postgresDb;
+      const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
-      const { parcelIds, fields } = request.payload;
+      const { parcelIds, fields } = request.payload
       logInfo(request.logger, {
         category: 'parcel',
         message: 'Fetch parcels',
@@ -97,35 +97,35 @@ const ParcelsControllerV2 = {
           parcelIds: parcelIds.join(','),
           fields: fields.join(',')
         }
-      });
+      })
 
-      const defraIdToken = request.headers['x-forwarded-authorization'];
+      const defraIdToken = request.headers['x-forwarded-authorization']
       if (!defraIdToken) {
-        return Boom.unauthorized('X-Forwarded-Authorization is required');
+        return Boom.unauthorized('X-Forwarded-Authorization is required')
       }
 
       const sssiConsentRequiredError = validateSSSIConsentRequired(
         parcelIds,
         fields
-      );
+      )
       if (sssiConsentRequiredError) {
-        return sssiConsentRequiredError;
+        return sssiConsentRequiredError
       }
 
       const heferConsentRequiredError = validateHEFERConsentRequired(
         parcelIds,
         fields
-      );
+      )
       if (heferConsentRequiredError) {
-        return heferConsentRequiredError;
+        return heferConsentRequiredError
       }
 
-      const showActionResults = fields.includes('actions.results');
+      const showActionResults = fields.includes('actions.results')
 
       const validationResponse = await getDataAndValidateRequest(
         parcelIds,
         request
-      );
+      )
 
       if (validationResponse.errors && validationResponse.errors.length > 0) {
         logValidationWarn(request.logger, {
@@ -135,14 +135,14 @@ const ParcelsControllerV2 = {
             parcelIds: parcelIds.join(','),
             fields: fields.join(',')
           }
-        });
-        return Boom.notFound(validationResponse.errors.join(', '));
+        })
+        return Boom.notFound(validationResponse.errors.join(', '))
       }
 
       const compatibilityCheckFn = await createCompatibilityMatrix(
         request.logger,
         postgresDb
-      );
+      )
 
       const responseParcels = await Promise.all(
         validationResponse.parcels.map(async (parcel) => {
@@ -154,11 +154,11 @@ const ParcelsControllerV2 = {
             compatibilityCheckFn,
             request,
             defraIdToken
-          );
+          )
         })
-      );
+      )
 
-      let transformedResponseParcels = responseParcels;
+      let transformedResponseParcels = responseParcels
 
       if (fields.includes('actions.sssiConsentRequired')) {
         transformedResponseParcels =
@@ -168,7 +168,7 @@ const ParcelsControllerV2 = {
             validationResponse.enabledActions,
             request.logger,
             postgresDb
-          );
+          )
       }
 
       if (fields.includes('actions.heferRequired')) {
@@ -179,15 +179,15 @@ const ParcelsControllerV2 = {
             validationResponse.enabledActions,
             request.logger,
             postgresDb
-          );
+          )
       }
 
-      let transformedGroups;
+      let transformedGroups
 
       if (fields.includes('groups')) {
         transformedGroups = actionGroupsTransformer(
           validationResponse.enabledActions
-        );
+        )
       }
 
       return h
@@ -196,14 +196,14 @@ const ParcelsControllerV2 = {
           parcels: transformedResponseParcels,
           groups: transformedGroups
         })
-        .code(statusCodes.ok);
+        .code(statusCodes.ok)
     } catch (error) {
       if (error instanceof InfeasibleAreaError) {
-        return Boom.boomify(error, { statusCode: 422 });
+        return Boom.boomify(error, { statusCode: 422 })
       }
-      const errorMessage = 'Error fetching parcels';
+      const errorMessage = 'Error fetching parcels'
       // @ts-expect-error - payload
-      const { parcelIds, fields } = request.payload;
+      const { parcelIds, fields } = request.payload
       logBusinessError(request.logger, {
         operation: 'Fetch parcels',
         error,
@@ -211,12 +211,12 @@ const ParcelsControllerV2 = {
           parcelIds: parcelIds.join(','),
           fields: fields.join(',')
         }
-      });
-      return Boom.internal(errorMessage);
+      })
+      return Boom.internal(errorMessage)
     }
   }
-};
-export { ParcelsControllerV2 };
+}
+export { ParcelsControllerV2 }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'

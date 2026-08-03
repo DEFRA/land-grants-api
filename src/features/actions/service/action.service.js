@@ -1,6 +1,6 @@
-import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js';
-import { getLatestApplicationRunForAppId } from '~/src/features/application/queries/getLatestApplicationRunForAppId.query.js';
-import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js';
+import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { getLatestApplicationRunForAppId } from '~/src/features/application/queries/getLatestApplicationRunForAppId.query.js'
+import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
 
 /**
  * Get all action configs for the given land actions, pinning versions from any previous validation run.
@@ -21,20 +21,20 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
         code: action.code,
         version: action.version
       }))
-    ) ?? [];
+    ) ?? []
 
   logInfo(request.logger, {
     category: 'application',
     message: 'Flattened land actions',
     context: { flattenedLandActions }
-  });
+  })
 
   // get the actions from the previous validation run
   const applicationValidationRuns = await getLatestApplicationRunForAppId(
     request.logger,
     postgresDb,
     applicationId
-  );
+  )
 
   // extract the actions from the previous validation run
   const previousRunActions =
@@ -43,38 +43,38 @@ const getActions = async (request, postgresDb, landActions, applicationId) => {
         code: action.code,
         version: action.actionConfigVersion || undefined
       }))
-    ) ?? [];
+    ) ?? []
 
   logInfo(request.logger, {
     category: 'application',
     message: 'Previous run actions',
     context: { previousRunActions }
-  });
+  })
 
   // merge actions: prior-run version (pinned to applicationId) > caller-supplied version > latest
   const actionMap = new Map(
     flattenedLandActions.map((action) => [action.code, action])
-  );
+  )
 
   for (const action of previousRunActions) {
-    actionMap.set(action.code, action);
+    actionMap.set(action.code, action)
   }
-  const mergedActions = [...actionMap.values()];
+  const mergedActions = [...actionMap.values()]
 
   logInfo(request.logger, {
     category: 'application',
     message: 'Merged actions',
     context: { mergedActions }
-  });
+  })
 
   // get the actions by version preserving the version they were validated at
   const actionsByVersion = await getActionsByVersion(
     request.logger,
     postgresDb,
     mergedActions
-  );
+  )
 
-  return actionsByVersion;
-};
+  return actionsByVersion
+}
 
-export { getActions };
+export { getActions }

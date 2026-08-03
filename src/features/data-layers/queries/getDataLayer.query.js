@@ -1,14 +1,14 @@
 import {
   logDatabaseError,
   logInfo
-} from '~/src/features/common/helpers/logging/log-helpers.js';
-import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js';
+} from '~/src/features/common/helpers/logging/log-helpers.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 
 export const DATA_LAYER_TYPES = {
   sssi: 1,
   less_favoured_areas: 2,
   historic_features: 3
-};
+}
 
 const accumulatedIntersectionAreaQuery = `
   SELECT
@@ -26,7 +26,7 @@ const accumulatedIntersectionAreaQuery = `
       p.parcel_id = $2
   GROUP BY
       p.geom
-`;
+`
 
 const unionIntersectionAreaQuery = `
     WITH parcel AS (
@@ -44,7 +44,7 @@ const unionIntersectionAreaQuery = `
       / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
   FROM parcel p
   LEFT JOIN data_layer_union u ON true
-`;
+`
 
 /**
  * Get the accumulated data layer query
@@ -69,7 +69,7 @@ export async function getDataLayerQueryAccumulated(
     accumulatedIntersectionAreaQuery,
     db,
     logger
-  );
+  )
 }
 
 /**
@@ -95,7 +95,7 @@ export async function getDataLayerQueryUnion(
     unionIntersectionAreaQuery,
     db,
     logger
-  );
+  )
 }
 
 /**
@@ -116,29 +116,29 @@ async function getDataLayerQuery(
   db,
   logger
 ) {
-  let client;
+  let client
 
   try {
-    client = await db.connect();
+    client = await db.connect()
 
-    const values = [sheetId, parcelId, dataLayerTypeId];
-    const result = await client.query(query, values);
+    const values = [sheetId, parcelId, dataLayerTypeId]
+    const result = await client.query(query, values)
 
     if (result?.rows?.length === 0) {
-      return 0;
+      return 0
     }
 
     const roundedOverlapPercent = Math.max(
       ...(result.rows.map((row) => row.overlap_percent) || 0)
-    );
+    )
 
     const roundedOverlapPercentToTwoDecimals = Number.parseFloat(
       roundedOverlapPercent.toFixed(2)
-    );
+    )
 
     const intersectionAreaSqm = Math.max(
       ...(result.rows.map((row) => row.sqm) || 0)
-    );
+    )
 
     logInfo(logger, {
       category: 'database',
@@ -149,12 +149,12 @@ async function getDataLayerQuery(
         roundedOverlapPercent: roundedOverlapPercentToTwoDecimals,
         intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
       }
-    });
+    })
 
     return {
       intersectingAreaPercentage: roundedOverlapPercentToTwoDecimals,
       intersectionAreaHa: sqmToHaRounded(intersectionAreaSqm)
-    };
+    }
   } catch (error) {
     logDatabaseError(logger, {
       operation: 'Get data layer query',
@@ -163,11 +163,11 @@ async function getDataLayerQuery(
         parcelId,
         sheetId
       }
-    });
-    return 0;
+    })
+    return 0
   } finally {
     if (client) {
-      client.release();
+      client.release()
     }
   }
 }

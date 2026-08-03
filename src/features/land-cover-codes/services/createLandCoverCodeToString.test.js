@@ -1,4 +1,4 @@
-import { createLandCoverCodeToString } from './createLandCoverCodeToString.js';
+import { createLandCoverCodeToString } from './createLandCoverCodeToString.js'
 
 const landCoverDefinitions = [
   {
@@ -17,31 +17,31 @@ const landCoverDefinitions = [
     landCoverClassDescription: 'Factory',
     landCoverDescription: 'Jam Factory'
   }
-];
+]
 
 describe('createLandCoverLookup', () => {
   it('should return a string representation of land cover', () => {
-    const codeToString = createLandCoverCodeToString(landCoverDefinitions);
+    const codeToString = createLandCoverCodeToString(landCoverDefinitions)
 
-    expect(codeToString('1331')).toBe('Beer Garden (1331)');
-    expect(codeToString('5551')).toBe('Jam Factory (5551)');
-  });
+    expect(codeToString('1331')).toBe('Beer Garden (1331)')
+    expect(codeToString('5551')).toBe('Jam Factory (5551)')
+  })
 
   it('should return a string representation of land cover class with a warning', () => {
-    const codeToString = createLandCoverCodeToString(landCoverDefinitions);
+    const codeToString = createLandCoverCodeToString(landCoverDefinitions)
 
-    expect(codeToString('1330')).toBe('Pub (1330)');
-    expect(codeToString('5550')).toBe('Factory (5550)');
-  });
+    expect(codeToString('1330')).toBe('Pub (1330)')
+    expect(codeToString('5550')).toBe('Factory (5550)')
+  })
 
   it('should return a string representation of unknown land cover codes', () => {
-    const codeToString = createLandCoverCodeToString(landCoverDefinitions);
-    expect(codeToString('9999')).toBe('Unknown land cover code: 9999');
-  });
+    const codeToString = createLandCoverCodeToString(landCoverDefinitions)
+    expect(codeToString('9999')).toBe('Unknown land cover code: 9999')
+  })
 
   it('should not show warning for land cover class codes when noWarning is set to true', () => {
-    const codeToString = createLandCoverCodeToString(landCoverDefinitions);
-    expect(codeToString('1330', true)).toBe('Pub (1330)');
-    expect(codeToString('5550', true)).toBe('Factory (5550)');
-  });
-});
+    const codeToString = createLandCoverCodeToString(landCoverDefinitions)
+    expect(codeToString('1330', true)).toBe('Pub (1330)')
+    expect(codeToString('5550', true)).toBe('Factory (5550)')
+  })
+})

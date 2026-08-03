@@ -1,21 +1,21 @@
-import { vi } from 'vitest';
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js';
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js';
+import { vi } from 'vitest'
+import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
 describe('Get Moorland Intercept Percentage Query', () => {
-  let logger, connection;
+  let logger, connection
 
   beforeAll(() => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
-    };
-    connection = connectToTestDatabase();
-  });
+    }
+    connection = connectToTestDatabase()
+  })
 
   afterAll(async () => {
-    await connection.end();
-  });
+    await connection.end()
+  })
 
   test.each([
     ['tiny amount of moorland and ref_code = M', 'SD7324', '7862', 1],
@@ -31,8 +31,8 @@ describe('Get Moorland Intercept Percentage Query', () => {
       parcelId,
       connection,
       logger
-    );
+    )
 
-    expect(result).toBe(expected);
-  });
-});
+    expect(result).toBe(expected)
+  })
+})

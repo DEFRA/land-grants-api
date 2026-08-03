@@ -1,10 +1,10 @@
-import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
-import { Signer } from '@aws-sdk/rds-signer';
-import { Client, Pool } from 'pg';
-import { config } from '../../../config/index.js';
+import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
+import { Signer } from '@aws-sdk/rds-signer'
+import { Client, Pool } from 'pg'
+import { config } from '../../../config/index.js'
 
-const DEFAULT_PORT = 5432;
-const keepAliveInterval = 60000;
+const DEFAULT_PORT = 5432
+const keepAliveInterval = 60000
 
 /**
  * Gets a database token for authentication
@@ -13,7 +13,7 @@ const keepAliveInterval = 60000;
  */
 async function getToken(options) {
   if (options.isLocal) {
-    return options.passwordForLocalDev;
+    return options.passwordForLocalDev
   } else {
     const signer = new Signer({
       hostname: options.host,
@@ -21,8 +21,8 @@ async function getToken(options) {
       username: options.user,
       credentials: fromNodeProviderChain(),
       region: options.region
-    });
-    return signer.getAuthToken();
+    })
+    return signer.getAuthToken()
   }
 }
 
@@ -44,7 +44,7 @@ export function getDBOptions() {
       database: config.get('postgres.database'),
       password: config.get('postgres.passwordForLocalDev'),
       port: Number(process.env.POSTGRES_PORT ?? DEFAULT_PORT)
-    };
+    }
   }
   return {
     user: config.get('postgres.user'),
@@ -54,7 +54,7 @@ export function getDBOptions() {
     isLocal: config.get('isLocal'),
     region: config.get('postgres.region'),
     loadPostgresData: config.get('loadPostgresData')
-  };
+  }
 }
 
 /**
@@ -70,23 +70,23 @@ export function createDBPool(options, server = {}) {
       password: options.password,
       host: options.host,
       database: options.database
-    });
+    })
   }
   return new Pool({
     port: options.port || DEFAULT_PORT,
     user: options.user,
     password: async () => {
-      server?.logger?.info('Getting Postgres authentication token');
+      server?.logger?.info('Getting Postgres authentication token')
       try {
-        const token = await getToken(options);
-        return token;
+        const token = await getToken(options)
+        return token
       } catch (error) {
         server?.logger?.error('Failed to get Postgres authentication token', {
           error: error.message,
           user: options.user,
           host: options.host
-        });
-        throw error;
+        })
+        throw error
       }
     },
     host: options.host,
@@ -105,7 +105,7 @@ export function createDBPool(options, server = {}) {
           secureContext: server.secureContext
         }
       })
-  });
+  })
 }
 
 /**
@@ -124,23 +124,23 @@ export function createDBClient(options, server = {}) {
       password: options.password,
       host: options.host,
       database: options.database
-    });
+    })
   }
   return new Client({
     port: options.port || DEFAULT_PORT,
     user: options.user,
     password: async () => {
-      server?.logger?.info('Getting Postgres authentication token');
+      server?.logger?.info('Getting Postgres authentication token')
       try {
-        const token = await getToken(options);
-        return token;
+        const token = await getToken(options)
+        return token
       } catch (error) {
         server?.logger?.error('Failed to get Postgres authentication token', {
           error: error.message,
           user: options.user,
           host: options.host
-        });
-        throw error;
+        })
+        throw error
       }
     },
     host: options.host,
@@ -153,7 +153,7 @@ export function createDBClient(options, server = {}) {
           secureContext: server.secureContext
         }
       })
-  });
+  })
 }
 
 /**
@@ -169,43 +169,43 @@ export const postgresDb = {
      * @param {{user: string, host: string, database: string, isLocal: boolean, region: string, passwordForLocalDev?: string}} options
      */
     register: function (server, options) {
-      server.logger.info('Setting up postgres');
+      server.logger.info('Setting up postgres')
 
-      const pool = createDBPool(options, server);
+      const pool = createDBPool(options, server)
 
-      server.decorate('server', 'postgresDb', pool);
+      server.decorate('server', 'postgresDb', pool)
 
       pool.on('error', (err) => {
-        server.logger.error({ err }, 'Unexpected idle Postgres client error');
-      });
+        server.logger.error({ err }, 'Unexpected idle Postgres client error')
+      })
 
       const keepAlive = setInterval(() => {
         pool.query('SELECT 1').catch((err) => {
-          server.logger.debug({ err }, 'Postgres keep-alive query failed');
-        });
-      }, keepAliveInterval);
-      keepAlive.unref();
+          server.logger.debug({ err }, 'Postgres keep-alive query failed')
+        })
+      }, keepAliveInterval)
+      keepAlive.unref()
 
       server.events.on('stop', () => {
-        server.logger.info('Closing Postgres pool');
-        clearInterval(keepAlive);
+        server.logger.info('Closing Postgres pool')
+        clearInterval(keepAlive)
         pool.end().catch((err) => {
-          server.logger.error({ err }, 'Error closing Postgres pool');
-        });
-      });
+          server.logger.error({ err }, 'Error closing Postgres pool')
+        })
+      })
 
       pool.on('connect', () => {
-        server.logger.debug('New client connected');
-      });
+        server.logger.debug('New client connected')
+      })
 
       pool.on('acquire', () => {
-        server.logger.debug('Client acquired from pool');
-      });
+        server.logger.debug('Client acquired from pool')
+      })
 
       pool.on('remove', () => {
-        server.logger.debug('Client removed from pool');
-      });
+        server.logger.debug('Client removed from pool')
+      })
     }
   },
   options: getDBOptions()
-};
+}

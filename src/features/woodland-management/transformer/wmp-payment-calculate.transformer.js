@@ -5,11 +5,11 @@ import {
   format,
   parseISO,
   startOfMonth
-} from 'date-fns';
-import { roundTo4DecimalPlaces } from '../../common/helpers/measurement.js';
-import { gbpToPence } from '../../common/helpers/currency.js';
+} from 'date-fns'
+import { roundTo4DecimalPlaces } from '../../common/helpers/measurement.js'
+import { gbpToPence } from '../../common/helpers/currency.js'
 
-const DATE_FORMAT = 'yyyy-MM-dd';
+const DATE_FORMAT = 'yyyy-MM-dd'
 
 /**
  * Returns the agreement start date. When `startDate` is provided it is used as
@@ -27,11 +27,11 @@ const getAgreementStartDate = (startDate) => {
         )
       ),
       DATE_FORMAT
-    );
+    )
   }
 
-  return format(startOfMonth(addMonths(new Date(), 1)), DATE_FORMAT);
-};
+  return format(startOfMonth(addMonths(new Date(), 1)), DATE_FORMAT)
+}
 
 /**
  * Returns the agreement end date, calculated as durationYears after the start date -1 day.
@@ -43,8 +43,8 @@ const getAgreementEndDate = (agreementStartDate, durationYears) => {
   return format(
     addDays(addYears(parseISO(agreementStartDate), durationYears), -1),
     DATE_FORMAT
-  );
-};
+  )
+}
 
 /**
  * Builds the payment schedule array from a WMP calculation result.
@@ -52,7 +52,7 @@ const getAgreementEndDate = (agreementStartDate, durationYears) => {
  * @returns {WmpPayment[]} The payment schedule
  */
 const transformPayments = (paymentResult) => {
-  const paymentPence = gbpToPence(paymentResult.payment);
+  const paymentPence = gbpToPence(paymentResult.payment)
   return [
     {
       totalPaymentPence: paymentPence,
@@ -64,8 +64,8 @@ const transformPayments = (paymentResult) => {
         }
       ]
     }
-  ];
-};
+  ]
+}
 
 /**
  * Builds the agreement-level items map from a WMP calculation result.
@@ -93,8 +93,8 @@ const transformAgreementLevelItems = (parcelIds, action, paymentResult) => {
       agreementTotalPence: gbpToPence(paymentResult.payment),
       unit: 'ha'
     }
-  };
-};
+  }
+}
 
 /**
  * Transforms a WMP payment calculation result into the API response shape.
@@ -110,7 +110,7 @@ export const wmpPaymentCalculateTransformer = (
   action,
   startDate
 ) => {
-  const agreementStartDate = getAgreementStartDate(startDate);
+  const agreementStartDate = getAgreementStartDate(startDate)
   return {
     explanations: [],
     agreementStartDate,
@@ -127,8 +127,8 @@ export const wmpPaymentCalculateTransformer = (
       wmpCalculationResult
     ),
     payments: transformPayments(wmpCalculationResult)
-  };
-};
+  }
+}
 
 /**
  * @import { WmpCalculationResult } from '~/src/features/payments-engine/payment-methods/wmp-calculation.d.js'
