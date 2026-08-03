@@ -57,8 +57,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
 const buildAuditContext = (request, sbi, crn) => ({
   correlationId: getCorrelationId(request),
   identifiers: { sbi, crn }
-});
-
+})
 
 /**
  *
