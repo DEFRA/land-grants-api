@@ -296,7 +296,8 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        'dummy',
+        false
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -304,6 +305,104 @@ describe('Parcels Controller 2.0.0', () => {
       expect(
         mockGetActionsForParcelWithHEFERConsentRequired
       ).not.toHaveBeenCalled()
+    })
+
+    test('should return 200 with metadata when requesting actions.metadata field', async () => {
+      const mockActionsWithMetadata = [
+        {
+          ...mockActionsWithAvailableArea[0],
+          metadata: {
+            available_area_type: 'total',
+            guidance_link: 'https://www.gov.uk/find-funding'
+          }
+        }
+      ]
+
+      mockGetActionsForParcel.mockImplementation((parcel, payload) => {
+        const result = {
+          parcelId: parcel.parcel_id,
+          sheetId: parcel.sheet_id
+        }
+
+        if (payload.fields.includes('size')) {
+          result.size = {
+            unit: 'ha',
+            value: 10
+          }
+        }
+
+        if (payload.fields.some((f) => f.startsWith('actions'))) {
+          result.actions = mockActionsWithMetadata
+        }
+
+        return Promise.resolve(result)
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
+        payload: {
+          sbi,
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions.metadata']
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message, parcels }
+      } = await server.inject(request)
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(parcels[0].actions[0].metadata).toEqual({
+        available_area_type: 'total',
+        guidance_link: 'https://www.gov.uk/find-funding'
+      })
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.objectContaining({
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions.metadata']
+        }),
+        false,
+        mockEnabledActions,
+        expect.any(Function),
+        expect.anything(),
+        'dummy',
+        true // showActionMetadata should be true
+      )
+    })
+
+    test('should default showActionMetadata to false when actions.metadata is not requested', async () => {
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
+        payload: {
+          sbi,
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.objectContaining({
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }),
+        false,
+        mockEnabledActions,
+        expect.any(Function),
+        expect.anything(),
+        'dummy',
+        false // showActionMetadata should be false
+      )
     })
 
     test('should return 200 and call getActionsForParcelWithSSSIConsentRequired when requesting actions.sssiConsentRequired with single parcel', async () => {
@@ -616,7 +715,8 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        'dummy',
+        false
       )
     })
 
@@ -882,7 +982,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe(
-        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, groups]`
+        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, actions.metadata, groups]`
       )
     })
 
@@ -1143,7 +1243,8 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        'dummy',
+        false
       )
     })
 

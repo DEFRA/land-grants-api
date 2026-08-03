@@ -8,6 +8,13 @@ const availableAreaSchema = Joi.object({
   value: Joi.number().required()
 })
 
+const actionMetadataSchema = Joi.object({
+  guidance_link: Joi.string().uri().optional(),
+  available_area_type: Joi.string()
+    .valid('total', 'partial', 'limited')
+    .optional()
+})
+
 const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
@@ -21,7 +28,8 @@ const actionSchema = Joi.object({
   ratePerAgreementPerYearGbp: Joi.number().optional(),
   sssiConsentRequired: Joi.boolean().optional(),
   heferRequired: Joi.boolean().optional(),
-  version: Joi.string().optional()
+  version: Joi.string().optional(),
+  metadata: actionMetadataSchema.optional()
 })
 
 const parcelSchema = Joi.object({
@@ -45,6 +53,7 @@ const parcelsSchema = Joi.object({
         'actions.results',
         'actions.sssiConsentRequired',
         'actions.heferRequired',
+        'actions.metadata',
         'groups'
       )
     )

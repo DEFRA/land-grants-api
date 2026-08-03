@@ -80,6 +80,71 @@ describe('Parcel Schema Validation v2', () => {
       const result = parcelsSuccessResponseSchema.validate(invalid)
       expect(result.error).toBeDefined()
     })
+
+    it('should validate action with metadata', () => {
+      const valid = {
+        ...validResponse,
+        parcels: [
+          {
+            ...mockParcelWithActions.parcel,
+            actions: [
+              {
+                ...mockParcelWithActions.parcel.actions[0],
+                metadata: {
+                  available_area_type: 'total',
+                  guidance_link: 'https://www.gov.uk/find-funding'
+                }
+              }
+            ]
+          }
+        ]
+      }
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should validate action without metadata', () => {
+      const result = parcelsSuccessResponseSchema.validate(validResponse)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject metadata with invalid available_area_type', () => {
+      const invalid = {
+        ...validResponse,
+        parcels: [
+          {
+            ...mockParcelWithActions.parcel,
+            actions: [
+              {
+                ...mockParcelWithActions.parcel.actions[0],
+                metadata: { available_area_type: 'not-a-real-type' }
+              }
+            ]
+          }
+        ]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject metadata with invalid guidance_link', () => {
+      const invalid = {
+        ...validResponse,
+        parcels: [
+          {
+            ...mockParcelWithActions.parcel,
+            actions: [
+              {
+                ...mockParcelWithActions.parcel.actions[0],
+                metadata: { guidance_link: 'not-a-url' }
+              }
+            ]
+          }
+        ]
+      }
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
   })
 
   describe('parcelsSchema', () => {
@@ -99,6 +164,7 @@ describe('Parcel Schema Validation v2', () => {
       ['single field', ['size']],
       ['sssiConsentRequired field', ['actions.sssiConsentRequired']],
       ['heferRequired field', ['actions.heferRequired']],
+      ['metadata field', ['actions.metadata']],
       ['groups field', ['groups']]
     ])('should validate with %s', (_name, fields) => {
       const valid = { ...validParcelsRequest, fields }
@@ -115,6 +181,7 @@ describe('Parcel Schema Validation v2', () => {
           'actions.results',
           'actions.sssiConsentRequired',
           'actions.heferRequired',
+          'actions.metadata',
           'groups'
         ]
       }

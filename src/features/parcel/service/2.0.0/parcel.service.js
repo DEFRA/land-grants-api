@@ -65,6 +65,7 @@ export function splitParcelId(id, logger) {
  * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {Pool} postgresDb - The postgres database
  * @param {Logger} logger - The logger
+ * @param {boolean} showActionMetadata - Whether to show action metadata
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 async function getParcelActionsWithAvailableArea(
@@ -74,7 +75,8 @@ async function getParcelActionsWithAvailableArea(
   enabledActions,
   compatibilityCheckFn,
   postgresDb,
-  logger
+  logger,
+  showActionMetadata = false
 ) {
   const actionsWithAvailableArea = []
 
@@ -113,7 +115,8 @@ async function getParcelActionsWithAvailableArea(
     const actionWithAvailableArea = actionTransformer(
       action,
       availableArea,
-      showActionResults
+      showActionResults,
+      showActionMetadata
     )
 
     actionsWithAvailableArea.push(actionWithAvailableArea)
@@ -129,7 +132,8 @@ export async function getActionsForParcel(
   enabledActions,
   compatibilityCheckFn,
   request,
-  defraIdToken
+  defraIdToken,
+  showActionMetadata = false
 ) {
   const { fields, plannedActions, sbi } = payload
 
@@ -161,7 +165,8 @@ export async function getActionsForParcel(
       enabledActions,
       compatibilityCheckFn,
       request.server.postgresDb,
-      request.logger
+      request.logger,
+      showActionMetadata
     )
 
     parcelResponse.actions = actionsWithAvailableArea

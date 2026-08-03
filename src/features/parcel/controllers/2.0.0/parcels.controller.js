@@ -121,6 +121,7 @@ const ParcelsControllerV2 = {
       }
 
       const showActionResults = fields.includes('actions.results')
+      const showActionMetadata = fields.includes('actions.metadata')
 
       const validationResponse = await getDataAndValidateRequest(
         parcelIds,
@@ -153,7 +154,8 @@ const ParcelsControllerV2 = {
             validationResponse.enabledActions,
             compatibilityCheckFn,
             request,
-            defraIdToken
+            defraIdToken,
+            showActionMetadata
           )
         })
       )

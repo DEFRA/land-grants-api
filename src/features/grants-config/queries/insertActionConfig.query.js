@@ -7,7 +7,7 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * is_active on the new row is TRUE only if no active row remains after the UPDATE.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, metadata: object|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
@@ -23,7 +23,8 @@ async function insertActionConfig(logger, db, params) {
     hfEligible,
     groupId,
     enabled,
-    display
+    display,
+    metadata
   } = params
   let client
   try {
@@ -31,14 +32,23 @@ async function insertActionConfig(logger, db, params) {
     await client.query('BEGIN')
 
     await client.query(
-      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, last_updated)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, metadata, last_updated)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
        ON CONFLICT (code) DO UPDATE SET
          description = COALESCE(EXCLUDED.description, actions.description),
          enabled = EXCLUDED.enabled,
          display = EXCLUDED.display,
+         metadata = COALESCE(EXCLUDED.metadata, actions.metadata),
          last_updated = NOW()`,
-      [code, enabled, display, description, sssiEligible, hfEligible]
+      [
+        code,
+        enabled,
+        display,
+        description,
+        sssiEligible,
+        hfEligible,
+        metadata ? JSON.stringify(metadata) : null
+      ]
     )
 
     await client.query(
