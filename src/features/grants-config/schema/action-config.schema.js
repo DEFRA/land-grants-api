@@ -1,6 +1,5 @@
 import Joi from 'joi'
-
-const AVAILABLE_AREA_TYPES = ['total', 'partial', 'limited']
+import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
 
 export const actionConfigInputSchema = Joi.object({
   code: Joi.string().required(),

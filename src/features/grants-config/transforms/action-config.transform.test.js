@@ -1,4 +1,5 @@
 import { transformActionConfig } from './action-config.transform.js'
+import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
 
 describe('transformActionConfig', () => {
   const pa3Json = {
@@ -265,7 +266,7 @@ describe('transformActionConfig', () => {
       ).not.toThrow()
     })
 
-    test.each(['total', 'partial', 'limited'])(
+    test.each(AVAILABLE_AREA_TYPES)(
       'does not throw for a valid metadata.available_area_type %s',
       (availableAreaType) => {
         expect(() =>
