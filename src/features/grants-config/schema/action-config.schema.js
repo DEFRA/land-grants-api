@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
 
 export const actionConfigInputSchema = Joi.object({
   code: Joi.string().required(),
@@ -16,5 +17,13 @@ export const actionConfigInputSchema = Joi.object({
   hfEligible: Joi.boolean().optional(),
   groupId: Joi.number().integer().allow(null).optional(),
   enabled: Joi.boolean().optional(),
-  display: Joi.boolean().optional()
+  display: Joi.boolean().optional(),
+  metadata: Joi.object({
+    guidance_link: Joi.string().uri().optional(),
+    available_area_type: Joi.string()
+      .valid(...AVAILABLE_AREA_TYPES)
+      .optional()
+  })
+    .allow(null)
+    .optional()
 }).options({ allowUnknown: true })

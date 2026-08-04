@@ -1,4 +1,5 @@
 import { transformActionConfig } from './action-config.transform.js'
+import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
 
 describe('transformActionConfig', () => {
   const pa3Json = {
@@ -96,6 +97,25 @@ describe('transformActionConfig', () => {
   test('defaults groupId to null when absent', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.groupId).toBeNull()
+  })
+
+  test('extracts metadata when present', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      metadata: {
+        available_area_type: 'total',
+        guidance_link: 'https://example.com'
+      }
+    })
+    expect(result.metadata).toEqual({
+      available_area_type: 'total',
+      guidance_link: 'https://example.com'
+    })
+  })
+
+  test('defaults metadata to null when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.metadata).toBeNull()
   })
 
   test('extracts enabled from input', () => {
@@ -238,6 +258,42 @@ describe('transformActionConfig', () => {
       expect(() =>
         transformActionConfig({ ...pa3Json, groupId: null })
       ).not.toThrow()
+    })
+
+    test('does not throw when metadata is null', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, metadata: null })
+      ).not.toThrow()
+    })
+
+    test.each(AVAILABLE_AREA_TYPES)(
+      'does not throw for a valid metadata.available_area_type %s',
+      (availableAreaType) => {
+        expect(() =>
+          transformActionConfig({
+            ...pa3Json,
+            metadata: { available_area_type: availableAreaType }
+          })
+        ).not.toThrow()
+      }
+    )
+
+    test('throws when metadata.available_area_type is not a recognised value', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          metadata: { available_area_type: 'not-a-real-type' }
+        })
+      ).toThrow('Invalid action config')
+    })
+
+    test('throws when metadata.guidance_link is not a valid URI', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          metadata: { guidance_link: 'not-a-url' }
+        })
+      ).toThrow('Invalid action config')
     })
   })
 
