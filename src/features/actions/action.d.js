@@ -24,6 +24,13 @@
  * @property {string} groupName
  * @property {number} displayOrder
  * @property {object} paymentMethod
+ * @property {ActionMetadata} [metadata]
+ */
+
+/**
+ * @typedef {object} ActionMetadata
+ * @property {string} [guidance_link]
+ * @property {'total'|'partial'|'limited'} [available_area_type] - Governs how the user must enter a value relative to availableArea: 'total' requires the full amount, 'partial' allows any amount up to and including the total, 'limited' allows an amount capped below the total. Values are defined in src/features/common/constants/action_metadata.js.
  */
 
 /**

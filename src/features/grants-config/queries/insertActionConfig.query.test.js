@@ -17,7 +17,8 @@ describe('insertActionConfig', () => {
     hfEligible: true,
     groupId: null,
     enabled: true,
-    display: true
+    display: true,
+    metadata: { available_area_type: 'total' }
   }
 
   beforeEach(() => {
@@ -47,12 +48,20 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with enabled, display, description, sssiEligible and hfEligible from params', async () => {
+  test('upserts action with enabled, display, description, sssiEligible, hfEligible and metadata from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', true, true]
+      [
+        'PA3',
+        true,
+        true,
+        'Woodland management plan',
+        true,
+        true,
+        JSON.stringify({ available_area_type: 'total' })
+      ]
     )
   })
 
@@ -64,7 +73,27 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, null, true, true]
+      [
+        'PA3',
+        true,
+        true,
+        null,
+        true,
+        true,
+        JSON.stringify({ available_area_type: 'total' })
+      ]
+    )
+  })
+
+  test('passes null metadata when absent', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      metadata: null
+    })
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO actions'),
+      ['PA3', true, true, 'Woodland management plan', true, true, null]
     )
   })
 
@@ -79,6 +108,17 @@ describe('insertActionConfig', () => {
     )
   })
 
+  test('uses COALESCE so null metadata does not overwrite existing', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+    )
+    expect(upsertCall[0]).toContain(
+      'COALESCE(EXCLUDED.metadata, actions.metadata)'
+    )
+  })
+
   test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
@@ -88,7 +128,15 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', false, false]
+      [
+        'PA3',
+        true,
+        true,
+        'Woodland management plan',
+        false,
+        false,
+        JSON.stringify({ available_area_type: 'total' })
+      ]
     )
   })
 
@@ -101,7 +149,15 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', false, false, 'Woodland management plan', true, true]
+      [
+        'PA3',
+        false,
+        false,
+        'Woodland management plan',
+        true,
+        true,
+        JSON.stringify({ available_area_type: 'total' })
+      ]
     )
   })
 

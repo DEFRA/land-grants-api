@@ -4,9 +4,16 @@ import { sizeTransformer } from '../parcelActions.transformer.js'
  * Transform parcel and actions to land parcel and actions for v2
  * @param {Action} action - The actions to merge
  * @param {AvailableAreaForAction | null} availableArea - Total Available Area
+ * @param {boolean} showResults - Whether to include results
+ * @param {boolean} showMetadata - Whether to include metadata
  * @returns {object} The land action data with available area
  */
-function actionTransformer(action, availableArea = null, showResults = false) {
+function actionTransformer(
+  action,
+  availableArea = null,
+  showResults = false,
+  showMetadata = false
+) {
   const response = {
     code: action.code,
     description: action.description,
@@ -14,6 +21,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     availableArea: Number.isFinite(availableArea?.availableAreaHectares)
       ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
       : undefined,
+    metadata: showMetadata ? (action.metadata ?? undefined) : undefined,
     ...action.payment
   }
 

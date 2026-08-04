@@ -99,7 +99,9 @@ const ParcelsControllerV2 = {
         }
       })
 
-      const defraIdToken = request.headers['x-forwarded-authorization']
+      const defraIdToken = /** @type {string} */ (
+        request.headers['x-forwarded-authorization']
+      )
       if (!defraIdToken) {
         return Boom.unauthorized('X-Forwarded-Authorization is required')
       }
@@ -120,7 +122,10 @@ const ParcelsControllerV2 = {
         return heferConsentRequiredError
       }
 
-      const showActionResults = fields.includes('actions.results')
+      const displayOptions = {
+        showActionResults: fields.includes('actions.results'),
+        showActionMetadata: fields.includes('actions.metadata')
+      }
 
       const validationResponse = await getDataAndValidateRequest(
         parcelIds,
@@ -149,11 +154,11 @@ const ParcelsControllerV2 = {
           return getActionsForParcel(
             parcel,
             request.payload,
-            showActionResults,
             validationResponse.enabledActions,
             compatibilityCheckFn,
             request,
-            defraIdToken
+            defraIdToken,
+            displayOptions
           )
         })
       )

@@ -53,6 +53,7 @@ describe('Get Actions By Latest Version Query', () => {
       code: 'CMOR1',
       description: 'Assess moorland and produce a written record',
       applicationUnitOfMeasurement: 'ha',
+      metadata: null,
       payment: {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272

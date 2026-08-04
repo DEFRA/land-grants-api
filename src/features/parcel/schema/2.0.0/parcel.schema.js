@@ -1,11 +1,19 @@
 import Joi from 'joi'
 import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
+import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
 const availableAreaSchema = Joi.object({
   unit: Joi.string().required(),
   value: Joi.number().required()
+})
+
+const actionMetadataSchema = Joi.object({
+  guidance_link: Joi.string().uri().optional(),
+  available_area_type: Joi.string()
+    .valid(...AVAILABLE_AREA_TYPES)
+    .optional()
 })
 
 const actionSchema = Joi.object({
@@ -21,7 +29,8 @@ const actionSchema = Joi.object({
   ratePerAgreementPerYearGbp: Joi.number().optional(),
   sssiConsentRequired: Joi.boolean().optional(),
   heferRequired: Joi.boolean().optional(),
-  version: Joi.string().optional()
+  version: Joi.string().optional(),
+  metadata: actionMetadataSchema.optional()
 })
 
 const parcelSchema = Joi.object({
@@ -45,6 +54,7 @@ const parcelsSchema = Joi.object({
         'actions.results',
         'actions.sssiConsentRequired',
         'actions.heferRequired',
+        'actions.metadata',
         'groups'
       )
     )

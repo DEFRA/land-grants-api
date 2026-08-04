@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="add-actions-metadata-column" author="system">
+    <comment>
+      Adds a metadata JSONB column to actions for optional per-action guidance_link
+      and available_area_type (total, partial, limited) fields.
+      available_area_type governs how the user must enter a value relative
+      to availableArea: 'total' requires the full amount, 'partial' allows any
+      amount up to and including the total, 'limited' allows an amount capped
+      below the total.
+    </comment>
+    <addColumn tableName="actions">
+      <column name="metadata" type="JSONB"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="backfill-actions-metadata" author="system">
+    <sql>
+      UPDATE actions SET metadata = jsonb_set(
+        jsonb_set(COALESCE(metadata, '{}'::jsonb), '{available_area_type}', '"total"'),
+        '{guidance_link}',
+        '"https://www.gov.uk/find-funding-for-land-or-farms/clig3-manage-grassland-with-very-low-nutrient-inputs"'
+      ) WHERE code = 'CLIG3';
+
+      UPDATE actions SET metadata = jsonb_set(
+        jsonb_set(COALESCE(metadata, '{}'::jsonb), '{available_area_type}', '"partial"'),
+        '{guidance_link}',
+        '"https://www.gov.uk/find-funding-for-land-or-farms/csam3-herbal-leys"'
+      ) WHERE code = 'CSAM3';
+
+      UPDATE actions SET metadata = jsonb_set(
+        jsonb_set(COALESCE(metadata, '{}'::jsonb), '{available_area_type}', '"partial"'),
+        '{guidance_link}',
+        '"https://www.gov.uk/find-funding-for-land-or-farms/scr2-manage-scrub-and-open-habitat-mosaics"'
+      ) WHERE code = 'SCR2';
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
