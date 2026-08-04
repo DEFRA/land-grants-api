@@ -124,7 +124,7 @@ const ParcelsControllerV2 = {
 
       const displayOptions = {
         showActionResults: fields.includes('actions.results'),
-        showActionMetadata: fields.includes('actions.metadata')
+        showActionAvailability: fields.includes('actions.availability')
       }
 
       const validationResponse = await getDataAndValidateRequest(

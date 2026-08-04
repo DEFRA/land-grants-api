@@ -3,7 +3,7 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
 /**
  * Upsert the core actions row.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
- * @param {{ code: string, enabled: boolean, display: boolean, description: string|null, sssiEligible: boolean, hfEligible: boolean, metadata: object|null }} params
+ * @param {{ code: string, enabled: boolean, display: boolean, description: string|null, sssiEligible: boolean, hfEligible: boolean, guidanceUrl: string|null, availability: object|null }} params
  * @returns {Promise<void>}
  */
 async function upsertAction(client, params) {
@@ -14,17 +14,19 @@ async function upsertAction(client, params) {
     description,
     sssiEligible,
     hfEligible,
-    metadata
+    guidanceUrl,
+    availability
   } = params
 
   await client.query(
-    `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, metadata, last_updated)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, guidance_url, availability, last_updated)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
      ON CONFLICT (code) DO UPDATE SET
        description = COALESCE(EXCLUDED.description, actions.description),
        enabled = EXCLUDED.enabled,
        display = EXCLUDED.display,
-       metadata = COALESCE(EXCLUDED.metadata, actions.metadata),
+       guidance_url = COALESCE(EXCLUDED.guidance_url, actions.guidance_url),
+       availability = COALESCE(EXCLUDED.availability, actions.availability),
        last_updated = NOW()`,
     [
       code,
@@ -33,7 +35,8 @@ async function upsertAction(client, params) {
       description,
       sssiEligible,
       hfEligible,
-      metadata ? JSON.stringify(metadata) : null
+      guidanceUrl,
+      availability ? JSON.stringify(availability) : null
     ]
   )
 }
@@ -93,7 +96,7 @@ async function insertConfigVersion(
  * new semantic version is strictly higher, then inserts the new row.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, metadata: object|null }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, guidanceUrl: string|null, availability: object|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {

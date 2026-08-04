@@ -64,7 +64,7 @@ export function splitParcelId(id, logger) {
  * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {Pool} postgresDb - The postgres database
  * @param {Logger} logger - The logger
- * @param {{ showActionResults?: boolean, showActionMetadata?: boolean }} displayOptions - Response field toggles
+ * @param {{ showActionResults?: boolean, showActionAvailability?: boolean }} displayOptions - Response field toggles
  * @returns {Promise<any[]>} The parcel actions with available area
  */
 async function getParcelActionsWithAvailableArea(
@@ -76,7 +76,7 @@ async function getParcelActionsWithAvailableArea(
   logger,
   displayOptions = {}
 ) {
-  const { showActionResults = false, showActionMetadata = false } =
+  const { showActionResults = false, showActionAvailability = false } =
     displayOptions
   const actionsWithAvailableArea = []
 
@@ -116,7 +116,7 @@ async function getParcelActionsWithAvailableArea(
       action,
       availableArea,
       showActionResults,
-      showActionMetadata
+      showActionAvailability
     )
 
     actionsWithAvailableArea.push(actionWithAvailableArea)
@@ -133,7 +133,7 @@ async function getParcelActionsWithAvailableArea(
  * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {object} request - The Hapi request
  * @param {string} defraIdToken - The Defra ID token
- * @param {{ showActionResults?: boolean, showActionMetadata?: boolean }} displayOptions - Response field toggles
+ * @param {{ showActionResults?: boolean, showActionAvailability?: boolean }} displayOptions - Response field toggles
  * @returns {Promise<object>} The parcel response
  */
 export async function getActionsForParcel(

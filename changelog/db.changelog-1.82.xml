@@ -5,29 +5,41 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-  <changeSet id="camelcase-actions-metadata-keys" author="system">
+  <changeSet id="add-actions-guidance-url-column" author="system">
     <comment>
-      actions.metadata was seeded with snake_case keys (guidance_link,
-      available_area_type) in db.changelog-1.81.xml, inconsistent with the
-      camelCase convention used everywhere else in API responses. Renames
-      those keys in place to guidanceLink and availableAreaType for any
-      rows that already have metadata set.
+      Adds a dedicated guidance_url column to actions, pulled out of the
+      metadata JSONB so it sits alongside code/description as a first-class
+      field.
+    </comment>
+    <addColumn tableName="actions">
+      <column name="guidance_url" type="TEXT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="rename-actions-metadata-to-availability" author="system">
+    <comment>
+      Renames actions.metadata to actions.availability. The column no longer
+      needs to be a general-purpose metadata bag: guidanceLink moved to the
+      new actions.guidance_url column, leaving only the "what can the user
+      enter relative to availableArea" concern, so the column is renamed to
+      reflect that directly. Shape simplifies from {"available": {"type":
+      "total"}} to {"type": "total"}.
     </comment>
     <sql>
+      ALTER TABLE actions RENAME COLUMN metadata TO availability;
+
       UPDATE actions
-      SET metadata = (
-        (metadata - 'guidance_link' - 'available_area_type')
-        || CASE WHEN jsonb_exists(metadata, 'guidance_link')
-             THEN jsonb_build_object('guidanceLink', metadata->'guidance_link')
-             ELSE '{}'::jsonb
-           END
-        || CASE WHEN jsonb_exists(metadata, 'available_area_type')
-             THEN jsonb_build_object('availableAreaType', metadata->'available_area_type')
-             ELSE '{}'::jsonb
-           END
-      )
-      WHERE metadata IS NOT NULL
-        AND (jsonb_exists(metadata, 'guidance_link') OR jsonb_exists(metadata, 'available_area_type'));
+      SET guidance_url = availability->>'guidanceLink'
+      WHERE availability IS NOT NULL AND jsonb_exists(availability, 'guidanceLink');
+
+      UPDATE actions
+      SET availability = CASE
+        WHEN jsonb_exists(availability, 'availableAreaType')
+          THEN jsonb_build_object('type', availability->'availableAreaType')
+        ELSE NULL
+      END
+      WHERE availability IS NOT NULL
+        AND (jsonb_exists(availability, 'guidanceLink') OR jsonb_exists(availability, 'availableAreaType'));
     </sql>
   </changeSet>
 

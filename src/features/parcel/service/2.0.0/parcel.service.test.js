@@ -620,7 +620,7 @@ describe('Parcel Service 2.0.0', () => {
       ])
     })
 
-    test('should pass showActionResults and showActionMetadata through to actionTransformer', async () => {
+    test('should pass showActionResults and showActionAvailability through to actionTransformer', async () => {
       await getActionsForParcel(
         mockParcel,
         mockPayload,
@@ -628,7 +628,7 @@ describe('Parcel Service 2.0.0', () => {
         mockCompatibilityCheckFn,
         mockRequest,
         'token',
-        { showActionResults: true, showActionMetadata: true }
+        { showActionResults: true, showActionAvailability: true }
       )
 
       expect(actionTransformer).toHaveBeenCalledWith(
@@ -639,7 +639,7 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
-    test('should default displayOptions to showing neither results nor metadata', async () => {
+    test('should default displayOptions to showing neither results nor availability', async () => {
       await getActionsForParcel(
         mockParcel,
         mockPayload,

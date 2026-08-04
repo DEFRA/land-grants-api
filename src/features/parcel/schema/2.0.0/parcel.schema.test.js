@@ -81,7 +81,7 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeDefined()
     })
 
-    it('should validate action with metadata', () => {
+    it('should validate action with availability and guidanceUrl', () => {
       const valid = {
         ...validResponse,
         parcels: [
@@ -90,10 +90,8 @@ describe('Parcel Schema Validation v2', () => {
             actions: [
               {
                 ...mockParcelWithActions.parcel.actions[0],
-                metadata: {
-                  availableAreaType: 'total',
-                  guidanceLink: 'https://www.gov.uk/find-funding'
-                }
+                guidanceUrl: 'https://www.gov.uk/find-funding',
+                availability: { type: 'total' }
               }
             ]
           }
@@ -103,12 +101,12 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should validate action without metadata', () => {
+    it('should validate action without availability', () => {
       const result = parcelsSuccessResponseSchema.validate(validResponse)
       expect(result.error).toBeUndefined()
     })
 
-    it('should reject metadata with invalid availableAreaType', () => {
+    it('should reject availability with invalid type', () => {
       const invalid = {
         ...validResponse,
         parcels: [
@@ -117,7 +115,7 @@ describe('Parcel Schema Validation v2', () => {
             actions: [
               {
                 ...mockParcelWithActions.parcel.actions[0],
-                metadata: { availableAreaType: 'not-a-real-type' }
+                availability: { type: 'not-a-real-type' }
               }
             ]
           }
@@ -127,7 +125,7 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeDefined()
     })
 
-    it('should reject metadata with invalid guidanceLink', () => {
+    it('should reject invalid guidanceUrl', () => {
       const invalid = {
         ...validResponse,
         parcels: [
@@ -136,7 +134,7 @@ describe('Parcel Schema Validation v2', () => {
             actions: [
               {
                 ...mockParcelWithActions.parcel.actions[0],
-                metadata: { guidanceLink: 'not-a-url' }
+                guidanceUrl: 'not-a-url'
               }
             ]
           }
@@ -164,7 +162,7 @@ describe('Parcel Schema Validation v2', () => {
       ['single field', ['size']],
       ['sssiConsentRequired field', ['actions.sssiConsentRequired']],
       ['heferRequired field', ['actions.heferRequired']],
-      ['metadata field', ['actions.metadata']],
+      ['availability field', ['actions.availability']],
       ['groups field', ['groups']]
     ])('should validate with %s', (_name, fields) => {
       const valid = { ...validParcelsRequest, fields }
@@ -181,7 +179,7 @@ describe('Parcel Schema Validation v2', () => {
           'actions.results',
           'actions.sssiConsentRequired',
           'actions.heferRequired',
-          'actions.metadata',
+          'actions.availability',
           'groups'
         ]
       }

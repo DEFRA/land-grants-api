@@ -296,7 +296,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: true, showActionMetadata: false }
+        { showActionResults: true, showActionAvailability: false }
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -306,14 +306,12 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should return 200 with metadata when requesting actions.metadata field', async () => {
-      const mockActionsWithMetadata = [
+    test('should return 200 with availability when requesting actions.availability field', async () => {
+      const mockActionsWithAvailability = [
         {
           ...mockActionsWithAvailableArea[0],
-          metadata: {
-            availableAreaType: 'total',
-            guidanceLink: 'https://www.gov.uk/find-funding'
-          }
+          guidanceUrl: 'https://www.gov.uk/find-funding',
+          availability: { type: 'total' }
         }
       ]
 
@@ -331,7 +329,7 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithMetadata
+          result.actions = mockActionsWithAvailability
         }
 
         return Promise.resolve(result)
@@ -344,7 +342,7 @@ describe('Parcels Controller 2.0.0', () => {
         payload: {
           sbi,
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.metadata']
+          fields: ['actions.availability']
         }
       }
 
@@ -356,25 +354,27 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
-      expect(parcels[0].actions[0].metadata).toEqual({
-        availableAreaType: 'total',
-        guidanceLink: 'https://www.gov.uk/find-funding'
+      expect(parcels[0].actions[0].guidanceUrl).toBe(
+        'https://www.gov.uk/find-funding'
+      )
+      expect(parcels[0].actions[0].availability).toEqual({
+        type: 'total'
       })
       expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,
         expect.objectContaining({
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.metadata']
+          fields: ['actions.availability']
         }),
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionMetadata: true }
+        { showActionResults: false, showActionAvailability: true }
       )
     })
 
-    test('should default showActionMetadata to false when actions.metadata is not requested', async () => {
+    test('should default showActionAvailability to false when actions.availability is not requested', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -398,7 +398,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        { showActionResults: false, showActionAvailability: false }
       )
     })
 
@@ -712,7 +712,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        { showActionResults: false, showActionAvailability: false }
       )
     })
 
@@ -978,7 +978,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe(
-        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, actions.metadata, groups]`
+        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, actions.availability, groups]`
       )
     })
 
@@ -1239,7 +1239,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        { showActionResults: false, showActionAvailability: false }
       )
     })
 

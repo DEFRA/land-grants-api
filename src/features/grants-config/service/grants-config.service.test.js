@@ -131,14 +131,11 @@ describe('processActionConfigFile', () => {
     })
   })
 
-  test('passes metadata from the transformed config through to insertActionConfig', async () => {
+  test('passes availability from the transformed config through to insertActionConfig', async () => {
     getActionConfigByVersion.mockResolvedValue(false)
     transformActionConfig.mockReturnValue({
       ...transformedConfig,
-      metadata: {
-        guidanceLink: 'https://example.com',
-        availableAreaType: 'total'
-      }
+      availability: { type: 'total' }
     })
 
     await processActionConfigFile(
@@ -153,10 +150,31 @@ describe('processActionConfigFile', () => {
       mockLogger,
       mockDb,
       expect.objectContaining({
-        metadata: {
-          guidanceLink: 'https://example.com',
-          availableAreaType: 'total'
-        }
+        availability: { type: 'total' }
+      })
+    )
+  })
+
+  test('passes guidanceUrl from the transformed config through to insertActionConfig', async () => {
+    getActionConfigByVersion.mockResolvedValue(false)
+    transformActionConfig.mockReturnValue({
+      ...transformedConfig,
+      guidanceUrl: 'https://example.com'
+    })
+
+    await processActionConfigFile(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      s3Key,
+      bucket
+    )
+
+    expect(insertActionConfig).toHaveBeenCalledWith(
+      mockLogger,
+      mockDb,
+      expect.objectContaining({
+        guidanceUrl: 'https://example.com'
       })
     )
   })

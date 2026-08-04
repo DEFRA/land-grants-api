@@ -147,14 +147,12 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should include metadata when showMetadata is true', () => {
+  test('should include availability when showAvailability is true', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      metadata: {
-        availableAreaType: 'total',
-        guidanceLink: 'https://example.com'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     }
 
     const result = actionTransformer(action, null, false, true)
@@ -163,20 +161,17 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      metadata: {
-        availableAreaType: 'total',
-        guidanceLink: 'https://example.com'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     })
   })
 
-  test('should not include metadata when showMetadata is false', () => {
+  test('should not include availability when showAvailability is false', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      metadata: {
-        availableAreaType: 'total'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     }
 
     const result = actionTransformer(action, null, false, false)
@@ -184,17 +179,17 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined
+      availableArea: undefined,
+      guidanceUrl: 'https://example.com'
     })
   })
 
-  test('should default showMetadata to false when omitted', () => {
+  test('should default showAvailability to false when omitted', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      metadata: {
-        availableAreaType: 'total'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     }
 
     const result = actionTransformer(action)
@@ -202,11 +197,12 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined
+      availableArea: undefined,
+      guidanceUrl: 'https://example.com'
     })
   })
 
-  test('should not include metadata when showMetadata is true but action has no metadata', () => {
+  test('should not include availability when showAvailability is true but action has none', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
@@ -219,5 +215,17 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availableArea: undefined
     })
+  })
+
+  test('should always include guidanceUrl regardless of showAvailability', () => {
+    const action = {
+      code: 'ACTION1',
+      description: 'Test Action',
+      guidanceUrl: 'https://example.com'
+    }
+
+    const result = actionTransformer(action, null, false, false)
+
+    expect(result.guidanceUrl).toBe('https://example.com')
   })
 })
