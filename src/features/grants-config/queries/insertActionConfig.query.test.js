@@ -130,38 +130,23 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('uses COALESCE so null description does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
+  test.each([
+    ['description', 'description'],
+    ['availability', 'availability'],
+    ['guidanceUrl', 'guidance_url']
+  ])(
+    'uses COALESCE so null %s does not overwrite existing',
+    async (_label, column) => {
+      await insertActionConfig(mockLogger, mockDb, params)
 
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.description, actions.description)'
-    )
-  })
-
-  test('uses COALESCE so null availability does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.availability, actions.availability)'
-    )
-  })
-
-  test('uses COALESCE so null guidanceUrl does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.guidance_url, actions.guidance_url)'
-    )
-  })
+      const upsertCall = mockClient.query.mock.calls.find(
+        (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+      )
+      expect(upsertCall[0]).toContain(
+        `COALESCE(EXCLUDED.${column}, actions.${column})`
+      )
+    }
+  )
 
   test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
     await insertActionConfig(mockLogger, mockDb, {

@@ -24,6 +24,13 @@ export function transformActionConfig(actionJson) {
     major,
     minor,
     patch,
+    ...buildDefaults(actionJson),
+    config: buildConfig(actionJson)
+  }
+}
+
+function buildDefaults(actionJson) {
+  return {
     displayOrder: actionJson.displayOrder ?? 0,
     description: actionJson.description ?? null,
     sssiEligible: actionJson.sssiEligible ?? true,
@@ -32,8 +39,7 @@ export function transformActionConfig(actionJson) {
     enabled: actionJson.enabled ?? true,
     display: actionJson.display ?? true,
     guidanceUrl: actionJson.guidanceUrl ?? null,
-    availability: actionJson.availability ?? null,
-    config: buildConfig(actionJson)
+    availability: actionJson.availability ?? null
   }
 }
 
