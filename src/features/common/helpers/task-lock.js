@@ -53,7 +53,7 @@ async function acquireTaskLock(pool, taskName, { timeoutMinutes = 5 } = {}) {
   } catch (err) {
     try {
       await client.query('ROLLBACK')
-    } catch (e) {
+    } catch {
       // ignore
     }
     throw err
@@ -74,7 +74,7 @@ async function releaseTaskLock(pool, taskName) {
   // Do not throw if deletion fails; caller may already be shutting down.
   try {
     await pool.query('DELETE FROM task_lock WHERE task_name = $1', [taskName])
-  } catch (err) {
+  } catch {
     // ignore
   }
 }

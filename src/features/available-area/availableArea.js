@@ -118,8 +118,9 @@ export function findMaximumAvailableArea(
         targetSssiEligible,
         targetHfEligible
       )
-    )
+    ) {
       return sum
+    }
     return sum + lc.areaSqm
   }, 0)
 
