@@ -78,7 +78,7 @@
     "https-proxy-agent": "^9.1.0",
     "javascript-lp-solver": "^1.0.3",
     "joi": "^17.13.4",
-    "minimatch": "^10.2.5",
+    "minimatch": "^10.2.6",
     "pg": "^8.22.0",
     "pg-copy-streams": "^7.0.0",
     "pino": "^10.3.1",
