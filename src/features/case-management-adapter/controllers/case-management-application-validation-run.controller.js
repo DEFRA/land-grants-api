@@ -32,8 +32,8 @@ export const CaseManagementApplicationValidationRunController = {
   },
   /**
    * Handler function for application validation
-   * @param {import('@hapi/hapi').Request} request - Hapi request object
-   * @param {import('@hapi/hapi').ResponseToolkit} h - Hapi response toolkit
+   * @param {import('@hapi/hapi').Request<{ Params: { id: string } }>} request - Hapi request object
+   * @param {import('@hapi/hapi').ResponseToolkit<{ Params: { id: string } }>} h - Hapi response toolkit
    * @returns {Promise<import('@hapi/hapi').ResponseObject | import('@hapi/boom').Boom>} Validation response
    */
   handler: async (request, h) => {
