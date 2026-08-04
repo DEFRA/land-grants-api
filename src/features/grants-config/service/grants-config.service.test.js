@@ -135,7 +135,10 @@ describe('processActionConfigFile', () => {
     getActionConfigByVersion.mockResolvedValue(false)
     transformActionConfig.mockReturnValue({
       ...transformedConfig,
-      metadata: { guidanceLink: 'https://example.com', availableAreaType: 'total' }
+      metadata: {
+        guidanceLink: 'https://example.com',
+        availableAreaType: 'total'
+      }
     })
 
     await processActionConfigFile(
