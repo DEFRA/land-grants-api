@@ -17,17 +17,17 @@
       UPDATE actions
       SET metadata = (
         (metadata - 'guidance_link' - 'available_area_type')
-        || CASE WHEN metadata ? 'guidance_link'
+        || CASE WHEN jsonb_exists(metadata, 'guidance_link')
              THEN jsonb_build_object('guidanceLink', metadata->'guidance_link')
              ELSE '{}'::jsonb
            END
-        || CASE WHEN metadata ? 'available_area_type'
+        || CASE WHEN jsonb_exists(metadata, 'available_area_type')
              THEN jsonb_build_object('availableAreaType', metadata->'available_area_type')
              ELSE '{}'::jsonb
            END
       )
       WHERE metadata IS NOT NULL
-        AND (metadata ? 'guidance_link' OR metadata ? 'available_area_type');
+        AND (jsonb_exists(metadata, 'guidance_link') OR jsonb_exists(metadata, 'available_area_type'));
     </sql>
   </changeSet>
 
