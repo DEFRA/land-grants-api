@@ -272,7 +272,7 @@ describe('formatExplanationSections', () => {
       // The LP will optimally place EX1 to maximize target availability
       // Total target availability should be 50000 - 15000 = 35000
       const totalAvailable = section.content.reduce((sum, line) => {
-        const match = line.match(/([\d.]+) ha available/)
+        const match = /([\d.]+) ha available/.exec(line)
         return sum + (match ? Number.parseFloat(match[1]) : 0)
       }, 0)
       expect(totalAvailable).toBeCloseTo(3.5, 1)

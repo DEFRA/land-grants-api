@@ -48,7 +48,7 @@ describe('Payment Calculation Service', () => {
       let parcels = []
       try {
         parcels = JSON.parse(parcelsStr)
-      } catch (e) {
+      } catch {
         logger.error(`Error parsing parcels in CSV file`)
       }
 

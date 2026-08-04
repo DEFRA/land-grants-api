@@ -23,12 +23,5 @@
     "src/tests/**",
     "vitest.*.config.js"
   ],
-  "include": [
-    "**/*.cjs",
-    "**/*.js",
-    ".*.cjs",
-    ".*.js",
-    ".eslintrc.*",
-    ".prettierrc.*"
-  ]
+  "include": ["**/*.cjs", "**/*.js", ".*.cjs", ".*.js", ".prettierrc.*"]
 }

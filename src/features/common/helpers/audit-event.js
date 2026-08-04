@@ -9,7 +9,9 @@ import { extractIp } from '~/src/features/common/helpers/request-ip.js'
  * @returns {string|string[]|undefined}
  */
 export const getCorrelationId = (request) =>
-  request.headers?.[config.get('tracing.header')]
+  /** @type {string | string[] | undefined} */ (
+    request.headers?.[config.get('tracing.header')]
+  )
 
 /**
  * Audit event types. Populated by tickets as land-grants-api operations are
