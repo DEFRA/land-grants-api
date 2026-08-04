@@ -91,8 +91,8 @@ describe('Parcel Schema Validation v2', () => {
               {
                 ...mockParcelWithActions.parcel.actions[0],
                 metadata: {
-                  available_area_type: 'total',
-                  guidance_link: 'https://www.gov.uk/find-funding'
+                  availableAreaType: 'total',
+                  guidanceLink: 'https://www.gov.uk/find-funding'
                 }
               }
             ]
@@ -108,7 +108,7 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
-    it('should reject metadata with invalid available_area_type', () => {
+    it('should reject metadata with invalid availableAreaType', () => {
       const invalid = {
         ...validResponse,
         parcels: [
@@ -117,7 +117,7 @@ describe('Parcel Schema Validation v2', () => {
             actions: [
               {
                 ...mockParcelWithActions.parcel.actions[0],
-                metadata: { available_area_type: 'not-a-real-type' }
+                metadata: { availableAreaType: 'not-a-real-type' }
               }
             ]
           }
@@ -127,7 +127,7 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeDefined()
     })
 
-    it('should reject metadata with invalid guidance_link', () => {
+    it('should reject metadata with invalid guidanceLink', () => {
       const invalid = {
         ...validResponse,
         parcels: [
@@ -136,7 +136,7 @@ describe('Parcel Schema Validation v2', () => {
             actions: [
               {
                 ...mockParcelWithActions.parcel.actions[0],
-                metadata: { guidance_link: 'not-a-url' }
+                metadata: { guidanceLink: 'not-a-url' }
               }
             ]
           }

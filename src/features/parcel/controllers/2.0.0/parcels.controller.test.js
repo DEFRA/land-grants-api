@@ -311,8 +311,8 @@ describe('Parcels Controller 2.0.0', () => {
         {
           ...mockActionsWithAvailableArea[0],
           metadata: {
-            available_area_type: 'total',
-            guidance_link: 'https://www.gov.uk/find-funding'
+            availableAreaType: 'total',
+            guidanceLink: 'https://www.gov.uk/find-funding'
           }
         }
       ]
@@ -357,8 +357,8 @@ describe('Parcels Controller 2.0.0', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(parcels[0].actions[0].metadata).toEqual({
-        available_area_type: 'total',
-        guidance_link: 'https://www.gov.uk/find-funding'
+        availableAreaType: 'total',
+        guidanceLink: 'https://www.gov.uk/find-funding'
       })
       expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,

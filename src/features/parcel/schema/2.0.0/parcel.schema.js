@@ -10,8 +10,8 @@ const availableAreaSchema = Joi.object({
 })
 
 const actionMetadataSchema = Joi.object({
-  guidance_link: Joi.string().uri().optional(),
-  available_area_type: Joi.string()
+  guidanceLink: Joi.string().uri().optional(),
+  availableAreaType: Joi.string()
     .valid(...AVAILABLE_AREA_TYPES)
     .optional()
 })

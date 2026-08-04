@@ -19,8 +19,8 @@ export const actionConfigInputSchema = Joi.object({
   enabled: Joi.boolean().optional(),
   display: Joi.boolean().optional(),
   metadata: Joi.object({
-    guidance_link: Joi.string().uri().optional(),
-    available_area_type: Joi.string()
+    guidanceLink: Joi.string().uri().optional(),
+    availableAreaType: Joi.string()
       .valid(...AVAILABLE_AREA_TYPES)
       .optional()
   })

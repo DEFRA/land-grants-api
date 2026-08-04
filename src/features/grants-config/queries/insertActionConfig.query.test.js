@@ -18,7 +18,7 @@ describe('insertActionConfig', () => {
     groupId: null,
     enabled: true,
     display: true,
-    metadata: { available_area_type: 'total' }
+    metadata: { availableAreaType: 'total' }
   }
 
   beforeEach(() => {
@@ -60,7 +60,7 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        JSON.stringify({ availableAreaType: 'total' })
       ]
     )
   })
@@ -80,7 +80,7 @@ describe('insertActionConfig', () => {
         null,
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        JSON.stringify({ availableAreaType: 'total' })
       ]
     )
   })
@@ -135,7 +135,7 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         false,
         false,
-        JSON.stringify({ available_area_type: 'total' })
+        JSON.stringify({ availableAreaType: 'total' })
       ]
     )
   })
@@ -156,7 +156,7 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        JSON.stringify({ availableAreaType: 'total' })
       ]
     )
   })

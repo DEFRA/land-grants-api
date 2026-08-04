@@ -103,13 +103,13 @@ describe('transformActionConfig', () => {
     const result = transformActionConfig({
       ...pa3Json,
       metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
+        availableAreaType: 'total',
+        guidanceLink: 'https://example.com'
       }
     })
     expect(result.metadata).toEqual({
-      available_area_type: 'total',
-      guidance_link: 'https://example.com'
+      availableAreaType: 'total',
+      guidanceLink: 'https://example.com'
     })
   })
 
@@ -267,31 +267,31 @@ describe('transformActionConfig', () => {
     })
 
     test.each(AVAILABLE_AREA_TYPES)(
-      'does not throw for a valid metadata.available_area_type %s',
+      'does not throw for a valid metadata.availableAreaType %s',
       (availableAreaType) => {
         expect(() =>
           transformActionConfig({
             ...pa3Json,
-            metadata: { available_area_type: availableAreaType }
+            metadata: { availableAreaType }
           })
         ).not.toThrow()
       }
     )
 
-    test('throws when metadata.available_area_type is not a recognised value', () => {
+    test('throws when metadata.availableAreaType is not a recognised value', () => {
       expect(() =>
         transformActionConfig({
           ...pa3Json,
-          metadata: { available_area_type: 'not-a-real-type' }
+          metadata: { availableAreaType: 'not-a-real-type' }
         })
       ).toThrow('Invalid action config')
     })
 
-    test('throws when metadata.guidance_link is not a valid URI', () => {
+    test('throws when metadata.guidanceLink is not a valid URI', () => {
       expect(() =>
         transformActionConfig({
           ...pa3Json,
-          metadata: { guidance_link: 'not-a-url' }
+          metadata: { guidanceLink: 'not-a-url' }
         })
       ).toThrow('Invalid action config')
     })

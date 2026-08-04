@@ -152,8 +152,8 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
+        availableAreaType: 'total',
+        guidanceLink: 'https://example.com'
       }
     }
 
@@ -164,8 +164,8 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availableArea: undefined,
       metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
+        availableAreaType: 'total',
+        guidanceLink: 'https://example.com'
       }
     })
   })
@@ -175,7 +175,7 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       metadata: {
-        available_area_type: 'total'
+        availableAreaType: 'total'
       }
     }
 
@@ -193,7 +193,7 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       metadata: {
-        available_area_type: 'total'
+        availableAreaType: 'total'
       }
     }
 
