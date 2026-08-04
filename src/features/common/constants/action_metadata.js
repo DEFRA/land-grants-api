@@ -1,5 +1,5 @@
-export const TOTAL = 'total'
-export const PARTIAL = 'partial'
-export const LIMITED = 'limited'
+const TOTAL = 'total'
+const PARTIAL = 'partial'
+const LIMITED = 'limited'
 
 export const AVAILABLE_AREA_TYPES = [TOTAL, PARTIAL, LIMITED]
