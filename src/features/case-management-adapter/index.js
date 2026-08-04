@@ -8,18 +8,16 @@ const caseManagementAdapter = {
   plugin: {
     name: 'case-management-adapter',
     register: (server) => {
-      server.route([
-        {
-          method: 'GET',
-          path: '/case-management-adapter/application/validation-run/{id}',
-          ...CaseManagementApplicationValidationRunController
-        },
-        {
-          method: 'POST',
-          path: '/case-management-adapter/application/validation-run/rerun',
-          ...CaseManagementApplicationValidationController
-        }
-      ])
+      server.route({
+        method: 'GET',
+        path: '/case-management-adapter/application/validation-run/{id}',
+        ...CaseManagementApplicationValidationRunController
+      })
+      server.route({
+        method: 'POST',
+        path: '/case-management-adapter/application/validation-run/rerun',
+        ...CaseManagementApplicationValidationController
+      })
     }
   }
 }

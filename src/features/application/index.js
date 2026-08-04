@@ -9,23 +9,21 @@ const application = {
   plugin: {
     name: 'application',
     register: (server) => {
-      server.route([
-        {
-          method: 'POST',
-          path: '/api/v2/application/validate',
-          ...ApplicationValidationControllerV2
-        },
-        {
-          method: 'POST',
-          path: '/application/validation-run/{id}',
-          ...ApplicationValidationRunController
-        },
-        {
-          method: 'POST',
-          path: '/application/{applicationId}/validation-run',
-          ...ApplicationValidationRunsController
-        }
-      ])
+      server.route({
+        method: 'POST',
+        path: '/api/v2/application/validate',
+        ...ApplicationValidationControllerV2
+      })
+      server.route({
+        method: 'POST',
+        path: '/application/validation-run/{id}',
+        ...ApplicationValidationRunController
+      })
+      server.route({
+        method: 'POST',
+        path: '/application/{applicationId}/validation-run',
+        ...ApplicationValidationRunsController
+      })
     }
   }
 }
