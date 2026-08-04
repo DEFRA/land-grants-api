@@ -131,6 +131,33 @@ describe('processActionConfigFile', () => {
     })
   })
 
+  test('passes metadata from the transformed config through to insertActionConfig', async () => {
+    getActionConfigByVersion.mockResolvedValue(false)
+    transformActionConfig.mockReturnValue({
+      ...transformedConfig,
+      metadata: { guidanceLink: 'https://example.com', availableAreaType: 'total' }
+    })
+
+    await processActionConfigFile(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      s3Key,
+      bucket
+    )
+
+    expect(insertActionConfig).toHaveBeenCalledWith(
+      mockLogger,
+      mockDb,
+      expect.objectContaining({
+        metadata: {
+          guidanceLink: 'https://example.com',
+          availableAreaType: 'total'
+        }
+      })
+    )
+  })
+
   test('logs info when skipping an existing version', async () => {
     getActionConfigByVersion.mockResolvedValue(true)
 
