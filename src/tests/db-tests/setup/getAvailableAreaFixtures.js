@@ -77,7 +77,8 @@ export function getAvailableAreaComputedFixtures() {
       '💡 Run "npm run test:fixtures:generate" to create the computed fixtures'
     )
     throw new Error(
-      'Computed fixtures not available. Please generate them first.'
+      'Computed fixtures not available. Please generate them first.',
+      { cause: error }
     )
   }
 }
