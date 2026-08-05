@@ -19,25 +19,26 @@
   <changeSet id="rename-actions-metadata-to-availability" author="system">
     <comment>
       Renames actions.metadata to actions.availability. The column no longer
-      needs to be a general-purpose metadata bag: guidanceLink moved to the
+      needs to be a general-purpose metadata bag: guidance_link moved to the
       new actions.guidance_url column, leaving only the "what can the user
       enter relative to availableArea" concern, so the column is renamed to
-      reflect that directly. Shape simplifies from {"available": {"type":
-      "total"}} to {"type": "total"}. Every row seeded with guidanceLink was
-      also seeded with availableAreaType, so the second UPDATE only needs to
-      key off availableAreaType.
+      reflect that directly. Shape simplifies from {"available_area_type":
+      "total"} to {"type": "total"}. Every row seeded with guidance_link was
+      also seeded with available_area_type, so the second UPDATE only needs to
+      key off available_area_type. Keys match the snake_case backfill in
+      db.changelog-1.81.xml.
     </comment>
     <sql>
       ALTER TABLE actions RENAME COLUMN metadata TO availability;
 
       UPDATE actions
-      SET guidance_url = availability->>'guidanceLink'
-      WHERE availability IS NOT NULL AND jsonb_exists(availability, 'guidanceLink');
+      SET guidance_url = availability->>'guidance_link'
+      WHERE availability IS NOT NULL AND jsonb_exists(availability, 'guidance_link');
 
       UPDATE actions
-      SET availability = jsonb_build_object('type', availability->'availableAreaType')
+      SET availability = jsonb_build_object('type', availability->'available_area_type')
       WHERE availability IS NOT NULL
-        AND jsonb_exists(availability, 'availableAreaType');
+        AND jsonb_exists(availability, 'available_area_type');
     </sql>
   </changeSet>
 
