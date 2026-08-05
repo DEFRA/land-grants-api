@@ -131,6 +131,54 @@ describe('processActionConfigFile', () => {
     })
   })
 
+  test('passes availability from the transformed config through to insertActionConfig', async () => {
+    getActionConfigByVersion.mockResolvedValue(false)
+    transformActionConfig.mockReturnValue({
+      ...transformedConfig,
+      availability: { type: 'total' }
+    })
+
+    await processActionConfigFile(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      s3Key,
+      bucket
+    )
+
+    expect(insertActionConfig).toHaveBeenCalledWith(
+      mockLogger,
+      mockDb,
+      expect.objectContaining({
+        availability: { type: 'total' }
+      })
+    )
+  })
+
+  test('passes guidanceUrl from the transformed config through to insertActionConfig', async () => {
+    getActionConfigByVersion.mockResolvedValue(false)
+    transformActionConfig.mockReturnValue({
+      ...transformedConfig,
+      guidanceUrl: 'https://example.com'
+    })
+
+    await processActionConfigFile(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      s3Key,
+      bucket
+    )
+
+    expect(insertActionConfig).toHaveBeenCalledWith(
+      mockLogger,
+      mockDb,
+      expect.objectContaining({
+        guidanceUrl: 'https://example.com'
+      })
+    )
+  })
+
   test('logs info when skipping an existing version', async () => {
     getActionConfigByVersion.mockResolvedValue(true)
 
