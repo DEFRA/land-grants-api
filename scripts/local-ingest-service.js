@@ -28,7 +28,7 @@ export const ingestLandData = async () => {
     })
     const client = await connection.connect()
 
-    const folder = path.join('./src/land-data', resource.name)
+    const folder = path.join('./ingestion-data/data', resource.name)
 
     const files = fs
       .readdirSync(folder)

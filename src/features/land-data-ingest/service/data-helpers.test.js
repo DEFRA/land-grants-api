@@ -220,20 +220,33 @@ describe('Data helpers', () => {
     const logger = { info: vi.fn() }
 
     test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({ rows: [] }) // disableTableIndexes SELECT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels
+        .mockResolvedValueOnce({}) // INSERT INTO land_parcels
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
+        .mockResolvedValueOnce({}) // COMMIT
+
       await promoteStagingTable('land_parcels', dbClient, logger)
 
-      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query).toHaveBeenCalledTimes(6)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
+        `SELECT indexname, indexdef FROM pg_indexes
+      WHERE tablename = $1 AND indexname NOT LIKE '%_pkey'`
+      )
+      expect(dbClient.query.mock.calls[1][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[2][0]).toBe(
         'TRUNCATE TABLE land_parcels'
       )
-      expect(dbClient.query.mock.calls[2][0]).toBe(
+      expect(dbClient.query.mock.calls[3][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[3][0]).toBe(
+      expect(dbClient.query.mock.calls[4][0]).toBe(
         'TRUNCATE TABLE land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[5][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
@@ -307,9 +320,11 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({ rows: [] }) // disableTableIndexes SELECT (land_parcels)
         .mockResolvedValueOnce({}) // TRUNCATE land_parcels
         .mockResolvedValueOnce({}) // INSERT land_parcels
         .mockResolvedValueOnce({}) // TRUNCATE land_parcels_staging
+        .mockResolvedValueOnce({ rows: [] }) // disableTableIndexes SELECT (land_covers)
         .mockResolvedValueOnce({}) // TRUNCATE land_covers
         .mockResolvedValueOnce({}) // INSERT land_covers
         .mockResolvedValueOnce({}) // TRUNCATE land_covers_staging
@@ -333,32 +348,42 @@ describe('Data helpers', () => {
       const stagedDate = dbClient.query.mock.calls[3][1][1]
 
       expect(dbClient.query.mock.calls[4][0]).toBe(
+        `SELECT indexname, indexdef FROM pg_indexes
+      WHERE tablename = $1 AND indexname NOT LIKE '%_pkey'`
+      )
+      expect(dbClient.query.mock.calls[4][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[5][0]).toBe(
         'TRUNCATE TABLE land_parcels'
       )
-      expect(dbClient.query.mock.calls[5][0]).toBe(
+      expect(dbClient.query.mock.calls[6][0]).toBe(
         'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[6][0]).toBe(
+      expect(dbClient.query.mock.calls[7][0]).toBe(
         'TRUNCATE TABLE land_parcels_staging'
       )
-      expect(dbClient.query.mock.calls[7][0]).toBe('TRUNCATE TABLE land_covers')
       expect(dbClient.query.mock.calls[8][0]).toBe(
+        `SELECT indexname, indexdef FROM pg_indexes
+      WHERE tablename = $1 AND indexname NOT LIKE '%_pkey'`
+      )
+      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_covers'])
+      expect(dbClient.query.mock.calls[9][0]).toBe('TRUNCATE TABLE land_covers')
+      expect(dbClient.query.mock.calls[10][0]).toBe(
         'INSERT INTO land_covers SELECT * FROM land_covers_staging'
       )
-      expect(dbClient.query.mock.calls[9][0]).toBe(
+      expect(dbClient.query.mock.calls[11][0]).toBe(
         'TRUNCATE TABLE land_covers_staging'
       )
-      expect(dbClient.query.mock.calls[10][0]).toBe(
+      expect(dbClient.query.mock.calls[12][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
       )
-      expect(dbClient.query.mock.calls[10][1][0]).toBe('completed')
+      expect(dbClient.query.mock.calls[12][1][0]).toBe('completed')
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[10][1][1]).toBe(stagedDate)
-      expect(dbClient.query.mock.calls[10][1][2]).toEqual([
+      expect(dbClient.query.mock.calls[12][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[12][1][2]).toEqual([
         ingestId,
         pairedIngestId
       ])
-      expect(dbClient.query.mock.calls[11][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[13][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
