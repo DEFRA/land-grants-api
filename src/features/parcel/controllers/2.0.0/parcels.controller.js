@@ -122,9 +122,7 @@ const ParcelsControllerV2 = {
         return heferConsentRequiredError
       }
 
-      const displayOptions = {
-        showActionResults: fields.includes('actions.results')
-      }
+      const showActionResults = fields.includes('actions.results')
 
       const validationResponse = await getDataAndValidateRequest(
         parcelIds,
@@ -153,11 +151,11 @@ const ParcelsControllerV2 = {
           return getActionsForParcel(
             parcel,
             request.payload,
+            showActionResults,
             validationResponse.enabledActions,
             compatibilityCheckFn,
             request,
-            defraIdToken,
-            displayOptions
+            defraIdToken
           )
         })
       )
