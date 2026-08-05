@@ -620,7 +620,7 @@ describe('Parcel Service 2.0.0', () => {
       ])
     })
 
-    test('should pass showActionResults and showActionAvailability through to actionTransformer', async () => {
+    test('should pass showActionResults through to actionTransformer', async () => {
       await getActionsForParcel(
         mockParcel,
         mockPayload,
@@ -628,18 +628,17 @@ describe('Parcel Service 2.0.0', () => {
         mockCompatibilityCheckFn,
         mockRequest,
         'token',
-        { showActionResults: true, showActionAvailability: true }
+        { showActionResults: true }
       )
 
       expect(actionTransformer).toHaveBeenCalledWith(
         mockEnabledActionsForParcel[0],
         expect.objectContaining({ availableAreaSqm: 5000 }),
-        true,
         true
       )
     })
 
-    test('should default displayOptions to showing neither results nor availability', async () => {
+    test('should default displayOptions to showing no results', async () => {
       await getActionsForParcel(
         mockParcel,
         mockPayload,
@@ -652,7 +651,6 @@ describe('Parcel Service 2.0.0', () => {
       expect(actionTransformer).toHaveBeenCalledWith(
         mockEnabledActionsForParcel[0],
         expect.objectContaining({ availableAreaSqm: 5000 }),
-        false,
         false
       )
     })

@@ -54,7 +54,6 @@ const parcelsSchema = Joi.object({
         'actions.results',
         'actions.sssiConsentRequired',
         'actions.heferRequired',
-        'actions.availability',
         'groups'
       )
     )

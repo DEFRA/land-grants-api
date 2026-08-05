@@ -296,7 +296,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: true, showActionAvailability: false }
+        { showActionResults: true }
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -306,7 +306,7 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should return 200 with availability when requesting actions.availability field', async () => {
+    test('should return 200 with guidanceUrl and availability when present, without needing a fields flag', async () => {
       const mockActionsWithAvailability = [
         {
           ...mockActionsWithAvailableArea[0],
@@ -342,7 +342,7 @@ describe('Parcels Controller 2.0.0', () => {
         payload: {
           sbi,
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.availability']
+          fields: ['actions']
         }
       }
 
@@ -364,41 +364,13 @@ describe('Parcels Controller 2.0.0', () => {
         mockParcelData,
         expect.objectContaining({
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.availability']
-        }),
-        mockEnabledActions,
-        expect.any(Function),
-        expect.anything(),
-        'dummy',
-        { showActionResults: false, showActionAvailability: true }
-      )
-    })
-
-    test('should default showActionAvailability to false when actions.availability is not requested', async () => {
-      const request = {
-        method: 'POST',
-        url: '/api/v2/parcels',
-        headers: { 'X-Forwarded-Authorization': 'dummy' },
-        payload: {
-          sbi,
-          parcelIds: ['SX0679-9238'],
-          fields: ['actions']
-        }
-      }
-
-      await server.inject(request)
-
-      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
-        mockParcelData,
-        expect.objectContaining({
-          parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }),
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionAvailability: false }
+        { showActionResults: false }
       )
     })
 
@@ -712,7 +684,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionAvailability: false }
+        { showActionResults: false }
       )
     })
 
@@ -978,7 +950,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe(
-        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, actions.availability, groups]`
+        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, groups]`
       )
     })
 
@@ -1239,7 +1211,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.any(Function),
         expect.anything(),
         'dummy',
-        { showActionResults: false, showActionAvailability: false }
+        { showActionResults: false }
       )
     })
 

@@ -123,8 +123,7 @@ const ParcelsControllerV2 = {
       }
 
       const displayOptions = {
-        showActionResults: fields.includes('actions.results'),
-        showActionAvailability: fields.includes('actions.availability')
+        showActionResults: fields.includes('actions.results')
       }
 
       const validationResponse = await getDataAndValidateRequest(

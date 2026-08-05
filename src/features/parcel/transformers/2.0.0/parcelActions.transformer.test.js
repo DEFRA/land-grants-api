@@ -147,44 +147,7 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should include availability when showAvailability is true', () => {
-    const action = {
-      code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://example.com',
-      availability: { type: 'total' }
-    }
-
-    const result = actionTransformer(action, null, false, true)
-
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      availableArea: undefined,
-      guidanceUrl: 'https://example.com',
-      availability: { type: 'total' }
-    })
-  })
-
-  test('should not include availability when showAvailability is false', () => {
-    const action = {
-      code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://example.com',
-      availability: { type: 'total' }
-    }
-
-    const result = actionTransformer(action, null, false, false)
-
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      availableArea: undefined,
-      guidanceUrl: 'https://example.com'
-    })
-  })
-
-  test('should default showAvailability to false when omitted', () => {
+  test('should always include availability when present', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
@@ -198,17 +161,18 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      guidanceUrl: 'https://example.com'
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     })
   })
 
-  test('should not include availability when showAvailability is true but action has none', () => {
+  test('should not include availability when action has none', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action'
     }
 
-    const result = actionTransformer(action, null, false, true)
+    const result = actionTransformer(action)
 
     expect(result).toEqual({
       code: 'ACTION1',
@@ -217,14 +181,14 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should always include guidanceUrl regardless of showAvailability', () => {
+  test('should always include guidanceUrl when present', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
       guidanceUrl: 'https://example.com'
     }
 
-    const result = actionTransformer(action, null, false, false)
+    const result = actionTransformer(action)
 
     expect(result.guidanceUrl).toBe('https://example.com')
   })

@@ -162,7 +162,6 @@ describe('Parcel Schema Validation v2', () => {
       ['single field', ['size']],
       ['sssiConsentRequired field', ['actions.sssiConsentRequired']],
       ['heferRequired field', ['actions.heferRequired']],
-      ['availability field', ['actions.availability']],
       ['groups field', ['groups']]
     ])('should validate with %s', (_name, fields) => {
       const valid = { ...validParcelsRequest, fields }
@@ -179,7 +178,6 @@ describe('Parcel Schema Validation v2', () => {
           'actions.results',
           'actions.sssiConsentRequired',
           'actions.heferRequired',
-          'actions.availability',
           'groups'
         ]
       }

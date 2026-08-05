@@ -5,15 +5,9 @@ import { sizeTransformer } from '../parcelActions.transformer.js'
  * @param {Action} action - The actions to merge
  * @param {AvailableAreaForAction | null} availableArea - Total Available Area
  * @param {boolean} showResults - Whether to include results
- * @param {boolean} showAvailability - Whether to include availability
  * @returns {object} The land action data with available area
  */
-function actionTransformer(
-  action,
-  availableArea = null,
-  showResults = false,
-  showAvailability = false
-) {
+function actionTransformer(action, availableArea = null, showResults = false) {
   const response = {
     code: action.code,
     description: action.description,
@@ -22,9 +16,7 @@ function actionTransformer(
       ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
       : undefined,
     guidanceUrl: action.guidanceUrl ?? undefined,
-    availability: showAvailability
-      ? (action.availability ?? undefined)
-      : undefined,
+    availability: action.availability ?? undefined,
     ...action.payment
   }
 
