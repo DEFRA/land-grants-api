@@ -18,7 +18,8 @@ describe('insertActionConfig', () => {
     groupId: null,
     enabled: true,
     display: true,
-    metadata: { available_area_type: 'total' }
+    guidanceUrl: 'https://example.com',
+    availability: { type: 'total' }
   }
 
   beforeEach(() => {
@@ -48,7 +49,7 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with enabled, display, description, sssiEligible, hfEligible and metadata from params', async () => {
+  test('upserts action with enabled, display, description, sssiEligible, hfEligible, guidanceUrl and availability from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
@@ -60,7 +61,8 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        'https://example.com',
+        JSON.stringify({ type: 'total' })
       ]
     )
   })
@@ -80,20 +82,51 @@ describe('insertActionConfig', () => {
         null,
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        'https://example.com',
+        JSON.stringify({ type: 'total' })
       ]
     )
   })
 
-  test('passes null metadata when absent', async () => {
+  test('passes null availability through to the query when absent', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
-      metadata: null
+      availability: null
     })
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', true, true, null]
+      [
+        'PA3',
+        true,
+        true,
+        'Woodland management plan',
+        true,
+        true,
+        'https://example.com',
+        null
+      ]
+    )
+  })
+
+  test('passes null guidanceUrl through to the query when absent', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      guidanceUrl: null
+    })
+
+    expect(mockClient.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO actions'),
+      [
+        'PA3',
+        true,
+        true,
+        'Woodland management plan',
+        true,
+        true,
+        null,
+        JSON.stringify({ type: 'total' })
+      ]
     )
   })
 
@@ -108,16 +141,23 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('uses COALESCE so null metadata does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
+  test.each([
+    ['guidanceUrl', 'guidance_url'],
+    ['availability', 'availability']
+  ])(
+    'overwrites %s directly from EXCLUDED, without COALESCE, so it can be cleared',
+    async (_label, column) => {
+      await insertActionConfig(mockLogger, mockDb, params)
 
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.metadata, actions.metadata)'
-    )
-  })
+      const upsertCall = mockClient.query.mock.calls.find(
+        (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+      )
+      expect(upsertCall[0]).toContain(`${column} = EXCLUDED.${column}`)
+      expect(upsertCall[0]).not.toContain(
+        `COALESCE(EXCLUDED.${column}, actions.${column})`
+      )
+    }
+  )
 
   test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
     await insertActionConfig(mockLogger, mockDb, {
@@ -135,7 +175,8 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         false,
         false,
-        JSON.stringify({ available_area_type: 'total' })
+        'https://example.com',
+        JSON.stringify({ type: 'total' })
       ]
     )
   })
@@ -156,7 +197,8 @@ describe('insertActionConfig', () => {
         'Woodland management plan',
         true,
         true,
-        JSON.stringify({ available_area_type: 'total' })
+        'https://example.com',
+        JSON.stringify({ type: 'total' })
       ]
     )
   })
