@@ -88,7 +88,7 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('passes null availability when absent', async () => {
+  test('passes null availability through to the query when absent', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
       availability: null
@@ -109,7 +109,7 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('passes null guidanceUrl when absent', async () => {
+  test('passes null guidanceUrl through to the query when absent', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
       guidanceUrl: null
@@ -130,19 +130,30 @@ describe('insertActionConfig', () => {
     )
   })
 
+  test('uses COALESCE so null description does not overwrite existing', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
+    )
+    expect(upsertCall[0]).toContain(
+      'COALESCE(EXCLUDED.description, actions.description)'
+    )
+  })
+
   test.each([
-    ['description', 'description'],
-    ['availability', 'availability'],
-    ['guidanceUrl', 'guidance_url']
+    ['guidanceUrl', 'guidance_url'],
+    ['availability', 'availability']
   ])(
-    'uses COALESCE so null %s does not overwrite existing',
+    'overwrites %s directly from EXCLUDED, without COALESCE, so it can be cleared',
     async (_label, column) => {
       await insertActionConfig(mockLogger, mockDb, params)
 
       const upsertCall = mockClient.query.mock.calls.find(
         (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
       )
-      expect(upsertCall[0]).toContain(
+      expect(upsertCall[0]).toContain(`${column} = EXCLUDED.${column}`)
+      expect(upsertCall[0]).not.toContain(
         `COALESCE(EXCLUDED.${column}, actions.${column})`
       )
     }

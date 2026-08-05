@@ -23,7 +23,9 @@
       new actions.guidance_url column, leaving only the "what can the user
       enter relative to availableArea" concern, so the column is renamed to
       reflect that directly. Shape simplifies from {"available": {"type":
-      "total"}} to {"type": "total"}.
+      "total"}} to {"type": "total"}. Every row seeded with guidanceLink was
+      also seeded with availableAreaType, so the second UPDATE only needs to
+      key off availableAreaType.
     </comment>
     <sql>
       ALTER TABLE actions RENAME COLUMN metadata TO availability;
@@ -33,13 +35,9 @@
       WHERE availability IS NOT NULL AND jsonb_exists(availability, 'guidanceLink');
 
       UPDATE actions
-      SET availability = CASE
-        WHEN jsonb_exists(availability, 'availableAreaType')
-          THEN jsonb_build_object('type', availability->'availableAreaType')
-        ELSE NULL
-      END
+      SET availability = jsonb_build_object('type', availability->'availableAreaType')
       WHERE availability IS NOT NULL
-        AND (jsonb_exists(availability, 'guidanceLink') OR jsonb_exists(availability, 'availableAreaType'));
+        AND jsonb_exists(availability, 'availableAreaType');
     </sql>
   </changeSet>
 

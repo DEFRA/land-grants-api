@@ -25,8 +25,8 @@ async function upsertAction(client, params) {
        description = COALESCE(EXCLUDED.description, actions.description),
        enabled = EXCLUDED.enabled,
        display = EXCLUDED.display,
-       guidance_url = COALESCE(EXCLUDED.guidance_url, actions.guidance_url),
-       availability = COALESCE(EXCLUDED.availability, actions.availability),
+       guidance_url = EXCLUDED.guidance_url,
+       availability = EXCLUDED.availability,
        last_updated = NOW()`,
     [
       code,
