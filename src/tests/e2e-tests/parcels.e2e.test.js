@@ -22,7 +22,6 @@ describe('Parcels Endpoints', () => {
       console.log('Status:', response.status)
       console.log('Response:', JSON.stringify(response.data, null, 2))
 
-
       expect(response.status).toBe(200)
       expect(response.data.message).toBe('success')
       expect(response.data.parcels).toHaveLength(1)
