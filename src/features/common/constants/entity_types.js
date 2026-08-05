@@ -5,21 +5,21 @@ export const ENTITY_TYPES = [
     ingest: true,
     pairedWith: 'land_covers'
   },
-  // { name: 'moorland_designations', truncateTable: false },
+  { name: 'moorland_designations', truncateTable: false },
   {
     name: 'land_covers',
     truncateTable: false,
     ingest: true,
     pairedWith: 'land_parcels'
-  }
-  // { name: 'compatibility_matrix', truncateTable: true },
-  // { name: 'agreements', truncateTable: true },
-  // { name: 'sssi', truncateTable: false },
-  // { name: 'registered_battlefields', truncateTable: false },
-  // { name: 'shine', truncateTable: false },
-  // { name: 'scheduled_monuments', truncateTable: false },
-  // { name: 'registered_parks_gardens', truncateTable: false },
-  // { name: 'action_sssi_hf_mapping', truncateTable: false }
+  },
+  { name: 'compatibility_matrix', truncateTable: true },
+  { name: 'agreements', truncateTable: true },
+  { name: 'sssi', truncateTable: false },
+  { name: 'registered_battlefields', truncateTable: false },
+  { name: 'shine', truncateTable: false },
+  { name: 'scheduled_monuments', truncateTable: false },
+  { name: 'registered_parks_gardens', truncateTable: false },
+  { name: 'action_sssi_hf_mapping', truncateTable: false }
 ]
 
 /**
