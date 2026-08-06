@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="move-guidance-url-availability-to-actions-config" author="system">
+    <comment>
+      guidanceUrl and availability can differ between versions of the same
+      action code, same as payment or rules, so they belong in the versioned
+      actions_config.config JSONB rather than on the one-row-per-code actions
+      table. Copies the current actions.guidance_url/availability values into
+      every actions_config row for that code (not just the active one) so
+      historical versions carry the same values forward, then drops the
+      source columns from actions.
+    </comment>
+    <sql>
+      UPDATE actions_config ac
+      SET config = config
+        || jsonb_build_object('guidance_url', a.guidance_url)
+        || jsonb_build_object('availability', a.availability)
+      FROM actions a
+      WHERE ac.code = a.code
+        AND (a.guidance_url IS NOT NULL OR a.availability IS NOT NULL);
+
+      ALTER TABLE actions DROP COLUMN guidance_url;
+      ALTER TABLE actions DROP COLUMN availability;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

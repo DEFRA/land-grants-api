@@ -99,30 +99,30 @@ describe('transformActionConfig', () => {
     expect(result.groupId).toBeNull()
   })
 
-  test('extracts availability when present', () => {
+  test('extracts availability into config when present', () => {
     const result = transformActionConfig({
       ...pa3Json,
       availability: { type: 'total' }
     })
-    expect(result.availability).toEqual({ type: 'total' })
+    expect(result.config.availability).toEqual({ type: 'total' })
   })
 
-  test('defaults availability to null when absent', () => {
+  test('defaults config.availability to null when absent', () => {
     const result = transformActionConfig(pa3Json)
-    expect(result.availability).toBeNull()
+    expect(result.config.availability).toBeNull()
   })
 
-  test('extracts guidanceUrl when present', () => {
+  test('extracts guidanceUrl into config.guidance_url when present', () => {
     const result = transformActionConfig({
       ...pa3Json,
       guidanceUrl: 'https://example.com'
     })
-    expect(result.guidanceUrl).toBe('https://example.com')
+    expect(result.config.guidance_url).toBe('https://example.com')
   })
 
-  test('defaults guidanceUrl to null when absent', () => {
+  test('defaults config.guidance_url to null when absent', () => {
     const result = transformActionConfig(pa3Json)
-    expect(result.guidanceUrl).toBeNull()
+    expect(result.config.guidance_url).toBeNull()
   })
 
   test('extracts enabled from input', () => {
@@ -154,7 +154,9 @@ describe('transformActionConfig', () => {
       payment: null,
       payment_method: { name: 'wmp-calculation', config: { tiers: [] } },
       land_cover_class_codes: [],
-      rules: [{ name: 'some-rule', description: 'desc' }]
+      rules: [{ name: 'some-rule', description: 'desc' }],
+      guidance_url: null,
+      availability: null
     })
   })
 
