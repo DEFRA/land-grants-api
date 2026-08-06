@@ -7,7 +7,12 @@ describe('insertActionConfig', () => {
 
   const params = {
     code: 'PA3',
-    config: { start_date: '2025-01-01', rules: [] },
+    config: {
+      start_date: '2025-01-01',
+      rules: [],
+      guidance_url: 'https://example.com',
+      availability: { type: 'total' }
+    },
     major: 1,
     minor: 0,
     patch: 0,
@@ -17,9 +22,7 @@ describe('insertActionConfig', () => {
     hfEligible: true,
     groupId: null,
     enabled: true,
-    display: true,
-    guidanceUrl: 'https://example.com',
-    availability: { type: 'total' }
+    display: true
   }
 
   beforeEach(() => {
@@ -49,21 +52,12 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with enabled, display, description, sssiEligible, hfEligible, guidanceUrl and availability from params', async () => {
+  test('upserts action with enabled, display, description, sssiEligible and hfEligible from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        true,
-        true,
-        'https://example.com',
-        JSON.stringify({ type: 'total' })
-      ]
+      ['PA3', true, true, 'Woodland management plan', true, true]
     )
   })
 
@@ -75,59 +69,24 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        null,
-        true,
-        true,
-        'https://example.com',
-        JSON.stringify({ type: 'total' })
-      ]
+      ['PA3', true, true, null, true, true]
     )
   })
 
-  test('passes null availability through to the query when absent', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      availability: null
-    })
+  test('carries guidanceUrl and availability inside config into actions_config, not actions', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        true,
-        true,
-        'https://example.com',
-        null
-      ]
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
     )
-  })
+    expect(upsertCall[0]).not.toContain('guidance_url')
+    expect(upsertCall[0]).not.toContain('availability')
 
-  test('passes null guidanceUrl through to the query when absent', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      guidanceUrl: null
-    })
-
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        true,
-        true,
-        null,
-        JSON.stringify({ type: 'total' })
-      ]
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
     )
+    expect(insertCall[1][1]).toBe(JSON.stringify(params.config))
   })
 
   test('uses COALESCE so null description does not overwrite existing', async () => {
@@ -141,24 +100,6 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test.each([
-    ['guidanceUrl', 'guidance_url'],
-    ['availability', 'availability']
-  ])(
-    'overwrites %s directly from EXCLUDED, without COALESCE, so it can be cleared',
-    async (_label, column) => {
-      await insertActionConfig(mockLogger, mockDb, params)
-
-      const upsertCall = mockClient.query.mock.calls.find(
-        (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-      )
-      expect(upsertCall[0]).toContain(`${column} = EXCLUDED.${column}`)
-      expect(upsertCall[0]).not.toContain(
-        `COALESCE(EXCLUDED.${column}, actions.${column})`
-      )
-    }
-  )
-
   test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
@@ -168,16 +109,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        false,
-        false,
-        'https://example.com',
-        JSON.stringify({ type: 'total' })
-      ]
+      ['PA3', true, true, 'Woodland management plan', false, false]
     )
   })
 
@@ -190,16 +122,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        false,
-        false,
-        'Woodland management plan',
-        true,
-        true,
-        'https://example.com',
-        JSON.stringify({ type: 'total' })
-      ]
+      ['PA3', false, false, 'Woodland management plan', true, true]
     )
   })
 
