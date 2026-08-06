@@ -1,5 +1,5 @@
 import { transformActionConfig } from './action-config.transform.js'
-import { AVAILABLE_AREA_TYPES } from '~/src/features/common/constants/action_metadata.js'
+import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_availability.js'
 
 describe('transformActionConfig', () => {
   const pa3Json = {
@@ -99,23 +99,30 @@ describe('transformActionConfig', () => {
     expect(result.groupId).toBeNull()
   })
 
-  test('extracts metadata when present', () => {
+  test('extracts availability into config when present', () => {
     const result = transformActionConfig({
       ...pa3Json,
-      metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
-      }
+      availability: { type: 'total' }
     })
-    expect(result.metadata).toEqual({
-      available_area_type: 'total',
-      guidance_link: 'https://example.com'
-    })
+    expect(result.config.availability).toEqual({ type: 'total' })
   })
 
-  test('defaults metadata to null when absent', () => {
+  test('defaults config.availability to null when absent', () => {
     const result = transformActionConfig(pa3Json)
-    expect(result.metadata).toBeNull()
+    expect(result.config.availability).toBeNull()
+  })
+
+  test('extracts guidanceUrl into config.guidance_url when present', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      guidanceUrl: 'https://example.com'
+    })
+    expect(result.config.guidance_url).toBe('https://example.com')
+  })
+
+  test('defaults config.guidance_url to null when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.config.guidance_url).toBeNull()
   })
 
   test('extracts enabled from input', () => {
@@ -147,7 +154,9 @@ describe('transformActionConfig', () => {
       payment: null,
       payment_method: { name: 'wmp-calculation', config: { tiers: [] } },
       land_cover_class_codes: [],
-      rules: [{ name: 'some-rule', description: 'desc' }]
+      rules: [{ name: 'some-rule', description: 'desc' }],
+      guidance_url: null,
+      availability: null
     })
   })
 
@@ -260,38 +269,47 @@ describe('transformActionConfig', () => {
       ).not.toThrow()
     })
 
-    test('does not throw when metadata is null', () => {
+    test('does not throw when availability is null', () => {
       expect(() =>
-        transformActionConfig({ ...pa3Json, metadata: null })
+        transformActionConfig({ ...pa3Json, availability: null })
       ).not.toThrow()
     })
 
-    test.each(AVAILABLE_AREA_TYPES)(
-      'does not throw for a valid metadata.available_area_type %s',
-      (availableAreaType) => {
+    test.each(AVAILABILITY_TYPES)(
+      'does not throw for a valid availability.type %s',
+      (type) => {
         expect(() =>
           transformActionConfig({
             ...pa3Json,
-            metadata: { available_area_type: availableAreaType }
+            availability: { type }
           })
         ).not.toThrow()
       }
     )
 
-    test('throws when metadata.available_area_type is not a recognised value', () => {
+    test('throws when availability.type is not a recognised value', () => {
       expect(() =>
         transformActionConfig({
           ...pa3Json,
-          metadata: { available_area_type: 'not-a-real-type' }
+          availability: { type: 'not-a-real-type' }
         })
       ).toThrow('Invalid action config')
     })
 
-    test('throws when metadata.guidance_link is not a valid URI', () => {
+    test('throws for availability.type "limited" (temporarily removed)', () => {
       expect(() =>
         transformActionConfig({
           ...pa3Json,
-          metadata: { guidance_link: 'not-a-url' }
+          availability: { type: 'limited' }
+        })
+      ).toThrow('Invalid action config')
+    })
+
+    test('throws when guidanceUrl is not a valid URI', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          guidanceUrl: 'not-a-url'
         })
       ).toThrow('Invalid action config')
     })

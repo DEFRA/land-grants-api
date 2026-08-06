@@ -147,54 +147,29 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should include metadata when showMetadata is true', () => {
+  test('should always include availability when present', () => {
     const action = {
       code: 'ACTION1',
       description: 'Test Action',
-      metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     }
 
-    const result = actionTransformer(action, null, false, true)
+    const result = actionTransformer(action)
 
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
       availableArea: undefined,
-      metadata: {
-        available_area_type: 'total',
-        guidance_link: 'https://example.com'
-      }
+      guidanceUrl: 'https://example.com',
+      availability: { type: 'total' }
     })
   })
 
-  test('should not include metadata when showMetadata is false', () => {
+  test('should not include availability when action has none', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action',
-      metadata: {
-        available_area_type: 'total'
-      }
-    }
-
-    const result = actionTransformer(action, null, false, false)
-
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      availableArea: undefined
-    })
-  })
-
-  test('should default showMetadata to false when omitted', () => {
-    const action = {
-      code: 'ACTION1',
-      description: 'Test Action',
-      metadata: {
-        available_area_type: 'total'
-      }
+      description: 'Test Action'
     }
 
     const result = actionTransformer(action)
@@ -206,18 +181,15 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should not include metadata when showMetadata is true but action has no metadata', () => {
+  test('should always include guidanceUrl when present', () => {
     const action = {
       code: 'ACTION1',
-      description: 'Test Action'
+      description: 'Test Action',
+      guidanceUrl: 'https://example.com'
     }
 
-    const result = actionTransformer(action, null, false, true)
+    const result = actionTransformer(action)
 
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      availableArea: undefined
-    })
+    expect(result.guidanceUrl).toBe('https://example.com')
   })
 })

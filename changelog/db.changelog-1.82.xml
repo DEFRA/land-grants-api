@@ -5,10 +5,40 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-  <changeSet id="staging-tables-unlogged" author="system">
+  <changeSet id="add-actions-guidance-url-column" author="system">
+    <comment>
+      Adds a dedicated guidance_url column to actions, pulled out of the
+      metadata JSONB so it sits alongside code/description as a first-class
+      field.
+    </comment>
+    <addColumn tableName="actions">
+      <column name="guidance_url" type="TEXT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet id="rename-actions-metadata-to-availability" author="system">
+    <comment>
+      Renames actions.metadata to actions.availability. The column no longer
+      needs to be a general-purpose metadata bag: guidance_link moved to the
+      new actions.guidance_url column, leaving only the "what can the user
+      enter relative to availableArea" concern, so the column is renamed to
+      reflect that directly. Shape simplifies from {"available_area_type":
+      "total"} to {"type": "total"}. Every row seeded with guidance_link was
+      also seeded with available_area_type, so the second UPDATE only needs to
+      key off available_area_type. Keys match the snake_case backfill in
+      db.changelog-1.81.xml.
+    </comment>
     <sql>
-        ALTER TABLE land_parcels_staging SET UNLOGGED;
-        ALTER TABLE land_covers_staging SET UNLOGGED;
+      ALTER TABLE actions RENAME COLUMN metadata TO availability;
+
+      UPDATE actions
+      SET guidance_url = availability->>'guidance_link'
+      WHERE availability IS NOT NULL AND jsonb_exists(availability, 'guidance_link');
+
+      UPDATE actions
+      SET availability = jsonb_build_object('type', availability->'available_area_type')
+      WHERE availability IS NOT NULL
+        AND jsonb_exists(availability, 'available_area_type');
     </sql>
   </changeSet>
 

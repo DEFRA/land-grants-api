@@ -18,6 +18,8 @@ const logger = {
   debug: () => console.debug
 }
 
+const ingestDataFolder = './src/land-data'
+
 export const ingestLandData = async () => {
   const dbOptions = getDBOptions()
   const connection = createDBPool(dbOptions, {
@@ -30,7 +32,7 @@ export const ingestLandData = async () => {
 
   // start ingest if needed
   for (const resource of ENTITY_TYPES) {
-    const folder = path.join('./ingestion-data/data', resource.name)
+    const folder = path.join(ingestDataFolder, resource.name)
 
     if (resource.ingest) {
       let ingestId = crypto.randomUUID()
@@ -64,7 +66,7 @@ export const ingestLandData = async () => {
 
   // inport files
   for (const resource of ENTITY_TYPES) {
-    const folder = path.join('./ingestion-data/data', resource.name)
+    const folder = path.join(ingestDataFolder, resource.name)
     const files = getFilesFromFolder(folder)
 
     for (let i = 0; i < files.length; i += 10) {

@@ -10,6 +10,7 @@ export function actionConfigTransformer(action) {
     start_date: startDate,
     last_updated: lastUpdated,
     duration_years: durationYears,
+    guidance_url: guidanceUrl,
     version,
     semantic_version: semanticVersion,
     ...actionObj
@@ -21,6 +22,7 @@ export function actionConfigTransformer(action) {
     landCoverClassCodes,
     startDate,
     lastUpdated,
+    guidanceUrl,
     version: Number(version),
     semanticVersion
   }

@@ -26,6 +26,8 @@ async function getActionsByLatestVersion(logger, db) {
           ac.config->'payment' as payment,
           ac.config->'land_cover_class_codes' as land_cover_class_codes,
           ac.config->'rules' as rules,
+          ac.config->>'guidance_url' as guidance_url,
+          ac.config->'availability' as availability,
           ac.last_updated_at as last_updated,
           ac.semantic_version as semantic_version,
           ac.group_id as group_id,
