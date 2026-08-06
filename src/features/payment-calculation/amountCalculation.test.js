@@ -224,6 +224,34 @@ describe('calculateAnnualAndAgreementTotals', () => {
     expect(agreementTotalPence).toBe(0)
     expect(annualTotalPence).toBe(0)
   })
+
+  it('should use each items own duration when calculating the agreement total', () => {
+    const parcelItems = {
+      1: {
+        code: 'CLIG3',
+        annualPaymentPence: 109390,
+        durationYears: 1
+      },
+      2: {
+        code: 'SCR2',
+        annualPaymentPence: 350000,
+        durationYears: 3
+      }
+    }
+    const agreementItems = {
+      1: {
+        code: 'CSAM3',
+        annualPaymentPence: 9700,
+        durationYears: 1
+      }
+    }
+
+    const { agreementTotalPence, annualTotalPence } =
+      calculateAnnualAndAgreementTotals(parcelItems, agreementItems)
+
+    expect(annualTotalPence).toBe(469090)
+    expect(agreementTotalPence).toBe(109390 * 1 + 9700 * 1 + 350000 * 3)
+  })
 })
 
 describe('createPaymentItems', () => {
@@ -636,12 +664,12 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'CMOR1',
         annualPaymentPence: 360,
-        durationYears: 3
+        durationYears: 1
       },
       2: {
         code: 'CSAM1',
         annualPaymentPence: 870,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -683,8 +711,8 @@ describe('reconcilePaymentAmounts', () => {
     const result = reconcilePaymentAmounts(parcelItems, {}, payments)
 
     // First payment should have pennies shifted to line items
-    // parcelItem 1: (360 * 3) % 4 = 0 pennies
-    // parcelItem 2: (870 * 3) % 4 = 2 pennies
+    // parcelItem 1: (360 * 1) - (4 * 90) = 0 pennies
+    // parcelItem 2: (870 * 1) - (4 * 217) = 2 pennies
     expect(result.payments[0].lineItems).toEqual([
       { parcelItemId: 1, paymentPence: 90 },
       { parcelItemId: 2, paymentPence: 219 } // 217 + 2
@@ -702,12 +730,12 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'CMOR1',
         annualPaymentPence: 27200,
-        durationYears: 3
+        durationYears: 1
       },
       2: {
         code: 'CSAM1',
         annualPaymentPence: 9700,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -748,8 +776,8 @@ describe('reconcilePaymentAmounts', () => {
 
     const result = reconcilePaymentAmounts({}, agreementItems, payments)
 
-    // agreementItem 1: (27200 * 3) % 4 = 0 pennies
-    // agreementItem 2: (9700 * 3) % 4 = 0 pennies
+    // agreementItem 1: (27200 * 1) - (4 * 6800) = 0 pennies
+    // agreementItem 2: (9700 * 1) - (4 * 2425) = 0 pennies
     expect(result.payments[0].lineItems).toEqual([
       { agreementLevelItemId: 1, paymentPence: 6800 },
       { agreementLevelItemId: 2, paymentPence: 2425 }
@@ -761,7 +789,7 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'TEST1',
         annualPaymentPence: 333,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -769,7 +797,7 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'TEST1',
         annualPaymentPence: 555,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -814,12 +842,12 @@ describe('reconcilePaymentAmounts', () => {
       payments
     )
 
-    // parcelItem 1: (333 * 3) % 4 = 999 % 4 = 3 pennies
-    // agreementItem 1: (555 * 3) % 4 = 1665 % 4 = 1 penny
+    // parcelItem 1: (333 * 1) - (4 * 83) = 1 penny
+    // agreementItem 1: (555 * 1) - (4 * 138) = 3 pennies
     // Total shifted: 4 pennies
     expect(result.payments[0].lineItems).toEqual([
-      { parcelItemId: 1, paymentPence: 86 }, // floor(83.25) + 3 = 83 + 3
-      { agreementLevelItemId: 1, paymentPence: 139 } // floor(138.75) + 1 = 138 + 1
+      { parcelItemId: 1, paymentPence: 84 }, // floor(83.25) + 1 = 83 + 1
+      { agreementLevelItemId: 1, paymentPence: 141 } // floor(138.75) + 3 = 138 + 3
     ])
 
     expect(result.payments[0].totalPaymentPence).toBe(226) // 222 + 4
@@ -862,17 +890,17 @@ describe('reconcilePaymentAmounts', () => {
       1: {
         code: 'ITEM1',
         annualPaymentPence: 111,
-        durationYears: 3
+        durationYears: 1
       },
       2: {
         code: 'ITEM2',
         annualPaymentPence: 222,
-        durationYears: 3
+        durationYears: 1
       },
       3: {
         code: 'ITEM3',
         annualPaymentPence: 333,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -919,9 +947,9 @@ describe('reconcilePaymentAmounts', () => {
 
     // Total: 6 pennies shifted to first payment
     expect(result.payments[0].lineItems).toEqual([
-      { parcelItemId: 1, paymentPence: 28 }, // floor(27.75) + 1 = 27 + 1
+      { parcelItemId: 1, paymentPence: 30 }, // floor(27.75) + 3 = 27 + 3
       { parcelItemId: 2, paymentPence: 57 }, // floor(55.5) + 2 = 55 + 2
-      { parcelItemId: 3, paymentPence: 86 } // floor(83.25) + 3 = 83 + 3
+      { parcelItemId: 3, paymentPence: 84 } // floor(83.25) + 1 = 83 + 1
     ])
     expect(result.payments[0].totalPaymentPence).toBe(173) // Math.round(166.5 + 6) = Math.round(172.5)
 
@@ -947,17 +975,17 @@ describe('reconcilePaymentAmounts', () => {
     expect(result.agreementLevelItems).toBe(agreementItems)
   })
 
-  it('should handle when parcel line item is not found in first payment', () => {
+  it('should handle when parcel line item is not found in any payment', () => {
     const parcelItems = {
       1: {
         code: 'CMOR1',
         annualPaymentPence: 360,
-        durationYears: 3
+        durationYears: 1
       },
       999: {
         code: 'MISSING',
         annualPaymentPence: 111,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -986,26 +1014,26 @@ describe('reconcilePaymentAmounts', () => {
 
     const result = reconcilePaymentAmounts(parcelItems, {}, payments)
 
-    // Line item for parcelItemId 999 doesn't exist in payments
-    // (360 * 3) % 4 = 0 pennies for item 1
-    // (111 * 3) % 4 = 1 penny for item 999 (but line item not found, so added to total only)
+    // Line item for parcelItemId 999 doesn't exist in any payment
+    // item 1: (360 * 1) - (4 * 90) = 0 pennies
+    // item 999: (111 * 1) - 0 = 111 pennies (line item not found, so added to total only)
     expect(result.payments[0].lineItems).toEqual([
       { parcelItemId: 1, paymentPence: 90 }
     ])
-    expect(result.payments[0].totalPaymentPence).toBe(91) // 90 + 1 penny from missing item
+    expect(result.payments[0].totalPaymentPence).toBe(201) // 90 + 111 pennies from missing item
   })
 
-  it('should handle when agreement line item is not found in first payment', () => {
+  it('should handle when agreement line item is not found in any payment', () => {
     const agreementItems = {
       1: {
         code: 'CMOR1',
         annualPaymentPence: 27200,
-        durationYears: 3
+        durationYears: 1
       },
       999: {
         code: 'MISSING_AGREEMENT',
         annualPaymentPence: 555,
-        durationYears: 3
+        durationYears: 1
       }
     }
 
@@ -1034,13 +1062,13 @@ describe('reconcilePaymentAmounts', () => {
 
     const result = reconcilePaymentAmounts({}, agreementItems, payments)
 
-    // Line item for agreementLevelItemId 999 doesn't exist in payments
-    // (27200 * 3) % 4 = 0 pennies for item 1
-    // (555 * 3) % 4 = 1 penny for item 999 (but line item not found, so added to total only)
+    // Line item for agreementLevelItemId 999 doesn't exist in any payment
+    // item 1: (27200 * 1) - (4 * 6800) = 0 pennies
+    // item 999: (555 * 1) - 0 = 555 pennies (line item not found, so added to total only)
     expect(result.payments[0].lineItems).toEqual([
       { agreementLevelItemId: 1, paymentPence: 6800 }
     ])
-    expect(result.payments[0].totalPaymentPence).toBe(6801) // 6800 + 1 penny from missing item
+    expect(result.payments[0].totalPaymentPence).toBe(7355) // 6800 + 555 pennies from missing item
   })
 })
 
@@ -1240,5 +1268,196 @@ describe('calculateScheduledPayments', () => {
         lineItems
       }))
     )
+  })
+
+  it('should only include items in payments that fall within their duration', () => {
+    const parcelItems = {
+      1: {
+        code: 'CLIG3',
+        annualPaymentPence: 109390,
+        durationYears: 1
+      },
+      2: {
+        code: 'SCR2',
+        annualPaymentPence: 350000,
+        durationYears: 3
+      }
+    }
+
+    const schedule = [
+      '2026-06-15',
+      '2026-09-15',
+      '2026-12-15',
+      '2027-03-15',
+      '2027-06-15',
+      '2027-09-15',
+      '2027-12-15',
+      '2028-03-15',
+      '2028-06-15',
+      '2028-09-15',
+      '2028-12-15',
+      '2029-03-15'
+    ]
+
+    const result = calculateScheduledPayments(parcelItems, {}, schedule)
+
+    // CLIG3 (1 year) is only paid on the first 4 payments
+    expect(result[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 27347.5 },
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+    expect(result[0].totalPaymentPence).toBe(114847) // floor(27347.5) + floor(87500)
+
+    // SCR2 (3 years) continues to be paid for the rest of the schedule
+    expect(result[4].lineItems).toEqual([
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+    expect(result[4].totalPaymentPence).toBe(87500)
+
+    expect(result[11].lineItems).toEqual([
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+    expect(result[11].totalPaymentPence).toBe(87500)
+
+    // the 1-year item is only present in the first 4 payments
+    const paymentsWithClig3 = result.filter((payment) =>
+      payment.lineItems.some((lineItem) => lineItem.parcelItemId === 1)
+    )
+    expect(paymentsWithClig3).toHaveLength(4)
+  })
+})
+
+describe('reconcilePaymentAmounts - mixed durations', () => {
+  it('should shift pennies per item over its own payment window', () => {
+    const parcelItems = {
+      1: {
+        code: 'CLIG3',
+        annualPaymentPence: 109390,
+        durationYears: 1
+      },
+      2: {
+        code: 'SCR2',
+        annualPaymentPence: 350000,
+        durationYears: 3
+      }
+    }
+
+    const payments = [
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27347.5 },
+          { parcelItemId: 2, paymentPence: 87500 }
+        ],
+        paymentDate: '2026-06-15',
+        totalPaymentPence: 114847
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27347.5 },
+          { parcelItemId: 2, paymentPence: 87500 }
+        ],
+        paymentDate: '2026-09-15',
+        totalPaymentPence: 114847
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27347.5 },
+          { parcelItemId: 2, paymentPence: 87500 }
+        ],
+        paymentDate: '2026-12-15',
+        totalPaymentPence: 114847
+      },
+      {
+        lineItems: [
+          { parcelItemId: 1, paymentPence: 27347.5 },
+          { parcelItemId: 2, paymentPence: 87500 }
+        ],
+        paymentDate: '2027-03-15',
+        totalPaymentPence: 114847
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2027-06-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2027-09-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2027-12-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2028-03-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2028-06-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2028-09-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2028-12-15',
+        totalPaymentPence: 87500
+      },
+      {
+        lineItems: [{ parcelItemId: 2, paymentPence: 87500 }],
+        paymentDate: '2029-03-15',
+        totalPaymentPence: 87500
+      }
+    ]
+
+    const result = reconcilePaymentAmounts(parcelItems, {}, payments)
+
+    // CLIG3 (1 year): (109390 * 1) - (4 * 27347) = 2 pennies
+    // SCR2 (3 years): (350000 * 3) - (12 * 87500) = 0 pennies
+    expect(result.payments[0].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 27349 }, // floor(27347.5) + 2
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+    expect(result.payments[0].totalPaymentPence).toBe(114849) // 114847 + 2
+
+    expect(result.payments[1].lineItems).toEqual([
+      { parcelItemId: 1, paymentPence: 27347 },
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+    expect(result.payments[4].lineItems).toEqual([
+      { parcelItemId: 2, paymentPence: 87500 }
+    ])
+
+    // Each item's total payments match its own agreement total (annual * duration)
+    const clig3Total = result.payments.reduce(
+      (acc, payment) =>
+        acc +
+        (payment.lineItems.find((item) => item.parcelItemId === 1)
+          ?.paymentPence ?? 0),
+      0
+    )
+    const scr2Total = result.payments.reduce(
+      (acc, payment) =>
+        acc +
+        (payment.lineItems.find((item) => item.parcelItemId === 2)
+          ?.paymentPence ?? 0),
+      0
+    )
+    expect(clig3Total).toBe(109390)
+    expect(scr2Total).toBe(1050000)
+
+    // The sum of all scheduled payments equals the agreement total
+    const sumOfPayments = result.payments.reduce(
+      (acc, payment) => acc + payment.totalPaymentPence,
+      0
+    )
+    expect(sumOfPayments).toBe(clig3Total + scr2Total)
   })
 })

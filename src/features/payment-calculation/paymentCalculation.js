@@ -32,11 +32,7 @@ export const getPaymentCalculationForParcels = (
 
   // calculate total amounts
   const { annualTotalPence, agreementTotalPence } =
-    calculateAnnualAndAgreementTotals(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    calculateAnnualAndAgreementTotals(parcelItems, agreementItems)
 
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
