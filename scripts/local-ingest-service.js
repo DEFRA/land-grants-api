@@ -33,9 +33,9 @@ export const ingestLandData = async () => {
   // start ingest if needed
   for (const resource of ENTITY_TYPES) {
     const folder = path.join(ingestDataFolder, resource.name)
+    let ingestId = crypto.randomUUID()
 
     if (resource.ingest) {
-      let ingestId = crypto.randomUUID()
       const filesWithCount = []
 
       const files = getFilesFromFolder(folder)
@@ -59,9 +59,8 @@ export const ingestLandData = async () => {
         client,
         logger
       )
-
-      ingestIds.set(resource.name, ingestId)
     }
+    ingestIds.set(resource.name, ingestId)
   }
 
   // inport files
