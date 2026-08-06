@@ -131,6 +131,32 @@ describe('processActionConfigFile', () => {
     })
   })
 
+  test('passes guidanceUrl and availability through to insertActionConfig inside config, not as top-level fields', async () => {
+    getActionConfigByVersion.mockResolvedValue(false)
+    transformActionConfig.mockReturnValue({
+      ...transformedConfig,
+      config: {
+        ...transformedConfig.config,
+        guidance_url: 'https://example.com',
+        availability: { type: 'total' }
+      }
+    })
+
+    await processActionConfigFile(
+      mockLogger,
+      mockS3Client,
+      mockDb,
+      s3Key,
+      bucket
+    )
+
+    const call = insertActionConfig.mock.calls[0][2]
+    expect(call.config.guidance_url).toBe('https://example.com')
+    expect(call.config.availability).toEqual({ type: 'total' })
+    expect(call.guidanceUrl).toBeUndefined()
+    expect(call.availability).toBeUndefined()
+  })
+
   test('logs info when skipping an existing version', async () => {
     getActionConfigByVersion.mockResolvedValue(true)
 

@@ -21,6 +21,8 @@ const getActionsByVersionSql = `
           ac.config->'payment' AS payment,
           ac.config->'land_cover_class_codes' AS land_cover_class_codes,
           ac.config->'rules' AS rules,
+          ac.config->>'guidance_url' AS guidance_url,
+          ac.config->'availability' AS availability,
           ac.last_updated_at AS last_updated,
           ac.semantic_version AS semantic_version,
           ac.group_id AS group_id,

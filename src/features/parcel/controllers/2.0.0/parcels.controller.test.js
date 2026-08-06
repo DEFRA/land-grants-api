@@ -292,11 +292,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions.results']
         }),
+        true,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy',
-        { showActionResults: true, showActionMetadata: false }
+        'dummy'
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -306,14 +306,12 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should return 200 with metadata when requesting actions.metadata field', async () => {
-      const mockActionsWithMetadata = [
+    test('should return 200 with guidanceUrl and availability when present, without needing a fields flag', async () => {
+      const mockActionsWithAvailability = [
         {
           ...mockActionsWithAvailableArea[0],
-          metadata: {
-            available_area_type: 'total',
-            guidance_link: 'https://www.gov.uk/find-funding'
-          }
+          guidanceUrl: 'https://www.gov.uk/find-funding',
+          availability: { type: 'total' }
         }
       ]
 
@@ -331,7 +329,7 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithMetadata
+          result.actions = mockActionsWithAvailability
         }
 
         return Promise.resolve(result)
@@ -344,7 +342,7 @@ describe('Parcels Controller 2.0.0', () => {
         payload: {
           sbi,
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.metadata']
+          fields: ['actions']
         }
       }
 
@@ -356,49 +354,23 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
-      expect(parcels[0].actions[0].metadata).toEqual({
-        available_area_type: 'total',
-        guidance_link: 'https://www.gov.uk/find-funding'
+      expect(parcels[0].actions[0].guidanceUrl).toBe(
+        'https://www.gov.uk/find-funding'
+      )
+      expect(parcels[0].actions[0].availability).toEqual({
+        type: 'total'
       })
       expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,
         expect.objectContaining({
           parcelIds: ['SX0679-9238'],
-          fields: ['actions.metadata']
+          fields: ['actions']
         }),
+        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy',
-        { showActionResults: false, showActionMetadata: true }
-      )
-    })
-
-    test('should default showActionMetadata to false when actions.metadata is not requested', async () => {
-      const request = {
-        method: 'POST',
-        url: '/api/v2/parcels',
-        headers: { 'X-Forwarded-Authorization': 'dummy' },
-        payload: {
-          sbi,
-          parcelIds: ['SX0679-9238'],
-          fields: ['actions']
-        }
-      }
-
-      await server.inject(request)
-
-      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
-        mockParcelData,
-        expect.objectContaining({
-          parcelIds: ['SX0679-9238'],
-          fields: ['actions']
-        }),
-        mockEnabledActions,
-        expect.any(Function),
-        expect.anything(),
-        'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        'dummy'
       )
     })
 
@@ -708,11 +680,11 @@ describe('Parcels Controller 2.0.0', () => {
             }
           ]
         }),
+        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        'dummy'
       )
     })
 
@@ -978,7 +950,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe(
-        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, actions.metadata, groups]`
+        `"fields[0]" must be one of [size, actions, actions.results, actions.sssiConsentRequired, actions.heferRequired, groups]`
       )
     })
 
@@ -1235,11 +1207,11 @@ describe('Parcels Controller 2.0.0', () => {
           parcelIds: ['SX0679-9238'],
           fields: ['actions']
         }),
+        false,
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy',
-        { showActionResults: false, showActionMetadata: false }
+        'dummy'
       )
     })
 

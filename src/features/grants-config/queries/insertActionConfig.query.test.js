@@ -7,7 +7,12 @@ describe('insertActionConfig', () => {
 
   const params = {
     code: 'PA3',
-    config: { start_date: '2025-01-01', rules: [] },
+    config: {
+      start_date: '2025-01-01',
+      rules: [],
+      guidance_url: 'https://example.com',
+      availability: { type: 'total' }
+    },
     major: 1,
     minor: 0,
     patch: 0,
@@ -17,8 +22,7 @@ describe('insertActionConfig', () => {
     hfEligible: true,
     groupId: null,
     enabled: true,
-    display: true,
-    metadata: { available_area_type: 'total' }
+    display: true
   }
 
   beforeEach(() => {
@@ -48,20 +52,12 @@ describe('insertActionConfig', () => {
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with enabled, display, description, sssiEligible, hfEligible and metadata from params', async () => {
+  test('upserts action with enabled, display, description, sssiEligible and hfEligible from params', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        true,
-        true,
-        JSON.stringify({ available_area_type: 'total' })
-      ]
+      ['PA3', true, true, 'Woodland management plan', true, true]
     )
   })
 
@@ -73,28 +69,24 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        null,
-        true,
-        true,
-        JSON.stringify({ available_area_type: 'total' })
-      ]
+      ['PA3', true, true, null, true, true]
     )
   })
 
-  test('passes null metadata when absent', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      metadata: null
-    })
+  test('carries guidanceUrl and availability inside config into actions_config, not actions', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', true, true, null]
+    const upsertCall = mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
     )
+    expect(upsertCall[0]).not.toContain('guidance_url')
+    expect(upsertCall[0]).not.toContain('availability')
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
+    )
+    expect(insertCall[1][1]).toBe(JSON.stringify(params.config))
   })
 
   test('uses COALESCE so null description does not overwrite existing', async () => {
@@ -108,17 +100,6 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('uses COALESCE so null metadata does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.metadata, actions.metadata)'
-    )
-  })
-
   test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
     await insertActionConfig(mockLogger, mockDb, {
       ...params,
@@ -128,15 +109,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        true,
-        true,
-        'Woodland management plan',
-        false,
-        false,
-        JSON.stringify({ available_area_type: 'total' })
-      ]
+      ['PA3', true, true, 'Woodland management plan', false, false]
     )
   })
 
@@ -149,15 +122,7 @@ describe('insertActionConfig', () => {
 
     expect(mockClient.query).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO actions'),
-      [
-        'PA3',
-        false,
-        false,
-        'Woodland management plan',
-        true,
-        true,
-        JSON.stringify({ available_area_type: 'total' })
-      ]
+      ['PA3', false, false, 'Woodland management plan', true, true]
     )
   })
 

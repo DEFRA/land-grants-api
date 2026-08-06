@@ -19,6 +19,7 @@ export function actionConfigTransformer(action) {
     group_name: groupName,
     display_order: displayOrder,
     payment_method: paymentMethod,
+    guidance_url: guidanceUrl,
     ...actionObj
   } = action
   return {
@@ -28,6 +29,7 @@ export function actionConfigTransformer(action) {
     landCoverClassCodes,
     startDate,
     lastUpdated,
+    guidanceUrl,
     version: Number(version),
     majorVersion: Number(majorVersion),
     minorVersion: Number(minorVersion),
