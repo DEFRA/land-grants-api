@@ -173,7 +173,6 @@ export async function logDuplicateRows(
 async function promoteStagingTableStatements(tableName, dbClient) {
   const indexes = await disableTableIndexes(tableName, dbClient)
   const stgIndexes = await disableTableIndexes(`${tableName}_staging`, dbClient)
-  await dbClient.query(`ALTER TABLE ${tableName} SET UNLOGGED`)
   await dbClient.query(`TRUNCATE TABLE ${tableName}`)
   await dbClient.query(
     `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
@@ -181,7 +180,6 @@ async function promoteStagingTableStatements(tableName, dbClient) {
   await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
   await enableIndexes(indexes, dbClient)
   await enableIndexes(stgIndexes, dbClient)
-  await dbClient.query(`ALTER TABLE ${tableName} SET LOGGED`)
 }
 
 /**
