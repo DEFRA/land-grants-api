@@ -4,7 +4,7 @@ import { actionConfigInputSchema } from '../schema/action-config.schema.js'
  * Transform an action config JSON (camelCase from land-grants-config repo)
  * into the shape stored in the actions_config DB table.
  * @param {object} actionJson - Raw action JSON from S3
- * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, guidanceUrl: string|null, availability: object|null, config: object }}
+ * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean, config: object }}
  */
 export function transformActionConfig(actionJson) {
   const { error } = actionConfigInputSchema.validate(actionJson)
@@ -37,9 +37,7 @@ function buildDefaults(actionJson) {
     hfEligible: actionJson.hfEligible ?? true,
     groupId: actionJson.groupId ?? null,
     enabled: actionJson.enabled ?? true,
-    display: actionJson.display ?? true,
-    guidanceUrl: actionJson.guidanceUrl ?? null,
-    availability: actionJson.availability ?? null
+    display: actionJson.display ?? true
   }
 }
 
@@ -51,7 +49,9 @@ function buildConfig(actionJson) {
     payment: actionJson.payment,
     payment_method: actionJson.paymentMethod,
     land_cover_class_codes: actionJson.landCoverClassCodes ?? [],
-    rules: actionJson.rules ?? []
+    rules: actionJson.rules ?? [],
+    guidance_url: actionJson.guidanceUrl ?? null,
+    availability: actionJson.availability ?? null
   }
 }
 
