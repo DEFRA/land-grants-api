@@ -110,7 +110,8 @@ const mockActionConfig = [
       'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
     availability: { type: 'partial' },
     payment: {
-      ratePerUnitGbp: 53
+      ratePerUnitGbp: 53,
+      ratePerAgreementPerYearGbp: 139
     },
     landCoverClassCodes: [
       '130',
