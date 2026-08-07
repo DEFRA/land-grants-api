@@ -11,7 +11,7 @@ x-common-postgres: &common-postgres
 
 services:
   database-up:
-    image: liquibase/liquibase:4.31-alpine
+    image: liquibase/liquibase:5.0-alpine
     restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
@@ -24,7 +24,7 @@ services:
       - grants-ui-net
 
   database-down:
-    image: liquibase/liquibase:4.31-alpine
+    image: liquibase/liquibase:5.0-alpine
     restart: 'no'
     environment:
       <<: [*common-postgres, *common-migration]
