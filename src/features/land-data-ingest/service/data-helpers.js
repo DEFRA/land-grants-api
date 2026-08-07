@@ -171,11 +171,15 @@ export async function logDuplicateRows(
  * @param {import('pg').Client} dbClient
  */
 async function promoteStagingTableStatements(tableName, dbClient) {
+  const indexes = await disableTableIndexes(tableName, dbClient)
+  const stgIndexes = await disableTableIndexes(`${tableName}_staging`, dbClient)
   await dbClient.query(`TRUNCATE TABLE ${tableName}`)
   await dbClient.query(
     `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
   )
   await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
+  await enableIndexes(indexes, dbClient)
+  await enableIndexes(stgIndexes, dbClient)
 }
 
 /**
@@ -201,6 +205,35 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
   } catch (error) {
     await dbClient.query('ROLLBACK')
     throw error
+  }
+}
+
+/**
+ * Disables table indexes
+ * @param {string} tableName
+ * @param {object} dbClient
+ * @returns {Promise<Array>} array of index declarations
+ */
+async function disableTableIndexes(tableName, dbClient) {
+  const indexes = await dbClient.query(
+    `SELECT indexname, indexdef FROM pg_indexes
+      WHERE tablename = $1 AND indexname NOT LIKE '%_pkey'`,
+    [tableName]
+  )
+  for (const { indexname } of indexes.rows) {
+    await dbClient.query(`DROP INDEX IF EXISTS ${indexname}`)
+  }
+  return indexes.rows
+}
+
+/**
+ * calls index declarations
+ * @param {Array} indexes
+ * @param {object} dbClient
+ */
+async function enableIndexes(indexes, dbClient) {
+  for (const { indexdef } of indexes) {
+    await dbClient.query(indexdef)
   }
 }
 
