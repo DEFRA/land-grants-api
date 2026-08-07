@@ -311,6 +311,79 @@ describe('Action Validation Service', () => {
       )
     })
 
+    test('should exclude a sibling action from existing area demand when its applicationUnitOfMeasurement is not hectares', async () => {
+      const countBasedSiblingAction = { code: 'WBD1', quantity: 5 }
+      const landActionWithSiblings = {
+        ...mockLandAction,
+        actions: [mockAction, countBasedSiblingAction]
+      }
+      const actionConfigWithWbd1 = [
+        ...mockActionConfig,
+        {
+          code: 'WBD1',
+          applicationUnitOfMeasurement: 'count'
+        }
+      ]
+      mockPlannedActionsTransformer.mockReturnValue([
+        { actionCode: 'LIG2', areaSqm: 1000000 }
+      ])
+
+      await validateLandAction(
+        mockAction,
+        actionConfigWithWbd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        landActionWithSiblings,
+        mockRequest
+      )
+
+      const expectedExistingActions = [{ actionCode: 'LIG2', areaSqm: 1000000 }]
+
+      expect(mockGetAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        mockAction.code,
+        landActionWithSiblings.sheetId,
+        landActionWithSiblings.parcelId,
+        expectedExistingActions,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockFindMaximumAvailableArea).toHaveBeenCalledWith(
+        mockAction.code,
+        expectedExistingActions,
+        mockCompatibilityCheckFn,
+        mockAvailableAreaDataRequirements
+      )
+    })
+
+    test('should include a sibling action as area demand when its action config is not found', async () => {
+      const unknownSiblingAction = { code: 'UNKNOWN1', quantity: 5 }
+      const landActionWithSiblings = {
+        ...mockLandAction,
+        actions: [mockAction, unknownSiblingAction]
+      }
+      mockPlannedActionsTransformer.mockReturnValue([])
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        landActionWithSiblings,
+        mockRequest
+      )
+
+      const expectedExistingActions = [
+        { actionCode: 'UNKNOWN1', areaSqm: 50000 }
+      ]
+
+      expect(mockFindMaximumAvailableArea).toHaveBeenCalledWith(
+        mockAction.code,
+        expectedExistingActions,
+        mockCompatibilityCheckFn,
+        mockAvailableAreaDataRequirements
+      )
+    })
+
     test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
       mockFindMaximumAvailableArea.mockReturnValue({
         feasible: false,
