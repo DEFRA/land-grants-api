@@ -478,6 +478,14 @@ describe('getPaymentCalculationForParcels', () => {
       0
     )
     expect(sumOfPayments).toBe(response.agreementTotalPence)
+
+    // The summary explanation reflects the distinct payment amounts per period
+    const summarySection = response.explanations.find(
+      (section) => section.title === 'Summary'
+    )
+    expect(summarySection.content).toContain(
+      'Quarterly payments: 359827 pence (x3), 220480 pence (x8)'
+    )
     vi.useRealTimers()
   })
 })

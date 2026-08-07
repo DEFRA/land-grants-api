@@ -857,6 +857,11 @@ describe('reconcilePaymentAmounts', () => {
       { parcelItemId: 1, paymentPence: 83 },
       { agreementLevelItemId: 1, paymentPence: 138 }
     ])
+
+    // With equal durations the rest-of-payments explanation collapses to one amount
+    expect(result.explanations.content).toContain(
+      '- QUARTERLY PAYMENTS (REST): 222 pence (x3)'
+    )
   })
 
   it('should correctly shift pennies when there is only one payment', () => {
@@ -1434,6 +1439,12 @@ describe('reconcilePaymentAmounts - mixed durations', () => {
     expect(result.payments[4].lineItems).toEqual([
       { parcelItemId: 2, paymentPence: 87500 }
     ])
+
+    // The rest-of-payments explanation shows the distinct amounts per period
+    // (3 payments of 114847 while the 1-year action is active, then 8 of 87500)
+    expect(result.explanations.content).toContain(
+      '- QUARTERLY PAYMENTS (REST): 114847 pence (x3), 87500 pence (x8)'
+    )
 
     // Each item's total payments match its own agreement total (annual * duration)
     const clig3Total = result.payments.reduce(

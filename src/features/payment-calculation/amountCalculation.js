@@ -110,6 +110,27 @@ const calculatePenniesToShift = (item, payments, findLineItem) => {
 }
 
 /**
+ * Formats the distinct payment amounts of a list of payments with their
+ * occurrence counts, e.g. "359827 pence (x3), 220480 pence (x8)". When all
+ * payments are the same this degrades to a single entry, e.g. "9532 pence (x11)".
+ * @param {Array<ScheduledPayment>} payments
+ * @returns {string}
+ */
+export const formatDistinctPaymentBreakdown = (payments) => {
+  const breakdown = new Map()
+  for (const payment of payments) {
+    breakdown.set(
+      payment.totalPaymentPence,
+      (breakdown.get(payment.totalPaymentPence) ?? 0) + 1
+    )
+  }
+
+  return Array.from(breakdown.entries())
+    .map(([amount, count]) => `${amount} pence (x${count})`)
+    .join(', ')
+}
+
+/**
  * Shifts payment pennies from all payments to the first scheduled payment
  * @param {Array<ScheduledPayment>} payments
  * @param {Array<PaymentParcelItem>} parcelItems
@@ -185,7 +206,9 @@ const shiftTotalPenniesToFirstScheduledPayment = (
   explanations.push(
     `- TOTAL: ${firstAdjustedPayment.totalPaymentPence} pence/year`,
     `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1]?.totalPaymentPence} + ${decimalsForAllPayments} = ${firstAdjustedPayment.totalPaymentPence} pence`,
-    `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1]?.totalPaymentPence} pence`
+    `- QUARTERLY PAYMENTS (REST): ${formatDistinctPaymentBreakdown(
+      adjustedPayments.slice(1)
+    )}`
   )
 
   return { adjustedPayments, explanations }
