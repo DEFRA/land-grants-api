@@ -11,6 +11,9 @@ const mockActionConfig = [
     applicationUnitOfMeasurement,
     enabled: true,
     display: true,
+    guidanceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/cmor1-assess-moorland-and-produce-a-written-record',
+    availability: { type: 'total' },
     payment: {
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
@@ -57,6 +60,9 @@ const mockActionConfig = [
     durationYears: 3,
     description: 'UPL1: Moderate livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    guidanceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/upl1-moderate-livestock-grazing-on-moorland',
+    availability: { type: 'partial' },
     payment: {
       ratePerUnitGbp: 20
     },
@@ -100,8 +106,12 @@ const mockActionConfig = [
     durationYears: 3,
     description: 'UPL2: Low livestock grazing on moorland',
     applicationUnitOfMeasurement,
+    guidanceUrl:
+      'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
+    availability: { type: 'partial' },
     payment: {
-      ratePerUnitGbp: 53
+      ratePerUnitGbp: 53,
+      ratePerAgreementPerYearGbp: 139
     },
     landCoverClassCodes: [
       '130',
