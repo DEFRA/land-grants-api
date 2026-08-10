@@ -3,6 +3,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import {
@@ -77,9 +78,27 @@ async function getParcelActionsWithAvailableArea(
   logger
 ) {
   const actionsWithAvailableArea = []
+  const unitsByCode = enabledActions.reduce(
+    (acc, e) => ({ ...acc, [e.code]: e.applicationUnitOfMeasurement }),
+    {}
+  )
 
   for (const action of enabledActions.filter((a) => a.display)) {
-    const transformedActions = plannedActionsTransformer(actions)
+    // Non-hectare actions should not go through AAC calculations
+    if (action.applicationUnitOfMeasurement !== HECTARES) {
+      actionsWithAvailableArea.push(
+        actionTransformer(action, undefined, showActionResults)
+      )
+      continue
+    }
+
+    // Non-hectare actions also shoul(dn't be taken into consideration for AACs for other actions
+    // TODO: Note that existing agreements we don't have configs for may cause issues here
+    const transformedActions = plannedActionsTransformer(
+      actions.filter(
+        (a) => (unitsByCode[a.actionCode] ?? HECTARES) === HECTARES
+      )
+    )
 
     const aacDataRequirements = await getAvailableAreaDataRequirements(
       action.code,
@@ -139,7 +158,10 @@ export async function getActionsForParcel(
   }
 
   if (fields.includes('size')) {
-    parcelResponse.size = sizeTransformer(sqmToHaRounded(parcel.area_sqm))
+    parcelResponse.size = sizeTransformer(
+      sqmToHaRounded(parcel.area_sqm),
+      HECTARES
+    )
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {

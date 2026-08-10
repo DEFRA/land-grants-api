@@ -1,5 +1,9 @@
 import { mockParcelWithActions } from '~/src/features/parcel/fixtures/index.js'
-import { parcelsSchema, parcelsSuccessResponseSchema } from './parcel.schema.js'
+import {
+  actionAvailabilitySchema,
+  parcelsSchema,
+  parcelsSuccessResponseSchema
+} from './parcel.schema.js'
 
 describe('Parcel Schema Validation v2', () => {
   describe('parcelsSuccessResponseSchema', () => {
@@ -91,7 +95,7 @@ describe('Parcel Schema Validation v2', () => {
               {
                 ...mockParcelWithActions.parcel.actions[0],
                 guidanceUrl: 'https://www.gov.uk/find-funding',
-                availability: { type: 'total' }
+                availability: { value: null, unit: 'ha', type: 'total' }
               }
             ]
           }
@@ -263,6 +267,42 @@ describe('Parcel Schema Validation v2', () => {
       }
       const result = parcelsSchema.validate(invalid)
       expect(result.error).toBeDefined()
+    })
+  })
+
+  describe('actionAvailabilitySchema', () => {
+    it.each([['ha'], ['count']])(
+      'should allow value to be absent with unit %s',
+      (unit) => {
+        const data = { unit, value: null }
+
+        const result = actionAvailabilitySchema.validate(data)
+        expect(result.error).toBeUndefined()
+      }
+    )
+
+    it('should allow integers with unit = count', () => {
+      const data = { unit: 'count', value: 100 }
+
+      const result = actionAvailabilitySchema.validate(data)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject floats with unit = count', () => {
+      const data = { unit: 'count', value: 100.2884 }
+
+      const result = actionAvailabilitySchema.validate(data)
+      expect(result.error).toBeDefined()
+    })
+
+    it.each([
+      ['integer', 100],
+      ['float', 100.827]
+    ])('should allow %ss with unit = ha', (_name, value) => {
+      const data = { unit: 'ha', value }
+
+      const result = actionAvailabilitySchema.validate(data)
+      expect(result.error).toBeUndefined()
     })
   })
 })

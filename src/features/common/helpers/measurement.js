@@ -1,5 +1,3 @@
-export const applicationUnitOfMeasurement = 'ha'
-
 export const sqmToHaRounded = (sqm) => {
   const decimalPlaces = 4
 
