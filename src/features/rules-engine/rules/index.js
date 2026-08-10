@@ -3,6 +3,7 @@ import { appliedForTotalAvailableArea } from './1.0.0/applied-for-total-availabl
 import { appliedForTotalOrPartialAvailableArea } from './1.0.0/applied-for-total-or-partial-available-area.js'
 import { sssiConsentRequired } from './1.0.0/sssi-consent-required.js'
 import { heferConsentRequired } from './1.0.0/hefer-consent-required.js'
+import { manualCheckRequired } from './1.0.0/manual-check-required.js'
 import { woodlandMinimumEligibility } from './1.0.0/woodland-minimum-eligibility.js'
 import { woodlandTotalArea } from './1.0.0/woodland-total-area.js'
 import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
@@ -15,6 +16,7 @@ export const rules = {
     appliedForTotalOrPartialAvailableArea,
   'sssi-consent-required-1.0.0': sssiConsentRequired,
   'hefer-consent-required-1.0.0': heferConsentRequired,
+  'manual-check-required-1.0.0': manualCheckRequired,
   'parcel-has-minimum-eligibility-for-woodland-management-plan-1.0.0':
     woodlandMinimumEligibility,
   'total-area-not-exceed-land-parcels-woodland-management-plan-1.0.0':
