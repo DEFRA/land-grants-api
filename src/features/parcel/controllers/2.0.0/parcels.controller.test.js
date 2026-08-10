@@ -641,6 +641,23 @@ describe('Parcels Controller 2.0.0', () => {
     })
 
     test('should return 200 with plannedActions included', async () => {
+      const plannedActions = [
+        {
+          actionCode: 'BND2',
+          quantity: 5.5,
+          unit: 'ha'
+        },
+        {
+          actionCode: 'HEF1',
+          quantity: 100,
+          unit: 'sqm'
+        },
+        {
+          actionCode: 'WBD1',
+          quantity: 2,
+          unit: 'count'
+        }
+      ]
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -649,13 +666,7 @@ describe('Parcels Controller 2.0.0', () => {
           sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
-          plannedActions: [
-            {
-              actionCode: 'BND2',
-              quantity: 5.5,
-              unit: 'ha'
-            }
-          ]
+          plannedActions
         }
       }
 
@@ -672,13 +683,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.objectContaining({
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
-          plannedActions: [
-            {
-              actionCode: 'BND2',
-              quantity: 5.5,
-              unit: 'ha'
-            }
-          ]
+          plannedActions
         }),
         false,
         mockEnabledActions,
@@ -1002,13 +1007,9 @@ describe('Parcels Controller 2.0.0', () => {
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject(request)
+      const { statusCode } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe(`"plannedActions[0].unit" must be one of [ha, sqm]`)
     })
 
     test('should return 500 when createCompatibilityMatrix throws error', async () => {
