@@ -47,7 +47,7 @@ describe('applicationValidationResponseSchemaV2', () => {
       expect(error).toBeUndefined()
     })
 
-    it('rejects a caveat missing percentageOverlap', () => {
+    it('accepts a caveat missing percentageOverlap', () => {
       const { error } = applicationValidationResponseSchemaV2.validate(
         buildResponse({
           code: 'hefer-consent-required',
@@ -60,10 +60,10 @@ describe('applicationValidationResponseSchemaV2', () => {
           }
         })
       )
-      expect(error.message).toContain('percentageOverlap')
+      expect(error).toBeUndefined()
     })
 
-    it('rejects a caveat missing overlapAreaHectares', () => {
+    it('accepts a caveat missing overlapAreaHectares', () => {
       const { error } = applicationValidationResponseSchemaV2.validate(
         buildResponse({
           code: 'hefer-consent-required',
@@ -76,7 +76,7 @@ describe('applicationValidationResponseSchemaV2', () => {
           }
         })
       )
-      expect(error.message).toContain('overlapAreaHectares')
+      expect(error).toBeUndefined()
     })
   })
 

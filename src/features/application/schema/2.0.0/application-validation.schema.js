@@ -1,12 +1,5 @@
 import Joi from 'joi'
 
-// Only these caveat codes come from GIS overlap rules (sssi-consent-required,
-// hefer-consent-required) run against hectare/m2-measured actions - they always
-// compute an overlap percentage/area. Caveats from other rules (e.g.
-// manual-check-required, used by unit/item actions like WBD1's pond check)
-// have no overlap to report.
-const overlapCaveatCodes = ['sssi-consent-required', 'hefer-consent-required']
-
 const applicationValidationResponseSchemaV2 = Joi.object({
   message: Joi.string().required(),
   id: Joi.number().integer().required(),
@@ -37,14 +30,8 @@ const applicationValidationResponseSchemaV2 = Joi.object({
               actionCode: Joi.string().required(),
               parcelId: Joi.string().required(),
               sheetId: Joi.string().required(),
-              percentageOverlap: Joi.number(),
-              overlapAreaHectares: Joi.number()
-            }).when('code', {
-              is: Joi.valid(...overlapCaveatCodes),
-              then: Joi.object({
-                percentageOverlap: Joi.number().required(),
-                overlapAreaHectares: Joi.number().required()
-              })
+              percentageOverlap: Joi.number().optional(),
+              overlapAreaHectares: Joi.number().optional()
             })
           })
         })

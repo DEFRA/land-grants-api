@@ -3,15 +3,14 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
-// Generic, config-driven manual-check rule: unlike sssi-consent-required/
-// hefer-consent-required, this isn't an automated GIS-overlap eligibility check - it
-// always passes and always attaches a caveat, flagging that a human (RPA caseworker) must
-// review something eligibility rules can't determine automatically. Reusable by any action
-// via config alone: set rule.type = 'manual-check-required' and rule.name to the specific
-// caveat identity (e.g. 'pond-check-required' for WBD1) - no new land-grants-api code is
-// needed for a future action's manual check.
-
 /**
+ * Generic, config-driven manual-check rule: unlike sssi-consent-required/
+ * hefer-consent-required, this isn't an automated GIS-overlap eligibility check - it
+ * always passes and always attaches a caveat, flagging that a human (RPA caseworker) must
+ * review something eligibility rules can't determine automatically. Reusable by any action
+ * via config alone: set rule.type = 'manual-check-required' and rule.name to the specific
+ * caveat identity (e.g. 'pond-check-required' for WBD1) - no new land-grants-api code is
+ * needed for a future action's manual check.
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
