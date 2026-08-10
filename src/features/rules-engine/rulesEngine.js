@@ -15,7 +15,11 @@
 export const executeRules = (rules, application, actionRules = []) => {
   const results = actionRules.map((rule) => {
     const version = rule.version ?? '1.0.0'
-    const ruleKey = `${rule.name}-${version}`
+    // `type` lets a config-defined rule name (e.g. a per-action caveat identity like
+    // 'pond-check-required') be dispatched to a shared, generic executor (e.g.
+    // 'manual-check-required') without needing its own registry entry. Falls back to
+    // `name` for every existing rule, which has no `type` - dispatch is unchanged for them.
+    const ruleKey = `${rule.type ?? rule.name}-${version}`
     return rules[ruleKey]
       ? { ...rules[ruleKey].execute(application, rule) }
       : { name: rule.name, passed: false, message: 'Rule not found' }
