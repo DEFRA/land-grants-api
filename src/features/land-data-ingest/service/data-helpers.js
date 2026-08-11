@@ -162,46 +162,49 @@ export async function logDuplicateRows(
 }
 
 /**
- * Runs the truncate+insert+truncate staging promotion for one table.
- * Uses TRUNCATE + INSERT because land_grants_api holds TRUNCATE/INSERT
- * privileges on the live table but does not own it (ownership required for ALTER TABLE RENAME).
- * The staging table is permanent (pre-created by Liquibase) so it is not dropped.
- * Caller is responsible for wrapping this in a transaction.
+ * Swaps the staging table with the live table so the freshly ingested staging data
+ * becomes the live data. The old live table is recycled as the (now empty) staging
+ * table for the next ingest, so no tables are created or dropped and the live table
+ * keeps its indexes (they are maintained while the staging table is loaded, off the
+ * live path). Runs through the swap_staging_with_live SECURITY DEFINER function
+ * (owned by the DDL role that runs the migrations) because the runtime role holds
+ * only grantable DML privileges and does not own the tables, which ALTER TABLE
+ * RENAME requires. Caller is responsible for wrapping this in a transaction.
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
  */
-async function promoteStagingTableStatements(tableName, dbClient) {
-  await dbClient.query(`TRUNCATE TABLE ${tableName}`)
-  await dbClient.query(
-    `INSERT INTO ${tableName} SELECT * FROM ${tableName}_staging`
-  )
-  await dbClient.query(`TRUNCATE TABLE ${tableName}_staging`)
+async function swapStagingWithLive(tableName, dbClient) {
+  await dbClient.query('SELECT swap_staging_with_live($1)', [tableName])
 }
 
 /**
- * Promotes the staging table to live within its own transaction.
+ * Promotes the staging table to live by swapping the table names in place: the staging
+ * table (with its indexes already built) becomes the live table and the old live table
+ * is recycled as the empty staging table for the next ingest. No indexes are dropped or
+ * rebuilt, so the promotion is a short transaction of metadata renames.
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
+ * @param {object} logger
  */
 export async function promoteStagingTable(tableName, dbClient, logger) {
   const startTime = performance.now()
 
   try {
     await dbClient.query('BEGIN')
-    await promoteStagingTableStatements(tableName, dbClient)
+    await swapStagingWithLive(tableName, dbClient)
     await dbClient.query('COMMIT')
-
-    const duration = performance.now() - startTime
-    logInfo(logger, {
-      category: LOG_CATEGORY,
-      operation: `${tableName}_staging_promoted`,
-      message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
-      context: { tableName, duration }
-    })
   } catch (error) {
     await dbClient.query('ROLLBACK')
     throw error
   }
+
+  const duration = performance.now() - startTime
+  logInfo(logger, {
+    category: LOG_CATEGORY,
+    operation: `${tableName}_staging_promoted`,
+    message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
+    context: { tableName, duration }
+  })
 }
 
 /**
@@ -247,7 +250,8 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * staging tables are then promoted to live in the same transaction, reusing that same
  * timestamp as `completed_date`; if not, it's simply left staged, waiting for its pair.
  * Access is serialized per-pair with an advisory lock so simultaneous completions can't
- * double-promote or miss each other.
+ * double-promote or miss each other. Promotion swaps the staging and live tables in place,
+ * so no indexes are dropped or rebuilt and the transaction is just metadata renames.
  * @param {string} entityName
  * @param {string} pairedEntityName
  * @param {string | number} ingestId
@@ -295,8 +299,8 @@ export async function completeAndPromotePaired(
       )
 
       if (pairedIngest?.status === INGEST_STATUS.STAGED) {
-        await promoteStagingTableStatements(entityName, dbClient)
-        await promoteStagingTableStatements(pairedEntityName, dbClient)
+        await swapStagingWithLive(entityName, dbClient)
+        await swapStagingWithLive(pairedEntityName, dbClient)
         await dbClient.query(
           `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`,
           [INGEST_STATUS.COMPLETED, now, [ingestId, pairedIngest.id]]

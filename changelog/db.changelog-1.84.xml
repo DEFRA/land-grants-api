@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="land-covers-staging-add-geom-hash" author="system">
+    <sql>
+      ALTER TABLE land_covers_staging
+        ADD COLUMN IF NOT EXISTS geom_hash text GENERATED ALWAYS AS (md5(encode(ST_AsBinary(geom), 'hex'))) STORED;
+    </sql>
+  </changeSet>
+
+  <changeSet id="land-covers-staging-add-indexes" author="system">
+    <sql>
+      CREATE INDEX IF NOT EXISTS idx_land_covers_staging_geom_hash_full
+        ON land_covers_staging (parcel_id, sheet_id, land_cover_class_code, geom_hash);
+      CREATE INDEX IF NOT EXISTS idx_land_covers_staging_parcel_sheet_class
+        ON land_covers_staging (parcel_id, sheet_id, land_cover_class_code);
+    </sql>
+  </changeSet>
+
+  <changeSet id="create-swap-staging-with-live-function" author="system">
+    <sql splitStatements="false">
+      CREATE OR REPLACE FUNCTION public.swap_staging_with_live(p_table_name text)
+      RETURNS void
+      LANGUAGE plpgsql
+      VOLATILE
+      SECURITY DEFINER
+      SET search_path = public
+      AS $$
+      BEGIN
+        IF p_table_name NOT IN ('land_covers', 'land_parcels') THEN
+          RAISE EXCEPTION 'cannot swap staging with live for unknown table %', p_table_name;
+        END IF;
+
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name, p_table_name || '_old');
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name || '_staging', p_table_name);
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name || '_old', p_table_name || '_staging');
+        EXECUTE format('TRUNCATE TABLE %I', p_table_name || '_staging');
+      END;
+      $$;
+    </sql>
+  </changeSet>
+
+  <changeSet id="grant-execute-swap-function" author="system">
+    <sql>
+      REVOKE ALL ON FUNCTION public.swap_staging_with_live(text) FROM PUBLIC;
+      GRANT EXECUTE ON FUNCTION public.swap_staging_with_live(text) TO land_grants_api;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

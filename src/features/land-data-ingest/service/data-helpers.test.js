@@ -217,37 +217,53 @@ describe('Data helpers', () => {
   })
 
   describe('promoteStagingTable', () => {
-    const logger = { info: vi.fn() }
+    const logger = { info: vi.fn(), error: vi.fn() }
 
-    test('should truncate live table, copy from staging, truncate staging within a transaction', async () => {
+    test('swaps staging and live tables within a transaction', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1)
+        .mockResolvedValueOnce({}) // COMMIT
+
       await promoteStagingTable('land_parcels', dbClient, logger)
 
-      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query).toHaveBeenCalledTimes(3)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
-        'TRUNCATE TABLE land_parcels'
+        'SELECT swap_staging_with_live($1)'
       )
-      expect(dbClient.query.mock.calls[2][0]).toBe(
-        'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[3][0]).toBe(
-        'TRUNCATE TABLE land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[1][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[2][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
     test('should roll back and rethrow when promotion fails', async () => {
       dbClient.query
-        .mockResolvedValueOnce({ rowCount: 1 }) // BEGIN
-        .mockRejectedValueOnce(new Error('truncate failed'))
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockRejectedValueOnce(new Error('swap failed')) // function call fails
 
       await expect(
         promoteStagingTable('land_parcels', dbClient, logger)
-      ).rejects.toThrow('truncate failed')
+      ).rejects.toThrow('swap failed')
 
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+    })
+
+    test('does not drop or rebuild any indexes', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1)
+        .mockResolvedValueOnce({}) // COMMIT
+
+      await promoteStagingTable('land_parcels', dbClient, logger)
+
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('DROP INDEX')
+      )
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('CREATE INDEX')
+      )
     })
   })
 
@@ -307,12 +323,8 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({}) // TRUNCATE land_parcels
-        .mockResolvedValueOnce({}) // INSERT land_parcels
-        .mockResolvedValueOnce({}) // TRUNCATE land_parcels_staging
-        .mockResolvedValueOnce({}) // TRUNCATE land_covers
-        .mockResolvedValueOnce({}) // INSERT land_covers
-        .mockResolvedValueOnce({}) // TRUNCATE land_covers_staging
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
         .mockResolvedValueOnce({}) // COMMIT
 
@@ -333,33 +345,55 @@ describe('Data helpers', () => {
       const stagedDate = dbClient.query.mock.calls[3][1][1]
 
       expect(dbClient.query.mock.calls[4][0]).toBe(
-        'TRUNCATE TABLE land_parcels'
+        'SELECT swap_staging_with_live($1)'
       )
+      expect(dbClient.query.mock.calls[4][1]).toEqual(['land_parcels'])
       expect(dbClient.query.mock.calls[5][0]).toBe(
-        'INSERT INTO land_parcels SELECT * FROM land_parcels_staging'
+        'SELECT swap_staging_with_live($1)'
       )
+      expect(dbClient.query.mock.calls[5][1]).toEqual(['land_covers'])
       expect(dbClient.query.mock.calls[6][0]).toBe(
-        'TRUNCATE TABLE land_parcels_staging'
-      )
-      expect(dbClient.query.mock.calls[7][0]).toBe('TRUNCATE TABLE land_covers')
-      expect(dbClient.query.mock.calls[8][0]).toBe(
-        'INSERT INTO land_covers SELECT * FROM land_covers_staging'
-      )
-      expect(dbClient.query.mock.calls[9][0]).toBe(
-        'TRUNCATE TABLE land_covers_staging'
-      )
-      expect(dbClient.query.mock.calls[10][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
       )
-      expect(dbClient.query.mock.calls[10][1][0]).toBe('completed')
+      expect(dbClient.query.mock.calls[6][1][0]).toBe('completed')
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[10][1][1]).toBe(stagedDate)
-      expect(dbClient.query.mock.calls[10][1][2]).toEqual([
+      expect(dbClient.query.mock.calls[6][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[6][1][2]).toEqual([
         ingestId,
         pairedIngestId
       ])
-      expect(dbClient.query.mock.calls[11][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[7][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
+    })
+
+    test('does not drop or rebuild any indexes when promoting the pair', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'staged' }]
+        }) // paired ingest ready
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
+        .mockResolvedValueOnce({}) // COMMIT
+
+      const result = await completeAndPromotePaired(
+        'land_parcels',
+        'land_covers',
+        ingestId,
+        dbClient,
+        logger
+      )
+
+      expect(result).toBe(true)
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('DROP INDEX')
+      )
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('CREATE INDEX')
+      )
     })
 
     test.each(['failed', 'cancelled'])(
