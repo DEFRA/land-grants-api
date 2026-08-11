@@ -63,7 +63,7 @@ export const ingestLandData = async () => {
     ingestIds.set(resource.name, ingestId)
   }
 
-  // inport files
+  // import files
   for (const resource of ENTITY_TYPES) {
     const folder = path.join(ingestDataFolder, resource.name)
     const files = getFilesFromFolder(folder)
