@@ -30,8 +30,8 @@ const applicationValidationResponseSchemaV2 = Joi.object({
               actionCode: Joi.string().required(),
               parcelId: Joi.string().required(),
               sheetId: Joi.string().required(),
-              percentageOverlap: Joi.number().required(),
-              overlapAreaHectares: Joi.number().required()
+              percentageOverlap: Joi.number().optional(),
+              overlapAreaHectares: Joi.number().optional()
             })
           })
         })

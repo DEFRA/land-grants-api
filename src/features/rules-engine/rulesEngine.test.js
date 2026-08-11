@@ -220,6 +220,45 @@ describe('Rules Engine', function () {
     })
   })
 
+  test('should dispatch by rule.type when present, ignoring rule.name for lookup', function () {
+    const rulesWithGenericExecutor = {
+      'manual-check-required-1.0.0': {
+        execute: (application, rule) => ({
+          name: rule.name,
+          passed: true,
+          caveat: { code: rule.name }
+        })
+      }
+    }
+
+    const result = executeRules(rulesWithGenericExecutor, application, [
+      {
+        name: 'pond-check-required',
+        type: 'manual-check-required',
+        config: { caveatDescription: 'A manual pond check is required' }
+      }
+    ])
+
+    expect(result).toStrictEqual({
+      passed: true,
+      results: [
+        {
+          name: 'pond-check-required',
+          passed: true,
+          caveat: { code: 'pond-check-required' }
+        }
+      ]
+    })
+  })
+
+  test('should fall back to rule.name for dispatch when rule.type is absent', function () {
+    const result = executeRules(rules, application, [
+      mockActionConfig[0].rules[0]
+    ])
+
+    expect(result.passed).toBe(true)
+  })
+
   test('should pass application and rule to execute function', function () {
     const mockExecute = vi.fn(() => ({
       name: 'test-rule',

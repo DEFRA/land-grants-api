@@ -41,7 +41,11 @@
 
 /**
  * @typedef {object} ActionRule
- * @property {number} name
+ * @property {string} name
+ * @property {string} [type] - Optional override selecting which registered rule executor
+ * to dispatch to (rules-engine/rules/index.js key is `${type ?? name}-${version}`). Lets a
+ * generic, reusable executor (e.g. 'manual-check-required') be configured under any
+ * per-action `name` (e.g. 'pond-check-required') without a new registry entry.
  * @property {string} description
  * @property {ActionRuleConfig} config
  * @property {string} version
@@ -52,6 +56,7 @@
  * @property {string} layerName
  * @property {number} minimumIntersectionPercent
  * @property {number} tolerancePercent
+ * @property {string} caveatDescription
  */
 
 /**
