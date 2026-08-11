@@ -18,27 +18,27 @@ const logger = {
   debug: () => console.debug
 }
 
+const ingestDataFolder = './src/land-data'
+
 export const ingestLandData = async () => {
+  const dbOptions = getDBOptions()
+  const connection = createDBPool(dbOptions, {
+    secureContext: createSecureContext(logger),
+    logger
+  })
+  const client = await connection.connect()
+
+  const ingestIds = new Map()
+
+  // start ingest if needed
   for (const resource of ENTITY_TYPES) {
-    // create db connection
-    const dbOptions = getDBOptions()
-    const connection = createDBPool(dbOptions, {
-      secureContext: createSecureContext(logger),
-      logger
-    })
-    const client = await connection.connect()
-
-    const folder = path.join('./src/land-data', resource.name)
-
-    const files = fs
-      .readdirSync(folder)
-      .filter((file) => file.endsWith('.csv'))
-      .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
-
+    const folder = path.join(ingestDataFolder, resource.name)
     let ingestId = crypto.randomUUID()
 
     if (resource.ingest) {
       const filesWithCount = []
+
+      const files = getFilesFromFolder(folder)
       for (const file of files) {
         const fileContent = fs.readFileSync(path.join(folder, file), 'utf8')
         const data = parse(fileContent, {
@@ -60,9 +60,13 @@ export const ingestLandData = async () => {
         logger
       )
     }
+    ingestIds.set(resource.name, ingestId)
+  }
 
-    client.release()
-    await connection.end()
+  // import files
+  for (const resource of ENTITY_TYPES) {
+    const folder = path.join(ingestDataFolder, resource.name)
+    const files = getFilesFromFolder(folder)
 
     for (let i = 0; i < files.length; i += 10) {
       const batch = files.slice(i, i + 10)
@@ -70,9 +74,25 @@ export const ingestLandData = async () => {
         batch.map((file) => {
           console.log(`Importing ${resource.name} - ${file}`)
           const bodyContents = createReadStream(path.join(folder, file))
-          return importData(bodyContents, resource, ingestId, file, logger)
+          return importData(
+            bodyContents,
+            resource,
+            ingestIds.get(resource.name),
+            file,
+            logger
+          )
         })
       )
     }
   }
+
+  client.release()
+  await connection.end()
+}
+
+function getFilesFromFolder(folder) {
+  return fs
+    .readdirSync(folder)
+    .filter((file) => file.endsWith('.csv'))
+    .sort((a, b) => parseInt(a.split('_')[1]) - parseInt(b.split('_')[1]))
 }
