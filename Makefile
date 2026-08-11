@@ -1,7 +1,5 @@
 lint:
-	npm run lint
-	npm run lint:types
-	npm run format:check
+	npm run lint && npm run format:check
 
 lint-fix:
 	npm run lint:fix

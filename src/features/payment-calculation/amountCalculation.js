@@ -25,27 +25,34 @@ const findActionByCode = (code, actions = []) => {
 
 /**
  * Calculates annual and total payments in pence for all parcels of an application
- * @param {Array<PaymentParcelItem>} parcelItems
- * @param {Array<PaymentAgreementItem>} agreementItems
- * @param {number} durationYears
+ *
+ * The agreement total is calculated using the duration of each individual item,
+ * so actions with different durations contribute their own total to the agreement.
+ * @param {object} parcelItems
+ * @param {object} agreementItems
  * @returns {{annualTotalPence: number, agreementTotalPence: number}}
  */
 export const calculateAnnualAndAgreementTotals = (
   parcelItems,
-  agreementItems,
-  durationYears
+  agreementItems
 ) => {
   let annualTotalPence = 0
+  let agreementTotalPence = 0
   for (const [, parcelItem] of Object.entries(parcelItems)) {
-    annualTotalPence += parcelItem.annualPaymentPence ?? 0
+    const annualPaymentPence = parcelItem.annualPaymentPence ?? 0
+    annualTotalPence += annualPaymentPence
+    agreementTotalPence += annualPaymentPence * (parcelItem.durationYears ?? 0)
   }
   for (const [, agreementItem] of Object.entries(agreementItems)) {
-    annualTotalPence += agreementItem.annualPaymentPence ?? 0
+    const annualPaymentPence = agreementItem.annualPaymentPence ?? 0
+    annualTotalPence += annualPaymentPence
+    agreementTotalPence +=
+      annualPaymentPence * (agreementItem.durationYears ?? 0)
   }
 
   return {
     annualTotalPence: Math.floor(annualTotalPence),
-    agreementTotalPence: Math.floor(annualTotalPence * durationYears)
+    agreementTotalPence: Math.floor(agreementTotalPence)
   }
 }
 
@@ -77,6 +84,53 @@ export const reconcilePaymentAmounts = (
 }
 
 /**
+ * Calculates the number of pennies to shift to the first payment for an item so
+ * that the sum of its line items exactly matches its agreement total
+ * (annualPaymentPence * durationYears) over the payments it appears in.
+ * @param {PaymentParcelItem | PaymentAgreementItem} item
+ * @param {Array<ScheduledPayment>} payments
+ * @param {(lineItem: LineItem) => boolean} findLineItem
+ * @returns {{penniesToShift: number, flooredTotal: number}}
+ */
+const calculatePenniesToShift = (item, payments, findLineItem) => {
+  let flooredTotal = 0
+  for (const payment of payments) {
+    const lineItem = payment.lineItems.find(findLineItem)
+    if (lineItem) {
+      flooredTotal += Math.floor(lineItem.paymentPence)
+    }
+  }
+
+  const itemTotal = (item.annualPaymentPence ?? 0) * (item.durationYears ?? 0)
+
+  return {
+    penniesToShift: itemTotal - flooredTotal,
+    flooredTotal
+  }
+}
+
+/**
+ * Formats the distinct payment amounts of a list of payments with their
+ * occurrence counts, e.g. "359827 pence (x3), 220480 pence (x8)". When all
+ * payments are the same this degrades to a single entry, e.g. "9532 pence (x11)".
+ * @param {Array<ScheduledPayment>} payments
+ * @returns {string}
+ */
+export const formatDistinctPaymentBreakdown = (payments) => {
+  const breakdown = new Map()
+  for (const payment of payments) {
+    breakdown.set(
+      payment.totalPaymentPence,
+      (breakdown.get(payment.totalPaymentPence) ?? 0) + 1
+    )
+  }
+
+  return Array.from(breakdown.entries())
+    .map(([amount, count]) => `${amount} pence (x${count})`)
+    .join(', ')
+}
+
+/**
  * Shifts payment pennies from all payments to the first scheduled payment
  * @param {Array<ScheduledPayment>} payments
  * @param {Array<PaymentParcelItem>} parcelItems
@@ -100,11 +154,13 @@ const shiftTotalPenniesToFirstScheduledPayment = (
   // Note: this calculates the total number of pennies to shift to the first payment
   // Note: use the parcelItems annualPaymentPence, as this contains the correct annualPaymentPence
   for (const [parcelItemId, parcelItem] of Object.entries(parcelItems)) {
-    const penniesToShift =
-      (parcelItem.annualPaymentPence * parcelItem.durationYears) %
-      payments.length
+    const { penniesToShift, flooredTotal } = calculatePenniesToShift(
+      parcelItem,
+      adjustedPayments,
+      (lineItem) => lineItem.parcelItemId === Number(parcelItemId)
+    )
     explanations.push(
-      `- Shifting ${penniesToShift} pennies to first payment for parcel ${parcelItem.code}: ${parcelItem.annualPaymentPence} * ${parcelItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
+      `- Shifting ${penniesToShift} pennies to first payment for parcel ${parcelItem.code}: (${parcelItem.annualPaymentPence} * ${parcelItem.durationYears}) - ${flooredTotal} = ${penniesToShift} pence`
     )
 
     // add pennies for each individual line item of the first payment
@@ -122,11 +178,13 @@ const shiftTotalPenniesToFirstScheduledPayment = (
   for (const [agreementItemId, agreementItem] of Object.entries(
     agreementItems
   )) {
-    const penniesToShift =
-      (agreementItem.annualPaymentPence * agreementItem.durationYears) %
-      payments.length
+    const { penniesToShift, flooredTotal } = calculatePenniesToShift(
+      agreementItem,
+      adjustedPayments,
+      (lineItem) => lineItem.agreementLevelItemId === Number(agreementItemId)
+    )
     explanations.push(
-      `- Shifting ${penniesToShift} pennies to first payment for agreement ${agreementItem.code}: ${agreementItem.annualPaymentPence} * ${agreementItem.durationYears} mod ${payments.length} = ${penniesToShift} pence`
+      `- Shifting ${penniesToShift} pennies to first payment for agreement ${agreementItem.code}: (${agreementItem.annualPaymentPence} * ${agreementItem.durationYears}) - ${flooredTotal} = ${penniesToShift} pence`
     )
 
     // add pennies for each individual line item of the first payment
@@ -148,7 +206,9 @@ const shiftTotalPenniesToFirstScheduledPayment = (
   explanations.push(
     `- TOTAL: ${firstAdjustedPayment.totalPaymentPence} pence/year`,
     `- FIRST PAYMENT (QUARTER) : ${adjustedPayments[1]?.totalPaymentPence} + ${decimalsForAllPayments} = ${firstAdjustedPayment.totalPaymentPence} pence`,
-    `- REST OF PAYMENTS (QUARTER): ${adjustedPayments[1]?.totalPaymentPence} pence`
+    `- QUARTERLY PAYMENTS (REST): ${formatDistinctPaymentBreakdown(
+      adjustedPayments.slice(1)
+    )}`
   )
 
   return { adjustedPayments, explanations }
@@ -183,6 +243,27 @@ const calculatePaymentsPerYear = (schedule) => {
 }
 
 /**
+ * Determines whether an item is paid on a given payment. An item is paid
+ * quarterly for the full length of its own duration, starting from the first
+ * scheduled payment, so shorter duration actions stop being paid before longer
+ * duration actions.
+ * @param {number | undefined} durationYears
+ * @param {number} paymentsPerYear
+ * @param {number} paymentIndex
+ * @returns {boolean}
+ */
+const isItemActiveAtPayment = (
+  durationYears,
+  paymentsPerYear,
+  paymentIndex
+) => {
+  if (durationYears == null) {
+    return true
+  }
+  return paymentIndex < durationYears * paymentsPerYear
+}
+
+/**
  * Calculates scheduled payments information for all parcels items and agreement level items
  * @param {Array<PaymentParcelItem>} parcelItems
  * @param {Array<PaymentAgreementItem>} agreementLevelItems
@@ -196,11 +277,20 @@ export const calculateScheduledPayments = (
 ) => {
   const paymentsPerYear = calculatePaymentsPerYear(schedule)
 
-  return schedule.map((paymentDate) => {
+  return schedule.map((paymentDate, paymentIndex) => {
     const lineItems = []
     let totalPaymentPence = 0
 
     for (const [id, parcelItem] of Object.entries(parcelItems)) {
+      if (
+        !isItemActiveAtPayment(
+          parcelItem.durationYears,
+          paymentsPerYear,
+          paymentIndex
+        )
+      ) {
+        continue
+      }
       const paymentPence = parcelItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         parcelItemId: Number(id),
@@ -211,6 +301,15 @@ export const calculateScheduledPayments = (
     }
 
     for (const [id, agreementItem] of Object.entries(agreementLevelItems)) {
+      if (
+        !isItemActiveAtPayment(
+          agreementItem.durationYears,
+          paymentsPerYear,
+          paymentIndex
+        )
+      ) {
+        continue
+      }
       const paymentPence = agreementItem.annualPaymentPence / paymentsPerYear
       lineItems.push({
         agreementLevelItemId: Number(id),
@@ -387,7 +486,7 @@ const addAgreementItem = (
 }
 
 /**
- * @import { PaymentParcel, ScheduledPayment, PaymentParcelAction, PaymentParcelItem, PaymentAgreementItem } from './payment-calculation.d.js'
+ * @import { PaymentParcel, ScheduledPayment, PaymentParcelAction, PaymentParcelItem, PaymentAgreementItem, LineItem } from './payment-calculation.d.js'
  * @import { Action } from '../actions/action.d.js'
  * @import { ExplanationSection } from '~/src/features/available-area/explanations.d.js'
  */

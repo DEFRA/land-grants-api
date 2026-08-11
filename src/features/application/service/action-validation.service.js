@@ -9,6 +9,7 @@ import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 import {
   actionResultTransformer,
   ruleEngineApplicationTransformer
@@ -44,8 +45,16 @@ export const validateLandAction = async (
   // Other actions requested for this same parcel in this submission also
   // compete for the parcel's area, alongside persisted agreements - both
   // are treated as "existing" demand when computing this action's available area.
+  // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
+  // for area, so they're excluded rather than mismeasured as hectares.
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
+    .filter((a) => {
+      const unit = actions.find(
+        (config) => config.code === a.code
+      )?.applicationUnitOfMeasurement
+      return unit === undefined || unit === HECTARES
+    })
     .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
   const existingActions = [

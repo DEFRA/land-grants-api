@@ -2,6 +2,7 @@ import {
   calculateAnnualAndAgreementTotals,
   calculateScheduledPayments,
   createPaymentItems,
+  formatDistinctPaymentBreakdown,
   reconcilePaymentAmounts
 } from './amountCalculation.js'
 import { generatePaymentSchedule } from './generateSchedule.js'
@@ -32,11 +33,7 @@ export const getPaymentCalculationForParcels = (
 
   // calculate total amounts
   const { annualTotalPence, agreementTotalPence } =
-    calculateAnnualAndAgreementTotals(
-      parcelItems,
-      agreementItems,
-      durationYears
-    )
+    calculateAnnualAndAgreementTotals(parcelItems, agreementItems)
 
   // generate date schedule
   const { agreementStartDate, agreementEndDate, schedule } =
@@ -71,7 +68,9 @@ export const getPaymentCalculationForParcels = (
       `Total agreement payment: ${agreementTotalPence} pence/year`,
       `Total annual payment: ${annualTotalPence} pence/year`,
       `First quarter payment: ${revisedPayments[0].totalPaymentPence} pence`,
-      `Rest quarters payment: ${revisedPayments[1].totalPaymentPence} pence`
+      `Quarterly payments: ${formatDistinctPaymentBreakdown(
+        revisedPayments.slice(1)
+      )}`
     ])
   ]
 
