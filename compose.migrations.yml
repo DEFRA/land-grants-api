@@ -2,22 +2,19 @@ x-common-migration: &common-migration
   POSTGRES_HOST: ${POSTGRES_HOST:-land-grants-backend-postgres}
   SCHEMA_ROLE: ${POSTGRES_SCHEMA_ROLE:-land_grants_api}
   SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
-  ENFORCE_SCHEMA_PERMISSIONS: ${ENFORCE_SCHEMA_PERMISSIONS:-true}
 
-# Postgres role used to run liquibase migrations (and own the schema objects), matching
-# production where land_grants_api_ddl is a superuser role.
-x-common-postgres-ddl: &common-postgres-ddl
+x-common-postgres: &common-postgres
   POSTGRES_PORT: 5432
   POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
-  POSTGRES_PASSWORD: ${POSTGRES_DDL_PASSWORD:-land_grants_api}
-  POSTGRES_USER: ${POSTGRES_DDL_USER:-land_grants_api_ddl}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-land_grants_api}
+  POSTGRES_USER: ${POSTGRES_USER:-land_grants_api}
 
 services:
   database-up:
     image: liquibase/liquibase:4.31-alpine
     restart: 'no'
     environment:
-      <<: [*common-postgres-ddl, *common-migration]
+      <<: [*common-postgres, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-up"
     volumes:
@@ -30,7 +27,7 @@ services:
     image: liquibase/liquibase:4.31-alpine
     restart: 'no'
     environment:
-      <<: [*common-postgres-ddl, *common-migration]
+      <<: [*common-postgres, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-down"
     volumes:

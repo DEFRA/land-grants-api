@@ -1,20 +1,9 @@
 #!/bin/bash
 echo "db update on $POSTGRES_HOST:$POSTGRES_PORT $SCHEMA_NAME as $POSTGRES_USER"
 
-CONNECTION_ARGS="--url=jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB --username=$POSTGRES_USER --password=$POSTGRES_PASSWORD --defaultSchemaName=$SCHEMA_NAME"
-
 /liquibase/liquibase \
 --driver=org.postgresql.Driver \
 --changeLogFile=/changelog/db.changelog.xml \
-$CONNECTION_ARGS \
+--url=jdbc:postgresql://$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB \
+--username="$POSTGRES_USER" --password="$POSTGRES_PASSWORD" --defaultSchemaName="$SCHEMA_NAME" \
 update
-
-if [ "${ENFORCE_SCHEMA_PERMISSIONS:-false}" = "true" ]; then
-  echo "enforcing prod schema permissions on $POSTGRES_HOST:$POSTGRES_PORT"
-  /liquibase/liquibase \
-  --driver=org.postgresql.Driver \
-  --searchPath=/scripts \
-  --changeLogFile=migration/enforce-permissions.xml \
-  $CONNECTION_ARGS \
-  update
-fi
