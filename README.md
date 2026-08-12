@@ -100,14 +100,6 @@ The following command:
 npm run dev:setup
 ```
 
-The dockerised postgres mirrors production permissions: a superuser role `land_grants_api_ddl` is used by the liquibase migrations to create the schema objects, and a limited `land_grants_api` role (non-superuser) is used by the API at runtime, receiving only the grants the migrations apply.
-
-> **Note:** the local postgres roles are created on first run of the postgres container. If you have an existing `postgres_data` volume from before this setup, recreate it so the roles are created:
->
-> ```bash
-> docker compose down -v
-> ```
-
 #### Ingest data into your local database
 
 In order to ingest data into your database, edit the file `scripts/local-ingest`, and set the path to you data directory, currently set to `./ingestion-data/data/`.
