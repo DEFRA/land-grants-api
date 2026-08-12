@@ -1,15 +1,24 @@
 import Joi from 'joi'
-import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
+import { COUNT, UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
 import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_availability.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
+// TODO: deprecated in favour of `availability`
 const availableAreaSchema = Joi.object({
   unit: Joi.string().required(),
-  value: Joi.number().required()
+  value: Joi.number().allow(null).required()
 })
 
-const actionAvailabilitySchema = Joi.object({
+export const actionAvailabilitySchema = Joi.object({
+  unit: Joi.string().required(),
+  value: Joi.number()
+    .allow(null)
+    .required()
+    .when(Joi.ref('unit'), {
+      is: Joi.allow(COUNT).only(),
+      then: Joi.number().integer()
+    }),
   type: Joi.string()
     .valid(...AVAILABILITY_TYPES)
     .optional()
@@ -18,6 +27,7 @@ const actionAvailabilitySchema = Joi.object({
 const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
+  // TODO: deprecated in favour of `availability`, rm once grants-ui has migrated to the latter
   availableArea: availableAreaSchema.optional(),
   results: Joi.object({
     totalValidLandCoverSqm: Joi.number().optional(),

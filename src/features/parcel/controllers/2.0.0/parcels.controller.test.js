@@ -233,6 +233,66 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
+    test.each([['m'], ['count']])(
+      'should return 200 with parcel data when requesting actions,with units = %s',
+      async (unit) => {
+        const request = {
+          method: 'POST',
+          url: '/api/v2/parcels',
+          headers: { 'X-Forwarded-Authorization': 'dummy' },
+          payload: {
+            sbi,
+            parcelIds: ['SX0679-9238'],
+            fields: ['actions']
+          }
+        }
+
+        mockGetActionsForParcel.mockImplementation((parcel) => {
+          return Promise.resolve({
+            actions: [
+              {
+                code: 'XYZ1',
+                description: `${unit}-based action`,
+                availableArea: undefined,
+                availability: {
+                  value: null,
+                  type: 'total',
+                  unit
+                },
+                ratePerUnitGbp: 10.6,
+                ratePerAgreementPerYearGbp: 272
+              }
+            ],
+            parcelId: parcel.parcel_id,
+            sheetId: parcel.sheet_id,
+            size: { unit: 'ha', value: 10 }
+          })
+        })
+
+        /** @type { Hapi.ServerInjectResponse<object> } */
+        const {
+          statusCode,
+          result: { message, parcels }
+        } = await server.inject(request)
+
+        expect(statusCode).toBe(200)
+        expect(message).toBe('success')
+        expect(parcels).toHaveLength(1)
+        expect(parcels[0]).toHaveProperty('actions')
+        expect(parcels[0].actions).toHaveLength(1)
+        expect(parcels[0].actions[0].code).toBe('XYZ1')
+        expect(parcels[0].actions[0].availability.unit).toBe(unit)
+        expect(parcels[0].actions[0].availability.value).toBeNull()
+        expect(mockGetActionsForParcel).toHaveBeenCalled()
+        expect(
+          mockGetActionsForParcelWithSSSIConsentRequired
+        ).not.toHaveBeenCalled()
+        expect(
+          mockGetActionsForParcelWithHEFERConsentRequired
+        ).not.toHaveBeenCalled()
+      }
+    )
+
     test('should return 200 with parcel data when requesting actions.results field', async () => {
       const mockActionsWithResults = [
         {
@@ -306,7 +366,7 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should return 200 with guidanceUrl and availability when present, without needing a fields flag', async () => {
+    test('should return 200 with guidanceUrl and availability when present', async () => {
       const mockActionsWithAvailability = [
         {
           ...mockActionsWithAvailableArea[0],
@@ -329,7 +389,10 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithAvailability
+          result.actions = mockActionsWithAvailability.map((a) => ({
+            ...a,
+            availability: { ...a.availability, unit: 'ha', value: null }
+          }))
         }
 
         return Promise.resolve(result)
@@ -358,7 +421,9 @@ describe('Parcels Controller 2.0.0', () => {
         'https://www.gov.uk/find-funding'
       )
       expect(parcels[0].actions[0].availability).toEqual({
-        type: 'total'
+        type: 'total',
+        unit: 'ha',
+        value: null
       })
       expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,
@@ -641,6 +706,28 @@ describe('Parcels Controller 2.0.0', () => {
     })
 
     test('should return 200 with plannedActions included', async () => {
+      const plannedActions = [
+        {
+          actionCode: 'BND2',
+          quantity: 5.5,
+          unit: 'ha'
+        },
+        {
+          actionCode: 'HEF1',
+          quantity: 100,
+          unit: 'sqm'
+        },
+        {
+          actionCode: 'WBD1',
+          quantity: 2,
+          unit: 'count'
+        },
+        {
+          actionCode: 'BND1',
+          quantity: 300,
+          unit: 'm'
+        }
+      ]
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -649,13 +736,7 @@ describe('Parcels Controller 2.0.0', () => {
           sbi,
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
-          plannedActions: [
-            {
-              actionCode: 'BND2',
-              quantity: 5.5,
-              unit: 'ha'
-            }
-          ]
+          plannedActions
         }
       }
 
@@ -672,13 +753,7 @@ describe('Parcels Controller 2.0.0', () => {
         expect.objectContaining({
           parcelIds: ['SX0679-9238'],
           fields: ['actions'],
-          plannedActions: [
-            {
-              actionCode: 'BND2',
-              quantity: 5.5,
-              unit: 'ha'
-            }
-          ]
+          plannedActions
         }),
         false,
         mockEnabledActions,
@@ -1002,13 +1077,9 @@ describe('Parcels Controller 2.0.0', () => {
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject(request)
+      const { statusCode } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-      expect(message).toBe(`"plannedActions[0].unit" must be one of [ha, sqm]`)
     })
 
     test('should return 500 when createCompatibilityMatrix throws error', async () => {

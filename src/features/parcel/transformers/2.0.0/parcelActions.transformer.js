@@ -8,15 +8,22 @@ import { sizeTransformer } from '../parcelActions.transformer.js'
  * @returns {object} The land action data with available area
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
+  const unit = action.applicationUnitOfMeasurement
+
+  const aa = Number.isFinite(availableArea?.availableAreaHectares)
+    ? sizeTransformer(availableArea?.availableAreaHectares ?? 0, unit)
+    : undefined
+
+  const availability = { unit, value: null, ...aa, ...action.availability }
+
   const response = {
     code: action.code,
     description: action.description,
     version: action.semanticVersion,
-    availableArea: Number.isFinite(availableArea?.availableAreaHectares)
-      ? sizeTransformer(availableArea?.availableAreaHectares ?? 0)
-      : undefined,
+    // TODO: deprecated in favour of generic availability, rm once grants-ui uses the latter
+    availableArea: aa,
     guidanceUrl: action.guidanceUrl ?? undefined,
-    availability: action.availability ?? undefined,
+    availability,
     ...action.payment
   }
 

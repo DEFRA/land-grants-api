@@ -127,6 +127,10 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            availability: {
+              unit: 'ha',
+              value: 762.9068
+            },
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             sssiConsentRequired: false,
@@ -137,6 +141,10 @@ describe('Parcels Controller 2.0.0', () => {
             code: 'UPL1',
             description: 'Moderate livestock grazing on moorland',
             availableArea: {
+              unit: 'ha',
+              value: 762.9068
+            },
+            availability: {
               unit: 'ha',
               value: 762.9068
             },
@@ -152,6 +160,10 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            availability: {
+              unit: 'ha',
+              value: 762.9068
+            },
             ratePerUnitGbp: 53,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -161,6 +173,10 @@ describe('Parcels Controller 2.0.0', () => {
             code: 'UPL3',
             description: 'Limited livestock grazing on moorland',
             availableArea: {
+              unit: 'ha',
+              value: 762.9068
+            },
+            availability: {
               unit: 'ha',
               value: 762.9068
             },

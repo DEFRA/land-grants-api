@@ -1,33 +1,27 @@
-import {
-  applicationUnitOfMeasurement,
-  haToSqm
-} from '~/src/features/common/helpers/measurement.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 
 /**
- * Transform size to application unit of measurement
+ * Attach application unit of measurement to size; this is used both for total parcel size (which
+ * will usually be provided with unit = hectares) and for action areas and available areas
  * @param {number} area - The area to transform
  * @returns {{unit: string, value: number}} The transformed size
  */
-function sizeTransformer(area) {
-  return {
-    unit: applicationUnitOfMeasurement,
-    value: area
-  }
+function sizeTransformer(area, unit) {
+  return { unit, value: area }
 }
 
 /**
- * Transform current actions to actions with area in square meters
+ * Transform current actions to actions with area in square meters. Only applicable to actions
+ * where applicationUnitOfMeasurement is HECTARES.
  * @param {AgreementAction[] | null} plannedActions - The planned actions to transform
  * @returns {ActionRequest[]} The transformed current actions
  */
 function plannedActionsTransformer(plannedActions) {
-  return (plannedActions ?? []).map((a) => {
-    return {
-      actionCode: a.actionCode,
-      areaSqm: a.unit === HECTARES ? haToSqm(a.quantity) : a.quantity
-    }
-  })
+  return (plannedActions ?? []).map((a) => ({
+    actionCode: a.actionCode,
+    areaSqm: a.unit === HECTARES ? haToSqm(a.quantity) : a.quantity
+  }))
 }
 
 /**

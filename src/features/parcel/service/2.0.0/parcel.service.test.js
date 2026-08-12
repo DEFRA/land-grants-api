@@ -103,6 +103,7 @@ describe('Parcel Service 2.0.0', () => {
 
       mockEnabledActions = [
         {
+          applicationUnitOfMeasurement: 'ha',
           code: 'UPL1',
           description: 'Action 1',
           enabled: true,
@@ -120,6 +121,7 @@ describe('Parcel Service 2.0.0', () => {
           ]
         },
         {
+          applicationUnitOfMeasurement: 'ha',
           code: 'UPL2',
           description: 'Action 2',
           enabled: true,
@@ -523,8 +525,24 @@ describe('Parcel Service 2.0.0', () => {
       }
 
       mockEnabledActionsForParcel = [
-        { code: 'UPL1', description: 'Action 1', display: true },
-        { code: 'UPL2', description: 'Action 2', display: false }
+        {
+          applicationUnitOfMeasurement: 'ha',
+          code: 'UPL1',
+          description: 'Action 1',
+          display: true
+        },
+        {
+          applicationUnitOfMeasurement: 'ha',
+          code: 'UPL2',
+          description: 'Action 2',
+          display: false
+        },
+        {
+          applicationUnitOfMeasurement: 'sqm',
+          code: 'HEF1',
+          description: 'Action 3',
+          display: true
+        }
       ]
 
       mockRequest = {
@@ -608,6 +626,76 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
+    test('should not run through AACs for actions with unit !== HECTARES', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        [mockEnabledActionsForParcel[2]],
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+    })
+
+    test('should filter out non-hectare agreements when calculating available areas', async () => {
+      const plannedActions = [
+        {
+          actionCode: 'HEF1',
+          quantity: 100,
+          unit: 'sqm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        },
+        {
+          actionCode: 'UPL1',
+          quantity: 100,
+          unit: 'sqm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        }
+      ]
+      mergeAgreementsTransformer.mockReturnValue(plannedActions)
+      plannedActionsTransformer.mockReturnValue([
+        { actionCode: 'UPL1', areaSqm: 100 }
+      ])
+
+      await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, plannedActions },
+        false,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(plannedActionsTransformer).toHaveBeenCalledTimes(1)
+      expect(plannedActionsTransformer).toHaveBeenCalledWith([
+        plannedActions[1]
+      ])
+
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        'UPL1',
+        'SX0679',
+        '9238',
+        [{ actionCode: 'UPL1', areaSqm: 100 }],
+        mockRequest.server.postgresDb,
+        mockRequest.logger
+      )
+
+      expect(findMaximumAvailableArea).toHaveBeenCalledTimes(1)
+      expect(findMaximumAvailableArea).toHaveBeenCalledWith(
+        'UPL1',
+        [{ actionCode: 'UPL1', areaSqm: 100 }],
+        mockCompatibilityCheckFn,
+        { landCoverToString: 'grass' }
+      )
+    })
+
     test('should include actions in the response when actions field is requested', async () => {
       const result = await getActionsForParcel(
         mockParcel,
@@ -620,7 +708,8 @@ describe('Parcel Service 2.0.0', () => {
       )
 
       expect(result.actions).toEqual([
-        { code: 'UPL1', description: 'Action 1' }
+        { code: 'UPL1', description: 'Action 1' },
+        { code: 'HEF1', description: 'Action 3' }
       ])
     })
 
