@@ -149,6 +149,7 @@ describe('importLandData', () => {
     ).rejects.toThrow('Ingest 123 not found')
 
     expect(importData).not.toHaveBeenCalled()
+    expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
   })
 
   it('should successfully import land data with ZIP file containing CSV', async () => {
