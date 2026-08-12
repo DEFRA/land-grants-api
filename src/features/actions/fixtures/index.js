@@ -1,4 +1,4 @@
-import { applicationUnitOfMeasurement } from '~/src/features/common/helpers/measurement.js'
+const applicationUnitOfMeasurement = 'ha'
 
 const mockActionConfig = [
   {
