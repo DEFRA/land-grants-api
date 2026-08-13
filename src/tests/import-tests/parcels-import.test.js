@@ -280,3 +280,355 @@ describe('Land covers import', () => {
     10000
   )
 })
+
+describe('Land import pairing scoping', () => {
+  let s3Client
+  let connection
+  const logger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
+  }
+
+  beforeAll(async () => {
+    connection = connectToTestDatabase()
+    s3Client = createTestS3Client()
+    await ensureBucketExists(s3Client)
+  })
+
+  afterAll(async () => {
+    await connection.end()
+    await deleteFiles(s3Client, ALL_S3_KEYS)
+  })
+
+  test('does not pair today with a staged covers ingest left over from yesterday', async () => {
+    // Remove ingest history left by earlier tests so the leftover is the most recent
+    // land_covers ingest (as it would be at the start of a brand new day).
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    // Yesterday's land_covers run finished staging but was never promoted.
+    const leftoverCoversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+    await importLandData({
+      s3key: COVERS_CSV_KEY,
+      filename: 'covers_head.csv',
+      ingestId: leftoverCoversIngestId
+    })
+    await connection.query(
+      `UPDATE ingest SET start_date = start_date - interval '1 day' WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    // Today's land_parcels run completes. It must wait for today's land_covers run
+    // rather than promoting against yesterday's leftover covers data.
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+    await importLandData({
+      s3key: PARCELS_CSV_KEY,
+      filename: 'parcels_head.csv',
+      ingestId: parcelsIngestId
+    })
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [leftoverCovers] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    expect(parcelsIngest.status).toBe('staged')
+    expect(leftoverCovers.status).toBe('staged')
+
+    // Today's land_covers run completes and pairs with today's parcels run.
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+    await importLandData({
+      s3key: COVERS_CSV_KEY,
+      filename: 'covers_head.csv',
+      ingestId: coversIngestId
+    })
+
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [promotedParcels] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [cancelledLeftoverCovers] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    expect(coversIngest.status).toBe('completed')
+    expect(promotedParcels.status).toBe('completed')
+    expect(cancelledLeftoverCovers.status).toBe('cancelled')
+  })
+
+  test('aborts the paired promotion when the covers staging holds more unique parcels than the parcels staging', async () => {
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    const [liveParcelsBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+    await importLandData({
+      s3key: PARCELS_CSV_KEY,
+      filename: 'parcels_head.csv',
+      ingestId: parcelsIngestId
+    })
+
+    // Remove most of the staged parcels so the staged covers (5 unique parcels) would
+    // reference more parcels than the parcels staging provides - the promotion must abort
+    // before touching live tables rather than leave unlinked covers.
+    await connection.query(
+      `DELETE FROM land_parcels_staging WHERE parcel_id IN (SELECT parcel_id FROM land_parcels_staging LIMIT 5)`
+    )
+
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+
+    await expect(
+      importLandData({
+        s3key: COVERS_CSV_KEY,
+        filename: 'covers_head.csv',
+        ingestId: coversIngestId
+      })
+    ).rejects.toThrow(
+      'land_covers/land_parcels cannot be promoted because the covers staging table contains more unique parcels (5) than the parcels staging table (4)'
+    )
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [liveParcelsAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    expect(parcelsIngest.status).toBe('failed')
+    expect(coversIngest.status).toBe('failed')
+    expect(liveParcelsAfter.count).toBe(liveParcelsBefore.count)
+    expect(liveCoversAfter.count).toBe(liveCoversBefore.count)
+  })
+
+  test('aborts the paired promotion when the parcels staging table is empty', async () => {
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    const [liveParcelsBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+    await importLandData({
+      s3key: PARCELS_CSV_KEY,
+      filename: 'parcels_head.csv',
+      ingestId: parcelsIngestId
+    })
+
+    // Empty the parcels staging after it staged so the promotion must abort rather than
+    // swap an empty table into live (which would wipe the live land_parcels table).
+    await connection.query(`DELETE FROM land_parcels_staging`)
+
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+
+    await expect(
+      importLandData({
+        s3key: COVERS_CSV_KEY,
+        filename: 'covers_head.csv',
+        ingestId: coversIngestId
+      })
+    ).rejects.toThrow(
+      'land_covers/land_parcels cannot be promoted because a staging table is empty'
+    )
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [liveParcelsAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    expect(parcelsIngest.status).toBe('failed')
+    expect(coversIngest.status).toBe('failed')
+    expect(liveParcelsAfter.count).toBe(liveParcelsBefore.count)
+    expect(liveCoversAfter.count).toBe(liveCoversBefore.count)
+  })
+
+  test('aborts the paired promotion when the covers staging table is empty', async () => {
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    const [liveParcelsBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+    await importLandData({
+      s3key: COVERS_CSV_KEY,
+      filename: 'covers_head.csv',
+      ingestId: coversIngestId
+    })
+
+    // Empty the covers staging after it staged so the promotion must abort rather than
+    // swap an empty table into live (which would wipe the live land_covers table).
+    await connection.query(`DELETE FROM land_covers_staging`)
+
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+
+    await expect(
+      importLandData({
+        s3key: PARCELS_CSV_KEY,
+        filename: 'parcels_head.csv',
+        ingestId: parcelsIngestId
+      })
+    ).rejects.toThrow(
+      'land_parcels/land_covers cannot be promoted because a staging table is empty'
+    )
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [liveParcelsAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    expect(parcelsIngest.status).toBe('failed')
+    expect(coversIngest.status).toBe('failed')
+    expect(liveParcelsAfter.count).toBe(liveParcelsBefore.count)
+    expect(liveCoversAfter.count).toBe(liveCoversBefore.count)
+  })
+})

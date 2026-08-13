@@ -25,7 +25,8 @@ import {
   setFileInProgress,
   setIngestCompleted,
   setIngestFailed,
-  getFileExpectedRowCount
+  getFileExpectedRowCount,
+  isValidIngestFile
 } from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
@@ -296,6 +297,27 @@ async function processValidatedFile(
   const startTime = performance.now()
   const { name: entityName } = entityType
 
+  // The CDP callback validated this file, but that check and this worker's execution are
+  // separated by the worker concurrency queue. Re-validate now so a file for an ingest that
+  // is no longer in progress (e.g. already promoted) or a file that was already processed
+  // (duplicate callback) is skipped rather than inserted into staging. Skipping is a no-op:
+  // the ingest is not marked failed, so a late file can never disturb an already-promoted pair.
+  // Processing is async (fire-and-forget off the callback), so this cannot be reported back to
+  // the uploader - raise it as an alert-worthy error and metric instead.
+  // @ts-expect-error filename
+  if (!(await isValidIngestFile(ingestId, filename, dbClient))) {
+    const error = new Error(
+      `${entityName} file ${filename} skipped - ingest ${ingestId} is no longer accepting files`
+    )
+    logBusinessError(logger, {
+      operation: `${entityName}_file_skipped`,
+      error,
+      context: { entityName, filename, ingestId }
+    })
+    await metricsCounter(`${entityName}_file_skipped`, 1)
+    return false
+  }
+
   // @ts-expect-error filename
   await setFileInProgress(filename, ingestId, dbClient)
   await createTempTable(dbClient, entityName)
@@ -373,7 +395,13 @@ async function handleImportFailure(
   await setIngestFailed(ingestId, dbClient)
   await cancelPendingFiles(ingestId, dbClient)
   if (pairedWith) {
-    await failPairedAwaitingIngest(entityName, pairedWith, dbClient, logger)
+    await failPairedAwaitingIngest(
+      entityName,
+      pairedWith,
+      ingestId,
+      dbClient,
+      logger
+    )
   }
   await metricsCounter(`${entityName}_data_ingest_failed`, 1)
 }

@@ -20,7 +20,8 @@ import {
   setFileFailed,
   setIngestCompleted,
   setIngestFailed,
-  getFileExpectedRowCount
+  getFileExpectedRowCount,
+  isValidIngestFile
 } from './start-ingest.service.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
@@ -81,6 +82,7 @@ describe('Import Land Data Service', () => {
     cancelPendingFiles.mockResolvedValue()
     getFileExpectedRowCount.mockResolvedValue(1)
     getTableRowCount.mockResolvedValue(1)
+    isValidIngestFile.mockResolvedValue(true)
     metricsCounter.mockResolvedValue()
     logDuplicateRows.mockResolvedValue(0)
   })
@@ -185,6 +187,43 @@ describe('Import Land Data Service', () => {
       )
     })
 
+    it(`should skip ${entity.name} file when the ingest is no longer accepting files`, async () => {
+      isValidIngestFile.mockResolvedValue(false)
+
+      const result = await importData(
+        makeStream(),
+        entity,
+        ingestId,
+        'file.csv',
+        mockLogger
+      )
+
+      expect(result).toBe(false)
+      expect(isValidIngestFile).toHaveBeenCalledWith(
+        ingestId,
+        'file.csv',
+        mockClient
+      )
+      expect(setFileInProgress).not.toHaveBeenCalled()
+      expect(createTempTable).not.toHaveBeenCalled()
+      expect(insertData).not.toHaveBeenCalled()
+      expect(isIngestComplete).not.toHaveBeenCalled()
+      expect(promoteStagingTable).not.toHaveBeenCalled()
+      expect(completeAndPromotePaired).not.toHaveBeenCalled()
+      expect(setIngestFailed).not.toHaveBeenCalled()
+      expect(cancelPendingFiles).not.toHaveBeenCalled()
+      expect(failPairedAwaitingIngest).not.toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_file_skipped`,
+        1
+      )
+      expect(metricsCounter).not.toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_failed`,
+        expect.anything()
+      )
+    })
+
     it(`should fail ${entity.name} and not promote when per-file row count does not match`, async () => {
       getTableRowCount.mockResolvedValue(5)
       getFileExpectedRowCount.mockResolvedValue(3)
@@ -203,6 +242,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -233,6 +273,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -256,6 +297,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -285,6 +327,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
