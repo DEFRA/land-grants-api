@@ -113,6 +113,25 @@ describe('actionResultTransformer', () => {
 
     expect(result.availableArea.areaInHa).toBe(-0.1)
   })
+
+  test('should handle null available area', () => {
+    const action = { code: 'WBD1' }
+    const actions = [
+      {
+        code: 'WBD1',
+        actionConfigVersion: '1.0',
+        applicationUnitOfMeasurement: 'count'
+      }
+    ]
+    const ruleResult = {
+      passed: true,
+      results: { rule: 'test rule' }
+    }
+
+    const result = actionResultTransformer(action, actions, null, ruleResult)
+
+    expect(result.availableArea).toBe(null)
+  })
 })
 
 describe('applicationDataTransformer', () => {

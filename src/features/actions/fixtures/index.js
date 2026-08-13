@@ -57,84 +57,134 @@ const totalAvailableAreaRule = {
   version: '1.0.0'
 }
 
-const mockActionConfig = [
-  {
-    version: 1,
-    semanticVersion: '1.0.0',
-    startDate: '2025-01-01',
-    code: 'CMOR1',
-    durationYears: 3,
-    description: 'Assess moorland and produce a written record',
-    applicationUnitOfMeasurement,
-    enabled: true,
-    display: true,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/cmor1-assess-moorland-and-produce-a-written-record',
-    availability: { type: 'total' },
-    payment: {
-      ratePerUnitGbp: 10.6,
-      ratePerAgreementPerYearGbp: 272
-    },
-    landCoverClassCodes,
-    rules: [
-      moorlandRule,
-      lessFavouredAreaRule,
-      sssiConsentRule,
-      totalAvailableAreaRule
-    ]
+const cmor1 = {
+  version: 1,
+  semanticVersion: '1.0.0',
+  startDate: '2025-01-01',
+  code: 'CMOR1',
+  durationYears: 3,
+  description: 'Assess moorland and produce a written record',
+  applicationUnitOfMeasurement,
+  enabled: true,
+  display: true,
+  guidanceUrl:
+    'https://www.gov.uk/find-funding-for-land-or-farms/cmor1-assess-moorland-and-produce-a-written-record',
+  availability: { type: 'total' },
+  payment: {
+    ratePerUnitGbp: 10.6,
+    ratePerAgreementPerYearGbp: 272
   },
-  {
-    version: 1,
-    semanticVersion: '1.0.0',
-    enabled: true,
-    display: true,
-    startDate: '2025-01-01',
-    code: 'UPL1',
-    durationYears: 3,
-    description: 'UPL1: Moderate livestock grazing on moorland',
-    applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/upl1-moderate-livestock-grazing-on-moorland',
-    availability: { type: 'partial' },
-    payment: {
-      ratePerUnitGbp: 20
-    },
-    landCoverClassCodes,
-    rules: [
-      moorlandRule,
-      lessFavouredAreaRule,
-      sssiConsentRule,
-      totalAvailableAreaRule
-    ]
-  },
-  {
-    version: 1,
-    semanticVersion: '1.0.0',
-    enabled: true,
-    display: true,
-    startDate: '2025-01-01',
-    code: 'UPL2',
-    durationYears: 3,
-    description: 'UPL2: Low livestock grazing on moorland',
-    applicationUnitOfMeasurement,
-    guidanceUrl:
-      'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
-    availability: { type: 'partial' },
-    payment: {
-      ratePerUnitGbp: 53,
-      ratePerAgreementPerYearGbp: 139
-    },
-    landCoverClassCodes,
-    rules: [
-      moorlandRule,
-      lessFavouredAreaRule,
-      sssiConsentRule,
-      totalAvailableAreaRule
-    ]
-  }
-]
+  landCoverClassCodes,
+  rules: [
+    moorlandRule,
+    lessFavouredAreaRule,
+    sssiConsentRule,
+    totalAvailableAreaRule
+  ]
+}
 
-const mockWoodlandManagementActionConfig = [
+const upl1 = {
+  version: 1,
+  semanticVersion: '1.0.0',
+  enabled: true,
+  display: true,
+  startDate: '2025-01-01',
+  code: 'UPL1',
+  durationYears: 3,
+  description: 'UPL1: Moderate livestock grazing on moorland',
+  applicationUnitOfMeasurement,
+  guidanceUrl:
+    'https://www.gov.uk/find-funding-for-land-or-farms/upl1-moderate-livestock-grazing-on-moorland',
+  availability: { type: 'partial' },
+  payment: {
+    ratePerUnitGbp: 20
+  },
+  landCoverClassCodes,
+  rules: [
+    moorlandRule,
+    lessFavouredAreaRule,
+    sssiConsentRule,
+    totalAvailableAreaRule
+  ]
+}
+const upl2 = {
+  version: 1,
+  semanticVersion: '1.0.0',
+  enabled: true,
+  display: true,
+  startDate: '2025-01-01',
+  code: 'UPL2',
+  durationYears: 3,
+  description: 'UPL2: Low livestock grazing on moorland',
+  applicationUnitOfMeasurement,
+  guidanceUrl:
+    'https://www.gov.uk/find-funding-for-land-or-farms/upl2-low-livestock-grazing-on-moorland',
+  availability: { type: 'partial' },
+  payment: {
+    ratePerUnitGbp: 53,
+    ratePerAgreementPerYearGbp: 139
+  },
+  landCoverClassCodes,
+  rules: [
+    moorlandRule,
+    lessFavouredAreaRule,
+    sssiConsentRule,
+    totalAvailableAreaRule
+  ]
+}
+
+export const wbd1 = {
+  applicationUnitOfMeasurement: 'count',
+  availability: {
+    type: 'total'
+  },
+  code: 'WBD1',
+  description: 'Manage ponds',
+  display: true,
+  displayOrder: 0,
+  durationYears: 3,
+  enabled: true,
+  groupId: null,
+  guidanceUrl:
+    'https://www.gov.uk/find-funding-for-land-or-farms/wbd1-manage-ponds',
+  payment: {
+    ratePerUnitGbp: 257,
+    ratePerAgreementPerYearGbp: 0
+  },
+  paymentMethod: {
+    config: {
+      ratePerUnitGbp: 257
+    },
+    name: 'default-calculation',
+    version: '1.0.0'
+  },
+  rules: [
+    {
+      config: {
+        caveatDescription: 'A hefer is needed from Historic England',
+        layerName: 'historic_features',
+        tolerancePercent: 0
+      },
+      description:
+        'Does the site require a Historic Environment Farm Environment Record?',
+      name: 'hefer-consent-required'
+    },
+    {
+      config: {
+        caveatDescription: 'A manual pond check is required'
+      },
+      description: 'Check that ponds on the land meet the action criteria',
+      name: 'pond-check-required',
+      type: 'manual-check-required'
+    }
+  ],
+  semanticVersion: '1.0.0',
+  startDate: '2026-10-18'
+}
+
+export const mockActionConfig = [cmor1, upl1, upl2, wbd1]
+
+export const mockWoodlandManagementActionConfig = [
   {
     id: 17,
     enabled: true,
@@ -193,5 +243,3 @@ const mockWoodlandManagementActionConfig = [
     }
   }
 ]
-
-export { mockActionConfig, mockWoodlandManagementActionConfig }
