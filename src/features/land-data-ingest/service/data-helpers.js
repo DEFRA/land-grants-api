@@ -210,18 +210,28 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
 }
 
 /**
- * Fetches the id/status of an entity's latest ingest. Must be called while holding the
- * pair's advisory lock when used for pair coordination.
+ * Fetches the id/status of an entity's latest ingest that belongs to the same run as the
+ * given reference ingest. Must be called while holding the pair's advisory lock when used
+ * for pair coordination. An ingest started on a different UTC calendar day is treated as a
+ * leftover from a previous run and is never returned. No status filter is applied so callers
+ * can still react to a same-run paired ingest that has failed or completed.
  * @param {string} entityName
+ * @param {Date | string | undefined} referenceStartDate
  * @param {import('pg').Client} dbClient
- * @returns {Promise<{id: number, status: string} | undefined>}
+ * @returns {Promise<{id: number, status: string, start_date: Date} | undefined>}
  */
-async function getLatestIngestStatus(entityName, dbClient) {
+async function getLatestIngestStatus(entityName, referenceStartDate, dbClient) {
+  const referenceDate = new Date(referenceStartDate ?? new Date())
   const {
     rows: [ingest]
   } = await dbClient.query(
-    `SELECT id, status FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1`,
-    [entityName]
+    `SELECT id, status, start_date
+       FROM ingest
+      WHERE entity = $1
+        AND start_date::date = ($2 AT TIME ZONE 'UTC')::date
+      ORDER BY start_date DESC
+      LIMIT 1`,
+    [entityName, referenceDate]
   )
   return ingest
 }
@@ -285,7 +295,11 @@ export async function completeAndPromotePaired(
     await acquirePairLock(entityName, pairedEntityName, dbClient)
 
     const thisIngest = await getIngestStatusById(ingestId, dbClient)
-    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
+    const pairedIngest = await getLatestIngestStatus(
+      pairedEntityName,
+      thisIngest?.start_date,
+      dbClient
+    )
 
     if (thisIngest && thisIngest.status !== INGEST_STATUS.IN_PROGRESS) {
       logFinalizeSkipped(entityName, ingestId, thisIngest.status, logger)
@@ -330,14 +344,15 @@ export async function completeAndPromotePaired(
  * advisory lock when used for pair coordination.
  * @param {string | number} ingestId
  * @param {import('pg').Client} dbClient
- * @returns {Promise<{id: number, status: string} | undefined>}
+ * @returns {Promise<{id: number, status: string, start_date: Date} | undefined>}
  */
 async function getIngestStatusById(ingestId, dbClient) {
   const {
     rows: [ingest]
-  } = await dbClient.query(`SELECT id, status FROM ingest WHERE id = $1`, [
-    ingestId
-  ])
+  } = await dbClient.query(
+    `SELECT id, status, start_date FROM ingest WHERE id = $1`,
+    [ingestId]
+  )
   return ingest
 }
 
@@ -480,12 +495,14 @@ async function promotePairedStaging({
  * If the paired entity has already finished staging and is awaiting this one, fail it too.
  * @param {string} entityName
  * @param {string} pairedEntityName
+ * @param {string | number} ingestId
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  */
 export async function failPairedAwaitingIngest(
   entityName,
   pairedEntityName,
+  ingestId,
   dbClient,
   logger
 ) {
@@ -493,7 +510,12 @@ export async function failPairedAwaitingIngest(
     await dbClient.query('BEGIN')
     await acquirePairLock(entityName, pairedEntityName, dbClient)
 
-    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
+    const thisIngest = await getIngestStatusById(ingestId, dbClient)
+    const pairedIngest = await getLatestIngestStatus(
+      pairedEntityName,
+      thisIngest?.start_date,
+      dbClient
+    )
 
     if (pairedIngest?.status === INGEST_STATUS.STAGED) {
       await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [

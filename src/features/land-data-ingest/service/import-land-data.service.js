@@ -390,7 +390,13 @@ async function handleImportFailure(
   await setIngestFailed(ingestId, dbClient)
   await cancelPendingFiles(ingestId, dbClient)
   if (pairedWith) {
-    await failPairedAwaitingIngest(entityName, pairedWith, dbClient, logger)
+    await failPairedAwaitingIngest(
+      entityName,
+      pairedWith,
+      ingestId,
+      dbClient,
+      logger
+    )
   }
   await metricsCounter(`${entityName}_data_ingest_failed`, 1)
 }

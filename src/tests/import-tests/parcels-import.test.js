@@ -280,3 +280,118 @@ describe('Land covers import', () => {
     10000
   )
 })
+
+describe('Land import pairing scoping', () => {
+  let s3Client
+  let connection
+  const logger = {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn()
+  }
+
+  beforeAll(async () => {
+    connection = connectToTestDatabase()
+    s3Client = createTestS3Client()
+    await ensureBucketExists(s3Client)
+  })
+
+  afterAll(async () => {
+    await connection.end()
+    await deleteFiles(s3Client, ALL_S3_KEYS)
+  })
+
+  test('does not pair today with a staged covers ingest left over from yesterday', async () => {
+    // Remove ingest history left by earlier tests so the leftover is the most recent
+    // land_covers ingest (as it would be at the start of a brand new day).
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    // Yesterday's land_covers run finished staging but was never promoted.
+    const leftoverCoversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+    await importLandData({
+      s3key: COVERS_CSV_KEY,
+      filename: 'covers_head.csv',
+      ingestId: leftoverCoversIngestId
+    })
+    await connection.query(
+      `UPDATE ingest SET start_date = start_date - interval '1 day' WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    // Today's land_parcels run completes. It must wait for today's land_covers run
+    // rather than promoting against yesterday's leftover covers data.
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+    await importLandData({
+      s3key: PARCELS_CSV_KEY,
+      filename: 'parcels_head.csv',
+      ingestId: parcelsIngestId
+    })
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [leftoverCovers] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    expect(parcelsIngest.status).toBe('staged')
+    expect(leftoverCovers.status).toBe('staged')
+
+    // Today's land_covers run completes and pairs with today's parcels run.
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+    await importLandData({
+      s3key: COVERS_CSV_KEY,
+      filename: 'covers_head.csv',
+      ingestId: coversIngestId
+    })
+
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [promotedParcels] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [cancelledLeftoverCovers] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [leftoverCoversIngestId]
+    )
+
+    expect(coversIngest.status).toBe('completed')
+    expect(promotedParcels.status).toBe('completed')
+    expect(cancelledLeftoverCovers.status).toBe('cancelled')
+  })
+})

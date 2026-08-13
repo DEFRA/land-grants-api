@@ -237,6 +237,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -267,6 +268,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -290,6 +292,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
@@ -319,6 +322,7 @@ describe('Import Land Data Service', () => {
       expect(failPairedAwaitingIngest).toHaveBeenCalledWith(
         entity.name,
         entity.pairedWith,
+        ingestId,
         mockClient,
         mockLogger
       )
