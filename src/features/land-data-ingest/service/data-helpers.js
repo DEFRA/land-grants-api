@@ -275,8 +275,9 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
- * @throws {Error} if the paired entity had already conclusively failed this cycle or the
- * covers staging table contains more unique parcels than the parcels staging table
+ * @throws {Error} if the paired entity had already conclusively failed this cycle, the
+ * covers staging table contains more unique parcels than the parcels staging table, or
+ * either staging table is empty at promotion time
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -469,9 +470,10 @@ async function getUniqueStagingCounts(entityName, pairedEntityName, dbClient) {
  * marks both ingests completed, reusing the same timestamp for `completed_date`. Every cover
  * must reference a parcel, so the covers staging table can never hold more unique parcels
  * than the parcels staging table; a breach of that guarantee aborts the promotion (no tables
- * are renamed), so partial or inconsistent data can never be promoted to live.
+ * are renamed), so partial or inconsistent data can never be promoted to live. An empty
+ * staging table also aborts the promotion, so an empty table can never wipe the live table.
  * @throws {Error} if the covers staging table contains more unique parcels than the parcels
- *   staging table
+ *   staging table, or if either staging table is empty
  */
 async function promotePairedStaging({
   entityName,
@@ -494,6 +496,12 @@ async function promotePairedStaging({
     entityName === 'land_parcels' ? entityUniqueCount : pairedUniqueCount
   const coversUniqueCount =
     entityName === 'land_parcels' ? pairedUniqueCount : entityUniqueCount
+
+  if (entityUniqueCount === 0 || pairedUniqueCount === 0) {
+    throw new Error(
+      `${entityName}/${pairedEntityName} cannot be promoted because a staging table is empty`
+    )
+  }
 
   if (coversUniqueCount > parcelsUniqueCount) {
     throw new Error(

@@ -498,6 +498,44 @@ describe('Data helpers', () => {
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
 
+    test.each([
+      ['parcels', '0', '5'],
+      ['covers', '5', '0']
+    ])(
+      'throws and rolls back without swapping when the %s staging table is empty',
+      async (_, entityCount, pairedCount) => {
+        dbClient.query
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // advisory lock
+          .mockResolvedValueOnce({
+            rows: [{ id: ingestId, status: 'in_progress' }]
+          }) // this ingest lookup
+          .mockResolvedValueOnce({
+            rows: [{ id: pairedIngestId, status: 'staged' }]
+          }) // paired ingest ready
+          .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+          .mockResolvedValueOnce({ rows: [{ unique_count: entityCount }] }) // entity unique staging count
+          .mockResolvedValueOnce({ rows: [{ unique_count: pairedCount }] }) // paired unique staging count
+
+        await expect(
+          completeAndPromotePaired(
+            'land_parcels',
+            'land_covers',
+            ingestId,
+            dbClient,
+            logger
+          )
+        ).rejects.toThrow(
+          'land_parcels/land_covers cannot be promoted because a staging table is empty'
+        )
+
+        expect(dbClient.query).not.toHaveBeenCalledWith(
+          'SELECT swap_staging_with_live($1)'
+        )
+        expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+      }
+    )
+
     test.each(['failed', 'cancelled'])(
       'fails this ingest and throws when the paired entity already %s',
       async (pairedStatus) => {
