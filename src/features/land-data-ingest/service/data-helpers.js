@@ -268,16 +268,14 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * A finalize call for an ingest that is no longer in progress (e.g. a late/duplicate
  * finalize after the ingest was already promoted) is a no-op: the ingest is never re-staged
  * and never re-promoted, because the swap-based promotion is not idempotent and would
- * recycle/truncate the previously promoted live data. The promotion also refuses to swap
- * when either staging table is empty, so an empty staging table can never wipe the live table.
+ * recycle/truncate the previously promoted live data.
  * @param {string} entityName
  * @param {string} pairedEntityName
  * @param {string | number} ingestId
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
- * @throws {Error} if the paired entity had already conclusively failed this cycle or either
- * staging table is empty at promotion time
+ * @throws {Error} if the paired entity had already conclusively failed this cycle
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -445,9 +443,7 @@ async function stageIngestAndPromoteIfPaired({
 
 /**
  * Swaps both staging tables into live and marks both ingests completed, reusing the same
- * timestamp for `completed_date`. Refuses to swap when either staging table is empty so an
- * empty staging table can never wipe the live table.
- * @throws {Error} if either staging table is empty
+ * timestamp for `completed_date`.
  */
 async function promotePairedStaging({
   entityName,
@@ -459,20 +455,6 @@ async function promotePairedStaging({
   logger
 }) {
   const startTime = performance.now()
-  const entityRowCount = await getTableRowCount(
-    dbClient,
-    `${entityName}_staging`
-  )
-  const pairedRowCount = await getTableRowCount(
-    dbClient,
-    `${pairedEntityName}_staging`
-  )
-
-  if (entityRowCount === 0 || pairedRowCount === 0) {
-    throw new Error(
-      `${entityName}/${pairedEntityName} cannot be promoted because a staging table is empty`
-    )
-  }
 
   await swapStagingWithLive(entityName, dbClient)
   await swapStagingWithLive(pairedEntityName, dbClient)

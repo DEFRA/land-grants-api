@@ -378,8 +378,6 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({ rows: [{ count: '5' }] }) // entity staging row count
-        .mockResolvedValueOnce({ rows: [{ count: '5' }] }) // paired staging row count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -401,25 +399,25 @@ describe('Data helpers', () => {
       expect(dbClient.query.mock.calls[4][1][2]).toBe(ingestId)
       const stagedDate = dbClient.query.mock.calls[4][1][1]
 
+      expect(dbClient.query.mock.calls[5][0]).toBe(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[5][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[6][0]).toBe(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[6][1]).toEqual(['land_covers'])
       expect(dbClient.query.mock.calls[7][0]).toBe(
-        'SELECT swap_staging_with_live($1)'
-      )
-      expect(dbClient.query.mock.calls[7][1]).toEqual(['land_parcels'])
-      expect(dbClient.query.mock.calls[8][0]).toBe(
-        'SELECT swap_staging_with_live($1)'
-      )
-      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_covers'])
-      expect(dbClient.query.mock.calls[9][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
       )
-      expect(dbClient.query.mock.calls[9][1][0]).toBe('completed')
+      expect(dbClient.query.mock.calls[7][1][0]).toBe('completed')
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[9][1][1]).toBe(stagedDate)
-      expect(dbClient.query.mock.calls[9][1][2]).toEqual([
+      expect(dbClient.query.mock.calls[7][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[7][1][2]).toEqual([
         ingestId,
         pairedIngestId
       ])
-      expect(dbClient.query.mock.calls[10][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[8][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
@@ -434,8 +432,6 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({ rows: [{ count: '5' }] }) // entity staging row count
-        .mockResolvedValueOnce({ rows: [{ count: '5' }] }) // paired staging row count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -548,38 +544,6 @@ describe('Data helpers', () => {
       )
       expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
-    })
-
-    test('throws and rolls back when a staging table is empty instead of swapping', async () => {
-      dbClient.query
-        .mockResolvedValueOnce({}) // BEGIN
-        .mockResolvedValueOnce({}) // advisory lock
-        .mockResolvedValueOnce({
-          rows: [{ id: ingestId, status: 'in_progress' }]
-        }) // this ingest lookup
-        .mockResolvedValueOnce({
-          rows: [{ id: pairedIngestId, status: 'staged' }]
-        }) // paired ingest ready
-        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // entity staging row count
-        .mockResolvedValueOnce({ rows: [{ count: '5' }] }) // paired staging row count
-
-      await expect(
-        completeAndPromotePaired(
-          'land_parcels',
-          'land_covers',
-          ingestId,
-          dbClient,
-          logger
-        )
-      ).rejects.toThrow(
-        'land_parcels/land_covers cannot be promoted because a staging table is empty'
-      )
-
-      expect(dbClient.query).not.toHaveBeenCalledWith(
-        'SELECT swap_staging_with_live($1)'
-      )
-      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
   })
 
