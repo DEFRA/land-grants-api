@@ -1,4 +1,5 @@
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { COUNT } from '~/src/features/common/constants/unit_type.js'
 
 /**
  * Validate land actions request
@@ -13,6 +14,33 @@ const validateLandActionsRequest = (landActions, actions) => {
 
   if (invalidActions?.length > 0) {
     return `Actions not found: ${invalidActions.join(',')}`
+  }
+
+  return null
+}
+
+/**
+ * Validate count action quantities are whole numbers
+ * @param {object[]} landActions - The land actions
+ * @param {object[]} actions - The actions
+ * @returns {string | null} The error message
+ */
+const validateCountActionQuantitiesRequest = (landActions, actions) => {
+  const invalidQuantities = landActions.flatMap((landAction) =>
+    landAction.actions.flatMap((action) => {
+      const actionConfig = actions.find((a) => a.code === action.code)
+      const isCountAction = actionConfig?.applicationUnitOfMeasurement === COUNT
+
+      return isCountAction && !Number.isInteger(action.quantity)
+        ? [
+            `${action.code} (${action.quantity}) on ${landAction.sheetId}-${landAction.parcelId}`
+          ]
+        : []
+    })
+  )
+
+  if (invalidQuantities?.length > 0) {
+    return `Count action quantity must be a whole number: ${invalidQuantities.join(', ')}`
   }
 
   return null
@@ -72,6 +100,16 @@ export const validateRequest = async (landActions, actions, request) => {
 
   if (landActionsErrors) {
     errors.push(landActionsErrors)
+  }
+
+  // Validate that count action quantities are whole numbers
+  const countQuantitiesErrors = validateCountActionQuantitiesRequest(
+    landActions,
+    actions
+  )
+
+  if (countQuantitiesErrors) {
+    errors.push(countQuantitiesErrors)
   }
 
   return errors
