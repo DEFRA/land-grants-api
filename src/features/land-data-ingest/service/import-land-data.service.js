@@ -25,7 +25,8 @@ import {
   setFileInProgress,
   setIngestCompleted,
   setIngestFailed,
-  getFileExpectedRowCount
+  getFileExpectedRowCount,
+  isValidIngestFile
 } from './start-ingest.service.js'
 
 const logCategory = 'land-data-ingest'
@@ -295,6 +296,22 @@ async function processValidatedFile(
 ) {
   const startTime = performance.now()
   const { name: entityName } = entityType
+
+  // The CDP callback validated this file, but that check and this worker's execution are
+  // separated by the worker concurrency queue. Re-validate now so a file for an ingest that
+  // is no longer in progress (e.g. already promoted) or a file that was already processed
+  // (duplicate callback) is skipped rather than inserted into staging. Skipping is a no-op:
+  // the ingest is not marked failed, so a late file can never disturb an already-promoted pair.
+  // @ts-expect-error filename
+  if (!(await isValidIngestFile(ingestId, filename, dbClient))) {
+    logInfo(logger, {
+      category: logCategory,
+      operation: `${entityName}_file_skipped`,
+      message: `${entityName} file ${filename} skipped - ingest ${ingestId} is no longer accepting files`,
+      context: { entityName, filename, ingestId }
+    })
+    return false
+  }
 
   // @ts-expect-error filename
   await setFileInProgress(filename, ingestId, dbClient)

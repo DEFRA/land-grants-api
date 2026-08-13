@@ -20,7 +20,8 @@ import {
   setFileFailed,
   setIngestCompleted,
   setIngestFailed,
-  getFileExpectedRowCount
+  getFileExpectedRowCount,
+  isValidIngestFile
 } from './start-ingest.service.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
@@ -81,6 +82,7 @@ describe('Import Land Data Service', () => {
     cancelPendingFiles.mockResolvedValue()
     getFileExpectedRowCount.mockResolvedValue(1)
     getTableRowCount.mockResolvedValue(1)
+    isValidIngestFile.mockResolvedValue(true)
     metricsCounter.mockResolvedValue()
     logDuplicateRows.mockResolvedValue(0)
   })
@@ -182,6 +184,38 @@ describe('Import Land Data Service', () => {
       expect(metricsCounter).toHaveBeenCalledWith(
         `${entity.name}_file_ingest_completed`,
         1
+      )
+    })
+
+    it(`should skip ${entity.name} file when the ingest is no longer accepting files`, async () => {
+      isValidIngestFile.mockResolvedValue(false)
+
+      const result = await importData(
+        makeStream(),
+        entity,
+        ingestId,
+        'file.csv',
+        mockLogger
+      )
+
+      expect(result).toBe(false)
+      expect(isValidIngestFile).toHaveBeenCalledWith(
+        ingestId,
+        'file.csv',
+        mockClient
+      )
+      expect(setFileInProgress).not.toHaveBeenCalled()
+      expect(createTempTable).not.toHaveBeenCalled()
+      expect(insertData).not.toHaveBeenCalled()
+      expect(isIngestComplete).not.toHaveBeenCalled()
+      expect(promoteStagingTable).not.toHaveBeenCalled()
+      expect(completeAndPromotePaired).not.toHaveBeenCalled()
+      expect(setIngestFailed).not.toHaveBeenCalled()
+      expect(cancelPendingFiles).not.toHaveBeenCalled()
+      expect(failPairedAwaitingIngest).not.toHaveBeenCalled()
+      expect(metricsCounter).not.toHaveBeenCalledWith(
+        `${entity.name}_data_ingest_failed`,
+        expect.anything()
       )
     })
 
