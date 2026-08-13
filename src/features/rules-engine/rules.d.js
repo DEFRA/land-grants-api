@@ -22,7 +22,7 @@
 
 /**
  * @typedef {object} LandParcel
- * @property {number} availableAreaSqm
+ * @property {number|null} availableAreaSqm
  * @property {Array} existingAgreements
  * @property {object} intersections
  */
