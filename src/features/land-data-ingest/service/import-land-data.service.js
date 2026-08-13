@@ -302,14 +302,19 @@ async function processValidatedFile(
   // is no longer in progress (e.g. already promoted) or a file that was already processed
   // (duplicate callback) is skipped rather than inserted into staging. Skipping is a no-op:
   // the ingest is not marked failed, so a late file can never disturb an already-promoted pair.
+  // Processing is async (fire-and-forget off the callback), so this cannot be reported back to
+  // the uploader - raise it as an alert-worthy error and metric instead.
   // @ts-expect-error filename
   if (!(await isValidIngestFile(ingestId, filename, dbClient))) {
-    logInfo(logger, {
-      category: logCategory,
+    const error = new Error(
+      `${entityName} file ${filename} skipped - ingest ${ingestId} is no longer accepting files`
+    )
+    logBusinessError(logger, {
       operation: `${entityName}_file_skipped`,
-      message: `${entityName} file ${filename} skipped - ingest ${ingestId} is no longer accepting files`,
+      error,
       context: { entityName, filename, ingestId }
     })
+    await metricsCounter(`${entityName}_file_skipped`, 1)
     return false
   }
 

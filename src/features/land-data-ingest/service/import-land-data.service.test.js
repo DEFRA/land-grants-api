@@ -213,6 +213,11 @@ describe('Import Land Data Service', () => {
       expect(setIngestFailed).not.toHaveBeenCalled()
       expect(cancelPendingFiles).not.toHaveBeenCalled()
       expect(failPairedAwaitingIngest).not.toHaveBeenCalled()
+      expect(mockLogger.error).toHaveBeenCalledTimes(1)
+      expect(metricsCounter).toHaveBeenCalledWith(
+        `${entity.name}_file_skipped`,
+        1
+      )
       expect(metricsCounter).not.toHaveBeenCalledWith(
         `${entity.name}_data_ingest_failed`,
         expect.anything()
