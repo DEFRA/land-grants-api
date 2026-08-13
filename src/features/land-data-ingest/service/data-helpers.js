@@ -96,11 +96,13 @@ export async function truncateTableAndInsertData(
  * @returns {Promise<{isComplete: boolean, isOverCount: boolean, totalCount: number}>}
  */
 export async function isIngestComplete(tableName, ingestId, dbClient) {
-  // count rows in stagin table
+  // count rows in staging table for this ingest only - rows left behind by a cancelled or
+  // overlapping ingest must never satisfy completeness or be counted as over-count
   const {
     rows: [{ count }]
   } = await dbClient.query(
-    `SELECT count(*) as count FROM ${tableName + '_staging'}`
+    `SELECT count(*) as count FROM ${tableName + '_staging'} WHERE ingest_id = $1`,
+    [ingestId]
   )
 
   // sum up file count
@@ -208,18 +210,28 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
 }
 
 /**
- * Fetches the id/status of an entity's latest ingest. Must be called while holding the
- * pair's advisory lock when used for pair coordination.
+ * Fetches the id/status of an entity's latest ingest that belongs to the same run as the
+ * given reference ingest. Must be called while holding the pair's advisory lock when used
+ * for pair coordination. An ingest started on a different UTC calendar day is treated as a
+ * leftover from a previous run and is never returned. No status filter is applied so callers
+ * can still react to a same-run paired ingest that has failed or completed.
  * @param {string} entityName
+ * @param {Date | string | undefined} referenceStartDate
  * @param {import('pg').Client} dbClient
- * @returns {Promise<{id: number, status: string} | undefined>}
+ * @returns {Promise<{id: number, status: string, start_date: Date} | undefined>}
  */
-async function getLatestIngestStatus(entityName, dbClient) {
+async function getLatestIngestStatus(entityName, referenceStartDate, dbClient) {
+  const referenceDate = new Date(referenceStartDate ?? new Date())
   const {
     rows: [ingest]
   } = await dbClient.query(
-    `SELECT id, status FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1`,
-    [entityName]
+    `SELECT id, status, start_date
+       FROM ingest
+      WHERE entity = $1
+        AND start_date::date = ($2 AT TIME ZONE 'UTC')::date
+      ORDER BY start_date DESC
+      LIMIT 1`,
+    [entityName, referenceDate]
   )
   return ingest
 }
@@ -252,13 +264,20 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * Access is serialized per-pair with an advisory lock so simultaneous completions can't
  * double-promote or miss each other. Promotion swaps the staging and live tables in place,
  * so no indexes are dropped or rebuilt and the transaction is just metadata renames.
+ *
+ * A finalize call for an ingest that is no longer in progress (e.g. a late/duplicate
+ * finalize after the ingest was already promoted) is a no-op: the ingest is never re-staged
+ * and never re-promoted, because the swap-based promotion is not idempotent and would
+ * recycle/truncate the previously promoted live data.
  * @param {string} entityName
  * @param {string} pairedEntityName
  * @param {string | number} ingestId
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
- * @throws {Error} if the paired entity had already conclusively failed this cycle
+ * @throws {Error} if the paired entity had already conclusively failed this cycle, the
+ * covers staging table contains more unique parcels than the parcels staging table, or
+ * either staging table is empty at promotion time
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -267,7 +286,6 @@ export async function completeAndPromotePaired(
   dbClient,
   logger
 ) {
-  const startTime = performance.now()
   const now = new Date()
   let promoted = false
   let pairAlreadyFailedError
@@ -276,52 +294,36 @@ export async function completeAndPromotePaired(
     await dbClient.query('BEGIN')
     await acquirePairLock(entityName, pairedEntityName, dbClient)
 
-    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
+    const thisIngest = await getIngestStatusById(ingestId, dbClient)
+    const pairedIngest = await getLatestIngestStatus(
+      pairedEntityName,
+      thisIngest?.start_date,
+      dbClient
+    )
 
-    if (pairedIngest && TERMINAL_FAILURE_STATUSES.has(pairedIngest.status)) {
-      await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
-        INGEST_STATUS.FAILED,
-        ingestId
-      ])
-
-      pairAlreadyFailedError = new Error(
-        `${entityName} cannot be promoted because its paired entity ${pairedEntityName} already failed`
-      )
-      logBusinessError(logger, {
-        operation: `${entityName}_paired_ingest_failed`,
-        error: pairAlreadyFailedError,
-        context: { entityName, pairedEntityName, ingestId }
+    if (thisIngest && thisIngest.status !== INGEST_STATUS.IN_PROGRESS) {
+      logFinalizeSkipped(entityName, ingestId, thisIngest.status, logger)
+    } else if (
+      pairedIngest &&
+      TERMINAL_FAILURE_STATUSES.has(pairedIngest.status)
+    ) {
+      pairAlreadyFailedError = await failIngestWhenPairFailed({
+        entityName,
+        pairedEntityName,
+        ingestId,
+        dbClient,
+        logger
       })
     } else {
-      await dbClient.query(
-        `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`,
-        [INGEST_STATUS.STAGED, now, ingestId]
-      )
-
-      if (pairedIngest?.status === INGEST_STATUS.STAGED) {
-        await swapStagingWithLive(entityName, dbClient)
-        await swapStagingWithLive(pairedEntityName, dbClient)
-        await dbClient.query(
-          `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`,
-          [INGEST_STATUS.COMPLETED, now, [ingestId, pairedIngest.id]]
-        )
-        promoted = true
-
-        const duration = performance.now() - startTime
-        logInfo(logger, {
-          category: LOG_CATEGORY,
-          operation: `${entityName}_paired_promotion_completed`,
-          message: `${entityName} and ${pairedEntityName} promoted to live together in ${duration.toFixed(0)}ms`,
-          context: { entityName, pairedEntityName, duration }
-        })
-      } else {
-        logInfo(logger, {
-          category: LOG_CATEGORY,
-          operation: `${entityName}_awaiting_pair`,
-          message: `${entityName} finished staging; waiting for ${pairedEntityName} before promoting`,
-          context: { entityName, pairedEntityName, ingestId }
-        })
-      }
+      promoted = await stageIngestAndPromoteIfPaired({
+        entityName,
+        pairedEntityName,
+        ingestId,
+        pairedIngest,
+        now,
+        dbClient,
+        logger
+      })
     }
 
     await dbClient.query('COMMIT')
@@ -338,16 +340,204 @@ export async function completeAndPromotePaired(
 }
 
 /**
+ * Fetches the status of a specific ingest. Must be called while holding the pair's
+ * advisory lock when used for pair coordination.
+ * @param {string | number} ingestId
+ * @param {import('pg').Client} dbClient
+ * @returns {Promise<{id: number, status: string, start_date: Date} | undefined>}
+ */
+async function getIngestStatusById(ingestId, dbClient) {
+  const {
+    rows: [ingest]
+  } = await dbClient.query(
+    `SELECT id, status, start_date FROM ingest WHERE id = $1`,
+    [ingestId]
+  )
+  return ingest
+}
+
+/**
+ * Logs that a finalize call was skipped for an ingest that is no longer in progress
+ * @param {string} entityName
+ * @param {string | number} ingestId
+ * @param {string} status
+ * @param {object} logger
+ */
+function logFinalizeSkipped(entityName, ingestId, status, logger) {
+  logInfo(logger, {
+    category: LOG_CATEGORY,
+    operation: `${entityName}_finalize_skipped`,
+    message: `${entityName} ingest ${ingestId} is already ${status}; skipping finalize`,
+    context: { entityName, ingestId, status }
+  })
+}
+
+/**
+ * Fails this ingest because its paired entity has already conclusively failed this cycle.
+ * @returns {Promise<Error>} the error describing the failed pair
+ */
+async function failIngestWhenPairFailed({
+  entityName,
+  pairedEntityName,
+  ingestId,
+  dbClient,
+  logger
+}) {
+  await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [
+    INGEST_STATUS.FAILED,
+    ingestId
+  ])
+
+  const error = new Error(
+    `${entityName} cannot be promoted because its paired entity ${pairedEntityName} already failed`
+  )
+  logBusinessError(logger, {
+    operation: `${entityName}_paired_ingest_failed`,
+    error,
+    context: { entityName, pairedEntityName, ingestId }
+  })
+
+  return error
+}
+
+/**
+ * Marks this ingest `staged`/`staged_date`, then promotes the pair together if the paired
+ * entity is also staged. When the paired entity has not finished staging this ingest is
+ * simply left staged, waiting for its pair.
+ * @returns {Promise<boolean>} true if both tables were promoted
+ */
+async function stageIngestAndPromoteIfPaired({
+  entityName,
+  pairedEntityName,
+  ingestId,
+  pairedIngest,
+  now,
+  dbClient,
+  logger
+}) {
+  await dbClient.query(
+    `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`,
+    [INGEST_STATUS.STAGED, now, ingestId]
+  )
+
+  if (pairedIngest?.status === INGEST_STATUS.STAGED) {
+    await promotePairedStaging({
+      entityName,
+      pairedEntityName,
+      ingestId,
+      pairedIngest,
+      now,
+      dbClient,
+      logger
+    })
+    return true
+  }
+
+  logInfo(logger, {
+    category: LOG_CATEGORY,
+    operation: `${entityName}_awaiting_pair`,
+    message: `${entityName} finished staging; waiting for ${pairedEntityName} before promoting`,
+    context: { entityName, pairedEntityName, ingestId }
+  })
+
+  return false
+}
+
+/**
+ * Counts the unique parcels in each of the paired staging tables, keyed on
+ * (sheet_id, parcel_id). The promotion swaps the whole staging tables into live, so the
+ * counts cover the entire staging tables rather than the current ingest's rows only.
+ * @param {string} entityName
+ * @param {string} pairedEntityName
+ * @param {import('pg').Client} dbClient
+ * @returns {Promise<{entityUniqueCount: number, pairedUniqueCount: number}>}
+ */
+async function getUniqueStagingCounts(entityName, pairedEntityName, dbClient) {
+  const entityResult = await dbClient.query(
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS unique_count FROM ${entityName}_staging`
+  )
+  const pairedResult = await dbClient.query(
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS unique_count FROM ${pairedEntityName}_staging`
+  )
+  return {
+    entityUniqueCount: Number(entityResult.rows[0].unique_count),
+    pairedUniqueCount: Number(pairedResult.rows[0].unique_count)
+  }
+}
+
+/**
+ * Validates that the paired staging tables are consistent, then swaps both into live and
+ * marks both ingests completed, reusing the same timestamp for `completed_date`. Every cover
+ * must reference a parcel, so the covers staging table can never hold more unique parcels
+ * than the parcels staging table; a breach of that guarantee aborts the promotion (no tables
+ * are renamed), so partial or inconsistent data can never be promoted to live. An empty
+ * staging table also aborts the promotion, so an empty table can never wipe the live table.
+ * @throws {Error} if the covers staging table contains more unique parcels than the parcels
+ *   staging table, or if either staging table is empty
+ */
+async function promotePairedStaging({
+  entityName,
+  pairedEntityName,
+  ingestId,
+  pairedIngest,
+  now,
+  dbClient,
+  logger
+}) {
+  const startTime = performance.now()
+
+  const { entityUniqueCount, pairedUniqueCount } = await getUniqueStagingCounts(
+    entityName,
+    pairedEntityName,
+    dbClient
+  )
+
+  const parcelsUniqueCount =
+    entityName === 'land_parcels' ? entityUniqueCount : pairedUniqueCount
+  const coversUniqueCount =
+    entityName === 'land_parcels' ? pairedUniqueCount : entityUniqueCount
+
+  if (entityUniqueCount === 0 || pairedUniqueCount === 0) {
+    throw new Error(
+      `${entityName}/${pairedEntityName} cannot be promoted because a staging table is empty`
+    )
+  }
+
+  if (coversUniqueCount > parcelsUniqueCount) {
+    throw new Error(
+      `${entityName}/${pairedEntityName} cannot be promoted because the covers staging table contains more unique parcels (${coversUniqueCount}) than the parcels staging table (${parcelsUniqueCount})`
+    )
+  }
+
+  await swapStagingWithLive(entityName, dbClient)
+  await swapStagingWithLive(pairedEntityName, dbClient)
+  await dbClient.query(
+    `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`,
+    [INGEST_STATUS.COMPLETED, now, [ingestId, pairedIngest.id]]
+  )
+
+  const duration = performance.now() - startTime
+  logInfo(logger, {
+    category: LOG_CATEGORY,
+    operation: `${entityName}_paired_promotion_completed`,
+    message: `${entityName} and ${pairedEntityName} promoted to live together in ${duration.toFixed(0)}ms`,
+    context: { entityName, pairedEntityName, duration }
+  })
+}
+
+/**
  * When this entity's ingest fails, its paired entity must not be promoted independently.
  * If the paired entity has already finished staging and is awaiting this one, fail it too.
  * @param {string} entityName
  * @param {string} pairedEntityName
+ * @param {string | number} ingestId
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  */
 export async function failPairedAwaitingIngest(
   entityName,
   pairedEntityName,
+  ingestId,
   dbClient,
   logger
 ) {
@@ -355,7 +545,12 @@ export async function failPairedAwaitingIngest(
     await dbClient.query('BEGIN')
     await acquirePairLock(entityName, pairedEntityName, dbClient)
 
-    const pairedIngest = await getLatestIngestStatus(pairedEntityName, dbClient)
+    const thisIngest = await getIngestStatusById(ingestId, dbClient)
+    const pairedIngest = await getLatestIngestStatus(
+      pairedEntityName,
+      thisIngest?.start_date,
+      dbClient
+    )
 
     if (pairedIngest?.status === INGEST_STATUS.STAGED) {
       await dbClient.query(`UPDATE ingest SET status = $1 WHERE id = $2`, [

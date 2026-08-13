@@ -186,7 +186,7 @@ describe('start ingest service', () => {
   })
 
   describe('is valid ingest file', () => {
-    test('makes correct db call', async () => {
+    test('returns false when the file or ingest is not pending/in progress', async () => {
       dbClient.query.mockResolvedValueOnce({
         rows: []
       })
@@ -202,6 +202,15 @@ describe('start ingest service', () => {
     WHERE f.ingest_id = $1 AND filename = $2 AND f.status = $3 AND i.status = $4`,
         [123, 'filename', INGEST_STATUS.PENDING, INGEST_STATUS.IN_PROGRESS]
       )
+    })
+
+    test('returns true when the file is pending and the ingest is in progress', async () => {
+      dbClient.query.mockResolvedValueOnce({
+        rows: [{ '?column?': 1 }]
+      })
+      const result = await isValidIngestFile(123, 'filename', dbClient)
+
+      expect(result).toBe(true)
     })
   })
 

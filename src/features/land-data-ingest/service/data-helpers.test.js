@@ -143,9 +143,25 @@ describe('Data helpers', () => {
         totalCount: 9
       })
       expect(dbClient.query.mock.calls[0][0]).toBe(
-        'SELECT count(*) as count FROM land_parcels_staging'
+        'SELECT count(*) as count FROM land_parcels_staging WHERE ingest_id = $1'
       )
+      expect(dbClient.query.mock.calls[0][1]).toEqual([123])
       expect(dbClient.query.mock.calls[1][1]).toEqual([123])
+    })
+
+    test("counts only this ingest's rows so rows from another ingest cannot satisfy completeness", async () => {
+      dbClient.query
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] })
+        .mockResolvedValueOnce({ rows: [{ total_rows: '9' }] })
+
+      const result = await isIngestComplete('land_parcels', 123, dbClient)
+
+      expect(result).toEqual({
+        isComplete: false,
+        isOverCount: false,
+        totalCount: 0
+      })
+      expect(dbClient.query.mock.calls[0][1]).toEqual([123])
     })
 
     test('should return isComplete false when staging count does not match the expected total rows', async () => {
@@ -277,6 +293,9 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
         .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
           rows: [{ id: pairedIngestId, status: 'in_progress' }]
         }) // paired ingest lookup
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged
@@ -299,20 +318,53 @@ describe('Data helpers', () => {
         'land_covers|land_parcels'
       ])
       expect(dbClient.query.mock.calls[2][0]).toBe(
-        'SELECT id, status FROM ingest WHERE entity = $1 ORDER BY start_date DESC LIMIT 1'
+        'SELECT id, status, start_date FROM ingest WHERE id = $1'
       )
-      expect(dbClient.query.mock.calls[2][1]).toEqual(['land_covers'])
-      expect(dbClient.query.mock.calls[3][0]).toBe(
+      expect(dbClient.query.mock.calls[2][1]).toEqual([ingestId])
+      expect(dbClient.query.mock.calls[3][0]).toContain('start_date::date')
+      expect(dbClient.query.mock.calls[3][1]).toEqual([
+        'land_covers',
+        expect.any(Date)
+      ])
+      expect(dbClient.query.mock.calls[4][0]).toBe(
         `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`
       )
-      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged')
-      expect(dbClient.query.mock.calls[3][1][1]).toBeInstanceOf(Date)
-      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId)
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[4][1][0]).toBe('staged')
+      expect(dbClient.query.mock.calls[4][1][1]).toBeInstanceOf(Date)
+      expect(dbClient.query.mock.calls[4][1][2]).toBe(ingestId)
+      expect(dbClient.query.mock.calls[5][0]).toBe('COMMIT')
       expect(dbClient.query).not.toHaveBeenCalledWith(
         expect.stringContaining('TRUNCATE TABLE land_parcels')
       )
       expect(logger.info).toHaveBeenCalledTimes(1)
+    })
+
+    test('scopes the paired ingest lookup to the same UTC calendar day as this ingest start date', async () => {
+      const startDate = new Date('2026-08-12T08:00:00.000Z')
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress', start_date: startDate }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({ rows: [] }) // paired ingest lookup - no same-run pair
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged
+        .mockResolvedValueOnce({}) // COMMIT
+
+      const result = await completeAndPromotePaired(
+        'land_parcels',
+        'land_covers',
+        ingestId,
+        dbClient,
+        logger
+      )
+
+      expect(result).toBe(false)
+      expect(dbClient.query.mock.calls[3][1]).toEqual([
+        'land_covers',
+        startDate
+      ])
+      expect(dbClient.query.mock.calls[4][1][0]).toBe('staged')
     })
 
     test('promotes both staging tables and marks both completed when the paired entity is staged', async () => {
@@ -320,9 +372,18 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
         .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // entity unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // paired unique staging count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -337,32 +398,32 @@ describe('Data helpers', () => {
       )
 
       expect(result).toBe(true)
-      expect(dbClient.query.mock.calls[3][0]).toBe(
+      expect(dbClient.query.mock.calls[4][0]).toBe(
         `UPDATE ingest SET status = $1, staged_date = $2 WHERE id = $3`
       )
-      expect(dbClient.query.mock.calls[3][1][0]).toBe('staged')
-      expect(dbClient.query.mock.calls[3][1][2]).toBe(ingestId)
-      const stagedDate = dbClient.query.mock.calls[3][1][1]
+      expect(dbClient.query.mock.calls[4][1][0]).toBe('staged')
+      expect(dbClient.query.mock.calls[4][1][2]).toBe(ingestId)
+      const stagedDate = dbClient.query.mock.calls[4][1][1]
 
-      expect(dbClient.query.mock.calls[4][0]).toBe(
+      expect(dbClient.query.mock.calls[7][0]).toBe(
         'SELECT swap_staging_with_live($1)'
       )
-      expect(dbClient.query.mock.calls[4][1]).toEqual(['land_parcels'])
-      expect(dbClient.query.mock.calls[5][0]).toBe(
+      expect(dbClient.query.mock.calls[7][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[8][0]).toBe(
         'SELECT swap_staging_with_live($1)'
       )
-      expect(dbClient.query.mock.calls[5][1]).toEqual(['land_covers'])
-      expect(dbClient.query.mock.calls[6][0]).toBe(
+      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_covers'])
+      expect(dbClient.query.mock.calls[9][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
       )
-      expect(dbClient.query.mock.calls[6][1][0]).toBe('completed')
+      expect(dbClient.query.mock.calls[9][1][0]).toBe('completed')
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[6][1][1]).toBe(stagedDate)
-      expect(dbClient.query.mock.calls[6][1][2]).toEqual([
+      expect(dbClient.query.mock.calls[9][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[9][1][2]).toEqual([
         ingestId,
         pairedIngestId
       ])
-      expect(dbClient.query.mock.calls[7][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[10][0]).toBe('COMMIT')
       expect(logger.info).toHaveBeenCalledTimes(1)
     })
 
@@ -371,9 +432,18 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
         .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // entity unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // paired unique staging count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -396,12 +466,85 @@ describe('Data helpers', () => {
       )
     })
 
+    test('throws and rolls back without swapping when the covers staging holds more unique parcels than the parcels staging', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'staged' }]
+        }) // paired ingest ready
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({ rows: [{ unique_count: '5' }] }) // entity (land_parcels) unique staging count
+        .mockResolvedValueOnce({ rows: [{ unique_count: '7' }] }) // paired (land_covers) unique staging count
+
+      await expect(
+        completeAndPromotePaired(
+          'land_parcels',
+          'land_covers',
+          ingestId,
+          dbClient,
+          logger
+        )
+      ).rejects.toThrow(
+        'land_parcels/land_covers cannot be promoted because the covers staging table contains more unique parcels (7) than the parcels staging table (5)'
+      )
+
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+    })
+
+    test.each([
+      ['parcels', '0', '5'],
+      ['covers', '5', '0']
+    ])(
+      'throws and rolls back without swapping when the %s staging table is empty',
+      async (_, entityCount, pairedCount) => {
+        dbClient.query
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // advisory lock
+          .mockResolvedValueOnce({
+            rows: [{ id: ingestId, status: 'in_progress' }]
+          }) // this ingest lookup
+          .mockResolvedValueOnce({
+            rows: [{ id: pairedIngestId, status: 'staged' }]
+          }) // paired ingest ready
+          .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+          .mockResolvedValueOnce({ rows: [{ unique_count: entityCount }] }) // entity unique staging count
+          .mockResolvedValueOnce({ rows: [{ unique_count: pairedCount }] }) // paired unique staging count
+
+        await expect(
+          completeAndPromotePaired(
+            'land_parcels',
+            'land_covers',
+            ingestId,
+            dbClient,
+            logger
+          )
+        ).rejects.toThrow(
+          'land_parcels/land_covers cannot be promoted because a staging table is empty'
+        )
+
+        expect(dbClient.query).not.toHaveBeenCalledWith(
+          'SELECT swap_staging_with_live($1)'
+        )
+        expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+      }
+    )
+
     test.each(['failed', 'cancelled'])(
       'fails this ingest and throws when the paired entity already %s',
       async (pairedStatus) => {
         dbClient.query
           .mockResolvedValueOnce({}) // BEGIN
           .mockResolvedValueOnce({}) // advisory lock
+          .mockResolvedValueOnce({
+            rows: [{ id: ingestId, status: 'in_progress' }]
+          }) // this ingest lookup
           .mockResolvedValueOnce({
             rows: [{ id: pairedIngestId, status: pairedStatus }]
           }) // paired ingest already failed/cancelled
@@ -420,11 +563,11 @@ describe('Data helpers', () => {
           'land_parcels cannot be promoted because its paired entity land_covers already failed'
         )
 
-        expect(dbClient.query.mock.calls[3][0]).toBe(
+        expect(dbClient.query.mock.calls[4][0]).toBe(
           'UPDATE ingest SET status = $1 WHERE id = $2'
         )
-        expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', ingestId])
-        expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+        expect(dbClient.query.mock.calls[4][1]).toEqual(['failed', ingestId])
+        expect(dbClient.query.mock.calls[5][0]).toBe('COMMIT')
         expect(dbClient.query).not.toHaveBeenCalledWith(
           expect.stringContaining('TRUNCATE')
         )
@@ -436,6 +579,9 @@ describe('Data helpers', () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
         .mockRejectedValueOnce(new Error('lookup failed')) // SELECT paired ingest
 
       await expect(
@@ -450,6 +596,37 @@ describe('Data helpers', () => {
 
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
+
+    test('does not re-stage or re-promote an ingest that was already completed', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'completed' }]
+        }) // this ingest already promoted
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'completed' }]
+        }) // paired ingest lookup
+        .mockResolvedValueOnce({}) // COMMIT
+
+      const result = await completeAndPromotePaired(
+        'land_parcels',
+        'land_covers',
+        ingestId,
+        dbClient,
+        logger
+      )
+
+      expect(result).toBe(false)
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        expect.stringContaining('staged_date')
+      )
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(logger.info).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe('failPairedAwaitingIngest', () => {
@@ -459,6 +636,9 @@ describe('Data helpers', () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: 123, status: 'in_progress' }]
+        }) // this ingest lookup
         .mockResolvedValueOnce({ rows: [{ id: 456, status: 'staged' }] }) // paired ingest awaiting
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = failed
         .mockResolvedValueOnce({}) // COMMIT
@@ -466,15 +646,16 @@ describe('Data helpers', () => {
       await failPairedAwaitingIngest(
         'land_parcels',
         'land_covers',
+        123,
         dbClient,
         logger
       )
 
-      expect(dbClient.query.mock.calls[3][0]).toBe(
+      expect(dbClient.query.mock.calls[4][0]).toBe(
         'UPDATE ingest SET status = $1 WHERE id = $2'
       )
-      expect(dbClient.query.mock.calls[3][1]).toEqual(['failed', 456])
-      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[4][1]).toEqual(['failed', 456])
+      expect(dbClient.query.mock.calls[5][0]).toBe('COMMIT')
       expect(logger.error).toHaveBeenCalledTimes(1)
     })
 
@@ -482,18 +663,22 @@ describe('Data helpers', () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: 123, status: 'in_progress' }]
+        }) // this ingest lookup
         .mockResolvedValueOnce({ rows: [{ id: 456, status: 'in_progress' }] }) // not awaiting
         .mockResolvedValueOnce({}) // COMMIT
 
       await failPairedAwaitingIngest(
         'land_parcels',
         'land_covers',
+        123,
         dbClient,
         logger
       )
 
-      expect(dbClient.query).toHaveBeenCalledTimes(4)
-      expect(dbClient.query.mock.calls[3][0]).toBe('COMMIT')
+      expect(dbClient.query).toHaveBeenCalledTimes(5)
+      expect(dbClient.query.mock.calls[4][0]).toBe('COMMIT')
       expect(logger.error).not.toHaveBeenCalled()
     })
 
@@ -501,12 +686,16 @@ describe('Data helpers', () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: 123, status: 'in_progress' }]
+        }) // this ingest lookup
         .mockRejectedValueOnce(new Error('lookup failed')) // SELECT paired ingest
 
       await expect(
         failPairedAwaitingIngest(
           'land_parcels',
           'land_covers',
+          123,
           dbClient,
           logger
         )
