@@ -275,7 +275,8 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
- * @throws {Error} if the paired entity had already conclusively failed this cycle
+ * @throws {Error} if the paired entity had already conclusively failed this cycle or the
+ * covers staging table contains more unique parcels than the parcels staging table
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -442,8 +443,35 @@ async function stageIngestAndPromoteIfPaired({
 }
 
 /**
- * Swaps both staging tables into live and marks both ingests completed, reusing the same
- * timestamp for `completed_date`.
+ * Counts the unique parcels in each of the paired staging tables, keyed on
+ * (sheet_id, parcel_id). The promotion swaps the whole staging tables into live, so the
+ * counts cover the entire staging tables rather than the current ingest's rows only.
+ * @param {string} entityName
+ * @param {string} pairedEntityName
+ * @param {import('pg').Client} dbClient
+ * @returns {Promise<{entityUniqueCount: number, pairedUniqueCount: number}>}
+ */
+async function getUniqueStagingCounts(entityName, pairedEntityName, dbClient) {
+  const entityResult = await dbClient.query(
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS unique_count FROM ${entityName}_staging`
+  )
+  const pairedResult = await dbClient.query(
+    `SELECT COUNT(DISTINCT (sheet_id, parcel_id)) AS unique_count FROM ${pairedEntityName}_staging`
+  )
+  return {
+    entityUniqueCount: Number(entityResult.rows[0].unique_count),
+    pairedUniqueCount: Number(pairedResult.rows[0].unique_count)
+  }
+}
+
+/**
+ * Validates that the paired staging tables are consistent, then swaps both into live and
+ * marks both ingests completed, reusing the same timestamp for `completed_date`. Every cover
+ * must reference a parcel, so the covers staging table can never hold more unique parcels
+ * than the parcels staging table; a breach of that guarantee aborts the promotion (no tables
+ * are renamed), so partial or inconsistent data can never be promoted to live.
+ * @throws {Error} if the covers staging table contains more unique parcels than the parcels
+ *   staging table
  */
 async function promotePairedStaging({
   entityName,
@@ -455,6 +483,23 @@ async function promotePairedStaging({
   logger
 }) {
   const startTime = performance.now()
+
+  const { entityUniqueCount, pairedUniqueCount } = await getUniqueStagingCounts(
+    entityName,
+    pairedEntityName,
+    dbClient
+  )
+
+  const parcelsUniqueCount =
+    entityName === 'land_parcels' ? entityUniqueCount : pairedUniqueCount
+  const coversUniqueCount =
+    entityName === 'land_parcels' ? pairedUniqueCount : entityUniqueCount
+
+  if (coversUniqueCount > parcelsUniqueCount) {
+    throw new Error(
+      `${entityName}/${pairedEntityName} cannot be promoted because the covers staging table contains more unique parcels (${coversUniqueCount}) than the parcels staging table (${parcelsUniqueCount})`
+    )
+  }
 
   await swapStagingWithLive(entityName, dbClient)
   await swapStagingWithLive(pairedEntityName, dbClient)

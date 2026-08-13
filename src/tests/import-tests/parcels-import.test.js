@@ -394,4 +394,85 @@ describe('Land import pairing scoping', () => {
     expect(promotedParcels.status).toBe('completed')
     expect(cancelledLeftoverCovers.status).toBe('cancelled')
   })
+
+  test('aborts the paired promotion when the covers staging holds more unique parcels than the parcels staging', async () => {
+    await connection.query(
+      `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
+      [['land_parcels', 'land_covers']]
+    )
+    await connection.query(`DELETE FROM ingest WHERE entity = ANY($1)`, [
+      ['land_parcels', 'land_covers']
+    ])
+
+    const [liveParcelsBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversBefore] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    const parcelsIngestId = await saveIngestStart(
+      { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
+      'land_parcels',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'parcels_head.csv', PARCELS_CSV_KEY)
+    await importLandData({
+      s3key: PARCELS_CSV_KEY,
+      filename: 'parcels_head.csv',
+      ingestId: parcelsIngestId
+    })
+
+    // Remove most of the staged parcels so the staged covers (5 unique parcels) would
+    // reference more parcels than the parcels staging provides - the promotion must abort
+    // before touching live tables rather than leave unlinked covers.
+    await connection.query(
+      `DELETE FROM land_parcels_staging WHERE parcel_id IN (SELECT parcel_id FROM land_parcels_staging LIMIT 5)`
+    )
+
+    const coversIngestId = await saveIngestStart(
+      { files: [{ filename: 'covers_head.csv', rows: 9 }] },
+      'land_covers',
+      connection,
+      logger
+    )
+    await uploadLandDataFixture(s3Client, 'covers_head.csv', COVERS_CSV_KEY)
+
+    await expect(
+      importLandData({
+        s3key: COVERS_CSV_KEY,
+        filename: 'covers_head.csv',
+        ingestId: coversIngestId
+      })
+    ).rejects.toThrow(
+      'land_covers/land_parcels cannot be promoted because the covers staging table contains more unique parcels (5) than the parcels staging table (4)'
+    )
+
+    const [parcelsIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [parcelsIngestId]
+    )
+    const [coversIngest] = await getRecordsByQuery(
+      connection,
+      `SELECT status FROM ingest WHERE id = $1`,
+      [coversIngestId]
+    )
+    const [liveParcelsAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_parcels`
+    )
+    const [liveCoversAfter] = await getRecordsByQuery(
+      connection,
+      `SELECT COUNT(*) AS count FROM land_covers`
+    )
+
+    expect(parcelsIngest.status).toBe('failed')
+    expect(coversIngest.status).toBe('failed')
+    expect(liveParcelsAfter.count).toBe(liveParcelsBefore.count)
+    expect(liveCoversAfter.count).toBe(liveCoversBefore.count)
+  })
 })
