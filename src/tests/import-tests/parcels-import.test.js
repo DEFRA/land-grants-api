@@ -395,7 +395,7 @@ describe('Land import pairing scoping', () => {
     expect(cancelledLeftoverCovers.status).toBe('cancelled')
   })
 
-  test('aborts the paired promotion when the covers staging holds more unique parcels than the parcels staging', async () => {
+  test('aborts the paired promotion when the covers staging references parcels missing from the parcels staging', async () => {
     await connection.query(
       `DELETE FROM ingest_files WHERE ingest_id IN (SELECT id FROM ingest WHERE entity = ANY($1))`,
       [['land_parcels', 'land_covers']]
@@ -426,9 +426,9 @@ describe('Land import pairing scoping', () => {
       ingestId: parcelsIngestId
     })
 
-    // Remove most of the staged parcels so the staged covers (5 unique parcels) would
-    // reference more parcels than the parcels staging provides - the promotion must abort
-    // before touching live tables rather than leave unlinked covers.
+    // Remove most of the staged parcels so the staged covers would reference parcels that
+    // are no longer in the parcels staging - the promotion must abort before touching live
+    // tables rather than leave unlinked covers.
     await connection.query(
       `DELETE FROM land_parcels_staging WHERE parcel_id IN (SELECT parcel_id FROM land_parcels_staging LIMIT 5)`
     )
@@ -448,7 +448,7 @@ describe('Land import pairing scoping', () => {
         ingestId: coversIngestId
       })
     ).rejects.toThrow(
-      'land_covers/land_parcels cannot be promoted because the covers staging table contains more unique parcels (5) than the parcels staging table (4)'
+      'land_covers/land_parcels cannot be promoted because the covers staging table references 5 parcels that are not in the parcels staging table'
     )
 
     const [parcelsIngest] = await getRecordsByQuery(

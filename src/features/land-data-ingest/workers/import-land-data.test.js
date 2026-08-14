@@ -256,7 +256,7 @@ describe('importLandData', () => {
     expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
   })
 
-  it('should increment land_data_ingest_failed when promotion is rejected over mismatched staging parcel counts', async () => {
+  it('should increment land_data_ingest_failed when promotion is rejected over unlinked staged parcels', async () => {
     const mockWebStream = new ReadableStream({ start: (c) => c.close() })
     const mockResponse = {
       ContentType: 'text/csv',
@@ -268,7 +268,7 @@ describe('importLandData', () => {
     getFile.mockResolvedValue(mockResponse)
 
     const mismatchError = new Error(
-      'land_parcels/land_covers cannot be promoted because the unique parcel counts do not match between the covers staging table (3) and the parcels staging table (5)'
+      'land_parcels/land_covers cannot be promoted because the covers staging table references 3 parcels that are not in the parcels staging table'
     )
     importData.mockRejectedValue(mismatchError)
 

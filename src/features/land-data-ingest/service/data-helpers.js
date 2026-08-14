@@ -308,8 +308,8 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
  * @throws {Error} if the paired entity had already conclusively failed this cycle, the
- * covers and parcels staging tables hold different numbers of unique parcels, or either
- * staging table is empty at promotion time
+ * covers staging table references parcels that are not in the parcels staging table,
+ * or either staging table is empty at promotion time
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -505,14 +505,43 @@ async function getUniqueStagingCounts(entityName, pairedEntityName, dbClient) {
 }
 
 /**
+ * Counts the covers whose (sheet_id, parcel_id) is not present in the parcels staging table
+ * (orphan covers). Every cover must reference a parcel that is in the parcels staging table,
+ * so this count is expected to be zero; parcels without covers are legitimate, so they are
+ * not checked. The promotion swaps the whole staging tables into live, so the check covers
+ * the entire staging tables rather than the current ingest's rows only.
+ * @param {string} entityName
+ * @param {string} pairedEntityName
+ * @param {import('pg').Client} dbClient
+ * @returns {Promise<number>} the number of covers referencing parcels not in the parcels
+ *   staging table
+ */
+async function getOrphanCoversCount(entityName, pairedEntityName, dbClient) {
+  const parcelsTable =
+    entityName === 'land_parcels' ? entityName : pairedEntityName
+  const coversTable =
+    entityName === 'land_parcels' ? pairedEntityName : entityName
+
+  const orphanCoversResult = await dbClient.query(
+    `SELECT COUNT(*) AS count
+       FROM ${coversTable}_staging c
+       LEFT JOIN ${parcelsTable}_staging p
+         ON c.sheet_id = p.sheet_id AND c.parcel_id = p.parcel_id
+      WHERE p.sheet_id IS NULL`
+  )
+  return Number(orphanCoversResult.rows[0].count)
+}
+
+/**
  * Validates that the paired staging tables are consistent, then swaps both into live and
  * marks both ingests completed, reusing the same timestamp for `completed_date`. Every cover
- * must reference a parcel, so the unique parcel counts of the covers and parcels staging
- * tables must match; a mismatch aborts the promotion (no tables are renamed), so partial or
- * inconsistent data can never be promoted to live. An empty staging table also aborts the
- * promotion, so an empty table can never wipe the live table.
- * @throws {Error} if the covers and parcels staging tables hold different numbers of unique
- *   parcels, or if either staging table is empty
+ * must reference a parcel that is in the parcels staging table; a covers staging table
+ * referencing parcels that are missing from the parcels staging aborts the promotion (no
+ * tables are renamed), so partial or inconsistent data can never be promoted to live.
+ * Parcels without covers are legitimate and do not block promotion. An empty staging table
+ * also aborts the promotion, so an empty table can never wipe the live table.
+ * @throws {Error} if the covers staging table references parcels that are not in the parcels
+ *   staging table, or if either staging table is empty
  */
 async function promotePairedStaging({
   entityName,
@@ -531,20 +560,21 @@ async function promotePairedStaging({
     dbClient
   )
 
-  const parcelsUniqueCount =
-    entityName === 'land_parcels' ? entityUniqueCount : pairedUniqueCount
-  const coversUniqueCount =
-    entityName === 'land_parcels' ? pairedUniqueCount : entityUniqueCount
-
   if (entityUniqueCount === 0 || pairedUniqueCount === 0) {
     throw new Error(
       `${entityName}/${pairedEntityName} cannot be promoted because a staging table is empty`
     )
   }
 
-  if (coversUniqueCount !== parcelsUniqueCount) {
+  const orphanCoversCount = await getOrphanCoversCount(
+    entityName,
+    pairedEntityName,
+    dbClient
+  )
+
+  if (orphanCoversCount > 0) {
     throw new Error(
-      `${entityName}/${pairedEntityName} cannot be promoted because the unique parcel counts do not match between the covers staging table (${coversUniqueCount}) and the parcels staging table (${parcelsUniqueCount})`
+      `${entityName}/${pairedEntityName} cannot be promoted because the covers staging table references ${orphanCoversCount} parcels that are not in the parcels staging table`
     )
   }
 
