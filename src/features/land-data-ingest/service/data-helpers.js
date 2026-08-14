@@ -180,14 +180,14 @@ async function swapStagingWithLive(tableName, dbClient) {
 }
 
 /**
- * Truncates the demoted staging table after a successful promotion. Runs outside the
- * promotion transaction so the truncate (which can take a while on large data) is not on
+ * Truncates the demoted staging table to be used after a successful promotion. Runs outside
+ * the promotion transaction so the truncate (which can take a while on large data) is not on
  * the swap's critical path.
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
  * @param {object} logger
  */
-async function truncateStagingTableAfterPromotion(tableName, dbClient, logger) {
+async function truncateStagingTable(tableName, dbClient, logger) {
   const startTime = performance.now()
 
   try {
@@ -238,7 +238,7 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
     context: { tableName, duration }
   })
 
-  await truncateStagingTableAfterPromotion(tableName, dbClient, logger)
+  await truncateStagingTable(tableName, dbClient, logger)
 }
 
 /**
@@ -365,8 +365,10 @@ export async function completeAndPromotePaired(
   }
 
   if (promoted) {
-    await truncateStagingTableAfterPromotion(entityName, dbClient, logger)
-    await truncateStagingTableAfterPromotion(pairedEntityName, dbClient, logger)
+    await Promise.all([
+      truncateStagingTable(entityName, dbClient, logger),
+      truncateStagingTable(pairedEntityName, dbClient, logger)
+    ])
   }
 
   if (pairAlreadyFailedError) {
