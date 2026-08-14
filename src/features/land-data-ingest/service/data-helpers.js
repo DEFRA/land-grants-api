@@ -180,10 +180,40 @@ async function swapStagingWithLive(tableName, dbClient) {
 }
 
 /**
+ * Truncates the demoted staging table after a successful promotion. Runs outside the
+ * promotion transaction so the truncate (which can take a while on large data) is not on
+ * the swap's critical path.
+ * @param {string} tableName
+ * @param {import('pg').Client} dbClient
+ * @param {object} logger
+ */
+async function truncateStagingTableAfterPromotion(tableName, dbClient, logger) {
+  const startTime = performance.now()
+
+  try {
+    await dbClient.query(`TRUNCATE TABLE ${tableName}_staging;`)
+    const duration = performance.now() - startTime
+    logInfo(logger, {
+      category: LOG_CATEGORY,
+      operation: `${tableName}_staging_truncated`,
+      message: `Staging table ${tableName}_staging truncated after promotion in ${duration.toFixed(0)}ms`,
+      context: { tableName, duration }
+    })
+  } catch (error) {
+    logBusinessError(logger, {
+      operation: `${tableName}_staging_truncate_failed`,
+      error,
+      context: { tableName }
+    })
+  }
+}
+
+/**
  * Promotes the staging table to live by swapping the table names in place: the staging
  * table (with its indexes already built) becomes the live table and the old live table
- * is recycled as the empty staging table for the next ingest. No indexes are dropped or
- * rebuilt, so the promotion is a short transaction of metadata renames.
+ * is recycled as the staging table for the next ingest. No indexes are dropped or
+ * rebuilt, so the promotion is a short transaction of metadata renames; the demoted old
+ * live table is then truncated afterwards, outside that transaction.
  * @param {string} tableName
  * @param {import('pg').Client} dbClient
  * @param {object} logger
@@ -207,6 +237,8 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
     message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
     context: { tableName, duration }
   })
+
+  await truncateStagingTableAfterPromotion(tableName, dbClient, logger)
 }
 
 /**
@@ -330,6 +362,11 @@ export async function completeAndPromotePaired(
   } catch (error) {
     await dbClient.query('ROLLBACK')
     throw error
+  }
+
+  if (promoted) {
+    await truncateStagingTableAfterPromotion(entityName, dbClient, logger)
+    await truncateStagingTableAfterPromotion(pairedEntityName, dbClient, logger)
   }
 
   if (pairAlreadyFailedError) {

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="swap-staging-with-live-remove-truncate" author="system">
+    <comment>Swap staging tables with live by renaming them. Truncate now happens separately.</comment>
+    <sql splitStatements="false">
+      CREATE OR REPLACE FUNCTION public.swap_staging_with_live(p_table_name text)
+      RETURNS void
+      LANGUAGE plpgsql
+      VOLATILE
+      SECURITY DEFINER
+      SET search_path = public
+      AS $$
+      BEGIN
+        IF p_table_name NOT IN ('land_covers', 'land_parcels') THEN
+          RAISE EXCEPTION 'cannot swap staging with live for unknown table %', p_table_name;
+        END IF;
+
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name, p_table_name || '_old');
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name || '_staging', p_table_name);
+        EXECUTE format('ALTER TABLE %I RENAME TO %I', p_table_name || '_old', p_table_name || '_staging');
+      END;
+      $$;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
