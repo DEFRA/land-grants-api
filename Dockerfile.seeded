@@ -1,7 +1,7 @@
 ##############################
 # Stage 1 - Generate seed SQL
 ##############################
-FROM liquibase/liquibase:4.31-alpine AS liquibase-build
+FROM liquibase/liquibase:5.0-alpine AS liquibase-build
 
 WORKDIR /workspace
 
