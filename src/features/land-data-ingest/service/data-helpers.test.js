@@ -499,37 +499,47 @@ describe('Data helpers', () => {
       )
     })
 
-    test('throws and rolls back without swapping when the covers staging holds more unique parcels than the parcels staging', async () => {
-      dbClient.query
-        .mockResolvedValueOnce({}) // BEGIN
-        .mockResolvedValueOnce({}) // advisory lock
-        .mockResolvedValueOnce({
-          rows: [{ id: ingestId, status: 'in_progress' }]
-        }) // this ingest lookup
-        .mockResolvedValueOnce({
-          rows: [{ id: pairedIngestId, status: 'staged' }]
-        }) // paired ingest ready
-        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({ rows: [{ unique_count: '5' }] }) // entity (land_parcels) unique staging count
-        .mockResolvedValueOnce({ rows: [{ unique_count: '7' }] }) // paired (land_covers) unique staging count
+    test.each([
+      ['covers', '5', '7', '7', '5'],
+      ['parcels', '7', '5', '5', '7']
+    ])(
+      'throws and rolls back without swapping when the %s staging holds a different number of unique parcels than its pair',
+      async (_, entityCount, pairedCount, coversCount, parcelsCount) => {
+        dbClient.query
+          .mockResolvedValueOnce({}) // BEGIN
+          .mockResolvedValueOnce({}) // advisory lock
+          .mockResolvedValueOnce({
+            rows: [{ id: ingestId, status: 'in_progress' }]
+          }) // this ingest lookup
+          .mockResolvedValueOnce({
+            rows: [{ id: pairedIngestId, status: 'staged' }]
+          }) // paired ingest ready
+          .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+          .mockResolvedValueOnce({
+            rows: [{ unique_count: entityCount }]
+          }) // entity (land_parcels) unique staging count
+          .mockResolvedValueOnce({
+            rows: [{ unique_count: pairedCount }]
+          }) // paired (land_covers) unique staging count
 
-      await expect(
-        completeAndPromotePaired(
-          'land_parcels',
-          'land_covers',
-          ingestId,
-          dbClient,
-          logger
+        await expect(
+          completeAndPromotePaired(
+            'land_parcels',
+            'land_covers',
+            ingestId,
+            dbClient,
+            logger
+          )
+        ).rejects.toThrow(
+          `land_parcels/land_covers cannot be promoted because the unique parcel counts do not match between the covers staging table (${coversCount}) and the parcels staging table (${parcelsCount})`
         )
-      ).rejects.toThrow(
-        'land_parcels/land_covers cannot be promoted because the covers staging table contains more unique parcels (7) than the parcels staging table (5)'
-      )
 
-      expect(dbClient.query).not.toHaveBeenCalledWith(
-        'SELECT swap_staging_with_live($1)'
-      )
-      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
-    })
+        expect(dbClient.query).not.toHaveBeenCalledWith(
+          'SELECT swap_staging_with_live($1)'
+        )
+        expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+      }
+    )
 
     test.each([
       ['parcels', '0', '5'],
