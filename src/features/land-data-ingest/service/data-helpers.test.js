@@ -235,22 +235,43 @@ describe('Data helpers', () => {
   describe('promoteStagingTable', () => {
     const logger = { info: vi.fn(), error: vi.fn() }
 
-    test('swaps staging and live tables within a transaction', async () => {
+    test('swaps staging and live tables within a transaction, then truncates the demoted staging table outside it', async () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1)
         .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
 
       await promoteStagingTable('land_parcels', dbClient, logger)
 
-      expect(dbClient.query).toHaveBeenCalledTimes(3)
+      expect(dbClient.query).toHaveBeenCalledTimes(4)
       expect(dbClient.query.mock.calls[0][0]).toBe('BEGIN')
       expect(dbClient.query.mock.calls[1][0]).toBe(
         'SELECT swap_staging_with_live($1)'
       )
       expect(dbClient.query.mock.calls[1][1]).toEqual(['land_parcels'])
       expect(dbClient.query.mock.calls[2][0]).toBe('COMMIT')
-      expect(logger.info).toHaveBeenCalledTimes(1)
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging;'
+      )
+      expect(logger.info).toHaveBeenCalledTimes(2)
+    })
+
+    test('logs but does not throw when truncating the demoted staging table fails', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1)
+        .mockResolvedValueOnce({}) // COMMIT
+        .mockRejectedValueOnce(new Error('truncate failed')) // TRUNCATE
+
+      await expect(
+        promoteStagingTable('land_parcels', dbClient, logger)
+      ).resolves.toBeUndefined()
+
+      expect(dbClient.query.mock.calls[3][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging;'
+      )
+      expect(logger.error).toHaveBeenCalledTimes(1)
     })
 
     test('should roll back and rethrow when promotion fails', async () => {
@@ -271,6 +292,7 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1)
         .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
 
       await promoteStagingTable('land_parcels', dbClient, logger)
 
@@ -388,6 +410,8 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
         .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_covers_staging
 
       const result = await completeAndPromotePaired(
         'land_parcels',
@@ -424,7 +448,14 @@ describe('Data helpers', () => {
         pairedIngestId
       ])
       expect(dbClient.query.mock.calls[10][0]).toBe('COMMIT')
-      expect(logger.info).toHaveBeenCalledTimes(1)
+      // the demoted old live tables are truncated outside the promotion transaction
+      expect(dbClient.query.mock.calls[11][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging;'
+      )
+      expect(dbClient.query.mock.calls[12][0]).toBe(
+        'TRUNCATE TABLE land_covers_staging;'
+      )
+      expect(logger.info).toHaveBeenCalledTimes(3)
     })
 
     test('does not drop or rebuild any indexes when promoting the pair', async () => {
@@ -448,6 +479,8 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
         .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_covers_staging
 
       const result = await completeAndPromotePaired(
         'land_parcels',
