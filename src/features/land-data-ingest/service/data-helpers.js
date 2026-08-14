@@ -308,8 +308,8 @@ const TERMINAL_FAILURE_STATUSES = new Set([
  * @param {object} logger
  * @returns {Promise<boolean>} true if both tables were promoted
  * @throws {Error} if the paired entity had already conclusively failed this cycle, the
- * covers staging table contains more unique parcels than the parcels staging table, or
- * either staging table is empty at promotion time
+ * covers and parcels staging tables hold different numbers of unique parcels, or either
+ * staging table is empty at promotion time
  */
 export async function completeAndPromotePaired(
   entityName,
@@ -507,12 +507,12 @@ async function getUniqueStagingCounts(entityName, pairedEntityName, dbClient) {
 /**
  * Validates that the paired staging tables are consistent, then swaps both into live and
  * marks both ingests completed, reusing the same timestamp for `completed_date`. Every cover
- * must reference a parcel, so the covers staging table can never hold more unique parcels
- * than the parcels staging table; a breach of that guarantee aborts the promotion (no tables
- * are renamed), so partial or inconsistent data can never be promoted to live. An empty
- * staging table also aborts the promotion, so an empty table can never wipe the live table.
- * @throws {Error} if the covers staging table contains more unique parcels than the parcels
- *   staging table, or if either staging table is empty
+ * must reference a parcel, so the unique parcel counts of the covers and parcels staging
+ * tables must match; a mismatch aborts the promotion (no tables are renamed), so partial or
+ * inconsistent data can never be promoted to live. An empty staging table also aborts the
+ * promotion, so an empty table can never wipe the live table.
+ * @throws {Error} if the covers and parcels staging tables hold different numbers of unique
+ *   parcels, or if either staging table is empty
  */
 async function promotePairedStaging({
   entityName,
@@ -542,9 +542,9 @@ async function promotePairedStaging({
     )
   }
 
-  if (coversUniqueCount > parcelsUniqueCount) {
+  if (coversUniqueCount !== parcelsUniqueCount) {
     throw new Error(
-      `${entityName}/${pairedEntityName} cannot be promoted because the covers staging table contains more unique parcels (${coversUniqueCount}) than the parcels staging table (${parcelsUniqueCount})`
+      `${entityName}/${pairedEntityName} cannot be promoted because the unique parcel counts do not match between the covers staging table (${coversUniqueCount}) and the parcels staging table (${parcelsUniqueCount})`
     )
   }
 
