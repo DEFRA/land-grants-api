@@ -592,6 +592,43 @@ describe('Data helpers', () => {
       expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
     })
 
+    test('throws and rolls back without swapping when the unique parcel counts do not match between the staging tables', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'staged' }]
+        }) // paired ingest ready
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '6' }]
+        }) // entity (land_parcels) unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // paired (land_covers) unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // orphan covers count
+
+      await expect(
+        completeAndPromotePaired(
+          'land_parcels',
+          'land_covers',
+          ingestId,
+          dbClient,
+          logger
+        )
+      ).rejects.toThrow(
+        'land_parcels/land_covers cannot be promoted because the unique parcel counts do not match between the covers staging table (5) and the parcels staging table (6)'
+      )
+
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+    })
+
     test.each([
       ['parcels', '0', '5'],
       ['covers', '5', '0']
