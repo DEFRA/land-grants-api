@@ -219,7 +219,7 @@ async function truncateStagingTable(tableName, dbClient, logger) {
  * @param {object} logger
  */
 export async function promoteStagingTable(tableName, dbClient, logger) {
-  const startTime = performance.now()
+  const swapStartTime = performance.now()
 
   try {
     await dbClient.query('BEGIN')
@@ -230,12 +230,12 @@ export async function promoteStagingTable(tableName, dbClient, logger) {
     throw error
   }
 
-  const duration = performance.now() - startTime
+  const swapDuration = performance.now() - swapStartTime
   logInfo(logger, {
     category: LOG_CATEGORY,
     operation: `${tableName}_staging_promoted`,
-    message: `Staging table ${tableName} promoted to live in ${duration.toFixed(0)}ms`,
-    context: { tableName, duration }
+    message: `Staging table ${tableName} promoted to live in ${swapDuration.toFixed(0)}ms`,
+    context: { tableName, swapDuration }
   })
 
   await truncateStagingTable(tableName, dbClient, logger)
@@ -590,8 +590,11 @@ async function promotePairedStaging({
     )
   }
 
+  const swapStartTime = performance.now()
   await swapStagingWithLive(entityName, dbClient)
   await swapStagingWithLive(pairedEntityName, dbClient)
+  const swapDuration = performance.now() - swapStartTime
+
   await dbClient.query(
     `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`,
     [INGEST_STATUS.COMPLETED, now, [ingestId, pairedIngest.id]]
@@ -601,8 +604,8 @@ async function promotePairedStaging({
   logInfo(logger, {
     category: LOG_CATEGORY,
     operation: `${entityName}_paired_promotion_completed`,
-    message: `${entityName} and ${pairedEntityName} promoted to live together in ${duration.toFixed(0)}ms`,
-    context: { entityName, pairedEntityName, duration }
+    message: `${entityName} and ${pairedEntityName} promoted to live together in ${swapDuration.toFixed(0)}ms - data integrity check took ${duration.toFixed(0)}ms`,
+    context: { entityName, pairedEntityName, duration, swapDuration }
   })
 }
 
