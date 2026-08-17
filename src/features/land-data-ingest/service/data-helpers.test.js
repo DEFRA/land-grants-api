@@ -406,6 +406,7 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({
           rows: [{ unique_count: '5' }]
         }) // paired unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // orphan covers count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -429,30 +430,30 @@ describe('Data helpers', () => {
       expect(dbClient.query.mock.calls[4][1][2]).toBe(ingestId)
       const stagedDate = dbClient.query.mock.calls[4][1][1]
 
-      expect(dbClient.query.mock.calls[7][0]).toBe(
-        'SELECT swap_staging_with_live($1)'
-      )
-      expect(dbClient.query.mock.calls[7][1]).toEqual(['land_parcels'])
       expect(dbClient.query.mock.calls[8][0]).toBe(
         'SELECT swap_staging_with_live($1)'
       )
-      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_covers'])
+      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_parcels'])
       expect(dbClient.query.mock.calls[9][0]).toBe(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[9][1]).toEqual(['land_covers'])
+      expect(dbClient.query.mock.calls[10][0]).toBe(
         `UPDATE ingest SET status = $1, completed_date = $2 WHERE id = ANY($3)`
       )
-      expect(dbClient.query.mock.calls[9][1][0]).toBe('completed')
+      expect(dbClient.query.mock.calls[10][1][0]).toBe('completed')
       // reuses the exact same timestamp used for this entity's staged_date
-      expect(dbClient.query.mock.calls[9][1][1]).toBe(stagedDate)
-      expect(dbClient.query.mock.calls[9][1][2]).toEqual([
+      expect(dbClient.query.mock.calls[10][1][1]).toBe(stagedDate)
+      expect(dbClient.query.mock.calls[10][1][2]).toEqual([
         ingestId,
         pairedIngestId
       ])
-      expect(dbClient.query.mock.calls[10][0]).toBe('COMMIT')
+      expect(dbClient.query.mock.calls[11][0]).toBe('COMMIT')
       // the demoted old live tables are truncated outside the promotion transaction
-      expect(dbClient.query.mock.calls[11][0]).toBe(
+      expect(dbClient.query.mock.calls[12][0]).toBe(
         'TRUNCATE TABLE land_parcels_staging;'
       )
-      expect(dbClient.query.mock.calls[12][0]).toBe(
+      expect(dbClient.query.mock.calls[13][0]).toBe(
         'TRUNCATE TABLE land_covers_staging;'
       )
       expect(logger.info).toHaveBeenCalledTimes(3)
@@ -475,6 +476,7 @@ describe('Data helpers', () => {
         .mockResolvedValueOnce({
           rows: [{ unique_count: '5' }]
         }) // paired unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // orphan covers count
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
         .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
@@ -499,7 +501,7 @@ describe('Data helpers', () => {
       )
     })
 
-    test('throws and rolls back without swapping when the covers staging holds more unique parcels than the parcels staging', async () => {
+    test('promotes both staging tables when the covers ingest is the entity and parcels is the paired entity', async () => {
       dbClient.query
         .mockResolvedValueOnce({}) // BEGIN
         .mockResolvedValueOnce({}) // advisory lock
@@ -510,8 +512,67 @@ describe('Data helpers', () => {
           rows: [{ id: pairedIngestId, status: 'staged' }]
         }) // paired ingest ready
         .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
-        .mockResolvedValueOnce({ rows: [{ unique_count: '5' }] }) // entity (land_parcels) unique staging count
-        .mockResolvedValueOnce({ rows: [{ unique_count: '7' }] }) // paired (land_covers) unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // entity (land_covers) unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // paired (land_parcels) unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // orphan covers count
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_covers)
+        .mockResolvedValueOnce({}) // SELECT swap_staging_with_live($1) (land_parcels)
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = completed
+        .mockResolvedValueOnce({}) // COMMIT
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_covers_staging
+        .mockResolvedValueOnce({}) // TRUNCATE TABLE land_parcels_staging
+
+      const result = await completeAndPromotePaired(
+        'land_covers',
+        'land_parcels',
+        ingestId,
+        dbClient,
+        logger
+      )
+
+      expect(result).toBe(true)
+      expect(dbClient.query.mock.calls[8][0]).toBe(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[8][1]).toEqual(['land_covers'])
+      expect(dbClient.query.mock.calls[9][0]).toBe(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query.mock.calls[9][1]).toEqual(['land_parcels'])
+      expect(dbClient.query.mock.calls[10][1][2]).toEqual([
+        ingestId,
+        pairedIngestId
+      ])
+      expect(dbClient.query.mock.calls[12][0]).toBe(
+        'TRUNCATE TABLE land_covers_staging;'
+      )
+      expect(dbClient.query.mock.calls[13][0]).toBe(
+        'TRUNCATE TABLE land_parcels_staging;'
+      )
+    })
+
+    test('throws and rolls back without swapping when the covers staging references parcels missing from the parcels staging', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'staged' }]
+        }) // paired ingest ready
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // entity (land_parcels) unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '7' }]
+        }) // paired (land_covers) unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '2' }] }) // orphan covers count
 
       await expect(
         completeAndPromotePaired(
@@ -522,7 +583,44 @@ describe('Data helpers', () => {
           logger
         )
       ).rejects.toThrow(
-        'land_parcels/land_covers cannot be promoted because the covers staging table contains more unique parcels (7) than the parcels staging table (5)'
+        'land_parcels/land_covers cannot be promoted because the covers staging table references 2 parcels that are not in the parcels staging table'
+      )
+
+      expect(dbClient.query).not.toHaveBeenCalledWith(
+        'SELECT swap_staging_with_live($1)'
+      )
+      expect(dbClient.query).toHaveBeenLastCalledWith('ROLLBACK')
+    })
+
+    test('throws and rolls back without swapping when the unique parcel counts do not match between the staging tables', async () => {
+      dbClient.query
+        .mockResolvedValueOnce({}) // BEGIN
+        .mockResolvedValueOnce({}) // advisory lock
+        .mockResolvedValueOnce({
+          rows: [{ id: ingestId, status: 'in_progress' }]
+        }) // this ingest lookup
+        .mockResolvedValueOnce({
+          rows: [{ id: pairedIngestId, status: 'staged' }]
+        }) // paired ingest ready
+        .mockResolvedValueOnce({}) // UPDATE ingest SET status = staged, staged_date
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '6' }]
+        }) // entity (land_parcels) unique staging count
+        .mockResolvedValueOnce({
+          rows: [{ unique_count: '5' }]
+        }) // paired (land_covers) unique staging count
+        .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // orphan covers count
+
+      await expect(
+        completeAndPromotePaired(
+          'land_parcels',
+          'land_covers',
+          ingestId,
+          dbClient,
+          logger
+        )
+      ).rejects.toThrow(
+        'land_parcels/land_covers cannot be promoted because parcel count (6) was not equal to cover count (5)'
       )
 
       expect(dbClient.query).not.toHaveBeenCalledWith(

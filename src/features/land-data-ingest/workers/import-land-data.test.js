@@ -256,6 +256,34 @@ describe('importLandData', () => {
     expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
   })
 
+  it('should increment land_data_ingest_failed when promotion is rejected over unlinked staged parcels', async () => {
+    const mockWebStream = new ReadableStream({ start: (c) => c.close() })
+    const mockResponse = {
+      ContentType: 'text/csv',
+      ContentLength: 1024,
+      Body: {
+        transformToWebStream: vi.fn().mockReturnValue(mockWebStream)
+      }
+    }
+    getFile.mockResolvedValue(mockResponse)
+
+    const mismatchError = new Error(
+      'land_parcels/land_covers cannot be promoted because the covers staging table references 3 parcels that are not in the parcels staging table'
+    )
+    importData.mockRejectedValue(mismatchError)
+
+    await expect(
+      importLandData({
+        s3key: 'land_parcels/123/test.csv',
+        filename: 'test.csv',
+        ingestId: '123'
+      })
+    ).rejects.toThrow(mismatchError.message)
+
+    expect(logBusinessError).toHaveBeenCalled()
+    expect(metricsCounter).toHaveBeenCalledWith('land_data_ingest_failed', 1)
+  })
+
   it('should handle invalid resource type in file path', async () => {
     const mockWebStream = new ReadableStream({ start: (c) => c.close() })
     const mockResponse = {
