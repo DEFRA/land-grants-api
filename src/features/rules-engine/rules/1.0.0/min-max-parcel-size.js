@@ -27,6 +27,31 @@ export const minMaxParcelSize = {
       }
     ]
 
+    if (!minimumParcelSizeSqm && !maximumParcelSizeSqm) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason: `Missing config for minimum and maximum sizes`,
+        explanations
+      }
+    }
+
+    if (
+      minimumParcelSizeSqm &&
+      maximumParcelSizeSqm &&
+      minimumParcelSizeSqm > maximumParcelSizeSqm
+    ) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason:
+          'Minimum expected parcel size is greater than configured maximum size',
+        explanations
+      }
+    }
+
     if (minimumParcelSizeSqm && availableAreaSqm < minimumParcelSizeSqm) {
       return {
         name,

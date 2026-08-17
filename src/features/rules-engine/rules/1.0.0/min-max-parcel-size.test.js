@@ -76,4 +76,28 @@ describe('minMaxParcelSize', () => {
       'The parcel is above the maximum elligble parcel size'
     )
   })
+
+  test('should fail when rule is missing config for min and max sizes', () => {
+    const result = minMaxParcelSize.execute(createApplication(), createRule({}))
+
+    expect(result.passed).toBe(false)
+    expect(result.reason).toEqual(
+      'Missing config for minimum and maximum sizes'
+    )
+  })
+
+  test('should fail when min is greater than max', () => {
+    const result = minMaxParcelSize.execute(
+      createApplication(),
+      createRule({
+        minimumParcelSizeHa: 5,
+        maximumParcelSizeHa: 4
+      })
+    )
+
+    expect(result.passed).toBe(false)
+    expect(result.reason).toEqual(
+      'Minimum expected parcel size is greater than configured maximum size'
+    )
+  })
 })
