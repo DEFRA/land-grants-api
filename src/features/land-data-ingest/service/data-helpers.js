@@ -586,7 +586,7 @@ async function promotePairedStaging({
 
   if (coversUniqueCount !== parcelsUniqueCount) {
     throw new Error(
-      `${entityName}/${pairedEntityName} cannot be promoted because the unique parcel counts do not match between the covers staging table (${coversUniqueCount}) and the parcels staging table (${parcelsUniqueCount})`
+      `${entityName}/${pairedEntityName} cannot be promoted because parcel count (${parcelsUniqueCount}) was not equal to cover count (${coversUniqueCount})`
     )
   }
 

@@ -168,6 +168,7 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
+            debug: vi.fn(),
             info: vi.fn()
           }
         }
@@ -178,7 +179,7 @@ describe('Postgres Helper', () => {
         const password = await poolConfig.password()
 
         expect(password).toBe('my-local-password')
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
         )
       })
@@ -206,6 +207,7 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
+            debug: vi.fn(),
             info: vi.fn()
           }
         }
@@ -272,8 +274,9 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
-            info: vi.fn(),
-            error: vi.fn()
+            debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn()
           }
         }
 
@@ -284,7 +287,7 @@ describe('Postgres Helper', () => {
           'Failed to get auth token'
         )
 
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
         )
         expect(mockServer.logger.error).toHaveBeenCalledWith(
@@ -450,6 +453,7 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
+            debug: vi.fn(),
             info: vi.fn()
           }
         }
@@ -469,7 +473,7 @@ describe('Postgres Helper', () => {
         const password = await clientConfig.password()
 
         expect(password).toBe('local-password')
-        expect(mockServer.logger.info).toHaveBeenCalledWith(
+        expect(mockServer.logger.debug).toHaveBeenCalledWith(
           'Getting Postgres authentication token'
         )
       })
@@ -497,6 +501,7 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
+            debug: vi.fn(),
             info: vi.fn()
           }
         }
@@ -580,8 +585,9 @@ describe('Postgres Helper', () => {
 
         const mockServer = {
           logger: {
-            info: vi.fn(),
-            error: vi.fn()
+            debug: vi.fn(),
+            error: vi.fn(),
+            info: vi.fn()
           }
         }
 
@@ -683,9 +689,9 @@ describe('Postgres Helper', () => {
 
       mockServer = {
         logger: {
-          info: vi.fn(),
+          debug: vi.fn(),
           error: vi.fn(),
-          debug: vi.fn()
+          info: vi.fn()
         },
         decorate: vi.fn(),
         events: {

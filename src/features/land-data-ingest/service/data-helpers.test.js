@@ -620,7 +620,7 @@ describe('Data helpers', () => {
           logger
         )
       ).rejects.toThrow(
-        'land_parcels/land_covers cannot be promoted because the unique parcel counts do not match between the covers staging table (5) and the parcels staging table (6)'
+        'land_parcels/land_covers cannot be promoted because parcel count (6) was not equal to cover count (5)'
       )
 
       expect(dbClient.query).not.toHaveBeenCalledWith(

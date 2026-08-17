@@ -529,7 +529,7 @@ describe('Land import pairing scoping', () => {
         ingestId: parcelsIngestId
       })
     ).rejects.toThrow(
-      'land_parcels/land_covers cannot be promoted because the unique parcel counts do not match between the covers staging table (7) and the parcels staging table (9)'
+      'land_parcels/land_covers cannot be promoted because parcel count (9) was not equal to cover count (7)'
     )
 
     const [parcelsIngest] = await getRecordsByQuery(
