@@ -1,0 +1,57 @@
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+
+/**
+ * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
+ * @import { ActionRule } from '~/src/features/actions/action.d.js'
+ */
+
+/**
+ * @param {RuleEngineApplication} application - The application to execute the rule on
+ * @param {ActionRule} rule - The rule to execute
+ * @returns {RuleResultItem} - The result of the rule
+ */
+export const minMaxParcelSize = {
+  execute: (application, rule) => {
+    const name = rule.name
+    const {
+      landParcel: { availableAreaSqm }
+    } = application
+    const { minimumParcelSizeHa, maximumParcelSizeHa } = rule.config
+    const minimumParcelSizeSqm = haToSqm(minimumParcelSizeHa)
+    const maximumParcelSizeSqm = haToSqm(maximumParcelSizeHa)
+
+    const explanations = [
+      {
+        title: 'Minimum and maximum parcel size',
+        lines: [`The parcel size is ${availableAreaSqm}`]
+      }
+    ]
+
+    if (minimumParcelSizeSqm && availableAreaSqm < minimumParcelSizeSqm) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason: `The parcel is below the minimum elligble parcel size`,
+        explanations
+      }
+    }
+    if (maximumParcelSizeSqm && availableAreaSqm > maximumParcelSizeSqm) {
+      return {
+        name,
+        passed: false,
+        description: rule.description,
+        reason: `The parcel is above the maximum elligble parcel size`,
+        explanations
+      }
+    }
+
+    return {
+      name,
+      passed: true,
+      description: rule.description,
+      reason: `The parcel size is of acceptable size`,
+      explanations
+    }
+  }
+}
