@@ -247,42 +247,16 @@ describe('ApplicationValidationController', () => {
           landActions: mockLandActions,
           actions: mockActions,
           applicationId,
-          sbi: String(sbi)
+          sbi
         }
       )
       expect(mockValidateAllLandParcels).toHaveBeenCalledWith(
         expect.objectContaining({ logger: expect.any(Object) }),
         mockPostgresDb,
-        String(sbi),
+        sbi,
         'dummy-token',
         { landActions: mockLandActions, actions: mockActions }
       )
-    })
-
-    test('should allow number for SBI', async () => {
-      const applicationId = 'APP-123'
-      const request = {
-        method: 'POST',
-        headers: { 'x-forwarded-authorization': 'dummy-token' },
-        url: '/api/v2/application/validate',
-        payload: {
-          applicationId,
-          requester: 'test-user',
-          applicantCrn: 'CRN-456',
-          sbi: 123456789,
-          landActions: mockLandActions
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { valid, id }
-      } = await server.inject(request)
-
-      expect(statusCode).toBe(200)
-      expect(valid).toBe(true)
-      expect(id).toBe(1)
     })
 
     test('should send an audit event with the eligibility decisions and explanations', async () => {

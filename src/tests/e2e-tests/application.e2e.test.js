@@ -7,6 +7,8 @@ const headers = {
   'X-Forwarded-Authorization': 'dummy'
 }
 
+const sbi = '123456789'
+
 describe('Application Validation Endpoints', () => {
   describe('POST /api/v2/application/validate', () => {
     test('should validate application with authentication', async () => {
@@ -16,7 +18,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-1',
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',
@@ -48,7 +50,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-2',
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',
@@ -86,7 +88,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-5',
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',
@@ -112,7 +114,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-6',
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',
@@ -158,7 +160,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: 'appid-run-1',
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',
@@ -227,7 +229,7 @@ describe('Application Validation Endpoints', () => {
           applicationId: testApplicationId,
           requester: 'test-user',
           applicantCrn: '1234567890',
-          sbi: 123456789,
+          sbi,
           landActions: [
             {
               sheetId: 'SD5649',

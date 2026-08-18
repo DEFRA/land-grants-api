@@ -17,7 +17,7 @@ describe('Case Management Adapter Endpoints', () => {
         applicationId: 'appid-cma-1',
         requester: 'test-user',
         applicantCrn: '1234567890',
-        sbi: 123456789,
+        sbi: '123456789',
         landActions: [
           {
             sheetId: 'SD5649',

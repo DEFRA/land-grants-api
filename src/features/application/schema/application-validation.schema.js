@@ -4,7 +4,7 @@ const applicationValidationSchema = Joi.object({
   applicationId: Joi.string().required(),
   requester: Joi.string().required(),
   applicantCrn: Joi.string().required(),
-  sbi: Joi.alternatives(Joi.string(), Joi.number().integer()).required(),
+  sbi: Joi.string().required(),
   landActions: Joi.array()
     .items(
       Joi.object({
