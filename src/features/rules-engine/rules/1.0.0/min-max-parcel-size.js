@@ -57,7 +57,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel is below the minimum elligble parcel size`,
+        reason: `The parcel size is below the minimum configured parcel size ${minimumParcelSizeHa}ha`,
         explanations
       }
     }
@@ -66,7 +66,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel is above the maximum elligble parcel size`,
+        reason: `The parcel size is above the maximum configured parcel size ${maximumParcelSizeHa}ha`,
         explanations
       }
     }
