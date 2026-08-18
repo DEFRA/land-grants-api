@@ -291,7 +291,7 @@ const ApplicationValidationController = {
         request.payload
 
       // @ts-expect-error - payload
-      const sbi = String(request.payload.sbi)
+      const sbi = request.payload.sbi
 
       logInfo(request.logger, {
         category: 'application',
