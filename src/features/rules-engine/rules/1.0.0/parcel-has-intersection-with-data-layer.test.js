@@ -31,7 +31,7 @@ describe('parcelHasIntersectionWithDataLayer', () => {
         {
           title: 'moorland check',
           lines: [
-            'This parcel has a 49% intersection with the moorland layer. The target is 51%.'
+            'This parcel has a 49% intersection with the moorland layer. The target is 49%.'
           ]
         }
       ]
@@ -50,7 +50,7 @@ describe('parcelHasIntersectionWithDataLayer', () => {
         {
           title: 'moorland check',
           lines: [
-            'This parcel has a 50% intersection with the moorland layer. The target is 51%.'
+            'This parcel has a 50% intersection with the moorland layer. The target is 49%.'
           ]
         }
       ]
@@ -69,7 +69,7 @@ describe('parcelHasIntersectionWithDataLayer', () => {
         {
           title: 'moorland check',
           lines: [
-            'This parcel has a 48% intersection with the moorland layer. The target is 51%.'
+            'This parcel has a 48% intersection with the moorland layer. The target is 49%.'
           ]
         }
       ]
@@ -90,6 +90,82 @@ describe('parcelHasIntersectionWithDataLayer', () => {
           title: 'moorland check',
           lines: [
             'An intersection with the moorland layer was not provided in the application data'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should use failureMessage when provided and rule fails', () => {
+    const ruleWithFailureMessage = {
+      config: {
+        layerName: 'lfa',
+        minimumIntersectionPercent: 100,
+        tolerancePercent: 1,
+        failureMessage:
+          'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+      }
+    }
+    const application = {
+      landParcel: {
+        intersections: {
+          lfa: { intersectingAreaPercentage: 80 }
+        }
+      }
+    }
+    const result = parcelHasIntersectionWithDataLayer.execute(
+      application,
+      ruleWithFailureMessage
+    )
+
+    expect(result).toEqual({
+      name: 'undefined-lfa',
+      passed: false,
+      reason:
+        'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)',
+      explanations: [
+        {
+          title: 'lfa check',
+          lines: [
+            'This parcel has a 80% intersection with the lfa layer. The target is 99%.'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should use default reason when failureMessage is provided but rule passes', () => {
+    const ruleWithFailureMessage = {
+      config: {
+        layerName: 'lfa',
+        minimumIntersectionPercent: 100,
+        tolerancePercent: 1,
+        failureMessage:
+          'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+      }
+    }
+    const application = {
+      landParcel: {
+        intersections: {
+          lfa: { intersectingAreaPercentage: 100 }
+        }
+      }
+    }
+    const result = parcelHasIntersectionWithDataLayer.execute(
+      application,
+      ruleWithFailureMessage
+    )
+
+    expect(result).toEqual({
+      name: 'undefined-lfa',
+      passed: true,
+      reason: 'This parcel is majority on the lfa',
+      description: undefined,
+      explanations: [
+        {
+          title: 'lfa check',
+          lines: [
+            'This parcel has a 100% intersection with the lfa layer. The target is 99%.'
           ]
         }
       ]

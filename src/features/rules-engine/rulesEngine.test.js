@@ -7,9 +7,18 @@ import { vi, beforeEach } from 'vitest'
 
 const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0': {
-    execute: () => {
+    execute: (_application, rule) => {
       return {
-        name: 'parcel-has-intersection-with-data-layer',
+        name: rule.name,
+        passed: true,
+        message: 'Success'
+      }
+    }
+  },
+  'sssi-consent-required-1.0.0': {
+    execute: (_application, rule) => {
+      return {
+        name: rule.name,
         passed: true,
         message: 'Success'
       }
@@ -33,7 +42,8 @@ const application = {
     area: 100,
     existingAgreements: [{ area: 100, code: 'LIG2' }],
     intersections: {
-      moorland: { intersectingAreaPercentage: 50 }
+      moorland: { intersectingAreaPercentage: 50 },
+      lfa: { intersectingAreaPercentage: 100 }
     }
   }
 }
@@ -57,7 +67,11 @@ describe('Rules Engine', function () {
   })
 
   test('should return passed=true if all rules are valid', function () {
-    const result = executeRules(rules, application, mockActionConfig[0].rules)
+    const result = executeRules(rules, application, [
+      mockActionConfig[0].rules[0],
+      mockActionConfig[0].rules[1],
+      mockActionConfig[0].rules[2]
+    ])
 
     expect(result).toStrictEqual({
       passed: true,
@@ -68,7 +82,12 @@ describe('Rules Engine', function () {
           message: 'Success'
         },
         {
-          name: 'applied-for-total-available-area',
+          name: 'parcel-is-on-less-favoured-area',
+          passed: true,
+          message: 'Success'
+        },
+        {
+          name: 'sssi-consent-required',
           passed: true,
           message: 'Success'
         }
@@ -149,11 +168,20 @@ describe('Rules Engine', function () {
   test('should return passed=false if any rule returns passed=false', function () {
     const rulesWithMixedResults = {
       'parcel-has-intersection-with-data-layer-1.0.0': {
-        execute: () => {
+        execute: (_application, rule) => {
           return {
-            name: 'parcel-has-intersection-with-data-layer',
+            name: rule.name,
             passed: true,
             message: 'Success'
+          }
+        }
+      },
+      'sssi-consent-required-1.0.0': {
+        execute: () => {
+          return {
+            name: 'sssi-consent-required',
+            passed: false,
+            message: 'Failed'
           }
         }
       },
@@ -168,11 +196,11 @@ describe('Rules Engine', function () {
       }
     }
 
-    const result = executeRules(
-      rulesWithMixedResults,
-      application,
-      mockActionConfig[0].rules
-    )
+    const result = executeRules(rulesWithMixedResults, application, [
+      mockActionConfig[0].rules[0],
+      mockActionConfig[0].rules[1],
+      mockActionConfig[0].rules[2]
+    ])
 
     expect(result).toStrictEqual({
       passed: false,
@@ -183,7 +211,12 @@ describe('Rules Engine', function () {
           message: 'Success'
         },
         {
-          name: 'applied-for-total-available-area',
+          name: 'parcel-is-on-less-favoured-area',
+          passed: true,
+          message: 'Success'
+        },
+        {
+          name: 'sssi-consent-required',
           passed: false,
           message: 'Failed'
         }

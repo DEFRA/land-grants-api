@@ -44,6 +44,29 @@ const mockActionConfig = [
         }
       },
       {
+        name: 'parcel-is-on-less-favoured-area',
+        type: 'parcel-has-intersection-with-data-layer',
+        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
+        version: '1.0.0',
+        config: {
+          layerName: 'lfa',
+          minimumIntersectionPercent: 100,
+          tolerancePercent: 1,
+          failureMessage:
+            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+        }
+      },
+      {
+        name: 'sssi-consent-required',
+        description: 'Is the site of special scientific interest?',
+        version: '1.0.0',
+        config: {
+          layerName: 'sssi',
+          tolerancePercent: 1,
+          caveatDescription: 'A consent is required from Natural England'
+        }
+      },
+      {
         name: 'applied-for-total-available-area',
         description: 'Has the total available area been applied for?',
         version: '1.0.0'
@@ -91,6 +114,29 @@ const mockActionConfig = [
         }
       },
       {
+        name: 'parcel-is-on-less-favoured-area',
+        type: 'parcel-has-intersection-with-data-layer',
+        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
+        version: '1.0.0',
+        config: {
+          layerName: 'lfa',
+          minimumIntersectionPercent: 100,
+          tolerancePercent: 1,
+          failureMessage:
+            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+        }
+      },
+      {
+        name: 'sssi-consent-required',
+        description: 'Is the site of special scientific interest?',
+        version: '1.0.0',
+        config: {
+          layerName: 'sssi',
+          tolerancePercent: 1,
+          caveatDescription: 'A consent is required from Natural England'
+        }
+      },
+      {
         name: 'applied-for-total-available-area',
         version: '1.0.0'
       }
@@ -135,6 +181,29 @@ const mockActionConfig = [
           layerName: 'moorland',
           minimumIntersectionPercent: 50,
           tolerancePercent: 1
+        }
+      },
+      {
+        name: 'parcel-is-on-less-favoured-area',
+        type: 'parcel-has-intersection-with-data-layer',
+        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
+        version: '1.0.0',
+        config: {
+          layerName: 'lfa',
+          minimumIntersectionPercent: 100,
+          tolerancePercent: 1,
+          failureMessage:
+            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+        }
+      },
+      {
+        name: 'sssi-consent-required',
+        description: 'Is the site of special scientific interest?',
+        version: '1.0.0',
+        config: {
+          layerName: 'sssi',
+          tolerancePercent: 1,
+          caveatDescription: 'A consent is required from Natural England'
         }
       },
       {

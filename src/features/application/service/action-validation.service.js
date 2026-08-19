@@ -1,4 +1,5 @@
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
   findMaximumAvailableArea,
@@ -10,10 +11,7 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { HECTARES } from '~/src/features/common/constants/unit_type.js'
-import {
-  actionResultTransformer,
-  ruleEngineApplicationTransformer
-} from '../transformers/application.transformer.js'
+import { actionResultTransformer } from '../transformers/application.transformer.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
@@ -120,7 +118,7 @@ export const validateLandAction = async (
  * @param {object} availableArea
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
- * @returns {Promise<object>}
+ * @returns {Promise<RuleEngineApplication>}
  */
 const buildRuleEngineApplication = async (
   action,
@@ -129,38 +127,56 @@ const buildRuleEngineApplication = async (
   agreements,
   request
 ) => {
-  const intersectingAreaPercentage = await getMoorlandInterceptPercentage(
-    landAction.sheetId,
-    landAction.parcelId,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  const sssiDataLayerData = await getDataLayerQueryAccumulated(
-    landAction.sheetId,
-    landAction.parcelId,
-    DATA_LAYER_TYPES.sssi,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  const historicFeaturesDataLayerData = await getDataLayerQueryUnion(
-    landAction.sheetId,
-    landAction.parcelId,
-    DATA_LAYER_TYPES.historic_features,
-    request.server.postgresDb,
-    request.logger
-  )
-
-  return ruleEngineApplicationTransformer(
-    action.quantity,
-    action.code,
-    availableArea.availableAreaSqm,
-    intersectingAreaPercentage,
+  const [
+    moorlandIntersectingAreaPercentage,
+    lfaIntersectingAreaPercentage,
     sssiDataLayerData,
-    historicFeaturesDataLayerData,
-    agreements
-  )
+    historicFeaturesDataLayerData
+  ] = await Promise.all([
+    getMoorlandInterceptPercentage(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
+    ),
+    getLfaInterceptPercentage(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
+    ),
+    getDataLayerQueryAccumulated(
+      landAction.sheetId,
+      landAction.parcelId,
+      DATA_LAYER_TYPES.sssi,
+      request.server.postgresDb,
+      request.logger
+    ),
+    getDataLayerQueryUnion(
+      landAction.sheetId,
+      landAction.parcelId,
+      DATA_LAYER_TYPES.historic_features,
+      request.server.postgresDb,
+      request.logger
+    )
+  ])
+
+  return {
+    areaAppliedFor: action.quantity,
+    actionCodeAppliedFor: action.code,
+    landParcel: {
+      availableAreaSqm: availableArea.availableAreaSqm,
+      existingAgreements: agreements,
+      intersections: {
+        moorland: {
+          intersectingAreaPercentage: moorlandIntersectingAreaPercentage
+        },
+        lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
+        sssi: sssiDataLayerData,
+        historic_features: historicFeaturesDataLayerData
+      }
+    }
+  }
 }
 
 /**
@@ -169,4 +185,5 @@ const buildRuleEngineApplication = async (
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
+ * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  */
