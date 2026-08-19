@@ -1,6 +1,4 @@
-import {
-  sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
