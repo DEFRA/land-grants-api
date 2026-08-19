@@ -11,7 +11,7 @@ describe('Application Validation Schema', () => {
       applicationId: 'app-123',
       requester: 'user@example.com',
       applicantCrn: 'CRN123456',
-      sbi: 123456789,
+      sbi: '123456789',
       landActions: [
         {
           sheetId: 'sheet-1',

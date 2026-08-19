@@ -35,12 +35,7 @@ const DEDUPE_COLUMNS_BY_ENTITY = {
   land_parcels: ['SHEET_ID', 'PARCEL_ID']
 }
 
-function hasDBOptions(options, logger) {
-  logInfo(logger, {
-    category: logCategory,
-    operation: 'hasDBOptions',
-    message: 'Checking database options'
-  })
+function hasDBOptions(options) {
   return options.user && options.database && options.host
 }
 
@@ -51,7 +46,7 @@ function hasDBOptions(options, logger) {
  */
 async function connectToDb(logger) {
   const dbOptions = getDBOptions()
-  if (!hasDBOptions(dbOptions, logger)) {
+  if (!hasDBOptions(dbOptions)) {
     throw new Error('Database options are not set')
   }
   const client = createDBClient(dbOptions, {

@@ -76,7 +76,7 @@ export function createDBPool(options, server = {}) {
     port: options.port || DEFAULT_PORT,
     user: options.user,
     password: async () => {
-      server?.logger?.info('Getting Postgres authentication token')
+      server?.logger?.debug('Getting Postgres authentication token')
       try {
         const token = await getToken(options)
         return token
@@ -130,7 +130,7 @@ export function createDBClient(options, server = {}) {
     port: options.port || DEFAULT_PORT,
     user: options.user,
     password: async () => {
-      server?.logger?.info('Getting Postgres authentication token')
+      server?.logger?.debug('Getting Postgres authentication token')
       try {
         const token = await getToken(options)
         return token
