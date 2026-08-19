@@ -1,5 +1,4 @@
 import {
-  haToSqm,
   sqmToHaRounded
 } from '~/src/features/common/helpers/measurement.js'
 
