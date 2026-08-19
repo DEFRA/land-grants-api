@@ -2,13 +2,15 @@ import { minMaxParcelSize } from './min-max-parcel-size.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 describe('minMaxParcelSize', () => {
+  const name = 'min-max-parcel-size'
+
   const createApplication = () => ({
     landParcel: {
       availableAreaSqm: haToSqm(10)
     }
   })
 
-  const createRule = (config = {}, name = 'min-max-parcel-size') => ({
+  const createRule = (config = {}) => ({
     name,
     description: 'Check parcel size is within configured size',
     config
@@ -18,8 +20,8 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        minimumParcelSizeHa: 5,
-        maximumParcelSizeHa: 15
+        minimumParcelSizeSqm: 50000,
+        maximumParcelSizeSqm: 150000
       })
     )
 
@@ -31,7 +33,7 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        minimumParcelSizeHa: 10
+        minimumParcelSizeSqm: 10000
       })
     )
 
@@ -42,7 +44,7 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        maximumParcelSizeHa: 30
+        maximumParcelSizeSqm: 300000
       })
     )
 
@@ -53,7 +55,7 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        minimumParcelSizeHa: 11
+        minimumParcelSizeSqm: 110000
       })
     )
 
@@ -67,7 +69,7 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        maximumParcelSizeHa: 5
+        maximumParcelSizeSqm: 50000
       })
     )
 
@@ -90,8 +92,8 @@ describe('minMaxParcelSize', () => {
     const result = minMaxParcelSize.execute(
       createApplication(),
       createRule({
-        minimumParcelSizeHa: 5,
-        maximumParcelSizeHa: 4
+        minimumParcelSizeSqm: 50000,
+        maximumParcelSizeSqm: 40000
       })
     )
 

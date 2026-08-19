@@ -1,4 +1,7 @@
-import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import {
+  haToSqm,
+  sqmToHaRounded
+} from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -16,9 +19,7 @@ export const minMaxParcelSize = {
     const {
       landParcel: { availableAreaSqm }
     } = application
-    const { minimumParcelSizeHa, maximumParcelSizeHa } = rule.config
-    const minimumParcelSizeSqm = haToSqm(minimumParcelSizeHa)
-    const maximumParcelSizeSqm = haToSqm(maximumParcelSizeHa)
+    const { minimumParcelSizeSqm, maximumParcelSizeSqm } = rule.config
 
     const explanations = [
       {
@@ -57,7 +58,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel size is below the minimum configured parcel size ${minimumParcelSizeHa}ha`,
+        reason: `The parcel size is below the minimum configured parcel size ${sqmToHaRounded(minimumParcelSizeSqm)}ha`,
         explanations
       }
     }
@@ -66,7 +67,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel size is above the maximum configured parcel size ${maximumParcelSizeHa}ha`,
+        reason: `The parcel size is above the maximum configured parcel size ${sqmToHaRounded(maximumParcelSizeSqm)}ha`,
         explanations
       }
     }
