@@ -99,7 +99,7 @@
     "eslint-import-resolver-typescript": "^3.6.3",
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-jsdoc": "63.3.1",
-    "knip": "^6.32.1",
+    "knip": "^6.32.2",
     "neostandard": "0.13.0",
     "nodemon": "^3.1.14",
     "nyc": "^18.0.0",
