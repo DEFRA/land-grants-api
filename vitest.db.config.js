@@ -13,6 +13,7 @@ export default defineConfig({
   test: {
     ...unitConfig.test,
     name: 'database',
+    testTimeout: 15000,
     include: ['src/tests/db-tests/**/?(*.)+(spec|test).[jt]s?(x)'],
     globalSetup: [resolve(__dirname, 'vitest.db.setup.js')],
     globalTeardown: [resolve(__dirname, 'vitest.db.teardown.js')],

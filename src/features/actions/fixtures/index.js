@@ -1,5 +1,62 @@
 const applicationUnitOfMeasurement = 'ha'
 
+const landCoverClassCodes = [
+  '130',
+  '240',
+  '250',
+  '270',
+  '280',
+  '300',
+  '330',
+  '580',
+  '590',
+  '620',
+  '640',
+  '650'
+]
+
+const moorlandRule = {
+  name: 'parcel-has-intersection-with-data-layer',
+  description: 'Is this parcel on the moorland?',
+  version: '1.0.0',
+  config: {
+    layerName: 'moorland',
+    minimumIntersectionPercent: 50,
+    tolerancePercent: 1
+  }
+}
+
+const lessFavouredAreaRule = {
+  name: 'parcel-is-on-less-favoured-area',
+  type: 'parcel-has-intersection-with-data-layer',
+  description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
+  version: '1.0.0',
+  config: {
+    layerName: 'lfa',
+    minimumIntersectionPercent: 100,
+    tolerancePercent: 1,
+    failureMessage:
+      'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+  }
+}
+
+const sssiConsentRule = {
+  name: 'sssi-consent-required',
+  description: 'Is the site of special scientific interest?',
+  version: '1.0.0',
+  config: {
+    layerName: 'sssi',
+    tolerancePercent: 1,
+    caveatDescription: 'A consent is required from Natural England'
+  }
+}
+
+const totalAvailableAreaRule = {
+  name: 'applied-for-total-available-area',
+  description: 'Has the total available area been applied for?',
+  version: '1.0.0'
+}
+
 const mockActionConfig = [
   {
     version: 1,
@@ -18,59 +75,12 @@ const mockActionConfig = [
       ratePerUnitGbp: 10.6,
       ratePerAgreementPerYearGbp: 272
     },
-    landCoverClassCodes: [
-      '130',
-      '240',
-      '250',
-      '270',
-      '280',
-      '300',
-      '330',
-      '580',
-      '590',
-      '620',
-      '640',
-      '650'
-    ],
+    landCoverClassCodes,
     rules: [
-      {
-        name: 'parcel-has-intersection-with-data-layer',
-        description: 'Is this parcel on the moorland?',
-        version: '1.0.0',
-        config: {
-          layerName: 'moorland',
-          minimumIntersectionPercent: 50,
-          tolerancePercent: 1
-        }
-      },
-      {
-        name: 'parcel-is-on-less-favoured-area',
-        type: 'parcel-has-intersection-with-data-layer',
-        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
-        version: '1.0.0',
-        config: {
-          layerName: 'lfa',
-          minimumIntersectionPercent: 100,
-          tolerancePercent: 1,
-          failureMessage:
-            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
-        }
-      },
-      {
-        name: 'sssi-consent-required',
-        description: 'Is the site of special scientific interest?',
-        version: '1.0.0',
-        config: {
-          layerName: 'sssi',
-          tolerancePercent: 1,
-          caveatDescription: 'A consent is required from Natural England'
-        }
-      },
-      {
-        name: 'applied-for-total-available-area',
-        description: 'Has the total available area been applied for?',
-        version: '1.0.0'
-      }
+      moorlandRule,
+      lessFavouredAreaRule,
+      sssiConsentRule,
+      totalAvailableAreaRule
     ]
   },
   {
@@ -89,57 +99,12 @@ const mockActionConfig = [
     payment: {
       ratePerUnitGbp: 20
     },
-    landCoverClassCodes: [
-      '130',
-      '240',
-      '250',
-      '270',
-      '280',
-      '300',
-      '330',
-      '580',
-      '590',
-      '620',
-      '640',
-      '650'
-    ],
+    landCoverClassCodes,
     rules: [
-      {
-        name: 'parcel-has-intersection-with-data-layer',
-        version: '1.0.0',
-        config: {
-          layerName: 'moorland',
-          minimumIntersectionPercent: 50,
-          tolerancePercent: 1
-        }
-      },
-      {
-        name: 'parcel-is-on-less-favoured-area',
-        type: 'parcel-has-intersection-with-data-layer',
-        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
-        version: '1.0.0',
-        config: {
-          layerName: 'lfa',
-          minimumIntersectionPercent: 100,
-          tolerancePercent: 1,
-          failureMessage:
-            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
-        }
-      },
-      {
-        name: 'sssi-consent-required',
-        description: 'Is the site of special scientific interest?',
-        version: '1.0.0',
-        config: {
-          layerName: 'sssi',
-          tolerancePercent: 1,
-          caveatDescription: 'A consent is required from Natural England'
-        }
-      },
-      {
-        name: 'applied-for-total-available-area',
-        version: '1.0.0'
-      }
+      moorlandRule,
+      lessFavouredAreaRule,
+      sssiConsentRule,
+      totalAvailableAreaRule
     ]
   },
   {
@@ -159,57 +124,12 @@ const mockActionConfig = [
       ratePerUnitGbp: 53,
       ratePerAgreementPerYearGbp: 139
     },
-    landCoverClassCodes: [
-      '130',
-      '240',
-      '250',
-      '270',
-      '280',
-      '300',
-      '330',
-      '580',
-      '590',
-      '620',
-      '640',
-      '650'
-    ],
+    landCoverClassCodes,
     rules: [
-      {
-        name: 'parcel-has-intersection-with-data-layer',
-        version: '1.0.0',
-        config: {
-          layerName: 'moorland',
-          minimumIntersectionPercent: 50,
-          tolerancePercent: 1
-        }
-      },
-      {
-        name: 'parcel-is-on-less-favoured-area',
-        type: 'parcel-has-intersection-with-data-layer',
-        description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
-        version: '1.0.0',
-        config: {
-          layerName: 'lfa',
-          minimumIntersectionPercent: 100,
-          tolerancePercent: 1,
-          failureMessage:
-            'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
-        }
-      },
-      {
-        name: 'sssi-consent-required',
-        description: 'Is the site of special scientific interest?',
-        version: '1.0.0',
-        config: {
-          layerName: 'sssi',
-          tolerancePercent: 1,
-          caveatDescription: 'A consent is required from Natural England'
-        }
-      },
-      {
-        name: 'applied-for-total-available-area',
-        version: '1.0.0'
-      }
+      moorlandRule,
+      lessFavouredAreaRule,
+      sssiConsentRule,
+      totalAvailableAreaRule
     ]
   }
 ]

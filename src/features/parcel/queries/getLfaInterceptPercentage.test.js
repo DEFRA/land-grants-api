@@ -1,4 +1,5 @@
 import { getLfaInterceptPercentage } from './getLfaInterceptPercentage.js'
+import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 describe('getLfaInterceptPercentage', () => {
   let mockDb
@@ -46,21 +47,26 @@ describe('getLfaInterceptPercentage', () => {
       WITH parcel AS (
         SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
       ),
-      lfa_union AS (
-        SELECT ST_Union(m.geom) AS union_geom
-        FROM data_layer m
-        JOIN parcel p ON ST_Intersects(p.geom, m.geom)
-        WHERE m.data_layer_type_id = 2
-          AND m.metadata->>'ref_code' = ANY($3)
+      dl_union AS (
+        SELECT ST_Union(dl.geom) AS union_geom
+        FROM data_layer dl
+        JOIN parcel p ON ST_Intersects(p.geom, dl.geom)
+        WHERE dl.data_layer_type_id = $4
+          AND dl.metadata->>'ref_code' = ANY($3)
       )
       SELECT
         COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0)
             / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
       FROM parcel p
-      LEFT JOIN lfa_union u ON true
+      LEFT JOIN dl_union u ON true
     `
 
-    const expectedValues = [sheetId, parcelId, ['D', 'S', 'M', 'MS', 'MD']]
+    const expectedValues = [
+      sheetId,
+      parcelId,
+      ['D', 'S', 'M', 'MS', 'MD'],
+      DATA_LAYER_TYPES.less_favoured_areas
+    ]
 
     await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
@@ -135,7 +141,7 @@ describe('getLfaInterceptPercentage', () => {
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
 
-  test('should handle errors and return 0', async () => {
+  test('should handle errors and return null', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const error = new Error('Database error')
@@ -148,7 +154,7 @@ describe('getLfaInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -177,7 +183,7 @@ describe('getLfaInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })

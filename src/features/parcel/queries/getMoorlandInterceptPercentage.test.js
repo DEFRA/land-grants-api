@@ -1,4 +1,5 @@
 import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
+import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 describe('getMoorlandInterceptPercentage', () => {
   let mockDb
@@ -10,8 +11,6 @@ describe('getMoorlandInterceptPercentage', () => {
     mockResult = {
       rows: [
         {
-          sheet_id: 'SH123',
-          parcel_id: 'PA456',
           overlap_percent: 50
         }
       ]
@@ -45,24 +44,29 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const expectedQuery = `
+      WITH parcel AS (
+        SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
+      ),
+      dl_union AS (
+        SELECT ST_Union(dl.geom) AS union_geom
+        FROM data_layer dl
+        JOIN parcel p ON ST_Intersects(p.geom, dl.geom)
+        WHERE dl.data_layer_type_id = $4
+          AND dl.metadata->>'ref_code' = ANY($3)
+      )
       SELECT
-          COALESCE(SUM(ST_Area(ST_Intersection(p.geom, m.geom))::float8), 0)
-              / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
-      FROM
-          land_parcels p
-      LEFT JOIN
-          data_layer m
-          ON ST_Intersects(p.geom, m.geom)
-      WHERE
-          p.sheet_id = $1 AND
-          p.parcel_id = $2 AND
-          m.metadata ->> 'ref_code' LIKE 'M%' AND
-          m.data_layer_type_id = 2
-      GROUP BY
-          p.geom, m.metadata ->> 'ref_code';
+        COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0)
+            / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
+      FROM parcel p
+      LEFT JOIN dl_union u ON true
     `
 
-    const expectedValues = [sheetId, parcelId]
+    const expectedValues = [
+      sheetId,
+      parcelId,
+      ['M', 'MS', 'MD'],
+      DATA_LAYER_TYPES.less_favoured_areas
+    ]
 
     await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
@@ -122,7 +126,7 @@ describe('getMoorlandInterceptPercentage', () => {
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
 
-  test('should handle errors and return undefined', async () => {
+  test('should handle errors and return null', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     const error = new Error('Database error')
@@ -135,7 +139,7 @@ describe('getMoorlandInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.objectContaining({
         error: expect.objectContaining({
@@ -164,7 +168,7 @@ describe('getMoorlandInterceptPercentage', () => {
       mockLogger
     )
 
-    expect(result).toBe(0)
+    expect(result).toBeNull()
     expect(mockLogger.error).toHaveBeenCalled()
     expect(mockClient.release).not.toHaveBeenCalled()
   })
