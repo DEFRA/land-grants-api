@@ -7,6 +7,7 @@ import { manualCheckRequired } from './1.0.0/manual-check-required.js'
 import { woodlandMinimumEligibility } from './1.0.0/woodland-minimum-eligibility.js'
 import { woodlandTotalArea } from './1.0.0/woodland-total-area.js'
 import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
+import { minMaxParcelSize } from './1.0.0/min-max-parcel-size.js'
 
 export const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0':
@@ -22,5 +23,6 @@ export const rules = {
   'total-area-not-exceed-land-parcels-woodland-management-plan-1.0.0':
     woodlandTotalArea,
   'parcel-intersection-does-not-exceed-maximum-for-data-layer-1.0.0':
-    parcelIntersectionDoesNotExceedMaximumForDataLayer
+    parcelIntersectionDoesNotExceedMaximumForDataLayer,
+  'min-max-parcel-size-1.0.0': minMaxParcelSize
 }
