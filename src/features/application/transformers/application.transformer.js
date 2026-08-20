@@ -11,9 +11,9 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * Transform the action result
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - The actions
- * @param {object} availableArea - The available area
+ * @param {object|null} availableArea - The available area
  * @param {object} ruleResult - The rule result
- * @returns {object} The action result
+ * @returns {object} The validation result
  */
 export const actionResultTransformer = (
   action,
@@ -23,14 +23,18 @@ export const actionResultTransformer = (
 ) => {
   const actionConfig = actions.find((a) => a.code === action.code)
 
+  const aa = availableArea
+    ? {
+        explanations: availableArea.explanations,
+        areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
+      }
+    : null
+
   return {
     hasPassed: ruleResult.passed,
     code: action.code,
     actionConfigVersion: actionConfig?.semanticVersion,
-    availableArea: {
-      explanations: availableArea.explanations,
-      areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
-    },
+    availableArea: aa,
     rules: ruleResult.results
   }
 }
@@ -116,9 +120,9 @@ export const applicationDataTransformer = (
 
 /**
  * Transform the application data
- * @param {number} areaAppliedFor - The area applied for
+ * @param {number} areaAppliedFor - The area applied for, if action is area-based
  * @param {string} code - The code of the action
- * @param {number} availableAreaSqm - The area of the parcel
+ * @param {number|null} availableAreaSqm - The available area in the parcel, if relevant to action
  * @param {number} intersectingAreaPercentage - The intersecting area percentage
  * @param {object} sssiDataLayerData - The sssi data
  * @param {object} historicFeaturesDataLayerData - The historic features data

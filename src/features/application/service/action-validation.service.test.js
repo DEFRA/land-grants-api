@@ -87,6 +87,16 @@ const mockRuleEngineApplicationTransformer = vi.mocked(
 const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
 const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)
 
+const parcelData = {
+  area: 0.1,
+  existingAgreements: [],
+  intersections: {
+    moorland: { intersectingAreaPercentage: 50 },
+    sssi: { intersectingAreaPercentage: 15.5 },
+    historic_features: { intersectingAreaPercentage: 15.5 }
+  }
+}
+
 describe('Action Validation Service', () => {
   const mockLogger = {
     info: vi.fn(),
@@ -191,15 +201,7 @@ describe('Action Validation Service', () => {
     mockRuleEngineApplicationTransformer.mockReturnValue({
       areaAppliedFor: 10,
       actionCodeAppliedFor: 'CMOR1',
-      landParcel: {
-        area: 0.1,
-        existingAgreements: [],
-        intersections: {
-          moorland: { intersectingAreaPercentage: 50 },
-          sssi: { intersectingAreaPercentage: 15.5 },
-          historic_features: { intersectingAreaPercentage: 15.5 }
-        }
-      }
+      landParcel: parcelData
     })
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
@@ -460,6 +462,47 @@ describe('Action Validation Service', () => {
           mockRequest
         )
       ).rejects.toThrow('Database connection failed')
+    })
+
+    test('should skip available area calculations with non-hectare units', async () => {
+      const action = { code: 'WBD1', quantity: 100 }
+
+      mockActionResultTransformer.mockReturnValue({
+        ...mockActionResult,
+        availableArea: null
+      })
+      mockRuleEngineApplicationTransformer.mockReturnValue({
+        areaAppliedFor: 0,
+        actionCodeAppliedFor: 'WBD1',
+        landParcel: parcelData
+      })
+
+      const result = await validateLandAction(
+        action,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
+      expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
+
+      expect(mockRuleEngineApplicationTransformer).toHaveBeenCalledWith(
+        0,
+        action.code,
+        null,
+        parcelData.intersections.moorland.intersectingAreaPercentage,
+        { ...parcelData.intersections.sssi, intersectionAreaHa: 0.1 },
+        {
+          ...parcelData.intersections.historic_features,
+          intersectionAreaHa: 0.1
+        },
+        mockAgreements
+      )
+
+      expect(result).toEqual({ ...mockActionResult, availableArea: null })
     })
   })
 })
