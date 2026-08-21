@@ -10,8 +10,12 @@
  */
 export const parcelHasIntersectionWithDataLayer = {
   execute: (application, rule) => {
-    const { layerName, minimumIntersectionPercent, tolerancePercent } =
-      rule.config
+    const {
+      layerName,
+      minimumIntersectionPercent,
+      tolerancePercent,
+      failureMessage
+    } = rule.config
     const name = `${rule.name}-${layerName}`
     const intersection = application.landParcel.intersections?.[layerName]
 
@@ -42,13 +46,20 @@ export const parcelHasIntersectionWithDataLayer = {
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${minimumIntersectionPercent + tolerancePercent}%.`
+      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${minimumIntersectionPercent - tolerancePercent}%.`
     )
+
+    const majorityStatus = isGreaterThanOrEqualToMin
+      ? 'majority'
+      : 'not majority'
 
     return {
       name,
       passed: isGreaterThanOrEqualToMin,
-      reason: `This parcel is ${isGreaterThanOrEqualToMin ? 'majority' : 'not majority'} on the ${layerName}`,
+      reason:
+        !isGreaterThanOrEqualToMin && failureMessage
+          ? failureMessage
+          : `This parcel is ${majorityStatus} on the ${layerName}`,
       description: rule.description,
       explanations
     }

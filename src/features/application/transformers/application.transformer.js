@@ -3,7 +3,6 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 /**
  * @import { ActionRequest, ApplicationValidationRun } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
- * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  * @import {ApplicationValidationRunList} from '~/src/features/application/application.d.js'
  */
 
@@ -111,41 +110,6 @@ export const applicationDataTransformer = (
       }))
     },
     parcelLevelResults: parcelResults
-  }
-}
-
-/**
- * Transform the application data
- * @param {number} areaAppliedFor - The area applied for
- * @param {string} code - The code of the action
- * @param {number} availableAreaSqm - The area of the parcel
- * @param {number} intersectingAreaPercentage - The intersecting area percentage
- * @param {object} sssiDataLayerData - The sssi data
- * @param {object} historicFeaturesDataLayerData - The historic features data
- * @param {Array} existingAgreements - The existing agreements
- * @returns {RuleEngineApplication} - The application
- */
-export function ruleEngineApplicationTransformer(
-  areaAppliedFor,
-  code,
-  availableAreaSqm,
-  intersectingAreaPercentage,
-  sssiDataLayerData,
-  historicFeaturesDataLayerData,
-  existingAgreements
-) {
-  return {
-    areaAppliedFor,
-    actionCodeAppliedFor: code,
-    landParcel: {
-      availableAreaSqm,
-      existingAgreements,
-      intersections: {
-        moorland: { intersectingAreaPercentage },
-        sssi: sssiDataLayerData,
-        historic_features: historicFeaturesDataLayerData
-      }
-    }
   }
 }
 

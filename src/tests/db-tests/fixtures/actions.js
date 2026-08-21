@@ -25,6 +25,19 @@ export const rules = [
     }
   },
   {
+    name: 'parcel-is-on-less-favoured-area',
+    type: 'parcel-has-intersection-with-data-layer',
+    description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
+    version: '1.0.0',
+    config: {
+      layerName: 'lfa',
+      minimumIntersectionPercent: 100,
+      tolerancePercent: 1,
+      failureMessage:
+        'It is not possible to select this action because the land parcel is not fully within a Less Favoured Area (LFA)'
+    }
+  },
+  {
     name: 'applied-for-total-available-area',
     description: 'Has the total available area been applied for?',
     version: '1.0.0'
@@ -70,7 +83,7 @@ export const actions = [
     display: true,
     description: 'Assess moorland and produce a written record',
     semanticVersion: '2.0.0',
-    rules: rules.slice(0, 2)
+    rules: rules.slice(0, 3)
   },
   {
     enabled: true,

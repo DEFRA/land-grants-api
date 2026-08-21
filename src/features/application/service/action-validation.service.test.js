@@ -2,15 +2,13 @@ import { vi } from 'vitest'
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import {
-  actionResultTransformer,
-  ruleEngineApplicationTransformer
-} from '~/src/features/application/transformers/application.transformer.js'
+import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
@@ -23,6 +21,9 @@ vi.mock(
     getMoorlandInterceptPercentage: vi.fn()
   })
 )
+vi.mock('~/src/features/parcel/queries/getLfaInterceptPercentage.js', () => ({
+  getLfaInterceptPercentage: vi.fn()
+}))
 vi.mock(
   '~/src/features/available-area/availableAreaDataRequirements.js',
   () => ({
@@ -54,8 +55,7 @@ vi.mock(
 vi.mock(
   '~/src/features/application/transformers/application.transformer.js',
   () => ({
-    actionResultTransformer: vi.fn(),
-    ruleEngineApplicationTransformer: vi.fn()
+    actionResultTransformer: vi.fn()
   })
 )
 vi.mock(
@@ -73,6 +73,7 @@ vi.mock(
 const mockGetMoorlandInterceptPercentage = vi.mocked(
   getMoorlandInterceptPercentage
 )
+const mockGetLfaInterceptPercentage = vi.mocked(getLfaInterceptPercentage)
 const mockGetAvailableAreaDataRequirements = vi.mocked(
   getAvailableAreaDataRequirements
 )
@@ -81,9 +82,6 @@ const mockFormatExplanationSections = vi.mocked(formatExplanationSections)
 const mockExecuteRules = vi.mocked(executeRules)
 const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
-const mockRuleEngineApplicationTransformer = vi.mocked(
-  ruleEngineApplicationTransformer
-)
 const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
 const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)
 
@@ -179,6 +177,7 @@ describe('Action Validation Service', () => {
       'Area calculation successful'
     ])
     mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
+    mockGetLfaInterceptPercentage.mockResolvedValue(100)
     mockGetDataLayerQueryAccumulated.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
@@ -188,19 +187,6 @@ describe('Action Validation Service', () => {
       intersectionAreaHa: 0.1
     })
     mockPlannedActionsTransformer.mockReturnValue([])
-    mockRuleEngineApplicationTransformer.mockReturnValue({
-      areaAppliedFor: 10,
-      actionCodeAppliedFor: 'CMOR1',
-      landParcel: {
-        area: 0.1,
-        existingAgreements: [],
-        intersections: {
-          moorland: { intersectingAreaPercentage: 50 },
-          sssi: { intersectingAreaPercentage: 15.5 },
-          historic_features: { intersectingAreaPercentage: 15.5 }
-        }
-      }
-    })
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
   })
@@ -237,6 +223,12 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
+      expect(mockGetLfaInterceptPercentage).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
       expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledTimes(1)
       expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledWith(
         mockLandAction.sheetId,
@@ -252,15 +244,6 @@ describe('Action Validation Service', () => {
         DATA_LAYER_TYPES.historic_features,
         mockPostgresDb,
         mockLogger
-      )
-      expect(mockRuleEngineApplicationTransformer).toHaveBeenCalledWith(
-        mockAction.quantity,
-        mockAction.code,
-        expect.any(Number),
-        50,
-        { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
-        { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
-        mockAgreements
       )
       expect(mockExecuteRules).toHaveBeenCalled()
       expect(mockActionResultTransformer).toHaveBeenCalledWith(
