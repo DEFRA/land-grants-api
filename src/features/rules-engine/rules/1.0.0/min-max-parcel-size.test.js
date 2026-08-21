@@ -61,7 +61,7 @@ describe('minMaxParcelSize', () => {
 
     expect(result.passed).toBe(false)
     expect(result.reason).toEqual(
-      'The parcel size is below the minimum configured parcel size 11ha'
+      'The parcel size is below the minimum configured parcel size 11 ha'
     )
   })
 
@@ -75,7 +75,7 @@ describe('minMaxParcelSize', () => {
 
     expect(result.passed).toBe(false)
     expect(result.reason).toEqual(
-      'The parcel size is above the maximum configured parcel size 5ha'
+      'The parcel size is above the maximum configured parcel size 5 ha'
     )
   })
 

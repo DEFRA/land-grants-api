@@ -21,7 +21,7 @@ export const minMaxParcelSize = {
     const explanations = [
       {
         title: 'Minimum and maximum parcel size',
-        lines: [`The parcel size is ${parcelSizeSqm}`]
+        lines: [`The parcel size is ${sqmToHaRounded(availableAreaSqm)} ha`]
       }
     ]
 
@@ -55,7 +55,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel size is below the minimum configured parcel size ${sqmToHaRounded(minimumParcelSizeSqm)}ha`,
+        reason: `The parcel size is below the minimum configured parcel size ${sqmToHaRounded(minimumParcelSizeSqm)} ha`,
         explanations
       }
     }
@@ -64,7 +64,7 @@ export const minMaxParcelSize = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The parcel size is above the maximum configured parcel size ${sqmToHaRounded(maximumParcelSizeSqm)}ha`,
+        reason: `The parcel size is above the maximum configured parcel size ${sqmToHaRounded(maximumParcelSizeSqm)} ha`,
         explanations
       }
     }
