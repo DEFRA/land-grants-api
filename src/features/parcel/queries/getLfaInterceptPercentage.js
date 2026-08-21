@@ -1,20 +1,20 @@
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { getInterceptPercentage } from '~/src/features/parcel/queries/getInterceptPercentage.js'
 
-const MOORLAND_REF_CODES = ['M', 'MS', 'MD']
+const LFA_REF_CODES = ['D', 'S', 'M', 'MS', 'MD']
 
-async function getMoorlandInterceptPercentage(sheetId, parcelId, db, logger) {
+async function getLfaInterceptPercentage(sheetId, parcelId, db, logger) {
   return getInterceptPercentage(
     {
       sheetId,
       parcelId,
-      refCodes: MOORLAND_REF_CODES,
+      refCodes: LFA_REF_CODES,
       dataLayerType: DATA_LAYER_TYPES.less_favoured_areas,
-      operationName: 'Get moorland intercept percentage'
+      operationName: 'Get LFA intercept percentage'
     },
     db,
     logger
   )
 }
 
-export { getMoorlandInterceptPercentage }
+export { getLfaInterceptPercentage }

@@ -28,6 +28,12 @@ import { payments } from '~/src/features/payment/index.js'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
 import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
+import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
+import {
+  getDataLayerQueryAccumulated,
+  getDataLayerQueryUnion
+} from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
@@ -61,6 +67,26 @@ vi.mock(
   '~/src/features/case-management-adapter/transformers/application-validation.transformer.js'
 )
 vi.mock('~/src/features/application/service/application-validation.service.js')
+vi.mock('~/src/features/parcel/queries/getMoorlandInterceptPercentage.js')
+vi.mock('~/src/features/parcel/queries/getLfaInterceptPercentage.js')
+vi.mock(
+  '~/src/features/data-layers/queries/getDataLayer.query.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      getDataLayerQueryAccumulated: vi
+        .fn()
+        .mockImplementation((_sheetId, _parcelId, dataLayerTypeId) => {
+          if (dataLayerTypeId === 1) {
+            return { intersectingAreaPercentage: 50, intersectionAreaHa: 0.1 }
+          }
+          return 0
+        }),
+      getDataLayerQueryUnion: vi.fn().mockResolvedValue(0)
+    }
+  }
+)
 
 const mockGetLandData = getLandData
 const mockGetActionsByLatestVersion = getActionsByLatestVersion
@@ -216,6 +242,18 @@ const pactVerifierOptions = async () => {
         mockValidationRunToCaseManagementResult
       )
       mockValidateApplication.mockImplementation(mockValidateApplicationResult)
+
+      getMoorlandInterceptPercentage.mockResolvedValue(0)
+      getLfaInterceptPercentage.mockResolvedValue(0)
+      getDataLayerQueryAccumulated.mockImplementation(
+        (_sheetId, _parcelId, dataLayerTypeId) => {
+          if (dataLayerTypeId === 1) {
+            return { intersectingAreaPercentage: 50, intersectionAreaHa: 0.1 }
+          }
+          return 0
+        }
+      )
+      getDataLayerQueryUnion.mockResolvedValue(0)
     },
 
     afterEach: () => {

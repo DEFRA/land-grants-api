@@ -1,7 +1,7 @@
-import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
+import { getLfaInterceptPercentage } from './getLfaInterceptPercentage.js'
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
-describe('getMoorlandInterceptPercentage', () => {
+describe('getLfaInterceptPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -11,7 +11,7 @@ describe('getMoorlandInterceptPercentage', () => {
     mockResult = {
       rows: [
         {
-          overlap_percent: 50
+          overlap_percent: 100
         }
       ]
     }
@@ -35,7 +35,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -64,35 +64,50 @@ describe('getMoorlandInterceptPercentage', () => {
     const expectedValues = [
       sheetId,
       parcelId,
-      ['M', 'MS', 'MD'],
+      ['D', 'S', 'M', 'MS', 'MD'],
       DATA_LAYER_TYPES.less_favoured_areas
     ]
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
 
-  test('should return the moorland overlap percentage', async () => {
+  test('should return the LFA overlap percentage', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
     )
 
-    expect(result).toBe(50)
+    expect(result).toBe(100)
   })
 
-  test('should return 0 when no moorland overlap', async () => {
+  test('should return partial overlap percentage', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockResult.rows[0].overlap_percent = 85.5
+
+    const result = await getLfaInterceptPercentage(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toBe(86)
+  })
+
+  test('should return 0 when no LFA overlap', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = null
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -107,7 +122,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows = []
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -121,7 +136,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -132,7 +147,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -150,7 +165,7 @@ describe('getMoorlandInterceptPercentage', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: Get moorland intercept percentage'
+        'Database operation failed: Get LFA intercept percentage'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -161,7 +176,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaInterceptPercentage(
       sheetId,
       parcelId,
       mockDb,
