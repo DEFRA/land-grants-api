@@ -22,7 +22,6 @@ import {
   validateAllLandParcels
 } from '~/src/features/application/service/validation.service.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 import {
   AuditEvent,
   auditEvent,
@@ -199,9 +198,6 @@ const runApplicationValidation = async (
  * @returns {Promise<import('@hapi/boom').Boom>}
  */
 const handleValidationError = async (error, request) => {
-  if (error instanceof InfeasibleAreaError) {
-    return Boom.boomify(error, { statusCode: 422 })
-  }
   // @ts-expect-error - payload
   const { landActions, applicationId, sbi, applicantCrn } = request.payload
   logBusinessError(request.logger, {

@@ -1,9 +1,6 @@
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import {
-  findMaximumAvailableArea,
-  throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
@@ -77,8 +74,6 @@ export const validateLandAction = async (
     compatibilityCheckFn,
     aacDataRequirements
   )
-
-  throwIfInfeasible(lpResult, landAction.sheetId, landAction.parcelId)
 
   const availableArea = {
     ...lpResult,
