@@ -384,7 +384,7 @@ describe('Action Validation Service', () => {
       )
     })
 
-    test('should throw InfeasibleAreaError when AAC returns feasible: false', async () => {
+    test('should provide feasible = false in explanations when AAC returns feasible = false', async () => {
       mockFindMaximumAvailableArea.mockReturnValue({
         feasible: false,
         availableAreaHectares: 0,
@@ -393,18 +393,22 @@ describe('Action Validation Service', () => {
         context: null
       })
 
-      await expect(
-        validateLandAction(
-          mockAction,
-          mockActionConfig,
-          mockAgreements,
-          mockCompatibilityCheckFn,
-          mockLandAction,
-          mockRequest
-        )
-      ).rejects.toThrow(
-        "For land parcel SX0679-9238, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message."
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
       )
+
+      expect(mockFormatExplanationSections).toHaveBeenCalledWith(null, {
+        targetAction: mockAction.code,
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 1000,
+        landCoverToString: mockAvailableAreaDataRequirements.landCoverToString,
+        feasible: false
+      })
     })
 
     test('should throw error when landAction is null', async () => {
