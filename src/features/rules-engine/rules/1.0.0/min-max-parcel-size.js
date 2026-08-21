@@ -21,7 +21,7 @@ export const minMaxParcelSize = {
     const explanations = [
       {
         title: 'Minimum and maximum parcel size',
-        lines: [`The parcel size is ${sqmToHaRounded(availableAreaSqm)} ha`]
+        lines: [`The parcel size is ${sqmToHaRounded(parcelSizeSqm)} ha`]
       }
     ]
 
