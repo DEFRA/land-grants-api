@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <!--
+    Local-only enforcement of the production schema permissions. Not part of the versioned
+    changelog (so it never deploys to prod); applied after every liquibase run to make sure the
+    schema ACL on schema public matches production (the DDL role holds CREATE/USAGE; the
+    runtime role has no explicit privileges and only gets USAGE via PUBLIC).
+  -->
+  <changeSet id="enforce-prod-schema-permissions" author="system" runAlways="true">
+    <sql splitStatements="false">
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'land_grants_api') THEN
+          CREATE ROLE land_grants_api LOGIN PASSWORD 'land_grants_api'
+            INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+        END IF;
+      END
+      $$;
+      GRANT CREATE, USAGE ON SCHEMA public TO land_grants_api_ddl;
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'land_grants_api') THEN
+          EXECUTE 'REVOKE ALL ON SCHEMA public FROM land_grants_api';
+        END IF;
+      END
+      $$;
+    </sql>
+  </changeSet>
+
+  <changeSet id="enforce-prod-table-ownership" author="system" runAlways="true">
+    <sql splitStatements="false">
+      DO $$
+      DECLARE
+        tbl RECORD;
+      BEGIN
+        FOR tbl IN
+          SELECT tablename
+          FROM pg_tables
+          WHERE schemaname = 'public'
+        LOOP
+          EXECUTE format('ALTER TABLE public.%I OWNER TO land_grants_api_ddl', tbl.tablename);
+        END LOOP;
+      END
+      $$;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
