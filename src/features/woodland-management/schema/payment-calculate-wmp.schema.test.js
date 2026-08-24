@@ -247,4 +247,53 @@ describe('paymentCalculateWMPSchemaV2', () => {
     expect(result.error).toBeDefined()
     expect(result.error.message).toContain('"parcelIds" must be an array')
   })
+
+  describe('rate version pinning', () => {
+    it('should validate a payload with a version', () => {
+      const result = paymentCalculateWMPSchemaV2.validate({
+        ...createValidPayload(),
+        version: '1.1.0'
+      })
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should validate a payload with a validationRunId', () => {
+      const result = paymentCalculateWMPSchemaV2.validate({
+        ...createValidPayload(),
+        validationRunId: 42
+      })
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject a payload with both version and validationRunId', () => {
+      const invalid = {
+        ...createValidPayload(),
+        version: '1.1.0',
+        validationRunId: 42
+      }
+      const result = paymentCalculateWMPSchemaV2.validate(invalid)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain(
+        'must not contain both "version" and "validationRunId"'
+      )
+    })
+
+    it('should reject a version that is not a semantic version', () => {
+      const invalid = { ...createValidPayload(), version: 'latest' }
+      const result = paymentCalculateWMPSchemaV2.validate(invalid)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain(
+        'fails to match the semantic version pattern'
+      )
+    })
+
+    it('should reject a non-integer validationRunId', () => {
+      const invalid = { ...createValidPayload(), validationRunId: 1.5 }
+      const result = paymentCalculateWMPSchemaV2.validate(invalid)
+      expect(result.error).toBeDefined()
+      expect(result.error.message).toContain(
+        '"validationRunId" must be an integer'
+      )
+    })
+  })
 })

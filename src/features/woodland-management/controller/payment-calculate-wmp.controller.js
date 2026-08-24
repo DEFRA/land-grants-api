@@ -14,16 +14,17 @@ import {
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
-import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
-import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { haToSqm } from '../../common/helpers/measurement.js'
+import {
+  calculateWMPPaymentWithRateVersion,
+  inferRateVersionSource
+} from '../service/wmp-rate-version.service.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import {
   AuditEvent,
   auditEvent,
   getCorrelationId
 } from '../../common/helpers/audit-event.js'
-import { WMP_ACTION_CODE } from '../constants.js'
 
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
@@ -45,13 +46,22 @@ const buildAuditContext = (request, { parcelIds }) => ({
  * @param {string[]} params.parcelIds
  * @param {number} params.oldWoodlandAreaHa
  * @param {number} params.newWoodlandAreaHa
- * @param {Date} [params.startDate]
+ * @param {string|Date} [params.startDate]
+ * @param {string} [params.version] - Exact action config semantic version to pin the rate to
+ * @param {number} [params.validationRunId] - Validation run id carrying the pinned rate version
  * @returns {Promise<object | import('@hapi/boom').Boom>} Transformed payment response, or a Boom error response
  */
 const runWmpPaymentCalculation = async (
   request,
   postgresDb,
-  { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate }
+  {
+    parcelIds,
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa,
+    startDate,
+    version,
+    validationRunId
+  }
 ) => {
   const validationResponse = await validatePaymentCalculationRequest(
     parcelIds,
@@ -67,29 +77,37 @@ const runWmpPaymentCalculation = async (
     return Boom.badRequest(validationResponse.errors.join(', '))
   }
 
-  const actions = await getActionsByLatestVersion(request.logger, postgresDb)
-  const action = actions.find((a) => a.code === WMP_ACTION_CODE)
+  const calculation = await calculateWMPPaymentWithRateVersion(
+    request.logger,
+    postgresDb,
+    {
+      oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
+      newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
+    },
+    { version, validationRunId }
+  )
 
-  if (!action) {
-    return Boom.badRequest('Action not found')
+  if ('error' in calculation) {
+    logValidationWarn(request.logger, {
+      operation: 'Payment Calculate WMP rate version resolution',
+      errors: [calculation.error],
+      context: { parcelIds: parcelIds.join(','), validationRunId, version }
+    })
+    return Boom.badRequest(calculation.error)
   }
 
-  const paymentResult = executePaymentMethod(
-    { ...action?.paymentMethod },
-    {
-      data: {
-        oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
-        newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
-      }
-    }
-  )
-
-  return wmpPaymentCalculateTransformer(
+  const transformedPayment = wmpPaymentCalculateTransformer(
     parcelIds,
-    paymentResult,
-    action,
+    calculation.paymentResult,
+    calculation.action,
     startDate
   )
+
+  return {
+    transformedPayment,
+    rateVersion: calculation.rateVersion.value,
+    rateVersionSource: calculation.rateVersion.source
+  }
 }
 
 /**
@@ -101,10 +119,16 @@ const runWmpPaymentCalculation = async (
  * @returns {Promise<import('@hapi/boom').Boom>}
  */
 const handleWmpPaymentCalculationError = async (request, error) => {
-  /** @type {paymentCalculateWMPSchemaV2} */
+  /** @type {import('../wmp.d.js').WMPPaymentCalculateRequest} */
   // @ts-expect-error - payload
-  const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
-    request.payload
+  const {
+    parcelIds,
+    oldWoodlandAreaHa,
+    newWoodlandAreaHa,
+    startDate,
+    version,
+    validationRunId
+  } = request.payload
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate wmp payment',
     error,
@@ -112,15 +136,26 @@ const handleWmpPaymentCalculationError = async (request, error) => {
       parcelIds: parcelIds.join(','),
       oldWoodlandAreaHa,
       newWoodlandAreaHa,
-      startDate
+      startDate,
+      version,
+      validationRunId
     }
   })
+
+  const rateVersionSource = inferRateVersionSource({ version, validationRunId })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_CALCULATED,
     {
       ...buildAuditContext(request, { parcelIds }),
-      request: { oldWoodlandAreaHa, newWoodlandAreaHa, startDate },
+      request: {
+        oldWoodlandAreaHa,
+        newWoodlandAreaHa,
+        startDate,
+        rateVersion: version ?? null,
+        rateVersionSource,
+        validationRunId: validationRunId ?? null
+      },
       error: error.message
     },
     'failure',
@@ -158,10 +193,16 @@ export const PaymentsCalculateWMPController = {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
 
-      /** @type {paymentCalculateWMPSchemaV2} */
+      /** @type {import('../wmp.d.js').WMPPaymentCalculateRequest} */
       // @ts-expect-error - payload
-      const { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate } =
-        request.payload
+      const {
+        parcelIds,
+        oldWoodlandAreaHa,
+        newWoodlandAreaHa,
+        startDate,
+        version,
+        validationRunId
+      } = request.payload
 
       logInfo(request.logger, {
         category: 'wmp',
@@ -170,24 +211,42 @@ export const PaymentsCalculateWMPController = {
           parcelIds,
           oldWoodlandAreaHa,
           newWoodlandAreaHa,
-          startDate
+          startDate,
+          version: version ?? null,
+          validationRunId: validationRunId ?? null
         }
       })
 
-      const transformedPayment = await runWmpPaymentCalculation(
+      const calculationResult = await runWmpPaymentCalculation(
         request,
         postgresDb,
-        { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate }
+        {
+          parcelIds,
+          oldWoodlandAreaHa,
+          newWoodlandAreaHa,
+          startDate,
+          version,
+          validationRunId
+        }
       )
-      if (Boom.isBoom(transformedPayment)) {
-        return transformedPayment
+      if (Boom.isBoom(calculationResult)) {
+        return calculationResult
       }
+
+      const { transformedPayment, rateVersion, rateVersionSource } =
+        calculationResult
 
       await auditEvent(
         AuditEvent.WMP_PAYMENT_CALCULATED,
         {
           ...buildAuditContext(request, { parcelIds }),
-          request: { oldWoodlandAreaHa, newWoodlandAreaHa, startDate },
+          request: {
+            oldWoodlandAreaHa,
+            newWoodlandAreaHa,
+            startDate,
+            rateVersion,
+            rateVersionSource
+          },
           response: transformedPayment
         },
         'success',
