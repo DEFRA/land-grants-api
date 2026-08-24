@@ -312,7 +312,7 @@ const config = convict({
     useDal: {
       doc: 'Use DAL to get additional agreements',
       format: Boolean,
-      default: !isProduction,
+      default: !(isProduction || isLocal),
       env: 'FEATURE_USE_DAL'
     }
   }

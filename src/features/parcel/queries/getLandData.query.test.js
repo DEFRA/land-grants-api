@@ -55,7 +55,16 @@ describe('getLandData', () => {
 
       expect(mockDb.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledWith(
-        'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
+        `SELECT
+        parcel_id,
+        sheet_id,
+        ST_Area(geom) as area_sqm,
+        geom,
+        last_updated,
+        ingest_id,
+        ingest_date
+      FROM land_parcels
+      WHERE sheet_id = $1 and parcel_id = $2`,
         [testSheetId, testParcelId]
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -74,7 +83,16 @@ describe('getLandData', () => {
 
       expect(mockDb.connect).toHaveBeenCalledTimes(1)
       expect(mockClient.query).toHaveBeenCalledWith(
-        'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
+        `SELECT
+        parcel_id,
+        sheet_id,
+        ST_Area(geom) as area_sqm,
+        geom,
+        last_updated,
+        ingest_id,
+        ingest_date
+      FROM land_parcels
+      WHERE sheet_id = $1 and parcel_id = $2`,
         [testSheetId, testParcelId]
       )
       expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -173,7 +191,16 @@ describe('getLandData', () => {
       )
 
       expect(mockClient.query).toHaveBeenCalledWith(
-        'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
+        `SELECT
+        parcel_id,
+        sheet_id,
+        ST_Area(geom) as area_sqm,
+        geom,
+        last_updated,
+        ingest_id,
+        ingest_date
+      FROM land_parcels
+      WHERE sheet_id = $1 and parcel_id = $2`,
         [numericSheetId, numericParcelId]
       )
       expect(result).toEqual(mockLandData)
@@ -186,7 +213,16 @@ describe('getLandData', () => {
       const result = await getLandData(null, undefined, mockDb, mockLogger)
 
       expect(mockClient.query).toHaveBeenCalledWith(
-        'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2',
+        `SELECT
+        parcel_id,
+        sheet_id,
+        ST_Area(geom) as area_sqm,
+        geom,
+        last_updated,
+        ingest_id,
+        ingest_date
+      FROM land_parcels
+      WHERE sheet_id = $1 and parcel_id = $2`,
         [null, undefined]
       )
       expect(result).toEqual(mockLandData)

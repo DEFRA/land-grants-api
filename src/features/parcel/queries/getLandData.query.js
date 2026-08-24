@@ -14,8 +14,16 @@ async function getLandData(sheetId, parcelId, db, logger) {
 
   try {
     client = await db.connect()
-    const query =
-      'SELECT * FROM land_parcels WHERE sheet_id = $1 and parcel_id = $2'
+    const query = `SELECT
+        parcel_id,
+        sheet_id,
+        ST_Area(geom) as area_sqm,
+        geom,
+        last_updated,
+        ingest_id,
+        ingest_date
+      FROM land_parcels
+      WHERE sheet_id = $1 and parcel_id = $2`
     const values = [sheetId, parcelId]
 
     const result = await client.query(query, values)

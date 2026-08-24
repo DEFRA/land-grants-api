@@ -6,7 +6,7 @@ describe('minMaxParcelSize', () => {
 
   const createApplication = () => ({
     landParcel: {
-      availableAreaSqm: haToSqm(10)
+      parcelSizeSqm: haToSqm(10)
     }
   })
 
