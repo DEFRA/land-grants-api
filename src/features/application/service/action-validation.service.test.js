@@ -448,5 +448,27 @@ describe('Action Validation Service', () => {
         )
       ).rejects.toThrow('Database connection failed')
     })
+
+    test('should skip available area calculations with non-hectare units', async () => {
+      const action = { code: 'WBD1', quantity: 100 }
+
+      mockActionResultTransformer.mockReturnValue({
+        ...mockActionResult,
+        availableArea: null
+      })
+
+      const result = await validateLandAction(
+        action,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
+      expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
+      expect(result).toEqual({ ...mockActionResult, availableArea: null })
+    })
   })
 })

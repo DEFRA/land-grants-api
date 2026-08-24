@@ -68,7 +68,7 @@
 /**
  * @typedef {object} ActionRuleResult
  * @property {RulesResult} ruleResult
- * @property {AvailableArea} availableArea
+ * @property {AvailableArea|null} availableArea
  */
 
 /**
