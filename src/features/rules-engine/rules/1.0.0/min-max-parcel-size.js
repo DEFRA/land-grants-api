@@ -14,14 +14,14 @@ export const minMaxParcelSize = {
   execute: (application, rule) => {
     const name = rule.name
     const {
-      landParcel: { availableAreaSqm }
+      landParcel: { parcelSizeSqm }
     } = application
     const { minimumParcelSizeSqm, maximumParcelSizeSqm } = rule.config
 
     const explanations = [
       {
         title: 'Minimum and maximum parcel size',
-        lines: [`The parcel size is ${sqmToHaRounded(availableAreaSqm)} ha`]
+        lines: [`The parcel size is ${sqmToHaRounded(parcelSizeSqm)} ha`]
       }
     ]
 
@@ -50,7 +50,7 @@ export const minMaxParcelSize = {
       }
     }
 
-    if (minimumParcelSizeSqm && availableAreaSqm < minimumParcelSizeSqm) {
+    if (minimumParcelSizeSqm && parcelSizeSqm < minimumParcelSizeSqm) {
       return {
         name,
         passed: false,
@@ -59,7 +59,7 @@ export const minMaxParcelSize = {
         explanations
       }
     }
-    if (maximumParcelSizeSqm && availableAreaSqm > maximumParcelSizeSqm) {
+    if (maximumParcelSizeSqm && parcelSizeSqm > maximumParcelSizeSqm) {
       return {
         name,
         passed: false,

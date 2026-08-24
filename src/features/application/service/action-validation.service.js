@@ -14,6 +14,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
+import { getLandData } from '../../parcel/queries/getLandData.query.js'
 
 /**
  * Validate a land action
@@ -126,7 +127,8 @@ const buildRuleEngineApplication = async (
     moorlandIntersectingAreaPercentage,
     lfaIntersectingAreaPercentage,
     sssiDataLayerData,
-    historicFeaturesDataLayerData
+    historicFeaturesDataLayerData,
+    landParcel
   ] = await Promise.all([
     getMoorlandInterceptPercentage(
       landAction.sheetId,
@@ -153,6 +155,12 @@ const buildRuleEngineApplication = async (
       DATA_LAYER_TYPES.historic_features,
       request.server.postgresDb,
       request.logger
+    ),
+    getLandData(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
     )
   ])
 
@@ -169,7 +177,8 @@ const buildRuleEngineApplication = async (
         lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
         sssi: sssiDataLayerData,
         historic_features: historicFeaturesDataLayerData
-      }
+      },
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
 }
