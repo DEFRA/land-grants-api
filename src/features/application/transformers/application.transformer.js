@@ -10,9 +10,9 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * Transform the action result
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - The actions
- * @param {object} availableArea - The available area
+ * @param {object|null} availableArea - The available area
  * @param {object} ruleResult - The rule result
- * @returns {object} The action result
+ * @returns {object} The validation result
  */
 export const actionResultTransformer = (
   action,
@@ -22,14 +22,18 @@ export const actionResultTransformer = (
 ) => {
   const actionConfig = actions.find((a) => a.code === action.code)
 
+  const aa = availableArea
+    ? {
+        explanations: availableArea.explanations,
+        areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
+      }
+    : null
+
   return {
     hasPassed: ruleResult.passed,
     code: action.code,
     actionConfigVersion: actionConfig?.semanticVersion,
-    availableArea: {
-      explanations: availableArea.explanations,
-      areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
-    },
+    availableArea: aa,
     rules: ruleResult.results
   }
 }
