@@ -1,43 +1,39 @@
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
-import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
-import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
-import { rules } from '~/src/features/rules-engine/rules/index.js'
-import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
-import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
-import { haToSqm } from '~/src/features/common/helpers/measurement.js'
-import { HECTARES } from '~/src/features/common/constants/unit_type.js'
-import { actionResultTransformer } from '../transformers/application.transformer.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
+import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
+import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
+import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
+import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { haToSqm } from '~/src/features/common/helpers/measurement.js'
+import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
+import { rules } from '~/src/features/rules-engine/rules/index.js'
 
 /**
- * Validate a land action
+ * Find the available area for a land action, only for land-area-based (hectare) actions
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {LandAction} landAction - The land action
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<ActionRuleResult>} The validation result
+ * @returns {Promise<object>} The validation result
  */
-export const validateLandAction = async (
+async function getAvailableArea(
   action,
   actions,
   agreements,
   compatibilityCheckFn,
   landAction,
   request
-) => {
-  if (!landAction || !actions || !compatibilityCheckFn) {
-    throw new Error('Unable to validate land action')
-  }
-
+) {
   // Other actions requested for this same parcel in this submission also
   // compete for the parcel's area, alongside persisted agreements - both
   // are treated as "existing" demand when computing this action's available area.
@@ -74,7 +70,7 @@ export const validateLandAction = async (
     aacDataRequirements
   )
 
-  const availableArea = {
+  return {
     ...lpResult,
     explanations: formatExplanationSections(lpResult.context, {
       targetAction: action.code,
@@ -83,6 +79,46 @@ export const validateLandAction = async (
       landCoverToString: aacDataRequirements.landCoverToString,
       feasible: lpResult.feasible
     })
+  }
+}
+
+/**
+ * Validate a land action
+ * @param {ActionRequest} action - The action
+ * @param {Action[]} actions - All enabled actions
+ * @param {AgreementAction[]} agreements - The agreements
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
+ * @param {LandAction} landAction - The land action
+ * @param {{logger: object, server: {postgresDb: object}}} request - The request object
+ * @returns {Promise<ActionRuleResult>} The validation result
+ */
+export const validateLandAction = async (
+  action,
+  actions,
+  agreements,
+  compatibilityCheckFn,
+  landAction,
+  request
+) => {
+  if (!landAction || !actions || !compatibilityCheckFn) {
+    throw new Error('Unable to validate land action')
+  }
+
+  const unit = actions.find(
+    (a) => a.code === action.code
+  )?.applicationUnitOfMeasurement
+
+  let availableArea = null
+
+  if (unit === HECTARES) {
+    availableArea = await getAvailableArea(
+      action,
+      actions,
+      agreements,
+      compatibilityCheckFn,
+      landAction,
+      request
+    )
   }
 
   const application = await buildRuleEngineApplication(
@@ -111,7 +147,7 @@ export const validateLandAction = async (
  * Fetches parcel data layers and builds the rule engine application object.
  * @param {ActionRequest} action
  * @param {LandAction} landAction
- * @param {object} availableArea
+ * @param {object|null} availableArea
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
  * @returns {Promise<RuleEngineApplication>}
@@ -165,10 +201,10 @@ const buildRuleEngineApplication = async (
   ])
 
   return {
-    areaAppliedFor: action.quantity,
+    areaAppliedFor: availableArea === null ? 0 : action.quantity,
     actionCodeAppliedFor: action.code,
     landParcel: {
-      availableAreaSqm: availableArea.availableAreaSqm,
+      availableAreaSqm: availableArea?.availableAreaSqm ?? null,
       existingAgreements: agreements,
       intersections: {
         moorland: {
@@ -184,10 +220,10 @@ const buildRuleEngineApplication = async (
 }
 
 /**
- * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
- * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
- * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
+ * @import { ActionRuleResult, Action, AvailableArea } from '~/src/features/actions/action.d.js'
+ * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
+ * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  */
