@@ -1,5 +1,5 @@
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
-import { COUNT } from '~/src/features/common/constants/unit_type.js'
+import { INTEGER_UNITS } from '~/src/features/common/constants/unit_type.js'
 
 /**
  * Validate land actions request
@@ -20,18 +20,20 @@ const validateLandActionsRequest = (landActions, actions) => {
 }
 
 /**
- * Validate count action quantities are whole numbers
+ * Validate that quantity is an integer for actions with integer-only units
  * @param {object[]} landActions - The land actions
  * @param {object[]} actions - The actions
- * @returns {string | null} The error message
+ * @returns {string|null} The error message
  */
-const validateCountActionQuantitiesRequest = (landActions, actions) => {
-  const invalidQuantities = landActions.flatMap((landAction) =>
+const validateQuantities = (landActions, actions) => {
+  const invalid = landActions.flatMap((landAction) =>
     landAction.actions.flatMap((action) => {
       const actionConfig = actions.find((a) => a.code === action.code)
-      const isCountAction = actionConfig?.applicationUnitOfMeasurement === COUNT
+      const requiresInt = INTEGER_UNITS.includes(
+        actionConfig?.applicationUnitOfMeasurement
+      )
 
-      return isCountAction && !Number.isInteger(action.quantity)
+      return requiresInt && !Number.isInteger(action.quantity)
         ? [
             `${action.code} (${action.quantity}) on ${landAction.sheetId}-${landAction.parcelId}`
           ]
@@ -39,8 +41,8 @@ const validateCountActionQuantitiesRequest = (landActions, actions) => {
     })
   )
 
-  if (invalidQuantities?.length > 0) {
-    return `Count action quantity must be a whole number: ${invalidQuantities.join(', ')}`
+  if (invalid.length > 0) {
+    return `Quantity must be a whole number for the following actions: ${invalid.join(', ')}`
   }
 
   return null
@@ -103,13 +105,10 @@ export const validateRequest = async (landActions, actions, request) => {
   }
 
   // Validate that count action quantities are whole numbers
-  const countQuantitiesErrors = validateCountActionQuantitiesRequest(
-    landActions,
-    actions
-  )
+  const quantityError = validateQuantities(landActions, actions)
 
-  if (countQuantitiesErrors) {
-    errors.push(countQuantitiesErrors)
+  if (quantityError) {
+    errors.push(quantityError)
   }
 
   return errors
