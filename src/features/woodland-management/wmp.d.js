@@ -19,7 +19,6 @@
  * @property {number} newWoodlandAreaHa
  * @property {string|Date} [startDate]
  * @property {string} [version] - Exact action config semantic version to pin the rate to
- * @property {number} [validationRunId] - Validation run id carrying the pinned rate version
  */
 
 /**
@@ -31,7 +30,6 @@
  * @property {string} [crn]
  * @property {string|Date} [startDate]
  * @property {string} [version] - Exact action config semantic version to pin the rate to
- * @property {number} [validationRunId] - Validation run id carrying the pinned rate version
  */
 
 /**

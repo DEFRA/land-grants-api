@@ -176,7 +176,7 @@ describe('Payment calculate WMP controller', () => {
           oldWoodlandAreaSqm: 5 * 10000,
           newWoodlandAreaSqm: 3 * 10000
         },
-        { version: undefined, validationRunId: undefined }
+        { version: undefined }
       )
       expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
         ['SX067-99238'],
@@ -220,7 +220,7 @@ describe('Payment calculate WMP controller', () => {
     test('should pin the rate to an explicit version and record it in the audit event', async () => {
       mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
         paymentResult: createMockCalculationResult(),
-        action: createMockAction('1.0.0'),
+        action: createMockAction(),
         rateVersion: { value: '1.0.0', source: 'explicit' }
       })
 
@@ -240,7 +240,7 @@ describe('Payment calculate WMP controller', () => {
         expect.anything(),
         expect.anything(),
         expect.anything(),
-        { version: '1.0.0', validationRunId: undefined }
+        { version: '1.0.0' }
       )
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_CALCULATED,
@@ -248,44 +248,6 @@ describe('Payment calculate WMP controller', () => {
           request: expect.objectContaining({
             rateVersion: '1.0.0',
             rateVersionSource: 'explicit'
-          })
-        }),
-        'success',
-        expect.objectContaining({ method: 'post' })
-      )
-    })
-
-    test('should resolve the rate version from a validation run id and record it in the audit event', async () => {
-      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
-        paymentResult: createMockCalculationResult(),
-        action: createMockAction(),
-        rateVersion: { value: '1.1.0', source: 'run' }
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: { ...validPayload, validationRunId: 42 }
-      })
-
-      expect(statusCode).toBe(200)
-      expect(message).toBe('success')
-      expect(mockCalculateWMPPaymentWithRateVersion).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        { version: undefined, validationRunId: 42 }
-      )
-      expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.WMP_PAYMENT_CALCULATED,
-        expect.objectContaining({
-          request: expect.objectContaining({
-            rateVersion: '1.1.0',
-            rateVersionSource: 'run'
           })
         }),
         'success',
@@ -349,28 +311,6 @@ describe('Payment calculate WMP controller', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe("Action config for PA3 at version '9.9.9' not found")
-    })
-
-    test('should return 400 when the validation run does not contain a pinned rate version', async () => {
-      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
-        error:
-          "Application validation run '999' does not contain a rate version for action code PA3"
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: { ...validPayload, validationRunId: 999 }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe(
-        "Application validation run '999' does not contain a rate version for action code PA3"
-      )
     })
   })
 
@@ -502,24 +442,6 @@ describe('Payment calculate WMP controller', () => {
       )
     })
 
-    test('should return 400 when both version and validationRunId are supplied', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, result } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: {
-          ...validPayload,
-          version: '1.0.0',
-          validationRunId: 42
-        }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(result.message).toContain(
-        'must not contain both "version" and "validationRunId"'
-      )
-    })
-
     test('should return 400 when version is not a semantic version', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, result } = await server.inject({
@@ -532,18 +454,6 @@ describe('Payment calculate WMP controller', () => {
       expect(result.message).toBe(
         '"version" with value "latest" fails to match the semantic version pattern'
       )
-    })
-
-    test('should return 400 when validationRunId is not a positive integer', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, result } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: { ...validPayload, validationRunId: 1.5 }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(result.message).toBe('"validationRunId" must be an integer')
     })
   })
 

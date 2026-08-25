@@ -23,10 +23,8 @@ import {
 } from '../../common/helpers/audit-event.js'
 
 const handleWmpPaymentTotalCalculationError = async (request, error) => {
-  const { totalAreaHa, applicationId, sbi, crn, version, validationRunId } =
-    /** @type {import('../wmp.d.js').WMPPaymentCalculateTotalRequest} */ (
-      request.payload
-    )
+  /** @type { WMPPaymentCalculateTotalRequest } */
+  const { totalAreaHa, applicationId, sbi, crn, version } = request.payload
 
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate total wmp payment',
@@ -36,12 +34,11 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
       applicationId,
       sbi,
       crn,
-      version,
-      validationRunId
+      version
     }
   })
 
-  const rateVersionSource = inferRateVersionSource({ version, validationRunId })
+  const rateVersionSource = inferRateVersionSource({ version })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
@@ -53,8 +50,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
         sbi,
         crn,
         rateVersion: version ?? null,
-        rateVersionSource,
-        validationRunId: validationRunId ?? null
+        rateVersionSource
       },
       error: error.message
     },
@@ -108,17 +104,10 @@ export const PaymentsCalculateTotalWMPController = {
       const postgresDb = request.server.postgresDb
       const logger = request.logger
 
-      /** @type {import('../wmp.d.js').WMPPaymentCalculateTotalRequest} */
+      /** @type { WMPPaymentCalculateTotalRequest } */
       // @ts-expect-error - payload
-      const {
-        totalAreaHa,
-        applicationId,
-        sbi,
-        crn,
-        startDate,
-        version,
-        validationRunId
-      } = request.payload
+      const { totalAreaHa, applicationId, sbi, crn, startDate, version } =
+        request.payload
 
       logInfo(logger, {
         category: 'wmp',
@@ -128,8 +117,7 @@ export const PaymentsCalculateTotalWMPController = {
           applicationId,
           sbi,
           crn,
-          version: version ?? null,
-          validationRunId: validationRunId ?? null
+          version: version ?? null
         }
       })
 
@@ -137,14 +125,14 @@ export const PaymentsCalculateTotalWMPController = {
         logger,
         postgresDb,
         { totalWoodlandAreaSqm: haToSqm(totalAreaHa) },
-        { version, validationRunId, applicationId }
+        { version }
       )
 
       if ('error' in calculation) {
         logValidationWarn(logger, {
           operation: 'Payment calculation: calculate total wmp payment',
           errors: [calculation.error],
-          context: { applicationId, sbi, crn, version, validationRunId }
+          context: { applicationId, sbi, crn, version }
         })
         return Boom.badRequest(calculation.error)
       }
@@ -186,4 +174,5 @@ export const PaymentsCalculateTotalWMPController = {
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'
+ * @import { WMPPaymentCalculateTotalRequest } from '../wmp.d.js'
  */

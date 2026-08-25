@@ -7,15 +7,14 @@
 - **Rate pinning on WMP payment calculation endpoints**:
   - `POST /api/v1/wmp/payments/calculate`
   - `POST /api/v1/wmp/payments/calculate-by-total-area`
-  - Both now accept optional `version` (exact action config semantic version, e.g. `"1.1.0"`) or `validationRunId` (resolves the version pinned in a stored application validation run). Supplying both is rejected with `400`.
-  - When neither is supplied the latest active config is used — unchanged behaviour for existing callers.
+  - Both now accept an optional `version` field (exact action config semantic version, e.g. `"1.1.0"`).
+  - When not supplied the latest active config is used — unchanged behaviour for existing callers.
   - Claims should pass the version recorded at agreement creation (`payment.agreementLevelItems[].version` from the original calculate response) so recalculations use the same rate.
 
 ### Behaviour
 
 - Supplied `version` that does not exist → `400` (fail closed)
-- `validationRunId` that does not exist, or whose results contain no pinned WMP version → `400`
-- Audit events (`WMP_PAYMENT_CALCULATED`, `WMP_PAYMENT_TOTAL_CALCULATED`) now include the resolved `rateVersion` and its source (`explicit`, `run` or `latest`)
+- Audit events (`WMP_PAYMENT_CALCULATED`, `WMP_PAYMENT_TOTAL_CALCULATED`) now include the resolved `rateVersion` and its source (`explicit` or `latest`)
 
 ## API v2 Payment Calculation Endpoint
 

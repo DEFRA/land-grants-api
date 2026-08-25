@@ -48,17 +48,10 @@ export const paymentCalculateWMPSchemaV2 = Joi.object({
   oldWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   newWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   startDate: Joi.date().optional(),
-  // Rate pinning for claims: either an exact action config semantic version,
-  // or a validation run id whose stored results carry the pinned version.
-  // At most one may be supplied; when neither is present the latest active
-  // config is used (backwards compatible default).
+  // Rate pinning for claims: an exact action config semantic version.
+  // When present the calculation uses that specific version instead of the
+  // latest active config, ensuring the same rate as the original agreement.
   version: Joi.string()
     .pattern(/^\d+\.\d+\.\d+$/, 'semantic version')
-    .optional(),
-  validationRunId: Joi.number().integer().positive().optional()
+    .optional()
 })
-  .oxor('version', 'validationRunId')
-  .messages({
-    'object.oxor':
-      '{{#label}} must not contain both "version" and "validationRunId"'
-  })

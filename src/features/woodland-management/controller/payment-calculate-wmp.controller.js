@@ -48,20 +48,12 @@ const buildAuditContext = (request, { parcelIds }) => ({
  * @param {number} params.newWoodlandAreaHa
  * @param {string|Date} [params.startDate]
  * @param {string} [params.version] - Exact action config semantic version to pin the rate to
- * @param {number} [params.validationRunId] - Validation run id carrying the pinned rate version
  * @returns {Promise<object | import('@hapi/boom').Boom>} Transformed payment response, or a Boom error response
  */
 const runWmpPaymentCalculation = async (
   request,
   postgresDb,
-  {
-    parcelIds,
-    oldWoodlandAreaHa,
-    newWoodlandAreaHa,
-    startDate,
-    version,
-    validationRunId
-  }
+  { parcelIds, oldWoodlandAreaHa, newWoodlandAreaHa, startDate, version }
 ) => {
   const validationResponse = await validatePaymentCalculationRequest(
     parcelIds,
@@ -84,14 +76,14 @@ const runWmpPaymentCalculation = async (
       oldWoodlandAreaSqm: haToSqm(oldWoodlandAreaHa),
       newWoodlandAreaSqm: haToSqm(newWoodlandAreaHa)
     },
-    { version, validationRunId }
+    { version }
   )
 
   if ('error' in calculation) {
     logValidationWarn(request.logger, {
-      operation: 'Payment Calculate WMP rate version resolution',
+      operation: 'Payment calculation: calculate wmp payment',
       errors: [calculation.error],
-      context: { parcelIds: parcelIds.join(','), validationRunId, version }
+      context: { parcelIds: parcelIds.join(','), version }
     })
     return Boom.badRequest(calculation.error)
   }
@@ -119,15 +111,14 @@ const runWmpPaymentCalculation = async (
  * @returns {Promise<import('@hapi/boom').Boom>}
  */
 const handleWmpPaymentCalculationError = async (request, error) => {
-  /** @type {import('../wmp.d.js').WMPPaymentCalculateRequest} */
+  /** @type { WMPPaymentCalculateRequest } */
   // @ts-expect-error - payload
   const {
     parcelIds,
     oldWoodlandAreaHa,
     newWoodlandAreaHa,
     startDate,
-    version,
-    validationRunId
+    version
   } = request.payload
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate wmp payment',
@@ -137,12 +128,11 @@ const handleWmpPaymentCalculationError = async (request, error) => {
       oldWoodlandAreaHa,
       newWoodlandAreaHa,
       startDate,
-      version,
-      validationRunId
+      version
     }
   })
 
-  const rateVersionSource = inferRateVersionSource({ version, validationRunId })
+  const rateVersionSource = inferRateVersionSource({ version })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_CALCULATED,
@@ -153,8 +143,7 @@ const handleWmpPaymentCalculationError = async (request, error) => {
         newWoodlandAreaHa,
         startDate,
         rateVersion: version ?? null,
-        rateVersionSource,
-        validationRunId: validationRunId ?? null
+        rateVersionSource
       },
       error: error.message
     },
@@ -193,15 +182,14 @@ export const PaymentsCalculateWMPController = {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
 
-      /** @type {import('../wmp.d.js').WMPPaymentCalculateRequest} */
+      /** @type { WMPPaymentCalculateRequest } */
       // @ts-expect-error - payload
       const {
         parcelIds,
         oldWoodlandAreaHa,
         newWoodlandAreaHa,
         startDate,
-        version,
-        validationRunId
+        version
       } = request.payload
 
       logInfo(request.logger, {
@@ -212,8 +200,7 @@ export const PaymentsCalculateWMPController = {
           oldWoodlandAreaHa,
           newWoodlandAreaHa,
           startDate,
-          version: version ?? null,
-          validationRunId: validationRunId ?? null
+          version: version ?? null
         }
       })
 
@@ -225,8 +212,7 @@ export const PaymentsCalculateWMPController = {
           oldWoodlandAreaHa,
           newWoodlandAreaHa,
           startDate,
-          version,
-          validationRunId
+          version
         }
       )
       if (Boom.isBoom(calculationResult)) {
@@ -267,4 +253,5 @@ export const PaymentsCalculateWMPController = {
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'
+ * @import { WMPPaymentCalculateRequest } from '../wmp.d.js'
  */

@@ -146,11 +146,7 @@ describe('Payment calculate total WMP controller', () => {
         expect.anything(),
         expect.anything(),
         { totalWoodlandAreaSqm: 8 * 10000 },
-        {
-          version: undefined,
-          validationRunId: undefined,
-          applicationId: 'app-123'
-        }
+        { version: undefined }
       )
       expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
         [],
@@ -236,40 +232,6 @@ describe('Payment calculate total WMP controller', () => {
         expect.objectContaining({ method: 'post' })
       )
     })
-
-    test('should resolve the rate version from a validation run id and record it in the audit event', async () => {
-      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
-        paymentResult: createMockCalculationResult(),
-        action: createMockAction(),
-        rateVersion: { value: '1.1.0', source: 'run' }
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: { ...validPayload, validationRunId: 42 }
-      })
-
-      expect(statusCode).toBe(200)
-      expect(mockCalculateWMPPaymentWithRateVersion).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        { version: undefined, validationRunId: 42, applicationId: 'app-123' }
-      )
-      expect(mockAuditEvent).toHaveBeenCalledWith(
-        AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
-        expect.objectContaining({
-          request: expect.objectContaining({
-            rateVersion: '1.1.0',
-            rateVersionSource: 'run'
-          })
-        }),
-        'success',
-        expect.objectContaining({ method: 'post' })
-      )
-    })
   })
 
   describe('schema validation', () => {
@@ -342,24 +304,6 @@ describe('Payment calculate total WMP controller', () => {
       expect(message).toBe('"sbi" is required')
     })
 
-    test('should return 400 when both version and validationRunId are supplied', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode, result } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: {
-          ...validPayload,
-          version: '1.0.0',
-          validationRunId: 42
-        }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(result.message).toContain(
-        'must not contain both "version" and "validationRunId"'
-      )
-    })
-
     test('should return 400 when version is not a semantic version', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, result } = await server.inject({
@@ -393,26 +337,6 @@ describe('Payment calculate total WMP controller', () => {
 
       expect(statusCode).toBe(400)
       expect(message).toBe("Action config for PA3 at version '9.9.9' not found")
-    })
-
-    test('should return 400 when the validation run does not exist', async () => {
-      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
-        error: "Application validation run '999' not found"
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: { ...validPayload, validationRunId: 999 }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe("Application validation run '999' not found")
-      expect(mockAuditEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -468,8 +392,7 @@ describe('Payment calculate total WMP controller', () => {
             sbi: '123456789',
             crn: undefined,
             rateVersion: null,
-            rateVersionSource: 'latest',
-            validationRunId: null
+            rateVersionSource: 'latest'
           },
           error: 'Database error'
         }),
