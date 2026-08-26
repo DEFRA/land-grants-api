@@ -1,7 +1,6 @@
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
-import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
+import { calculateWMPPaymentWithRateVersion } from '../service/wmp-rate-version.service.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import createTestServer from '~/src/tests/test-server.js'
 import {
@@ -10,26 +9,19 @@ import {
 } from '~/src/features/common/helpers/audit-event.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
-vi.mock(
-  '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
-)
-vi.mock(
-  '../service/wmp-payment-calculate.service.js',
-  async (importOriginal) => {
-    const actual = await importOriginal()
-    return {
-      ...actual,
-      executeRulesForPaymentCalculationWMP: vi.fn()
-    }
+vi.mock('../service/wmp-rate-version.service.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    calculateWMPPaymentWithRateVersion: vi.fn()
   }
-)
-vi.mock('../../payments-engine/paymentsEngine.js')
+})
 vi.mock('../transformer/wmp-payment-calculate.transformer.js')
 vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockGetLandData = getLandData
-const mockGetActionsByLatestVersion = getActionsByLatestVersion
-const mockExecutePaymentMethod = executePaymentMethod
+const mockCalculateWMPPaymentWithRateVersion =
+  calculateWMPPaymentWithRateVersion
 const mockWmpPaymentCalculateTransformer = wmpPaymentCalculateTransformer
 const mockAuditEvent = auditEvent
 
@@ -152,8 +144,11 @@ describe('Payment calculate WMP controller', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetLandData.mockResolvedValue([createMockParcel()])
-    mockGetActionsByLatestVersion.mockResolvedValue([createMockAction()])
-    mockExecutePaymentMethod.mockReturnValue(createMockCalculationResult())
+    mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
+      paymentResult: createMockCalculationResult(),
+      action: createMockAction(),
+      rateVersion: { value: null, source: 'latest' }
+    })
     mockWmpPaymentCalculateTransformer.mockReturnValue(
       createMockPaymentResponse()
     )
@@ -174,14 +169,14 @@ describe('Payment calculate WMP controller', () => {
       expect(statusCode).toBe(200)
       expect(message).toBe('success')
       expect(payment).toEqual(createMockPaymentResponse())
-      expect(mockExecutePaymentMethod).toHaveBeenCalledWith(
-        createMockAction().paymentMethod,
+      expect(mockCalculateWMPPaymentWithRateVersion).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
         {
-          data: {
-            oldWoodlandAreaSqm: 5 * 10000,
-            newWoodlandAreaSqm: 3 * 10000
-          }
-        }
+          oldWoodlandAreaSqm: 5 * 10000,
+          newWoodlandAreaSqm: 3 * 10000
+        },
+        { version: undefined }
       )
       expect(mockWmpPaymentCalculateTransformer).toHaveBeenCalledWith(
         ['SX067-99238'],
@@ -196,7 +191,9 @@ describe('Payment calculate WMP controller', () => {
           request: {
             oldWoodlandAreaHa: 5,
             newWoodlandAreaHa: 3,
-            startDate: new Date('2024-01-01')
+            startDate: new Date('2024-01-01'),
+            rateVersion: null,
+            rateVersionSource: 'latest'
           },
           response: createMockPaymentResponse()
         }),
@@ -219,6 +216,44 @@ describe('Payment calculate WMP controller', () => {
 
       expect(statusCode).toBe(200)
     })
+
+    test('should pin the rate to an explicit version and record it in the audit event', async () => {
+      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
+        paymentResult: createMockCalculationResult(),
+        action: createMockAction(),
+        rateVersion: { value: '1.0.0', source: 'explicit' }
+      })
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const {
+        statusCode,
+        result: { message }
+      } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate',
+        payload: { ...validPayload, version: '1.0.0' }
+      })
+
+      expect(statusCode).toBe(200)
+      expect(message).toBe('success')
+      expect(mockCalculateWMPPaymentWithRateVersion).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        { version: '1.0.0' }
+      )
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.WMP_PAYMENT_CALCULATED,
+        expect.objectContaining({
+          request: expect.objectContaining({
+            rateVersion: '1.0.0',
+            rateVersionSource: 'explicit'
+          })
+        }),
+        'success',
+        expect.objectContaining({ method: 'post' })
+      )
+    })
   })
 
   describe('validation errors', () => {
@@ -240,8 +275,10 @@ describe('Payment calculate WMP controller', () => {
       expect(mockAuditEvent).not.toHaveBeenCalled()
     })
 
-    test('should return 400 when no PA3 action exists', async () => {
-      mockGetActionsByLatestVersion.mockResolvedValue([])
+    test('should return 400 when no WMP action config exists at all', async () => {
+      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
+        error: 'Action not found'
+      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -257,10 +294,10 @@ describe('Payment calculate WMP controller', () => {
       expect(message).toBe('Action not found')
     })
 
-    test('should return 400 when actions do not include PA3', async () => {
-      mockGetActionsByLatestVersion.mockResolvedValue([
-        { ...createMockAction(), code: 'PA1' }
-      ])
+    test('should return 400 when the requested rate version does not exist', async () => {
+      mockCalculateWMPPaymentWithRateVersion.mockResolvedValue({
+        error: "Action config for PA3 at version '9.9.9' not found"
+      })
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const {
@@ -269,11 +306,11 @@ describe('Payment calculate WMP controller', () => {
       } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate',
-        payload: validPayload
+        payload: { ...validPayload, version: '9.9.9' }
       })
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('Action not found')
+      expect(message).toBe("Action config for PA3 at version '9.9.9' not found")
     })
   })
 
@@ -404,11 +441,25 @@ describe('Payment calculate WMP controller', () => {
         '"newWoodlandAreaHa" must be greater than or equal to 0'
       )
     })
+
+    test('should return 400 when version is not a semantic version', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode, result } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate',
+        payload: { ...validPayload, version: 'latest' }
+      })
+
+      expect(statusCode).toBe(400)
+      expect(result.message).toBe(
+        '"version" with value "latest" fails to match the semantic version pattern'
+      )
+    })
   })
 
   describe('error handling', () => {
-    test('should return 500 when getActionsByLatestVersion throws', async () => {
-      mockGetActionsByLatestVersion.mockRejectedValue(
+    test('should return 500 when rate version resolution throws', async () => {
+      mockCalculateWMPPaymentWithRateVersion.mockRejectedValue(
         new Error('Database error')
       )
 
@@ -422,22 +473,7 @@ describe('Payment calculate WMP controller', () => {
       expect(statusCode).toBe(500)
     })
 
-    test('should return 500 when executePaymentMethod throws', async () => {
-      mockExecutePaymentMethod.mockImplementation(() => {
-        throw new Error('Calculation error')
-      })
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate',
-        payload: validPayload
-      })
-
-      expect(statusCode).toBe(500)
-    })
-
-    test('should return 500 with catch message when an unexpected error is thrown', async () => {
+    test('should return 500 when the calculation service throws unexpectedly', async () => {
       mockWmpPaymentCalculateTransformer.mockImplementation(() => {
         throw new Error('Unexpected transformer error')
       })

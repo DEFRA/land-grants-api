@@ -10,7 +10,7 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * Get latest application validation run
  * @param {Logger} logger - The logger
  * @param {Pool} db - The postgres instance
- * @param {string} id - The id of the application validation run
+ * @param {string|number} id - The id of the application validation run
  * @returns {Promise<ApplicationResult | null>} The application validation run
  */
 async function getApplicationValidationRun(logger, db, id) {

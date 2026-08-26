@@ -6,10 +6,14 @@ import {
 } from '~/src/features/common/schema/index.js'
 import {
   logBusinessError,
-  logInfo
+  logInfo,
+  logValidationWarn
 } from '../../common/helpers/logging/log-helpers.js'
 import { haToSqm } from '../../common/helpers/measurement.js'
-import { calculateWMPPayment } from '../service/wmp-service.js'
+import {
+  calculateWMPPaymentWithRateVersion,
+  inferRateVersionSource
+} from '../service/wmp-rate-version.service.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import { paymentCalculateWMPResponseSchema } from '../schema/payment-calculate-wmp.schema.js'
 import {
@@ -19,9 +23,8 @@ import {
 } from '../../common/helpers/audit-event.js'
 
 const handleWmpPaymentTotalCalculationError = async (request, error) => {
-  /** @type {paymentCalculateTotalWMPSchema} */
-  // @ts-expect-error - payload
-  const { totalAreaHa, applicationId, sbi, crn } = request.payload
+  /** @type { WMPPaymentCalculateTotalRequest } */
+  const { totalAreaHa, applicationId, sbi, crn, version } = request.payload
 
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate total wmp payment',
@@ -30,15 +33,25 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
       totalAreaHa,
       applicationId,
       sbi,
-      crn
+      crn,
+      version
     }
   })
+
+  const rateVersionSource = inferRateVersionSource({ version })
 
   await auditEvent(
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
     {
       ...buildAuditContext(request, sbi, crn),
-      request: { totalAreaHa, applicationId, sbi, crn },
+      request: {
+        totalAreaHa,
+        applicationId,
+        sbi,
+        crn,
+        rateVersion: version ?? null,
+        rateVersionSource
+      },
       error: error.message
     },
     'failure',
@@ -91,26 +104,43 @@ export const PaymentsCalculateTotalWMPController = {
       const postgresDb = request.server.postgresDb
       const logger = request.logger
 
-      /** @type {paymentCalculateTotalWMPSchema} */
+      /** @type { WMPPaymentCalculateTotalRequest } */
       // @ts-expect-error - payload
-      const { totalAreaHa, applicationId, sbi, crn, startDate } =
+      const { totalAreaHa, applicationId, sbi, crn, startDate, version } =
         request.payload
 
       logInfo(logger, {
         category: 'wmp',
         message: 'Payment Calculate total WMP',
-        context: { totalAreaHa, applicationId, sbi, crn }
+        context: {
+          totalAreaHa,
+          applicationId,
+          sbi,
+          crn,
+          version: version ?? null
+        }
       })
 
-      const { result: paymentResult, action } = await calculateWMPPayment(
+      const calculation = await calculateWMPPaymentWithRateVersion(
         logger,
         postgresDb,
-        { totalWoodlandAreaSqm: haToSqm(totalAreaHa) }
+        { totalWoodlandAreaSqm: haToSqm(totalAreaHa) },
+        { version }
       )
+
+      if ('error' in calculation) {
+        logValidationWarn(logger, {
+          operation: 'Payment calculation: calculate total wmp payment',
+          errors: [calculation.error],
+          context: { applicationId, sbi, crn, version }
+        })
+        return Boom.badRequest(calculation.error)
+      }
+
       const transformedPaymentResult = wmpPaymentCalculateTransformer(
         [],
-        paymentResult,
-        action,
+        calculation.paymentResult,
+        calculation.action,
         startDate
       )
 
@@ -118,7 +148,14 @@ export const PaymentsCalculateTotalWMPController = {
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         {
           ...buildAuditContext(request, sbi, crn),
-          request: { totalAreaHa, applicationId, sbi, crn },
+          request: {
+            totalAreaHa,
+            applicationId,
+            sbi,
+            crn,
+            rateVersion: calculation.rateVersion.value,
+            rateVersionSource: calculation.rateVersion.source
+          },
           response: transformedPaymentResult
         },
         'success',
@@ -137,4 +174,5 @@ export const PaymentsCalculateTotalWMPController = {
 
 /**
  * @import { Request, ResponseToolkit, ResponseObject } from '@hapi/hapi'
+ * @import { WMPPaymentCalculateTotalRequest } from '../wmp.d.js'
  */

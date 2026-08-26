@@ -47,5 +47,11 @@ export const paymentCalculateWMPSchemaV2 = Joi.object({
   parcelIds: Joi.array().items(Joi.string()).min(1).required(),
   oldWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
   newWoodlandAreaHa: Joi.number().min(0).precision(4).required(),
-  startDate: Joi.date().optional()
+  startDate: Joi.date().optional(),
+  // Rate pinning for claims: an exact action config semantic version.
+  // When present the calculation uses that specific version instead of the
+  // latest active config, ensuring the same rate as the original agreement.
+  version: Joi.string()
+    .pattern(/^\d+\.\d+\.\d+$/, 'semantic version')
+    .optional()
 })
