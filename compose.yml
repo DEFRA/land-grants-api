@@ -2,7 +2,18 @@ x-common-migration: &common-migration
   POSTGRES_HOST: ${POSTGRES_HOST:-land-grants-backend-postgres}
   SCHEMA_ROLE: ${POSTGRES_SCHEMA_ROLE:-land_grants_api}
   SCHEMA_NAME: ${POSTGRES_SCHEMA_NAME:-public}
+  ENFORCE_SCHEMA_PERMISSIONS: ${ENFORCE_SCHEMA_PERMISSIONS:-true}
 
+# Postgres role used to run liquibase migrations (and own the schema objects), matching
+# production where land_grants_api_ddl is a superuser role.
+x-common-postgres-ddl: &common-postgres-ddl
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
+  POSTGRES_PASSWORD: ${POSTGRES_DDL_PASSWORD:-land_grants_api}
+  POSTGRES_USER: ${POSTGRES_DDL_USER:-land_grants_api_ddl}
+
+# Postgres role used by the application at runtime, with only the permissions granted to it
+# by the migrations (non-superuser), matching production.
 x-common-postgres: &common-postgres
   POSTGRES_PORT: 5432
   POSTGRES_DB: ${POSTGRES_DB:-land_grants_api}
@@ -15,7 +26,7 @@ services:
     profiles: [migrations]
     restart: 'no'
     environment:
-      <<: [*common-postgres, *common-migration]
+      <<: [*common-postgres-ddl, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-up"
     depends_on:
@@ -32,7 +43,7 @@ services:
     profiles: [migrations]
     restart: 'no'
     environment:
-      <<: [*common-postgres, *common-migration]
+      <<: [*common-postgres-ddl, *common-migration]
     entrypoint: >
       sh -c "/scripts/migration/database-down"
     depends_on:
@@ -47,7 +58,9 @@ services:
   land-grants-backend-postgres:
     image: postgis/postgis:16-3.4
     environment:
-      <<: *common-postgres
+      <<: *common-postgres-ddl
+      APP_USER: ${POSTGRES_USER:-land_grants_api}
+      APP_PASSWORD: ${POSTGRES_PASSWORD:-land_grants_api}
     ports:
       - 5432:5432
     healthcheck:
@@ -61,6 +74,7 @@ services:
       retries: 10
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres/init:/docker-entrypoint-initdb.d:ro
     networks:
       - land-grants-net
 
@@ -71,6 +85,7 @@ services:
     command: ['npm', 'run', 'dev']
     environment:
       <<: *common-postgres
+      POSTGRES_USERNAME: ${POSTGRES_USER:-land_grants_api}
       PORT: 3001
       POSTGRES_HOST: land-grants-backend-postgres
       GRANTS_CONFIG_QUEUE_URL: http://floci:4566/000000000000/grants_config_broker_update
