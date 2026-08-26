@@ -121,7 +121,8 @@ export const validateLandAction = async (
       landAction,
       request
     )
-  } else if (unit === METERS) {
+  }
+  if (unit === METERS) {
     availableLength = await getAvailableLength(
       action,
       actions,

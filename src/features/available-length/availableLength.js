@@ -32,7 +32,7 @@ export async function getAvailableLength(
 
   const existingActions = agreements.map(mapAction).concat(siblingActions)
   const incompatibleLength = existingActions
-    .filter((a) => compatibilityCheckFn(a.actionCode, action.code))
+    .filter((a) => !compatibilityCheckFn(a.actionCode, action.code))
     .reduce((prev, cur) => {
       return prev + cur.boundaryLengthMeters
     }, 0)
