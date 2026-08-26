@@ -83,9 +83,13 @@ const runCaseManagementValidation = async (
     sbi,
     crn,
     application_id: applicationId,
-    data
+    data,
+    created_at: createdAt
   } = applicationValidationRun
 
+  // Case Management always references the validation run created when the
+  // application was originally submitted, so its created_at is the
+  // application's true creation date.
   const { validationErrors, applicationData, applicationValidationRunId } =
     await validateApplication(
       data.application.parcels,
@@ -93,7 +97,8 @@ const runCaseManagementValidation = async (
       crn,
       sbi,
       requesterUsername,
-      request
+      request,
+      new Date(createdAt)
     )
 
   if (validationErrors && validationErrors.length > 0) {
