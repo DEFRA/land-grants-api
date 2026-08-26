@@ -14,7 +14,7 @@ async function getLandParcelBoundary(sheetId, parcelId, db, logger) {
   try {
     client = await db.connect()
     const query = `SELECT
-        round(st_length(ST_ExteriorRing(geom))) as boundary_length_meters
+        round(ST_Perimeter(geom)) as boundary_length_meters
       FROM land_parcels
       WHERE sheet_id = $1 and parcel_id = $2`
     const values = [sheetId, parcelId]

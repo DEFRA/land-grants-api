@@ -19,7 +19,7 @@ describe('getLandParcelBoundary', () => {
   const testParcelId = '9456'
 
   const expectedQuery = `SELECT
-        round(st_length(ST_ExteriorRing(geom))) as boundary_length_meters
+        round(ST_Perimeter(geom)) as boundary_length_meters
       FROM land_parcels
       WHERE sheet_id = $1 and parcel_id = $2`
 
