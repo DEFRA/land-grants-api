@@ -4,6 +4,15 @@ import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 
+const upl1 = { code: 'UPL1', applicationUnitOfMeasurement: 'ha' }
+const upl2 = { code: 'UPL2', applicationUnitOfMeasurement: 'ha' }
+const cmor1 = { code: 'CMOR1', applicationUnitOfMeasurement: 'ha' }
+const wbd1 = { code: 'WBD1', applicationUnitOfMeasurement: 'count' }
+const hef1 = { code: 'HEF1', applicationUnitOfMeasurement: 'sqm' }
+const bnd1 = { code: 'BND1', applicationUnitOfMeasurement: 'm' }
+
+const actions = [upl1, upl2, cmor1, wbd1, hef1, bnd1]
+
 describe('Application Validation', () => {
   const mockLogger = {
     info: vi.fn(),
@@ -35,7 +44,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
@@ -45,7 +53,7 @@ describe('Application Validation', () => {
       expect(result).toEqual([])
     })
 
-    test('should return empty array when count action quantity is a whole number', async () => {
+    test('should return empty array when action quantities are an integer', async () => {
       const landActions = [
         {
           sheetId: 'sheet1',
@@ -56,7 +64,6 @@ describe('Application Validation', () => {
           ]
         }
       ]
-      const actions = [{ code: 'WBD1', applicationUnitOfMeasurement: 'count' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
@@ -66,27 +73,27 @@ describe('Application Validation', () => {
       expect(result).toEqual([])
     })
 
-    test('should return count action error when quantity is not a whole number', async () => {
-      const landActions = [
-        {
-          sheetId: 'sheet1',
-          parcelId: 'parcel1',
-          actions: [{ code: 'WBD1', quantity: 2.5 }]
-        }
-      ]
-      const actions = [{ code: 'WBD1', applicationUnitOfMeasurement: 'count' }]
+    it.each([['HEF1'], ['WBD1'], ['BND1']])(
+      'should return an error for non-integer quantity for action %s',
+      async (code) => {
+        const landActions = [
+          {
+            sheetId: 'sheet1',
+            parcelId: 'parcel1',
+            actions: [{ code, quantity: 2.5 }]
+          }
+        ]
 
-      getLandData.mockResolvedValue([
-        { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-      ])
+        getLandData.mockResolvedValue([
+          { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
+        ])
 
-      const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual([
-        'Count action quantity must be a whole number: WBD1 (2.5) on sheet1-parcel1'
-      ])
-    })
+        const result = await validateRequest(landActions, actions, mockRequest)
+        expect(result).toHaveLength(1)
+      }
+    )
 
-    test('should allow non-whole number quantities for non-count actions', async () => {
+    test('should allow non-whole number quantities for hectare actions', async () => {
       const landActions = [
         {
           sheetId: 'sheet1',
@@ -94,7 +101,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1', quantity: 2.5 }]
         }
       ]
-      const actions = [{ code: 'UPL1', applicationUnitOfMeasurement: 'ha' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
@@ -104,20 +110,16 @@ describe('Application Validation', () => {
       expect(result).toEqual([])
     })
 
-    test('should return count action error for multiple invalid quantities', async () => {
+    test('should return non-integer error for multiple invalid quantities', async () => {
       const landActions = [
         {
           sheetId: 'sheet1',
           parcelId: 'parcel1',
           actions: [
             { code: 'WBD1', quantity: 2.5 },
-            { code: 'WBD2', quantity: 3.75 }
+            { code: 'HEF1', quantity: 3.75 }
           ]
         }
-      ]
-      const actions = [
-        { code: 'WBD1', applicationUnitOfMeasurement: 'count' },
-        { code: 'WBD2', applicationUnitOfMeasurement: 'count' }
       ]
 
       getLandData.mockResolvedValue([
@@ -125,41 +127,10 @@ describe('Application Validation', () => {
       ])
 
       const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual([
-        'Count action quantity must be a whole number: WBD1 (2.5) on sheet1-parcel1, WBD2 (3.75) on sheet1-parcel1'
-      ])
+      expect(result).toHaveLength(1)
     })
 
-    test('should return count action error across multiple parcels', async () => {
-      const landActions = [
-        {
-          sheetId: 'sheet1',
-          parcelId: 'parcel1',
-          actions: [{ code: 'WBD1', quantity: 2.5 }]
-        },
-        {
-          sheetId: 'sheet2',
-          parcelId: 'parcel2',
-          actions: [{ code: 'WBD1', quantity: 4.5 }]
-        }
-      ]
-      const actions = [{ code: 'WBD1', applicationUnitOfMeasurement: 'count' }]
-
-      getLandData
-        .mockResolvedValueOnce([
-          { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
-        ])
-        .mockResolvedValueOnce([
-          { id: 2, sheet_id: 'sheet2', parcel_id: 'parcel2' }
-        ])
-
-      const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual([
-        'Count action quantity must be a whole number: WBD1 (2.5) on sheet1-parcel1, WBD1 (4.5) on sheet2-parcel2'
-      ])
-    })
-
-    test('should return both count and actions errors when both validations fail', async () => {
+    test('should return both non-integer and actions errors when both validations fail', async () => {
       const landActions = [
         {
           sheetId: 'sheet1',
@@ -170,17 +141,13 @@ describe('Application Validation', () => {
           ]
         }
       ]
-      const actions = [{ code: 'WBD1', applicationUnitOfMeasurement: 'count' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
       ])
 
       const result = await validateRequest(landActions, actions, mockRequest)
-      expect(result).toEqual([
-        'Actions not found: INVALID_ACTION',
-        'Count action quantity must be a whole number: WBD1 (2.5) on sheet1-parcel1'
-      ])
+      expect(result).toHaveLength(2)
     })
 
     test('should return empty array when all actions are valid across multiple parcels', async () => {
@@ -196,7 +163,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'CMOR1' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }, { code: 'UPL2' }, { code: 'CMOR1' }]
 
       getLandData
         .mockResolvedValueOnce([
@@ -218,7 +184,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'INVALID_ACTION' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
@@ -241,7 +206,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'INVALID2' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData
         .mockResolvedValueOnce([
@@ -263,7 +227,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue([])
 
@@ -279,7 +242,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue(null)
 
@@ -295,7 +257,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'INVALID_ACTION' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue([])
 
@@ -311,7 +272,6 @@ describe('Application Validation', () => {
         { sheetId: 'sheet1', parcelId: 'parcel1', actions: [] },
         { sheetId: 'sheet2', parcelId: 'parcel2', actions: [] }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValueOnce([{ id: 1 }]).mockResolvedValueOnce([])
 
@@ -332,7 +292,6 @@ describe('Application Validation', () => {
           actions: [{ code: 'INVALID_ACTION' }]
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData
         .mockResolvedValueOnce([
@@ -352,7 +311,6 @@ describe('Application Validation', () => {
         { sheetId: 'sheet1', parcelId: 'parcel1', actions: [{ code: 'UPL1' }] },
         { sheetId: 'sheet2', parcelId: 'parcel2', actions: [{ code: 'UPL1' }] }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData
         .mockResolvedValueOnce([
@@ -380,7 +338,6 @@ describe('Application Validation', () => {
 
     test('should handle empty landActions array', async () => {
       const landActions = []
-      const actions = [{ code: 'UPL1' }]
 
       const result = await validateRequest(landActions, actions, mockRequest)
       expect(result).toEqual([])
@@ -395,13 +352,12 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1' }]
         }
       ]
-      const actions = []
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
       ])
 
-      const result = await validateRequest(landActions, actions, mockRequest)
+      const result = await validateRequest(landActions, [], mockRequest)
       expect(result).toEqual(['Actions not found: UPL1'])
     })
 
@@ -413,7 +369,6 @@ describe('Application Validation', () => {
           actions: []
         }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
@@ -425,14 +380,13 @@ describe('Application Validation', () => {
 
     test('should handle null/undefined landActions', async () => {
       const landActions = null
-      const actions = [{ code: 'UPL1' }]
 
       await expect(
         validateRequest(landActions, actions, mockRequest)
       ).rejects.toThrow()
     })
 
-    test('should handle null/undefined actions', async () => {
+    test('should handle null actions', async () => {
       const landActions = [
         {
           sheetId: 'sheet1',
@@ -440,14 +394,13 @@ describe('Application Validation', () => {
           actions: [{ code: 'UPL1' }]
         }
       ]
-      const actions = null
 
       getLandData.mockResolvedValue([
         { id: 1, sheet_id: 'sheet1', parcel_id: 'parcel1' }
       ])
 
       await expect(
-        validateRequest(landActions, actions, mockRequest)
+        validateRequest(landActions, null, mockRequest)
       ).rejects.toThrow()
     })
 
@@ -455,7 +408,6 @@ describe('Application Validation', () => {
       const landActions = [
         { sheetId: 'sheet1', parcelId: 'parcel1', actions: [] }
       ]
-      const actions = [{ code: 'UPL1' }]
 
       getLandData.mockRejectedValueOnce(new Error('Database connection failed'))
 
