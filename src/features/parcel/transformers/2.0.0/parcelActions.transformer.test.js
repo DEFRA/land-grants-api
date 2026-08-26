@@ -16,10 +16,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: {
-        unit: 'ha',
-        value: 500
-      },
       availability: {
         unit: 'ha',
         value: 500
@@ -36,7 +32,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
       availability: { unit: 'ha', value: null }
     })
   })
@@ -47,7 +42,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
       availability: { unit: 'ha', value: null }
     })
   })
@@ -63,7 +57,6 @@ describe('actionTransformer 2.0.0', () => {
       expect(result).toEqual({
         code: 'ACTION1',
         description: 'Test Action',
-        availableArea: undefined,
         availability: { unit, value: null }
       })
     }
@@ -79,10 +72,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: {
-        unit: 'ha',
-        value: 0
-      },
       availability: {
         unit: 'ha',
         value: 0
@@ -100,7 +89,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
       availability: { unit: 'ha', value: null }
     })
   })
@@ -118,10 +106,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: {
-        unit: 'ha',
-        value: 500
-      },
       availability: {
         unit: 'ha',
         value: 500
@@ -147,10 +131,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: {
-        unit: 'ha',
-        value: 500
-      },
       availability: {
         unit: 'ha',
         value: 500
@@ -170,7 +150,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
       guidanceUrl: 'https://example.com',
       availability: { unit: 'ha', value: null, type: 'total' }
     })
@@ -184,7 +163,6 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availableArea: undefined,
       availability: { unit: 'ha', value: null }
     })
   })

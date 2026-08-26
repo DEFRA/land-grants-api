@@ -20,8 +20,6 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     code: action.code,
     description: action.description,
     version: action.semanticVersion,
-    // TODO: deprecated in favour of generic availability, rm once grants-ui uses the latter
-    availableArea: aa,
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
     ...action.payment

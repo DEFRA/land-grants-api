@@ -33,7 +33,7 @@ const mockParcelWithActions = {
       {
         code: 'CMOR1',
         description: 'Assess moorland and produce a written record',
-        availableArea: {
+        availability: {
           unit: 'ha',
           value: 0.02
         },

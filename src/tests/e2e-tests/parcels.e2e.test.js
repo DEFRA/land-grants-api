@@ -37,7 +37,7 @@ describe('Parcels Endpoints', () => {
             expect.objectContaining({
               code: expect.any(String),
               description: expect.any(String),
-              availableArea: expect.objectContaining({
+              availability: expect.objectContaining({
                 unit: 'ha',
                 value: expect.any(Number)
               })

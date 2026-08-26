@@ -55,11 +55,11 @@ const mockEnabledActions = [
   }
 ]
 
-const mockActionsWithAvailableArea = [
+const mockActionsWithAvailability = [
   {
     code: 'BND1',
     description: 'Hedgerow management',
-    availableArea: {
+    availability: {
       unit: 'ha',
       value: 10
     },
@@ -69,7 +69,7 @@ const mockActionsWithAvailableArea = [
   {
     code: 'BND2',
     description: 'Hedge laying',
-    availableArea: {
+    availability: {
       unit: 'ha',
       value: 8
     },
@@ -124,7 +124,7 @@ describe('Parcels Controller 2.0.0', () => {
       }
 
       if (payload.fields.some((f) => f.startsWith('actions'))) {
-        result.actions = mockActionsWithAvailableArea
+        result.actions = mockActionsWithAvailability
       }
 
       return Promise.resolve(result)
@@ -253,7 +253,6 @@ describe('Parcels Controller 2.0.0', () => {
               {
                 code: 'XYZ1',
                 description: `${unit}-based action`,
-                availableArea: undefined,
                 availability: {
                   value: null,
                   type: 'total',
@@ -296,7 +295,7 @@ describe('Parcels Controller 2.0.0', () => {
     test('should return 200 with parcel data when requesting actions.results field', async () => {
       const mockActionsWithResults = [
         {
-          ...mockActionsWithAvailableArea[0],
+          ...mockActionsWithAvailability[0],
           results: {
             totalValidLandCoverSqm: 50000,
             stacks: [],
@@ -367,9 +366,9 @@ describe('Parcels Controller 2.0.0', () => {
     })
 
     test('should return 200 with guidanceUrl and availability when present', async () => {
-      const mockActionsWithAvailability = [
+      const actions = [
         {
-          ...mockActionsWithAvailableArea[0],
+          ...mockActionsWithAvailability[0],
           guidanceUrl: 'https://www.gov.uk/find-funding',
           availability: { type: 'total' }
         }
@@ -389,7 +388,7 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithAvailability.map((a) => ({
+          result.actions = actions.map((a) => ({
             ...a,
             availability: { ...a.availability, unit: 'ha', value: null }
           }))
@@ -768,21 +767,21 @@ describe('Parcels Controller 2.0.0', () => {
         {
           code: 'UPL3',
           description: 'Action 3',
-          availableArea: { unit: 'ha', value: 5 },
+          availability: { unit: 'ha', value: 5 },
           ratePerUnitGbp: 10,
           ratePerAgreementPerYearGbp: 0
         },
         {
           code: 'BND1',
           description: 'Action 1',
-          availableArea: { unit: 'ha', value: 10 },
+          availability: { unit: 'ha', value: 10 },
           ratePerUnitGbp: 10.6,
           ratePerAgreementPerYearGbp: 272
         },
         {
           code: 'CSAM1',
           description: 'Action 2',
-          availableArea: { unit: 'ha', value: 8 },
+          availability: { unit: 'ha', value: 8 },
           ratePerUnitGbp: 15,
           ratePerAgreementPerYearGbp: 0
         }
@@ -1324,7 +1323,7 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithAvailableArea
+          result.actions = mockActionsWithAvailability
         }
 
         return Promise.resolve(result)
@@ -1367,7 +1366,7 @@ describe('Parcels Controller 2.0.0', () => {
         }
 
         if (payload.fields.some((f) => f.startsWith('actions'))) {
-          result.actions = mockActionsWithAvailableArea
+          result.actions = mockActionsWithAvailability
         }
 
         return Promise.resolve(result)

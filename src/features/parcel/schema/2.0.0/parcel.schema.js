@@ -4,12 +4,6 @@ import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_avail
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
-// TODO: deprecated in favour of `availability`
-const availableAreaSchema = Joi.object({
-  unit: Joi.string().required(),
-  value: Joi.number().allow(null).required()
-})
-
 export const actionAvailabilitySchema = Joi.object({
   unit: Joi.string().required(),
   value: Joi.number()
@@ -27,8 +21,6 @@ export const actionAvailabilitySchema = Joi.object({
 const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
-  // TODO: deprecated in favour of `availability`, rm once grants-ui has migrated to the latter
-  availableArea: availableAreaSchema.optional(),
   results: Joi.object({
     totalValidLandCoverSqm: Joi.number().optional(),
     stacks: Joi.array().optional(),

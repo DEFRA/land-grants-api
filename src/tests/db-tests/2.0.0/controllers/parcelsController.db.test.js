@@ -123,10 +123,6 @@ describe('Parcels Controller 2.0.0', () => {
           {
             code: 'CMOR1',
             description: 'Assess moorland and produce a written record',
-            availableArea: {
-              unit: 'ha',
-              value: 762.9068
-            },
             availability: {
               unit: 'ha',
               value: 762.9068
@@ -140,10 +136,6 @@ describe('Parcels Controller 2.0.0', () => {
           {
             code: 'UPL1',
             description: 'Moderate livestock grazing on moorland',
-            availableArea: {
-              unit: 'ha',
-              value: 762.9068
-            },
             availability: {
               unit: 'ha',
               value: 762.9068
@@ -156,10 +148,6 @@ describe('Parcels Controller 2.0.0', () => {
           {
             code: 'UPL2',
             description: 'Low livestock grazing on moorland',
-            availableArea: {
-              unit: 'ha',
-              value: 762.9068
-            },
             availability: {
               unit: 'ha',
               value: 762.9068
@@ -172,10 +160,6 @@ describe('Parcels Controller 2.0.0', () => {
           {
             code: 'UPL3',
             description: 'Limited livestock grazing on moorland',
-            availableArea: {
-              unit: 'ha',
-              value: 762.9068
-            },
             availability: {
               unit: 'ha',
               value: 762.9068
