@@ -14,3 +14,8 @@
  * @property {string} geom
  * @property {Date} last_updated
  */
+
+/**
+ * @typedef {object} LandParcelBoundary
+ * @property {number} boundaryLengthMeters
+ */

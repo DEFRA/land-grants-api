@@ -9,6 +9,8 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { plannedActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
+import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
+import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
@@ -58,6 +60,12 @@ vi.mock(
     actionResultTransformer: vi.fn()
   })
 )
+vi.mock('~/src/features/parcel/queries/getLandData.query.js', () => ({
+  getLandData: vi.fn()
+}))
+vi.mock('~/src/features/available-length/availableLength.js', () => ({
+  getAvailableLength: vi.fn()
+}))
 vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
   async (importOriginal) => {
@@ -84,6 +92,8 @@ const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
 const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
 const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)
+const mockGetLandData = vi.mocked(getLandData)
+const mockGetAvailableLength = vi.mocked(getAvailableLength)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -186,6 +196,8 @@ describe('Action Validation Service', () => {
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
     })
+    mockGetLandData.mockResolvedValue([{ area: 5000 }])
+    mockGetAvailableLength.mockResolvedValue({ availableLength: 200 })
     mockPlannedActionsTransformer.mockReturnValue([])
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
@@ -245,7 +257,26 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
+      expect(mockGetLandData).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockGetAvailableLength).not.toHaveBeenCalled()
       expect(mockExecuteRules).toHaveBeenCalled()
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        areaAppliedFor: mockAction.quantity,
+        boundaryLengthAppliedFor: Math.round(mockAction.quantity),
+        actionCodeAppliedFor: mockAction.code,
+        parcelId: mockLandAction.parcelId,
+        sheetId: mockLandAction.sheetId,
+        actionCode: mockAction.code,
+        landParcel: expect.objectContaining({
+          parcelSizeSqm: 5000,
+          boundaryLengthMeters: 0
+        })
+      })
       expect(mockActionResultTransformer).toHaveBeenCalledWith(
         mockAction,
         mockActionConfig,
@@ -469,6 +500,85 @@ describe('Action Validation Service', () => {
       expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
       expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
       expect(result).toEqual({ ...mockActionResult, availableArea: null })
+    })
+
+    test('should calculate available length for meter-based actions', async () => {
+      const meterAction = { code: 'BND1', quantity: 150 }
+      const actionConfigWithBnd1 = [
+        ...mockActionConfig,
+        { code: 'BND1', applicationUnitOfMeasurement: 'm' }
+      ]
+
+      await validateLandAction(
+        meterAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockGetAvailableLength).toHaveBeenCalledWith(
+        meterAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+      expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
+      expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        areaAppliedFor: 0,
+        boundaryLengthAppliedFor: Math.round(meterAction.quantity),
+        landParcel: expect.objectContaining({
+          availableAreaSqm: null,
+          boundaryLengthMeters: 200
+        })
+      })
+    })
+
+    test('should default boundaryLengthMeters to 0 when getAvailableLength returns null', async () => {
+      const meterAction = { code: 'BND1', quantity: 150 }
+      const actionConfigWithBnd1 = [
+        ...mockActionConfig,
+        { code: 'BND1', applicationUnitOfMeasurement: 'm' }
+      ]
+      mockGetAvailableLength.mockResolvedValue(null)
+
+      await validateLandAction(
+        meterAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          boundaryLengthMeters: 0
+        })
+      })
+    })
+
+    test('should default parcelSizeSqm to 0 when getLandData returns no rows', async () => {
+      mockGetLandData.mockResolvedValue([])
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          parcelSizeSqm: 0
+        })
+      })
     })
   })
 })

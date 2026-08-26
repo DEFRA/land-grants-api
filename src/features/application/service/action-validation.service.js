@@ -3,7 +3,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
-import { HECTARES } from '~/src/features/common/constants/unit_type.js'
+import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -15,6 +15,7 @@ import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/ge
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
+import { getAvailableLength } from '../../available-length/availableLength.js'
 
 /**
  * Find the available area for a land action, only for land-area-based (hectare) actions
@@ -109,9 +110,19 @@ export const validateLandAction = async (
   )?.applicationUnitOfMeasurement
 
   let availableArea = null
+  let availableLength = null
 
   if (unit === HECTARES) {
     availableArea = await getAvailableArea(
+      action,
+      actions,
+      agreements,
+      compatibilityCheckFn,
+      landAction,
+      request
+    )
+  } else if (unit === METERS) {
+    availableLength = await getAvailableLength(
       action,
       actions,
       agreements,
@@ -125,6 +136,7 @@ export const validateLandAction = async (
     action,
     landAction,
     availableArea,
+    availableLength,
     agreements,
     request
   )
@@ -148,6 +160,7 @@ export const validateLandAction = async (
  * @param {ActionRequest} action
  * @param {LandAction} landAction
  * @param {object|null} availableArea
+ * @param {{availableLength: number}|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
  * @returns {Promise<RuleEngineApplication>}
@@ -156,6 +169,7 @@ const buildRuleEngineApplication = async (
   action,
   landAction,
   availableArea,
+  availableLength,
   agreements,
   request
 ) => {
@@ -202,6 +216,7 @@ const buildRuleEngineApplication = async (
 
   return {
     areaAppliedFor: availableArea === null ? 0 : action.quantity,
+    boundaryLengthAppliedFor: Math.round(action.quantity),
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
@@ -214,14 +229,15 @@ const buildRuleEngineApplication = async (
         sssi: sssiDataLayerData,
         historic_features: historicFeaturesDataLayerData
       },
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0,
+      boundaryLengthMeters: availableLength?.availableLength ?? 0
     }
   }
 }
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
- * @import { ActionRuleResult, Action, AvailableArea } from '~/src/features/actions/action.d.js'
+ * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
