@@ -13,7 +13,8 @@ import { validateApplication } from '../../application/service/application-valid
 import {
   logResourceNotFound,
   logValidationWarn,
-  logBusinessError
+  logBusinessError,
+  logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   AuditEvent,
@@ -111,6 +112,19 @@ const runCaseManagementValidation = async (
       validationErrors.map((err) => err.message).join(', ')
     )
   }
+
+  logInfo(request.logger, {
+    category: 'application',
+    operation: 'Case management application validation rerun',
+    message: 'Case management application validation rerun completed',
+    context: {
+      validationRunId: id,
+      applicationValidationRunId,
+      sbi,
+      crn,
+      applicationId
+    }
+  })
 
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,

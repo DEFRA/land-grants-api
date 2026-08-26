@@ -160,6 +160,18 @@ describe('Case Management Application Validation Controller', () => {
         'success',
         expect.objectContaining({ method: 'post' })
       )
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          event: {
+            category: 'application',
+            action: 'Case management application validation rerun',
+            type: 'info',
+            kind: undefined
+          }
+        },
+        'Case management application validation rerun completed [validationRunId=1 | applicationValidationRunId=1 | sbi=123456789 | crn=1234567890 | applicationId=APP-123456]'
+      )
     })
 
     test('should return 404 when application validation run is not found', async () => {
