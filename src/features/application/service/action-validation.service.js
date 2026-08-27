@@ -214,10 +214,18 @@ const buildRuleEngineApplication = async (
   ])
 
   return {
-    appliedForQuantity: availableArea ? action.quantity : availableLength ? Math.round(action.quantity) : 0,
+    appliedForQuantity: availableArea
+      ? action.quantity
+      : availableLength
+        ? Math.round(action.quantity)
+        : 0,
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
+      availability:
+        availableArea?.availableAreaSqm ??
+        availableLength?.availableLength ??
+        0,
       existingAgreements: agreements,
       intersections: {
         moorland: {
@@ -227,8 +235,8 @@ const buildRuleEngineApplication = async (
         sssi: sssiDataLayerData,
         historic_features: historicFeaturesDataLayerData
       },
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0,
-      boundaryLengthMeters: availableLength?.availableLength ?? 0
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      // boundaryLengthMeters: availableLength?.availableLength ?? 0
     }
   }
 }

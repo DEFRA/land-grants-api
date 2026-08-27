@@ -218,7 +218,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
       intersections: {
         sssi: { intersectingAreaPercentage }
       },
-      boundaryLengthMeters: 0
+      availability: 0
     }
   }
 
@@ -262,7 +262,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
       intersections: {
         historic_features: { intersectingAreaPercentage }
       },
-      boundaryLengthMeters: 0
+      availability: 0
     }
   }
 

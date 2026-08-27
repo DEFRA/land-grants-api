@@ -273,7 +273,7 @@ describe('Action Validation Service', () => {
         actionCode: mockAction.code,
         landParcel: expect.objectContaining({
           parcelSizeSqm: 5000,
-          boundaryLengthMeters: 0
+          availability: 1000
         })
       })
       expect(mockActionResultTransformer).toHaveBeenCalledWith(
@@ -531,12 +531,12 @@ describe('Action Validation Service', () => {
         appliedForQuantity: 150,
         landParcel: expect.objectContaining({
           availableAreaSqm: null,
-          boundaryLengthMeters: 200
+          availability: 200
         })
       })
     })
 
-    test('should default boundaryLengthMeters to 0 when getAvailableLength returns null', async () => {
+    test('should default availability to 0 when getAvailableLength returns null', async () => {
       const meterAction = { code: 'BND1', quantity: 150 }
       const actionConfigWithBnd1 = [
         ...mockActionConfig,
@@ -555,7 +555,7 @@ describe('Action Validation Service', () => {
 
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
         landParcel: expect.objectContaining({
-          boundaryLengthMeters: 0
+          availability: 0
         })
       })
     })
