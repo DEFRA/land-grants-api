@@ -1,3 +1,4 @@
+import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
 import {
   PARCEL_ID,
@@ -22,6 +23,7 @@ const response404 = {
 }
 
 const mockLogger = { info: vi.fn() }
+vi.mock('~/src/services/entra/index.js')
 
 describe('getAgreements', () => {
   const sbi = '123456789'
@@ -41,6 +43,7 @@ describe('getAgreements', () => {
 
     vi.clearAllMocks()
     global.fetch = vi.fn()
+    getToken.mockResolvedValue('dummy-entra-token')
   })
 
   it('should provide agreements from DAL', async () => {
@@ -62,6 +65,7 @@ describe('getAgreements', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
+          Authorization: 'Bearer dummy-entra-token',
           'Content-Type': 'application/json',
           'Gateway-Type': 'external',
           'X-Forwarded-Authorization': 'dummy'
@@ -137,6 +141,7 @@ describe('getAgreements', () => {
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
+          Authorization: 'Bearer dummy-entra-token',
           'Content-Type': 'application/json',
           'Gateway-Type': 'internal',
           Email: 'land-grants-api@defra.gov.uk'
