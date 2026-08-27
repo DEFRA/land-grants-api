@@ -214,8 +214,7 @@ const buildRuleEngineApplication = async (
   ])
 
   return {
-    areaAppliedFor: availableArea === null ? 0 : action.quantity,
-    boundaryLengthAppliedFor: Math.round(action.quantity),
+    appliedForQuantity: availableArea ? action.quantity : availableLength ? Math.round(action.quantity) : 0,
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,

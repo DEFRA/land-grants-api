@@ -209,9 +209,8 @@ export async function getActionsForParcelWithSSSIConsentRequired(
   )
 
   const application = {
-    areaAppliedFor: 0,
+    appliedForQuantity: 0,
     actionCodeAppliedFor: '',
-    boundaryLengthAppliedFor: 0,
     landParcel: {
       availableAreaSqm: 0,
       parcelSizeSqm: 0,
@@ -254,9 +253,8 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   )
 
   const application = {
-    areaAppliedFor: 0,
+    appliedForQuantity: 0,
     actionCodeAppliedFor: '',
-    boundaryLengthAppliedFor: 0,
     landParcel: {
       availableAreaSqm: 0,
       parcelSizeSqm: 0,

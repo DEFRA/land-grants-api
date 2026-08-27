@@ -6,7 +6,7 @@
 export const appliedForAvailableLength = {
   execute: (application, rule) => {
     const {
-      boundaryLengthAppliedFor,
+      appliedForQuantity,
       landParcel: { boundaryLengthMeters }
     } = application
 
@@ -16,12 +16,12 @@ export const appliedForAvailableLength = {
       {
         title: 'Total available boundary length',
         lines: [
-          `The available boundary length was (${boundaryLengthMeters} m) the applicant applied for (${boundaryLengthAppliedFor} m)`
+          `The available boundary length was (${boundaryLengthMeters} m) the applicant applied for (${appliedForQuantity} m)`
         ]
       }
     ]
 
-    if (boundaryLengthAppliedFor > boundaryLengthMeters) {
+    if (appliedForQuantity > boundaryLengthMeters) {
       return {
         name,
         passed: false,
@@ -31,7 +31,7 @@ export const appliedForAvailableLength = {
       }
     }
 
-    if (boundaryLengthAppliedFor < boundaryLengthMeters) {
+    if (appliedForQuantity < boundaryLengthMeters) {
       return {
         name,
         passed: false,

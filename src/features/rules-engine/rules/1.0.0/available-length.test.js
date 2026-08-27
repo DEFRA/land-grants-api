@@ -2,10 +2,10 @@ import { appliedForAvailableLength } from './available-length.js'
 
 describe('appliedForAvailableLength', () => {
   const createApplication = (
-    boundaryLengthAppliedFor,
+    appliedForQuantity,
     boundaryLengthMeters
   ) => ({
-    boundaryLengthAppliedFor,
+    appliedForQuantity,
     landParcel: {
       boundaryLengthMeters
     }

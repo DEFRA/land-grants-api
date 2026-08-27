@@ -266,8 +266,7 @@ describe('Action Validation Service', () => {
       expect(mockGetAvailableLength).not.toHaveBeenCalled()
       expect(mockExecuteRules).toHaveBeenCalled()
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
-        areaAppliedFor: mockAction.quantity,
-        boundaryLengthAppliedFor: Math.round(mockAction.quantity),
+        appliedForQuantity: mockAction.quantity,
         actionCodeAppliedFor: mockAction.code,
         parcelId: mockLandAction.parcelId,
         sheetId: mockLandAction.sheetId,
@@ -529,8 +528,7 @@ describe('Action Validation Service', () => {
       expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
       expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
-        areaAppliedFor: 0,
-        boundaryLengthAppliedFor: Math.round(meterAction.quantity),
+        appliedForQuantity: 150,
         landParcel: expect.objectContaining({
           availableAreaSqm: null,
           boundaryLengthMeters: 200

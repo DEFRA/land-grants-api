@@ -38,9 +38,8 @@
  * @property {number|string|null} [newWoodlandAreaSqm]
  * @property {number|string} [totalParcelAreaSqm]
  * @property {number} [totalAvailableArea]
- * @property {number|string} [areaAppliedFor]
+ * @property {number|string} [appliedForQuantity]
  * @property {string} [actionCodeAppliedFor]
- * @property {number} [boundaryLengthAppliedFor]
  * @property {LandParcel} [landParcel]
  */
 
