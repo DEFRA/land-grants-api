@@ -1,5 +1,6 @@
 import { METERS } from '~/src/features/common/constants/unit_type.js'
 import { getLandParcelBoundary } from '../parcel/queries/getParcelBoundary.query.js'
+import { createFilterActionByUnit } from '../common/helpers/filter-action-by-unit.js'
 
 /**
  * Calculates the availble boundary length of a parcel
@@ -19,15 +20,10 @@ export async function getAvailableLength(
   landAction,
   request
 ) {
-  // filter actions that are not length
+  const filterActionByUnit = createFilterActionByUnit(actions, METERS)
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .filter((a) => {
-      const unit = actions.find(
-        (config) => config.code === a.code
-      )?.applicationUnitOfMeasurement
-      return unit === METERS
-    })
+    .filter(filterActionByUnit)
     .map(mapAction)
 
   const existingActions = agreements.map(mapAction).concat(siblingActions)
@@ -72,5 +68,5 @@ function mapAction(action) {
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
- * @import { LandAction } from '~/src/features/payment/payment.d.js'
+ * @import { LandAction, LandActionEntry } from '~/src/features/payment/payment.d.js'
  */

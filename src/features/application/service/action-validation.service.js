@@ -16,6 +16,7 @@ import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
+import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
 
 /**
  * Find the available area for a land action, only for land-area-based (hectare) actions
@@ -40,14 +41,11 @@ async function getAvailableArea(
   // are treated as "existing" demand when computing this action's available area.
   // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
   // for area, so they're excluded rather than mismeasured as hectares.
+
+  const filterActionByUnit = createFilterActionByUnit(actions, HECTARES)
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .filter((a) => {
-      const unit = actions.find(
-        (config) => config.code === a.code
-      )?.applicationUnitOfMeasurement
-      return unit === undefined || unit === HECTARES
-    })
+    .filter(filterActionByUnit)
     .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
   const existingActions = [

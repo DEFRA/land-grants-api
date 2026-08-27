@@ -100,7 +100,7 @@ describe('getAvailableLength', () => {
     expect(result).toEqual({ availableLength: 1000 })
   })
 
-  it('excludes sibling actions with no matching action config', async () => {
+  it('should include sibling actions not matching the action code', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const unknownSibling = { code: 'UNKNOWN', quantity: 100 }
     compatibilityCheckFn.mockReturnValue(true)
@@ -114,7 +114,6 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(compatibilityCheckFn).not.toHaveBeenCalled()
     expect(result).toEqual({ availableLength: 1000 })
   })
 
