@@ -18,7 +18,7 @@ const logger = {
   debug: () => console.debug
 }
 
-const ingestDataFolder = './ingestion-data/data'
+const ingestDataFolder = './src/land-data'
 
 export const ingestLandData = async () => {
   const dbOptions = getDBOptions()
