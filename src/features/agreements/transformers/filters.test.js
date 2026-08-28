@@ -35,8 +35,33 @@ describe('getAgreements', () => {
     }))
 
     const expected = current.map((a) => ({ ...a, ...basicAgreement }))
-    const actual = agreements.filter(expiredActionsFilter)
+    const actual = agreements.filter((a) => expiredActionsFilter(a))
 
     expect(actual).toEqual(expected)
+  })
+
+  it('should filter using an explicit referenceDate instead of the system clock', () => {
+    const referenceDate = new Date('2019-06-01')
+
+    const agreements = [
+      // active around referenceDate, but expired "now" (per fake timer)
+      {
+        startDate: new Date('2019-01-01'),
+        endDate: new Date('2019-12-31'),
+        ...basicAgreement
+      },
+      // active "now", but not yet started at referenceDate
+      {
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2030-01-01'),
+        ...basicAgreement
+      }
+    ]
+
+    const actual = agreements.filter((a) =>
+      expiredActionsFilter(a, referenceDate)
+    )
+
+    expect(actual).toEqual([agreements[0]])
   })
 })

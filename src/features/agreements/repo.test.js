@@ -233,4 +233,31 @@ describe('getAgreements', () => {
 
     expect(result).toEqual([goodAction, goodAction])
   })
+
+  test('should filter agreements against an explicit referenceDate rather than the system clock', async () => {
+    const pastReferenceDate = new Date('2018-06-01')
+
+    const pastAgreement = {
+      actionCode: 'UPL1',
+      quantity: 100,
+      unit: 'sqm',
+      startDate: new Date('2018-01-01'),
+      endDate: new Date('2019-01-01')
+    }
+
+    db.getAgreementsForParcel.mockResolvedValue([pastAgreement])
+    dal.getAgreements.mockResolvedValue([])
+
+    const result = await getAgreements(
+      sbi,
+      sheetId,
+      parcelId,
+      token,
+      null,
+      mockLogger,
+      pastReferenceDate
+    )
+
+    expect(result).toEqual([pastAgreement])
+  })
 })

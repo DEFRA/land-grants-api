@@ -173,6 +173,42 @@ describe('Land Parcel Validation Service', () => {
       )
     })
 
+    test('should filter agreements against an explicit referenceDate rather than the system clock', async () => {
+      // Only active around referenceDate - long since expired "now"
+      const agreementActiveAtReferenceDate = {
+        actionCode: 'CLIG2',
+        quantity: 100,
+        unit: 'sqm',
+        startDate: new Date('2018-01-01T00:00:00Z'),
+        endDate: new Date('2019-01-01T00:00:00Z')
+      }
+      const referenceDate = new Date('2018-06-01T00:00:00Z')
+
+      mockGetAgreementsForParcel.mockResolvedValue([
+        agreementActiveAtReferenceDate
+      ])
+      mockGetAgreements.mockResolvedValue([])
+
+      await validateLandParcelActions(
+        sbi,
+        mockLandAction,
+        mockActions,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'dummy-token',
+        referenceDate
+      )
+
+      expect(mockValidateLandAction).toHaveBeenCalledWith(
+        expect.anything(),
+        mockActions,
+        [agreementActiveAtReferenceDate],
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+    })
+
     test('should throw error when landAction is null', async () => {
       await expect(
         validateLandParcelActions(

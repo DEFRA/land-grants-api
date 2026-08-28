@@ -13,7 +13,8 @@ import { validateApplication } from '../../application/service/application-valid
 import {
   logResourceNotFound,
   logValidationWarn,
-  logBusinessError
+  logBusinessError,
+  logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import {
   AuditEvent,
@@ -82,9 +83,13 @@ const runCaseManagementValidation = async (
     sbi,
     crn,
     application_id: applicationId,
-    data
+    data,
+    created_at: createdAt
   } = applicationValidationRun
 
+  // Case Management always references the validation run created when the
+  // application was originally submitted, so its created_at is the
+  // application's true creation date.
   const { validationErrors, applicationData, applicationValidationRunId } =
     await validateApplication(
       data.application.parcels,
@@ -92,7 +97,8 @@ const runCaseManagementValidation = async (
       crn,
       sbi,
       requesterUsername,
-      request
+      request,
+      new Date(createdAt)
     )
 
   if (validationErrors && validationErrors.length > 0) {
@@ -111,6 +117,19 @@ const runCaseManagementValidation = async (
       validationErrors.map((err) => err.message).join(', ')
     )
   }
+
+  logInfo(request.logger, {
+    category: 'application',
+    operation: 'Case management application validation rerun',
+    message: 'Case management application validation rerun completed',
+    context: {
+      validationRunId: id,
+      applicationValidationRunId,
+      sbi,
+      crn,
+      applicationId
+    }
+  })
 
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,

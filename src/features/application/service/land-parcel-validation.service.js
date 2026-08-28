@@ -9,6 +9,7 @@ import { validateLandAction } from './action-validation.service.js'
  * @param {object} compatibilityCheckFn - The compatibility check function
  * @param {object} request - The request
  * @param {string|null} defraIdToken - The JWT token for the end user in DEFRA ID
+ * @param {Date} [referenceDate] - The date to check agreement activity against, defaults to now
  */
 export const validateLandParcelActions = async (
   sbi,
@@ -16,7 +17,8 @@ export const validateLandParcelActions = async (
   actions,
   compatibilityCheckFn,
   request,
-  defraIdToken
+  defraIdToken,
+  referenceDate
 ) => {
   if (!landAction || !actions || !compatibilityCheckFn) {
     throw new Error('Unable to validate land parcel actions')
@@ -30,7 +32,8 @@ export const validateLandParcelActions = async (
     landAction.parcelId,
     defraIdToken,
     request.server.postgresDb,
-    request.logger
+    request.logger,
+    referenceDate
   )
 
   const actionResults = await Promise.all(

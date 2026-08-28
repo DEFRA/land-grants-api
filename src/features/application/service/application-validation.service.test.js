@@ -201,7 +201,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null
+        null,
+        undefined
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
@@ -210,7 +211,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null
+        null,
+        undefined
       )
 
       expect(mockApplicationDataTransformer).toHaveBeenCalledWith(
@@ -231,6 +233,45 @@ describe('Application Validation Service', () => {
           crn: mockCrn,
           data: mockApplicationData
         }
+      )
+    })
+
+    test('should forward an explicit referenceDate to validateLandParcelActions', async () => {
+      const mockReferenceDate = new Date('2024-01-15T10:00:00Z')
+
+      mockValidateLandParcelActions
+        .mockResolvedValueOnce(mockParcelResults[0])
+        .mockResolvedValueOnce(mockParcelResults[1])
+
+      await validateApplication(
+        mockLandAction,
+        mockApplicationId,
+        mockCrn,
+        mockSbi,
+        mockRequesterUsername,
+        mockRequest,
+        mockReferenceDate
+      )
+
+      expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
+        1,
+        mockSbi,
+        mockLandAction[0],
+        mockEnabledActions,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        null,
+        mockReferenceDate
+      )
+      expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
+        2,
+        mockSbi,
+        mockLandAction[1],
+        mockEnabledActions,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        null,
+        mockReferenceDate
       )
     })
 
