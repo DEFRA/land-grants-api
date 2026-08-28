@@ -213,12 +213,14 @@ const buildRuleEngineApplication = async (
     )
   ])
 
+  const appliedForQuantity = availableArea
+    ? action.quantity
+    : availableLength
+      ? Math.round(action.quantity)
+      : 0
+
   return {
-    appliedForQuantity: availableArea
-      ? action.quantity
-      : availableLength
-        ? Math.round(action.quantity)
-        : 0,
+    appliedForQuantity,
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
@@ -236,7 +238,6 @@ const buildRuleEngineApplication = async (
         historic_features: historicFeaturesDataLayerData
       },
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
-      // boundaryLengthMeters: availableLength?.availableLength ?? 0
     }
   }
 }
