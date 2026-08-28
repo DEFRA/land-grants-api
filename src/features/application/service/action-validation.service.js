@@ -250,7 +250,8 @@ const buildRuleEngineApplication = async (
 function getAppliedForQuantity(availableArea, availableLength, action) {
   if (availableArea) {
     return action.quantity
-  } else if (availableLength) {
+  }
+  if (availableLength) {
     return Math.round(action.quantity)
   }
   return 0
