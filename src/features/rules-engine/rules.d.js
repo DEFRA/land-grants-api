@@ -24,6 +24,7 @@
  * @typedef {object} LandParcel
  * @property {number|null} availableAreaSqm
  * @property {number} parcelSizeSqm
+ * @property {number} availability
  * @property {Array} existingAgreements
  * @property {object} intersections
  */
@@ -37,7 +38,7 @@
  * @property {number|string|null} [newWoodlandAreaSqm]
  * @property {number|string} [totalParcelAreaSqm]
  * @property {number} [totalAvailableArea]
- * @property {number|string} [areaAppliedFor]
+ * @property {number|string} [appliedForQuantity]
  * @property {string} [actionCodeAppliedFor]
  * @property {LandParcel} [landParcel]
  */

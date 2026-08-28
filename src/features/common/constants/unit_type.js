@@ -1,9 +1,9 @@
 export const HECTARES = 'ha'
 export const COUNT = 'count'
-const M = 'm'
+export const METERS = 'm'
 const SQM = 'sqm'
 
-export const UNIT_TYPES = [HECTARES, SQM, M, COUNT]
+export const UNIT_TYPES = [HECTARES, SQM, METERS, COUNT]
 
 // Unit which must be integers
-export const INTEGER_UNITS = [SQM, M, COUNT]
+export const INTEGER_UNITS = [SQM, METERS, COUNT]

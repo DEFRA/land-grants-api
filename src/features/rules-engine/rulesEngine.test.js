@@ -36,7 +36,7 @@ const rules = {
 }
 
 const application = {
-  areaAppliedFor: 100,
+  appliedForQuantity: 100,
   actionCodeAppliedFor: 'GRH7',
   landParcel: {
     area: 100,

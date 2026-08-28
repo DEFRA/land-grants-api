@@ -3,7 +3,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
-import { HECTARES } from '~/src/features/common/constants/unit_type.js'
+import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -15,6 +15,8 @@ import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/ge
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
+import { getAvailableLength } from '../../available-length/availableLength.js'
+import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
 
 /**
  * Find the available area for a land action, only for land-area-based (hectare) actions
@@ -39,14 +41,11 @@ async function getAvailableArea(
   // are treated as "existing" demand when computing this action's available area.
   // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
   // for area, so they're excluded rather than mismeasured as hectares.
+
+  const filterActionByUnit = createFilterActionByUnit(actions, HECTARES)
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .filter((a) => {
-      const unit = actions.find(
-        (config) => config.code === a.code
-      )?.applicationUnitOfMeasurement
-      return unit === undefined || unit === HECTARES
-    })
+    .filter(filterActionByUnit)
     .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
   const existingActions = [
@@ -109,9 +108,20 @@ export const validateLandAction = async (
   )?.applicationUnitOfMeasurement
 
   let availableArea = null
+  let availableLength = null
 
   if (unit === HECTARES) {
     availableArea = await getAvailableArea(
+      action,
+      actions,
+      agreements,
+      compatibilityCheckFn,
+      landAction,
+      request
+    )
+  }
+  if (unit === METERS) {
+    availableLength = await getAvailableLength(
       action,
       actions,
       agreements,
@@ -125,6 +135,7 @@ export const validateLandAction = async (
     action,
     landAction,
     availableArea,
+    availableLength,
     agreements,
     request
   )
@@ -148,6 +159,7 @@ export const validateLandAction = async (
  * @param {ActionRequest} action
  * @param {LandAction} landAction
  * @param {object|null} availableArea
+ * @param {{availableLength: number}|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
  * @returns {Promise<RuleEngineApplication>}
@@ -156,6 +168,7 @@ const buildRuleEngineApplication = async (
   action,
   landAction,
   availableArea,
+  availableLength,
   agreements,
   request
 ) => {
@@ -201,10 +214,18 @@ const buildRuleEngineApplication = async (
   ])
 
   return {
-    areaAppliedFor: availableArea === null ? 0 : action.quantity,
+    appliedForQuantity: getAppliedForQuantity(
+      availableArea,
+      availableLength,
+      action
+    ),
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
+      availability:
+        availableArea?.availableAreaSqm ??
+        availableLength?.availableLength ??
+        0,
       existingAgreements: agreements,
       intersections: {
         moorland: {
@@ -220,8 +241,25 @@ const buildRuleEngineApplication = async (
 }
 
 /**
+ * get the applied for quantity based on available area and length.
+ * @param {number} availableArea
+ * @param {object} availableLength
+ * @param {ActionRequest} action
+ * @returns {number}
+ */
+function getAppliedForQuantity(availableArea, availableLength, action) {
+  if (availableArea) {
+    return action.quantity
+  }
+  if (availableLength) {
+    return Math.round(action.quantity)
+  }
+  return 0
+}
+
+/**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
- * @import { ActionRuleResult, Action, AvailableArea } from '~/src/features/actions/action.d.js'
+ * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
