@@ -39,7 +39,6 @@ describe('getAvailableLength', () => {
     const result = await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
       mockRequest
@@ -56,7 +55,6 @@ describe('getAvailableLength', () => {
     const result = await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, sibling] },
       mockRequest
@@ -73,7 +71,6 @@ describe('getAvailableLength', () => {
     await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
       mockRequest
@@ -90,7 +87,6 @@ describe('getAvailableLength', () => {
     const result = await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, nonLengthSibling] },
       mockRequest
@@ -108,7 +104,6 @@ describe('getAvailableLength', () => {
     const result = await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, unknownSibling] },
       mockRequest
@@ -117,55 +112,16 @@ describe('getAvailableLength', () => {
     expect(result).toEqual({ availableLength: 1000 })
   })
 
-  it('subtracts the length of incompatible existing agreement actions', async () => {
-    const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200 }
-    compatibilityCheckFn.mockImplementation(
-      (code) => code !== agreement.actionCode
-    )
-
-    const result = await getAvailableLength(
-      action,
-      actions,
-      [agreement],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action] },
-      mockRequest
-    )
-
-    expect(compatibilityCheckFn).toHaveBeenCalledWith('BND2', 'BND1')
-    expect(result).toEqual({ availableLength: 800 })
-  })
-
-  it('combines incompatible lengths from both agreements and sibling actions', async () => {
-    const action = { code: 'BND1', quantity: 50 }
-    const sibling = { code: 'BND2', quantity: 100 }
-    const agreement = { actionCode: 'CHRW2', quantity: 200 }
-    compatibilityCheckFn.mockReturnValue(false)
-
-    const result = await getAvailableLength(
-      action,
-      actions,
-      [agreement],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action, sibling] },
-      mockRequest
-    )
-
-    expect(result).toEqual({ availableLength: 700 })
-  })
-
   it('rounds fractional quantities when summing incompatible lengths', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200.6 }
+    const action2 = { actionCode: 'BND2', quantity: 200.6 }
     compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
       compatibilityCheckFn,
-      { ...landAction, actions: [action] },
+      { ...landAction, actions: [action, action2] },
       mockRequest
     )
 
@@ -179,7 +135,6 @@ describe('getAvailableLength', () => {
     await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
       mockRequest
@@ -200,7 +155,6 @@ describe('getAvailableLength', () => {
     const result = await getAvailableLength(
       action,
       actions,
-      [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
       mockRequest
@@ -210,16 +164,15 @@ describe('getAvailableLength', () => {
   })
 
   it('can return a negative available length when incompatible length exceeds the boundary', async () => {
-    const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 1500 }
+    const action = { code: 'BND1', quantity: 500 }
+    const action2 = { code: 'BND2', quantity: 1500 }
     compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
       compatibilityCheckFn,
-      { ...landAction, actions: [action] },
+      { ...landAction, actions: [action, action2] },
       mockRequest
     )
 
