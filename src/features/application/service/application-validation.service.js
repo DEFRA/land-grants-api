@@ -14,6 +14,7 @@ import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
  * @param {string} sbi - The sbi
  * @param {string} requesterUsername - The requester username
  * @param {object} request - The request
+ * @param {Date} [referenceDate] - The date to check active agreements against; defaults to now.
  * @returns {Promise<{validationErrors: object[] | null, applicationData: object, applicationValidationRunId: string | null}>} The validation errors, application data and validation run id
  */
 export const validateApplication = async (
@@ -22,7 +23,8 @@ export const validateApplication = async (
   crn,
   sbi,
   requesterUsername,
-  request
+  request,
+  referenceDate
 ) => {
   const actions = await getActions(
     request,
@@ -69,7 +71,8 @@ export const validateApplication = async (
         actions,
         compatibilityCheckFn,
         request,
-        null
+        null,
+        referenceDate
       )
     )
   )

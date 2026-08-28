@@ -50,11 +50,14 @@ describe('Case Management Application Validation Controller', () => {
   })
 
   describe('POST /case-management-adapter/application/validation-run/rerun', () => {
+    const mockCreatedAt = new Date('2023-05-10T09:00:00.000Z')
+
     const mockApplicationValidationRun = {
       id: 1,
       application_id: 'APP-123456',
       sbi: '123456789',
       crn: '1234567890',
+      created_at: mockCreatedAt,
       data: {
         application: {
           parcels: [
@@ -144,7 +147,8 @@ describe('Case Management Application Validation Controller', () => {
         expect.objectContaining({
           logger: expect.any(Object),
           server: expect.objectContaining({ postgresDb: expect.any(Object) })
-        })
+        }),
+        mockCreatedAt
       )
 
       expect(mockAuditEvent).toHaveBeenCalledWith(
@@ -159,6 +163,18 @@ describe('Case Management Application Validation Controller', () => {
         }),
         'success',
         expect.objectContaining({ method: 'post' })
+      )
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        {
+          event: {
+            category: 'application',
+            action: 'Case management application validation rerun',
+            type: 'info',
+            kind: undefined
+          }
+        },
+        'Case management application validation rerun completed [validationRunId=1 | applicationValidationRunId=1 | sbi=123456789 | crn=1234567890 | applicationId=APP-123456]'
       )
     })
 
