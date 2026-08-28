@@ -213,11 +213,14 @@ const buildRuleEngineApplication = async (
     )
   ])
 
-  const appliedForQuantity = availableArea
-    ? action.quantity
-    : availableLength
-      ? Math.round(action.quantity)
-      : 0
+  let appliedForQuantity
+  if (availableArea) {
+    appliedForQuantity = action.quantity
+  } else if (availableLength) {
+    appliedForQuantity = Math.round(action.quantity)
+  } else {
+    appliedForQuantity = 0
+  }
 
   return {
     appliedForQuantity,
