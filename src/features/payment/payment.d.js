@@ -3,11 +3,11 @@
  * @property {string} sheetId
  * @property {string} parcelId
  * @property {number} sbi
- * @property {Action[]} actions
+ * @property {LandActionEntry[]} actions
  */
 
 /**
- * @typedef {object} Action
+ * @typedef {object} LandActionEntry
  * @property {string} code
  * @property {number} quantity
  */

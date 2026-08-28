@@ -16,30 +16,30 @@ import {
 export const appliedForTotalAvailableArea = {
   execute: (application, rule) => {
     const {
-      areaAppliedFor,
+      appliedForQuantity,
       landParcel: { availableAreaSqm }
     } = application
 
-    const areaAppliedForHa = Number.parseFloat(areaAppliedFor)
+    const appliedForQuantityHa = Number.parseFloat(appliedForQuantity)
     const availableAreaHa = sqmToHaRounded(availableAreaSqm)
-    const areaAppliedForSqm = haToSqm(areaAppliedForHa)
+    const appliedForQuantitySqm = haToSqm(appliedForQuantityHa)
 
     const name = rule.name
     const explanations = [
       {
         title: 'Total valid land cover',
         lines: [
-          `The available area was (${availableAreaHa} ha) the applicant applied for (${areaAppliedFor} ha)`
+          `The available area was (${availableAreaHa} ha) the applicant applied for (${appliedForQuantity} ha)`
         ]
       }
     ]
 
-    if (areaAppliedForSqm !== availableAreaSqm) {
+    if (appliedForQuantitySqm !== availableAreaSqm) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
+        reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
         explanations
       }
     }
@@ -48,7 +48,7 @@ export const appliedForTotalAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${areaAppliedForHa} ha)`,
+      reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
       explanations
     }
   }

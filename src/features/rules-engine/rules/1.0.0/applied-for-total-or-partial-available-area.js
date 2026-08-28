@@ -18,12 +18,12 @@ import {
 export const appliedForTotalOrPartialAvailableArea = {
   execute: (application, rule) => {
     const {
-      areaAppliedFor: areaAppliedForHa,
+      appliedForQuantity: appliedForQuantityHa,
       landParcel: { availableAreaSqm }
     } = application
     const name = rule.name
 
-    const parsedAppliedAreaHa = Number.parseFloat(areaAppliedForHa) || 0
+    const parsedAppliedAreaHa = Number.parseFloat(appliedForQuantityHa) || 0
     const parsedAvailableAreaHa = sqmToHaRounded(availableAreaSqm) || 0
     const maximumAllowedAppliedAreaHa = parsedAvailableAreaHa
 

@@ -209,7 +209,7 @@ export async function getActionsForParcelWithSSSIConsentRequired(
   )
 
   const application = {
-    areaAppliedFor: 0,
+    appliedForQuantity: 0,
     actionCodeAppliedFor: '',
     landParcel: {
       availableAreaSqm: 0,
@@ -217,7 +217,8 @@ export async function getActionsForParcelWithSSSIConsentRequired(
       existingAgreements: [],
       intersections: {
         sssi: { intersectingAreaPercentage }
-      }
+      },
+      availability: 0
     }
   }
 
@@ -252,7 +253,7 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   )
 
   const application = {
-    areaAppliedFor: 0,
+    appliedForQuantity: 0,
     actionCodeAppliedFor: '',
     landParcel: {
       availableAreaSqm: 0,
@@ -260,7 +261,8 @@ export async function getActionsForParcelWithHEFERConsentRequired(
       existingAgreements: [],
       intersections: {
         historic_features: { intersectingAreaPercentage }
-      }
+      },
+      availability: 0
     }
   }
 

@@ -19,7 +19,6 @@ export const createCompatibilityMatrix = async (logger, db, codes = null) => {
 }
 
 /**
- * @import { Action, CompatibilityCheckFn } from "./available-area.d.js"
  * @import { Logger } from '~/src/features/common/logger.d.js'
  * @import { Pool } from '~/src/features/common/postgres.d.js'
  */
