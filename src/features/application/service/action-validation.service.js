@@ -213,15 +213,12 @@ const buildRuleEngineApplication = async (
     )
   ])
 
-  let appliedForQuantity = 0
-  if (availableArea) {
-    appliedForQuantity = action.quantity
-  } else if (availableLength) {
-    appliedForQuantity = Math.round(action.quantity)
-  }
-
   return {
-    appliedForQuantity,
+    appliedForQuantity: getAppliedForQuantity(
+      availableArea,
+      availableLength,
+      action
+    ),
     actionCodeAppliedFor: action.code,
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
@@ -241,6 +238,22 @@ const buildRuleEngineApplication = async (
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
+}
+
+/**
+ * get the applied for quantity based on available area and length.
+ * @param {number} availableArea
+ * @param {object} availableLength
+ * @param {ActionRequest} action
+ * @returns {number}
+ */
+function getAppliedForQuantity(availableArea, availableLength, action) {
+  if (availableArea) {
+    return action.quantity
+  } else if (availableLength) {
+    return Math.round(action.quantity)
+  }
+  return 0
 }
 
 /**
