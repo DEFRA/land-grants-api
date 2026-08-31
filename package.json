@@ -93,7 +93,7 @@
     "@babel/preset-env": "^8.0.2",
     "@pact-foundation/pact": "^17.1.2",
     "@types/node": "^24.13.3",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "archiver": "^8.0.0",
     "eslint": "9.39.5",
     "eslint-import-resolver-typescript": "^3.6.3",
@@ -107,7 +107,7 @@
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
     "typescript-eslint": "8.67.0",
-    "vitest": "^4.1.4",
+    "vitest": "^4.1.11",
     "vitest-fetch-mock": "^0.4.5"
   }
 }
