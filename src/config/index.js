@@ -308,6 +308,28 @@ const config = convict({
       env: 'DAL_SERVICE_ACCOUNT'
     }
   },
+  azure: {
+    entra: {
+      host: {
+        doc: 'The host + protocol for the Entra service',
+        format: String,
+        default: 'https://login.microsoftonline.com',
+        env: 'ENTRA_HOST'
+      },
+      clientId: {
+        doc: 'The client ID for Entra auth for land-grants-api',
+        format: String,
+        default: '43559562-7ee3-49bc-95ff-55933b1bc2d2',
+        env: 'ENTRA_CLIENT_ID'
+      },
+      tenantId: {
+        doc: 'The tenant ID for Entra auth for land-grants-api',
+        format: String,
+        default: '6f504113-6b64-43f2-ade9-242e05780007',
+        env: 'ENTRA_TENANT_ID'
+      }
+    }
+  },
   featureFlags: {
     useDal: {
       doc: 'Use DAL to get additional agreements',
