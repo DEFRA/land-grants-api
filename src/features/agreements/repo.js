@@ -14,6 +14,7 @@ import { getAgreements as getFromDal } from '~/src/services/dal/index.js'
  * @param {string|null} defraIdToken - The user's defra ID token (JWT)
  * @param {any} db - Database connection
  * @param {Logger} logger - Logger object
+ * @param {Date} [referenceDate] - The date to check agreement activity against, defaults to now
  * @returns {Promise<AgreementAction[]>} The agreements
  */
 export async function getAgreements(
@@ -22,7 +23,8 @@ export async function getAgreements(
   parcelId,
   defraIdToken,
   db,
-  logger
+  logger,
+  referenceDate = new Date()
 ) {
   const results = await Promise.all([
     getFromDb(sheetId, parcelId, db, logger),
@@ -32,7 +34,7 @@ export async function getAgreements(
   return results
     .flat()
     .filter((a) => a.unit === 'sqm')
-    .filter(expiredActionsFilter)
+    .filter((a) => expiredActionsFilter(a, referenceDate))
 }
 
 /**
