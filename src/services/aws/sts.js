@@ -1,7 +1,7 @@
 import { GetWebIdentityTokenCommand, STSClient } from '@aws-sdk/client-sts'
 
-// One hour in seconds
-const TOKEN_DURATION = 3600
+// 15 mins, in seconds
+const TOKEN_DURATION = 900
 const TOKEN_AUDIENCE = 'land_grants_api'
 
 /**

@@ -38,7 +38,7 @@ describe('getToken', () => {
     expect(mockSend).toHaveBeenCalledWith({
       SigningAlgorithm: 'RS256',
       Audience: ['land_grants_api'],
-      DurationSeconds: 3600
+      DurationSeconds: 900
     })
   })
 
@@ -60,7 +60,7 @@ describe('getToken', () => {
     expect(mockSend).toHaveBeenCalledWith({
       SigningAlgorithm: 'RS256',
       Audience: ['land_grants_api'],
-      DurationSeconds: 3600
+      DurationSeconds: 900
     })
   })
 
@@ -81,7 +81,7 @@ describe('getToken', () => {
     expect(mockSend).toHaveBeenCalledWith({
       SigningAlgorithm: 'RS256',
       Audience: ['land_grants_api'],
-      DurationSeconds: 3600
+      DurationSeconds: 900
     })
   })
 })
