@@ -20,6 +20,30 @@ const formatContext = (context) => {
 }
 
 /**
+ * Generate a stack trace from an error, including the underlying `cause` if available
+ * @param {Error} err
+ * @returns {string}
+ */
+export function getStackTrace(err) {
+  const MAX_DEPTH = 3 // 3 levels of cause is enough
+  /** @type {any} */
+  let cursor = err
+  let depth = 0
+  let stack = err.stack ?? ''
+
+  while (depth < MAX_DEPTH) {
+    cursor = cursor.cause
+    if (!cursor) {
+      break
+    }
+
+    stack += `\nCaused by:\n${cursor.stack ?? ''}`
+    depth++
+  }
+  return stack
+}
+
+/**
  * Log an informational event
  * @param {Logger} logger
  * @param {object} options
@@ -57,7 +81,7 @@ export const logDatabaseError = (logger, { operation, error, context }) => {
   const logData = {
     error: {
       message: error.message,
-      stack_trace: error.stack,
+      stack_trace: getStackTrace(error),
       type: error.constructor.name
     },
     event: {
@@ -131,7 +155,7 @@ export const logBusinessError = (logger, { operation, error, context }) => {
   const logData = {
     error: {
       message: error.message,
-      stack_trace: error.stack,
+      stack_trace: getStackTrace(error),
       type: error.constructor.name
     },
     event: {

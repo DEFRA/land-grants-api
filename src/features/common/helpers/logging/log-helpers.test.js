@@ -1,10 +1,10 @@
-import { vi, describe, beforeEach, expect } from 'vitest'
 import {
-  logInfo,
+  getStackTrace,
+  logBusinessError,
   logDatabaseError,
-  logValidationWarn,
+  logInfo,
   logResourceNotFound,
-  logBusinessError
+  logValidationWarn
 } from './log-helpers.js'
 
 describe('Log Helpers', () => {
@@ -362,7 +362,7 @@ describe('Log Helpers', () => {
       })
 
       const logData = mockLogger.error.mock.calls[0][0]
-      expect(logData.error.stack_trace).toBeUndefined()
+      expect(logData.error.stack_trace).toEqual('')
     })
 
     it('should handle error without message', () => {
@@ -493,6 +493,40 @@ describe('Log Helpers', () => {
       expect(message).toMatch(
         /Business operation failed: process transaction \[transactionId=TXN-999 \| amount=100.5\]/
       )
+    })
+  })
+
+  describe('getStackTrace', () => {
+    it('should return the error stack for an error with no cause', () => {
+      const err = new Error('Oh no')
+
+      const expected = err.stack
+      const actual = getStackTrace(err)
+
+      expect(actual).toEqual(expected)
+    })
+
+    it('should concatenate error stack traces for nested errors', () => {
+      const cause = new Error('Ruh roh!')
+      const rootErr = new Error('Oh no', { cause })
+
+      const expected = `${rootErr.stack}\nCaused by:\n${cause.stack}`
+      const actual = getStackTrace(rootErr)
+
+      expect(actual).toEqual(expected)
+    })
+
+    it('should only descend 3 layers of cause', () => {
+      const err1 = new Error('Ruh roh!')
+      const err2 = new Error('Eeeeep!', { cause: err1 })
+      const err3 = new Error('Historic error', { cause: err2 })
+      const err4 = new Error('Oh no!', { cause: err3 })
+      const err5 = new Error('Oof', { cause: err4 })
+
+      const expected = `${err5.stack}\nCaused by:\n${err4.stack}\nCaused by:\n${err3.stack}\nCaused by:\n${err2.stack}`
+      const actual = getStackTrace(err5)
+
+      expect(actual).toEqual(expected)
     })
   })
 })
