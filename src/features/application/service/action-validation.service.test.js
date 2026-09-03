@@ -520,7 +520,6 @@ describe('Action Validation Service', () => {
       expect(mockGetAvailableLength).toHaveBeenCalledWith(
         meterAction,
         actionConfigWithBnd1,
-        mockAgreements,
         mockCompatibilityCheckFn,
         mockLandAction,
         mockRequest

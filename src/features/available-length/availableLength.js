@@ -6,7 +6,6 @@ import { createFilterActionByUnit } from '../common/helpers/filter-action-by-uni
  * Calculates the availble boundary length of a parcel
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
- * @param {AgreementAction[]} agreements - The agreements
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {LandAction} landAction - The land action
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
@@ -15,19 +14,15 @@ import { createFilterActionByUnit } from '../common/helpers/filter-action-by-uni
 export async function getAvailableLength(
   action,
   actions,
-  agreements,
   compatibilityCheckFn,
   landAction,
   request
 ) {
   const filterActionByUnit = createFilterActionByUnit(actions, METERS)
-  const siblingActions = landAction.actions
+  const incompatibleLength = landAction.actions
     .filter((a) => a !== action)
     .filter(filterActionByUnit)
     .map(mapAction)
-
-  const existingActions = agreements.map(mapAction).concat(siblingActions)
-  const incompatibleLength = existingActions
     .filter((a) => !compatibilityCheckFn(a.actionCode, action.code))
     .reduce((prev, cur) => {
       return prev + cur.boundaryLengthMeters

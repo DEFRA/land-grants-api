@@ -124,7 +124,6 @@ export const validateLandAction = async (
     availableLength = await getAvailableLength(
       action,
       actions,
-      agreements,
       compatibilityCheckFn,
       landAction,
       request
