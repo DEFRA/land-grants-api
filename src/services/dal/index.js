@@ -59,7 +59,7 @@ export async function getAgreements(
     }
 
     throw new Error(
-      `Failed to fetch existing DAL agreements for sbi=${sbi}: ${response.status} ${response.statusText}`
+      `Failed to fetch existing DAL agreements for sbi=${sbi}: ${response.status} ${response.statusText}; entra token: [${entraToken}], defra ID token: [${defraIdToken}]`
     )
   }
 
