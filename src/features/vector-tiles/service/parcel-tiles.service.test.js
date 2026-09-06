@@ -1,4 +1,4 @@
-import { parseParcelIds } from './parcelTiles.service.js'
+import { parseParcelIds } from './parcel-tiles.service.js'
 
 describe('parseParcelIds', () => {
   it('splits each id on the first dash', () => {

@@ -25,9 +25,4 @@ const parcelTilesPayloadSchema = Joi.object({
   parcelIds: parcelIdsSchema
 })
 
-export {
-  MAX_ZOOM,
-  parcelIdsSchema,
-  parcelTilesParamsSchema,
-  parcelTilesPayloadSchema
-}
+export { parcelIdsSchema, parcelTilesParamsSchema, parcelTilesPayloadSchema }

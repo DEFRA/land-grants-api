@@ -1,6 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { vi } from 'vitest'
-import { ParcelTilesController } from './parcelTiles.controller.js'
+import { ParcelTilesController } from './parcel-tiles.controller.js'
 import { getParcelMvt } from '~/src/features/vector-tiles/queries/getParcelMvt.query.js'
 
 vi.mock('~/src/features/vector-tiles/queries/getParcelMvt.query.js')

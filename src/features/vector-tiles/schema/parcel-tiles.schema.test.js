@@ -1,7 +1,7 @@
 import {
   parcelTilesParamsSchema,
   parcelTilesPayloadSchema
-} from './parcelTiles.schema.js'
+} from './parcel-tiles.schema.js'
 
 describe('parcelTilesParamsSchema', () => {
   it('accepts valid tile coordinates', () => {

@@ -1,5 +1,5 @@
-import { ParcelTilesController } from './controllers/parcelTiles.controller.js'
-import { ParcelTilesLocateController } from './controllers/parcelTilesLocate.controller.js'
+import { ParcelTilesController } from './controllers/parcel-tiles.controller.js'
+import { ParcelTilesLocateController } from './controllers/parcel-tiles-locate.controller.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}

@@ -1,40 +1,41 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
+import {
+  BNG_SRID,
+  WGS84_WEB_MERCATOR_SRID
+} from '~/src/features/vector-tiles/constants/coordinate-systems.js'
 
 const MVT_EXTENT = 4096
 const MVT_BUFFER = 64
-const SOURCE_SRID = 27700
-const TILE_SRID = 3857
 
 const sql = `
 WITH tile AS (
-  SELECT ST_TileEnvelope($3, $4, $5) AS env_3857
+  SELECT ST_TileEnvelope($3, $4, $5) AS env_mercator
 ),
 keys AS (
   SELECT * FROM unnest($1::text[], $2::text[]) AS t(sheet_id, parcel_id)
 ),
--- ~3% of parcels have geom SRID=0 although the coords are BNG. Force the
--- expected SRID so ST_Transform works for them too. Repairing the data is
--- a separate piece of work — tracked outside this spike.
+-- Ingested rows carry no SRID and ST_Transform rejects SRID 0, so declare it
+-- here (repairing the data so the column carries its own SRID is outstanding).
 source_geom AS (
   SELECT
     p.sheet_id,
     p.parcel_id,
-    ST_SetSRID(p.geom, ${SOURCE_SRID}) AS geom
+    ST_SetSRID(p.geom, ${BNG_SRID}) AS geom
   FROM land_parcels p
   JOIN keys k ON p.sheet_id = k.sheet_id AND p.parcel_id = k.parcel_id
 ),
 mvtgeom AS (
   SELECT
     ST_AsMVTGeom(
-      ST_Transform(s.geom, ${TILE_SRID}),
-      tile.env_3857,
+      ST_Transform(s.geom, ${WGS84_WEB_MERCATOR_SRID}),
+      tile.env_mercator,
       ${MVT_EXTENT}, ${MVT_BUFFER}, true
     ) AS geom,
     s.sheet_id,
     s.parcel_id
   FROM source_geom s
   CROSS JOIN tile
-  WHERE s.geom && ST_Transform(tile.env_3857, ${SOURCE_SRID})
+  WHERE s.geom && ST_Transform(tile.env_mercator, ${BNG_SRID})
 )
 SELECT COALESCE(ST_AsMVT(mvtgeom.*, 'parcels', ${MVT_EXTENT}, 'geom'), ''::bytea) AS tile
 FROM mvtgeom

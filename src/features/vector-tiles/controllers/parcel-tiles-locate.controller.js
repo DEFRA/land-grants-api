@@ -4,28 +4,38 @@ import {
   logBusinessError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { parcelTilesLocatePayloadSchema } from '~/src/features/vector-tiles/schema/parcelTilesLocate.schema.js'
-import { parseParcelIds } from '~/src/features/vector-tiles/service/parcelTiles.service.js'
-import { webMercatorToLngLat } from '~/src/features/vector-tiles/service/locateParcelTile.service.js'
+import {
+  errorResponseSchema,
+  internalServerErrorResponseSchema
+} from '~/src/features/common/schema/index.js'
+import {
+  parcelTilesLocatePayloadSchema,
+  parcelTilesLocateSuccessResponseSchema
+} from '~/src/features/vector-tiles/schema/parcel-tiles-locate.schema.js'
+import { parseParcelIds } from '~/src/features/vector-tiles/service/parcel-tiles.service.js'
 import { getParcelExtent } from '~/src/features/vector-tiles/queries/getParcelExtent.query.js'
 
 /**
  * ParcelTilesLocateController
- * Given a list of land parcel ids, returns the smallest XYZ Web Mercator tile
- * that contains all of their geometries with a small visual margin. The result
- * is intended to be fed straight into the existing /api/v1/parcel-tiles/{z}/{x}/{y}
- * endpoint.
+ * Given a list of land parcel ids, returns the WGS84 bounding box containing
+ * the union of their geometries, for a client to fit its map viewport to.
  * @satisfies {Partial<ServerRoute>}
  */
 const ParcelTilesLocateController = {
   options: {
     tags: ['api'],
-    description:
-      'Locate the XYZ tile that frames the given land parcels with padding',
+    description: 'Get the WGS84 bounding box containing the given land parcels',
     notes:
       'Returns { message, bbox: { minLng, minLat, maxLng, maxLat } } for the WGS84 bounding box of the union extent of the requested parcels.',
     validate: {
       payload: parcelTilesLocatePayloadSchema
+    },
+    response: {
+      status: {
+        200: parcelTilesLocateSuccessResponseSchema,
+        404: errorResponseSchema,
+        500: internalServerErrorResponseSchema
+      }
     }
   },
 
@@ -59,21 +69,7 @@ const ParcelTilesLocateController = {
         return Boom.notFound('No matching parcels found')
       }
 
-      const { lng: minLng, lat: minLat } = webMercatorToLngLat(
-        bbox.xmin,
-        bbox.ymin
-      )
-      const { lng: maxLng, lat: maxLat } = webMercatorToLngLat(
-        bbox.xmax,
-        bbox.ymax
-      )
-
-      return h
-        .response({
-          message: 'success',
-          bbox: { minLng, minLat, maxLng, maxLat }
-        })
-        .code(statusCodes.ok)
+      return h.response({ message: 'success', bbox }).code(statusCodes.ok)
     } catch (error) {
       logBusinessError(request.logger, {
         operation: 'Locate parcel tile',

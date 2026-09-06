@@ -1,6 +1,6 @@
 import Hapi from '@hapi/hapi'
 import { vi } from 'vitest'
-import { ParcelTilesLocateController } from './parcelTilesLocate.controller.js'
+import { ParcelTilesLocateController } from './parcel-tiles-locate.controller.js'
 import { getParcelExtent } from '~/src/features/vector-tiles/queries/getParcelExtent.query.js'
 
 vi.mock('~/src/features/vector-tiles/queries/getParcelExtent.query.js')
@@ -48,14 +48,14 @@ describe('ParcelTilesLocateController', () => {
     vi.clearAllMocks()
   })
 
-  it('returns a tile that contains the requested parcels', async () => {
+  it('returns the bounding box containing the requested parcels', async () => {
     mockGetParcelExtent.mockResolvedValue({
       foundCount: 1,
       bbox: {
-        xmin: -200_000,
-        ymin: 6_800_000,
-        xmax: -199_950,
-        ymax: 6_800_050
+        minLng: -2.615462,
+        minLat: 53.919221,
+        maxLng: -2.549834,
+        maxLat: 53.951681
       }
     })
 
@@ -69,10 +69,10 @@ describe('ParcelTilesLocateController', () => {
     const body = JSON.parse(response.payload)
     expect(body.message).toBe('success')
     expect(body.bbox).toEqual({
-      minLng: expect.any(Number),
-      minLat: expect.any(Number),
-      maxLng: expect.any(Number),
-      maxLat: expect.any(Number)
+      minLng: -2.615462,
+      minLat: 53.919221,
+      maxLng: -2.549834,
+      maxLat: 53.951681
     })
     expect(mockGetParcelExtent).toHaveBeenCalledWith(
       { sheetIds: ['SD7547'], parcelKeys: ['4115'] },

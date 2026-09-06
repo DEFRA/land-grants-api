@@ -30,10 +30,10 @@ describe('getParcelExtent', () => {
       rows: [
         {
           found_count: 2,
-          xmin: -200_000,
-          ymin: 6_800_000,
-          xmax: -199_000,
-          ymax: 6_801_000
+          min_lng: -2.615462,
+          min_lat: 53.919221,
+          max_lng: -2.549834,
+          max_lat: 53.951681
         }
       ]
     })
@@ -47,10 +47,10 @@ describe('getParcelExtent', () => {
     expect(result).toEqual({
       foundCount: 2,
       bbox: {
-        xmin: -200_000,
-        ymin: 6_800_000,
-        xmax: -199_000,
-        ymax: 6_801_000
+        minLng: -2.615462,
+        minLat: 53.919221,
+        maxLng: -2.549834,
+        maxLat: 53.951681
       }
     })
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -61,10 +61,10 @@ describe('getParcelExtent', () => {
       rows: [
         {
           found_count: 0,
-          xmin: null,
-          ymin: null,
-          xmax: null,
-          ymax: null
+          min_lng: null,
+          min_lat: null,
+          max_lng: null,
+          max_lat: null
         }
       ]
     })
@@ -87,10 +87,10 @@ describe('getParcelExtent', () => {
       rows: [
         {
           found_count: 1,
-          xmin: '-200000.5',
-          ymin: '6800000.25',
-          xmax: '-199000.75',
-          ymax: '6801000.5'
+          min_lng: '-2.615462',
+          min_lat: '53.919221',
+          max_lng: '-2.549834',
+          max_lat: '53.951681'
         }
       ]
     })
@@ -98,10 +98,10 @@ describe('getParcelExtent', () => {
     const result = await getParcelExtent(params, mockDb, mockLogger)
 
     expect(result.bbox).toEqual({
-      xmin: -200_000.5,
-      ymin: 6_800_000.25,
-      xmax: -199_000.75,
-      ymax: 6_801_000.5
+      minLng: -2.615462,
+      minLat: 53.919221,
+      maxLng: -2.549834,
+      maxLat: 53.951681
     })
   })
 

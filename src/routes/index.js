@@ -14,6 +14,7 @@ import { postgresDb } from '~/src/features/common/helpers/postgres.js'
 import { auth } from '~/src/features/common/plugins/auth.js'
 import { s3Client } from '~/src/features/common/plugins/s3-client.js'
 import { statistics } from '~/src/features/common/plugins/statistics.js'
+import { coordinateTransformCheck } from '~/src/features/common/plugins/coordinate-transform-check.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 import { grantsConfigConsumer } from '~/src/features/grants-config/index.js'
 
@@ -56,6 +57,7 @@ async function createServer() {
   // router              - routes used in the app
   // s3Client            - S3 client
   // statistics          - statistics counts
+  // coordinateTransformCheck - asserts PostGIS is using OSTN15 at startup
   // grantsConfig        - SQS consumer for grants-config-broker updates
   // swagger             - swagger documentation
   await server.register([
@@ -69,6 +71,7 @@ async function createServer() {
     router,
     s3Client,
     statistics,
+    coordinateTransformCheck,
     woodlandManagement,
     grantsConfigConsumer
   ])

@@ -7,8 +7,8 @@ import {
 import {
   parcelTilesParamsSchema,
   parcelTilesPayloadSchema
-} from '~/src/features/vector-tiles/schema/parcelTiles.schema.js'
-import { parseParcelIds } from '~/src/features/vector-tiles/service/parcelTiles.service.js'
+} from '~/src/features/vector-tiles/schema/parcel-tiles.schema.js'
+import { parseParcelIds } from '~/src/features/vector-tiles/service/parcel-tiles.service.js'
 import { getParcelMvt } from '~/src/features/vector-tiles/queries/getParcelMvt.query.js'
 
 const MVT_CONTENT_TYPE = 'application/vnd.mapbox-vector-tile'
@@ -17,7 +17,8 @@ const MVT_CONTENT_TYPE = 'application/vnd.mapbox-vector-tile'
  * ParcelTilesController
  * Serves a Mapbox Vector Tile containing the requested land parcels.
  * Geometry is transformed from EPSG:27700 (BNG) to EPSG:3857 (Web Mercator)
- * using PostGIS's default datum shift. OSTN15 accuracy is a follow-up.
+ * by PostGIS, which the coordinate-transform-check plugin asserts is using
+ * OSTN15 rather than a lower-accuracy fallback.
  * @satisfies {Partial<ServerRoute>}
  */
 const ParcelTilesController = {
