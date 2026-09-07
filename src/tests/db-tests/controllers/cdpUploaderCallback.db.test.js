@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { CDPUploaderCallbackController } from '~/src/features/land-data-ingest/controller/cdp-uploader-callback.controller.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import {

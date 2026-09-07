@@ -1,4 +1,3 @@
-import { vi, describe, beforeEach, afterEach } from 'vitest'
 import { Worker } from 'node:worker_threads'
 import { startWorker } from './start-worker-thread.js'
 import * as logHelpers from '../helpers/logging/log-helpers.js'

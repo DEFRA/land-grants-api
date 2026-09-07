@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { Consumer } from 'sqs-consumer'
 import { grantsConfigSqsPlugin } from './sqs-client.js'
 

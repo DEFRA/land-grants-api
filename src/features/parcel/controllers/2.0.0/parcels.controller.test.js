@@ -1,5 +1,3 @@
-import { vi } from 'vitest'
-
 import createTestServer from '~/src/tests/test-server.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import {

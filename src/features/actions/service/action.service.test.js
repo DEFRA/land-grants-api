@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { getActions } from './action.service.js'
 import { getLatestApplicationRunForAppId } from '~/src/features/application/queries/getLatestApplicationRunForAppId.query.js'
 import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'

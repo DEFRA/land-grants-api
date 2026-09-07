@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest'
 import { statusIngestQuery } from './status.schema.js'
 
 describe('statusIngestQuery schema validation', () => {

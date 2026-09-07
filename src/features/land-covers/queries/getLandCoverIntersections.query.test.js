@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { getLandCoverIntersections } from './getLandCoverIntersections.query.js'
 
 describe('getLandCoverIntersections', () => {

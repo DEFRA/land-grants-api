@@ -1,6 +1,5 @@
 import { swagger } from '~/src/features/common/plugins/swagger.js'
 import packageJson from '~/package.json' with { type: 'json' }
-import { vi } from 'vitest'
 
 const mockRegister = vi.fn()
 const mockServer = {

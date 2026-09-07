@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { generatePaymentSchedule } from './generateSchedule.js'
 
 describe('generateSchedule', () => {
