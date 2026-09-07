@@ -11,6 +11,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * @returns {RuleResultItem} - The result of the rule
  */
 export const minMaxParcelSize = {
+  requires: [{ type: 'parcelSize' }],
   execute: (application, rule) => {
     const name = rule.name
     const {

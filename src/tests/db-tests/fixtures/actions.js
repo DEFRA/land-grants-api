@@ -15,22 +15,19 @@ export const landCoverClassCodes = [
 
 export const rules = [
   {
-    name: 'parcel-has-intersection-with-data-layer',
+    name: 'parcel-has-moorland-intersection',
     description: 'Is this parcel on the moorland?',
     version: '1.0.0',
     config: {
-      layerName: 'moorland',
       minimumIntersectionPercent: 50,
       tolerancePercent: 1
     }
   },
   {
-    name: 'parcel-is-on-less-favoured-area',
-    type: 'parcel-has-intersection-with-data-layer',
+    name: 'parcel-has-lfa-intersection',
     description: 'Is this parcel fully within a Less Favoured Area (LFA)?',
     version: '1.0.0',
     config: {
-      layerName: 'lfa',
       minimumIntersectionPercent: 100,
       tolerancePercent: 1,
       failureMessage:
@@ -48,7 +45,6 @@ export const rules = [
       'Does the site require a Historic Environment Farm Environment Record?',
     version: '1.0.0',
     config: {
-      layerName: 'historic_features',
       tolerancePercent: 0,
       caveatDescription: 'A hefer is needed from Historic England'
     }
@@ -58,7 +54,6 @@ export const rules = [
     description: 'Is the site of special scientific interest?',
     version: '1.0.0',
     config: {
-      layerName: 'sssi',
       tolerancePercent: 1,
       caveatDescription: 'A consent is required from Natural England'
     }

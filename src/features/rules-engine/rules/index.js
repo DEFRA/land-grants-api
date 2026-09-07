@@ -1,4 +1,8 @@
-import { parcelHasIntersectionWithDataLayer } from './1.0.0/parcel-has-intersection-with-data-layer.js'
+import {
+  parcelHasMoorlandIntersection,
+  parcelHasLfaIntersection,
+  parcelHasSssiIntersection
+} from './1.0.0/parcel-has-intersection-with-data-layer.js'
 import { appliedForTotalAvailableArea } from './1.0.0/applied-for-total-available-area.js'
 import { appliedForTotalOrPartialAvailableArea } from './1.0.0/applied-for-total-or-partial-available-area.js'
 import { sssiConsentRequired } from './1.0.0/sssi-consent-required.js'
@@ -6,13 +10,14 @@ import { heferConsentRequired } from './1.0.0/hefer-consent-required.js'
 import { manualCheckRequired } from './1.0.0/manual-check-required.js'
 import { woodlandMinimumEligibility } from './1.0.0/woodland-minimum-eligibility.js'
 import { woodlandTotalArea } from './1.0.0/woodland-total-area.js'
-import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
+import { parcelWithinMaxMoorlandIntersection } from './1.0.0/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
 import { minMaxParcelSize } from './1.0.0/min-max-parcel-size.js'
 import { appliedForAvailableLength } from './1.0.0/available-length.js'
 
 export const rules = {
-  'parcel-has-intersection-with-data-layer-1.0.0':
-    parcelHasIntersectionWithDataLayer,
+  'parcel-has-moorland-intersection-1.0.0': parcelHasMoorlandIntersection,
+  'parcel-has-lfa-intersection-1.0.0': parcelHasLfaIntersection,
+  'parcel-has-sssi-intersection-1.0.0': parcelHasSssiIntersection,
   'applied-for-total-available-area-1.0.0': appliedForTotalAvailableArea,
   'applied-for-total-or-partial-available-area-1.0.0':
     appliedForTotalOrPartialAvailableArea,
@@ -23,8 +28,8 @@ export const rules = {
     woodlandMinimumEligibility,
   'total-area-not-exceed-land-parcels-woodland-management-plan-1.0.0':
     woodlandTotalArea,
-  'parcel-intersection-does-not-exceed-maximum-for-data-layer-1.0.0':
-    parcelIntersectionDoesNotExceedMaximumForDataLayer,
+  'parcel-within-max-moorland-intersection-1.0.0':
+    parcelWithinMaxMoorlandIntersection,
   'min-max-parcel-size-1.0.0': minMaxParcelSize,
   'available-length-1.0.0': appliedForAvailableLength
 }

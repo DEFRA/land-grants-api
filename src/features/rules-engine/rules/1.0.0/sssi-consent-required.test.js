@@ -137,28 +137,9 @@ describe('sssiConsentRequired', () => {
     })
   })
 
-  test('should use custom layer name in explanations', () => {
-    const application = createApplication(5, 'custom-layer')
-    const rule = createRule(
-      'sssi-consent-required',
-      'custom-layer',
-      'A parcel requires SSSI consent from Natural England',
-      1
-    )
-    const result = sssiConsentRequired.execute(application, rule)
-
-    expect(result.name).toBe('sssi-consent-required')
-    expect(result.explanations[0].title).toBe('custom-layer check')
-    expect(result.explanations[0].lines).toEqual([
-      'This parcel has a 5% intersection with the sssi layer. The tolerance is 1%.'
+  test('declares an sssi intersection requirement', () => {
+    expect(sssiConsentRequired.requires).toEqual([
+      { type: 'intersection', layer: 'sssi' }
     ])
-    expect(result.caveat).toEqual({
-      code: 'ne-consent-required',
-      description: 'A parcel requires SSSI consent from Natural England',
-      metadata: {
-        percentageOverlap: 5,
-        overlapAreaHectares: 0.1
-      }
-    })
   })
 })

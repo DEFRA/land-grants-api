@@ -1,27 +1,27 @@
 /**
- * @import { RuleEngineApplication, RuleResultItem } from '~/src/features/rules-engine/rules.d.js'
+ * @import { RuleEngineApplication, RuleResultItem, RuleExecutor } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
 /**
- * @param {RuleEngineApplication} application - The application to execute the rule on
- * @param {ActionRule} rule - The rule to execute
- * @returns {RuleResultItem} - The result of the rule
+ * Builds a layer-specific "parcel has a minimum intersection with <layer>" rule.
+ * The layer is baked into the rule so it never appears in the action config, and
+ * the rule declares its own data requirement. The minimum/tolerance/failureMessage
+ * remain per-action config.
+ * @param {string} layer - The data layer name (e.g. 'moorland')
+ * @returns {RuleExecutor}
  */
-export const parcelHasIntersectionWithDataLayer = {
+const makeParcelHasIntersection = (layer) => ({
+  requires: [{ type: 'intersection', layer }],
   execute: (application, rule) => {
-    const {
-      layerName,
-      minimumIntersectionPercent,
-      tolerancePercent,
-      failureMessage
-    } = rule.config
-    const name = `${rule.name}-${layerName}`
-    const intersection = application.landParcel.intersections?.[layerName]
+    const { minimumIntersectionPercent, tolerancePercent, failureMessage } =
+      rule.config
+    const name = rule.name
+    const intersection = application.landParcel.intersections?.[layer]
 
     const explanations = [
       {
-        title: `${layerName} check`,
+        title: `${layer} check`,
         lines: []
       }
     ]
@@ -29,13 +29,13 @@ export const parcelHasIntersectionWithDataLayer = {
     if (intersection == null) {
       explanations[0].lines.push(
         // @ts-expect-error - lines
-        `An intersection with the ${layerName} layer was not provided in the application data`
+        `An intersection with the ${layer} layer was not provided in the application data`
       )
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `An intersection with the ${layerName} layer was not provided in the application data`,
+        reason: `An intersection with the ${layer} layer was not provided in the application data`,
         explanations
       }
     }
@@ -46,7 +46,7 @@ export const parcelHasIntersectionWithDataLayer = {
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${minimumIntersectionPercent - tolerancePercent}%.`
+      `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layer} layer. The target is ${minimumIntersectionPercent - tolerancePercent}%.`
     )
 
     const majorityStatus = isGreaterThanOrEqualToMin
@@ -59,9 +59,14 @@ export const parcelHasIntersectionWithDataLayer = {
       reason:
         !isGreaterThanOrEqualToMin && failureMessage
           ? failureMessage
-          : `This parcel is ${majorityStatus} on the ${layerName}`,
+          : `This parcel is ${majorityStatus} on the ${layer}`,
       description: rule.description,
       explanations
     }
   }
-}
+})
+
+export const parcelHasMoorlandIntersection =
+  makeParcelHasIntersection('moorland')
+export const parcelHasLfaIntersection = makeParcelHasIntersection('lfa')
+export const parcelHasSssiIntersection = makeParcelHasIntersection('sssi')

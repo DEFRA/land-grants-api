@@ -23,7 +23,7 @@
 /**
  * @typedef {object} LandParcel
  * @property {number|null} availableAreaSqm
- * @property {number} parcelSizeSqm
+ * @property {number} [parcelSizeSqm] - Only present when a rule requires it (fetched on demand)
  * @property {number} availability
  * @property {Array} existingAgreements
  * @property {object} intersections
@@ -44,6 +44,13 @@
  */
 
 /**
+ * @typedef {object} RequirementDescriptor
+ * @property {string} type - The requirement type, mapped to a provider in data-requirements/providers.js
+ * @property {string} [layer] - For intersection requirements, the data layer name (e.g. 'moorland')
+ */
+
+/**
  * @typedef {object} RuleExecutor
  * @property {Function} execute
+ * @property {RequirementDescriptor[]} [requires] - Data this rule needs fetched into the application before execution
  */
