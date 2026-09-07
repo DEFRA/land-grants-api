@@ -1,6 +1,5 @@
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { vi } from 'vitest'
 
 describe('Get Actions By Latest Version Query', () => {
   let logger, connection

@@ -1,5 +1,3 @@
-import { vi } from 'vitest'
-
 import { ApplicationValidationController } from '~/src/features/application/controllers/2.0.0/application-validation.controller.js'
 import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'

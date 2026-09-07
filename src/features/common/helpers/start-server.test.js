@@ -1,7 +1,6 @@
 import { startServer } from '~/src/features/common/helpers/start-server.js'
 import { createServer } from '~/src/routes/index.js'
 import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
-import { vi } from 'vitest'
 
 vi.mock('~/src/config/index.js', () => ({
   config: {

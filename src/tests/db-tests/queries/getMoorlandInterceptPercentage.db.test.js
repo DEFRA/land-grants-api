@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 

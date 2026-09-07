@@ -1,5 +1,4 @@
 import { pulse } from '~/src/features/common/helpers/pulse.js'
-import { vi } from 'vitest'
 
 vi.mock('hapi-pulse', () => ({
   default: 'mock-hapi-pulse'

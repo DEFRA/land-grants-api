@@ -25,7 +25,6 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
-import { vi } from 'vitest'
 
 vi.mock('~/src/features/parcel/transformers/parcelActions.transformer.js')
 vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')

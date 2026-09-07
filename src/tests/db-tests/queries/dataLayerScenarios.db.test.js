@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getDataLayerScenariosFixtures } from '~/src/tests/db-tests/setup/getDataLayerScenariosFixtures.js'
 import {
