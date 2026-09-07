@@ -1,6 +1,5 @@
 import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { vi } from 'vitest'
 
 describe('Get Actions Query', () => {
   let logger, connection

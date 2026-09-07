@@ -1,6 +1,5 @@
 // Mock the config module with the actual value we want to test
 import { requestTracing } from './request-tracing.js'
-import { vi } from 'vitest'
 
 vi.mock('~/src/config/index.js', () => ({
   config: {

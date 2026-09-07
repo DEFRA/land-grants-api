@@ -1,5 +1,4 @@
 import Hapi from '@hapi/hapi'
-import { vi } from 'vitest'
 import { InitiateLandDataUploadController } from './initiate-land-data-upload.controller.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { initiateLandDataUpload } from '../service/ingest.service.js'

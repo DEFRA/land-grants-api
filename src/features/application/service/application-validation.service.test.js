@@ -5,7 +5,6 @@ import { applicationDataTransformer } from '../transformers/application.transfor
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
-import { vi } from 'vitest'
 
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 vi.mock('../mutations/saveApplication.mutation.js')

@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { PaymentsCalculateWMPController } from '~/src/features/woodland-management/controller/payment-calculate-wmp.controller.js'
 import { validatePaymentCalculationRequest } from '~/src/features/woodland-management/validation/payment-calculation.validation.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
