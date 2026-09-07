@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 

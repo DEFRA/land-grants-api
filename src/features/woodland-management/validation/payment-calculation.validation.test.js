@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { validatePaymentCalculationRequest } from './payment-calculation.validation.js'
 import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { getAndValidateParcels } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'

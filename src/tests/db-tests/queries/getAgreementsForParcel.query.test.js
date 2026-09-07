@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 

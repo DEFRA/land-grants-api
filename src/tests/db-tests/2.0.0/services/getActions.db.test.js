@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import { getLatestApplicationRunForAppId } from '~/src/features/application/queries/getLatestApplicationRunForAppId.query.js'

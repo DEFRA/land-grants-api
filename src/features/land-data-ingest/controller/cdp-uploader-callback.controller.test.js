@@ -1,5 +1,4 @@
 import Hapi from '@hapi/hapi'
-import { vi } from 'vitest'
 import { CDPUploaderCallbackController } from './cdp-uploader-callback.controller.js'
 import {
   logInfo,

@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 import { router } from '~/src/routes/router.js'
 import { parcel } from '~/src/features/parcel/index.js'

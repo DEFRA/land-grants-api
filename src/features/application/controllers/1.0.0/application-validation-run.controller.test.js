@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { application } from '../../index.js'
 import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 import createTestServer from '~/src/tests/test-server.js'

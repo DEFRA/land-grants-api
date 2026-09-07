@@ -1,7 +1,6 @@
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { vi } from 'vitest'
 
 describe('Get Compatibility Matrix Query', () => {
   let logger, connection

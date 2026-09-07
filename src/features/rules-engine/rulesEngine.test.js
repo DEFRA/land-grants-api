@@ -3,7 +3,6 @@ import {
   executeSingleRuleForEnabledActions
 } from '~/src/features/rules-engine/rulesEngine.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
-import { vi, beforeEach } from 'vitest'
 
 const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0': {

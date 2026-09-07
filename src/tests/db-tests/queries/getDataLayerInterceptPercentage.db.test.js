@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated

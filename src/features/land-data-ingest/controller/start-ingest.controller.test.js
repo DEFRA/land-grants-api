@@ -1,7 +1,6 @@
 import createTestServer from '~/src/tests/test-server.js'
 import { StartIngestController } from './start-ingest.controller.js'
 import { saveIngestStart } from '../service/start-ingest.service.js'
-import { vi } from 'vitest'
 
 vi.mock('../service/start-ingest.service.js')
 

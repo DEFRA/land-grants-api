@@ -1,5 +1,4 @@
 import { StorageResolution, Unit } from 'aws-embedded-metrics'
-import { vi } from 'vitest'
 
 import { config } from '~/src/config/index.js'
 import { metricsCounter } from '~/src/features/common/helpers/metrics.js'

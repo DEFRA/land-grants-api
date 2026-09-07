@@ -1,5 +1,3 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-
 const mockNetworkInterfaces = vi.hoisted(() => vi.fn())
 
 vi.mock('node:os', () => ({

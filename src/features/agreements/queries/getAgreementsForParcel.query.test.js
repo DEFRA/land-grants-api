@@ -1,5 +1,4 @@
 import { getAgreementsForParcel } from './getAgreementsForParcel.query.js'
-import { vi } from 'vitest'
 
 describe('getAgreementsForParcel', () => {
   let mockDb

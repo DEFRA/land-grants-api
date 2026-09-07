@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getPaymentCalculationForParcels } from '~/src/features/payment-calculation/paymentCalculation.js'
 import { getPaymentCalculationFixtures } from '~/src/tests/db-tests/setup/getPaymentCalculationFixtures.js'

@@ -13,7 +13,6 @@ import {
   failPairedAwaitingIngest,
   logDuplicateRows
 } from './data-helpers.js'
-import { vi } from 'vitest'
 
 vi.mock('../../common/helpers/read-file.js', () => ({
   readFile: vi.fn()

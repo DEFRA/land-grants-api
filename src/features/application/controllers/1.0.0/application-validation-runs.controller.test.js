@@ -1,7 +1,6 @@
 import { application } from '../../index.js'
 import { getApplicationValidationRuns } from '../../queries/getApplicationValidationRuns.query.js'
 import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js'
-import { vi } from 'vitest'
 import createTestServer from '~/src/tests/test-server.js'
 
 vi.mock(

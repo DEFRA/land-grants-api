@@ -1,7 +1,6 @@
 import Boom from '@hapi/boom'
 import crypto from 'node:crypto'
 import { auth } from './auth.js'
-import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 
 vi.mock('~/src/config/index.js', () => ({

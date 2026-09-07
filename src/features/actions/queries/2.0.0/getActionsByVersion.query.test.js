@@ -1,5 +1,4 @@
 import { getActionsByVersion } from './getActionsByVersion.query.js'
-import { vi } from 'vitest'
 
 describe('getActionsByVersion', () => {
   let mockDb

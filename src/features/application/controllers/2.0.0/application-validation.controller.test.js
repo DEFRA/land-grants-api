@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import Hapi from '@hapi/hapi'
 import Boom from '@hapi/boom'
 import { ApplicationValidationController } from './application-validation.controller.js'

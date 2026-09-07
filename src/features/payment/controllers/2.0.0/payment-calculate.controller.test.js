@@ -6,7 +6,6 @@ import {
   AuditEvent,
   auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
-import { vi } from 'vitest'
 import createTestServer from '~/src/tests/test-server.js'
 import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 

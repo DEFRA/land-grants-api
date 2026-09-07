@@ -1,4 +1,3 @@
-import { vi, describe, test, beforeEach, afterEach, expect } from 'vitest'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 import { Signer } from '@aws-sdk/rds-signer'
 import { Pool, Client } from 'pg'

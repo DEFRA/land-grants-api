@@ -1,5 +1,4 @@
 import { statistics } from './statistics.js'
-import { vi } from 'vitest'
 import { config } from '~/src/config/index.js'
 
 const { mockGetStats, mockMetricsCounter, mockWithTaskLock } = vi.hoisted(

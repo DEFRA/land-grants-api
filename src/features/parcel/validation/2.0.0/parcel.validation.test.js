@@ -2,7 +2,6 @@ import * as parcelValidation from './parcel.validation.js'
 import { splitParcelId } from '../../service/2.0.0/parcel.service.js'
 import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getLandData } from '../../queries/getLandData.query.js'
-import { vi } from 'vitest'
 
 // Mock the dependencies
 vi.mock('../../service/2.0.0/parcel.service.js')

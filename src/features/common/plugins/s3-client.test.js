@@ -3,7 +3,6 @@ import {
   createS3Client
 } from '~/src/features/common/plugins/s3-client.js'
 import { S3Client } from '@aws-sdk/client-s3'
-import { vi } from 'vitest'
 
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn(function () {

@@ -1,5 +1,4 @@
 import hapi from '@hapi/hapi'
-import { vi } from 'vitest'
 
 import { secureContext } from '~/src/features/common/helpers/secure-context/index.js'
 import { requestLogger } from '~/src/features/common/helpers/logging/request-logger.js'

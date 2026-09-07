@@ -1,6 +1,5 @@
 import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
-import { vi } from 'vitest'
 
 describe('Get Action Eligibility Query', () => {
   let logger, connection

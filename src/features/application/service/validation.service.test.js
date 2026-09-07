@@ -1,4 +1,3 @@
-import { vi } from 'vitest'
 import Boom from '@hapi/boom'
 import {
   validateRequestData,

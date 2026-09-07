@@ -6,7 +6,6 @@ import {
   AuditEvent,
   auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
-import { vi } from 'vitest'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js'
