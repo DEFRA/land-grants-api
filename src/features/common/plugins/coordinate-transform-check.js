@@ -58,7 +58,7 @@ export const coordinateTransformCheck = {
             context
           })
           await metricsCounter('coordinate_transform_inaccurate', 1)
-          return accurate
+          return false
         }
 
         logInfo(server.logger, {
@@ -66,7 +66,7 @@ export const coordinateTransformCheck = {
           message: 'Coordinate transform verified against OSTN15 reference',
           context
         })
-        return accurate
+        return true
       }
 
       server.expose('verifyCoordinateTransform', verifyCoordinateTransform)
