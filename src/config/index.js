@@ -306,6 +306,15 @@ const config = convict({
       format: String,
       default: 'land-grants-api@defra.gov.uk',
       env: 'DAL_SERVICE_ACCOUNT'
+    },
+    useEntraAuth: {
+      doc:
+        'Whether to authenticate to DAL with an ENTRA token. This is REQUIRED in all ' +
+        'environments other than dev, and when using the DAL service stub. It should only be ' +
+        'turned off in dev and local dev environments.',
+      format: Boolean,
+      default: true,
+      env: 'DAL_USE_ENTRA_AUTH'
     }
   },
   azure: {
