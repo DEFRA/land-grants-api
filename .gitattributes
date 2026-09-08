@@ -1,0 +1,14 @@
+# Ensure text files are checked out with LF endings on every platform. Shell
+# scripts that run inside the postgres/liquibase containers break on CRLF
+# (heredoc terminators and `set -e` are misparsed), so they must always be LF.
+*.sh text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.xml text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf

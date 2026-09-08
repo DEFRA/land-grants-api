@@ -3,7 +3,7 @@ services:
     scale: 0
 
   land-grants-backend-postgres:
-    volumes: !reset []
+    volumes: !override ['./scripts/postgres/init:/docker-entrypoint-initdb.d:ro']
     tmpfs:
       - /var/lib/postgresql/data
 

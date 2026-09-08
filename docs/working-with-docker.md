@@ -26,6 +26,8 @@ Note: Running via Docker compose supports hot reloading of the API code, so you 
 
 This project uses Liquibase to manage database schema changes. There are two ways to run migrations locally, depending on whether you want to run them inside the main `compose.yml` stack or against an existing database from a separate, `grants-ui` compose file.
 
+Migrations always run as the `land_grants_api_ddl` role (a superuser, matching production), which owns the schema objects and grants the runtime `land_grants_api` role only the permissions it needs. The roles are created automatically when the postgres container initialises; see the note in the [README](../README.md) if you have an existing postgres data volume.
+
 #### Option A — Run the full stack from compose.yml
 
 The main `compose.yml` includes two ephemeral services behind a Docker Compose profile named `migrations`:
