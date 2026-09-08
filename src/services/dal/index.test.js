@@ -29,16 +29,20 @@ describe('getAgreements', () => {
   const sbi = '123456789'
 
   afterEach(() => {
-    ;['dal.apiEndpoint', 'dal.serviceAccount', 'featureFlags.useDal'].forEach(
-      (v) => {
-        config.set(v, config.default(v))
-      }
-    )
+    ;[
+      'dal.apiEndpoint',
+      'dal.serviceAccount',
+      'dal.useEntraAuth',
+      'featureFlags.useDal'
+    ].forEach((v) => {
+      config.set(v, config.default(v))
+    })
   })
 
   beforeEach(() => {
     config.set('dal.apiEndpoint', stubEndpoint)
     config.set('dal.serviceAccount', 'land-grants-api@defra.gov.uk')
+    config.set('dal.useEntraAuth', true)
     config.set('featureFlags.useDal', true)
 
     vi.clearAllMocks()
@@ -76,6 +80,8 @@ describe('getAgreements', () => {
     expect(result).toEqual(
       dalBusinessToAgreements(dalResponse.data.business, PARCEL_ID, SHEET_ID)
     )
+
+    expect(getToken).toHaveBeenCalled()
   })
 
   it('throws when the DAL response is not ok', async () => {
@@ -152,5 +158,31 @@ describe('getAgreements', () => {
     expect(result).toEqual(
       dalBusinessToAgreements(dalResponse.data.business, PARCEL_ID, SHEET_ID)
     )
+  })
+
+  it('does not use entra auth if switched off', async () => {
+    config.set('dal.useEntraAuth', false)
+
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(dalResponse)
+    })
+
+    await getAgreements(sbi, PARCEL_ID, SHEET_ID, 'dummy', mockLogger)
+
+    expect(fetch).toHaveBeenCalledWith(
+      stubEndpoint,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          'Gateway-Type': 'external',
+          'X-Forwarded-Authorization': 'dummy'
+        }),
+        body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
+      })
+    )
+
+    expect(getToken).not.toHaveBeenCalled()
   })
 })
