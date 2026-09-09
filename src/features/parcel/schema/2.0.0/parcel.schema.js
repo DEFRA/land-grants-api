@@ -32,7 +32,8 @@ const actionSchema = Joi.object({
   heferRequired: Joi.boolean().optional(),
   version: Joi.string().optional(),
   guidanceUrl: Joi.string().uri().optional(),
-  availability: actionAvailabilitySchema.optional()
+  availability: actionAvailabilitySchema.optional(),
+  quantityRequired: Joi.boolean().required()
 })
 
 const parcelSchema = Joi.object({

@@ -1,3 +1,4 @@
+import { TOTAL } from '~/src/features/common/constants/action_availability.js'
 import { sizeTransformer } from '../parcelActions.transformer.js'
 
 /**
@@ -14,6 +15,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     ? sizeTransformer(availableArea?.availableAreaHectares ?? 0, unit)
     : undefined
 
+  // TODO: rm action.availability info here once grants-ui stop using it
   const availability = { unit, value: null, ...aa, ...action.availability }
 
   const response = {
@@ -22,6 +24,7 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     version: action.semanticVersion,
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
+    quantityRequired: action?.availability?.type !== TOTAL,
     ...action.payment
   }
 

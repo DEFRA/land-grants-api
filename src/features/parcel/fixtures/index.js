@@ -35,10 +35,12 @@ const mockParcelWithActions = {
         description: 'Assess moorland and produce a written record',
         availability: {
           unit: 'ha',
-          value: 0.02
+          value: 0.02,
+          type: 'total'
         },
         ratePerUnitGbp: 10.6,
-        ratePerAgreementPerYearGbp: 272
+        ratePerAgreementPerYearGbp: 272,
+        quantityRequired: false
       }
     ]
   }
