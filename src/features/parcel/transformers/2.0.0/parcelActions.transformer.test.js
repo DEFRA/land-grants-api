@@ -3,7 +3,10 @@ import { actionTransformer } from './parcelActions.transformer.js'
 const defaultAction = {
   code: 'ACTION1',
   description: 'Test Action',
-  applicationUnitOfMeasurement: 'ha'
+  applicationUnitOfMeasurement: 'ha',
+  availability: {
+    type: 'partial'
+  }
 }
 
 describe('actionTransformer 2.0.0', () => {
@@ -18,8 +21,10 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500
+        value: 500,
+        type: 'partial'
       },
+      quantityRequired: true,
       version: '2.0.0'
     })
   })
@@ -32,7 +37,8 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null }
+      availability: { unit: 'ha', value: null, type: 'partial' },
+      quantityRequired: true
     })
   })
 
@@ -42,7 +48,8 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null }
+      availability: { unit: 'ha', value: null, type: 'partial' },
+      quantityRequired: true
     })
   })
 
@@ -57,7 +64,8 @@ describe('actionTransformer 2.0.0', () => {
       expect(result).toEqual({
         code: 'ACTION1',
         description: 'Test Action',
-        availability: { unit, value: null }
+        availability: { unit, value: null, type: 'partial' },
+        quantityRequired: true
       })
     }
   )
@@ -74,8 +82,10 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 0
-      }
+        value: 0,
+        type: 'partial'
+      },
+      quantityRequired: true
     })
   })
 
@@ -89,7 +99,8 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null }
+      availability: { unit: 'ha', value: null, type: 'partial' },
+      quantityRequired: true
     })
   })
 
@@ -108,8 +119,10 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500
+        value: 500,
+        type: 'partial'
       },
+      quantityRequired: true,
       results: {
         totalValidLandCoverSqm: 5000000,
         stacks: [{ stack: 'data' }],
@@ -133,25 +146,10 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500
-      }
-    })
-  })
-
-  test('should always include availability when present', () => {
-    const action = {
-      ...defaultAction,
-      guidanceUrl: 'https://example.com',
-      availability: { type: 'total' }
-    }
-
-    const result = actionTransformer(action)
-
-    expect(result).toEqual({
-      code: 'ACTION1',
-      description: 'Test Action',
-      guidanceUrl: 'https://example.com',
-      availability: { unit: 'ha', value: null, type: 'total' }
+        value: 500,
+        type: 'partial'
+      },
+      quantityRequired: true
     })
   })
 
@@ -163,7 +161,8 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null }
+      availability: { unit: 'ha', value: null },
+      quantityRequired: true
     })
   })
 
@@ -173,5 +172,22 @@ describe('actionTransformer 2.0.0', () => {
     const result = actionTransformer(action)
 
     expect(result.guidanceUrl).toBe('https://example.com')
+  })
+
+  test('should have quantityRequired = false for "total" actions', () => {
+    const action = { ...defaultAction, availability: { type: 'total' } }
+
+    const result = actionTransformer(action)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availability: {
+        unit: 'ha',
+        value: null,
+        type: 'total'
+      },
+      quantityRequired: false
+    })
   })
 })
