@@ -114,5 +114,12 @@ FROM postgis/postgis:16-3.4
 
 ENV PGDATA=/var/lib/postgresql/data
 
+# Ensure the Ordnance Survey OSTN15 grid is installed, without which the
+# underlying coordinate transformation software (called PROJ) silently falls
+# back to a less accurate way of converting British National Grid to WGS84,
+# positioning parcels about a metre from where they should be - see
+# docker/proj-data/README.md for more details.
+COPY docker/proj-data/uk_os_OSTN15_NTv2_OSGBtoETRS.tif /usr/share/proj/
+
 COPY --from=db-build /var/lib/postgresql/data /var/lib/postgresql/data
 
