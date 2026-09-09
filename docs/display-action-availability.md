@@ -15,22 +15,28 @@ Today there is no mechanism to distinguish these cases, so all rule enforcement 
 
 ### Part 1: API returns availability status
 
-Rather than filtering unavailable actions from the response, the API returns all displayable actions and annotates each with an `available` boolean and (when false) an array of human-readable reasons:
+Rather than filtering unavailable actions from the response, the API returns all displayable actions and extends the existing `availability` object with an `available` boolean and (when false) an array of human-readable reasons:
 
 ```json
 {
   "code": "GRH12",
   "description": "...",
-  "available": false,
-  "reasons": ["The parcel size is below the minimum configured parcel size 2 ha"],
-  "availability": { "unit": "ha", "value": 0.0 },
+  "availability": {
+    "unit": "ha",
+    "value": 0.0,
+    "available": false,
+    "unavailableReasons": [
+      "The parcel size is below the minimum configured parcel size 2 ha"
+    ]
+  },
   ...
 }
 ```
 
-- `available: true` (or field omitted) means the action _can_ be applied for on this parcel
-- `available: false` means the action _cannot_ be applied, and `reasons` explains why
-- Reasons cover both traditional cases (AAC = 0) and new rule-based eligibility failures
+- `availability.available: true` (or field omitted) means the action _can_ be applied for on this parcel
+- `availability.available: false` means the action _cannot_ be applied, and `availability.unavailableReasons` explains why
+- `unavailableReasons` covers both traditional cases (AAC = 0) and new rule-based eligibility failures
+- Nesting these inside `availability` keeps everything about whether/how much an action can be applied for in one place
 
 The UI greys out unavailable actions, displays the reason text, and prevents selection. Users understand why an action is unavailable rather than seeing a silent omission.
 
@@ -77,9 +83,9 @@ When handling `POST /api/v2/parcels`, for each displayable action:
    - Results folded into the application object
 3. Execute display-safe rules via `executeRules(rules, application, displaySafeRules)`
 4. Collect hard failures (rules where `passed: false` and no caveat):
-   - Failure messages become entries in the action's `reasons` array
+   - Failure messages become entries in the action's `availability.unavailableReasons` array
 5. Separately, if AAC returns zero available area, add a reason for that too
-6. Set `available: !(reasons.length > 0)`
+6. Set `availability.available = availability.unavailableReasons.length === 0`
 
 **Important:** consent annotation rules (SSSI, HEFER) produce `caveat` results, not failures — they don't make an action unavailable, they annotate it with `sssiConsentRequired` or `heferRequired`. These continue to work as today.
 
@@ -140,11 +146,14 @@ Rules without declared requirements should be treated conservatively as display-
    ```json
    {
      "code": "GRH12",
-     "available": false,
-     "reasons": [
-       "The parcel size is below the minimum configured parcel size 2 ha"
-     ],
-     "availability": { "unit": "ha", "value": 0.0 }
+     "availability": {
+       "unit": "ha",
+       "value": 0.0,
+       "available": false,
+       "unavailableReasons": [
+         "The parcel size is below the minimum configured parcel size 2 ha"
+       ]
+     }
    }
    ```
 
@@ -165,9 +174,12 @@ Rules without declared requirements should be treated conservatively as display-
    ```json
    {
      "code": "CMOR1",
-     "available": false,
-     "reasons": ["This parcel is not majority on the moorland"],
-     "availability": { "unit": "ha", "value": null },
+     "availability": {
+       "unit": "ha",
+       "value": null,
+       "available": false,
+       "unavailableReasons": ["This parcel is not majority on the moorland"]
+     },
      "sssiConsentRequired": false
    }
    ```
@@ -184,13 +196,12 @@ Rules without declared requirements should be treated conservatively as display-
 
 1. `min-max-parcel-size` rule passes (50,000 sqm ≥ 20,000 sqm)
 2. AAC computes available area for new application: 3ha
-3. `available: true`
+3. `availability.available: true`
 4. Response:
    ```json
    {
      "code": "GRH12",
-     "available": true,
-     "availability": { "unit": "ha", "value": 3.0 }
+     "availability": { "unit": "ha", "value": 3.0, "available": true }
    }
    ```
 
@@ -253,7 +264,7 @@ Today, `getActionsForParcelWithSSSIConsentRequired` and `...HEFERConsentRequired
 
 Count and metre actions currently bypass AAC. Should they also skip the display-safe rule pass, or should they participate?
 
-**Option A:** Skip rule evaluation; always `available: true`. Simplest for now.
+**Option A:** Skip rule evaluation; always `availability.available: true`. Simplest for now.
 
 **Option B:** Participate in display-safe rule pass (e.g., a count action could have a parcel-size rule). Rules can gate non-ha actions too if needed.
 
@@ -261,11 +272,11 @@ Count and metre actions currently bypass AAC. Should they also skip the display-
 
 ### 6. Backwards compatibility
 
-The current endpoint (`/api/v2/parcels`) is v2. Clients currently filter on `availability.value === 0`. The new `available` flag is additive.
+The current endpoint (`/api/v2/parcels`) is v2. Clients currently filter on `availability.value === 0`. The new `availability.available` flag is additive.
 
-**Breaking change?** The field is new, so clients that ignore unknown fields won't break. But clients that _rely_ on `value === 0` to detect unavailability will miss the new `available: false` cases.
+**Breaking change?** The fields are new (nested within the existing `availability` object), so clients that ignore unknown fields won't break. But clients that _rely_ on `availability.value === 0` to detect unavailability will miss the new `availability.available: false` cases.
 
-**Recommendation:** This should be a documented change in the API release notes, but not a version bump. Clients should migrate to checking `available` as the canonical signal. We could add a sunset timeline for the old filtering pattern if needed.
+**Recommendation:** This should be a documented change in the API release notes, but not a version bump. Clients should migrate to checking `availability.available` as the canonical signal. We could add a sunset timeline for the old filtering pattern if needed.
 
 ---
 
@@ -286,10 +297,10 @@ This document is a proposal for team discussion. Once consensus is reached:
    - Identify display-safe rules per action
    - Call `resolveApplicationData` per action (with per-parcel memoisation if decided)
    - Execute display-safe rules and collect failures
-   - Add `available: boolean` and `reasons: string[]` to each action in the response
+   - Add `available: boolean` and `unavailableReasons: string[]` into each action's `availability` object in the response
 
 5. **Update schema** in `parcel.schema.js`:
-   - Add `available` (required) and `reasons` (optional) to `actionSchema`
+   - Add `available` (required) and `unavailableReasons` (optional) to `actionAvailabilitySchema`
 
 6. **Tests:**
    - Add tests for the display-safe filtering logic
