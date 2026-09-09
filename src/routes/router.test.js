@@ -5,6 +5,7 @@ import { payments } from '~/src/features/payment/index.js'
 import { application } from '~/src/features/application/index.js'
 import { caseManagementAdapter } from '~/src/features/case-management-adapter/index.js'
 import { landDataIngest } from '~/src/features/land-data-ingest/index.js'
+import { vectorTiles } from '~/src/features/vector-tiles/index.js'
 
 // `log` must resolve to a valid shape here (not just in beforeEach): several
 // registered plugins transitively import the pino logger at module-load
@@ -40,12 +41,13 @@ describe('router', () => {
 
     await router.plugin.register(mockServer)
 
-    expect(mockRegister).toHaveBeenCalledTimes(5)
+    expect(mockRegister).toHaveBeenCalledTimes(6)
     expect(mockRegister).toHaveBeenNthCalledWith(1, [parcel])
     expect(mockRegister).toHaveBeenNthCalledWith(2, [payments])
     expect(mockRegister).toHaveBeenNthCalledWith(3, [application])
     expect(mockRegister).toHaveBeenNthCalledWith(4, [caseManagementAdapter])
     expect(mockRegister).toHaveBeenNthCalledWith(5, [landDataIngest])
+    expect(mockRegister).toHaveBeenNthCalledWith(6, [vectorTiles])
 
     // Verify logger warning was not called
     expect(mockLogger.warn).not.toHaveBeenCalled()
