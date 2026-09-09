@@ -47,15 +47,18 @@ describe('getMoorlandInterceptPercentage', () => {
       WITH parcel AS (
         SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
       ),
-      dl_union AS (
-        SELECT ST_Union(dl.geom) AS union_geom
+      dl_clipped AS (
+        SELECT ST_Intersection(p.geom, dl.geom) AS geom
         FROM data_layer dl
         JOIN parcel p ON ST_Intersects(p.geom, dl.geom)
         WHERE dl.data_layer_type_id = $4
           AND dl.metadata->>'ref_code' = ANY($3)
+      ),
+      dl_union AS (
+        SELECT ST_Union(geom) AS union_geom FROM dl_clipped
       )
       SELECT
-        COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0)
+        COALESCE(ST_Area(u.union_geom)::float8, 0)
             / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
       FROM parcel p
       LEFT JOIN dl_union u ON true
