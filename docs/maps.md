@@ -10,7 +10,7 @@ within grants-ui
 ```
 curl --request POST \
   --url http://localhost:3021/api/v1/parcel-tiles/locate \
-  --header 'Authorization: Bearer <token>'
+  --header 'Authorization: Bearer <token> \'
   --header 'Content-Type: application/json' \
   --data '{
   "parcelIds": ["SD2396-0165"]
