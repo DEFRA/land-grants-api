@@ -1,7 +1,7 @@
-import { getLfaInterceptPercentage } from './getLfaInterceptPercentage.js'
+import { getLfaIntersectPercentage } from './getLfaIntersectPercentage.js'
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
-describe('getLfaInterceptPercentage', () => {
+describe('getLfaIntersectPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -35,7 +35,7 @@ describe('getLfaInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -71,7 +71,7 @@ describe('getLfaInterceptPercentage', () => {
       DATA_LAYER_TYPES.less_favoured_areas
     ]
 
-    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
@@ -80,7 +80,7 @@ describe('getLfaInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -95,7 +95,7 @@ describe('getLfaInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = 85.5
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -110,7 +110,7 @@ describe('getLfaInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = null
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -125,7 +125,7 @@ describe('getLfaInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows = []
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -139,7 +139,7 @@ describe('getLfaInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getLfaInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -150,7 +150,7 @@ describe('getLfaInterceptPercentage', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -168,7 +168,7 @@ describe('getLfaInterceptPercentage', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: Get LFA intercept percentage'
+        'Database operation failed: Get LFA intersect percentage'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -179,7 +179,7 @@ describe('getLfaInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getLfaInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,

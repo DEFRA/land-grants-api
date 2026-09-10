@@ -1,7 +1,7 @@
-import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
+import { getMoorlandIntersectPercentage } from './getMoorlandIntersectPercentage.js'
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
-describe('getMoorlandInterceptPercentage', () => {
+describe('getMoorlandIntersectPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -35,7 +35,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -71,7 +71,7 @@ describe('getMoorlandInterceptPercentage', () => {
       DATA_LAYER_TYPES.less_favoured_areas
     ]
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
@@ -80,7 +80,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -95,7 +95,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = null
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -110,7 +110,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows = []
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -124,7 +124,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getMoorlandIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -135,7 +135,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -153,7 +153,7 @@ describe('getMoorlandInterceptPercentage', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: Get moorland intercept percentage'
+        'Database operation failed: Get moorland intersect percentage'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -164,7 +164,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,

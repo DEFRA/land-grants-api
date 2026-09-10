@@ -3,7 +3,7 @@ import {
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 
-async function getInterceptPercentage(
+async function getIntersectPercentage(
   { sheetId, parcelId, refCodes, dataLayerType, operationName },
   db,
   logger
@@ -76,4 +76,4 @@ async function getInterceptPercentage(
   }
 }
 
-export { getInterceptPercentage }
+export { getIntersectPercentage }

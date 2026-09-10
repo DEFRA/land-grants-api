@@ -1,7 +1,7 @@
 import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
-import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
+import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
+import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
@@ -17,13 +17,13 @@ import {
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
 vi.mock(
-  '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js',
+  '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js',
   () => ({
-    getMoorlandInterceptPercentage: vi.fn()
+    getMoorlandIntersectPercentage: vi.fn()
   })
 )
-vi.mock('~/src/features/parcel/queries/getLfaInterceptPercentage.js', () => ({
-  getLfaInterceptPercentage: vi.fn()
+vi.mock('~/src/features/parcel/queries/getLfaIntersectPercentage.js', () => ({
+  getLfaIntersectPercentage: vi.fn()
 }))
 vi.mock(
   '~/src/features/available-area/availableAreaDataRequirements.js',
@@ -77,10 +77,10 @@ vi.mock(
   }
 )
 
-const mockGetMoorlandInterceptPercentage = vi.mocked(
-  getMoorlandInterceptPercentage
+const mockGetMoorlandIntersectPercentage = vi.mocked(
+  getMoorlandIntersectPercentage
 )
-const mockGetLfaInterceptPercentage = vi.mocked(getLfaInterceptPercentage)
+const mockGetLfaIntersectPercentage = vi.mocked(getLfaIntersectPercentage)
 const mockGetAvailableAreaDataRequirements = vi.mocked(
   getAvailableAreaDataRequirements
 )
@@ -185,8 +185,8 @@ describe('Action Validation Service', () => {
     mockFormatExplanationSections.mockReturnValue([
       'Area calculation successful'
     ])
-    mockGetMoorlandInterceptPercentage.mockResolvedValue(50)
-    mockGetLfaInterceptPercentage.mockResolvedValue(100)
+    mockGetMoorlandIntersectPercentage.mockResolvedValue(50)
+    mockGetLfaIntersectPercentage.mockResolvedValue(100)
     mockGetDataLayerQueryAccumulated.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
@@ -228,13 +228,13 @@ describe('Action Validation Service', () => {
         mockCompatibilityCheckFn,
         mockAvailableAreaDataRequirements
       )
-      expect(mockGetMoorlandInterceptPercentage).toHaveBeenCalledWith(
+      expect(mockGetMoorlandIntersectPercentage).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetLfaInterceptPercentage).toHaveBeenCalledWith(
+      expect(mockGetLfaIntersectPercentage).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         mockPostgresDb,
