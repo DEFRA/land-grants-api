@@ -125,28 +125,9 @@ describe('heferConsentRequired', () => {
     })
   })
 
-  test('should use custom layer name in explanations', () => {
-    const application = createApplication(5, 'custom-layer')
-    const rule = createRule(
-      'hefer-consent-required',
-      'custom-layer',
-      'A hefer is needed from Historic England',
-      0
-    )
-    const result = heferConsentRequired.execute(application, rule)
-
-    expect(result.name).toBe('hefer-consent-required')
-    expect(result.explanations[0].title).toBe('custom-layer check')
-    expect(result.explanations[0].lines).toEqual([
-      'This parcel has a 5% intersection with the custom-layer layer. The tolerance is 0%.'
+  test('declares a historic_features intersection requirement', () => {
+    expect(heferConsentRequired.requires).toEqual([
+      { type: 'intersection', layer: 'historic_features' }
     ])
-    expect(result.caveat).toEqual({
-      code: 'hefer-consent-required',
-      description: 'A hefer is needed from Historic England',
-      metadata: {
-        percentageOverlap: 5,
-        overlapAreaHectares: 0.1
-      }
-    })
   })
 })

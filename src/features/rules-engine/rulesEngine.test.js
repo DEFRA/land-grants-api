@@ -5,7 +5,16 @@ import {
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 
 const rules = {
-  'parcel-has-intersection-with-data-layer-1.0.0': {
+  'parcel-has-moorland-intersection-1.0.0': {
+    execute: (_application, rule) => {
+      return {
+        name: rule.name,
+        passed: true,
+        message: 'Success'
+      }
+    }
+  },
+  'parcel-has-lfa-intersection-1.0.0': {
     execute: (_application, rule) => {
       return {
         name: rule.name,
@@ -57,7 +66,7 @@ describe('Rules Engine', function () {
       passed: true,
       results: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           passed: true,
           message: 'Success'
         }
@@ -76,12 +85,12 @@ describe('Rules Engine', function () {
       passed: true,
       results: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           passed: true,
           message: 'Success'
         },
         {
-          name: 'parcel-is-on-less-favoured-area',
+          name: 'parcel-has-lfa-intersection',
           passed: true,
           message: 'Success'
         },
@@ -117,7 +126,7 @@ describe('Rules Engine', function () {
       passed: false,
       results: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           passed: true,
           message: 'Success'
         },
@@ -137,10 +146,10 @@ describe('Rules Engine', function () {
 
   test('should return passed=false if a rule returns passed=false', function () {
     const rulesWithFailure = {
-      'parcel-has-intersection-with-data-layer-1.0.0': {
+      'parcel-has-moorland-intersection-1.0.0': {
         execute: () => {
           return {
-            name: 'parcel-has-intersection-with-data-layer',
+            name: 'parcel-has-moorland-intersection',
             passed: false,
             message: 'Rule failed'
           }
@@ -156,7 +165,7 @@ describe('Rules Engine', function () {
       passed: false,
       results: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           passed: false,
           message: 'Rule failed'
         }
@@ -166,7 +175,16 @@ describe('Rules Engine', function () {
 
   test('should return passed=false if any rule returns passed=false', function () {
     const rulesWithMixedResults = {
-      'parcel-has-intersection-with-data-layer-1.0.0': {
+      'parcel-has-moorland-intersection-1.0.0': {
+        execute: (_application, rule) => {
+          return {
+            name: rule.name,
+            passed: true,
+            message: 'Success'
+          }
+        }
+      },
+      'parcel-has-lfa-intersection-1.0.0': {
         execute: (_application, rule) => {
           return {
             name: rule.name,
@@ -205,12 +223,12 @@ describe('Rules Engine', function () {
       passed: false,
       results: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           passed: true,
           message: 'Success'
         },
         {
-          name: 'parcel-is-on-less-favoured-area',
+          name: 'parcel-has-lfa-intersection',
           passed: true,
           message: 'Success'
         },

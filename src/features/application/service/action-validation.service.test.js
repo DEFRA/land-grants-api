@@ -248,20 +248,9 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
-      expect(mockGetDataLayerQueryUnion).toHaveBeenCalledTimes(1)
-      expect(mockGetDataLayerQueryUnion).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        DATA_LAYER_TYPES.historic_features,
-        mockPostgresDb,
-        mockLogger
-      )
-      expect(mockGetLandData).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        mockPostgresDb,
-        mockLogger
-      )
+      // CMOR1 has no hefer or parcel-size rules, so those data layers are not fetched
+      expect(mockGetDataLayerQueryUnion).not.toHaveBeenCalled()
+      expect(mockGetLandData).not.toHaveBeenCalled()
       expect(mockGetAvailableLength).not.toHaveBeenCalled()
       expect(mockExecuteRules).toHaveBeenCalled()
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
@@ -271,7 +260,6 @@ describe('Action Validation Service', () => {
         sheetId: mockLandAction.sheetId,
         actionCode: mockAction.code,
         landParcel: expect.objectContaining({
-          parcelSizeSqm: 5000,
           availability: 1000
         })
       })
@@ -559,12 +547,48 @@ describe('Action Validation Service', () => {
       })
     })
 
+    // An action config where CMOR1 additionally requires the parcel size data
+    // (via the min-max-parcel-size rule), so getLandData should be fetched.
+    const configRequiringParcelSize = mockActionConfig.map((a) =>
+      a.code === 'CMOR1'
+        ? {
+            ...a,
+            rules: [...a.rules, { name: 'min-max-parcel-size', config: {} }]
+          }
+        : a
+    )
+
+    test('should fetch and set parcelSizeSqm when a rule requires it', async () => {
+      mockGetLandData.mockResolvedValue([{ area: 5000 }])
+
+      await validateLandAction(
+        mockAction,
+        configRequiringParcelSize,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockGetLandData).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          parcelSizeSqm: 5000
+        })
+      })
+    })
+
     test('should default parcelSizeSqm to 0 when getLandData returns no rows', async () => {
       mockGetLandData.mockResolvedValue([])
 
       await validateLandAction(
         mockAction,
-        mockActionConfig,
+        configRequiringParcelSize,
         mockAgreements,
         mockCompatibilityCheckFn,
         mockLandAction,

@@ -53,10 +53,11 @@
 
 /**
  * @typedef {object} ActionRuleConfig
- * @property {string} layerName
  * @property {number} minimumIntersectionPercent
+ * @property {number} maximumIntersectionPercent
  * @property {number} tolerancePercent
  * @property {string} caveatDescription
+ * @property {string} failureMessage
  */
 
 /**

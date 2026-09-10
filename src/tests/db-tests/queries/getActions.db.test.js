@@ -66,11 +66,10 @@ describe('Get Actions Query', () => {
       ],
       rules: [
         {
-          name: 'parcel-has-intersection-with-data-layer',
+          name: 'parcel-has-moorland-intersection',
           description: 'Is this parcel on the moorland?',
           version: '1.0.0',
           config: {
-            layerName: 'moorland',
             minimumIntersectionPercent: 50,
             tolerancePercent: 1
           }
@@ -85,7 +84,6 @@ describe('Get Actions Query', () => {
           description:
             'Does the site require a Historic Environment Farm Environment Record?',
           config: {
-            layerName: 'historic_features',
             tolerancePercent: 0,
             caveatDescription: 'A hefer is needed from Historic England'
           }

@@ -1,17 +1,10 @@
-import {
-  DATA_LAYER_TYPES,
-  getDataLayerQueryAccumulated,
-  getDataLayerQueryUnion
-} from '../../data-layers/queries/getDataLayer.query.js'
 import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
+import { resolveApplicationData } from '~/src/features/rules-engine/data-requirements/resolveApplicationData.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
@@ -131,16 +124,18 @@ export const validateLandAction = async (
     )
   }
 
+  const ruleToExecute = actions.find((a) => a.code === action.code)
+
   const application = await buildRuleEngineApplication(
     action,
     landAction,
     availableArea,
     availableLength,
     agreements,
-    request
+    request,
+    ruleToExecute?.rules
   )
 
-  const ruleToExecute = actions.find((a) => a.code === action.code)
   const ruleResult = executeRules(
     rules,
     {
@@ -155,13 +150,16 @@ export const validateLandAction = async (
 }
 
 /**
- * Fetches parcel data layers and builds the rule engine application object.
+ * Builds the base rule engine application (data known without fetching) and delegates
+ * fetching of parcel data layers / parcel size to the requirements resolver, which only
+ * fetches what the action's rules actually declare they need.
  * @param {ActionRequest} action
  * @param {LandAction} landAction
  * @param {object|null} availableArea
  * @param {{availableLength: number}|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
+ * @param {ActionRule[]} [actionRules] - The rules configured for the action, used to determine data requirements
  * @returns {Promise<RuleEngineApplication>}
  */
 const buildRuleEngineApplication = async (
@@ -170,50 +168,10 @@ const buildRuleEngineApplication = async (
   availableArea,
   availableLength,
   agreements,
-  request
+  request,
+  actionRules = []
 ) => {
-  const [
-    moorlandIntersectingAreaPercentage,
-    lfaIntersectingAreaPercentage,
-    sssiDataLayerData,
-    historicFeaturesDataLayerData,
-    landParcel
-  ] = await Promise.all([
-    getMoorlandInterceptPercentage(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getLfaInterceptPercentage(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getDataLayerQueryAccumulated(
-      landAction.sheetId,
-      landAction.parcelId,
-      DATA_LAYER_TYPES.sssi,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getDataLayerQueryUnion(
-      landAction.sheetId,
-      landAction.parcelId,
-      DATA_LAYER_TYPES.historic_features,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getLandData(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    )
-  ])
-
-  return {
+  const baseApplication = {
     appliedForQuantity: getAppliedForQuantity(
       availableArea,
       availableLength,
@@ -227,17 +185,18 @@ const buildRuleEngineApplication = async (
         availableLength?.availableLength ??
         0,
       existingAgreements: agreements,
-      intersections: {
-        moorland: {
-          intersectingAreaPercentage: moorlandIntersectingAreaPercentage
-        },
-        lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
-        sssi: sssiDataLayerData,
-        historic_features: historicFeaturesDataLayerData
-      },
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      intersections: {}
     }
   }
+
+  const ctx = {
+    sheetId: landAction.sheetId,
+    parcelId: landAction.parcelId,
+    db: request.server.postgresDb,
+    logger: request.logger
+  }
+
+  return resolveApplicationData(actionRules, baseApplication, ctx)
 }
 
 /**
@@ -259,7 +218,7 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
- * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
+ * @import { ActionRuleResult, Action, ActionRule } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
