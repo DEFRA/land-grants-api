@@ -127,6 +127,7 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            quantityRequired: true,
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             sssiConsentRequired: false,
@@ -140,6 +141,7 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            quantityRequired: true,
             ratePerUnitGbp: 20,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -152,6 +154,7 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            quantityRequired: true,
             ratePerUnitGbp: 53,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -164,6 +167,7 @@ describe('Parcels Controller 2.0.0', () => {
               unit: 'ha',
               value: 762.9068
             },
+            quantityRequired: true,
             ratePerUnitGbp: 66,
             sssiConsentRequired: true,
             heferRequired: false,

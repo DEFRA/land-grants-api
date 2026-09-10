@@ -41,14 +41,19 @@ export async function getAgreements(
           Email: config.get('dal.serviceAccount')
         }
 
-  const entraToken = await getToken()
+  let entraHeader = {}
+
+  if (config.get('dal.useEntraAuth')) {
+    const entraToken = await getToken()
+    entraHeader = { Authorization: `Bearer ${entraToken}` }
+  }
 
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${entraToken}`,
       'Content-Type': 'application/json',
-      ...authHeaders
+      ...authHeaders,
+      ...entraHeader
     },
     body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
   })

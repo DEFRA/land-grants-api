@@ -10,8 +10,8 @@ import { findMaximumAvailableArea } from '~/src/features/available-area/availabl
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
-import { getLfaInterceptPercentage } from '~/src/features/parcel/queries/getLfaInterceptPercentage.js'
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
+import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
@@ -179,13 +179,13 @@ const buildRuleEngineApplication = async (
     historicFeaturesDataLayerData,
     landParcel
   ] = await Promise.all([
-    getMoorlandInterceptPercentage(
+    getMoorlandIntersectPercentage(
       landAction.sheetId,
       landAction.parcelId,
       request.server.postgresDb,
       request.logger
     ),
-    getLfaInterceptPercentage(
+    getLfaIntersectPercentage(
       landAction.sheetId,
       landAction.parcelId,
       request.server.postgresDb,

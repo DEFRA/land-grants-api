@@ -1,7 +1,7 @@
-import { getMoorlandInterceptPercentage } from './getMoorlandInterceptPercentage.js'
+import { getLfaIntersectPercentage } from './getLfaIntersectPercentage.js'
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
-describe('getMoorlandInterceptPercentage', () => {
+describe('getLfaIntersectPercentage', () => {
   let mockDb
   let mockLogger
   let mockClient
@@ -11,7 +11,7 @@ describe('getMoorlandInterceptPercentage', () => {
     mockResult = {
       rows: [
         {
-          overlap_percent: 50
+          overlap_percent: 100
         }
       ]
     }
@@ -35,7 +35,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
@@ -47,15 +47,18 @@ describe('getMoorlandInterceptPercentage', () => {
       WITH parcel AS (
         SELECT geom FROM land_parcels WHERE sheet_id = $1 AND parcel_id = $2
       ),
-      dl_union AS (
-        SELECT ST_Union(dl.geom) AS union_geom
+      dl_clipped AS (
+        SELECT ST_Intersection(p.geom, dl.geom) AS geom
         FROM data_layer dl
         JOIN parcel p ON ST_Intersects(p.geom, dl.geom)
         WHERE dl.data_layer_type_id = $4
           AND dl.metadata->>'ref_code' = ANY($3)
+      ),
+      dl_union AS (
+        SELECT ST_Union(geom) AS union_geom FROM dl_clipped
       )
       SELECT
-        COALESCE(ST_Area(ST_Intersection(p.geom, u.union_geom))::float8, 0)
+        COALESCE(ST_Area(u.union_geom)::float8, 0)
             / NULLIF(ST_Area(p.geom)::float8, 0) * 100 AS overlap_percent
       FROM parcel p
       LEFT JOIN dl_union u ON true
@@ -64,35 +67,50 @@ describe('getMoorlandInterceptPercentage', () => {
     const expectedValues = [
       sheetId,
       parcelId,
-      ['M', 'MS', 'MD'],
+      ['D', 'S', 'M', 'MS', 'MD'],
       DATA_LAYER_TYPES.less_favoured_areas
     ]
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, expectedValues)
   })
 
-  test('should return the moorland overlap percentage', async () => {
+  test('should return the LFA overlap percentage', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
       mockLogger
     )
 
-    expect(result).toBe(50)
+    expect(result).toBe(100)
   })
 
-  test('should return 0 when no moorland overlap', async () => {
+  test('should return partial overlap percentage', async () => {
+    const sheetId = 'SH123'
+    const parcelId = 'PA456'
+    mockResult.rows[0].overlap_percent = 85.5
+
+    const result = await getLfaIntersectPercentage(
+      sheetId,
+      parcelId,
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toBe(86)
+  })
+
+  test('should return 0 when no LFA overlap', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     mockResult.rows[0].overlap_percent = null
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -107,7 +125,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockResult.rows = []
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -121,7 +139,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
 
-    await getMoorlandInterceptPercentage(sheetId, parcelId, mockDb, mockLogger)
+    await getLfaIntersectPercentage(sheetId, parcelId, mockDb, mockLogger)
 
     expect(mockClient.release).toHaveBeenCalledTimes(1)
   })
@@ -132,7 +150,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const error = new Error('Database error')
     mockClient.query = vi.fn().mockRejectedValue(error)
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,
@@ -150,7 +168,7 @@ describe('getMoorlandInterceptPercentage', () => {
         })
       }),
       expect.stringContaining(
-        'Database operation failed: Get moorland intercept percentage'
+        'Database operation failed: Get LFA intersect percentage'
       )
     )
     expect(mockClient.release).toHaveBeenCalledTimes(1)
@@ -161,7 +179,7 @@ describe('getMoorlandInterceptPercentage', () => {
     const parcelId = 'PA456'
     mockDb.connect = vi.fn().mockRejectedValue(new Error('Connection error'))
 
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getLfaIntersectPercentage(
       sheetId,
       parcelId,
       mockDb,

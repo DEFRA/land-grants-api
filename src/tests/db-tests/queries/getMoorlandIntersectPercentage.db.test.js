@@ -1,7 +1,7 @@
-import { getMoorlandInterceptPercentage } from '~/src/features/parcel/queries/getMoorlandInterceptPercentage.js'
+import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
-describe('Get Moorland Intercept Percentage Query', () => {
+describe('Get Moorland Intersect Percentage Query', () => {
   let logger, connection
 
   beforeAll(() => {
@@ -25,7 +25,7 @@ describe('Get Moorland Intercept Percentage Query', () => {
     ['sheet_id found but parcel_id not found', 'SD6842', '1234', 0],
     ['sheet id and parcel id not found', 'SD0000', '1234', 0]
   ])('when %s', async (_desc, sheetId, parcelId, expected) => {
-    const result = await getMoorlandInterceptPercentage(
+    const result = await getMoorlandIntersectPercentage(
       sheetId,
       parcelId,
       connection,

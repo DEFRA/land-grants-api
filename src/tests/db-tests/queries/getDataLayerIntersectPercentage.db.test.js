@@ -4,7 +4,7 @@ import {
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
-describe('Get Data Layer Intercept Percentage Query', () => {
+describe('Get Data Layer Intersect Percentage Query', () => {
   let logger, connection
 
   beforeAll(() => {

@@ -81,6 +81,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
 
+      - name: Fetch latest tags
+        run: git fetch --tags --force
+
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
