@@ -165,7 +165,7 @@ export const validateLandAction = async (
  * @param {ActionRequest} action
  * @param {LandAction} landAction
  * @param {object|null} availableArea
- * @param {{availableLength: number}|null} availableLength
+ * @param {AvailableLength|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
  * @returns {Promise<RuleEngineApplication>}
@@ -232,6 +232,12 @@ const buildRuleEngineApplication = async (
         availableArea?.availableAreaSqm ??
         availableLength?.availableLength ??
         0,
+      boundaryLength: availableLength
+        ? {
+            totalMeters: availableLength.boundaryLengthMeters,
+            incompatibleMeters: availableLength.incompatibleLengthMeters
+          }
+        : null,
       existingAgreements: agreements,
       intersections: {
         moorland: {
@@ -267,6 +273,7 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'

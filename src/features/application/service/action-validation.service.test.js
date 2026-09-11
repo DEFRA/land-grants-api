@@ -196,7 +196,11 @@ describe('Action Validation Service', () => {
       intersectionAreaHa: 0.1
     })
     mockGetLandData.mockResolvedValue([{ area: 5000 }])
-    mockGetAvailableLength.mockResolvedValue({ availableLength: 200 })
+    mockGetAvailableLength.mockResolvedValue({
+      availableLength: 200,
+      boundaryLengthMeters: 1000,
+      incompatibleLengthMeters: 800
+    })
     mockPlannedActionsTransformer.mockReturnValue([])
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
@@ -553,7 +557,25 @@ describe('Action Validation Service', () => {
         appliedForQuantity: 150,
         landParcel: expect.objectContaining({
           availableAreaSqm: null,
-          availability: 200
+          availability: 200,
+          boundaryLength: { totalMeters: 1000, incompatibleMeters: 800 }
+        })
+      })
+    })
+
+    test('should supply no boundary length breakdown for area-based actions', async () => {
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          boundaryLength: null
         })
       })
     })
@@ -577,7 +599,8 @@ describe('Action Validation Service', () => {
 
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
         landParcel: expect.objectContaining({
-          availability: 0
+          availability: 0,
+          boundaryLength: null
         })
       })
     })
