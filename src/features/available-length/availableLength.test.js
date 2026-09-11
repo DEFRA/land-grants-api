@@ -5,6 +5,8 @@ vi.mock('../parcel/queries/getParcelBoundary.query.js', () => ({
   getLandParcelBoundary: vi.fn()
 }))
 
+const PARCEL_PERIMETER_METERS = 1000
+
 describe('getAvailableLength', () => {
   const mockLogger = { info: vi.fn(), error: vi.fn() }
   const mockRequest = {
@@ -12,6 +14,7 @@ describe('getAvailableLength', () => {
     server: { postgresDb: {} }
   }
 
+  // BND1, BND2 and ACT2 are linear actions measured in metres; CMOR1 is area-based
   const actions = [
     { code: 'BND1', applicationUnitOfMeasurement: 'm' },
     { code: 'BND2', applicationUnitOfMeasurement: 'm' },
@@ -29,7 +32,9 @@ describe('getAvailableLength', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    getLandParcelBoundary.mockResolvedValue({ boundaryLengthMeters: 1000 })
+    getLandParcelBoundary.mockResolvedValue({
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS
+    })
   })
 
   it('returns the full boundary length when there are no incompatible actions', async () => {
@@ -45,7 +50,7 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: 1000 })
+    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
   })
 
   it('subtracts the length of incompatible sibling actions on the same parcel', async () => {
@@ -97,7 +102,7 @@ describe('getAvailableLength', () => {
     )
 
     expect(compatibilityCheckFn).not.toHaveBeenCalled()
-    expect(result).toEqual({ availableLength: 1000 })
+    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
   })
 
   it('should include sibling actions not matching the action code', async () => {
@@ -114,12 +119,12 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: 1000 })
+    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
   })
 
   it('subtracts the length of incompatible existing agreement actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200 }
+    const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
     compatibilityCheckFn.mockImplementation(
       (code) => code !== agreement.actionCode
     )
@@ -137,10 +142,28 @@ describe('getAvailableLength', () => {
     expect(result).toEqual({ availableLength: 800 })
   })
 
+  it('excludes agreement actions whose unit is not meters', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+    const areaAgreement = { actionCode: 'CMOR1', quantity: 15000, unit: 'sqm' }
+    const countAgreement = { actionCode: 'WBD1', quantity: 800, unit: 'count' }
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = await getAvailableLength(
+      action,
+      actions,
+      [areaAgreement, countAgreement],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockRequest
+    )
+
+    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
+  })
+
   it('combines incompatible lengths from both agreements and sibling actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const sibling = { code: 'BND2', quantity: 100 }
-    const agreement = { actionCode: 'CHRW2', quantity: 200 }
+    const agreement = { actionCode: 'CHRW2', quantity: 200, unit: 'm' }
     compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
@@ -157,7 +180,7 @@ describe('getAvailableLength', () => {
 
   it('rounds fractional quantities when summing incompatible lengths', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200.6 }
+    const agreement = { actionCode: 'BND2', quantity: 200.6, unit: 'm' }
     compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
@@ -169,7 +192,9 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: 1000 - 201 })
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS - 201
+    })
   })
 
   it('calls getLandParcelBoundary with the sheet id, parcel id, db and logger', async () => {
@@ -211,7 +236,7 @@ describe('getAvailableLength', () => {
 
   it('can return a negative available length when incompatible length exceeds the boundary', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 1500 }
+    const agreement = { actionCode: 'BND2', quantity: 1500, unit: 'm' }
     compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(

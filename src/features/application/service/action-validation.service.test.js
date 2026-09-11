@@ -323,6 +323,29 @@ describe('Action Validation Service', () => {
       )
     })
 
+    test('should exclude agreements whose unit is not area-based from existing area demand', async () => {
+      const areaAgreement = { actionCode: 'UPL1', quantity: 15000, unit: 'sqm' }
+      const lengthAgreement = { actionCode: 'BND1', quantity: 500, unit: 'm' }
+      const countAgreement = {
+        actionCode: 'WBD1',
+        quantity: 800,
+        unit: 'count'
+      }
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        [areaAgreement, lengthAgreement, countAgreement],
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockPlannedActionsTransformer).toHaveBeenCalledWith([
+        areaAgreement
+      ])
+    })
+
     test('should exclude a sibling action from existing area demand when its applicationUnitOfMeasurement is not hectares', async () => {
       const countBasedSiblingAction = { code: 'WBD1', quantity: 5 }
       const landActionWithSiblings = {

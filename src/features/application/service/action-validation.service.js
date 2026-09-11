@@ -3,7 +3,11 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
-import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
+import {
+  HECTARES,
+  METERS,
+  isAreaUnit
+} from '~/src/features/common/constants/unit_type.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -48,8 +52,10 @@ async function getAvailableArea(
     .filter(filterActionByUnit)
     .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
+  // Agreements arrive in every unit; only area-based ones compete for area.
+  const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
   const existingActions = [
-    ...plannedActionsTransformer(agreements),
+    ...plannedActionsTransformer(areaAgreements),
     ...siblingActions
   ]
 

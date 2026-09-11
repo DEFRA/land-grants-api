@@ -26,7 +26,12 @@ export async function getAvailableLength(
     .filter(filterActionByUnit)
     .map(mapAction)
 
-  const existingActions = agreements.map(mapAction).concat(siblingActions)
+  // Agreements arrive in every unit; only those measured in metres compete
+  // for the parcel's boundary length.
+  const existingActions = agreements
+    .filter((a) => a.unit === METERS)
+    .map(mapAction)
+    .concat(siblingActions)
   const incompatibleLength = existingActions
     .filter((a) => !compatibilityCheckFn(a.actionCode, action.code))
     .reduce((prev, cur) => {
