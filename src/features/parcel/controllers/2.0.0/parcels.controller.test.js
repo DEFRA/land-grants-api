@@ -255,7 +255,6 @@ describe('Parcels Controller 2.0.0', () => {
                 description: `${unit}-based action`,
                 availability: {
                   value: null,
-                  type: 'total',
                   unit
                 },
                 quantityRequired: false,
@@ -391,7 +390,7 @@ describe('Parcels Controller 2.0.0', () => {
         if (payload.fields.some((f) => f.startsWith('actions'))) {
           result.actions = actions.map((a) => ({
             ...a,
-            availability: { ...a.availability, unit: 'ha', value: null }
+            availability: { unit: 'ha', value: null }
           }))
         }
 
@@ -421,7 +420,6 @@ describe('Parcels Controller 2.0.0', () => {
         'https://www.gov.uk/find-funding'
       )
       expect(parcels[0].actions[0].availability).toEqual({
-        type: 'total',
         unit: 'ha',
         value: null
       })

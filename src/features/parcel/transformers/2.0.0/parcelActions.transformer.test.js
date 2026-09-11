@@ -21,8 +21,7 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500,
-        type: 'partial'
+        value: 500
       },
       quantityRequired: true,
       version: '2.0.0'
@@ -37,7 +36,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null, type: 'partial' },
+      availability: { unit: 'ha', value: null },
       quantityRequired: true
     })
   })
@@ -48,7 +47,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null, type: 'partial' },
+      availability: { unit: 'ha', value: null },
       quantityRequired: true
     })
   })
@@ -64,7 +63,7 @@ describe('actionTransformer 2.0.0', () => {
       expect(result).toEqual({
         code: 'ACTION1',
         description: 'Test Action',
-        availability: { unit, value: null, type: 'partial' },
+        availability: { unit, value: null },
         quantityRequired: true
       })
     }
@@ -82,8 +81,7 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 0,
-        type: 'partial'
+        value: 0
       },
       quantityRequired: true
     })
@@ -99,7 +97,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: null, type: 'partial' },
+      availability: { unit: 'ha', value: null },
       quantityRequired: true
     })
   })
@@ -119,8 +117,7 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500,
-        type: 'partial'
+        value: 500
       },
       quantityRequired: true,
       results: {
@@ -146,8 +143,7 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: 500,
-        type: 'partial'
+        value: 500
       },
       quantityRequired: true
     })
@@ -184,8 +180,7 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: {
         unit: 'ha',
-        value: null,
-        type: 'total'
+        value: null
       },
       quantityRequired: false
     })
