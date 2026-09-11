@@ -15,6 +15,14 @@ Checks run in this order, and the order matters:
 
 The second check runs before the third so that an applicant on a parcel with no room left is told the action does not fit, rather than being told to enter more length than the parcel holds.
 
+## Why the available length can be zero
+
+A boundary can legitimately be committed beyond its own length. Actions paid per side, such as BND2 and CHRW2, allow up to twice the boundary to be claimed, while the calculation treats a boundary as a single run of metres. Other causes are a parcel perimeter that differs from the boundary feature measured on the ground, legacy agreements never checked against that perimeter, and option codes absent from the compatibility matrix, which are treated as incompatible and deducted in full.
+
+`landParcel.availability` is therefore floored at zero. An over-committed boundary reports zero rather than a negative figure, which would otherwise reach the applicant as "enter a value that is no more than -500 m". A parcel whose boundary geometry cannot be read also reports zero.
+
+The two are told apart by `landParcel.boundaryLength`, which carries the parcel's own `totalMeters` and the `incompatibleMeters` already committed. The rule writes both into its explanation, so a caseworker can see whether a parcel has no boundary data or a boundary that is already spoken for. It is absent for actions that are not measured in metres, and the explanation omits that line when it is.
+
 ## Configuration parameters
 
 | Parameter        | Type   | Description                                                               |

@@ -50,7 +50,11 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
   })
 
   it('subtracts the length of incompatible sibling actions on the same parcel', async () => {
@@ -68,7 +72,11 @@ describe('getAvailableLength', () => {
     )
 
     expect(compatibilityCheckFn).toHaveBeenCalledWith('BND1', 'CHRW2')
-    expect(result).toEqual({ availableLength: 900 })
+    expect(result).toEqual({
+      availableLength: 900,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 100
+    })
   })
 
   it('excludes the action itself from sibling actions', async () => {
@@ -102,7 +110,11 @@ describe('getAvailableLength', () => {
     )
 
     expect(compatibilityCheckFn).not.toHaveBeenCalled()
-    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
   })
 
   it('should include sibling actions not matching the action code', async () => {
@@ -119,7 +131,11 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
   })
 
   it('subtracts the length of incompatible existing agreement actions', async () => {
@@ -139,7 +155,11 @@ describe('getAvailableLength', () => {
     )
 
     expect(compatibilityCheckFn).toHaveBeenCalledWith('BND2', 'BND1')
-    expect(result).toEqual({ availableLength: 800 })
+    expect(result).toEqual({
+      availableLength: 800,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 200
+    })
   })
 
   it('excludes agreement actions whose unit is not meters', async () => {
@@ -157,7 +177,11 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: PARCEL_PERIMETER_METERS })
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
   })
 
   it('combines incompatible lengths from both agreements and sibling actions', async () => {
@@ -175,7 +199,11 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: 700 })
+    expect(result).toEqual({
+      availableLength: 700,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 300
+    })
   })
 
   it('rounds fractional quantities when summing incompatible lengths', async () => {
@@ -193,7 +221,9 @@ describe('getAvailableLength', () => {
     )
 
     expect(result).toEqual({
-      availableLength: PARCEL_PERIMETER_METERS - 201
+      availableLength: 799,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 201
     })
   })
 
@@ -231,11 +261,16 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: 0 })
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: 0,
+      incompatibleLengthMeters: 0
+    })
   })
 
-  it('can return a negative available length when incompatible length exceeds the boundary', async () => {
+  it('clamps the available length at zero when the incompatible length exceeds the boundary', async () => {
     const action = { code: 'BND1', quantity: 50 }
+    // BND2 is paid per side, so a 1000 m boundary can legitimately carry 1500 m
     const agreement = { actionCode: 'BND2', quantity: 1500, unit: 'm' }
     compatibilityCheckFn.mockReturnValue(false)
 
@@ -248,6 +283,10 @@ describe('getAvailableLength', () => {
       mockRequest
     )
 
-    expect(result).toEqual({ availableLength: -500 })
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 1500
+    })
   })
 })
