@@ -1,6 +1,5 @@
 import Joi from 'joi'
 import { COUNT, UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
-import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_availability.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
@@ -12,10 +11,7 @@ export const actionAvailabilitySchema = Joi.object({
     .when(Joi.ref('unit'), {
       is: Joi.allow(COUNT).only(),
       then: Joi.number().integer()
-    }),
-  type: Joi.string()
-    .valid(...AVAILABILITY_TYPES)
-    .optional()
+    })
 })
 
 const actionSchema = Joi.object({
