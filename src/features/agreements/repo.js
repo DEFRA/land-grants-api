@@ -5,9 +5,9 @@ import { getAgreements as getFromDal } from '~/src/services/dal/index.js'
 /**
  * Retrieve agreements for a parcel, from multiple sources
  *
- * N.B. currently agreements are only fetched in order to calculate available
- * area, so we filter the results to those which are area-based (sqm). We also
- * filter out expired agreements.
+ * N.B. agreements are returned in every unit; callers filter by the unit they
+ * care about, since area and length calculations each need a different subset.
+ * Expired agreements are filtered out here.
  * @param {string} sbi - The SBI for the business owning the parcel
  * @param {string} sheetId - The sheetId
  * @param {string} parcelId - The parcelId
@@ -31,10 +31,7 @@ export async function getAgreements(
     getFromDal(sbi, parcelId, sheetId, defraIdToken, logger)
   ])
 
-  return results
-    .flat()
-    .filter((a) => a.unit === 'sqm')
-    .filter((a) => expiredActionsFilter(a, referenceDate))
+  return results.flat().filter((a) => expiredActionsFilter(a, referenceDate))
 }
 
 /**
