@@ -95,7 +95,7 @@ describe('Parcel Schema Validation v2', () => {
               {
                 ...mockParcelWithActions.parcel.actions[0],
                 guidanceUrl: 'https://www.gov.uk/find-funding',
-                availability: { value: null, unit: 'ha', type: 'total' }
+                availability: { value: null, unit: 'ha' }
               }
             ]
           }
@@ -108,25 +108,6 @@ describe('Parcel Schema Validation v2', () => {
     it('should validate action without availability', () => {
       const result = parcelsSuccessResponseSchema.validate(validResponse)
       expect(result.error).toBeUndefined()
-    })
-
-    it('should reject availability with invalid type', () => {
-      const invalid = {
-        ...validResponse,
-        parcels: [
-          {
-            ...mockParcelWithActions.parcel,
-            actions: [
-              {
-                ...mockParcelWithActions.parcel.actions[0],
-                availability: { type: 'not-a-real-type' }
-              }
-            ]
-          }
-        ]
-      }
-      const result = parcelsSuccessResponseSchema.validate(invalid)
-      expect(result.error).toBeDefined()
     })
 
     it('should reject invalid guidanceUrl', () => {
