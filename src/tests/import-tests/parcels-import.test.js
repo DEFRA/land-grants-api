@@ -7,7 +7,10 @@ import {
   deleteFiles
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
-import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import {
+  connectToTestDatabase,
+  connectToTestDatabaseDdl
+} from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 import { getCsvFixtures } from '~/src/tests/import-tests/setup/csv.js'
 import { S3_CONFIG } from '~/src/tests/db-tests/setup/test-config.js'
@@ -284,6 +287,7 @@ describe('Land covers import', () => {
 describe('Land import pairing scoping', () => {
   let s3Client
   let connection
+  let ddlConnection
   const logger = {
     info: vi.fn(),
     error: vi.fn(),
@@ -293,12 +297,14 @@ describe('Land import pairing scoping', () => {
 
   beforeAll(async () => {
     connection = connectToTestDatabase()
+    ddlConnection = connectToTestDatabaseDdl()
     s3Client = createTestS3Client()
     await ensureBucketExists(s3Client)
   })
 
   afterAll(async () => {
     await connection.end()
+    await ddlConnection.end()
     await deleteFiles(s3Client, ALL_S3_KEYS)
   })
 
@@ -429,7 +435,7 @@ describe('Land import pairing scoping', () => {
     // Remove most of the staged parcels so the staged covers would reference parcels that
     // are no longer in the parcels staging - the promotion must abort before touching live
     // tables rather than leave unlinked covers.
-    await connection.query(
+    await ddlConnection.query(
       `DELETE FROM land_parcels_staging WHERE parcel_id IN (SELECT parcel_id FROM land_parcels_staging LIMIT 5)`
     )
 
@@ -510,7 +516,7 @@ describe('Land import pairing scoping', () => {
     // Remove some of the staged covers so the parcels staging would hold more unique parcels
     // than the covers staging - the promotion must abort before touching live tables rather
     // than promote parcels that have no covers.
-    await connection.query(
+    await ddlConnection.query(
       `DELETE FROM land_covers_staging WHERE parcel_id IN (SELECT parcel_id FROM land_covers_staging LIMIT 2)`
     )
 
@@ -590,7 +596,7 @@ describe('Land import pairing scoping', () => {
 
     // Empty the parcels staging after it staged so the promotion must abort rather than
     // swap an empty table into live (which would wipe the live land_parcels table).
-    await connection.query(`DELETE FROM land_parcels_staging`)
+    await ddlConnection.query(`DELETE FROM land_parcels_staging`)
 
     const coversIngestId = await saveIngestStart(
       { files: [{ filename: 'covers_head.csv', rows: 9 }] },
@@ -668,7 +674,7 @@ describe('Land import pairing scoping', () => {
 
     // Empty the covers staging after it staged so the promotion must abort rather than
     // swap an empty table into live (which would wipe the live land_covers table).
-    await connection.query(`DELETE FROM land_covers_staging`)
+    await ddlConnection.query(`DELETE FROM land_covers_staging`)
 
     const parcelsIngestId = await saveIngestStart(
       { files: [{ filename: 'parcels_head.csv', rows: 9 }] },
