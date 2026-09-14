@@ -179,52 +179,13 @@ const buildRuleEngineApplication = async (
   agreements,
   request
 ) => {
-  const [
-    moorlandIntersectingAreaPercentage,
-    lfaIntersectingAreaPercentage,
-    sdaIntersectingAreaPercentage,
-    sssiDataLayerData,
-    historicFeaturesDataLayerData,
-    landParcel
-  ] = await Promise.all([
-    getMoorlandIntersectPercentage(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getLfaIntersectPercentage(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getSdaIntersectPercentage(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getDataLayerQueryAccumulated(
-      landAction.sheetId,
-      landAction.parcelId,
-      DATA_LAYER_TYPES.sssi,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getDataLayerQueryUnion(
-      landAction.sheetId,
-      landAction.parcelId,
-      DATA_LAYER_TYPES.historic_features,
-      request.server.postgresDb,
-      request.logger
-    ),
-    getLandData(
-      landAction.sheetId,
-      landAction.parcelId,
-      request.server.postgresDb,
-      request.logger
-    )
+  const { sheetId, parcelId } = landAction
+  const db = request.server.postgresDb
+  const logger = request.logger
+
+  const [intersections, landParcel] = await Promise.all([
+    getIntersections(sheetId, parcelId, db, logger),
+    getLandData(sheetId, parcelId, db, logger)
   ])
 
   return {
@@ -242,13 +203,7 @@ const buildRuleEngineApplication = async (
         0,
       boundaryLength: toBoundaryLength(availableLength),
       existingAgreements: agreements,
-      intersections: toIntersections({
-        moorlandIntersectingAreaPercentage,
-        lfaIntersectingAreaPercentage,
-        sdaIntersectingAreaPercentage,
-        sssiDataLayerData,
-        historicFeaturesDataLayerData
-      }),
+      intersections,
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
@@ -271,24 +226,41 @@ function toBoundaryLength(availableLength) {
 }
 
 /**
- * @param {object} dataLayers - The intersection results for the parcel
- * @returns {object} The intersections as the rules engine expects them
+ * Fetches every data layer intersection for the parcel, keyed by the
+ * layerName that action config rules refer to.
+ * @param {string} sheetId
+ * @param {string} parcelId
+ * @param {object} db
+ * @param {object} logger
+ * @returns {Promise<object>}
  */
-function toIntersections({
-  moorlandIntersectingAreaPercentage,
-  lfaIntersectingAreaPercentage,
-  sdaIntersectingAreaPercentage,
-  sssiDataLayerData,
-  historicFeaturesDataLayerData
-}) {
+async function getIntersections(sheetId, parcelId, db, logger) {
+  const [moorland, lfa, sda, sssi, historicFeatures] = await Promise.all([
+    getMoorlandIntersectPercentage(sheetId, parcelId, db, logger),
+    getLfaIntersectPercentage(sheetId, parcelId, db, logger),
+    getSdaIntersectPercentage(sheetId, parcelId, db, logger),
+    getDataLayerQueryAccumulated(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.sssi,
+      db,
+      logger
+    ),
+    getDataLayerQueryUnion(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.historic_features,
+      db,
+      logger
+    )
+  ])
+
   return {
-    moorland: {
-      intersectingAreaPercentage: moorlandIntersectingAreaPercentage
-    },
-    lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
-    sda: { intersectingAreaPercentage: sdaIntersectingAreaPercentage },
-    sssi: sssiDataLayerData,
-    historic_features: historicFeaturesDataLayerData
+    moorland: { intersectingAreaPercentage: moorland },
+    lfa: { intersectingAreaPercentage: lfa },
+    sda: { intersectingAreaPercentage: sda },
+    sssi,
+    historic_features: historicFeatures
   }
 }
 
