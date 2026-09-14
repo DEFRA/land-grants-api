@@ -232,30 +232,59 @@ const buildRuleEngineApplication = async (
         availableArea?.availableAreaSqm ??
         availableLength?.availableLength ??
         0,
-      boundaryLength: availableLength
-        ? {
-            totalMeters: availableLength.boundaryLengthMeters,
-            incompatibleMeters: availableLength.incompatibleLengthMeters
-          }
-        : null,
+      boundaryLength: toBoundaryLength(availableLength),
       existingAgreements: agreements,
-      intersections: {
-        moorland: {
-          intersectingAreaPercentage: moorlandIntersectingAreaPercentage
-        },
-        lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
-        sssi: sssiDataLayerData,
-        historic_features: historicFeaturesDataLayerData
-      },
+      intersections: toIntersections({
+        moorlandIntersectingAreaPercentage,
+        lfaIntersectingAreaPercentage,
+        sssiDataLayerData,
+        historicFeaturesDataLayerData
+      }),
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
 }
 
 /**
+ * The parcel perimeter and the length already committed to incompatible
+ * actions, so a caseworker can tell an unreadable boundary from an
+ * over-committed one when availability is zero. Null for non-linear actions.
+ * @param {AvailableLength|null} availableLength
+ * @returns {{totalMeters: number, incompatibleMeters: number}|null}
+ */
+function toBoundaryLength(availableLength) {
+  return availableLength
+    ? {
+        totalMeters: availableLength.boundaryLengthMeters,
+        incompatibleMeters: availableLength.incompatibleLengthMeters
+      }
+    : null
+}
+
+/**
+ * @param {object} dataLayers - The intersection results for the parcel
+ * @returns {object} The intersections as the rules engine expects them
+ */
+function toIntersections({
+  moorlandIntersectingAreaPercentage,
+  lfaIntersectingAreaPercentage,
+  sssiDataLayerData,
+  historicFeaturesDataLayerData
+}) {
+  return {
+    moorland: {
+      intersectingAreaPercentage: moorlandIntersectingAreaPercentage
+    },
+    lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
+    sssi: sssiDataLayerData,
+    historic_features: historicFeaturesDataLayerData
+  }
+}
+
+/**
  * get the applied for quantity based on available area and length.
  * @param {number} availableArea
- * @param {object} availableLength
+ * @param {AvailableLength|null} availableLength
  * @param {ActionRequest} action
  * @returns {number}
  */
@@ -263,9 +292,11 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
   if (availableArea) {
     return action.quantity
   }
+
   if (availableLength) {
     return Math.round(action.quantity)
   }
+
   return 0
 }
 
