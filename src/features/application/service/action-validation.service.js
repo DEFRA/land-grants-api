@@ -16,6 +16,7 @@ import { getAvailableAreaDataRequirements } from '~/src/features/available-area/
 import { getLandData } from '../../parcel/queries/getLandData.query.js'
 import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
+import { getSdaIntersectPercentage } from '~/src/features/parcel/queries/getSdaIntersectPercentage.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
@@ -181,6 +182,7 @@ const buildRuleEngineApplication = async (
   const [
     moorlandIntersectingAreaPercentage,
     lfaIntersectingAreaPercentage,
+    sdaIntersectingAreaPercentage,
     sssiDataLayerData,
     historicFeaturesDataLayerData,
     landParcel
@@ -192,6 +194,12 @@ const buildRuleEngineApplication = async (
       request.logger
     ),
     getLfaIntersectPercentage(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
+    ),
+    getSdaIntersectPercentage(
       landAction.sheetId,
       landAction.parcelId,
       request.server.postgresDb,
@@ -237,6 +245,7 @@ const buildRuleEngineApplication = async (
       intersections: toIntersections({
         moorlandIntersectingAreaPercentage,
         lfaIntersectingAreaPercentage,
+        sdaIntersectingAreaPercentage,
         sssiDataLayerData,
         historicFeaturesDataLayerData
       }),
@@ -268,6 +277,7 @@ function toBoundaryLength(availableLength) {
 function toIntersections({
   moorlandIntersectingAreaPercentage,
   lfaIntersectingAreaPercentage,
+  sdaIntersectingAreaPercentage,
   sssiDataLayerData,
   historicFeaturesDataLayerData
 }) {
@@ -276,6 +286,7 @@ function toIntersections({
       intersectingAreaPercentage: moorlandIntersectingAreaPercentage
     },
     lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
+    sda: { intersectingAreaPercentage: sdaIntersectingAreaPercentage },
     sssi: sssiDataLayerData,
     historic_features: historicFeaturesDataLayerData
   }
