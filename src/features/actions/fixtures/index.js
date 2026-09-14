@@ -142,6 +142,8 @@ export const wbd1 = {
   description: 'Manage ponds',
   display: true,
   displayOrder: 0,
+  displayUnit: 'pond',
+  displayUnitPlural: 'ponds',
   durationYears: 3,
   enabled: true,
   groupId: null,

@@ -54,6 +54,8 @@ describe('Get Actions By Latest Version Query', () => {
       applicationUnitOfMeasurement: 'ha',
       guidanceUrl: null,
       availability: null,
+      displayUnit: null,
+      displayUnitPlural: null,
       payment: {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272
