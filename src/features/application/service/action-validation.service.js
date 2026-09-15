@@ -3,7 +3,11 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
-import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
+import {
+  HECTARES,
+  METERS,
+  isAreaUnit
+} from '~/src/features/common/constants/unit_type.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
@@ -48,8 +52,10 @@ async function getAvailableArea(
     .filter(filterActionByUnit)
     .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
 
+  // Agreements arrive in every unit; only area-based ones compete for area.
+  const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
   const existingActions = [
-    ...plannedActionsTransformer(agreements),
+    ...plannedActionsTransformer(areaAgreements),
     ...siblingActions
   ]
 
@@ -159,7 +165,7 @@ export const validateLandAction = async (
  * @param {ActionRequest} action
  * @param {LandAction} landAction
  * @param {object|null} availableArea
- * @param {{availableLength: number}|null} availableLength
+ * @param {AvailableLength|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
  * @returns {Promise<RuleEngineApplication>}
@@ -226,24 +232,59 @@ const buildRuleEngineApplication = async (
         availableArea?.availableAreaSqm ??
         availableLength?.availableLength ??
         0,
+      boundaryLength: toBoundaryLength(availableLength),
       existingAgreements: agreements,
-      intersections: {
-        moorland: {
-          intersectingAreaPercentage: moorlandIntersectingAreaPercentage
-        },
-        lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
-        sssi: sssiDataLayerData,
-        historic_features: historicFeaturesDataLayerData
-      },
+      intersections: toIntersections({
+        moorlandIntersectingAreaPercentage,
+        lfaIntersectingAreaPercentage,
+        sssiDataLayerData,
+        historicFeaturesDataLayerData
+      }),
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
 }
 
 /**
+ * The parcel perimeter and the length already committed to incompatible
+ * actions, so a caseworker can tell an unreadable boundary from an
+ * over-committed one when availability is zero. Null for non-linear actions.
+ * @param {AvailableLength|null} availableLength
+ * @returns {{totalMeters: number, incompatibleMeters: number}|null}
+ */
+function toBoundaryLength(availableLength) {
+  return availableLength
+    ? {
+        totalMeters: availableLength.boundaryLengthMeters,
+        incompatibleMeters: availableLength.incompatibleLengthMeters
+      }
+    : null
+}
+
+/**
+ * @param {object} dataLayers - The intersection results for the parcel
+ * @returns {object} The intersections as the rules engine expects them
+ */
+function toIntersections({
+  moorlandIntersectingAreaPercentage,
+  lfaIntersectingAreaPercentage,
+  sssiDataLayerData,
+  historicFeaturesDataLayerData
+}) {
+  return {
+    moorland: {
+      intersectingAreaPercentage: moorlandIntersectingAreaPercentage
+    },
+    lfa: { intersectingAreaPercentage: lfaIntersectingAreaPercentage },
+    sssi: sssiDataLayerData,
+    historic_features: historicFeaturesDataLayerData
+  }
+}
+
+/**
  * get the applied for quantity based on available area and length.
  * @param {number} availableArea
- * @param {object} availableLength
+ * @param {AvailableLength|null} availableLength
  * @param {ActionRequest} action
  * @returns {number}
  */
@@ -251,9 +292,11 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
   if (availableArea) {
     return action.quantity
   }
+
   if (availableLength) {
     return Math.round(action.quantity)
   }
+
   return 0
 }
 
@@ -261,6 +304,7 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'

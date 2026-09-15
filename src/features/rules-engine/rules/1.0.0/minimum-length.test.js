@@ -3,10 +3,16 @@ import { minimumLength } from './minimum-length.js'
 describe('minimumLength', () => {
   const name = 'minimum-length'
 
-  const createApplication = (appliedForQuantity, availability) => ({
+  // By default nothing is committed, so the whole boundary is available
+  const createApplication = (
+    appliedForQuantity,
+    availability,
+    boundaryLength = { totalMeters: availability, incompatibleMeters: 0 }
+  ) => ({
     appliedForQuantity,
     landParcel: {
-      availability
+      availability,
+      boundaryLength
     }
   })
 
@@ -110,6 +116,35 @@ describe('minimumLength', () => {
   test('should explain the minimum, the available length and the applied for length', () => {
     const result = minimumLength.execute(
       createApplication(50, 300),
+      createRule()
+    )
+
+    expect(result.explanations).toEqual([
+      {
+        title: 'Minimum length',
+        lines: [
+          'The minimum allowable length is (20 m), the available length was (300 m) and the applicant applied for (50 m)',
+          'The parcel boundary is (300 m) and (0 m) is already committed to incompatible actions'
+        ]
+      }
+    ])
+  })
+
+  test('should explain an over-committed boundary that has been clamped to zero', () => {
+    const result = minimumLength.execute(
+      createApplication(50, 0, { totalMeters: 1000, incompatibleMeters: 1500 }),
+      createRule()
+    )
+
+    expect(result.passed).toBe(false)
+    expect(result.explanations[0].lines[1]).toEqual(
+      'The parcel boundary is (1000 m) and (1500 m) is already committed to incompatible actions'
+    )
+  })
+
+  test('should omit the boundary breakdown when none is supplied', () => {
+    const result = minimumLength.execute(
+      createApplication(50, 300, null),
       createRule()
     )
 
