@@ -8,7 +8,7 @@ This rule checks that the parcel associated with the application has an intersec
 
 | Parameter                    | Type   | Description                                                                  |
 | ---------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `layerName`                  | string | The data layer to check (e.g. "moorland", "sssi").                           |
+| `layerName`                  | string | The data layer to check (e.g. "moorland", "lfa", "sda").                     |
 | `maximumIntersectionPercent` | number | The maximum allowed intersection percentage before tolerance is applied.     |
 | `tolerancePercent`           | number | Additional percentage tolerance added to the maximum intersection threshold. |
 

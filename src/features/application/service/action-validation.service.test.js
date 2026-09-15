@@ -2,6 +2,7 @@ import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
+import { getSdaIntersectPercentage } from '~/src/features/parcel/queries/getSdaIntersectPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
@@ -24,6 +25,9 @@ vi.mock(
 )
 vi.mock('~/src/features/parcel/queries/getLfaIntersectPercentage.js', () => ({
   getLfaIntersectPercentage: vi.fn()
+}))
+vi.mock('~/src/features/parcel/queries/getSdaIntersectPercentage.js', () => ({
+  getSdaIntersectPercentage: vi.fn()
 }))
 vi.mock(
   '~/src/features/available-area/availableAreaDataRequirements.js',
@@ -81,6 +85,7 @@ const mockGetMoorlandIntersectPercentage = vi.mocked(
   getMoorlandIntersectPercentage
 )
 const mockGetLfaIntersectPercentage = vi.mocked(getLfaIntersectPercentage)
+const mockGetSdaIntersectPercentage = vi.mocked(getSdaIntersectPercentage)
 const mockGetAvailableAreaDataRequirements = vi.mocked(
   getAvailableAreaDataRequirements
 )
@@ -187,6 +192,7 @@ describe('Action Validation Service', () => {
     ])
     mockGetMoorlandIntersectPercentage.mockResolvedValue(50)
     mockGetLfaIntersectPercentage.mockResolvedValue(100)
+    mockGetSdaIntersectPercentage.mockResolvedValue(40)
     mockGetDataLayerQueryAccumulated.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
@@ -244,6 +250,12 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
+      expect(mockGetSdaIntersectPercentage).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
       expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledTimes(1)
       expect(mockGetDataLayerQueryAccumulated).toHaveBeenCalledWith(
         mockLandAction.sheetId,
@@ -285,6 +297,30 @@ describe('Action Validation Service', () => {
         mockAvailableAreaResult,
         mockRuleResult
       )
+    })
+
+    test('should pass every data layer intersection to the rules engine', async () => {
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(
+        mockExecuteRules.mock.calls[0][1].landParcel.intersections
+      ).toEqual({
+        moorland: { intersectingAreaPercentage: 50 },
+        lfa: { intersectingAreaPercentage: 100 },
+        sda: { intersectingAreaPercentage: 40 },
+        sssi: { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
+        historic_features: {
+          intersectingAreaPercentage: 15.5,
+          intersectionAreaHa: 0.1
+        }
+      })
     })
 
     test('should include other actions requested for the same parcel as existing area demand', async () => {
