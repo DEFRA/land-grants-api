@@ -23,12 +23,12 @@ export const hasCompatibleLandUseCode = {
       }
     ]
 
-    const hasCompatibleLandUseCode = landUseCodes.some(
+    const hasLandUseCode = landUseCodes.some(
       (code) =>
         code.localeCompare(landUseCode, 'en', { sensitivity: 'base' }) === 0
     )
 
-    if (hasCompatibleLandUseCode) {
+    if (hasLandUseCode) {
       return {
         name,
         passed: true,
