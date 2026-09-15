@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="land-cover-codes-add-class-code-index" author="system">
+    <sql>
+      CREATE INDEX IF NOT EXISTS land_cover_class_code_idx
+        ON land_cover_codes(land_cover_class_code);
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
