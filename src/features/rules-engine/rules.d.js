@@ -25,8 +25,15 @@
  * @property {number|null} availableAreaSqm
  * @property {number} parcelSizeSqm
  * @property {number} availability
+ * @property {BoundaryLength|null} [boundaryLength]
  * @property {Array} existingAgreements
  * @property {object} intersections
+ */
+
+/**
+ * @typedef {object} BoundaryLength
+ * @property {number} totalMeters
+ * @property {number} incompatibleMeters
  */
 
 /**

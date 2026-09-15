@@ -12,7 +12,7 @@ export const minimumLength = {
   execute: (application, rule) => {
     const {
       appliedForQuantity,
-      landParcel: { availability }
+      landParcel: { availability, boundaryLength }
     } = application
     const { minimumLengthM } = rule.config ?? {}
     const name = rule.name
@@ -32,14 +32,17 @@ export const minimumLength = {
       }
     }
 
-    const explanations = [
-      {
-        title: 'Minimum length',
-        lines: [
-          `The minimum allowable length is (${minimumLengthM} m), the available length was (${availability} m) and the applicant applied for (${appliedForQuantity} m)`
-        ]
-      }
+    const lines = [
+      `The minimum allowable length is (${minimumLengthM} m), the available length was (${availability} m) and the applicant applied for (${appliedForQuantity} m)`
     ]
+
+    if (boundaryLength) {
+      lines.push(
+        `The parcel boundary is (${boundaryLength.totalMeters} m) and (${boundaryLength.incompatibleMeters} m) is already committed to incompatible actions`
+      )
+    }
+
+    const explanations = [{ title: 'Minimum length', lines }]
 
     if (availability < minimumLengthM) {
       return {

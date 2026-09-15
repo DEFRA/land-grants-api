@@ -88,7 +88,7 @@ describe('getAgreements', () => {
     expect(result).toEqual([...dbAgreements, ...dalAgreements])
   })
 
-  it('should filter out non-area agreements', async () => {
+  it('should return agreements in every unit, not only area-based ones', async () => {
     const dbAgreementCount = {
       actionCode: 'AF1',
       quantity: 800,
@@ -149,7 +149,12 @@ describe('getAgreements', () => {
       mockLogger
     )
 
-    expect(result).toEqual([dbAgreementArea, dalAgreementArea])
+    expect(result).toEqual([
+      dbAgreementCount,
+      dbAgreementArea,
+      dalAgreementLength,
+      dalAgreementArea
+    ])
   })
 
   test.each([

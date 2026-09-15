@@ -695,6 +695,51 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
+    test('should judge an agreement by its own unit when its action code has no enabled-action config', async () => {
+      const plannedActions = [
+        {
+          actionCode: 'LEGACY_AREA',
+          quantity: 100,
+          unit: 'sqm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        },
+        {
+          actionCode: 'LEGACY_HECTARES',
+          quantity: 2,
+          unit: 'ha',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        },
+        {
+          actionCode: 'LEGACY_LENGTH',
+          quantity: 500,
+          unit: 'm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        }
+      ]
+      mergeAgreementsTransformer.mockReturnValue(plannedActions)
+      plannedActionsTransformer.mockReturnValue([
+        { actionCode: 'LEGACY_AREA', areaSqm: 100 }
+      ])
+
+      await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, plannedActions },
+        false,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(plannedActionsTransformer).toHaveBeenCalledWith([
+        plannedActions[0],
+        plannedActions[1]
+      ])
+    })
+
     test('should include actions in the response when actions field is requested', async () => {
       const result = await getActionsForParcel(
         mockParcel,
