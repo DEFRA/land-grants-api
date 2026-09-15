@@ -28,6 +28,8 @@ async function getActionsByLatestVersion(logger, db) {
           ac.config->'rules' as rules,
           ac.config->>'guidance_url' as guidance_url,
           ac.config->'availability' as availability,
+          ac.config->>'display_unit' as display_unit,
+          ac.config->>'display_unit_plural' as display_unit_plural,
           ac.last_updated_at as last_updated,
           ac.semantic_version as semantic_version,
           ac.group_id as group_id,

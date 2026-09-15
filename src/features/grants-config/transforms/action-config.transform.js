@@ -51,7 +51,9 @@ function buildConfig(actionJson) {
     land_cover_class_codes: actionJson.landCoverClassCodes ?? [],
     rules: actionJson.rules ?? [],
     guidance_url: actionJson.guidanceUrl ?? null,
-    availability: actionJson.availability ?? null
+    availability: actionJson.availability ?? null,
+    display_unit: actionJson.displayUnit ?? null,
+    display_unit_plural: actionJson.displayUnitPlural ?? null
   }
 }
 

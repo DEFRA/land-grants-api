@@ -20,6 +20,8 @@ export function actionConfigTransformer(action) {
     display_order: displayOrder,
     payment_method: paymentMethod,
     guidance_url: guidanceUrl,
+    display_unit: displayUnit,
+    display_unit_plural: displayUnitPlural,
     ...actionObj
   } = action
   return {
@@ -30,6 +32,8 @@ export function actionConfigTransformer(action) {
     startDate,
     lastUpdated,
     guidanceUrl,
+    displayUnit,
+    displayUnitPlural,
     version: Number(version),
     majorVersion: Number(majorVersion),
     minorVersion: Number(minorVersion),

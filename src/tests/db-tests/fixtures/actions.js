@@ -156,5 +156,24 @@ export const actions = [
     display: false,
     description: 'Conservation support for moorland',
     semanticVersion: '2.0.0'
+  },
+  {
+    applicationUnitOfMeasurement: 'count',
+    code: 'WBD1',
+    description: 'Manage ponds',
+    display: false,
+    displayUnit: 'pond',
+    displayUnitPlural: 'ponds',
+    durationYears: 3,
+    enabled: true,
+    groupId: null,
+    groupName: null,
+    landCoverClassCodes,
+    payment: {
+      ratePerUnitGbp: 257
+    },
+    semanticVersion: '2.0.0',
+    startDate: '2025-01-01',
+    version: 1
   }
 ]

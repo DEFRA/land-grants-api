@@ -3,21 +3,23 @@ import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_avail
 
 describe('transformActionConfig', () => {
   const pa3Json = {
+    applicationUnitOfMeasurement: 'ha',
     code: 'PA3',
     description: 'Woodland management plan',
-    enabled: true,
     display: false,
-    payment: null,
-    rules: [{ name: 'some-rule', description: 'desc' }],
-    applicationUnitOfMeasurement: 'ha',
-    durationYears: 10,
-    startDate: '2025-01-01',
-    semanticVersion: '1.0.0',
     displayOrder: 0,
+    displayUnit: 'blueberry',
+    displayUnitPlural: 'blueberries',
+    durationYears: 10,
+    enabled: true,
+    payment: null,
     paymentMethod: {
       name: 'wmp-calculation',
       config: { tiers: [] }
-    }
+    },
+    rules: [{ name: 'some-rule', description: 'desc' }],
+    semanticVersion: '1.0.0',
+    startDate: '2025-01-01'
   }
 
   test('extracts code and semanticVersion', () => {
@@ -125,6 +127,29 @@ describe('transformActionConfig', () => {
     expect(result.config.guidance_url).toBeNull()
   })
 
+  test('extracts config.displayUnit when present', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.config.display_unit).toBe('blueberry')
+  })
+
+  test('defaults config.displayUnit to null when absent', () => {
+    const result = transformActionConfig({ ...pa3Json, displayUnit: undefined })
+    expect(result.config.display_unit).toBeNull()
+  })
+
+  test('extracts config.displayUnitPlural when present', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.config.display_unit_plural).toBe('blueberries')
+  })
+
+  test('defaults config.displayUnitPlural to null when absent', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      displayUnitPlural: undefined
+    })
+    expect(result.config.display_unit_plural).toBeNull()
+  })
+
   test('extracts enabled from input', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.enabled).toBe(true)
@@ -156,7 +181,9 @@ describe('transformActionConfig', () => {
       land_cover_class_codes: [],
       rules: [{ name: 'some-rule', description: 'desc' }],
       guidance_url: null,
-      availability: null
+      availability: null,
+      display_unit: 'blueberry',
+      display_unit_plural: 'blueberries'
     })
   })
 
@@ -183,11 +210,11 @@ describe('transformActionConfig', () => {
       payment: undefined,
       rules: undefined
     })
-    expect(result.config.start_date).toBeUndefined()
     expect(result.config.application_unit_of_measurement).toBeUndefined()
     expect(result.config.duration_years).toBeUndefined()
     expect(result.config.payment_method).toBeUndefined()
     expect(result.config.rules).toEqual([])
+    expect(result.config.start_date).toBeUndefined()
   })
 
   test('throws when semanticVersion is missing', () => {

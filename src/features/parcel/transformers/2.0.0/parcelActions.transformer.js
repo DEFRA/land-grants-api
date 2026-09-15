@@ -24,6 +24,8 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
     quantityRequired: action?.availability?.type !== TOTAL,
+    displayUnit: action?.displayUnit,
+    displayUnitPlural: action?.displayUnitPlural,
     ...action.payment
   }
 

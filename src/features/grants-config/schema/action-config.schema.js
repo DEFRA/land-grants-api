@@ -18,6 +18,8 @@ export const actionConfigInputSchema = Joi.object({
   groupId: Joi.number().integer().allow(null).optional(),
   enabled: Joi.boolean().optional(),
   display: Joi.boolean().optional(),
+  displayUnit: Joi.string().optional(),
+  displayUnitPlural: Joi.string().optional(),
   guidanceUrl: Joi.string().uri().optional(),
   availability: Joi.object({
     type: Joi.string()
