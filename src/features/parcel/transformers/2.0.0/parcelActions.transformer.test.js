@@ -185,4 +185,26 @@ describe('actionTransformer 2.0.0', () => {
       quantityRequired: false
     })
   })
+
+  test('should include displayUnit and displayUnitPlural where available', () => {
+    const action = {
+      ...defaultAction,
+      displayUnit: 'tomato',
+      displayUnitPlural: 'tomatoes'
+    }
+
+    const result = actionTransformer(action)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availability: {
+        unit: 'ha',
+        value: null
+      },
+      quantityRequired: true,
+      displayUnit: 'tomato',
+      displayUnitPlural: 'tomatoes'
+    })
+  })
 })
