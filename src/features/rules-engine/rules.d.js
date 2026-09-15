@@ -28,6 +28,7 @@
  * @property {BoundaryLength|null} [boundaryLength]
  * @property {Array} existingAgreements
  * @property {object} intersections
+ * @property {string[]} [landUseCodes]
  */
 
 /**

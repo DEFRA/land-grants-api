@@ -22,6 +22,7 @@ import { plannedActionsTransformer } from '../../parcel/transformers/parcelActio
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
 import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
+import { getLandUseCodesForParcel } from '../../parcel/queries/getLandUseCodesForParcel.query.js'
 
 /**
  * Find the available area for a land action, only for land-area-based (hectare) actions
@@ -183,9 +184,10 @@ const buildRuleEngineApplication = async (
   const db = request.server.postgresDb
   const logger = request.logger
 
-  const [intersections, landParcel] = await Promise.all([
+  const [intersections, landParcel, landUseCodes] = await Promise.all([
     getIntersections(sheetId, parcelId, db, logger),
-    getLandData(sheetId, parcelId, db, logger)
+    getLandData(sheetId, parcelId, db, logger),
+    getLandUseCodesForParcel(sheetId, parcelId, db, logger)
   ])
 
   return {
@@ -209,7 +211,8 @@ const buildRuleEngineApplication = async (
         : null,
       existingAgreements: agreements,
       intersections,
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0,
+      landUseCodes: landUseCodes ?? []
     }
   }
 }

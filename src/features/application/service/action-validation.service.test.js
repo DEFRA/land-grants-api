@@ -16,6 +16,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import { getLandUseCodesForParcel } from '~/src/features/parcel/queries/getLandUseCodesForParcel.query.js'
 
 vi.mock(
   '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js',
@@ -70,6 +71,12 @@ vi.mock('~/src/features/available-length/availableLength.js', () => ({
   getAvailableLength: vi.fn()
 }))
 vi.mock(
+  '~/src/features/parcel/queries/getLandUseCodesForParcel.query.js',
+  () => ({
+    getLandUseCodesForParcel: vi.fn()
+  })
+)
+vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
   async (importOriginal) => {
     const actual = await importOriginal()
@@ -98,6 +105,7 @@ const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
 const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)
 const mockGetLandData = vi.mocked(getLandData)
 const mockGetAvailableLength = vi.mocked(getAvailableLength)
+const mockGetLandUseCodesForParcel = vi.mocked(getLandUseCodesForParcel)
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -139,7 +147,7 @@ describe('Action Validation Service', () => {
   const mockCompatibilityCheckFn = vi.fn()
 
   const mockAvailableAreaDataRequirements = {
-    landCoverCodesForAppliedForAction: ['130', '240'],
+    landCoverCodesForAppliedForAction: ['WF01', 'WF03'],
     landCoversForParcel: [],
     landCoversForExistingActions: [],
     landCoverToString: vi.fn()
@@ -207,6 +215,7 @@ describe('Action Validation Service', () => {
       boundaryLengthMeters: 1000,
       incompatibleLengthMeters: 800
     })
+    mockGetLandUseCodesForParcel.mockResolvedValue(['WF01', 'WF03'])
     mockPlannedActionsTransformer.mockReturnValue([])
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
@@ -278,6 +287,12 @@ describe('Action Validation Service', () => {
         mockPostgresDb,
         mockLogger
       )
+      expect(mockGetLandUseCodesForParcel).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
       expect(mockGetAvailableLength).not.toHaveBeenCalled()
       expect(mockExecuteRules).toHaveBeenCalled()
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
@@ -288,7 +303,8 @@ describe('Action Validation Service', () => {
         actionCode: mockAction.code,
         landParcel: expect.objectContaining({
           parcelSizeSqm: 5000,
-          availability: 1000
+          availability: 1000,
+          landUseCodes: ['WF01', 'WF03']
         })
       })
       expect(mockActionResultTransformer).toHaveBeenCalledWith(
@@ -656,6 +672,25 @@ describe('Action Validation Service', () => {
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
         landParcel: expect.objectContaining({
           parcelSizeSqm: 0
+        })
+      })
+    })
+
+    test('should default landUseCodes to an empty array when getLandUseCodesForParcel returns null', async () => {
+      mockGetLandUseCodesForParcel.mockResolvedValue(null)
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          landUseCodes: []
         })
       })
     })
