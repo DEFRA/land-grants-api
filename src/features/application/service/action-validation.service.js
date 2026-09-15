@@ -224,7 +224,13 @@ const buildRuleEngineApplication = async (
  * @returns {Promise<object>}
  */
 async function getIntersections(sheetId, parcelId, db, logger) {
-  const [moorland, lfa, sda, sssi, historicFeatures] = await Promise.all([
+  const [
+    moorland,
+    lessFavouredArea,
+    severelyDisadvantagedArea,
+    sssi,
+    historicFeatures
+  ] = await Promise.all([
     getMoorlandIntersectPercentage(sheetId, parcelId, db, logger),
     getLfaIntersectPercentage(sheetId, parcelId, db, logger),
     getSdaIntersectPercentage(sheetId, parcelId, db, logger),
@@ -246,8 +252,8 @@ async function getIntersections(sheetId, parcelId, db, logger) {
 
   return {
     moorland: { intersectingAreaPercentage: moorland },
-    lfa: { intersectingAreaPercentage: lfa },
-    sda: { intersectingAreaPercentage: sda },
+    lfa: { intersectingAreaPercentage: lessFavouredArea },
+    sda: { intersectingAreaPercentage: severelyDisadvantagedArea },
     sssi,
     historic_features: historicFeatures
   }
