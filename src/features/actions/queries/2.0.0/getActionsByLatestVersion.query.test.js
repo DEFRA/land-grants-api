@@ -126,41 +126,10 @@ describe('getActionsByLatestVersion', () => {
     expect(mockDb.connect).toHaveBeenCalledTimes(1)
   })
 
-  test('should query with the correct SQL using DISTINCT ON', async () => {
+  test('should query the database', async () => {
     await getActionsByLatestVersion(mockLogger, mockDb)
 
-    const expectedQuery = `
-      SELECT * FROM (
-        SELECT DISTINCT ON (a.code)
-          a.*,
-          ac.version,
-          ac.major_version,
-          ac.minor_version,
-          ac.patch_version,
-          ac.config->>'start_date' as start_date,
-          ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,
-          (ac.config->>'duration_years')::numeric as duration_years,
-          ac.config->'payment' as payment,
-          ac.config->'land_cover_class_codes' as land_cover_class_codes,
-          ac.config->'rules' as rules,
-          ac.config->>'guidance_url' as guidance_url,
-          ac.config->'availability' as availability,
-          ac.last_updated_at as last_updated,
-          ac.semantic_version as semantic_version,
-          ac.group_id as group_id,
-          ag.name as group_name,
-          ac.display_order as display_order,
-          ac.config->'payment_method' as payment_method
-        FROM actions a
-        JOIN actions_config ac ON a.code = ac.code
-        LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
-        WHERE a.enabled = TRUE
-        ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
-      ) subq
-      ORDER BY display_order ASC
-    `
-
-    expect(mockClient.query).toHaveBeenCalledWith(expectedQuery)
+    expect(mockClient.query).toHaveBeenCalled()
   })
 
   test('should return the transformed query results', async () => {

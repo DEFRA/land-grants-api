@@ -26,6 +26,8 @@
  * @property {object} paymentMethod
  * @property {string} [guidanceUrl]
  * @property {ActionAvailability} [availability]
+ * @property {string} [displayUnit]
+ * @property {string} [displayUnitPlural]
  */
 
 /**
