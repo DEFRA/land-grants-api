@@ -202,6 +202,13 @@ const config = convict({
       env: 'LAND_GRANTS_AUTH_TOKEN',
       sensitive: true
     },
+    gasTokenHash: {
+      doc: 'SHA-256 hash of the bearer token used by the GAS service',
+      format: String,
+      default: '',
+      env: 'GAS_AUTH_TOKEN_HASH',
+      sensitive: true
+    },
     encryptionKey: {
       doc: 'Encryption key for securing bearer token transmission',
       format: String,

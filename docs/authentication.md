@@ -21,6 +21,16 @@ Clients must:
 3. Base64 encode the entire formatted string
 4. Send as a Bearer token: `Authorization: Bearer {base64EncodedEncryptedToken}`
 
+#### GAS authentication
+
+GAS sends its `LAND_GRANTS_TOKEN` as a bearer token:
+
+```text
+Authorization: Bearer {LAND_GRANTS_TOKEN}
+```
+
+Land Grants hashes the incoming token with SHA-256 and compares it with `GAS_AUTH_TOKEN_HASH`.
+
 #### Excluded Endpoints
 
 The following endpoints do not require authentication:
