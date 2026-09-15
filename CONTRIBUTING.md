@@ -48,9 +48,7 @@ the subject already says everything.
 Follow the [Defra pull request standards](https://defra.github.io/software-development-standards/processes/pull_requests): branch, push and open the pull request early, keep it focused, rebase rather than
 merge to stay current, and squash on merge.
 
-Because merges are squashed, the pull request title becomes the commit subject on `main`.
-
-Note that a CI check validates that the title matches the subject format above and that Dependabot pull requests and
-GitHub-generated `Revert "..."` titles are exempt.
+Because merges are squashed, the pull request title becomes the commit subject on `main`, so
+it should follow the subject format above.
 
 Where a branch has several commits, replace GitHub's default squash message with a single coherent message before merging.
