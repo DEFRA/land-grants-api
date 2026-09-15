@@ -18,6 +18,7 @@ export async function getLandUseCodesForParcel(sheetId, parcelId, db, logger) {
     FROM
     land_covers c
     INNER JOIN land_cover_codes cc ON cc.land_cover_class_code = c.land_cover_class_code
+          OR cc.land_cover_code = c.land_cover_class_code
     WHERE
         c.sheet_id = $1
     AND c.parcel_id = $2`

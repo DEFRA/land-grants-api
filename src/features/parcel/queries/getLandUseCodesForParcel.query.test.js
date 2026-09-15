@@ -43,6 +43,7 @@ describe('getLandUseCodesForParcel', () => {
     FROM
     land_covers c
     INNER JOIN land_cover_codes cc ON cc.land_cover_class_code = c.land_cover_class_code
+          OR cc.land_cover_code = c.land_cover_class_code
     WHERE
         c.sheet_id = $1
     AND c.parcel_id = $2`
@@ -67,7 +68,7 @@ describe('getLandUseCodesForParcel', () => {
     expect(result).toEqual(['WF03', 'WF01'])
   })
 
-  test('should return an empty array when there WS03e no matching rows', async () => {
+  test('should return an empty array when there are no matching rows', async () => {
     const sheetId = 'SH123'
     const parcelId = 'PA456'
     mockClient.query = vi.fn().mockResolvedValue({ rows: [] })
