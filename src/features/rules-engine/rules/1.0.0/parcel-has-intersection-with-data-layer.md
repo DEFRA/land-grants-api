@@ -8,7 +8,7 @@ This rule checks that the parcel associated with the application has an intersec
 
 | Parameter                    | Type   | Description                                                                  |
 | ---------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `dataLayer`                  | string | The data layer to check for intersection (e.g. "moorland", "sssi").          |
+| `layerName`                  | string | The data layer to check for intersection (e.g. "moorland", "lfa", "sda").    |
 | `minimumIntersectionPercent` | number | The minimum required intersection area as a percentage of the parcel area.   |
 | `tolerancePercent`           | number | The tolerance level for the intersection check as a percentage of the parcel |
 

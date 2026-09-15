@@ -25,8 +25,18 @@
  * @property {number|null} availableAreaSqm
  * @property {number} parcelSizeSqm
  * @property {number} availability
+ * @property {BoundaryLength|null} [boundaryLength]
  * @property {Array} existingAgreements
  * @property {object} intersections
+ */
+
+/**
+ * The parcel perimeter and the length already committed to incompatible
+ * actions, so a caseworker can tell an unreadable boundary from an
+ * over-committed one when availability is zero. Null for non-linear actions.
+ * @typedef {object} BoundaryLength
+ * @property {number} totalMeters
+ * @property {number} incompatibleMeters
  */
 
 /**

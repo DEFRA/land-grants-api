@@ -10,7 +10,7 @@ import { createFilterActionByUnit } from '../common/helpers/filter-action-by-uni
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {LandAction} landAction - The land action
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<{availableLength: number}>} The validation result
+ * @returns {Promise<AvailableLength>} The validation result
  */
 export async function getAvailableLength(
   action,
@@ -26,8 +26,13 @@ export async function getAvailableLength(
     .filter(filterActionByUnit)
     .map(mapAction)
 
-  const existingActions = agreements.map(mapAction).concat(siblingActions)
-  const incompatibleLength = existingActions
+  // Agreements arrive in every unit; only those measured in metres compete
+  // for the parcel's boundary length.
+  const existingActions = agreements
+    .filter((a) => a.unit === METERS)
+    .map(mapAction)
+    .concat(siblingActions)
+  const incompatibleLengthMeters = existingActions
     .filter((a) => !compatibilityCheckFn(a.actionCode, action.code))
     .reduce((prev, cur) => {
       return prev + cur.boundaryLengthMeters
@@ -40,15 +45,17 @@ export async function getAvailableLength(
     request.logger
   )
 
-  if (!boundaryResult) {
-    return {
-      availableLength: 0
-    }
-  }
-  const { boundaryLengthMeters } = boundaryResult
+  // A boundary that cannot be read reports zero, as does one committed beyond
+  // its own length - the two are told apart by the figures returned alongside.
+  const boundaryLengthMeters = boundaryResult?.boundaryLengthMeters ?? 0
 
   return {
-    availableLength: boundaryLengthMeters - incompatibleLength
+    availableLength: Math.max(
+      0,
+      boundaryLengthMeters - incompatibleLengthMeters
+    ),
+    boundaryLengthMeters,
+    incompatibleLengthMeters
   }
 }
 
@@ -67,6 +74,7 @@ function mapAction(action) {
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction, LandActionEntry } from '~/src/features/payment/payment.d.js'
  */

@@ -2,6 +2,7 @@ import { validateLandAction } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
+import { getSdaIntersectPercentage } from '~/src/features/parcel/queries/getSdaIntersectPercentage.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
@@ -24,6 +25,9 @@ vi.mock(
 )
 vi.mock('~/src/features/parcel/queries/getLfaIntersectPercentage.js', () => ({
   getLfaIntersectPercentage: vi.fn()
+}))
+vi.mock('~/src/features/parcel/queries/getSdaIntersectPercentage.js', () => ({
+  getSdaIntersectPercentage: vi.fn()
 }))
 vi.mock(
   '~/src/features/available-area/availableAreaDataRequirements.js',
@@ -81,6 +85,7 @@ const mockGetMoorlandIntersectPercentage = vi.mocked(
   getMoorlandIntersectPercentage
 )
 const mockGetLfaIntersectPercentage = vi.mocked(getLfaIntersectPercentage)
+const mockGetSdaIntersectPercentage = vi.mocked(getSdaIntersectPercentage)
 const mockGetAvailableAreaDataRequirements = vi.mocked(
   getAvailableAreaDataRequirements
 )
@@ -187,6 +192,7 @@ describe('Action Validation Service', () => {
     ])
     mockGetMoorlandIntersectPercentage.mockResolvedValue(50)
     mockGetLfaIntersectPercentage.mockResolvedValue(100)
+    mockGetSdaIntersectPercentage.mockResolvedValue(40)
     mockGetDataLayerQueryAccumulated.mockResolvedValue({
       intersectingAreaPercentage: 15.5,
       intersectionAreaHa: 0.1
@@ -196,7 +202,11 @@ describe('Action Validation Service', () => {
       intersectionAreaHa: 0.1
     })
     mockGetLandData.mockResolvedValue([{ area: 5000 }])
-    mockGetAvailableLength.mockResolvedValue({ availableLength: 200 })
+    mockGetAvailableLength.mockResolvedValue({
+      availableLength: 200,
+      boundaryLengthMeters: 1000,
+      incompatibleLengthMeters: 800
+    })
     mockPlannedActionsTransformer.mockReturnValue([])
     mockExecuteRules.mockReturnValue(mockRuleResult)
     mockActionResultTransformer.mockReturnValue(mockActionResult)
@@ -235,6 +245,12 @@ describe('Action Validation Service', () => {
         mockLogger
       )
       expect(mockGetLfaIntersectPercentage).toHaveBeenCalledWith(
+        mockLandAction.sheetId,
+        mockLandAction.parcelId,
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockGetSdaIntersectPercentage).toHaveBeenCalledWith(
         mockLandAction.sheetId,
         mockLandAction.parcelId,
         mockPostgresDb,
@@ -283,6 +299,30 @@ describe('Action Validation Service', () => {
       )
     })
 
+    test('should pass every data layer intersection to the rules engine', async () => {
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(
+        mockExecuteRules.mock.calls[0][1].landParcel.intersections
+      ).toEqual({
+        moorland: { intersectingAreaPercentage: 50 },
+        lfa: { intersectingAreaPercentage: 100 },
+        sda: { intersectingAreaPercentage: 40 },
+        sssi: { intersectingAreaPercentage: 15.5, intersectionAreaHa: 0.1 },
+        historic_features: {
+          intersectingAreaPercentage: 15.5,
+          intersectionAreaHa: 0.1
+        }
+      })
+    })
+
     test('should include other actions requested for the same parcel as existing area demand', async () => {
       const siblingAction = { code: 'UPL1', quantity: 5 }
       const landActionWithSiblings = {
@@ -321,6 +361,29 @@ describe('Action Validation Service', () => {
         mockCompatibilityCheckFn,
         mockAvailableAreaDataRequirements
       )
+    })
+
+    test('should exclude agreements whose unit is not area-based from existing area demand', async () => {
+      const areaAgreement = { actionCode: 'UPL1', quantity: 15000, unit: 'sqm' }
+      const lengthAgreement = { actionCode: 'BND1', quantity: 500, unit: 'm' }
+      const countAgreement = {
+        actionCode: 'WBD1',
+        quantity: 800,
+        unit: 'count'
+      }
+
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        [areaAgreement, lengthAgreement, countAgreement],
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockPlannedActionsTransformer).toHaveBeenCalledWith([
+        areaAgreement
+      ])
     })
 
     test('should exclude a sibling action from existing area demand when its applicationUnitOfMeasurement is not hectares', async () => {
@@ -530,7 +593,25 @@ describe('Action Validation Service', () => {
         appliedForQuantity: 150,
         landParcel: expect.objectContaining({
           availableAreaSqm: null,
-          availability: 200
+          availability: 200,
+          boundaryLength: { totalMeters: 1000, incompatibleMeters: 800 }
+        })
+      })
+    })
+
+    test('should supply no boundary length breakdown for area-based actions', async () => {
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
+        landParcel: expect.objectContaining({
+          boundaryLength: null
         })
       })
     })
@@ -554,7 +635,8 @@ describe('Action Validation Service', () => {
 
       expect(mockExecuteRules.mock.calls[0][1]).toMatchObject({
         landParcel: expect.objectContaining({
-          availability: 0
+          availability: 0,
+          boundaryLength: null
         })
       })
     })
