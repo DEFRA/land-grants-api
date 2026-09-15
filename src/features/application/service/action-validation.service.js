@@ -201,28 +201,17 @@ const buildRuleEngineApplication = async (
         availableArea?.availableAreaSqm ??
         availableLength?.availableLength ??
         0,
-      boundaryLength: toBoundaryLength(availableLength),
+      boundaryLength: availableLength
+        ? {
+            totalMeters: availableLength.boundaryLengthMeters,
+            incompatibleMeters: availableLength.incompatibleLengthMeters
+          }
+        : null,
       existingAgreements: agreements,
       intersections,
       parcelSizeSqm: landParcel?.[0]?.area ?? 0
     }
   }
-}
-
-/**
- * The parcel perimeter and the length already committed to incompatible
- * actions, so a caseworker can tell an unreadable boundary from an
- * over-committed one when availability is zero. Null for non-linear actions.
- * @param {AvailableLength|null} availableLength
- * @returns {{totalMeters: number, incompatibleMeters: number}|null}
- */
-function toBoundaryLength(availableLength) {
-  return availableLength
-    ? {
-        totalMeters: availableLength.boundaryLengthMeters,
-        incompatibleMeters: availableLength.incompatibleLengthMeters
-      }
-    : null
 }
 
 /**
