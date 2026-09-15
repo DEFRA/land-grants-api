@@ -41,7 +41,9 @@ describe('Get Land Use Codes For Parcel Query', () => {
       logger
     )
 
-    expect(landUseCodes).toEqual(expect.arrayContaining(['PG01', 'PG02']))
-    expect(landUseCodes).toHaveLength(2)
+    expect(landUseCodes).toEqual(
+      expect.arrayContaining(['NF01', 'PG01', 'PG02', 'RO04'])
+    )
+    expect(landUseCodes).toHaveLength(4)
   })
 })
