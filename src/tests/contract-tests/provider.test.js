@@ -30,6 +30,7 @@ import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.servic
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
+import { getSdaIntersectPercentage } from '~/src/features/parcel/queries/getSdaIntersectPercentage.js'
 import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
@@ -69,6 +70,7 @@ vi.mock(
 vi.mock('~/src/features/application/service/application-validation.service.js')
 vi.mock('~/src/features/parcel/queries/getMoorlandIntersectPercentage.js')
 vi.mock('~/src/features/parcel/queries/getLfaIntersectPercentage.js')
+vi.mock('~/src/features/parcel/queries/getSdaIntersectPercentage.js')
 vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
   async (importOriginal) => {
@@ -245,6 +247,7 @@ const pactVerifierOptions = async () => {
 
       getMoorlandIntersectPercentage.mockResolvedValue(0)
       getLfaIntersectPercentage.mockResolvedValue(0)
+      getSdaIntersectPercentage.mockResolvedValue(0)
       getDataLayerQueryAccumulated.mockImplementation(
         (_sheetId, _parcelId, dataLayerTypeId) => {
           if (dataLayerTypeId === 1) {

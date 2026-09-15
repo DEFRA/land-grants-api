@@ -1,4 +1,4 @@
-import { getLfaIntersectPercentage } from './getLfaIntersectPercentage.js'
+import { getSdaIntersectPercentage } from './getSdaIntersectPercentage.js'
 import { getIntersectPercentage } from './getIntersectPercentage.js'
 import { DATA_LAYER_TYPES } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 
@@ -6,13 +6,13 @@ vi.mock('./getIntersectPercentage.js', () => ({
   getIntersectPercentage: vi.fn()
 }))
 
-describe('getLfaIntersectPercentage', () => {
-  test('should query the LFA layer for every LFA ref code', async () => {
+describe('getSdaIntersectPercentage', () => {
+  test('should query the LFA layer for the SDA ref codes', async () => {
     const mockDb = {}
     const mockLogger = {}
     vi.mocked(getIntersectPercentage).mockResolvedValue(42)
 
-    const result = await getLfaIntersectPercentage(
+    const result = await getSdaIntersectPercentage(
       'SH123',
       'PA456',
       mockDb,
@@ -24,9 +24,9 @@ describe('getLfaIntersectPercentage', () => {
       {
         sheetId: 'SH123',
         parcelId: 'PA456',
-        refCodes: ['D', 'S', 'M', 'MS', 'MD'],
+        refCodes: ['S', 'MS'],
         dataLayerType: DATA_LAYER_TYPES.less_favoured_areas,
-        operationName: 'Get LFA intersect percentage'
+        operationName: 'Get SDA intersect percentage'
       },
       mockDb,
       mockLogger
