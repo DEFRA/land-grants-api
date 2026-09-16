@@ -11,6 +11,20 @@ const TOKEN_PARTS_COUNT = 3
 const OPERATION_NAME = 'Validate auth token'
 const logger = createLogger()
 
+function tokensMatch(actualToken, expectedToken) {
+  const actual = Buffer.from(actualToken)
+  const expected = Buffer.from(expectedToken)
+
+  return (
+    actual.length === expected.length &&
+    crypto.timingSafeEqual(actual, expected)
+  )
+}
+
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token, 'utf8').digest('hex')
+}
+
 /**
  * Decrypts an encrypted bearer token using AES-256-GCM
  * @param {string} encryptedToken - Token in format: iv:authTag:encryptedData (base64)
@@ -69,6 +83,11 @@ async function validateAuthToken(authHeader) {
       error: 'Missing or invalid Authorization header format'
     }
   }
+  const bearerToken = authHeader.split(' ').pop() ?? ''
+  const gasTokenHash = config.get('auth.gasTokenHash')
+  if (gasTokenHash && tokensMatch(hashToken(bearerToken), gasTokenHash)) {
+    return { isValid: true }
+  }
 
   const expectedToken = config.get('auth.token')
   if (!expectedToken) {
@@ -92,18 +111,15 @@ async function validateAuthToken(authHeader) {
   }
 
   try {
-    const encryptedToken = Buffer.from(
-      authHeader.split(' ').pop() ?? '',
-      'base64'
-    ).toString('utf-8')
+    const encryptedToken = Buffer.from(bearerToken, 'base64').toString('utf-8')
     const actualToken = await decryptToken(encryptedToken)
     if (!actualToken) {
       return { isValid: false, error: 'Invalid encrypted token' }
     }
 
-    const tokensMatch = actualToken === expectedToken
+    const matchesExpectedToken = tokensMatch(actualToken, expectedToken)
 
-    if (!tokensMatch) {
+    if (!matchesExpectedToken) {
       return { isValid: false, error: 'Invalid bearer token' }
     }
   } catch (error) {

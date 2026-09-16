@@ -82,6 +82,7 @@ services:
       SNS_ENDPOINT: http://floci:4566
       SNS_TOPIC_ARN_AUDIT: arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api
       LAND_GRANTS_AUTH_TOKEN: ${LAND_GRANTS_AUTH_TOKEN:-local-dev-token}
+      GAS_AUTH_TOKEN_HASH: ${GAS_AUTH_TOKEN_HASH:-}
       LAND_GRANTS_ENCRYPTION_KEY: ${LAND_GRANTS_ENCRYPTION_KEY:-local-dev-encryption-key-at-least-24-chars}
     volumes:
       - ./src:/home/node/src
