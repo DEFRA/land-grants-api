@@ -1,5 +1,7 @@
+import { HECTARES, SQM } from '~/src/features/common/constants/unit_type.js'
 import {
   haToSqm,
+  roundSqm,
   sqmToHaRounded
 } from '~/src/features/common/helpers/measurement.js'
 
@@ -17,19 +19,31 @@ export const appliedForTotalAvailableArea = {
   execute: (application, rule) => {
     const {
       appliedForQuantity,
+      applicationUnitOfMeasurement,
       landParcel: { availableAreaSqm }
     } = application
 
-    const appliedForQuantityHa = Number.parseFloat(appliedForQuantity)
-    const availableAreaHa = sqmToHaRounded(availableAreaSqm)
-    const appliedForQuantitySqm = haToSqm(appliedForQuantityHa)
+    // Hectare actions apply for hectares and compare in sqm; sqm actions
+    // (e.g. buildings) already apply for and compare in sqm directly.
+    const isHectares = applicationUnitOfMeasurement === HECTARES
+    const unit = isHectares ? HECTARES : (applicationUnitOfMeasurement ?? SQM)
+
+    const availableAreaDisplay = isHectares
+      ? sqmToHaRounded(availableAreaSqm)
+      : availableAreaSqm
+    const appliedForQuantityDisplay = isHectares
+      ? Number.parseFloat(appliedForQuantity)
+      : roundSqm(appliedForQuantity)
+    const appliedForQuantitySqm = isHectares
+      ? haToSqm(appliedForQuantityDisplay)
+      : appliedForQuantityDisplay
 
     const name = rule.name
     const explanations = [
       {
         title: 'Total valid land cover',
         lines: [
-          `The available area was (${availableAreaHa} ha) the applicant applied for (${appliedForQuantity} ha)`
+          `The available area was (${availableAreaDisplay} ${unit}) the applicant applied for (${appliedForQuantityDisplay} ${unit})`
         ]
       }
     ]
@@ -39,7 +53,7 @@ export const appliedForTotalAvailableArea = {
         name,
         passed: false,
         description: rule.description,
-        reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
+        reason: `There is not sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
         explanations
       }
     }
@@ -48,7 +62,7 @@ export const appliedForTotalAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
+      reason: `There is sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
       explanations
     }
   }

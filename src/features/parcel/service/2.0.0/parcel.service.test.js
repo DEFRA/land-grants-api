@@ -697,7 +697,9 @@ describe('Parcel Service 2.0.0', () => {
         []
       )
 
-      expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
+      // UPL2 has display=false and is skipped; UPL1 (ha) and HEF1 (sqm) both
+      // go through AAC since both are area-unit actions.
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(2)
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
         'UPL1',
         'SX0679',
@@ -706,9 +708,38 @@ describe('Parcel Service 2.0.0', () => {
         mockRequest.server.postgresDb,
         mockRequest.logger
       )
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        'HEF1',
+        'SX0679',
+        '9238',
+        [],
+        mockRequest.server.postgresDb,
+        mockRequest.logger
+      )
     })
 
-    test('should not run through AACs for actions with unit !== HECTARES', async () => {
+    test('should not run through AACs for non-area-unit actions (e.g. count)', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        [
+          {
+            applicationUnitOfMeasurement: 'count',
+            code: 'WBD1',
+            description: 'Manage ponds',
+            display: true
+          }
+        ],
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+    })
+
+    test('should run building (sqm) actions through AACs', async () => {
       await getActionsForParcel(
         mockParcel,
         mockPayload,
@@ -719,15 +750,108 @@ describe('Parcel Service 2.0.0', () => {
         []
       )
 
-      expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
+      expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        'HEF1',
+        'SX0679',
+        '9238',
+        [],
+        mockRequest.server.postgresDb,
+        mockRequest.logger
+      )
     })
 
-    test('should filter out non-hectare agreements when calculating available areas', async () => {
+    test('should omit a building (sqm) action entirely when it has zero available area', async () => {
+      findMaximumAvailableArea.mockReturnValue({
+        context: {},
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 0,
+        feasible: true
+      })
+
+      const result = await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        [mockEnabledActionsForParcel[2]],
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(actionTransformer).not.toHaveBeenCalled()
+      expect(result.actions).toEqual([])
+    })
+
+    test('should still include a hectare action with zero available area', async () => {
+      findMaximumAvailableArea.mockReturnValue({
+        context: {},
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 0,
+        feasible: true
+      })
+
+      const result = await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        [mockEnabledActionsForParcel[0]],
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      expect(actionTransformer).toHaveBeenCalled()
+      expect(result.actions).toEqual([
+        { code: 'UPL1', description: 'Action 1' }
+      ])
+    })
+
+    test('should include sqm-configured (e.g. building) actions as area demand alongside hectare actions', async () => {
       const plannedActions = [
         {
           actionCode: 'HEF1',
           quantity: 100,
           unit: 'sqm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        },
+        {
+          actionCode: 'UPL1',
+          quantity: 2,
+          unit: 'ha',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2020-01-01')
+        }
+      ]
+      mergeAgreementsTransformer.mockReturnValue(plannedActions)
+      plannedActionsTransformer.mockReturnValue([
+        { actionCode: 'HEF1', areaSqm: 100 },
+        { actionCode: 'UPL1', areaSqm: 20000 }
+      ])
+
+      await getActionsForParcel(
+        mockParcel,
+        { ...mockPayload, plannedActions },
+        false,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        'token'
+      )
+
+      // Computing UPL1's (ha) available area now also considers the
+      // existing HEF1 (sqm) agreement as area demand - the AAC's own
+      // land-cover eligibility decides whether they actually compete.
+      expect(plannedActionsTransformer).toHaveBeenCalledWith(plannedActions)
+    })
+
+    test('should exclude configured non-area (count) actions from area demand', async () => {
+      const plannedActions = [
+        {
+          actionCode: 'WBD1',
+          quantity: 2,
+          unit: 'count',
           startDate: new Date('2020-01-01'),
           endDate: new Date('2020-01-01')
         },
@@ -744,11 +868,21 @@ describe('Parcel Service 2.0.0', () => {
         { actionCode: 'UPL1', areaSqm: 100 }
       ])
 
+      const enabledActionsWithCount = [
+        mockEnabledActionsForParcel[0],
+        {
+          applicationUnitOfMeasurement: 'count',
+          code: 'WBD1',
+          description: 'Manage ponds',
+          display: true
+        }
+      ]
+
       await getActionsForParcel(
         mockParcel,
         { ...mockPayload, plannedActions },
         false,
-        mockEnabledActionsForParcel,
+        enabledActionsWithCount,
         mockCompatibilityCheckFn,
         mockRequest,
         []

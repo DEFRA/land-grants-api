@@ -186,6 +186,51 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
+  test('should transform an sqm (e.g. building) action using availableAreaSqm, not availableAreaHectares', () => {
+    const action = {
+      ...defaultAction,
+      code: 'HEF1',
+      applicationUnitOfMeasurement: 'sqm'
+    }
+    const availableArea = {
+      availableAreaSqm: 150,
+      availableAreaHectares: 0.015
+    }
+
+    const result = actionTransformer(action, availableArea)
+
+    expect(result).toEqual({
+      code: 'HEF1',
+      description: 'Test Action',
+      availability: {
+        unit: 'sqm',
+        value: 150
+      },
+      quantityRequired: true
+    })
+  })
+
+  test('should transform an sqm action with available area when availableAreaSqm is 0', () => {
+    const action = {
+      ...defaultAction,
+      code: 'HEF1',
+      applicationUnitOfMeasurement: 'sqm'
+    }
+    const availableArea = { availableAreaSqm: 0 }
+
+    const result = actionTransformer(action, availableArea)
+
+    expect(result).toEqual({
+      code: 'HEF1',
+      description: 'Test Action',
+      availability: {
+        unit: 'sqm',
+        value: 0
+      },
+      quantityRequired: true
+    })
+  })
+
   test('should include displayUnit and displayUnitPlural where available', () => {
     const action = {
       ...defaultAction,
