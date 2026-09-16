@@ -494,6 +494,74 @@ describe('Action Validation Service', () => {
       )
     })
 
+    test('should include a sibling sqm (e.g. building) action as area demand, unconverted', async () => {
+      const sqmSiblingAction = { code: 'HEF1', quantity: 150 }
+      const landActionWithSiblings = {
+        ...mockLandAction,
+        actions: [mockAction, sqmSiblingAction]
+      }
+      const actionConfigWithHef1 = [
+        ...mockActionConfig,
+        {
+          code: 'HEF1',
+          applicationUnitOfMeasurement: 'sqm'
+        }
+      ]
+      mockPlannedActionsTransformer.mockReturnValue([])
+
+      await validateLandAction(
+        mockAction,
+        actionConfigWithHef1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        landActionWithSiblings,
+        mockRequest
+      )
+
+      const expectedExistingActions = [{ actionCode: 'HEF1', areaSqm: 150 }]
+
+      expect(mockFindMaximumAvailableArea).toHaveBeenCalledWith(
+        mockAction.code,
+        expectedExistingActions,
+        mockCompatibilityCheckFn,
+        mockAvailableAreaDataRequirements
+      )
+    })
+
+    test('should run a building (sqm) action through the AAC available-area path, not the length path', async () => {
+      const buildingAction = { code: 'HEF1', quantity: 150 }
+      const landActionForBuilding = {
+        ...mockLandAction,
+        actions: [buildingAction]
+      }
+      const actionConfigWithHef1 = [
+        ...mockActionConfig,
+        {
+          code: 'HEF1',
+          applicationUnitOfMeasurement: 'sqm'
+        }
+      ]
+
+      await validateLandAction(
+        buildingAction,
+        actionConfigWithHef1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        landActionForBuilding,
+        mockRequest
+      )
+
+      expect(mockGetAvailableAreaDataRequirements).toHaveBeenCalledWith(
+        buildingAction.code,
+        landActionForBuilding.sheetId,
+        landActionForBuilding.parcelId,
+        [],
+        mockPostgresDb,
+        mockLogger
+      )
+      expect(mockGetAvailableLength).not.toHaveBeenCalled()
+    })
+
     test('should provide feasible = false in explanations when AAC returns feasible = false', async () => {
       mockFindMaximumAvailableArea.mockReturnValue({
         feasible: false,
