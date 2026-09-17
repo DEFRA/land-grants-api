@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="360" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">The unifying idea: side-metres</text>
+  <text x="450" y="55" text-anchor="middle" font-size="14">A perimeter of P metres has two sides &#8594; 2P side-metres of resource</text>
+
+  <!-- the 2P resource bar -->
+  <g>
+    <text x="80" y="105" font-weight="bold">Total resource</text>
+    <rect x="80" y="115" width="740" height="40" fill="#f2f2f2" stroke="#7f7f7f" stroke-width="2"/>
+    <line x1="450" y1="115" x2="450" y2="155" stroke="#7f7f7f" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="265" y="140" text-anchor="middle">side A: P metres</text>
+    <text x="635" y="140" text-anchor="middle">side B: P metres</text>
+    <text x="450" y="180" text-anchor="middle" font-weight="bold">= 2P side-metres</text>
+  </g>
+
+  <!-- consumption rules -->
+  <g>
+    <rect x="80" y="215" width="360" height="110" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+    <text x="100" y="248" font-weight="bold" fill="#2f5496">Both-sides action</text>
+    <text x="100" y="275">consumes <tspan font-weight="bold">2 side-metres</tspan> per claimed metre</text>
+    <text x="100" y="300">(covers both sides of the length)</text>
+
+    <rect x="460" y="215" width="360" height="110" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="480" y="248" font-weight="bold" fill="#548235">Single-side action</text>
+    <text x="480" y="275">consumes <tspan font-weight="bold">1 side-metre</tspan> per claimed metre</text>
+    <text x="480" y="300">(covers one side of the length)</text>
+  </g>
+</svg>
