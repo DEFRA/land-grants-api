@@ -6,11 +6,12 @@ This rule checks that the parcel associated with the application has an intersec
 
 ## Configuration parameters
 
-| Parameter                    | Type   | Description                                                                  |
-| ---------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `layerName`                  | string | The data layer to check for intersection (e.g. "moorland", "lfa", "sda").    |
-| `minimumIntersectionPercent` | number | The minimum required intersection area as a percentage of the parcel area.   |
-| `tolerancePercent`           | number | The tolerance level for the intersection check as a percentage of the parcel |
+| Parameter                    | Type   | Description                                                                                   |
+| ---------------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| `layerName`                  | string | The data layer to check for intersection (e.g. "moorland", "lfa", "sda").                     |
+| `minimumIntersectionPercent` | number | The minimum required intersection area as a percentage of the parcel area.                    |
+| `tolerancePercent`           | number | The tolerance level for the intersection check as a percentage of the parcel                  |
+| `failureMessage`             | string | Optional. Replaces the default reason when the rule fails. Not used when the layer is absent. |
 
 ## Why and for whom would it fail?
 

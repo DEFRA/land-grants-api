@@ -6,11 +6,12 @@ This rule checks that the parcel associated with the application has an intersec
 
 ## Configuration parameters
 
-| Parameter                    | Type   | Description                                                                  |
-| ---------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `layerName`                  | string | The data layer to check (e.g. "moorland", "lfa", "sda").                     |
-| `maximumIntersectionPercent` | number | The maximum allowed intersection percentage before tolerance is applied.     |
-| `tolerancePercent`           | number | Additional percentage tolerance added to the maximum intersection threshold. |
+| Parameter                    | Type   | Description                                                                                   |
+| ---------------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| `layerName`                  | string | The data layer to check (e.g. "moorland", "lfa", "sda").                                      |
+| `maximumIntersectionPercent` | number | The maximum allowed intersection percentage before tolerance is applied.                      |
+| `tolerancePercent`           | number | Additional percentage tolerance added to the maximum intersection threshold.                  |
+| `failureMessage`             | string | Optional. Replaces the default reason when the rule fails. Not used when the layer is absent. |
 
 ## Why and for whom would it fail?
 

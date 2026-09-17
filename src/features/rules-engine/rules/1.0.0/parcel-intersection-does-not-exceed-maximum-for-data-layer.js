@@ -10,8 +10,12 @@
  */
 export const parcelIntersectionDoesNotExceedMaximumForDataLayer = {
   execute: (application, rule) => {
-    const { layerName, tolerancePercent, maximumIntersectionPercent } =
-      rule.config
+    const {
+      layerName,
+      tolerancePercent,
+      maximumIntersectionPercent,
+      failureMessage
+    } = rule.config
     const configuredTolerancePercent = tolerancePercent ?? 0
     const configuredMaximumIntersectionPercent = maximumIntersectionPercent ?? 0
     const maximumAllowedIntersectionPercent =
@@ -48,10 +52,15 @@ export const parcelIntersectionDoesNotExceedMaximumForDataLayer = {
       `This parcel has a ${intersection.intersectingAreaPercentage}% intersection with the ${layerName} layer. The target is ${maximumAllowedIntersectionPercent}%.`
     )
 
+    const defaultReason = `This parcel ${isWithinMaximumAllowedIntersection ? 'is within' : 'exceeds'} the maximum allowed intersection with the ${layerName} layer`
+
     return {
       name,
       passed: isWithinMaximumAllowedIntersection,
-      reason: `This parcel ${isWithinMaximumAllowedIntersection ? 'is within' : 'exceeds'} the maximum allowed intersection with the ${layerName} layer`,
+      reason:
+        !isWithinMaximumAllowedIntersection && failureMessage
+          ? failureMessage
+          : defaultReason,
       description: rule.description,
       explanations
     }
