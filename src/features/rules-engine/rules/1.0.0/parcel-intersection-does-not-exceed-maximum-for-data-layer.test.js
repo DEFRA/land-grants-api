@@ -20,6 +20,14 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
     }
   }
 
+  const ruleWithFailureMessage = {
+    config: {
+      ...rule.config,
+      failureMessage:
+        'It is not possible to select this action because the land parcel is on the moorland'
+    }
+  }
+
   test('should pass when intersection is exactly at maximumIntersectionPercent + tolerancePercent', () => {
     const application = createApplication(1)
     const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
@@ -118,5 +126,52 @@ describe('parcelIntersectionDoesNotExceedMaximumForDataLayer', () => {
         }
       ]
     })
+  })
+
+  test('should use failureMessage as the reason when the rule fails', () => {
+    const application = createApplication(2)
+    const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
+      application,
+      ruleWithFailureMessage
+    )
+
+    expect(result).toEqual({
+      name: 'undefined-moorland',
+      passed: false,
+      reason:
+        'It is not possible to select this action because the land parcel is on the moorland',
+      explanations: [
+        {
+          title: 'moorland check',
+          lines: [
+            'This parcel has a 2% intersection with the moorland layer. The target is 1%.'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('should use the default reason when the rule passes', () => {
+    const application = createApplication(1)
+    const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
+      application,
+      ruleWithFailureMessage
+    )
+
+    expect(result.reason).toBe(
+      'This parcel is within the maximum allowed intersection with the moorland layer'
+    )
+  })
+
+  test('should not use failureMessage when the layer is not provided', () => {
+    const application = createApplication(undefined)
+    const result = parcelIntersectionDoesNotExceedMaximumForDataLayer.execute(
+      application,
+      ruleWithFailureMessage
+    )
+
+    expect(result.reason).toBe(
+      'An intersection with the moorland layer was not provided in the application data'
+    )
   })
 })
