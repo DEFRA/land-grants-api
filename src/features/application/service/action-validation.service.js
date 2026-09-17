@@ -3,6 +3,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
+import { getBoundaryIntersection } from '../../data-layers/queries/getBoundaryIntersection.query.js'
 import {
   HECTARES,
   METERS,
@@ -146,7 +147,8 @@ export const validateLandAction = async (
     availableArea,
     availableLength,
     agreements,
-    request
+    request,
+    unit
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
@@ -171,6 +173,7 @@ export const validateLandAction = async (
  * @param {AvailableLength|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
+ * @param {string} [unit] - The action's applicationUnitOfMeasurement
  * @returns {Promise<RuleEngineApplication>}
  */
 const buildRuleEngineApplication = async (
@@ -179,19 +182,28 @@ const buildRuleEngineApplication = async (
   availableArea,
   availableLength,
   agreements,
-  request
+  request,
+  unit
 ) => {
   const { sheetId, parcelId } = landAction
   const db = request.server.postgresDb
   const logger = request.logger
 
-  const [intersections, landParcel, landCovers, landCoversForAction] =
-    await Promise.all([
-      getIntersections(sheetId, parcelId, db, logger),
-      getLandData(sheetId, parcelId, db, logger),
-      getLandCoversForParcel(sheetId, parcelId, db, logger),
-      getLandCoversForAction(action.code, db, logger)
-    ])
+  const [
+    intersections,
+    boundaryIntersections,
+    landParcel,
+    landCovers,
+    landCoversForAction
+  ] = await Promise.all([
+    getIntersections(sheetId, parcelId, db, logger),
+    unit === METERS
+      ? getBoundaryIntersections(sheetId, parcelId, db, logger)
+      : null,
+    getLandData(sheetId, parcelId, db, logger),
+    getLandCoversForParcel(sheetId, parcelId, db, logger),
+    getLandCoversForAction(action.code, db, logger)
+  ])
 
   return {
     appliedForQuantity: getAppliedForQuantity(
@@ -215,6 +227,7 @@ const buildRuleEngineApplication = async (
         : null,
       existingAgreements: agreements,
       intersections,
+      boundaryIntersections,
       parcelSizeSqm: landParcel?.[0]?.area ?? 0,
       landCovers: landCovers ?? []
     }
@@ -261,6 +274,40 @@ async function getIntersections(sheetId, parcelId, db, logger) {
     moorland: { intersectingAreaPercentage: moorland },
     lfa: { intersectingAreaPercentage: lessFavouredArea },
     sda: { intersectingAreaPercentage: severelyDisadvantagedArea },
+    sssi,
+    historic_features: historicFeatures
+  }
+}
+
+/**
+ * Measures the parcel boundary against each layer a linear action can need
+ * consent for, keyed by the layerName that action config rules refer to.
+ * A layer is null when its query failed, so its rule can fail closed.
+ * @param {string} sheetId
+ * @param {string} parcelId
+ * @param {object} db
+ * @param {object} logger
+ * @returns {Promise<object>}
+ */
+async function getBoundaryIntersections(sheetId, parcelId, db, logger) {
+  const [sssi, historicFeatures] = await Promise.all([
+    getBoundaryIntersection(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.sssi,
+      db,
+      logger
+    ),
+    getBoundaryIntersection(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.historic_features,
+      db,
+      logger
+    )
+  ])
+
+  return {
     sssi,
     historic_features: historicFeatures
   }
