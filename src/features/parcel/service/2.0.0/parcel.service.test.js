@@ -22,7 +22,6 @@ import {
   throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
-import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 
@@ -32,7 +31,6 @@ vi.mock('~/src/features/rules-engine/rulesEngine.js')
 vi.mock('~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js')
 vi.mock('~/src/features/available-area/availableArea.js')
 vi.mock('~/src/features/available-area/explanations.js')
-vi.mock('~/src/features/agreements/repo.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 
@@ -551,7 +549,6 @@ describe('Parcel Service 2.0.0', () => {
 
       mockCompatibilityCheckFn = vi.fn()
 
-      getAgreements.mockResolvedValue([])
       mergeAgreementsTransformer.mockReturnValue([])
       plannedActionsTransformer.mockReturnValue([])
       sizeTransformer.mockImplementation((value) => ({ unit: 'ha', value }))
@@ -580,7 +577,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(result).toEqual({
@@ -597,7 +594,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(result.size).toEqual({ unit: 'ha', value: 10 })
@@ -611,7 +608,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
@@ -633,7 +630,7 @@ describe('Parcel Service 2.0.0', () => {
         [mockEnabledActionsForParcel[2]],
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
@@ -668,7 +665,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(plannedActionsTransformer).toHaveBeenCalledTimes(1)
@@ -731,7 +728,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(plannedActionsTransformer).toHaveBeenCalledWith([
@@ -748,7 +745,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(result.actions).toEqual([
@@ -765,7 +762,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(actionTransformer).toHaveBeenCalledWith(
@@ -783,7 +780,7 @@ describe('Parcel Service 2.0.0', () => {
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        []
       )
 
       expect(actionTransformer).toHaveBeenCalledWith(
@@ -793,19 +790,26 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
-    test('should not fetch agreements or actions when actions field is not requested', async () => {
+    test('should merge passed-in existing agreements with planned actions', async () => {
+      const upl1 = {
+        actionCode: 'UPL1',
+        unit: 'ha',
+        quantity: 0.5,
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31')
+      }
+
       await getActionsForParcel(
         mockParcel,
-        { ...mockPayload, fields: ['size'] },
-        false,
+        mockPayload,
+        undefined,
         mockEnabledActionsForParcel,
         mockCompatibilityCheckFn,
         mockRequest,
-        'token'
+        [upl1]
       )
 
-      expect(getAgreements).not.toHaveBeenCalled()
-      expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+      expect(mergeAgreementsTransformer).toHaveBeenCalledWith([upl1], [])
     })
 
     test('should propagate error when the available area is infeasible', async () => {
@@ -822,7 +826,7 @@ describe('Parcel Service 2.0.0', () => {
           mockEnabledActionsForParcel,
           mockCompatibilityCheckFn,
           mockRequest,
-          'token'
+          []
         )
       ).rejects.toThrow('Infeasible area')
     })

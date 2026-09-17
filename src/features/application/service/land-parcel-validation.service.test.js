@@ -1,18 +1,22 @@
 import { getAgreements } from '~/src/services/dal/index.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreementsForParcels } from '../../agreements/queries/getAgreementsForParcels.query.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { validateLandAction } from './action-validation.service.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 
-vi.mock('../../agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('../../agreements/queries/getAgreementsForParcels.query.js')
 vi.mock('~/src/services/dal/index.js')
 vi.mock('./action-validation.service.js')
 
-const mockGetAgreementsForParcel = getAgreementsForParcel
+const mockGetAgreementsForParcels = getAgreementsForParcels
 const mockGetAgreements = getAgreements
 const mockValidateLandAction = validateLandAction
 
 const sbi = '012345678'
+
+const parcelId = '9238'
+const sheetId = 'SX0679'
+const fullParcelId = `${parcelId}-${sheetId}`
 
 describe('Land Parcel Validation Service', () => {
   const mockLogger = {
@@ -35,8 +39,8 @@ describe('Land Parcel Validation Service', () => {
   }
 
   const mockLandAction = {
-    sheetId: 'SX0679',
-    parcelId: '9238',
+    sheetId,
+    parcelId,
     actions: [
       {
         code: 'CMOR1',
@@ -53,25 +57,34 @@ describe('Land Parcel Validation Service', () => {
 
   const mockCompatibilityCheckFn = vi.fn()
 
-  const mockAgreementsDb = [
-    {
-      actionCode: 'CLIG2',
-      quantity: 100,
-      unit: 'sqm',
-      startDate: new Date('2020-01-01T00:00:00Z'),
-      endDate: new Date('2030-01-01T00:00:00Z')
-    }
-  ]
-  const mockAgreementsDal = [
-    {
-      actionCode: 'CLIG2',
-      quantity: 1000,
-      unit: 'sqm',
-      startDate: new Date('2020-01-01T00:00:00Z'),
-      endDate: new Date('2030-01-01T00:00:00Z')
-    }
-  ]
-  const mockAgreementsAll = [...mockAgreementsDb, ...mockAgreementsDal]
+  const mockAgreementsDb = {
+    [fullParcelId]: [
+      {
+        actionCode: 'CLIG2',
+        quantity: 100,
+        unit: 'sqm',
+        startDate: new Date('2020-01-01T00:00:00Z'),
+        endDate: new Date('2030-01-01T00:00:00Z')
+      }
+    ]
+  }
+  const mockAgreementsDal = {
+    [fullParcelId]: [
+      {
+        actionCode: 'CLIG2',
+        quantity: 1000,
+        unit: 'sqm',
+        startDate: new Date('2020-01-01T00:00:00Z'),
+        endDate: new Date('2030-01-01T00:00:00Z')
+      }
+    ]
+  }
+  const mockAgreementsAll = {
+    [fullParcelId]: [
+      ...mockAgreementsDb[fullParcelId],
+      ...mockAgreementsDal[fullParcelId]
+    ]
+  }
 
   const mockActionResult1 = {
     hasPassed: true,
@@ -110,7 +123,7 @@ describe('Land Parcel Validation Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockGetAgreementsForParcel.mockResolvedValue(mockAgreementsDb)
+    mockGetAgreementsForParcels.mockResolvedValue(mockAgreementsDb)
     mockGetAgreements.mockResolvedValue(mockAgreementsDal)
     mockValidateLandAction.mockResolvedValue(mockActionResult1)
   })
@@ -136,16 +149,13 @@ describe('Land Parcel Validation Service', () => {
         actions: [mockActionResult1, mockActionResult2]
       })
 
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
+      expect(mockGetAgreementsForParcels).toHaveBeenCalledWith(
+        [[parcelId, sheetId]],
         mockPostgresDb,
         mockLogger
       )
       expect(mockGetAgreements).toHaveBeenCalledWith(
         sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
         'dummy-token',
         mockLogger
       )
@@ -155,7 +165,7 @@ describe('Land Parcel Validation Service', () => {
         1,
         mockLandAction.actions[0],
         mockActions,
-        mockAgreementsAll,
+        mockAgreementsAll[fullParcelId],
         mockCompatibilityCheckFn,
         mockLandAction,
         mockRequest
@@ -164,7 +174,7 @@ describe('Land Parcel Validation Service', () => {
         2,
         mockLandAction.actions[1],
         mockActions,
-        mockAgreementsAll,
+        mockAgreementsAll[fullParcelId],
         mockCompatibilityCheckFn,
         mockLandAction,
         mockRequest
@@ -182,10 +192,10 @@ describe('Land Parcel Validation Service', () => {
       }
       const referenceDate = new Date('2018-06-01T00:00:00Z')
 
-      mockGetAgreementsForParcel.mockResolvedValue([
-        agreementActiveAtReferenceDate
-      ])
-      mockGetAgreements.mockResolvedValue([])
+      mockGetAgreementsForParcels.mockResolvedValue({
+        [fullParcelId]: [agreementActiveAtReferenceDate]
+      })
+      mockGetAgreements.mockResolvedValue({})
 
       await validateLandParcelActions(
         sbi,
@@ -248,7 +258,7 @@ describe('Land Parcel Validation Service', () => {
 
     test('should fail if database error occurs when fetching agreements', async () => {
       const dbError = new Error('Database connection failed')
-      mockGetAgreementsForParcel.mockRejectedValue(dbError)
+      mockGetAgreementsForParcels.mockRejectedValue(dbError)
 
       await expect(
         validateLandParcelActions(
@@ -261,16 +271,13 @@ describe('Land Parcel Validation Service', () => {
         )
       ).rejects.toThrow()
 
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
+      expect(mockGetAgreementsForParcels).toHaveBeenCalledWith(
+        [[parcelId, sheetId]],
         mockPostgresDb,
         mockLogger
       )
       expect(mockGetAgreements).toHaveBeenCalledWith(
         sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
         'dummy-token',
         mockLogger
       )
@@ -291,16 +298,13 @@ describe('Land Parcel Validation Service', () => {
         )
       ).rejects.toThrow()
 
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
+      expect(mockGetAgreementsForParcels).toHaveBeenCalledWith(
+        [[parcelId, sheetId]],
         mockPostgresDb,
         mockLogger
       )
       expect(mockGetAgreements).toHaveBeenCalledWith(
         sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
         'dummy-token',
         mockLogger
       )
