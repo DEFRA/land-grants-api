@@ -11,7 +11,7 @@
  * @property {boolean} passed
  * @property {string} reason
  * @property {Explanation[]} explanations
- * @property {object} cavets
+ * @property {object} [cavets]
  */
 
 /**
@@ -28,6 +28,7 @@
  * @property {BoundaryLength|null} [boundaryLength]
  * @property {Array} existingAgreements
  * @property {object} intersections
+ * @property {{landCoverClassCode:string, landCoverCode?: string, areaSqm: number}[]} [landCovers]
  */
 
 /**
@@ -51,6 +52,7 @@
  * @property {number|string} [appliedForQuantity]
  * @property {string} [actionCodeAppliedFor]
  * @property {LandParcel} [landParcel]
+ * @property {{landCoverClassCode: string, landCoverCode: string}[]} [actionLandCovers]
  */
 
 /**
