@@ -18,8 +18,8 @@ describe('parcelHasValidLandCover', () => {
   test('should pass when parcel land covers include all action land covers', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110', areaSqm: 100 }]
       ),
       createRule()
     )
@@ -31,10 +31,10 @@ describe('parcelHasValidLandCover', () => {
   test('should pass when parcel has additional land covers not required by the action', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
+        [{ landCoverClassCode: '110' }],
         [
-          { landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 },
-          { landCoverClassCode: '130', landCoverCode: '2', areaSqm: 50 }
+          { landCoverClassCode: '110', areaSqm: 100 },
+          { landCoverClassCode: '130', areaSqm: 50 }
         ]
       ),
       createRule()
@@ -43,11 +43,11 @@ describe('parcelHasValidLandCover', () => {
     expect(result.passed).toBe(true)
   })
 
-  test('should fail when parcel does not have a matching land cover code', () => {
+  test('should fail when parcel does not have a matching land cover class code', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '2', areaSqm: 100 }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '130', areaSqm: 100 }]
       ),
       createRule()
     )
@@ -58,26 +58,11 @@ describe('parcelHasValidLandCover', () => {
     )
   })
 
-  test('should fail when parcel does not have a matching land cover class code', () => {
-    const result = parcelHasValidLandCover.execute(
-      createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '130', landCoverCode: '1', areaSqm: 100 }]
-      ),
-      createRule()
-    )
-
-    expect(result.passed).toBe(false)
-  })
-
   test('should fail when not all action land covers are present on the parcel', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [
-          { landCoverClassCode: '110', landCoverCode: '1' },
-          { landCoverClassCode: '130', landCoverCode: '2' }
-        ],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 }]
+        [{ landCoverClassCode: '110' }, { landCoverClassCode: '130' }],
+        [{ landCoverClassCode: '110', areaSqm: 100 }]
       ),
       createRule()
     )
@@ -87,10 +72,7 @@ describe('parcelHasValidLandCover', () => {
 
   test('should fail when parcel has no land covers', () => {
     const result = parcelHasValidLandCover.execute(
-      createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        []
-      ),
+      createApplication([{ landCoverClassCode: '110' }], []),
       createRule()
     )
 
@@ -99,10 +81,7 @@ describe('parcelHasValidLandCover', () => {
 
   test('should pass when the action has no required land covers', () => {
     const result = parcelHasValidLandCover.execute(
-      createApplication(
-        [],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 }]
-      ),
+      createApplication([], [{ landCoverClassCode: '110', areaSqm: 100 }]),
       createRule()
     )
 
@@ -112,8 +91,8 @@ describe('parcelHasValidLandCover', () => {
   test('should fail when the matching land cover has zero area', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 0 }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110', areaSqm: 0 }]
       ),
       createRule()
     )
@@ -127,8 +106,8 @@ describe('parcelHasValidLandCover', () => {
   test('should fail when the matching land cover is missing an area', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '1' }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110' }]
       ),
       createRule()
     )
@@ -138,9 +117,7 @@ describe('parcelHasValidLandCover', () => {
 
   test('should fail when actionLandCovers is not an array', () => {
     const result = parcelHasValidLandCover.execute(
-      createApplication(undefined, [
-        { landCoverClassCode: '110', landCoverCode: '1' }
-      ]),
+      createApplication(undefined, [{ landCoverClassCode: '110' }]),
       createRule()
     )
 
@@ -150,10 +127,7 @@ describe('parcelHasValidLandCover', () => {
 
   test('should fail when landCovers is not an array', () => {
     const result = parcelHasValidLandCover.execute(
-      createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        undefined
-      ),
+      createApplication([{ landCoverClassCode: '110' }], undefined),
       createRule()
     )
 
@@ -165,8 +139,8 @@ describe('parcelHasValidLandCover', () => {
     const rule = createRule()
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110', areaSqm: 100 }]
       ),
       rule
     )
@@ -178,8 +152,8 @@ describe('parcelHasValidLandCover', () => {
   test('should include the default explanation', () => {
     const result = parcelHasValidLandCover.execute(
       createApplication(
-        [{ landCoverClassCode: '110', landCoverCode: '1' }],
-        [{ landCoverClassCode: '110', landCoverCode: '1', areaSqm: 100 }]
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110', areaSqm: 100 }]
       ),
       createRule()
     )

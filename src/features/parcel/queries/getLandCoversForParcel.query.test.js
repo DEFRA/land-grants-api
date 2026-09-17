@@ -11,23 +11,19 @@ describe('getLandCoversForParcel', () => {
       rows: [
         {
           area_sqm: 123,
-          land_cover_class_code: '321',
-          land_cover_code: '301'
+          land_cover_class_code: '321'
         },
         {
           area_sqm: 456,
-          land_cover_class_code: '543',
-          land_cover_code: '502'
+          land_cover_class_code: '543'
         },
         {
           area_sqm: 450.44,
-          land_cover_class_code: '543',
-          land_cover_code: '502'
+          land_cover_class_code: '543'
         },
         {
           area_sqm: 450.54,
-          land_cover_class_code: '543',
-          land_cover_code: '502'
+          land_cover_class_code: '543'
         }
       ]
     }
@@ -62,7 +58,6 @@ describe('getLandCoversForParcel', () => {
     const expectedQuery = `
         SELECT
           lc.land_cover_class_code,
-          lc.land_cover_code,
           ST_Area(lc.geom) AS area_sqm
         FROM land_covers lc
         WHERE lc.sheet_id = $1
@@ -88,10 +83,10 @@ describe('getLandCoversForParcel', () => {
     )
 
     expect(result).toEqual([
-      { areaSqm: 123, landCoverClassCode: '321', landCoverCode: '301' },
-      { areaSqm: 456, landCoverClassCode: '543', landCoverCode: '502' },
-      { areaSqm: 450, landCoverClassCode: '543', landCoverCode: '502' },
-      { areaSqm: 451, landCoverClassCode: '543', landCoverCode: '502' }
+      { areaSqm: 123, landCoverClassCode: '321' },
+      { areaSqm: 456, landCoverClassCode: '543' },
+      { areaSqm: 450, landCoverClassCode: '543' },
+      { areaSqm: 451, landCoverClassCode: '543' }
     ])
   })
 

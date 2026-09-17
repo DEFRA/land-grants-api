@@ -36,7 +36,6 @@ export const parcelHasValidLandCover = {
       return landCovers.some((landCover) => {
         return (
           landCover.landCoverClassCode === actionLandCover.landCoverClassCode &&
-          landCover.landCoverCode === actionLandCover.landCoverCode &&
           landCover.areaSqm > 0
         )
       })

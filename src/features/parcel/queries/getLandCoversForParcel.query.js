@@ -21,7 +21,6 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
     const landCoversQuery = `
         SELECT
           lc.land_cover_class_code,
-          lc.land_cover_code,
           ST_Area(lc.geom) AS area_sqm
         FROM land_covers lc
         WHERE lc.sheet_id = $1
@@ -42,7 +41,6 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
 
     const landCovers = result.rows.map((row) => ({
       landCoverClassCode: row.land_cover_class_code,
-      landCoverCode: row.land_cover_code,
       areaSqm: roundSqm(row.area_sqm)
     }))
 

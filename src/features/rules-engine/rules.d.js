@@ -28,7 +28,7 @@
  * @property {BoundaryLength|null} [boundaryLength]
  * @property {Array} existingAgreements
  * @property {object} intersections
- * @property {{landCoverClassCode:string, landCoverCode?: string, areaSqm: number}[]} [landCovers]
+ * @property {{landCoverClassCode:string, areaSqm: number}[]} [landCovers]
  */
 
 /**
