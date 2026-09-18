@@ -23,11 +23,14 @@ All linear features are assumed to run along the **outer perimeter** of the land
 farmer can apply for a new linear action, the system needs to answer one question: **how many
 metres of that action can they still claim on this parcel?** That is the Available Length.
 
-The answer is not simply "the perimeter", for two reasons that this document unpacks:
+The answer is not simply "the perimeter", for three reasons that this document unpacks:
 
 1. Some actions are paid for **one side** of a boundary and some for **both sides**.
 2. Length already committed to **existing, incompatible** actions must be taken away — and the
    amount to take away depends on the sidedness of _both_ actions involved.
+3. Existing actions that are compatible with **each other** stack onto the same boundary, so their
+   footprints overlap rather than add — working out the true combined footprint is an arrangement
+   problem, the same one the Available Area Calculation solves.
 
 ---
 
@@ -125,13 +128,24 @@ Keep this in your head — it is the key to Step 2.
 ## Step 2 — Subtracting existing actions (the tricky bit)
 
 Any linear action already on a previous agreement (from SitiAgri) has consumed part of the
-boundary. We must take that away. Two subtleties:
+boundary. We must take that away. Three subtleties:
 
 1. **Only _incompatible_ existing actions are subtracted.** If an existing action can stack with
    the one we're applying for, it shares the length and costs nothing (see
    [Scenario C](#scenario-c--stacking-a-compatible-action-costs-nothing)).
-2. **The amount to subtract depends on the sidedness of _both_ actions.** An existing action's
-   length is recorded in _its own_ units, but we need the deduction in the _target_ action's units.
+2. **The amount to subtract for one action depends on the sidedness of _both_ actions.** An
+   existing action's length is recorded in _its own_ units, but we need the deduction in the
+   _target_ action's units.
+3. **You cannot simply add the deductions up.** Existing actions that are compatible with **each
+   other** stack onto the _same_ stretch of boundary, so their footprints overlap rather than sum.
+   Working out the true combined footprint is an arrangement problem — the subject of
+   [Putting the footprints together](#putting-the-footprints-together--the-best-case-arrangement)
+   below, and the reason the ALC is nearly as involved as the Available Area Calculation.
+
+We build up to the answer in two stages: first the footprint of a **single** existing action
+(subtlety 2), then how to **combine** footprints correctly (subtlety 3).
+
+### One action's footprint
 
 Convert through side-metres. An existing action of quantity `q` consumes `q × existing_sides`
 side-metres. Expressed in the target action's units, that is:
@@ -149,6 +163,77 @@ This produces four cases:
 
 The two "same sidedness" cases are intuitive — subtract like for like. The two mixed cases are
 where mistakes happen, and the next scenarios show each one.
+
+### Putting the footprints together — the best-case arrangement
+
+It is tempting to work out each incompatible action's footprint and add them all up. **That is
+wrong**, and it is the single biggest trap in the ALC.
+
+Existing actions that are compatible **with each other** occupy the _same_ physical boundary — they
+stack. Their footprints overlap, so the combined footprint is **not** the sum. As with the
+Available Area Calculation, we do not know _where_ on the boundary each existing action physically
+sits, so we assume the arrangement most favourable to the applicant: existing actions are packed
+together as tightly as their compatibility allows, leaving the **maximum** possible length free for
+the new action.
+
+This is exactly the AAC's "best case" / ephemeral-stacking principle, applied to one dimension:
+
+- Two existing actions that are **compatible** with each other can be laid on the same stretch —
+  the space they jointly need is the **larger** of the two, not the sum.
+- Two existing actions that are **incompatible** with each other need **separate** stretches — here
+  the footprints **do** add.
+
+So the deduction is driven by the **heaviest group of existing actions that are (a) all incompatible
+with the new action _and_ (b) all mutually incompatible with each other.** Such a group cannot be
+stacked apart at all, so its footprints genuinely add; any other existing action either stacks with
+the new action (costs nothing) or stacks onto a member of that group (adds nothing extra).
+
+In graph terms this "heaviest mutually-incompatible group" is a **maximum-weight clique** in the
+incompatibility graph — the very same construct the AAC builds (see
+[aac-technical-deep-dive.md](../available-area-calculation/aac-technical-deep-dive.md), Step 3).
+The ALC is essentially that calculation with a **single resource** (the boundary) and **no land
+covers or designations**, which is why it reduces to one clean subtraction:
+
+> **available side-metres = 2P − (heaviest incompatible clique's footprint)**
+>
+> then divide by the target's sidedness to get the available length.
+
+[Scenario D](#scenario-d--stacking-among-existing-actions) shows why the naïve sum fails and this
+arrangement is needed.
+
+### Include every existing action — don't drop the compatible ones
+
+An action that is compatible with the new action costs nothing against it, so it is tempting to
+**discard** such actions up front. Do not. The AAC learned this the hard way: dropping
+target-compatible actions produced wrong answers, because a compatible action can **displace** a
+third, incompatible action onto land the new action needs.
+
+That displacement needs two ingredients that the AAC has but the ALC does not: **multiple land
+covers**, and **eligibility rules that give existing actions a _choice_ of where to sit**. A
+target-compatible action can monopolise a cover the target does not use, forcing an incompatible
+action off it and onto the target's cover. The ALC has a **single, uniform resource** and no
+eligibility, so there is no "elsewhere" to push anything and no choice to exploit — the target's
+result depends only on cliques that _contain_ the target, and a target-compatible action is by
+definition never in one. Given feasible data, the answer is therefore the same whether or not those
+actions are present.
+
+So why keep them? Two reasons:
+
+1. **Feasibility.** "Same answer" holds only while the existing agreements actually fit on the
+   boundary. If SitiAgri returns more incompatible existing length than the boundary can hold, the
+   honest result is "this data cannot be arranged" — the ALC's equivalent of the AAC's
+   `feasible: false`. You can only detect that if you keep every action in the arrangement.
+2. **Consistency.** Feeding _all_ actions into the incompatibility graph and letting the
+   clique arithmetic assign compatible ones zero weight — rather than special-casing a "drop" step —
+   keeps the ALC structurally identical to the AAC and removes a whole class of "when is dropping
+   safe?" mistakes.
+
+> **Assumption — one uniform boundary.** This safety rests entirely on the boundary being a single
+> homogeneous resource with no eligibility. It would no longer hold if we modelled the two **faces**
+> as separate resources, or modelled **boundary composition** (a wall action only where there is a
+> wall, a hedgebank action only on hedgebank segments). Either turns segments into land-cover-like
+> resources with a choice of placement, and the AAC's displacement problem — and the danger of
+> dropping — returns in full.
 
 ---
 
@@ -213,24 +298,65 @@ that the hedgebank needs. Only **incompatible** existing actions reduce the tota
 
 ---
 
-## Scenario D — Everything at once
+## Scenario D — Stacking among existing actions
+
+> A farmer has a **stone-faced hedgebank with a hedge on top** along **three-quarters** of a
+> **1000 m** perimeter — already in an agreement as BND2 **and** CHRW2. They now apply for **BND1**
+> (a dry stone wall), which is incompatible with _both_ existing actions. What is available?
+
+<img src="./images/alc-explained-6-existing-stacking.svg" alt="Three-quarters of a 1000 m boundary carries a hedgebank (BND2) with a hedge (CHRW2) stacked on top. Naively summing both deductions wrongly gives zero; recognising that BND2 and CHRW2 share the same 750 m leaves 250 m for BND1" />
+
+The 750 m of covered boundary carries two existing actions stacked together:
+
+- **BND2** (single-side, both faces of the 750 m bank) = `2 × 750 = 1500 m` → 1500 side-metres.
+- **CHRW2** (the hedge on top, single-side) = 750 m → 750 side-metres.
+
+**Target:** BND1 — **both-sides** → base = P = **1000 m** (i.e. 2000 side-metres of resource).
+
+**The wrong way (summing):**
+
+- BND2 deduction (single→both, halve): `1500 ÷ 2 = 750 m`
+- CHRW2 deduction (single→both, halve): `750 ÷ 2 = 375 m`
+- Sum = 1125 m → `1000 − 1125 = −125` → clamped to **0 m**. ❌
+
+That says the whole boundary is used up — but a quarter of it is plainly bare.
+
+**The right way (arrange first).** BND2 and CHRW2 are **compatible with each other**, so they
+occupy the _same_ 750 m. They cannot be in the same mutually-incompatible group, so we never add
+their footprints. The groups (cliques) that include the target are:
+
+| Group (clique) with BND1 | Footprint (side-metres) |
+| :----------------------- | :---------------------- |
+| {BND1, BND2}             | 1500                    |
+| {BND1, CHRW2}            | 750                     |
+
+The **heaviest** is 1500 side-metres. So:
+
+- **Available side-metres = 2000 − 1500 = 500** → BND1 (both-sides) = `500 ÷ 2 = **250 m**.** ✅
+
+That 250 m is exactly the free quarter of the boundary. The stacked hedge added **nothing** to the
+deduction, because it was hiding inside the hedgebank's footprint all along.
+
+---
+
+## Scenario E — Everything at once
 
 > A farmer applies for **BND2** (single-side) on a **1000 m** perimeter parcel. Two things already
 > exist from previous agreements: a **400 m CHRW2** hedgerow (which stacks with BND2) and a
 > **200 m BND1** dry stone wall (which does not).
 
 - **Target:** BND2 — **single-side** → base = 2P = **2000 m**.
-- **CHRW2 (400 m):** compatible with BND2 → **skipped** (0 m deducted).
-- **BND1 (200 m):** incompatible, both-sides existing vs single-side target → **double**:
-  `200 × 2 = 400 m`.
-- **Available = 2000 − 0 − 400 = 1600 m.**
+- **CHRW2 (400 m):** compatible with BND2 → not in any incompatible group → **costs nothing**.
+- **BND1 (200 m):** incompatible with BND2. Heaviest incompatible group = {BND2, BND1}; BND1's
+  footprint is both-sides → `200 × 2 = 400` side-metres.
+- **Available = 2000 − 400 = 1600 m** (single-side target, ÷ 1).
 
-**Side-metre check:** total `2P = 2000`; CHRW2 skipped; BND1 consumes `200 × 2 = 400`; remaining
+**Side-metre check:** total `2P = 2000`; heaviest incompatible clique = {BND1} at 400; remaining
 `1600` side-metres ÷ 1 = **1600 m**. ✔
 
-> **A note on clamping:** if existing incompatible actions add up to more than the base, the
-> available length would go negative. In that case the parcel simply has **no length available**
-> for the new action (treated as 0), and the application would fail validation.
+> **A note on clamping:** if — even after the best-case arrangement — the heaviest incompatible
+> group still exceeds the base, the available length would go negative. In that case the parcel has
+> **no length available** for the new action (treated as 0), and the application fails validation.
 
 ---
 
@@ -238,21 +364,19 @@ that the hedgebank needs. Only **incompatible** existing actions reduce the tota
 
 ```mermaid
 flowchart TD
-    A["Farmer applies for a new linear\naction on a land parcel"] --> B["Get the parcel perimeter P"]
-    B --> C{"Is the new action\nsingle-side or both-sides?"}
-    C -->|Both-sides| D["Base = P"]
-    C -->|Single-side| E["Base = 2 x P"]
-    D --> F["List existing linear actions\n(from SitiAgri) + sibling actions"]
-    E --> F
-    F --> G{"For each existing action:\ncompatible with the new action?"}
-    G -->|Compatible / stacks| H["Skip — deduct nothing"]
-    G -->|Incompatible| I["deduction = qty x (existing_sides / target_sides)"]
-    H --> J["Available length =\nbase - sum of deductions"]
-    I --> J
-    J --> K["Clamp to 0 if negative"]
+    A["Farmer applies for a new linear\naction on a land parcel"] --> B["Get the parcel perimeter P\n(2P side-metres of resource)"]
+    B --> C["List ALL existing linear actions\n(from SitiAgri) + sibling actions"]
+    C --> D["Footprint of each action\n= qty x sides (side-metres)"]
+    D --> E["Build incompatibility graph over\n{new action + all existing}"]
+    E --> F["Find the heaviest mutually-incompatible\ngroup that contains the new action\n(max-weight clique)"]
+    F --> G["Available side-metres =\n2P - heaviest clique footprint"]
+    G --> H["Available length =\navailable side-metres / target_sides"]
+    H --> I["Clamp to 0 if negative"]
+    C -. "existing data can't fit\nthe boundary" .-> X["Infeasible: report\nrather than under-report"]
 
     style A fill:#274e13,stroke:#1b3409,color:#ffffff
-    style K fill:#1f3864,stroke:#0f1f3a,color:#ffffff
+    style I fill:#1f3864,stroke:#0f1f3a,color:#ffffff
+    style X fill:#7b241c,stroke:#4a1610,color:#ffffff
 ```
 
 ---
@@ -266,10 +390,23 @@ flowchart TD
   `src/features/agreements/transformers/agreements.transformer.js`.
 - **Compatibility / stacking** is decided by the compatibility matrix
   (`src/features/available-area/compatibilityMatrix.js`) — the same source the Available Area
-  Calculation uses. Compatible existing actions are not subtracted.
+  Calculation uses.
+- **Arranging existing actions** should reuse the AAC's stacking machinery: the incompatibility
+  graph and maximal-clique enumeration (Bron–Kerbosch) described in
+  `docs/available-area-calculation/aac-technical-deep-dive.md`. Because the ALC has a single
+  resource and no land covers or designations, the full LP collapses to picking the
+  **heaviest incompatible clique** and subtracting its footprint — but sharing the AAC's graph and
+  clique code keeps the two calculations consistent.
 - **The calculation** is assembled in `src/features/available-length/availableLength.js`, and a
   rules-engine rule (`src/features/rules-engine/rules/1.0.0/minimum-length.md`) caps an
   application at the available length, failing with a clear message if more is applied for.
+
+  > **Note — current gap:** as written today, `availableLength.js` sums the raw lengths of
+  > incompatible actions. It does **not** yet apply the sidedness conversion, the base doubling,
+  > or the best-case arrangement, so it will under-report available length whenever existing
+  > actions stack with each other (as in Scenario D). Closing that gap is the work proposed in
+  > LDR-005.
+
 - **Sidedness is intended to be a per-action config flag** (single-side vs both-sides), per
   LDR-005 — so introducing a new linear action needs no code change, just configuration.
 
@@ -280,17 +417,23 @@ flowchart TD
 The Available Length Calculation works out how many metres of a new linear action a parcel can
 still take:
 
-1. **Start from the perimeter** — `P` for a both-sides action, `2 × P` for a single-side action.
-2. **Think in side-metres** — a boundary of `P` metres holds `2P` side-metres; a both-sides action
+1. **Think in side-metres** — a boundary of `P` metres holds `2P` side-metres; a both-sides action
    uses 2 per metre, a single-side action uses 1.
-3. **Subtract only incompatible existing actions**, converting each with
-   `deduction = existing_qty × (existing_sides ÷ target_sides)` — i.e. **halve** a single-side
-   existing action against a both-sides target, and **double** a both-sides existing action against
-   a single-side target.
-4. **Let compatible actions stack** — they share the length and cost nothing.
-5. **Clamp to zero** if deductions exceed the base.
+2. **Include every existing action** (plus sibling actions) and size each one's footprint in
+   side-metres (`qty × existing_sides`). Don't drop the ones compatible with the new action — the
+   clique arithmetic gives them zero weight on their own, and keeping them lets you spot existing
+   data that cannot fit the boundary.
+3. **Arrange for the best case** — actions compatible with _each other_ share the same stretch, so
+   find the **heaviest group that is mutually incompatible _and_ contains the new action** (a
+   max-weight clique); only that group's footprints genuinely add up.
+4. **Subtract and convert** — `available side-metres = 2P − heaviest-clique footprint`, then divide
+   by the target's sidedness (giving base `P` for both-sides, `2P` for single-side). **Clamp to
+   zero** if negative.
 
-The subtlety that trips people up is Step 3: because a stone-faced hedgebank is effectively two
-walls, a single-side action's recorded length is not directly comparable to a both-sides action's —
-you must convert through sidedness, or you will double-count (or, as in Scenario A, wrongly wipe out
-half a boundary that is genuinely free).
+Two subtleties trip people up. First (Scenarios A–B): because a stone-faced hedgebank is effectively
+two walls, a single-side action's recorded length is not directly comparable to a both-sides
+action's — you must convert through sidedness. Second (Scenario D): existing actions that are
+compatible with each other stack onto the same boundary, so you must **arrange before you subtract**
+rather than summing deductions — otherwise you wrongly wipe out boundary that is genuinely free.
+This second point is why the ALC is nearly as involved as the Available Area Calculation, and why it
+reuses the same incompatibility-graph and clique machinery.
