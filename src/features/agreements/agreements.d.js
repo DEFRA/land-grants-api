@@ -6,3 +6,7 @@
  * @property {Date} startDate - The action start date
  * @property {Date} endDate - The action end date
  */
+
+/**
+ * @typedef {{[key: string]: AgreementAction[]}} AgreementsByParcel
+ */
