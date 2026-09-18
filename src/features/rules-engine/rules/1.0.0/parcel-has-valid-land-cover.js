@@ -10,7 +10,8 @@ export const parcelHasValidLandCover = {
    * @returns {RuleResultItem} - The result of the rule
    */
   execute: (application, rule) => {
-    const defaultFailureMessage = 'Rule requires action and parcel land covers'
+    const defaultFailureMessage =
+      "This land parcel doesn't have valid land covers"
     const failureMessage = rule.config?.failureMessage ?? defaultFailureMessage
     const { actionLandCovers, landParcel } = application
     const name = `${rule.name}`
@@ -37,7 +38,9 @@ export const parcelHasValidLandCover = {
     const hasValidLandCover = actionLandCovers.every((actionLandCover) => {
       return landCovers.some((landCover) => {
         return (
-          landCover.landCoverClassCode === actionLandCover.landCoverClassCode &&
+          (landCover.landCoverClassCode ===
+            actionLandCover.landCoverClassCode ||
+            landCover.landCoverClassCode === actionLandCover.landCoverCode) &&
           landCover.areaSqm > 0
         )
       })
