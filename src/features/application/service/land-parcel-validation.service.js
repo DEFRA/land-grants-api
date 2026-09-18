@@ -1,4 +1,5 @@
 import { getAgreements } from '~/src/features/agreements/repo.js'
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 import { validateLandAction } from './action-validation.service.js'
 
 /**
@@ -24,17 +25,17 @@ export const validateLandParcelActions = async (
     throw new Error('Unable to validate land parcel actions')
   }
 
-  // Get agreements and filter them to only area-based actions, as only
-  // these should be used for Available Area Calculations
-  const agreements = await getAgreements(
+  const allAgreements = await getAgreements(
     sbi,
-    landAction.sheetId,
-    landAction.parcelId,
+    [[landAction.parcelId, landAction.sheetId]],
     defraIdToken,
     request.server.postgresDb,
-    request.logger,
-    referenceDate
+    request.logger
   )
+
+  const agreements = (
+    allAgreements[`${landAction.parcelId}-${landAction.sheetId}`] || []
+  ).filter((a) => expiredActionsFilter(a, referenceDate))
 
   const actionResults = await Promise.all(
     landAction.actions.map(async (action) => {

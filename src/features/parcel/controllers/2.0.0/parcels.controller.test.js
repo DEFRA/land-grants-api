@@ -5,12 +5,14 @@ import {
   getActionsForParcelWithSSSIConsentRequired,
   getActionsForParcelWithHEFERConsentRequired
 } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { parcel } from '~/src/features/parcel/index.js'
 
-vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
-vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
+vi.mock('~/src/features/agreements/repo.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
+vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
+vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
@@ -21,6 +23,19 @@ const mockGetActionsForParcelWithHEFERConsentRequired =
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 
 const sbi = '012345678'
+
+const defaultAgreements = [
+  {
+    actionCode: 'CMOR1',
+    quantity: 15000,
+    unit: 'sqm',
+    startDate: new Date('2000-01-01'),
+    endDate: new Date('2200-01-01')
+  }
+]
+const agreements = {
+  '9238-SX0679': defaultAgreements
+}
 
 const mockParcelData = {
   sheet_id: 'SX0679',
@@ -104,6 +119,7 @@ describe('Parcels Controller 2.0.0', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
+    getAgreements.mockResolvedValue(agreements)
     mockGetDataAndValidateRequest.mockResolvedValue({
       errors: null,
       parcels: [mockParcelData],
@@ -224,6 +240,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect(parcels[0]).toHaveProperty('actions')
       expect(parcels[0].actions).toHaveLength(2)
       expect(parcels[0].actions[0].code).toBe('BND1')
+      expect(getAgreements).toHaveBeenCalled()
       expect(mockGetActionsForParcel).toHaveBeenCalled()
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -355,7 +372,7 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        defaultAgreements
       )
       expect(
         mockGetActionsForParcelWithSSSIConsentRequired
@@ -433,7 +450,7 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        defaultAgreements
       )
     })
 
@@ -757,7 +774,7 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        defaultAgreements
       )
     })
 
@@ -1273,6 +1290,7 @@ describe('Parcels Controller 2.0.0', () => {
 
       await server.inject(request)
 
+      expect(getAgreements).toHaveBeenCalled()
       expect(mockGetActionsForParcel).toHaveBeenCalledWith(
         mockParcelData,
         expect.objectContaining({
@@ -1283,7 +1301,7 @@ describe('Parcels Controller 2.0.0', () => {
         mockEnabledActions,
         expect.any(Function),
         expect.anything(),
-        'dummy'
+        defaultAgreements
       )
     })
 

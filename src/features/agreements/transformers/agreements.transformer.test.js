@@ -1,6 +1,6 @@
 import * as fx from '~/src/services/dal/fixtures/business.js'
 import {
-  agreementActionsTransformer,
+  dbToAgreements,
   dalBusinessToAgreements,
   mergeAgreementsTransformer
 } from './agreements.transformer.js'
@@ -10,10 +10,23 @@ const defaultDates = {
   endDate: new Date('2021-01-01T00:00:00+01:00')
 }
 
-describe('agreementActionsTransformer', () => {
+const defaultDbFields = {
+  id: 1,
+  parcel_id: fx.PARCEL_ID,
+  sheet_id: fx.SHEET_ID,
+  ingest_id: 1337,
+  ingest_date: '2020-01-01T00:00:00Z',
+  actions: []
+}
+
+// Default key for grouping agreements, using default parcel + sheet IDs
+const key = `${fx.PARCEL_ID}-${fx.SHEET_ID}`
+
+describe('dbToAgreements', () => {
   test('should transform agreements with actions correctly', () => {
     const agreements = [
       {
+        ...defaultDbFields,
         actions: [
           {
             actionCode: 'UPL1',
@@ -33,176 +46,129 @@ describe('agreementActionsTransformer', () => {
       }
     ]
 
-    const result = agreementActionsTransformer(agreements)
+    const result = dbToAgreements(agreements)
 
-    expect(result).toEqual([
+    expect(result).toEqual({
+      [key]: [
+        {
+          actionCode: 'UPL1',
+          quantity: 100,
+          unit: 'ha',
+          startDate: new Date('2025-01-01'),
+          endDate: new Date('2025-11-31')
+        },
+        {
+          actionCode: 'SPM4',
+          quantity: 50,
+          unit: 'ha',
+          startDate: new Date('2025-01-01'),
+          endDate: new Date('2025-11-31')
+        }
+      ]
+    })
+  })
+
+  test('should return an empty object when no agreements were found for any parcel', () => {
+    const result = dbToAgreements([])
+    expect(result).toEqual({})
+  })
+
+  test('should handle agreements with an empty actions array', () => {
+    const agreements = [defaultDbFields]
+    const result = dbToAgreements(agreements)
+    expect(result).toEqual({ [key]: [] })
+  })
+
+  test('should group agreements by parcelId + sheetId for multiple parcel results', () => {
+    const rows = [
       {
-        actionCode: 'UPL1',
-        quantity: 100,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      },
-      {
-        actionCode: 'SPM4',
-        quantity: 50,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      }
-    ])
-  })
-
-  test('should return empty array when agreements is null', () => {
-    const result = agreementActionsTransformer(null)
-    expect(result).toEqual([])
-  })
-
-  test('should return empty array when agreements is undefined', () => {
-    const result = agreementActionsTransformer(undefined)
-    expect(result).toEqual([])
-  })
-
-  test('should return empty array when agreements is empty array', () => {
-    const result = agreementActionsTransformer([])
-    expect(result).toEqual([])
-  })
-
-  test('should handle agreement with empty actions array', () => {
-    const agreements = [
-      {
-        actions: []
-      }
-    ]
-
-    const result = agreementActionsTransformer(agreements)
-    expect(result).toEqual([])
-  })
-
-  test('should handle multiple agreements with some having no actions', () => {
-    const agreements = [
-      {
+        ...defaultDbFields,
         actions: [
           {
-            actionCode: 'UPL1',
-            quantity: 100,
-            unit: 'ha',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
-          },
-          {
-            actionCode: 'SPM4',
-            quantity: 50,
-            unit: 'ha',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
-          }
-        ]
-      }
-    ]
-
-    const result = agreementActionsTransformer(agreements)
-
-    expect(result).toEqual([
-      {
-        actionCode: 'UPL1',
-        quantity: 100,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      },
-      {
-        actionCode: 'SPM4',
-        quantity: 50,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      }
-    ])
-  })
-
-  test('should handle action with zero quantity', () => {
-    const agreements = [
-      {
-        actions: [
-          {
-            actionCode: 'UPL1',
-            quantity: 0,
-            unit: 'ha',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
-          }
-        ]
-      }
-    ]
-
-    const result = agreementActionsTransformer(agreements)
-
-    expect(result).toEqual([
-      {
-        actionCode: 'UPL1',
-        quantity: 0,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      }
-    ])
-  })
-
-  test('should handle action with different unit types', () => {
-    const agreements = [
-      {
-        actions: [
-          {
-            actionCode: 'UPL1',
-            quantity: 100,
-            unit: 'ha',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
-          },
-          {
-            actionCode: 'SPM4',
-            quantity: 200,
+            actionCode: 'BN1',
+            quantity: 10,
             unit: 'm',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
+            startDate: '2020-01-01',
+            endDate: '2021-01-01'
+          }
+        ]
+      },
+      {
+        ...defaultDbFields,
+        parcel_id: '0002',
+        sheet_id: 'NY0002',
+        actions: [
+          {
+            actionCode: 'BN2',
+            quantity: 10,
+            unit: 'm',
+            startDate: '2020-01-01',
+            endDate: '2021-01-01'
           },
           {
-            actionCode: 'CMOR1',
-            quantity: 15,
-            unit: 'km',
-            startDate: '2025-01-01',
-            endDate: '2025-11-31'
+            actionCode: 'CLIG3',
+            quantity: 100,
+            unit: 'ha',
+            startDate: '2020-01-01',
+            endDate: '2021-01-01'
+          }
+        ]
+      },
+      {
+        ...defaultDbFields,
+        parcel_id: '0003',
+        sheet_id: 'NY0003',
+        actions: [
+          {
+            actionCode: 'AF1',
+            quantity: 1000,
+            unit: 'count',
+            startDate: '2020-01-01',
+            endDate: '2021-01-01'
           }
         ]
       }
     ]
 
-    const result = agreementActionsTransformer(agreements)
+    const expected = {
+      '0001-NY0001': [
+        {
+          actionCode: 'BN1',
+          quantity: 10,
+          unit: 'm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2021-01-01')
+        }
+      ],
+      '0002-NY0002': [
+        {
+          actionCode: 'BN2',
+          quantity: 10,
+          unit: 'm',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2021-01-01')
+        },
+        {
+          actionCode: 'CLIG3',
+          quantity: 100,
+          unit: 'ha',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2021-01-01')
+        }
+      ],
+      '0003-NY0003': [
+        {
+          actionCode: 'AF1',
+          quantity: 1000,
+          unit: 'count',
+          startDate: new Date('2020-01-01'),
+          endDate: new Date('2021-01-01')
+        }
+      ]
+    }
+    const actual = dbToAgreements(rows)
 
-    expect(result).toEqual([
-      {
-        actionCode: 'UPL1',
-        quantity: 100,
-        unit: 'ha',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      },
-      {
-        actionCode: 'SPM4',
-        quantity: 200,
-        unit: 'm',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      },
-      {
-        actionCode: 'CMOR1',
-        quantity: 15,
-        unit: 'km',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-11-31')
-      }
-    ])
+    expect(actual).toEqual(expected)
   })
 })
 
@@ -395,110 +361,122 @@ describe('mergeAgreementsTransformer', () => {
 })
 
 describe('dalBusinessToAgreements', () => {
-  test('should transform a business actions to AgreementActions', () => {
-    const expected = [
-      {
-        actionCode: 'BN1',
-        quantity: 10,
-        unit: 'm',
-        ...defaultDates
-      },
-      {
-        actionCode: 'BN2',
-        quantity: 10,
-        unit: 'm',
-        ...defaultDates
-      },
-      {
-        actionCode: 'AF1',
-        quantity: 1000,
-        unit: 'count',
-        ...defaultDates
-      }
-    ]
-    const actual = dalBusinessToAgreements(
-      fx.SIMPLE_BUSINESS,
-      fx.PARCEL_ID,
-      fx.SHEET_ID
-    )
+  test('should transform business actions to AgreementActions', () => {
+    const expected = {
+      [key]: [
+        {
+          actionCode: 'BN1',
+          quantity: 10,
+          unit: 'm',
+          ...defaultDates
+        },
+        {
+          actionCode: 'BN2',
+          quantity: 10,
+          unit: 'm',
+          ...defaultDates
+        },
+        {
+          actionCode: 'AF1',
+          quantity: 1000,
+          unit: 'count',
+          ...defaultDates
+        }
+      ]
+    }
+    const actual = dalBusinessToAgreements(fx.SIMPLE_BUSINESS)
 
     expect(actual).toEqual(expected)
   })
 
   test('should transform hectare areas into sqm', () => {
-    const expected = [
-      {
-        actionCode: 'CLIG3',
-        quantity: 1000000,
-        unit: 'sqm',
-        ...defaultDates
-      }
-    ]
-    const actual = dalBusinessToAgreements(
-      fx.BUSINESS_CLIG3,
-      fx.PARCEL_ID,
-      fx.SHEET_ID
-    )
+    const expected = {
+      [key]: [
+        {
+          actionCode: 'CLIG3',
+          quantity: 1000000,
+          unit: 'sqm',
+          ...defaultDates
+        }
+      ]
+    }
+    const actual = dalBusinessToAgreements(fx.BUSINESS_CLIG3)
 
     expect(actual).toEqual(expected)
   })
 
   test('should filter out non-SIGNED agreements', () => {
-    const expected = [
-      {
-        actionCode: 'AF1',
-        quantity: 1000,
-        unit: 'count',
-        ...defaultDates
-      }
-    ]
-    const actual = dalBusinessToAgreements(
-      fx.BUSINESS_WITH_DRAFTS,
-      fx.PARCEL_ID,
-      fx.SHEET_ID
-    )
+    const expected = {
+      [key]: [
+        {
+          actionCode: 'AF1',
+          quantity: 1000,
+          unit: 'count',
+          ...defaultDates
+        }
+      ]
+    }
+    const actual = dalBusinessToAgreements(fx.BUSINESS_WITH_DRAFTS)
 
     expect(actual).toEqual(expected)
   })
 
-  test('should filter resulting actions by parcelId and sheetName', () => {
-    const expected = [
-      {
-        actionCode: 'BN1',
-        quantity: 10,
-        unit: 'm',
-        ...defaultDates
-      }
-    ]
-    const actual = dalBusinessToAgreements(
-      fx.BUSINESS_WITH_MULTIPLE_PARCELS,
-      fx.PARCEL_ID,
-      fx.SHEET_ID
-    )
+  test('should group actions by parcelId + sheetId', () => {
+    const expected = {
+      '0001-NY0001': [
+        {
+          actionCode: 'BN1',
+          quantity: 10,
+          unit: 'm',
+          ...defaultDates
+        }
+      ],
+      '0002-NY0002': [
+        {
+          actionCode: 'BN2',
+          quantity: 10,
+          unit: 'm',
+          ...defaultDates
+        },
+        {
+          actionCode: 'CLIG3',
+          quantity: 1000000,
+          unit: 'sqm',
+          ...defaultDates
+        }
+      ],
+      '0003-NY0003': [
+        {
+          actionCode: 'AF1',
+          quantity: 1000,
+          unit: 'count',
+          ...defaultDates
+        }
+      ]
+    }
+    const actual = dalBusinessToAgreements(fx.BUSINESS_WITH_MULTIPLE_PARCELS)
 
     expect(actual).toEqual(expected)
   })
 
   test('should filter out actions with capital grants (no quantity specified at all)', () => {
-    const expected = [
-      {
-        actionCode: 'BN1',
-        quantity: 10,
-        unit: 'm',
-        ...defaultDates
-      },
-      {
-        actionCode: 'AF1',
-        quantity: 1000,
-        unit: 'count',
-        ...defaultDates
-      }
-    ]
-    const actual = dalBusinessToAgreements(
-      fx.BUSINESS_WITH_CAPITAL_GRANTS,
-      fx.PARCEL_ID,
-      fx.SHEET_ID
-    )
+    const expected = {
+      [key]: [
+        {
+          actionCode: 'BN1',
+          quantity: 10,
+          unit: 'm',
+          ...defaultDates
+        },
+        {
+          actionCode: 'AF1',
+          quantity: 1000,
+          unit: 'count',
+          ...defaultDates
+        }
+      ]
+    }
+    const actual = dalBusinessToAgreements(fx.BUSINESS_WITH_CAPITAL_GRANTS)
 
     expect(actual).toEqual(expected)
   })

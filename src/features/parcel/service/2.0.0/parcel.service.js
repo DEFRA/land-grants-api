@@ -14,7 +14,6 @@ import {
   throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
-import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 import {
@@ -153,9 +152,9 @@ export async function getActionsForParcel(
   enabledActions,
   compatibilityCheckFn,
   request,
-  defraIdToken
+  agreements
 ) {
-  const { fields, plannedActions, sbi } = payload
+  const { fields, plannedActions } = payload
 
   const parcelResponse = {
     parcelId: parcel.parcel_id,
@@ -170,15 +169,6 @@ export async function getActionsForParcel(
   }
 
   if (fields.some((f) => f.startsWith('actions'))) {
-    const agreements = await getAgreements(
-      sbi,
-      parcel.sheet_id,
-      parcel.parcel_id,
-      defraIdToken,
-      request.server.postgresDb,
-      request.logger
-    )
-
     const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
     const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
