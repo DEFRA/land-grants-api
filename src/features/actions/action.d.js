@@ -59,6 +59,7 @@
  * @property {number} minimumIntersectionPercent
  * @property {number} tolerancePercent
  * @property {string} caveatDescription
+ * @property {string} [failureMessage]
  */
 
 /**
