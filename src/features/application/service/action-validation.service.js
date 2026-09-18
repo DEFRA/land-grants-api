@@ -21,12 +21,11 @@ import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
-import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
- * Find the available area for a land action, only for land-area-based (hectare) actions
+ * Find the available area for a land action, only for land-area-based (hectare or sqm) actions
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
@@ -48,12 +47,24 @@ async function getAvailableArea(
   // are treated as "existing" demand when computing this action's available area.
   // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
   // for area, so they're excluded rather than mismeasured as hectares.
-
-  const filterActionByUnit = createFilterActionByUnit(actions, HECTARES)
+  // Each sibling's own configured unit decides whether its quantity needs
+  // converting from hectares, or is already area-native (e.g. sqm). Where
+  // there is no enabled-action config, fall back to hectares.
+  const findConfiguredUnit = (code) =>
+    actions.find((config) => config.code === code)?.applicationUnitOfMeasurement
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .filter(filterActionByUnit)
-    .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
+    .filter((a) => {
+      const configuredUnit = findConfiguredUnit(a.code)
+      return configuredUnit === undefined || isAreaUnit(configuredUnit)
+    })
+    .map((a) => ({
+      actionCode: a.code,
+      areaSqm:
+        (findConfiguredUnit(a.code) ?? HECTARES) === HECTARES
+          ? haToSqm(a.quantity)
+          : a.quantity
+    }))
 
   // Agreements arrive in every unit; only area-based ones compete for area.
   const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
@@ -119,7 +130,7 @@ export const validateLandAction = async (
   let availableArea = null
   let availableLength = null
 
-  if (unit === HECTARES) {
+  if (isAreaUnit(unit)) {
     availableArea = await getAvailableArea(
       action,
       actions,
@@ -146,7 +157,8 @@ export const validateLandAction = async (
     availableArea,
     availableLength,
     agreements,
-    request
+    request,
+    unit
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
@@ -171,6 +183,7 @@ export const validateLandAction = async (
  * @param {AvailableLength|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
+ * @param {string} [applicationUnitOfMeasurement] - The applying-for action's configured unit
  * @returns {Promise<RuleEngineApplication>}
  */
 const buildRuleEngineApplication = async (
@@ -179,7 +192,8 @@ const buildRuleEngineApplication = async (
   availableArea,
   availableLength,
   agreements,
-  request
+  request,
+  applicationUnitOfMeasurement
 ) => {
   const { sheetId, parcelId } = landAction
   const db = request.server.postgresDb
@@ -199,6 +213,7 @@ const buildRuleEngineApplication = async (
       availableLength,
       action
     ),
+    applicationUnitOfMeasurement,
     actionCodeAppliedFor: action.code,
     actionLandCovers: landCoversForAction ?? [],
     landParcel: {

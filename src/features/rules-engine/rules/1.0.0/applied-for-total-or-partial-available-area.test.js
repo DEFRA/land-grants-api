@@ -2,8 +2,13 @@ import { appliedForTotalOrPartialAvailableArea } from './applied-for-total-or-pa
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 describe('appliedForTotalOrPartialAvailableArea', () => {
-  const createApplication = (appliedForQuantity, parcelArea) => ({
+  const createApplication = (
     appliedForQuantity,
+    parcelArea,
+    applicationUnitOfMeasurement = 'ha'
+  ) => ({
+    appliedForQuantity,
+    applicationUnitOfMeasurement,
     landParcel: {
       availableAreaSqm: haToSqm(Number.parseFloat(parcelArea))
     }
@@ -140,6 +145,86 @@ describe('appliedForTotalOrPartialAvailableArea', () => {
           ]
         }
       ]
+    })
+  })
+
+  describe('sqm actions (e.g. buildings)', () => {
+    const createSqmApplication = (appliedForQuantity, availableAreaSqm) => ({
+      appliedForQuantity,
+      applicationUnitOfMeasurement: 'sqm',
+      landParcel: { availableAreaSqm }
+    })
+
+    test('should pass when area applied for is between zero and available area, in sqm', () => {
+      const application = createSqmApplication(100, 150)
+      const rule = createRule()
+      const result = appliedForTotalOrPartialAvailableArea.execute(
+        application,
+        rule
+      )
+
+      expect(result).toEqual({
+        name: 'applied-for-total-or-partial-available-area',
+        passed: true,
+        reason:
+          'The applied figure (100 sqm) is within the allowed range (greater than 0 sqm and up to 150 sqm)',
+        explanations: [
+          {
+            title: 'Total or partial available area',
+            lines: [
+              'The available area is (150 sqm), and the applicant applied for (100 sqm).'
+            ]
+          }
+        ]
+      })
+    })
+
+    test('should fail when area applied for is above available area, in sqm', () => {
+      const application = createSqmApplication(200, 150)
+      const rule = createRule()
+      const result = appliedForTotalOrPartialAvailableArea.execute(
+        application,
+        rule
+      )
+
+      expect(result).toEqual({
+        name: 'applied-for-total-or-partial-available-area',
+        passed: false,
+        reason:
+          'The amount of land must be the same as or less than the available area',
+        explanations: [
+          {
+            title: 'Total or partial available area',
+            lines: [
+              'The available area is (150 sqm), and the applicant applied for (200 sqm).'
+            ]
+          }
+        ]
+      })
+    })
+
+    test('should fail when there is no available area, in sqm', () => {
+      const application = createSqmApplication(0, 0)
+      const rule = createRule()
+      const result = appliedForTotalOrPartialAvailableArea.execute(
+        application,
+        rule
+      )
+
+      expect(result).toEqual({
+        name: 'applied-for-total-or-partial-available-area',
+        passed: false,
+        reason:
+          'The amount of land must be the same as or less than the available area',
+        explanations: [
+          {
+            title: 'Total or partial available area',
+            lines: [
+              'The available area is (0 sqm), and the applicant applied for (0 sqm).'
+            ]
+          }
+        ]
+      })
     })
   })
 })
