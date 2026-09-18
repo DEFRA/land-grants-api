@@ -10,10 +10,14 @@ describe('parcelHasValidLandCover', () => {
     }
   })
 
-  const createRule = () => ({
+  const createRule = (config) => ({
     name,
-    description: 'Check parcel has valid land cover'
+    description: 'Check parcel has valid land cover',
+    ...(config ? { config } : {})
   })
+
+  const failureMessage =
+    'It is not possible to select this action because the parcel does not have a valid land cover'
 
   test('should pass when parcel land covers include all action land covers', () => {
     const result = parcelHasValidLandCover.execute(
@@ -53,9 +57,7 @@ describe('parcelHasValidLandCover', () => {
     )
 
     expect(result.passed).toBe(false)
-    expect(result.reason).toEqual(
-      'Parcel does not have valid land covers for this action'
-    )
+    expect(result.reason).toEqual('Rule requires action and parcel land covers')
   })
 
   test('should fail when not all action land covers are present on the parcel', () => {
@@ -98,9 +100,7 @@ describe('parcelHasValidLandCover', () => {
     )
 
     expect(result.passed).toBe(false)
-    expect(result.reason).toEqual(
-      'Parcel does not have valid land covers for this action'
-    )
+    expect(result.reason).toEqual('Rule requires action and parcel land covers')
   })
 
   test('should fail when the matching land cover is missing an area', () => {
@@ -133,6 +133,55 @@ describe('parcelHasValidLandCover', () => {
 
     expect(result.passed).toBe(false)
     expect(result.reason).toEqual('Rule requires action and parcel land covers')
+  })
+
+  test('should use failureMessage as the reason when the parcel has no valid land cover', () => {
+    const result = parcelHasValidLandCover.execute(
+      createApplication(
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '130', areaSqm: 100 }]
+      ),
+      createRule({ failureMessage })
+    )
+
+    expect(result.passed).toBe(false)
+    expect(result.reason).toEqual(failureMessage)
+  })
+
+  test('should use failureMessage as the reason when the land covers are missing', () => {
+    const result = parcelHasValidLandCover.execute(
+      createApplication([{ landCoverClassCode: '110' }], undefined),
+      createRule({ failureMessage })
+    )
+
+    expect(result.passed).toBe(false)
+    expect(result.reason).toEqual(failureMessage)
+  })
+
+  test('should use the default reason when failureMessage is not configured', () => {
+    const result = parcelHasValidLandCover.execute(
+      createApplication(
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '130', areaSqm: 100 }]
+      ),
+      createRule({})
+    )
+
+    expect(result.passed).toBe(false)
+    expect(result.reason).toEqual('Rule requires action and parcel land covers')
+  })
+
+  test('should not use failureMessage when the rule passes', () => {
+    const result = parcelHasValidLandCover.execute(
+      createApplication(
+        [{ landCoverClassCode: '110' }],
+        [{ landCoverClassCode: '110', areaSqm: 100 }]
+      ),
+      createRule({ failureMessage })
+    )
+
+    expect(result.passed).toBe(true)
+    expect(result.reason).toEqual('Parcel has valid land cover')
   })
 
   test('should include the name and description in the result', () => {

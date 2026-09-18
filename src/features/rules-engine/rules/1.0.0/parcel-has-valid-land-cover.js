@@ -10,6 +10,8 @@ export const parcelHasValidLandCover = {
    * @returns {RuleResultItem} - The result of the rule
    */
   execute: (application, rule) => {
+    const defaultFailureMessage = 'Rule requires action and parcel land covers'
+    const failureMessage = rule.config?.failureMessage ?? defaultFailureMessage
     const { actionLandCovers, landParcel } = application
     const name = `${rule.name}`
 
@@ -27,7 +29,7 @@ export const parcelHasValidLandCover = {
         name,
         passed: false,
         description: rule.description,
-        reason: 'Rule requires action and parcel land covers',
+        reason: failureMessage,
         explanations
       }
     }
@@ -55,7 +57,7 @@ export const parcelHasValidLandCover = {
       name,
       passed: false,
       description: rule.description,
-      reason: 'Parcel does not have valid land covers for this action',
+      reason: failureMessage,
       explanations
     }
   }
