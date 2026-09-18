@@ -173,12 +173,12 @@ npm run dev
 
 ###### Subcommands
 
-| Subcommand                   | Description                                                                                 |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| _(no args)_                  | Start the broker with no config changes (useful for a restart)                              |
-| `add <version> <sem-ver>`    | Create a synthetic **TEST01** action config and start the broker                            |
-| `update <version> <sem-ver>` | Copy PA3 from `grants-config-land-grants`, set a new semantic version, and start the broker |
-| `inspect`                    | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit              |
+| Subcommand                                 | Description                                                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| _(no args)_                                | Start the broker with no config changes (useful for a restart)                                           |
+| `add <version> <sem-ver>`                  | Create a synthetic **TEST01** action config and start the broker                                         |
+| `update <action-code> <version> <sem-ver>` | Copy the given action from `grants-config-land-grants`, set a new semantic version, and start the broker |
+| `inspect [action-code...]`                 | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit (defaults to PA3, TEST01) |
 
 > **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
 
@@ -189,13 +189,19 @@ npm run dev
 ./scripts/start-config-broker.sh add 0.0.5 1.0.0
 
 # Republish PA3 with a new semantic version and start the broker
-./scripts/start-config-broker.sh update 0.0.6 2.0.0
+./scripts/start-config-broker.sh update PA3 0.0.6 2.0.0
+
+# Republish HEF1 with a new semantic version and start the broker
+./scripts/start-config-broker.sh update HEF1 0.0.7 1.2.0
 
 # Restart the broker without touching config (previous run's files still in place)
 ./scripts/start-config-broker.sh
 
 # Check what landed in LocalStack and the DB
 ./scripts/start-config-broker.sh inspect
+
+# Check the DB row for a specific action
+./scripts/start-config-broker.sh inspect HEF1
 ```
 
 ##### Useful AWS CLI commands

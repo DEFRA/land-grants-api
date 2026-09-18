@@ -1,9 +1,4 @@
-import { HECTARES, SQM } from '~/src/features/common/constants/unit_type.js'
-import {
-  haToSqm,
-  roundSqm,
-  sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
+import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -23,20 +18,16 @@ export const appliedForTotalAvailableArea = {
       landParcel: { availableAreaSqm }
     } = application
 
-    // Hectare actions apply for hectares and compare in sqm; sqm actions
-    // (e.g. buildings) already apply for and compare in sqm directly.
-    const isHectares = applicationUnitOfMeasurement === HECTARES
-    const unit = isHectares ? HECTARES : (applicationUnitOfMeasurement ?? SQM)
-
-    const availableAreaDisplay = isHectares
-      ? sqmToHaRounded(availableAreaSqm)
-      : availableAreaSqm
-    const appliedForQuantityDisplay = isHectares
-      ? Number.parseFloat(appliedForQuantity)
-      : roundSqm(appliedForQuantity)
-    const appliedForQuantitySqm = isHectares
-      ? haToSqm(appliedForQuantityDisplay)
-      : appliedForQuantityDisplay
+    const {
+      unit,
+      appliedAreaDisplay: appliedForQuantityDisplay,
+      availableAreaDisplay,
+      appliedAreaSqm: appliedForQuantitySqm
+    } = normalizeAppliedArea(
+      applicationUnitOfMeasurement,
+      appliedForQuantity,
+      availableAreaSqm
+    )
 
     const name = rule.name
     const explanations = [

@@ -1,3 +1,5 @@
+import { HECTARES, SQM } from '~/src/features/common/constants/unit_type.js'
+
 export const sqmToHaRounded = (sqm) => {
   const decimalPlaces = 4
 
@@ -62,4 +64,45 @@ export const roundTo2DecimalPlaces = (number) => {
     Math.round(number * Math.pow(10, decimalPlaces)) /
     Math.pow(10, decimalPlaces)
   )
+}
+
+/**
+ * Normalize an applied-for quantity and available area into the unit they
+ * should be displayed and compared in, given the action's configured unit.
+ * Hectare actions apply for hectares and compare in sqm; sqm actions (e.g.
+ * buildings) already apply for and compare in sqm directly.
+ * @param {string|undefined} applicationUnitOfMeasurement - The action's configured unit
+ * @param {number|string} appliedForQuantity - The quantity applied for, in the action's unit
+ * @param {number} availableAreaSqm - The available area, in sqm
+ * @returns {{unit: string, appliedAreaDisplay: number, availableAreaDisplay: number, appliedAreaSqm: number, availableAreaSqmDisplay: number}}
+ */
+export const normalizeAppliedArea = (
+  applicationUnitOfMeasurement,
+  appliedForQuantity,
+  availableAreaSqm
+) => {
+  if (applicationUnitOfMeasurement === HECTARES) {
+    const appliedAreaDisplay =
+      Number.parseFloat(String(appliedForQuantity)) || 0
+    const availableAreaDisplay = sqmToHaRounded(availableAreaSqm) || 0
+
+    return {
+      unit: HECTARES,
+      appliedAreaDisplay,
+      availableAreaDisplay,
+      appliedAreaSqm: haToSqm(appliedAreaDisplay),
+      availableAreaSqmDisplay: haToSqm(availableAreaDisplay)
+    }
+  }
+
+  const appliedAreaDisplay = roundSqm(appliedForQuantity)
+  const availableAreaDisplay = availableAreaSqm || 0
+
+  return {
+    unit: applicationUnitOfMeasurement ?? SQM,
+    appliedAreaDisplay,
+    availableAreaDisplay,
+    appliedAreaSqm: appliedAreaDisplay,
+    availableAreaSqmDisplay: availableAreaDisplay
+  }
 }

@@ -3,7 +3,8 @@ import {
   haToSqm,
   roundSqm,
   roundTo4DecimalPlaces,
-  roundTo2DecimalPlaces
+  roundTo2DecimalPlaces,
+  normalizeAppliedArea
 } from './measurement.js'
 
 describe('sqmToHaRounded', () => {
@@ -512,6 +513,83 @@ describe('roundSqm', () => {
     })
     test('returns 0 for non-numeric string', () => {
       expect(roundTo2DecimalPlaces('abc')).toBe(0)
+    })
+  })
+})
+
+describe('normalizeAppliedArea', () => {
+  describe('hectare actions', () => {
+    test('displays and compares in hectares/sqm', () => {
+      expect(normalizeAppliedArea('ha', '10.5', 105000)).toEqual({
+        unit: 'ha',
+        appliedAreaDisplay: 10.5,
+        availableAreaDisplay: 10.5,
+        appliedAreaSqm: 105000,
+        availableAreaSqmDisplay: 105000
+      })
+    })
+
+    test('accepts a numeric appliedForQuantity', () => {
+      expect(normalizeAppliedArea('ha', 5, 50000)).toEqual({
+        unit: 'ha',
+        appliedAreaDisplay: 5,
+        availableAreaDisplay: 5,
+        appliedAreaSqm: 50000,
+        availableAreaSqmDisplay: 50000
+      })
+    })
+
+    test('rounds available area through hectare display precision', () => {
+      // 12.84 sqm rounds to 0.0013 ha (4 dp), which converts back to 13 sqm
+      expect(normalizeAppliedArea('ha', 0, 12.84)).toEqual({
+        unit: 'ha',
+        appliedAreaDisplay: 0,
+        availableAreaDisplay: 0.0013,
+        appliedAreaSqm: 0,
+        availableAreaSqmDisplay: 13
+      })
+    })
+  })
+
+  describe('sqm actions (e.g. buildings)', () => {
+    test('displays and compares in sqm directly, unconverted', () => {
+      expect(normalizeAppliedArea('sqm', 100, 150)).toEqual({
+        unit: 'sqm',
+        appliedAreaDisplay: 100,
+        availableAreaDisplay: 150,
+        appliedAreaSqm: 100,
+        availableAreaSqmDisplay: 150
+      })
+    })
+
+    test('rounds a fractional applied quantity to whole sqm', () => {
+      expect(normalizeAppliedArea('sqm', 100.6, 150)).toEqual({
+        unit: 'sqm',
+        appliedAreaDisplay: 101,
+        availableAreaDisplay: 150,
+        appliedAreaSqm: 101,
+        availableAreaSqmDisplay: 150
+      })
+    })
+
+    test('treats a missing available area as zero', () => {
+      expect(normalizeAppliedArea('sqm', 0, undefined)).toEqual({
+        unit: 'sqm',
+        appliedAreaDisplay: 0,
+        availableAreaDisplay: 0,
+        appliedAreaSqm: 0,
+        availableAreaSqmDisplay: 0
+      })
+    })
+
+    test('defaults the unit label to sqm when unconfigured', () => {
+      expect(normalizeAppliedArea(undefined, 5, 10)).toEqual({
+        unit: 'sqm',
+        appliedAreaDisplay: 5,
+        availableAreaDisplay: 10,
+        appliedAreaSqm: 5,
+        availableAreaSqmDisplay: 10
+      })
     })
   })
 })
