@@ -20,7 +20,8 @@ async function getLandCoversForParcel(sheetId, parcelId, db, logger) {
 
     const landCoversQuery = `
         SELECT
-          lc.land_cover_class_code, ST_Area(lc.geom) AS area_sqm
+          lc.land_cover_class_code,
+          ST_Area(lc.geom) AS area_sqm
         FROM land_covers lc
         WHERE lc.sheet_id = $1
           AND lc.parcel_id = $2

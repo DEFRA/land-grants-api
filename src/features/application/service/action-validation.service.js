@@ -22,6 +22,8 @@ import { plannedActionsTransformer } from '../../parcel/transformers/parcelActio
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
 import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
+import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
  * Find the available area for a land action, only for land-area-based (hectare) actions
@@ -183,10 +185,13 @@ const buildRuleEngineApplication = async (
   const db = request.server.postgresDb
   const logger = request.logger
 
-  const [intersections, landParcel] = await Promise.all([
-    getIntersections(sheetId, parcelId, db, logger),
-    getLandData(sheetId, parcelId, db, logger)
-  ])
+  const [intersections, landParcel, landCovers, landCoversForAction] =
+    await Promise.all([
+      getIntersections(sheetId, parcelId, db, logger),
+      getLandData(sheetId, parcelId, db, logger),
+      getLandCoversForParcel(sheetId, parcelId, db, logger),
+      getLandCoversForAction(action.code, db, logger)
+    ])
 
   return {
     appliedForQuantity: getAppliedForQuantity(
@@ -195,6 +200,7 @@ const buildRuleEngineApplication = async (
       action
     ),
     actionCodeAppliedFor: action.code,
+    actionLandCovers: landCoversForAction ?? [],
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
       availability:
@@ -209,7 +215,8 @@ const buildRuleEngineApplication = async (
         : null,
       existingAgreements: agreements,
       intersections,
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0,
+      landCovers: landCovers ?? []
     }
   }
 }
