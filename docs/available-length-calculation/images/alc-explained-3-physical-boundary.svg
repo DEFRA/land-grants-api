@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="420" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">One physical boundary — the resource the ALC rations</text>
+  <text x="450" y="54" text-anchor="middle" font-size="14">P metres of boundary; a feature occupies its whole width, never one face only</text>
+
+  <!-- The single boundary line -->
+  <g>
+    <rect x="80" y="80" width="740" height="26" fill="#eef6e6" stroke="#548235" stroke-width="2"/>
+    <text x="450" y="98" text-anchor="middle" font-size="13" fill="#548235">physical boundary — P metres</text>
+  </g>
+
+  <!-- Both-sides feature -->
+  <g>
+    <rect x="80" y="140" width="360" height="100" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+    <text x="100" y="168" font-weight="bold" fill="#2f5496">Both-sides feature (BND1)</text>
+    <rect x="100" y="185" width="150" height="18" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="1"/>
+    <text x="175" y="198" text-anchor="middle" font-size="11">occupies 1 physical metre</text>
+    <text x="100" y="225">bills <tspan font-weight="bold">1 metre</tspan> per physical metre &#8594; max = P</text>
+  </g>
+
+  <!-- Single-side feature -->
+  <g>
+    <rect x="460" y="140" width="360" height="100" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="480" y="168" font-weight="bold" fill="#548235">Single-side feature (BND2, CHRW2)</text>
+    <rect x="480" y="185" width="150" height="18" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <text x="555" y="198" text-anchor="middle" font-size="11">still occupies the whole width</text>
+    <text x="480" y="225">bills <tspan font-weight="bold">2 metres</tspan> per physical metre &#8594; max = 2P</text>
+  </g>
+
+  <!-- Impossible arrangement -->
+  <g>
+    <rect x="80" y="270" width="740" height="115" fill="#f2dede" stroke="#a94442" stroke-width="2"/>
+    <text x="100" y="298" font-weight="bold" fill="#a94442">Impossible — and unrepresentable in this model</text>
+    <!-- two features trying to share a stretch on "different faces" -->
+    <rect x="100" y="315" width="200" height="16" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="1"/>
+    <rect x="100" y="333" width="200" height="16" fill="#9bc16b" stroke="#548235" stroke-width="1"/>
+    <text x="320" y="328" font-size="13">wall on "one face"...</text>
+    <text x="320" y="346" font-size="13">...an incompatible hedge on "the other face" of the same stretch</text>
+    <!-- big cross -->
+    <line x1="100" y1="315" x2="300" y2="349" stroke="#a94442" stroke-width="3"/>
+    <line x1="300" y1="315" x2="100" y2="349" stroke="#a94442" stroke-width="3"/>
+    <text x="100" y="375" font-size="13" font-style="italic">A single structure fills the whole width, so two incompatible features cannot share a stretch.</text>
+  </g>
+</svg>

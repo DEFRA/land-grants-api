@@ -36,16 +36,16 @@ The answer is not simply "the perimeter", for three reasons that this document u
 
 ## Key Terms
 
-| Term                         | What it means                                                                                                                                  |
-| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Land Parcel**              | A defined unit of land — typically a single field. Its boundary runs all the way round.                                                        |
-| **Perimeter (P)**            | The total length of the parcel boundary, in metres. Calculated from the parcel geometry.                                                       |
-| **Linear Action**            | An environmental activity applied for in metres along the boundary — e.g. maintaining a wall or managing a hedge.                              |
-| **Single-side action**       | An action paid for **one face** of a boundary. The farmer can claim each side separately, so the maximum is **twice** the perimeter.           |
-| **Both-sides action**        | An action paid for **both faces at once**. One claimed metre covers both sides, so the maximum is the perimeter itself.                        |
-| **Side-metre**               | The unit that makes everything add up: one metre of one side of a boundary. A perimeter of `P` metres has `2P` side-metres of "resource".      |
-| **Compatibility / Stacking** | Some actions can occupy the **same** stretch of boundary at the same time (they _stack_). Others cannot and each needs its own length.         |
-| **Existing agreement**       | A linear action already committed on a previous agreement, retrieved from the incumbent system **SitiAgri**. Its length must be accounted for. |
+| Term                         | What it means                                                                                                                                                                                                               |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Land Parcel**              | A defined unit of land — typically a single field. Its boundary runs all the way round.                                                                                                                                     |
+| **Perimeter (P)**            | The total length of the parcel boundary, in metres. Calculated from the parcel geometry.                                                                                                                                    |
+| **Linear Action**            | An environmental activity applied for in metres along the boundary — e.g. maintaining a wall or managing a hedge.                                                                                                           |
+| **Single-side action**       | An action paid **per face** of a boundary — the two faces are billed separately, so the most that can be claimed is **twice** the perimeter. The structure still occupies the whole boundary width (see _Physical extent_). |
+| **Both-sides action**        | An action paid for **both faces at once** — one billed metre covers the whole width, so the most that can be claimed is the perimeter itself.                                                                               |
+| **Physical extent**          | The metres of physical boundary a feature actually occupies — the resource the ALC rations. A feature always occupies its whole extent; a single-side feature **cannot** be "on one face only."                             |
+| **Compatibility / Stacking** | Some actions can occupy the **same** stretch of boundary at the same time (they _stack_). Others cannot and each needs its own length.                                                                                      |
+| **Existing agreement**       | A linear action already committed on a previous agreement, retrieved from the incumbent system **SitiAgri**. Its length must be accounted for.                                                                              |
 
 ---
 
@@ -81,7 +81,8 @@ these boundaries physically are.
 - A **stone-faced hedgebank (BND2)** is really **two walls with earth packed between them**. Each
   face is maintained — and paid for — **separately**. That is why it is a **single-side** action:
   to look after the whole bank along one metre of boundary, you claim **one metre for each face**,
-  i.e. two metres of BND2.
+  i.e. two metres of BND2. But note it is still **one structure**: it occupies the whole width of
+  that metre of boundary, and cannot be present on one face without the other.
 - Because the bank has earth in the middle, a **hedge (CHRW2)** can grow on top — which is exactly
   why BND2 and CHRW2 are allowed to **stack** on the same length.
 
@@ -105,23 +106,37 @@ before any deductions.
 
 ---
 
-## The unifying idea: side-metres
+## The unifying idea: one physical boundary
 
-There is one mental model that makes the base **and** the deductions fall out consistently. Think
-of the boundary as a stock of **side-metres**.
+The resource the ALC rations is the **physical boundary itself — `P` metres of it.** Picture a
+single line running round the parcel, with no separately-usable "faces": whatever occupies a stretch
+of boundary occupies the **whole width** of it.
 
-<img src="./images/alc-explained-3-side-metres.svg" alt="A perimeter of P metres has two sides, giving 2P side-metres. A both-sides action consumes 2 side-metres per metre; a single-side action consumes 1" />
+<img src="./images/alc-explained-3-physical-boundary.svg" alt="A single physical boundary of P metres. A both-sides feature occupies one physical metre per billed metre; a single-side feature occupies the whole width but bills two metres per physical metre; two different features cannot sit on separate faces of the same stretch." />
 
-- A perimeter of `P` metres has two faces → **`2P` side-metres** of resource in total.
-- A **both-sides** action consumes **2 side-metres** per claimed metre (it takes both faces).
-- A **single-side** action consumes **1 side-metre** per claimed metre (it takes one face).
+This matters most for single-side features. A stone-faced hedgebank (BND2) is one physical
+structure; even though it is _paid for_ per face, it **cannot be present on one face only** — the
+bank is either on a metre of boundary or it is not. So what uses up the resource is its **physical
+extent** — the metres of boundary it sits on — not the number of metres billed.
 
-The base available length is just the whole `2P` resource expressed in the action's own units:
+We therefore work in **physical metres of boundary** throughout, and touch the per-face billing only
+at the two edges of the calculation:
 
-- both-sides: `2P ÷ 2 = P`
-- single-side: `2P ÷ 1 = 2P`
+- **Billed length → physical extent** (for existing features): a single-side feature billed for
+  both faces of a stretch was billed twice its extent, so **halve** it; a both-sides feature is
+  billed once, so its extent equals its length.
+- **Physical extent → billed length** (for the new action's answer): a single-side action can bill
+  both faces of the free boundary, so **double** the free physical length; a both-sides action bills
+  it once.
 
-Keep this in your head — it is the key to Step 2.
+This is exactly why the base available length is `P` for a both-sides action but `2P` for a
+single-side one: the same `P` metres of physical boundary, billed once or per-face.
+
+> **Why not "side-metres"?** You could instead treat the boundary as `2P` "side-metres," one per
+> face. It gives the same base numbers, but it quietly implies the two faces can be filled
+> _independently_ — which would let an incompatible feature sit on "the other face" of a hedgebank
+> that physically fills the whole width. Rationing **one** physical boundary makes that impossible
+> arrangement unrepresentable, so we anchor on the physical metre instead.
 
 ---
 
@@ -147,22 +162,38 @@ We build up to the answer in two stages: first the footprint of a **single** exi
 
 ### One action's footprint
 
-Convert through side-metres. An existing action of quantity `q` consumes `q × existing_sides`
-side-metres. Expressed in the target action's units, that is:
+A feature's footprint is its **physical extent** — the metres of boundary it sits on. Recover it
+from the billed length by undoing the per-face billing:
 
-> **deduction = existing_qty × (existing_sides ÷ target_sides)**
+- **both-sides** existing action: extent = its length;
+- **single-side** existing action: extent = its length **÷ 2** (it was billed once per face).
+
+The deduction we ultimately want is in the **new action's** billing units, so we re-bill that extent
+for the target. The two conversions collapse to a single factor:
+
+> **deduction = existing_length × (target_billing ÷ existing_billing)**
 >
-> where `sides` = **2** for a both-sides action and **1** for a single-side action.
+> where `billing` = **1** for a both-sides action and **2** for a single-side action (billed metres
+> per physical metre).
 
-This produces four cases:
+This produces four cases — the same answer whether you reason through physical extent or apply the
+factor directly:
 
 | Available Length is for →          | Existing **both-sides** action | Existing **single-side** action |
 | :--------------------------------- | :----------------------------- | :------------------------------ |
 | **Both-sides** target (base = P)   | subtract **as-is**             | **halve** it                    |
 | **Single-side** target (base = 2P) | **double** it                  | subtract **as-is**              |
 
-The two "same sidedness" cases are intuitive — subtract like for like. The two mixed cases are
-where mistakes happen, and the next scenarios show each one.
+The two "same sidedness" cases are subtract-like-for-like; the mixed cases are where mistakes
+happen, and the next scenarios show each one.
+
+> **Data caveat — one face or both?** "Halve a single-side existing length" assumes it was billed
+> for **both** faces (the usual case, as in Scenario A). But boundary features are often shared with
+> a neighbour who maintains the other face, so an agreement may bill only **one** face — while the
+> structure still occupies its **whole** extent. In that case the extent equals the billed length
+> (do **not** halve). The calculation therefore needs to know, per agreement, how many faces were
+> claimed; the single/both flag proposed in LDR-005 should carry it. Where it is unknown, assuming
+> the **larger** extent is the safe, never-over-allocating choice.
 
 ### Putting the footprints together — the best-case arrangement
 
@@ -191,12 +222,13 @@ the new action (costs nothing) or stacks onto a member of that group (adds nothi
 In graph terms this "heaviest mutually-incompatible group" is a **maximum-weight clique** in the
 incompatibility graph — the very same construct the AAC builds (see
 [aac-technical-deep-dive.md](../available-area-calculation/aac-technical-deep-dive.md), Step 3).
-The ALC is essentially that calculation with a **single resource** (the boundary) and **no land
-covers or designations**, which is why it reduces to one clean subtraction:
+The ALC is essentially that calculation with a **single resource** (the physical boundary) and **no
+land covers or designations**, which is why it reduces to one clean subtraction:
 
-> **available side-metres = 2P − (heaviest incompatible clique's footprint)**
+> **available boundary = P − (heaviest incompatible clique's physical extent)**
 >
-> then divide by the target's sidedness to get the available length.
+> then re-bill for the target — **× 2** for a single-side action, **× 1** for a both-sides one — to
+> get the available length.
 
 [Scenario D](#scenario-d--stacking-among-existing-actions) shows why the naïve sum fails and this
 arrangement is needed.
@@ -256,8 +288,9 @@ That 500 m is exactly the free stone-wall half. Note the trap: naively subtracti
 would have given **0 m available**, wrongly implying there is no boundary left — even though half
 the physical boundary is untouched.
 
-**Side-metre check:** total `2P = 2000` side-metres; BND2 consumes `1000 × 1 = 1000`; remaining
-`1000` side-metres ÷ 2 (both-sides target) = **500 m**. ✔
+**Physical check:** the parcel has `P = 1000 m` of boundary; the BND2 hedgebank occupies its extent
+`1000 ÷ 2 = 500 m`; `1000 − 500 = 500 m` is bare, and BND1 (both-sides) bills that once → **500 m**.
+✔
 
 ---
 
@@ -272,11 +305,11 @@ the physical boundary is untouched.
 - **Deduction:** existing is both-sides, target is single-side → **double** it: `300 × 2 = 600 m`.
 - **Available = 1600 − 600 = 1000 m.**
 
-Why double? The 300 m of wall occupies **both faces** of 300 m of boundary. In single-side CHRW2
-terms, that's `2 × 300 = 600 m` of side length removed from the 1600 m pool.
+Why double? The wall physically occupies **300 m** of boundary. CHRW2 could have billed both faces
+of that 300 m — `2 × 300 = 600 m` — so 600 m of potential CHRW2 claim is blocked.
 
-**Side-metre check:** total `2P = 1600`; BND1 consumes `300 × 2 = 600`; remaining `1000`
-side-metres ÷ 1 (single-side target) = **1000 m**. ✔
+**Physical check:** `P = 800 m`; the wall occupies 300 m; `800 − 300 = 500 m` is bare; CHRW2
+(single-side) bills both faces → `500 × 2 = **1000 m**`. ✔
 
 ---
 
@@ -306,14 +339,16 @@ that the hedgebank needs. Only **incompatible** existing actions reduce the tota
 
 <img src="./images/alc-explained-6-existing-stacking.svg" alt="Three-quarters of a 1000 m boundary carries a hedgebank (BND2) with a hedge (CHRW2) stacked on top. Naively summing both deductions wrongly gives zero; recognising that BND2 and CHRW2 share the same 750 m leaves 250 m for BND1" />
 
-The 750 m of covered boundary carries two existing actions stacked together:
+The 750 m of covered boundary carries two existing actions stacked together. In **physical extent**
+(metres of boundary occupied):
 
-- **BND2** (single-side, both faces of the 750 m bank) = `2 × 750 = 1500 m` → 1500 side-metres.
-- **CHRW2** (the hedge on top, single-side) = 750 m → 750 side-metres.
+- **BND2** the hedgebank occupies the full **750 m** of boundary (billed `2 × 750 = 1500 m` for both
+  faces, so extent = `1500 ÷ 2 = 750 m`).
+- **CHRW2** the hedge lies along that **same 750 m**, stacked on the bank.
 
-**Target:** BND1 — **both-sides** → base = P = **1000 m** (i.e. 2000 side-metres of resource).
+**Target:** BND1 — **both-sides** → base = P = **1000 m** of physical boundary.
 
-**The wrong way (summing):**
+**The wrong way (summing billed lengths):**
 
 - BND2 deduction (single→both, halve): `1500 ÷ 2 = 750 m`
 - CHRW2 deduction (single→both, halve): `750 ÷ 2 = 375 m`
@@ -322,20 +357,20 @@ The 750 m of covered boundary carries two existing actions stacked together:
 That says the whole boundary is used up — but a quarter of it is plainly bare.
 
 **The right way (arrange first).** BND2 and CHRW2 are **compatible with each other**, so they
-occupy the _same_ 750 m. They cannot be in the same mutually-incompatible group, so we never add
-their footprints. The groups (cliques) that include the target are:
+occupy the _same_ 750 m of boundary. They cannot be in the same mutually-incompatible group, so we
+never add their extents. The groups (cliques) that include the target are:
 
-| Group (clique) with BND1 | Footprint (side-metres) |
-| :----------------------- | :---------------------- |
-| {BND1, BND2}             | 1500                    |
-| {BND1, CHRW2}            | 750                     |
+| Group (clique) with BND1 | Combined physical extent |
+| :----------------------- | :----------------------- |
+| {BND1, BND2}             | 750 m                    |
+| {BND1, CHRW2}            | ≤ 750 m (same stretch)   |
 
-The **heaviest** is 1500 side-metres. So:
+The **heaviest** is 750 m of boundary. So:
 
-- **Available side-metres = 2000 − 1500 = 500** → BND1 (both-sides) = `500 ÷ 2 = **250 m**.** ✅
+- **Available boundary = 1000 − 750 = 250 m** → BND1 (both-sides) bills it once = **250 m**. ✅
 
 That 250 m is exactly the free quarter of the boundary. The stacked hedge added **nothing** to the
-deduction, because it was hiding inside the hedgebank's footprint all along.
+deduction, because it sits on boundary the hedgebank already occupies.
 
 ---
 
@@ -345,14 +380,16 @@ deduction, because it was hiding inside the hedgebank's footprint all along.
 > exist from previous agreements: a **400 m CHRW2** hedgerow (which stacks with BND2) and a
 > **200 m BND1** dry stone wall (which does not).
 
-- **Target:** BND2 — **single-side** → base = 2P = **2000 m**.
+- **Target:** BND2 — **single-side** → base = 2P = **2000 m** (i.e. `P = 1000 m` of boundary, billed
+  per face).
 - **CHRW2 (400 m):** compatible with BND2 → not in any incompatible group → **costs nothing**.
-- **BND1 (200 m):** incompatible with BND2. Heaviest incompatible group = {BND2, BND1}; BND1's
-  footprint is both-sides → `200 × 2 = 400` side-metres.
-- **Available = 2000 − 400 = 1600 m** (single-side target, ÷ 1).
+- **BND1 (200 m):** incompatible with BND2. Both-sides, so its extent is the full **200 m** of
+  boundary. Heaviest incompatible group = {BND2, BND1} = 200 m.
+- **Available boundary = 1000 − 200 = 800 m** → BND2 (single-side) bills both faces →
+  `800 × 2 = **1600 m**`.
 
-**Side-metre check:** total `2P = 2000`; heaviest incompatible clique = {BND1} at 400; remaining
-`1600` side-metres ÷ 1 = **1600 m**. ✔
+**Physical check:** `P = 1000 m`; heaviest incompatible clique {BND1} occupies 200 m; `800 m` bare
+× 2 (single-side target) = **1600 m**. ✔
 
 > **A note on clamping:** if — even after the best-case arrangement — the heaviest incompatible
 > group still exceeds the base, the available length would go negative. In that case the parcel has
@@ -364,13 +401,13 @@ deduction, because it was hiding inside the hedgebank's footprint all along.
 
 ```mermaid
 flowchart TD
-    A["Farmer applies for a new linear\naction on a land parcel"] --> B["Get the parcel perimeter P\n(2P side-metres of resource)"]
+    A["Farmer applies for a new linear\naction on a land parcel"] --> B["Get the parcel perimeter P\n(P metres of physical boundary)"]
     B --> C["List ALL existing linear actions\n(from SitiAgri) + sibling actions"]
-    C --> D["Footprint of each action\n= qty x sides (side-metres)"]
+    C --> D["Physical extent of each action\n= length / billing (÷2 single-side, ÷1 both)"]
     D --> E["Build incompatibility graph over\n{new action + all existing}"]
     E --> F["Find the heaviest mutually-incompatible\ngroup that contains the new action\n(max-weight clique)"]
-    F --> G["Available side-metres =\n2P - heaviest clique footprint"]
-    G --> H["Available length =\navailable side-metres / target_sides"]
+    F --> G["Available boundary =\nP - heaviest clique's extent"]
+    G --> H["Available length =\navailable boundary x target billing\n(x2 single-side, x1 both)"]
     H --> I["Clamp to 0 if negative"]
     C -. "existing data can't fit\nthe boundary" .-> X["Infeasible: report\nrather than under-report"]
 
@@ -417,23 +454,23 @@ flowchart TD
 The Available Length Calculation works out how many metres of a new linear action a parcel can
 still take:
 
-1. **Think in side-metres** — a boundary of `P` metres holds `2P` side-metres; a both-sides action
-   uses 2 per metre, a single-side action uses 1.
-2. **Include every existing action** (plus sibling actions) and size each one's footprint in
-   side-metres (`qty × existing_sides`). Don't drop the ones compatible with the new action — the
-   clique arithmetic gives them zero weight on their own, and keeping them lets you spot existing
-   data that cannot fit the boundary.
+1. **Ration one physical boundary** — the parcel has `P` metres of boundary, a single resource with
+   no independently-usable faces; a feature always occupies its whole width.
+2. **Include every existing action** (plus sibling actions) and size each one's **physical extent**
+   (metres of boundary occupied): a both-sides feature's extent is its length, a single-side
+   feature's is its length ÷ 2 (billed per face). Don't drop the ones compatible with the new
+   action — the clique arithmetic gives them zero weight on their own, and keeping them lets you
+   spot existing data that cannot fit the boundary.
 3. **Arrange for the best case** — actions compatible with _each other_ share the same stretch, so
    find the **heaviest group that is mutually incompatible _and_ contains the new action** (a
-   max-weight clique); only that group's footprints genuinely add up.
-4. **Subtract and convert** — `available side-metres = 2P − heaviest-clique footprint`, then divide
-   by the target's sidedness (giving base `P` for both-sides, `2P` for single-side). **Clamp to
-   zero** if negative.
+   max-weight clique); only that group's extents genuinely add up.
+4. **Subtract and re-bill** — `available boundary = P − heaviest-clique extent`, then multiply by
+   the new action's billing (× 2 for single-side so it can claim both faces, × 1 for both-sides).
+   **Clamp to zero** if negative.
 
-Two subtleties trip people up. First (Scenarios A–B): because a stone-faced hedgebank is effectively
-two walls, a single-side action's recorded length is not directly comparable to a both-sides
-action's — you must convert through sidedness. Second (Scenario D): existing actions that are
-compatible with each other stack onto the same boundary, so you must **arrange before you subtract**
-rather than summing deductions — otherwise you wrongly wipe out boundary that is genuinely free.
-This second point is why the ALC is nearly as involved as the Available Area Calculation, and why it
-reuses the same incompatibility-graph and clique machinery.
+Two subtleties trip people up. First (Scenarios A–B): a single-side feature is billed per face, so
+its recorded length is **not** the metres of boundary it occupies — you must convert to physical
+extent. Second (Scenario D): existing actions compatible with each other stack onto the same
+boundary, so you must **arrange before you subtract** rather than summing lengths. Both are why the
+ALC anchors on **one physical boundary** — never on independently-countable "sides" — and why it
+reuses the AAC's incompatibility-graph and clique machinery.
