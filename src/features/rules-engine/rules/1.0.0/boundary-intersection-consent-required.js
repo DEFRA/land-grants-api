@@ -4,12 +4,12 @@
  */
 
 // Boundary-length counterpart to sssi/hefer-consent-required, for linear actions
-/**
- * @param {RuleEngineApplication} application - The application to execute the rule on
- * @param {ActionRule} rule - The rule to execute
- * @returns {RuleResultItem} - The result of the rule
- */
 export const boundaryIntersectionConsentRequired = {
+  /**
+   * @param {RuleEngineApplication} application - The application to execute the rule on
+   * @param {ActionRule} rule - The rule to execute
+   * @returns {RuleResultItem} - The result of the rule
+   */
   execute: (application, rule) => {
     const {
       layerName,

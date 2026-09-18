@@ -281,13 +281,12 @@ async function getIntersections(sheetId, parcelId, db, logger) {
 
 /**
  * Measures the parcel boundary against each layer a linear action can need
- * consent for, keyed by the layerName that action config rules refer to.
- * A layer is null when its query failed, so its rule can fail closed.
+ * consent for. A layer is null when its query failed, so its rule can fail closed.
  * @param {string} sheetId
  * @param {string} parcelId
  * @param {object} db
  * @param {object} logger
- * @returns {Promise<object>}
+ * @returns {Promise<BoundaryIntersections>}
  */
 async function getBoundaryIntersections(sheetId, parcelId, db, logger) {
   const [sssi, historicFeatures] = await Promise.all([
@@ -334,6 +333,7 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
+ * @import { BoundaryIntersections } from '~/src/features/data-layers/data-layers.d.js'
  * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'

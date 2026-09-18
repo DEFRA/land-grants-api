@@ -1,7 +1,18 @@
 /**
+ * @import { BoundaryIntersections } from '~/src/features/data-layers/data-layers.d.js'
+ */
+
+/**
  * @typedef {object} Explanation
  * @property {string} title
  * @property {string[]} lines
+ */
+
+/**
+ * @typedef {object} Caveat
+ * @property {string} code
+ * @property {string} description
+ * @property {object} metadata
  */
 
 /**
@@ -11,7 +22,7 @@
  * @property {boolean} passed
  * @property {string} reason
  * @property {Explanation[]} explanations
- * @property {object} [cavets]
+ * @property {Caveat} [caveat]
  */
 
 /**
@@ -29,7 +40,7 @@
  * @property {Array} existingAgreements
  * @property {object} intersections
  * @property {{landCoverClassCode:string, areaSqm: number}[]} [landCovers]
- * @property {object|null} [boundaryIntersections]
+ * @property {BoundaryIntersections|null} [boundaryIntersections]
  */
 
 /**
