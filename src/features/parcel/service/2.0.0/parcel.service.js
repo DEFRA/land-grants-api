@@ -9,13 +9,13 @@ import {
 } from '~/src/features/common/constants/unit_type.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
+import { rules } from '~/src/features/rules-engine/rules/index.js'
 import {
   findMaximumAvailableArea,
   throwIfInfeasible
 } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { heferConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/hefer-consent-required.js'
 import {
   heferRequiredActionTransformer,
   plannedActionsTransformer,
@@ -24,7 +24,6 @@ import {
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { sssiConsentRequired } from '~/src/features/rules-engine/rules/1.0.0/sssi-consent-required.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -218,10 +217,10 @@ export async function getActionsForParcelWithSSSIConsentRequired(
   }
 
   const sssiConsentRequiredAction = executeSingleRuleForEnabledActions(
+    rules,
     enabledActions,
     application,
-    'sssi-consent-required',
-    sssiConsentRequired
+    'sssi-consent-required'
   )
 
   return sssiConsentRequiredActionTransformer(
@@ -262,10 +261,10 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   }
 
   const heferRequiredAction = executeSingleRuleForEnabledActions(
+    rules,
     enabledActions,
     application,
-    'hefer-consent-required',
-    heferConsentRequired
+    'hefer-consent-required'
   )
 
   return heferRequiredActionTransformer(responseParcels, heferRequiredAction)
