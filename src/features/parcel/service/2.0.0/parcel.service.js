@@ -3,8 +3,10 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
+import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import {
   HECTARES,
+  METERS,
   isAreaUnit
 } from '~/src/features/common/constants/unit_type.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
@@ -31,6 +33,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * @import {Logger} from '~/src/features/common/logger.d.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
+ * @import {RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
  */
 
 /**
@@ -185,6 +188,57 @@ export async function getActionsForParcel(
   return parcelResponse
 }
 
+/**
+ * Builds the rule engine application for a consent check on one layer. Area
+ * actions read intersections[layer]; a displayed linear action's rule reads
+ * boundaryIntersections[layer] instead, so that is only measured when one exists.
+ * @param {string} layer - The layerName the consent rules refer to
+ * @param {Function} areaQuery - The data layer query for the area intersection
+ * @param {Action[]} enabledActions - The enabled actions
+ * @param {{sheetId: string, parcelId: string}} parcel - The parcel
+ * @param {Pool} postgresDb - The postgres database
+ * @param {Logger} logger - The logger
+ * @returns {Promise<RuleEngineApplication>}
+ */
+async function getConsentApplication(
+  layer,
+  areaQuery,
+  enabledActions,
+  { sheetId, parcelId },
+  postgresDb,
+  logger
+) {
+  const hasDisplayedLinearAction = enabledActions.some(
+    (a) => a.enabled && a.display && a.applicationUnitOfMeasurement === METERS
+  )
+
+  const [areaIntersection, boundaryIntersection] = await Promise.all([
+    areaQuery(sheetId, parcelId, DATA_LAYER_TYPES[layer], postgresDb, logger),
+    hasDisplayedLinearAction
+      ? getBoundaryIntersection(
+          sheetId,
+          parcelId,
+          DATA_LAYER_TYPES[layer],
+          postgresDb,
+          logger
+        )
+      : null
+  ])
+
+  return {
+    appliedForQuantity: 0,
+    actionCodeAppliedFor: '',
+    landParcel: {
+      availableAreaSqm: 0,
+      parcelSizeSqm: 0,
+      existingAgreements: [],
+      intersections: { [layer]: areaIntersection },
+      boundaryIntersections: { [layer]: boundaryIntersection },
+      availability: 0
+    }
+  }
+}
+
 export async function getActionsForParcelWithSSSIConsentRequired(
   parcelIds,
   responseParcels,
@@ -192,29 +246,14 @@ export async function getActionsForParcelWithSSSIConsentRequired(
   logger,
   postgresDb
 ) {
-  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
-
-  const { intersectingAreaPercentage } = await getDataLayerQueryAccumulated(
-    sheetId,
-    parcelId,
-    DATA_LAYER_TYPES.sssi,
+  const application = await getConsentApplication(
+    'sssi',
+    getDataLayerQueryAccumulated,
+    enabledActions,
+    splitParcelId(parcelIds[0], logger),
     postgresDb,
     logger
   )
-
-  const application = {
-    appliedForQuantity: 0,
-    actionCodeAppliedFor: '',
-    landParcel: {
-      availableAreaSqm: 0,
-      parcelSizeSqm: 0,
-      existingAgreements: [],
-      intersections: {
-        sssi: { intersectingAreaPercentage }
-      },
-      availability: 0
-    }
-  }
 
   const sssiConsentRequiredAction = executeSingleRuleForEnabledActions(
     rules,
@@ -236,29 +275,14 @@ export async function getActionsForParcelWithHEFERConsentRequired(
   logger,
   postgresDb
 ) {
-  const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
-
-  const { intersectingAreaPercentage } = await getDataLayerQueryUnion(
-    sheetId,
-    parcelId,
-    DATA_LAYER_TYPES.historic_features,
+  const application = await getConsentApplication(
+    'historic_features',
+    getDataLayerQueryUnion,
+    enabledActions,
+    splitParcelId(parcelIds[0], logger),
     postgresDb,
     logger
   )
-
-  const application = {
-    appliedForQuantity: 0,
-    actionCodeAppliedFor: '',
-    landParcel: {
-      availableAreaSqm: 0,
-      parcelSizeSqm: 0,
-      existingAgreements: [],
-      intersections: {
-        historic_features: { intersectingAreaPercentage }
-      },
-      availability: 0
-    }
-  }
 
   const heferRequiredAction = executeSingleRuleForEnabledActions(
     rules,
