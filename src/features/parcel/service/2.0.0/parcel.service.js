@@ -63,12 +63,16 @@ export function splitParcelId(id, logger) {
 
 /**
  * Compute a single action's entry for the parcel actions response, running it
- * through the AAC when its unit competes for area. Non-hectare (e.g.
- * building) actions with no available area on this parcel are omitted
- * entirely (returns null) rather than shown at zero - A.C.: given a land
- * parcel has no available building area, do not display the building-related
- * action as an option for that parcel. Hectare actions are always returned,
- * even at zero, to keep today's behaviour unchanged for them.
+ * through the AAC when its unit competes for area. Always returns the action,
+ * even at zero available area - A.C.: given a land parcel has no available
+ * building area, do not display the building-related action as an option for
+ * that parcel is satisfied by grants-ui's own hasAvailableLand/
+ * isVisibleOnInitialLoad filtering (any action, any unit), which only sees
+ * the current figure if this endpoint keeps reporting the action rather than
+ * omitting it - grants-ui's mergeRecomputedAvailability only overwrites an
+ * action's availability when it finds a matching code in this response, so
+ * omitting a now-zero action here would leave its stale, previously-fetched
+ * availability in place instead of updating it to zero.
  * @param {Action} action - The action to compute
  * @param {AgreementAction[]} actions - The existing/planned actions competing for area
  * @param {Record<string, string|undefined>} unitsByCode - Configured unit of measurement by action code
@@ -78,7 +82,7 @@ export function splitParcelId(id, logger) {
  * @param {LandParcelDb} context.parcel - The parcel
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
- * @returns {Promise<object|null>} The transformed action, or null to omit it
+ * @returns {Promise<object>} The transformed action
  */
 async function buildActionWithAvailableArea(
   action,
@@ -126,14 +130,6 @@ async function buildActionWithAvailableArea(
   )
 
   throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
-
-  const isZeroAvailabilityNonHectareAction =
-    action.applicationUnitOfMeasurement !== HECTARES &&
-    lpResult.availableAreaSqm <= 0
-
-  if (isZeroAvailabilityNonHectareAction) {
-    return null
-  }
 
   const availableArea = {
     ...lpResult,
@@ -183,9 +179,7 @@ async function getParcelActionsWithAvailableArea(
       { showActionResults, compatibilityCheckFn, parcel, postgresDb, logger }
     )
 
-    if (actionWithAvailableArea) {
-      actionsWithAvailableArea.push(actionWithAvailableArea)
-    }
+    actionsWithAvailableArea.push(actionWithAvailableArea)
   }
 
   return actionsWithAvailableArea

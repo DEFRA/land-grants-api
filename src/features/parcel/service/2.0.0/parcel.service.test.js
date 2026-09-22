@@ -761,51 +761,33 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
-    test('should omit a building (sqm) action entirely when it has zero available area', async () => {
-      findMaximumAvailableArea.mockReturnValue({
-        context: {},
-        availableAreaSqm: 0,
-        totalValidLandCoverSqm: 0,
-        feasible: true
-      })
+    test.each([
+      ['building (sqm)', 2],
+      ['hectare', 0]
+    ])(
+      'should still include a %s action with zero available area, so grants-ui sees the recomputed figure rather than a stale one',
+      async (_description, actionIndex) => {
+        findMaximumAvailableArea.mockReturnValue({
+          context: {},
+          availableAreaSqm: 0,
+          totalValidLandCoverSqm: 0,
+          feasible: true
+        })
 
-      const result = await getActionsForParcel(
-        mockParcel,
-        mockPayload,
-        false,
-        [mockEnabledActionsForParcel[2]],
-        mockCompatibilityCheckFn,
-        mockRequest,
-        'token'
-      )
+        const result = await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          [mockEnabledActionsForParcel[actionIndex]],
+          mockCompatibilityCheckFn,
+          mockRequest,
+          'token'
+        )
 
-      expect(actionTransformer).not.toHaveBeenCalled()
-      expect(result.actions).toEqual([])
-    })
-
-    test('should still include a hectare action with zero available area', async () => {
-      findMaximumAvailableArea.mockReturnValue({
-        context: {},
-        availableAreaSqm: 0,
-        totalValidLandCoverSqm: 0,
-        feasible: true
-      })
-
-      const result = await getActionsForParcel(
-        mockParcel,
-        mockPayload,
-        false,
-        [mockEnabledActionsForParcel[0]],
-        mockCompatibilityCheckFn,
-        mockRequest,
-        'token'
-      )
-
-      expect(actionTransformer).toHaveBeenCalled()
-      expect(result.actions).toEqual([
-        { code: 'UPL1', description: 'Action 1' }
-      ])
-    })
+        expect(actionTransformer).toHaveBeenCalled()
+        expect(result.actions).toHaveLength(1)
+      }
+    )
 
     test('should include sqm-configured (e.g. building) actions as area demand alongside hectare actions', async () => {
       const plannedActions = [
