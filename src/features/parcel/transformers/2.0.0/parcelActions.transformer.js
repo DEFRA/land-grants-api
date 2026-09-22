@@ -1,4 +1,5 @@
 import { TOTAL } from '~/src/features/common/constants/action_availability.js'
+import { HECTARES } from '~/src/features/common/constants/unit_type.js'
 import { sizeTransformer } from '../parcelActions.transformer.js'
 
 /**
@@ -10,9 +11,13 @@ import { sizeTransformer } from '../parcelActions.transformer.js'
  */
 function actionTransformer(action, availableArea = null, showResults = false) {
   const unit = action.applicationUnitOfMeasurement
+  const areaValue =
+    unit === HECTARES
+      ? availableArea?.availableAreaHectares
+      : availableArea?.availableAreaSqm
 
-  const aa = Number.isFinite(availableArea?.availableAreaHectares)
-    ? sizeTransformer(availableArea?.availableAreaHectares ?? 0, unit)
+  const aa = Number.isFinite(areaValue)
+    ? sizeTransformer(areaValue ?? 0, unit)
     : undefined
 
   const availability = { unit, value: null, ...aa }

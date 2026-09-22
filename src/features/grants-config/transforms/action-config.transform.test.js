@@ -1,5 +1,6 @@
 import { transformActionConfig } from './action-config.transform.js'
 import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_availability.js'
+import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
 
 describe('transformActionConfig', () => {
   const pa3Json = {
@@ -207,10 +208,10 @@ describe('transformActionConfig', () => {
     const result = transformActionConfig({
       code: 'PA3',
       semanticVersion: '1.0.0',
+      applicationUnitOfMeasurement: 'ha',
       payment: undefined,
       rules: undefined
     })
-    expect(result.config.application_unit_of_measurement).toBeUndefined()
     expect(result.config.duration_years).toBeUndefined()
     expect(result.config.payment_method).toBeUndefined()
     expect(result.config.rules).toEqual([])
@@ -340,6 +341,36 @@ describe('transformActionConfig', () => {
         })
       ).toThrow('Invalid action config')
     })
+
+    test('throws when applicationUnitOfMeasurement is missing', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          applicationUnitOfMeasurement: undefined
+        })
+      ).toThrow('Invalid action config')
+    })
+
+    test('throws when applicationUnitOfMeasurement is not a recognised unit', () => {
+      expect(() =>
+        transformActionConfig({
+          ...pa3Json,
+          applicationUnitOfMeasurement: 'hectares'
+        })
+      ).toThrow('Invalid action config')
+    })
+
+    test.each(UNIT_TYPES)(
+      'does not throw for a valid applicationUnitOfMeasurement %s',
+      (unit) => {
+        expect(() =>
+          transformActionConfig({
+            ...pa3Json,
+            applicationUnitOfMeasurement: unit
+          })
+        ).not.toThrow()
+      }
+    )
   })
 
   test('config does not include top-level action metadata fields', () => {

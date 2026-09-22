@@ -1,7 +1,4 @@
-import {
-  haToSqm,
-  sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
+import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -17,19 +14,27 @@ export const appliedForTotalAvailableArea = {
   execute: (application, rule) => {
     const {
       appliedForQuantity,
+      applicationUnitOfMeasurement,
       landParcel: { availableAreaSqm }
     } = application
 
-    const appliedForQuantityHa = Number.parseFloat(appliedForQuantity)
-    const availableAreaHa = sqmToHaRounded(availableAreaSqm)
-    const appliedForQuantitySqm = haToSqm(appliedForQuantityHa)
+    const {
+      unit,
+      appliedAreaDisplay: appliedForQuantityDisplay,
+      availableAreaDisplay,
+      appliedAreaSqm: appliedForQuantitySqm
+    } = normalizeAppliedArea(
+      applicationUnitOfMeasurement,
+      appliedForQuantity,
+      availableAreaSqm
+    )
 
     const name = rule.name
     const explanations = [
       {
         title: 'Total valid land cover',
         lines: [
-          `The available area was (${availableAreaHa} ha) the applicant applied for (${appliedForQuantity} ha)`
+          `The available area was (${availableAreaDisplay} ${unit}) the applicant applied for (${appliedForQuantityDisplay} ${unit})`
         ]
       }
     ]
@@ -39,7 +44,7 @@ export const appliedForTotalAvailableArea = {
         name,
         passed: false,
         description: rule.description,
-        reason: `There is not sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
+        reason: `There is not sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
         explanations
       }
     }
@@ -48,7 +53,7 @@ export const appliedForTotalAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `There is sufficient available area (${availableAreaHa} ha) for the applied figure (${appliedForQuantityHa} ha)`,
+      reason: `There is sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
       explanations
     }
   }

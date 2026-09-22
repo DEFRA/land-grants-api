@@ -62,6 +62,90 @@ export function splitParcelId(id, logger) {
 }
 
 /**
+ * Compute a single action's entry for the parcel actions response, running it
+ * through the AAC when its unit competes for area. Always returns the action,
+ * even at zero available area - A.C.: given a land parcel has no available
+ * building area, do not display the building-related action as an option for
+ * that parcel is satisfied by grants-ui's own hasAvailableLand/
+ * isVisibleOnInitialLoad filtering (any action, any unit), which only sees
+ * the current figure if this endpoint keeps reporting the action rather than
+ * omitting it - grants-ui's mergeRecomputedAvailability only overwrites an
+ * action's availability when it finds a matching code in this response, so
+ * omitting a now-zero action here would leave its stale, previously-fetched
+ * availability in place instead of updating it to zero.
+ * @param {Action} action - The action to compute
+ * @param {AgreementAction[]} actions - The existing/planned actions competing for area
+ * @param {Record<string, string|undefined>} unitsByCode - Configured unit of measurement by action code
+ * @param {object} context
+ * @param {boolean} context.showActionResults - Whether to show action results
+ * @param {Function} context.compatibilityCheckFn - The compatibility check function
+ * @param {LandParcelDb} context.parcel - The parcel
+ * @param {Pool} context.postgresDb - The postgres database
+ * @param {Logger} context.logger - The logger
+ * @returns {Promise<object>} The transformed action
+ */
+async function buildActionWithAvailableArea(
+  action,
+  actions,
+  unitsByCode,
+  context
+) {
+  const {
+    showActionResults,
+    compatibilityCheckFn,
+    parcel,
+    postgresDb,
+    logger
+  } = context
+
+  // Non-area actions (e.g. count/linear) should not go through AAC calculations
+  if (!isAreaUnit(action.applicationUnitOfMeasurement)) {
+    return actionTransformer(action, undefined, showActionResults)
+  }
+
+  // Non-area actions also shouldn't be taken into consideration for AACs for other actions
+  // Where there is no enabled-action config, fall back to the action's own unit
+  const areaActions = actions.filter((a) => {
+    const configuredUnit = unitsByCode[a.actionCode]
+    return configuredUnit === undefined
+      ? isAreaUnit(a.unit)
+      : isAreaUnit(configuredUnit)
+  })
+  const transformedActions = plannedActionsTransformer(areaActions)
+
+  const aacDataRequirements = await getAvailableAreaDataRequirements(
+    action.code,
+    parcel.sheet_id,
+    parcel.parcel_id,
+    transformedActions,
+    postgresDb,
+    logger
+  )
+
+  const lpResult = findMaximumAvailableArea(
+    action.code,
+    transformedActions,
+    compatibilityCheckFn,
+    aacDataRequirements
+  )
+
+  throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
+
+  const availableArea = {
+    ...lpResult,
+    explanations: formatExplanationSections(lpResult.context, {
+      targetAction: action.code,
+      availableAreaSqm: lpResult.availableAreaSqm,
+      totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
+      landCoverToString: aacDataRequirements.landCoverToString,
+      feasible: lpResult.feasible
+    })
+  }
+
+  return actionTransformer(action, availableArea, showActionResults)
+}
+
+/**
  * Get parcel actions with available area
  * @param {LandParcelDb} parcel - The parcel
  * @param {AgreementAction[]} actions - The actions to get
@@ -88,57 +172,11 @@ async function getParcelActionsWithAvailableArea(
   )
 
   for (const action of enabledActions.filter((a) => a.display)) {
-    // Non-hectare actions should not go through AAC calculations
-    if (action.applicationUnitOfMeasurement !== HECTARES) {
-      actionsWithAvailableArea.push(
-        actionTransformer(action, undefined, showActionResults)
-      )
-      continue
-    }
-
-    // Non-hectare actions also shouldn't be taken into consideration for AACs for other actions
-    // Where there is no enabled-action config, fall back to the action's own unit
-    const areaActions = actions.filter((a) => {
-      const configuredUnit = unitsByCode[a.actionCode]
-      return configuredUnit === undefined
-        ? isAreaUnit(a.unit)
-        : configuredUnit === HECTARES
-    })
-    const transformedActions = plannedActionsTransformer(areaActions)
-
-    const aacDataRequirements = await getAvailableAreaDataRequirements(
-      action.code,
-      parcel.sheet_id,
-      parcel.parcel_id,
-      transformedActions,
-      postgresDb,
-      logger
-    )
-
-    const lpResult = findMaximumAvailableArea(
-      action.code,
-      transformedActions,
-      compatibilityCheckFn,
-      aacDataRequirements
-    )
-
-    throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
-
-    const availableArea = {
-      ...lpResult,
-      explanations: formatExplanationSections(lpResult.context, {
-        targetAction: action.code,
-        availableAreaSqm: lpResult.availableAreaSqm,
-        totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
-        landCoverToString: aacDataRequirements.landCoverToString,
-        feasible: lpResult.feasible
-      })
-    }
-
-    const actionWithAvailableArea = actionTransformer(
+    const actionWithAvailableArea = await buildActionWithAvailableArea(
       action,
-      availableArea,
-      showActionResults
+      actions,
+      unitsByCode,
+      { showActionResults, compatibilityCheckFn, parcel, postgresDb, logger }
     )
 
     actionsWithAvailableArea.push(actionWithAvailableArea)

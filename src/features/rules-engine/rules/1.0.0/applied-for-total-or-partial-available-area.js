@@ -1,7 +1,4 @@
-import {
-  haToSqm,
-  sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
+import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -18,31 +15,34 @@ import {
 export const appliedForTotalOrPartialAvailableArea = {
   execute: (application, rule) => {
     const {
-      appliedForQuantity: appliedForQuantityHa,
+      appliedForQuantity,
+      applicationUnitOfMeasurement,
       landParcel: { availableAreaSqm }
     } = application
     const name = rule.name
 
-    const parsedAppliedAreaHa = Number.parseFloat(appliedForQuantityHa) || 0
-    const parsedAvailableAreaHa = sqmToHaRounded(availableAreaSqm) || 0
-    const maximumAllowedAppliedAreaHa = parsedAvailableAreaHa
-
-    const parsedAppliedAreaSqm = haToSqm(parsedAppliedAreaHa)
-    const maximumAllowedAppliedAreaSqm = haToSqm(maximumAllowedAppliedAreaHa)
+    const {
+      unit,
+      appliedAreaDisplay: parsedAppliedArea,
+      availableAreaDisplay: parsedAvailableArea,
+      appliedAreaSqm,
+      availableAreaSqmDisplay: maximumAllowedAreaSqm
+    } = normalizeAppliedArea(
+      applicationUnitOfMeasurement,
+      appliedForQuantity,
+      availableAreaSqm
+    )
 
     const explanations = [
       {
         title: 'Total or partial available area',
         lines: [
-          `The available area is (${parsedAvailableAreaHa} ha), and the applicant applied for (${parsedAppliedAreaHa} ha).`
+          `The available area is (${parsedAvailableArea} ${unit}), and the applicant applied for (${parsedAppliedArea} ${unit}).`
         ]
       }
     ]
 
-    if (
-      parsedAppliedAreaSqm <= 0 ||
-      parsedAppliedAreaSqm > maximumAllowedAppliedAreaSqm
-    ) {
+    if (appliedAreaSqm <= 0 || appliedAreaSqm > maximumAllowedAreaSqm) {
       return {
         name,
         passed: false,
@@ -56,7 +56,7 @@ export const appliedForTotalOrPartialAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `The applied figure (${parsedAppliedAreaHa} ha) is within the allowed range (greater than 0 ha and up to ${maximumAllowedAppliedAreaHa} ha)`,
+      reason: `The applied figure (${parsedAppliedArea} ${unit}) is within the allowed range (greater than 0 ${unit} and up to ${parsedAvailableArea} ${unit})`,
       explanations
     }
   }

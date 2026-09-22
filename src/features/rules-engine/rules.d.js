@@ -62,6 +62,7 @@
  * @property {number|string} [totalParcelAreaSqm]
  * @property {number} [totalAvailableArea]
  * @property {number|string} [appliedForQuantity]
+ * @property {string} [applicationUnitOfMeasurement]
  * @property {string} [actionCodeAppliedFor]
  * @property {LandParcel} [landParcel]
  * @property {{landCoverClassCode: string, landCoverCode: string}[]} [actionLandCovers]
