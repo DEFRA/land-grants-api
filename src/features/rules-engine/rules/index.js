@@ -10,6 +10,8 @@ import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './1.0.0/parc
 import { minMaxParcelSize } from './1.0.0/min-max-parcel-size.js'
 import { appliedForAvailableLength } from './1.0.0/available-length.js'
 import { minimumLength } from './1.0.0/minimum-length.js'
+import { parcelHasValidLandCover } from './1.0.0/parcel-has-valid-land-cover.js'
+import { boundaryIntersectionConsentRequired } from './1.0.0/boundary-intersection-consent-required.js'
 
 export const rules = {
   'parcel-has-intersection-with-data-layer-1.0.0':
@@ -28,5 +30,8 @@ export const rules = {
     parcelIntersectionDoesNotExceedMaximumForDataLayer,
   'min-max-parcel-size-1.0.0': minMaxParcelSize,
   'available-length-1.0.0': appliedForAvailableLength,
-  'minimum-length-1.0.0': minimumLength
+  'minimum-length-1.0.0': minimumLength,
+  'parcel-has-valid-land-cover-1.0.0': parcelHasValidLandCover,
+  'boundary-intersection-consent-required-1.0.0':
+    boundaryIntersectionConsentRequired
 }

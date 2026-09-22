@@ -1,10 +1,12 @@
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
-import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
+import { getActions } from '../../actions/service/action.service.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
+import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getActions } from '../../actions/service/action.service.js'
-import { logValidationWarn } from '../../common/helpers/logging/log-helpers.js'
 
 /**
  * Validate application
@@ -41,12 +43,7 @@ export const validateApplication = async (
     logValidationWarn(request.logger, {
       operation: 'Application validation',
       errors: validationErrors,
-      context: {
-        sbi,
-        crn,
-        requesterUsername,
-        applicationId
-      }
+      context: { sbi, crn, requesterUsername, applicationId }
     })
 
     return {
@@ -62,19 +59,29 @@ export const validateApplication = async (
     request.server.postgresDb
   )
 
+  const allAgreements = await getAgreements(
+    sbi,
+    landAction.map((a) => [a.parcelId, a.sheetId]),
+    null, // No DEFRA token on caseworker route
+    request.server.postgresDb,
+    request.logger
+  )
+
   // Validate each land action
   const parcelResults = await Promise.all(
-    landAction.map(async (la) =>
-      validateLandParcelActions(
-        sbi,
+    landAction.map(async (la) => {
+      const agreements = (
+        allAgreements[`${la.parcelId}-${la.sheetId}`] || []
+      ).filter((a) => expiredActionsFilter(a, referenceDate))
+
+      return validateLandParcelActions(
         la,
         actions,
         compatibilityCheckFn,
         request,
-        null,
-        referenceDate
+        agreements
       )
-    )
+    })
   )
 
   // Transform the application data

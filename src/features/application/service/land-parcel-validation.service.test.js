@@ -1,18 +1,13 @@
-import { getAgreements } from '~/src/services/dal/index.js'
-import { getAgreementsForParcel } from '../../agreements/queries/getAgreementsForParcel.query.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { validateLandAction } from './action-validation.service.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 
-vi.mock('../../agreements/queries/getAgreementsForParcel.query.js')
-vi.mock('~/src/services/dal/index.js')
 vi.mock('./action-validation.service.js')
 
-const mockGetAgreementsForParcel = getAgreementsForParcel
-const mockGetAgreements = getAgreements
 const mockValidateLandAction = validateLandAction
 
-const sbi = '012345678'
+const parcelId = '9238'
+const sheetId = 'SX0679'
 
 describe('Land Parcel Validation Service', () => {
   const mockLogger = {
@@ -35,8 +30,8 @@ describe('Land Parcel Validation Service', () => {
   }
 
   const mockLandAction = {
-    sheetId: 'SX0679',
-    parcelId: '9238',
+    sheetId,
+    parcelId,
     actions: [
       {
         code: 'CMOR1',
@@ -53,7 +48,7 @@ describe('Land Parcel Validation Service', () => {
 
   const mockCompatibilityCheckFn = vi.fn()
 
-  const mockAgreementsDb = [
+  const agreements = [
     {
       actionCode: 'CLIG2',
       quantity: 100,
@@ -62,16 +57,6 @@ describe('Land Parcel Validation Service', () => {
       endDate: new Date('2030-01-01T00:00:00Z')
     }
   ]
-  const mockAgreementsDal = [
-    {
-      actionCode: 'CLIG2',
-      quantity: 1000,
-      unit: 'sqm',
-      startDate: new Date('2020-01-01T00:00:00Z'),
-      endDate: new Date('2030-01-01T00:00:00Z')
-    }
-  ]
-  const mockAgreementsAll = [...mockAgreementsDb, ...mockAgreementsDal]
 
   const mockActionResult1 = {
     hasPassed: true,
@@ -110,8 +95,6 @@ describe('Land Parcel Validation Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockGetAgreementsForParcel.mockResolvedValue(mockAgreementsDb)
-    mockGetAgreements.mockResolvedValue(mockAgreementsDal)
     mockValidateLandAction.mockResolvedValue(mockActionResult1)
   })
 
@@ -122,12 +105,11 @@ describe('Land Parcel Validation Service', () => {
         .mockResolvedValueOnce(mockActionResult2)
 
       const result = await validateLandParcelActions(
-        sbi,
         mockLandAction,
         mockActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        'dummy-token'
+        agreements
       )
 
       expect(result).toEqual({
@@ -136,26 +118,12 @@ describe('Land Parcel Validation Service', () => {
         actions: [mockActionResult1, mockActionResult2]
       })
 
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        mockPostgresDb,
-        mockLogger
-      )
-      expect(mockGetAgreements).toHaveBeenCalledWith(
-        sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
-        'dummy-token',
-        mockLogger
-      )
-
       expect(mockValidateLandAction).toHaveBeenCalledTimes(2)
       expect(mockValidateLandAction).toHaveBeenNthCalledWith(
         1,
         mockLandAction.actions[0],
         mockActions,
-        mockAgreementsAll,
+        agreements,
         mockCompatibilityCheckFn,
         mockLandAction,
         mockRequest
@@ -164,43 +132,7 @@ describe('Land Parcel Validation Service', () => {
         2,
         mockLandAction.actions[1],
         mockActions,
-        mockAgreementsAll,
-        mockCompatibilityCheckFn,
-        mockLandAction,
-        mockRequest
-      )
-    })
-
-    test('should filter agreements against an explicit referenceDate rather than the system clock', async () => {
-      // Only active around referenceDate - long since expired "now"
-      const agreementActiveAtReferenceDate = {
-        actionCode: 'CLIG2',
-        quantity: 100,
-        unit: 'sqm',
-        startDate: new Date('2018-01-01T00:00:00Z'),
-        endDate: new Date('2019-01-01T00:00:00Z')
-      }
-      const referenceDate = new Date('2018-06-01T00:00:00Z')
-
-      mockGetAgreementsForParcel.mockResolvedValue([
-        agreementActiveAtReferenceDate
-      ])
-      mockGetAgreements.mockResolvedValue([])
-
-      await validateLandParcelActions(
-        sbi,
-        mockLandAction,
-        mockActions,
-        mockCompatibilityCheckFn,
-        mockRequest,
-        'dummy-token',
-        referenceDate
-      )
-
-      expect(mockValidateLandAction).toHaveBeenCalledWith(
-        expect.anything(),
-        mockActions,
-        [agreementActiveAtReferenceDate],
+        agreements,
         mockCompatibilityCheckFn,
         mockLandAction,
         mockRequest
@@ -210,12 +142,11 @@ describe('Land Parcel Validation Service', () => {
     test('should throw error when landAction is null', async () => {
       await expect(
         validateLandParcelActions(
-          sbi,
           null,
           mockActions,
           mockCompatibilityCheckFn,
           mockRequest,
-          'dummy-token'
+          agreements
         )
       ).rejects.toThrow('Unable to validate land parcel actions')
     })
@@ -223,12 +154,11 @@ describe('Land Parcel Validation Service', () => {
     test('should throw error when actions is null', async () => {
       await expect(
         validateLandParcelActions(
-          sbi,
           mockLandAction,
           null,
           mockCompatibilityCheckFn,
           mockRequest,
-          'dummy-token'
+          agreements
         )
       ).rejects.toThrow('Unable to validate land parcel actions')
     })
@@ -236,74 +166,13 @@ describe('Land Parcel Validation Service', () => {
     test('should throw error when compatibilityCheckFn is null', async () => {
       await expect(
         validateLandParcelActions(
-          sbi,
           mockLandAction,
           mockActions,
           null,
           mockRequest,
-          'dummy-token'
+          agreements
         )
       ).rejects.toThrow('Unable to validate land parcel actions')
-    })
-
-    test('should fail if database error occurs when fetching agreements', async () => {
-      const dbError = new Error('Database connection failed')
-      mockGetAgreementsForParcel.mockRejectedValue(dbError)
-
-      await expect(
-        validateLandParcelActions(
-          sbi,
-          mockLandAction,
-          mockActions,
-          mockCompatibilityCheckFn,
-          mockRequest,
-          'dummy-token'
-        )
-      ).rejects.toThrow()
-
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        mockPostgresDb,
-        mockLogger
-      )
-      expect(mockGetAgreements).toHaveBeenCalledWith(
-        sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
-        'dummy-token',
-        mockLogger
-      )
-    })
-
-    test('should fail if fetching agreements from DAL fails', async () => {
-      const err = new Error('DAL request failed')
-      mockGetAgreements.mockRejectedValue(err)
-
-      await expect(
-        validateLandParcelActions(
-          sbi,
-          mockLandAction,
-          mockActions,
-          mockCompatibilityCheckFn,
-          mockRequest,
-          'dummy-token'
-        )
-      ).rejects.toThrow()
-
-      expect(mockGetAgreementsForParcel).toHaveBeenCalledWith(
-        mockLandAction.sheetId,
-        mockLandAction.parcelId,
-        mockPostgresDb,
-        mockLogger
-      )
-      expect(mockGetAgreements).toHaveBeenCalledWith(
-        sbi,
-        mockLandAction.parcelId,
-        mockLandAction.sheetId,
-        'dummy-token',
-        mockLogger
-      )
     })
   })
 })

@@ -10,24 +10,24 @@ const DAL_QUANTITY_KEYS = ['actionArea', 'actionMTL', 'actionUnits']
 const STATUS_SIGNED = 'SIGNED'
 
 /**
- * Transforms actions from DB format to AgreementAction format.
- * @param {object[]} agreements - The agreements to transform.
- * @returns {AgreementAction[]} The transformed agreement actions.
+ * Transforms actions from DB row format (agreements table) to AgreementAction format and group
+ * them by parcelId and sheetId.
+ * @param {object[]} agreements - Rows from the agreements table in postgres
+ * @returns {AgreementsByParcel} Transformed AgreementActions, keyed by parcelId-sheetId
  */
-export function agreementActionsTransformer(agreements) {
-  if (!agreements || agreements.length === 0) {
-    return []
-  }
-
-  return agreements[0].actions?.map((action) => {
-    return {
+export function dbToAgreements(agreements) {
+  return agreements.reduce((acc, agreement) => {
+    const key = `${agreement.parcel_id}-${agreement.sheet_id}`
+    const actions = agreement.actions?.map((action) => ({
       actionCode: action.actionCode,
       quantity: action.quantity,
       unit: action.unit,
       startDate: new Date(action.startDate),
       endDate: new Date(action.endDate)
-    }
-  })
+    }))
+
+    return { ...acc, [key]: actions }
+  }, {})
 }
 
 /**
@@ -73,32 +73,35 @@ function getDalQuantityFields(action) {
 /**
  * Convert Business instance received from DAL to an array of internal AgreementActions
  * @param {Business} business The business to convert
- * @returns {AgreementAction[]} Agreements related to this business
+ * @returns {{[key: string]: AgreementAction[]}} Agreements related to this business, keyed by
+ *     ${parcelId}-${sheetId}
  */
-export function dalBusinessToAgreements(business, parcelId, sheetId) {
+export function dalBusinessToAgreements(business) {
   // Agreement actions are nested in agreement.paymentSchedules so we flatten them out of the
-  // agreements array. We also need to filter by agreement status and parcelId + sheetId in order
-  // to limit results to relevant ones.
-  return (
-    (business?.agreements || [])
-      .filter((agreement) => agreement.status === STATUS_SIGNED)
-      .flatMap((agreement) => agreement.paymentSchedules)
-      .filter(
-        (action) =>
-          action.parcelName === parcelId && action.sheetName === sheetId
-      )
-      .map((a) => ({
+  // agreements array, and then collect them into an object keyed by `parcelId-sheetId`.
+  // We also filter out non-signed agreements as they're not relevant for us.
+  return (business?.agreements || [])
+    .filter((agreement) => agreement.status === STATUS_SIGNED)
+    .flatMap((agreement) => agreement.paymentSchedules)
+    .reduce((acc, a) => {
+      const key = `${a.parcelName}-${a.sheetName}`
+      const transformed = {
         actionCode: a.optionCode,
         startDate: new Date(a.startDate),
         endDate: new Date(a.endDate),
         ...getDalQuantityFields(a)
-      }))
+      }
+
       // Capital actions will have no quantity at all, we'll also filter these out
-      .filter((a) => a.quantity !== null)
-  )
+      if (transformed.quantity === null) {
+        return acc
+      }
+
+      return { ...acc, [key]: [...(acc[key] || []), transformed] }
+    }, {})
 }
 
 /**
- * @import { AgreementAction } from "../agreements.d.js"
+ * @import { AgreementAction, AgreementsByParcel } from "../agreements.d.js"
  * @import { Business } from "../../../services/dal/business.d.js"
  */
