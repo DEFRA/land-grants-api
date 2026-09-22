@@ -82,16 +82,15 @@ export const normalizeAppliedArea = (
   availableAreaSqm
 ) => {
   if (applicationUnitOfMeasurement === HECTARES) {
-    const appliedAreaDisplay =
-      Number.parseFloat(String(appliedForQuantity)) || 0
-    const availableAreaDisplay = sqmToHaRounded(availableAreaSqm) || 0
+    const appliedAreaHa = Number.parseFloat(String(appliedForQuantity)) || 0
+    const availableAreaHa = sqmToHaRounded(availableAreaSqm) || 0
 
     return {
       unit: HECTARES,
-      appliedAreaDisplay,
-      availableAreaDisplay,
-      appliedAreaSqm: haToSqm(appliedAreaDisplay),
-      availableAreaSqmDisplay: haToSqm(availableAreaDisplay)
+      appliedAreaDisplay: appliedAreaHa,
+      availableAreaDisplay: availableAreaHa,
+      appliedAreaSqm: haToSqm(appliedAreaHa),
+      availableAreaSqmDisplay: haToSqm(availableAreaHa)
     }
   }
 
