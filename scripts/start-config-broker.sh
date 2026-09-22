@@ -44,17 +44,18 @@ print_help() {
   echo "  $(basename "$0") [subcommand] [arguments]"
   echo
   echo -e "${BOLD}SUBCOMMANDS${RESET}"
-  echo -e "  ${GREEN}(no args)${RESET}                          Start the broker without any config setup"
-  echo -e "  ${GREEN}add${RESET} <grant-version> <sem-ver>     Create a TEST01 action config and start"
-  echo -e "  ${GREEN}update${RESET} <grant-version> <sem-ver>  Republish PA3 with a new semantic version and start"
-  echo -e "  ${GREEN}inspect${RESET}                           Print SQS queues, S3 contents, and DB rows then exit"
-  echo -e "  ${GREEN}-h${RESET}, ${GREEN}--help${RESET}                        Show this help message"
+  echo -e "  ${GREEN}(no args)${RESET}                                       Start the broker without any config setup"
+  echo -e "  ${GREEN}add${RESET} <grant-version> <sem-ver>                  Create a TEST01 action config and start"
+  echo -e "  ${GREEN}update${RESET} <action-code> <grant-version> <sem-ver> Republish an existing action with a new semantic version and start"
+  echo -e "  ${GREEN}inspect${RESET} [action-code...]                       Print SQS queues, S3 contents, and DB rows then exit"
+  echo -e "  ${GREEN}-h${RESET}, ${GREEN}--help${RESET}                                   Show this help message"
   echo
   echo -e "${BOLD}EXAMPLES${RESET}"
   echo "  $(basename "$0")                        # restart broker, no config changes"
   echo "  $(basename "$0") add 0.0.5 1.0.0        # publish TEST01 v1.0.0 under grant release 0.0.5"
-  echo "  $(basename "$0") update 0.0.6 2.0.0     # republish PA3 with semanticVersion 2.0.0"
-  echo "  $(basename "$0") inspect                # inspect current LocalStack (floci) + DB state"
+  echo "  $(basename "$0") update PA3 0.0.6 2.0.0    # republish PA3 with semanticVersion 2.0.0"
+  echo "  $(basename "$0") update HEF1 0.0.7 1.2.0   # republish HEF1 with semanticVersion 1.2.0"
+  echo "  $(basename "$0") inspect HEF1            # inspect current LocalStack (floci) + DB state"
   echo
 }
 
@@ -110,6 +111,12 @@ case "${1:-}" in
     ;;
 
   inspect)
+    shift
+    ACTION_CODES=("$@")
+    if [[ ${#ACTION_CODES[@]} -eq 0 ]]; then
+      ACTION_CODES=(PA3 TEST01)
+    fi
+
     print_splash
     echo "=== SQS queues ==="
     aws sqs list-queues | xargs echo
@@ -118,11 +125,14 @@ case "${1:-}" in
     echo "=== S3 configs-bucket ==="
     aws s3 ls s3://configs-bucket --recursive
 
+    CODES_LIST=$(printf "'%s'," "${ACTION_CODES[@]}")
+    CODES_LIST="${CODES_LIST%,}"
+
     echo ""
-    echo "=== actions_config (PA3, TEST01) ==="
+    echo "=== actions_config (${ACTION_CODES[*]}) ==="
     docker exec land-grants-api-land-grants-backend-postgres-1 psql \
       -U land_grants_api -d land_grants_api \
-      -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code IN ('PA3','TEST01') ORDER BY code, id;"
+      -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code IN ($CODES_LIST) ORDER BY code, id;"
 
     exit 0
     ;;
@@ -165,24 +175,31 @@ EOF
     ;;
 
   update)
-    GRANT_VERSION="${2:-}"
-    SEMANTIC_VERSION="${3:-}"
-    if [[ -z "$GRANT_VERSION" || -z "$SEMANTIC_VERSION" ]]; then
-      echo -e "${BOLD}Usage:${RESET} $0 update <grant-version> <semantic-version>" >&2
+    ACTION_CODE="${2:-}"
+    GRANT_VERSION="${3:-}"
+    SEMANTIC_VERSION="${4:-}"
+    if [[ -z "$ACTION_CODE" || -z "$GRANT_VERSION" || -z "$SEMANTIC_VERSION" ]]; then
+      echo -e "${BOLD}Usage:${RESET} $0 update <action-code> <grant-version> <semantic-version>" >&2
+      exit 1
+    fi
+
+    SOURCE_ACTION_DIR="$GRANT_CONFIG_SOURCE/configurations/land-grants/actions/$ACTION_CODE"
+    if [[ ! -d "$SOURCE_ACTION_DIR" ]]; then
+      echo -e "${BOLD}Error:${RESET} no config found for $ACTION_CODE at $SOURCE_ACTION_DIR" >&2
       exit 1
     fi
 
     print_splash
-    echo -e "  ${BOLD}Mode:${RESET} update PA3 → semanticVersion ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
+    echo -e "  ${BOLD}Mode:${RESET} update $ACTION_CODE → semanticVersion ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
     echo
 
     VERSIONED_DIR="$BROKER_DIR/config/${GRANT_NAME}@${GRANT_VERSION}"
     make_release_yml "$GRANT_VERSION"
 
-    mkdir -p "$VERSIONED_DIR/actions/PA3"
-    cp "$GRANT_CONFIG_SOURCE/actions/PA3/"*.json "$VERSIONED_DIR/actions/PA3/"
+    mkdir -p "$VERSIONED_DIR/actions/$ACTION_CODE"
+    cp "$SOURCE_ACTION_DIR/"*.json "$VERSIONED_DIR/actions/$ACTION_CODE/"
 
-    find "$VERSIONED_DIR/actions/PA3" -name "*.json" | while read -r file; do
+    find "$VERSIONED_DIR/actions/$ACTION_CODE" -name "*.json" | while read -r file; do
       dir=$(dirname "$file")
       basename=$(basename "$file")
       old_version=$(jq -r '.semanticVersion' "$file")
@@ -190,7 +207,7 @@ EOF
       jq --arg v "$SEMANTIC_VERSION" '.semanticVersion = $v' "$file" > "$dir/$new_basename"
       [[ "$basename" != "$new_basename" ]] && rm -f "$file"
     done
-    echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions/PA3/ (semanticVersion → $SEMANTIC_VERSION)"
+    echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions/$ACTION_CODE/ (semanticVersion → $SEMANTIC_VERSION)"
 
     start_broker
     ;;
