@@ -65,6 +65,13 @@ export async function getAgreements(sbi, defraIdToken, logger) {
   }
 
   const body = await response.json()
+  const rawData = Buffer.from(JSON.stringify(body), 'utf8').toString('base64')
+  logInfo(logger, {
+    category: 'agreements',
+    operation: 'Fetch agreements from DAL',
+    context: { sbi },
+    message: `FULL RAW DAL RESPONSE: [${rawData}]`
+  })
   const results = dalBusinessToAgreements(body.data.business)
 
   const summary = Object.entries(results).flatMap(([parcel, actions]) =>
