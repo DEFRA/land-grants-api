@@ -312,63 +312,29 @@ describe('Rules Engine', function () {
   })
 
   describe('executeSingleRuleForEnabledActions', function () {
+    const sssiRule = {
+      name: 'sssi-consent-required',
+      config: { layerName: 'sssi', tolerancePercent: 0 }
+    }
+
     const enabledActions = [
-      {
-        code: 'CMOR1',
-        enabled: true,
-        display: true,
-        rules: [
-          {
-            name: 'sssi-consent-required',
-            config: { layerName: 'sssi', tolerancePercent: 0 }
-          }
-        ]
-      },
-      {
-        code: 'UPL1',
-        enabled: true,
-        display: true,
-        rules: [
-          {
-            name: 'sssi-consent-required',
-            config: { layerName: 'sssi', tolerancePercent: 0 }
-          }
-        ]
-      },
-      {
-        code: 'UPL2',
-        enabled: true,
-        display: false,
-        rules: [
-          {
-            name: 'sssi-consent-required',
-            config: { layerName: 'sssi', tolerancePercent: 0 }
-          }
-        ]
-      },
-      {
-        code: 'DISABLED1',
-        enabled: false,
-        display: true,
-        rules: [
-          {
-            name: 'sssi-consent-required',
-            config: { layerName: 'sssi', tolerancePercent: 0 }
-          }
-        ]
-      }
+      { code: 'CMOR1', enabled: true, display: true, rules: [sssiRule] },
+      { code: 'UPL1', enabled: true, display: true, rules: [sssiRule] },
+      { code: 'UPL2', enabled: true, display: false, rules: [sssiRule] },
+      { code: 'DISABLED1', enabled: false, display: true, rules: [sssiRule] }
     ]
 
     const mockRuleExecutor = {
       execute: vi.fn(() => ({
-        name: 'sssi-consent-required-sssi',
+        name: 'sssi-consent-required',
         passed: true,
         reason: 'No consent required',
         description: 'SSSI consent check',
-        explanations: [],
-        cavets: { isConsentRequired: false }
+        explanations: []
       }))
     }
+
+    const registry = { 'sssi-consent-required-1.0.0': mockRuleExecutor }
 
     beforeEach(function () {
       mockRuleExecutor.execute.mockClear()
@@ -376,35 +342,94 @@ describe('Rules Engine', function () {
 
     test('should return results for enabled and display actions only', function () {
       const result = executeSingleRuleForEnabledActions(
+        registry,
         enabledActions,
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
-      expect(result).toHaveProperty('CMOR1')
-      expect(result).toHaveProperty('UPL1')
-      expect(result).not.toHaveProperty('UPL2')
-      expect(result).not.toHaveProperty('DISABLED1')
+      expect(Object.keys(result)).toStrictEqual(['CMOR1', 'UPL1'])
     })
 
     test('should execute rule for each matching enabled action', function () {
       executeSingleRuleForEnabledActions(
+        registry,
         enabledActions,
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
-      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(2)
-      expect(mockRuleExecutor.execute).toHaveBeenCalledWith(
+      expect(mockRuleExecutor.execute.mock.calls).toStrictEqual([
+        [application, sssiRule],
+        [application, sssiRule]
+      ])
+    })
+
+    test('should dispatch by rule.type when present, so two actions naming the same rule can reach different executors', function () {
+      const boundaryRule = {
+        name: 'sssi-consent-required',
+        type: 'boundary-intersection-consent-required',
+        config: { layerName: 'sssi', toleranceMeters: 0 }
+      }
+      const registryWithBoundaryExecutor = {
+        'sssi-consent-required-1.0.0': {
+          execute: () => ({ name: 'sssi-consent-required', executor: 'area' })
+        },
+        'boundary-intersection-consent-required-1.0.0': {
+          execute: () => ({
+            name: 'sssi-consent-required',
+            executor: 'boundary'
+          })
+        }
+      }
+
+      const result = executeSingleRuleForEnabledActions(
+        registryWithBoundaryExecutor,
+        [
+          { code: 'UPL1', enabled: true, display: true, rules: [sssiRule] },
+          { code: 'BND1', enabled: true, display: true, rules: [boundaryRule] }
+        ],
         application,
-        enabledActions[0].rules[0]
+        'sssi-consent-required'
       )
-      expect(mockRuleExecutor.execute).toHaveBeenCalledWith(
+
+      expect(result).toStrictEqual({
+        UPL1: { name: 'sssi-consent-required', executor: 'area' },
+        BND1: { name: 'sssi-consent-required', executor: 'boundary' }
+      })
+    })
+
+    test('should use custom version when provided in rule', function () {
+      const versionedRule = { ...sssiRule, version: '2.0.0' }
+      const registryWithV2 = {
+        'sssi-consent-required-2.0.0': {
+          execute: () => ({ name: 'sssi-consent-required', version: 'v2' })
+        }
+      }
+
+      const result = executeSingleRuleForEnabledActions(
+        registryWithV2,
+        [
+          { code: 'UPL1', enabled: true, display: true, rules: [versionedRule] }
+        ],
         application,
-        enabledActions[1].rules[0]
+        'sssi-consent-required'
       )
+
+      expect(result).toStrictEqual({
+        UPL1: { name: 'sssi-consent-required', version: 'v2' }
+      })
+    })
+
+    test('should return false for actions whose rule has no registered executor', function () {
+      const result = executeSingleRuleForEnabledActions(
+        {},
+        [{ code: 'UPL1', enabled: true, display: true, rules: [sssiRule] }],
+        application,
+        'sssi-consent-required'
+      )
+
+      expect(result).toStrictEqual({ UPL1: false })
     })
 
     test('should return false for actions without matching rule', function () {
@@ -418,113 +443,80 @@ describe('Rules Engine', function () {
       ]
 
       const result = executeSingleRuleForEnabledActions(
+        registry,
         actionsWithoutRule,
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
-      expect(result).toStrictEqual({
-        NO_RULE1: false
-      })
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
+      expect(result).toStrictEqual({ NO_RULE1: false })
     })
 
     test('should return empty object for empty enabledActions array', function () {
       const result = executeSingleRuleForEnabledActions(
+        registry,
         [],
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
       expect(result).toStrictEqual({})
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
     })
 
     test('should return empty object when no actions are enabled and display', function () {
       const allDisabledActions = [
-        {
-          code: 'DISABLED1',
-          enabled: false,
-          display: true,
-          rules: [
-            {
-              name: 'sssi-consent-required',
-              config: { layerName: 'sssi', tolerancePercent: 0 }
-            }
-          ]
-        },
-        {
-          code: 'HIDDEN1',
-          enabled: true,
-          display: false,
-          rules: [
-            {
-              name: 'sssi-consent-required',
-              config: { layerName: 'sssi', tolerancePercent: 0 }
-            }
-          ]
-        }
+        { code: 'DISABLED1', enabled: false, display: true, rules: [sssiRule] },
+        { code: 'HIDDEN1', enabled: true, display: false, rules: [sssiRule] }
       ]
 
       const result = executeSingleRuleForEnabledActions(
+        registry,
         allDisabledActions,
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
       expect(result).toStrictEqual({})
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
     })
 
     test('should handle actions with no rules array', function () {
       const actionsWithoutRules = [
-        {
-          code: 'NO_RULES1',
-          enabled: true,
-          display: true
-        }
+        { code: 'NO_RULES1', enabled: true, display: true }
       ]
 
       const result = executeSingleRuleForEnabledActions(
+        registry,
         actionsWithoutRules,
         application,
-        'sssi-consent-required',
-        mockRuleExecutor
+        'sssi-consent-required'
       )
 
-      expect(result).toStrictEqual({
-        NO_RULES1: false
-      })
-      expect(mockRuleExecutor.execute).not.toHaveBeenCalled()
+      expect(result).toStrictEqual({ NO_RULES1: false })
     })
 
     test('should match rule name as string', function () {
-      const actionsWithNumericRuleName = [
-        {
-          code: 'NUMERIC_RULE1',
-          enabled: true,
-          display: true,
-          rules: [
-            {
-              name: 123,
-              config: { layerName: 'sssi', tolerancePercent: 0 }
-            }
-          ]
-        }
-      ]
+      const numericRule = { name: 123, config: {} }
+      const registryWithNumericName = {
+        '123-1.0.0': { execute: () => ({ name: '123', passed: true }) }
+      }
 
       const result = executeSingleRuleForEnabledActions(
-        actionsWithNumericRuleName,
+        registryWithNumericName,
+        [
+          {
+            code: 'NUMERIC_RULE1',
+            enabled: true,
+            display: true,
+            rules: [numericRule]
+          }
+        ],
         application,
-        '123',
-        mockRuleExecutor
+        '123'
       )
 
-      expect(result).toHaveProperty('NUMERIC_RULE1')
-      expect(mockRuleExecutor.execute).toHaveBeenCalledTimes(1)
+      expect(result).toStrictEqual({
+        NUMERIC_RULE1: { name: '123', passed: true }
+      })
     })
   })
 })
