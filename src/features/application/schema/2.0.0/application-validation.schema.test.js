@@ -80,6 +80,42 @@ describe('applicationValidationResponseSchemaV2', () => {
     })
   })
 
+  describe('sssi-consent-required (boundary intersection rule)', () => {
+    it('accepts a caveat with intersectingLengthMeters and boundaryLengthMeters', () => {
+      const { error } = applicationValidationResponseSchemaV2.validate(
+        buildResponse({
+          code: 'ne-consent-required',
+          description: 'A consent is required from Natural England',
+          metadata: {
+            actionCode: 'BND1',
+            parcelId: '7704',
+            sheetId: 'SD6855',
+            intersectingLengthMeters: 897,
+            boundaryLengthMeters: 3518
+          }
+        })
+      )
+      expect(error).toBeUndefined()
+    })
+
+    it('accepts a caveat whose boundary lies wholly inside the layer', () => {
+      const { error } = applicationValidationResponseSchemaV2.validate(
+        buildResponse({
+          code: 'hefer-consent-required',
+          description: 'A HEFER is needed from Historic England',
+          metadata: {
+            actionCode: 'BND1',
+            parcelId: '0556',
+            sheetId: 'NT9728',
+            intersectingLengthMeters: 1734,
+            boundaryLengthMeters: 1734
+          }
+        })
+      )
+      expect(error).toBeUndefined()
+    })
+  })
+
   describe('pond-check-required (manual-check-required rule)', () => {
     it('accepts a caveat with no overlap metadata', () => {
       const { error } = applicationValidationResponseSchemaV2.validate(
