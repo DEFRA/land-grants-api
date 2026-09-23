@@ -1,6 +1,7 @@
 import Hapi from '@hapi/hapi'
 import Boom from '@hapi/boom'
 import { ApplicationValidationController } from './application-validation.controller.js'
+import { UnauthorizedError } from '~/src/services/dal/errors.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
@@ -299,6 +300,28 @@ describe('ApplicationValidationController', () => {
         'success',
         expect.objectContaining({ method: 'post' })
       )
+    })
+
+    test('should respond with a 401 when an UnauthorizedError is propagated', async () => {
+      mockValidateAllLandParcels.mockRejectedValue(new UnauthorizedError(sbi))
+      const applicationId = 'APP-123'
+      const request = {
+        method: 'POST',
+        url: '/api/v2/application/validate',
+        headers: { 'x-forwarded-authorization': 'dummy-token' },
+        payload: {
+          applicationId,
+          requester: 'test-user',
+          applicantCrn: 'CRN-456',
+          sbi,
+          landActions: mockLandActions
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(401)
     })
 
     test('should send a failure audit event when an unexpected error occurs', async () => {

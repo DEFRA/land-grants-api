@@ -1,4 +1,5 @@
 import Hapi from '@hapi/hapi'
+import { UnauthorizedError } from '~/src/services/dal/errors.js'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import { validateApplication } from '../../application/service/application-validation.service.js'
@@ -204,6 +205,27 @@ describe('Case Management Application Validation Controller', () => {
 
       expect(validateApplication).not.toHaveBeenCalled()
       expect(mockAuditEvent).not.toHaveBeenCalled()
+    })
+
+    test('should respond with a 401 when an UnauthorizedError is propagated', async () => {
+      vi.mocked(getApplicationValidationRun).mockResolvedValue(
+        mockApplicationValidationRun
+      )
+      validateApplication.mockRejectedValue(new UnauthorizedError('123456789'))
+
+      const request = {
+        method: 'POST',
+        url: '/case-management-adapter/application/validation-run/rerun',
+        payload: {
+          requesterUsername: 'test.user@example.com',
+          id: 1
+        }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(401)
     })
 
     test('should return 400 when payload is missing requesterUsername', async () => {
