@@ -1,5 +1,10 @@
 import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
+import {
+  GraphQLError,
+  HTTPError,
+  UnauthorizedError
+} from '~/src/services/dal/errors.js'
 import { SIMPLE_BUSINESS } from '~/src/services/dal/fixtures/business.js'
 import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -14,6 +19,16 @@ const response404 = {
       locations: [{ line: 1, column: 32 }],
       path: ['business'],
       extensions: { code: 'NOT FOUND' }
+    }
+  ]
+}
+const errorResponse = {
+  errors: [
+    {
+      message: "variable 'sbi' must match pattern ^[1-9][0-9]{8}$",
+      locations: [{ line: 2, column: 3 }],
+      path: ['business'],
+      extensions: { code: 'BAD_USER_INPUT' }
     }
   ]
 }
@@ -72,14 +87,45 @@ describe('getAgreements', () => {
     expect(getToken).toHaveBeenCalled()
   })
 
-  it('throws when the DAL response is not ok', async () => {
+  it('throws when the DAL HTTP response is not ok', async () => {
+    const status = 500
+    const statusText = 'Internal Server Error'
+
+    const expectedError = new HTTPError(sbi, status, statusText)
+
+    fetch.mockResolvedValue({ ok: false, status, statusText })
+
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
+  })
+
+  it('throws when the DAL response is 200 but contains errors', async () => {
+    const expectedError = new GraphQLError(sbi, errorResponse.errors)
+
     fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      statusText: 'Internal Server Error'
+      ok: true,
+      json: () => Promise.resolve(errorResponse)
     })
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow()
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
+  })
+
+  it('throws an UnauthorizedError when DAL response is 401', async () => {
+    const expectedError = new UnauthorizedError(sbi)
+
+    fetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+      json: () => Promise.resolve({ error: 'Unauthorized' })
+    })
+
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
   })
 
   it('returns an empty object when DAL 404s', async () => {
