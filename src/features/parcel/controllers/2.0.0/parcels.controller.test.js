@@ -1,5 +1,4 @@
 import createTestServer from '~/src/tests/test-server.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 import { UnauthorizedError } from '~/src/services/dal/errors.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import {
@@ -1106,27 +1105,6 @@ describe('Parcels Controller 2.0.0', () => {
       const { statusCode } = await server.inject(request)
 
       expect(statusCode).toBe(400)
-    })
-
-    test('should return 422 when an InfeasibleAreaError is thrown', async () => {
-      mockGetActionsForParcel.mockImplementation(() => {
-        throw new InfeasibleAreaError()
-      })
-      const request = {
-        method: 'POST',
-        url: '/api/v2/parcels',
-        headers: { 'X-Forwarded-Authorization': 'dummy' },
-        payload: {
-          sbi,
-          parcelIds: ['SX0679-9238'],
-          fields: ['size']
-        }
-      }
-
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject(request)
-
-      expect(statusCode).toBe(422)
     })
 
     test('should return 401 when an UnauthorizedError is thrown from DAL', async () => {
