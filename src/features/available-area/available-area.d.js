@@ -149,7 +149,9 @@
  * @typedef {object} AvailableAreaForAction
  * @property {Stack[]} [stacks] - Stacks (absent when using LP-based implementation)
  * @property {object} explanations - Explanations
+ * @property {boolean} feasible - Whether the existing actions can be arranged on the parcel's land covers at all
  * @property {number} availableAreaSqm - The available area
  * @property {number} totalValidLandCoverSqm - The total valid land cover area
  * @property {number} availableAreaHectares - The available area in hectares
+ * @property {number} [existingActionsAreaSqm] - The area recorded against the parcel's existing actions, reported only when the calculation was infeasible
  */

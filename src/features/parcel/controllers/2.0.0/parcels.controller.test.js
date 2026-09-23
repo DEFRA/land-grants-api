@@ -79,6 +79,7 @@ const mockActionsWithAvailability = [
       value: 10
     },
     quantityRequired: true,
+    isAvailable: true,
     ratePerUnitGbp: 10.6,
     ratePerAgreementPerYearGbp: 272
   },
@@ -90,6 +91,7 @@ const mockActionsWithAvailability = [
       value: 8
     },
     quantityRequired: true,
+    isAvailable: true,
     ratePerUnitGbp: 20.5,
     ratePerAgreementPerYearGbp: 0
   }
@@ -277,6 +279,7 @@ describe('Parcels Controller 2.0.0', () => {
                   unit
                 },
                 quantityRequired: false,
+                isAvailable: true,
                 ratePerUnitGbp: 10.6,
                 ratePerAgreementPerYearGbp: 272
               }
@@ -787,6 +790,7 @@ describe('Parcels Controller 2.0.0', () => {
           description: 'Action 3',
           availability: { unit: 'ha', value: 5 },
           quantityRequired: true,
+          isAvailable: true,
           ratePerUnitGbp: 10,
           ratePerAgreementPerYearGbp: 0
         },
@@ -795,6 +799,7 @@ describe('Parcels Controller 2.0.0', () => {
           description: 'Action 1',
           availability: { unit: 'ha', value: 10 },
           quantityRequired: true,
+          isAvailable: true,
           ratePerUnitGbp: 10.6,
           ratePerAgreementPerYearGbp: 272
         },
@@ -803,6 +808,7 @@ describe('Parcels Controller 2.0.0', () => {
           description: 'Action 2',
           availability: { unit: 'ha', value: 8 },
           quantityRequired: true,
+          isAvailable: true,
           ratePerUnitGbp: 15,
           ratePerAgreementPerYearGbp: 0
         }
