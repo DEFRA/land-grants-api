@@ -2,8 +2,13 @@ import { appliedForTotalAvailableArea } from './applied-for-total-available-area
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 
 describe('appliedForTotalAvailableArea', () => {
-  const createApplication = (appliedForQuantity, parcelArea) => ({
+  const createApplication = (
     appliedForQuantity,
+    parcelArea,
+    applicationUnitOfMeasurement = 'ha'
+  ) => ({
+    appliedForQuantity,
+    applicationUnitOfMeasurement,
     landParcel: {
       availableAreaSqm: haToSqm(Number.parseFloat(parcelArea))
     }
@@ -94,6 +99,56 @@ describe('appliedForTotalAvailableArea', () => {
           ]
         }
       ]
+    })
+  })
+
+  describe('sqm actions (e.g. buildings)', () => {
+    const createSqmApplication = (appliedForQuantity, availableAreaSqm) => ({
+      appliedForQuantity,
+      applicationUnitOfMeasurement: 'sqm',
+      landParcel: { availableAreaSqm }
+    })
+
+    test('should pass when area applied for matches available area, in sqm', () => {
+      const application = createSqmApplication(150, 150)
+      const rule = createRule()
+      const result = appliedForTotalAvailableArea.execute(application, rule)
+
+      expect(result).toEqual({
+        name: 'applied-for-total-available-area',
+        passed: true,
+        reason:
+          'There is sufficient available area (150 sqm) for the applied figure (150 sqm)',
+        explanations: [
+          {
+            title: 'Total valid land cover',
+            lines: [
+              'The available area was (150 sqm) the applicant applied for (150 sqm)'
+            ]
+          }
+        ]
+      })
+    })
+
+    test('should fail when area applied for does not match available area, in sqm', () => {
+      const application = createSqmApplication(100, 150)
+      const rule = createRule()
+      const result = appliedForTotalAvailableArea.execute(application, rule)
+
+      expect(result).toEqual({
+        name: 'applied-for-total-available-area',
+        passed: false,
+        reason:
+          'There is not sufficient available area (150 sqm) for the applied figure (100 sqm)',
+        explanations: [
+          {
+            title: 'Total valid land cover',
+            lines: [
+              'The available area was (150 sqm) the applicant applied for (100 sqm)'
+            ]
+          }
+        ]
+      })
     })
   })
 })
