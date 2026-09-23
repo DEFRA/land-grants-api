@@ -1,5 +1,10 @@
 import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
+import {
+  GraphQLError,
+  HTTPError,
+  UnauthorizedError
+} from '~/src/services/dal/errors.js'
 import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
@@ -59,12 +64,19 @@ export async function getAgreements(sbi, defraIdToken, logger) {
       return {}
     }
 
-    throw new Error(
-      `Failed to fetch existing DAL agreements for sbi=${sbi}: ${response.status} ${response.statusText}`
-    )
+    if (response.status === statusCodes.unauthorized) {
+      throw new UnauthorizedError(sbi)
+    }
+
+    throw new HTTPError(sbi, response.status, response.statusText)
   }
 
   const body = await response.json()
+
+  if (body.errors && body.errors.length > 0) {
+    throw new GraphQLError(sbi, body.errors)
+  }
+
   const results = dalBusinessToAgreements(body.data.business)
 
   const summary = Object.entries(results).flatMap(([parcel, actions]) =>

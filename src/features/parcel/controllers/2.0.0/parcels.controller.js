@@ -22,7 +22,6 @@ import {
   getActionsForParcelWithHEFERConsentRequired
 } from '../../service/2.0.0/parcel.service.js'
 import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 
@@ -216,8 +215,8 @@ const ParcelsControllerV2 = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof InfeasibleAreaError) {
-        return Boom.boomify(error, { statusCode: 422 })
+      if (error.statusCode) {
+        return Boom.boomify(error, { statusCode: error.statusCode })
       }
       const errorMessage = 'Error fetching parcels'
       // @ts-expect-error - payload
