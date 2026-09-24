@@ -16,6 +16,8 @@ import {
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
+import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -37,6 +39,8 @@ vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
 vi.mock('~/src/features/data-layers/queries/getBoundaryIntersection.query.js')
 vi.mock('~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js')
 vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-length/availableLength.js')
+vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js')
 vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
@@ -1106,6 +1110,122 @@ describe('Parcel Service 2.0.0', () => {
         }),
         false
       )
+    })
+
+    describe('linear actions', () => {
+      const bnd1 = {
+        applicationUnitOfMeasurement: 'm',
+        code: 'BND1',
+        description: 'Maintain dry stone walls',
+        display: true
+      }
+      const bnd2 = { ...bnd1, code: 'BND2', description: 'Maintain hedgerows' }
+      let linearEnabledActions
+
+      beforeEach(() => {
+        linearEnabledActions = [bnd1, mockEnabledActionsForParcel[0]]
+        getLandParcelBoundary.mockResolvedValue({
+          boundaryLengthMeters: 1800
+        })
+        calculateAvailableLength.mockReturnValue({
+          availableLength: 240,
+          boundaryLengthMeters: 1800,
+          incompatibleLengthMeters: 1560
+        })
+      })
+
+      test('should report the available length', async () => {
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          linearEnabledActions,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(actionTransformer).toHaveBeenCalledWith(
+          bnd1,
+          expect.objectContaining({ availableLength: 240 }),
+          false
+        )
+      })
+
+      test('should read the parcel boundary once however many linear actions there are', async () => {
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          [bnd1, bnd2, mockEnabledActionsForParcel[0]],
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(getLandParcelBoundary).toHaveBeenCalledTimes(1)
+        expect(getLandParcelBoundary).toHaveBeenCalledWith(
+          'SX0679',
+          '9238',
+          mockRequest.server.postgresDb,
+          mockLogger
+        )
+      })
+
+      test('should not read the parcel boundary when nothing displayed is measured in metres', async () => {
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          mockEnabledActionsForParcel,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(getLandParcelBoundary).not.toHaveBeenCalled()
+      })
+
+      test('should deduct only the existing actions measured in metres', async () => {
+        mergeAgreementsTransformer.mockReturnValue([
+          { actionCode: 'BND2', quantity: 300, unit: 'm' },
+          { actionCode: 'UPL1', quantity: 2, unit: 'ha' }
+        ])
+
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          linearEnabledActions,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(calculateAvailableLength).toHaveBeenCalledWith(
+          'BND1',
+          [{ actionCode: 'BND2', boundaryLengthMeters: 300 }],
+          mockCompatibilityCheckFn,
+          1800
+        )
+      })
+
+      test('should leave a linear action unrestricted when the boundary cannot be read', async () => {
+        getLandParcelBoundary.mockResolvedValue(null)
+
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          linearEnabledActions,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(calculateAvailableLength).not.toHaveBeenCalled()
+        expect(actionTransformer).toHaveBeenCalledWith(bnd1, undefined, false)
+      })
     })
   })
 })
