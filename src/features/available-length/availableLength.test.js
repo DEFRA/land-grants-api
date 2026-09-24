@@ -1,4 +1,7 @@
-import { getAvailableLength } from './availableLength.js'
+import {
+  calculateAvailableLength,
+  getAvailableLength
+} from './availableLength.js'
 import { getLandParcelBoundary } from '../parcel/queries/getParcelBoundary.query.js'
 
 vi.mock('../parcel/queries/getParcelBoundary.query.js', () => ({
@@ -287,6 +290,149 @@ describe('getAvailableLength', () => {
       availableLength: 0,
       boundaryLengthMeters: PARCEL_PERIMETER_METERS,
       incompatibleLengthMeters: 1500
+    })
+  })
+})
+
+describe('calculateAvailableLength', () => {
+  const compatibilityCheckFn = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns the whole boundary when nothing competes for it', () => {
+    const result = calculateAvailableLength(
+      'BND1',
+      [],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
+  })
+
+  it('subtracts the length committed to an incompatible action', () => {
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = calculateAvailableLength(
+      'BND1',
+      [{ actionCode: 'BND2', boundaryLengthMeters: 200 }],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: 800,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 200
+    })
+  })
+
+  it('leaves the boundary intact when the competing action is compatible', () => {
+    compatibilityCheckFn.mockReturnValue(true)
+
+    const result = calculateAvailableLength(
+      'BND1',
+      [{ actionCode: 'BND2', boundaryLengthMeters: 200 }],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: PARCEL_PERIMETER_METERS,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 0
+    })
+  })
+
+  it('sums the lengths of every incompatible action', () => {
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = calculateAvailableLength(
+      'BND1',
+      [
+        { actionCode: 'BND2', boundaryLengthMeters: 200 },
+        { actionCode: 'CHRW2', boundaryLengthMeters: 100 }
+      ],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: 700,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 300
+    })
+  })
+
+  it('asks whether each existing action is compatible with the action applied for', () => {
+    compatibilityCheckFn.mockReturnValue(true)
+
+    calculateAvailableLength(
+      'BND1',
+      [
+        { actionCode: 'BND2', boundaryLengthMeters: 200 },
+        { actionCode: 'CHRW2', boundaryLengthMeters: 100 }
+      ],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(compatibilityCheckFn.mock.calls).toEqual([
+      ['BND2', 'BND1'],
+      ['CHRW2', 'BND1']
+    ])
+  })
+
+  it('rounds each action to whole metres before summing them', () => {
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = calculateAvailableLength(
+      'BND1',
+      [
+        { actionCode: 'BND2', boundaryLengthMeters: 200.6 },
+        { actionCode: 'CHRW2', boundaryLengthMeters: 200.6 }
+      ],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: 598,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 402
+    })
+  })
+
+  it('clamps the available length at zero when the boundary is oversubscribed', () => {
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = calculateAvailableLength(
+      'BND1',
+      [{ actionCode: 'BND2', boundaryLengthMeters: 1500 }],
+      compatibilityCheckFn,
+      PARCEL_PERIMETER_METERS
+    )
+
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 1500
+    })
+  })
+
+  it('reports no available length on a parcel with no boundary', () => {
+    const result = calculateAvailableLength('BND1', [], compatibilityCheckFn, 0)
+
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: 0,
+      incompatibleLengthMeters: 0
     })
   })
 })

@@ -15,10 +15,7 @@ import {
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
-import {
-  findMaximumAvailableArea,
-  throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -47,7 +44,8 @@ vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 describe('Parcel Service 2.0.0', () => {
   const mockLogger = {
     error: vi.fn(),
-    info: vi.fn()
+    info: vi.fn(),
+    warn: vi.fn()
   }
 
   describe('splitParcelId', () => {
@@ -647,7 +645,6 @@ describe('Parcel Service 2.0.0', () => {
         totalValidLandCoverSqm: 5000,
         feasible: true
       })
-      throwIfInfeasible.mockImplementation(() => undefined)
       formatExplanationSections.mockReturnValue([])
       actionTransformer.mockImplementation((action) => ({
         code: action.code,
@@ -1014,14 +1011,24 @@ describe('Parcel Service 2.0.0', () => {
       expect(mergeAgreementsTransformer).toHaveBeenCalledWith([upl1], [])
     })
 
-    test('should propagate error when the available area is infeasible', async () => {
-      const infeasibleError = new Error('Infeasible area')
-      throwIfInfeasible.mockImplementation(() => {
-        throw infeasibleError
-      })
+    describe('when the existing actions do not fit the parcel', () => {
+      // 5.83 ha of actions recorded against 4.12 ha of eligible cover
+      const infeasibleResult = {
+        context: {
+          existingActions: [
+            { actionCode: 'CMOR1', areaSqm: 32000 },
+            { actionCode: 'UPL1', areaSqm: 26300 }
+          ]
+        },
+        availableAreaSqm: 0,
+        totalValidLandCoverSqm: 41200,
+        feasible: false
+      }
 
-      await expect(
-        getActionsForParcel(
+      test('should still return every displayed action', async () => {
+        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+        const result = await getActionsForParcel(
           mockParcel,
           mockPayload,
           false,
@@ -1030,7 +1037,75 @@ describe('Parcel Service 2.0.0', () => {
           mockRequest,
           []
         )
-      ).rejects.toThrow('Infeasible area')
+
+        expect(result.actions).toEqual([
+          { code: 'UPL1', description: 'Action 1' },
+          { code: 'HEF1', description: 'Action 3' }
+        ])
+      })
+
+      test('should report the area committed to the existing actions', async () => {
+        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          mockEnabledActionsForParcel,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(actionTransformer).toHaveBeenCalledWith(
+          mockEnabledActionsForParcel[0],
+          expect.objectContaining({
+            feasible: false,
+            existingActionsAreaSqm: 58300 // 32000 + 26300
+          }),
+          false
+        )
+      })
+
+      test('should warn once, naming the parcel and every action affected', async () => {
+        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+        await getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          mockEnabledActionsForParcel,
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+        expect(mockLogger.warn).toHaveBeenCalledTimes(1)
+        const [, message] = mockLogger.warn.mock.calls[0]
+        expect(message).toContain('sheetId=SX0679')
+        expect(message).toContain('parcelId=9238')
+        expect(message).toContain('actionCodes=UPL1,HEF1')
+      })
+    })
+
+    test('should not report an existing actions area when the calculation is feasible', async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        mockEnabledActionsForParcel,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        []
+      )
+
+      expect(actionTransformer).toHaveBeenCalledWith(
+        mockEnabledActionsForParcel[0],
+        expect.not.objectContaining({
+          existingActionsAreaSqm: expect.anything()
+        }),
+        false
+      )
     })
   })
 })

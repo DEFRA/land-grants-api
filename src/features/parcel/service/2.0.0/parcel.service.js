@@ -12,10 +12,7 @@ import {
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
-import {
-  findMaximumAvailableArea,
-  throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
@@ -26,6 +23,7 @@ import {
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
+import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -34,7 +32,19 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
+ * @import {AacContext} from '~/src/features/available-area/available-area.d.js'
  */
+
+/**
+ * The area recorded against a parcel's existing actions. Reported when it
+ * cannot be arranged on the land, which is the figure the RPA needs to see.
+ * @param {AacContext|null} context - Context from the area calculation
+ * @returns {number} The committed area in square metres
+ */
+function existingActionsArea(context) {
+  const existingActions = context?.existingActions ?? []
+  return existingActions.reduce((total, a) => total + a.areaSqm, 0)
+}
 
 /**
  * Split id into sheet id and parcel id
@@ -129,10 +139,11 @@ async function buildActionWithAvailableArea(
     aacDataRequirements
   )
 
-  throwIfInfeasible(lpResult, parcel.sheet_id, parcel.parcel_id)
-
   const availableArea = {
     ...lpResult,
+    existingActionsAreaSqm: lpResult.feasible
+      ? undefined
+      : existingActionsArea(lpResult.context),
     explanations: formatExplanationSections(lpResult.context, {
       targetAction: action.code,
       availableAreaSqm: lpResult.availableAreaSqm,
@@ -180,6 +191,22 @@ async function getParcelActionsWithAvailableArea(
     )
 
     actionsWithAvailableArea.push(actionWithAvailableArea)
+  }
+
+  const unavailableActions = actionsWithAvailableArea.filter(
+    (a) => !a.isAvailable
+  )
+
+  if (unavailableActions.length > 0) {
+    logValidationWarn(logger, {
+      operation: 'Available area calculation',
+      errors: 'Existing actions do not fit the parcel land covers',
+      context: {
+        sheetId: parcel.sheet_id,
+        parcelId: parcel.parcel_id,
+        actionCodes: unavailableActions.map((a) => a.code).join(',')
+      }
+    })
   }
 
   return actionsWithAvailableArea

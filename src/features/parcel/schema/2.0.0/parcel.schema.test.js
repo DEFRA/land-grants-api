@@ -306,4 +306,77 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
   })
+
+  describe('action availability fields', () => {
+    const unavailableAction = {
+      ...mockParcelWithActions.parcel.actions[0],
+      availability: { unit: 'ha', value: 0 },
+      isAvailable: false,
+      unavailableReason: {
+        code: 'existing-actions-do-not-fit',
+        reason:
+          'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+        metadata: { totalValidLandCoverSqm: 41200 }
+      }
+    }
+
+    const responseWithAction = (action) => ({
+      message: 'success',
+      parcels: [{ ...mockParcelWithActions.parcel, actions: [action] }]
+    })
+
+    it('should validate an unavailable action carrying a reason', () => {
+      const valid = responseWithAction(unavailableAction)
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should validate an unavailable reason without metadata', () => {
+      const action = {
+        ...unavailableAction,
+        unavailableReason: {
+          code: 'existing-actions-do-not-fit',
+          reason: 'Your existing actions do not fit on this land parcel.'
+        }
+      }
+
+      const valid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
+    it('should reject an action without isAvailable', () => {
+      const action = { ...mockParcelWithActions.parcel.actions[0] }
+      delete action.isAvailable
+
+      const invalid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject an unavailable reason with an unrecognised code', () => {
+      const action = {
+        ...unavailableAction,
+        unavailableReason: {
+          ...unavailableAction.unavailableReason,
+          code: 'something-we-never-emit'
+        }
+      }
+
+      const invalid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should reject an unavailable reason without a reason', () => {
+      const action = {
+        ...unavailableAction,
+        unavailableReason: { code: 'existing-actions-do-not-fit' }
+      }
+
+      const invalid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+  })
 })
