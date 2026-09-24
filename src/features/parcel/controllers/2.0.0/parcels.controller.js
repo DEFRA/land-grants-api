@@ -2,7 +2,6 @@ import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
-  unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
 import {
@@ -73,7 +72,6 @@ const ParcelsControllerV2 = {
       status: {
         200: parcelsSuccessResponseSchema,
         404: errorResponseSchema,
-        422: unprocessableEntityResponseSchema,
         500: internalServerErrorResponseSchema
       }
     }

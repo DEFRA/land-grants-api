@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { COUNT, UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
+import { UNAVAILABLE_REASON_CODES } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
@@ -12,6 +13,14 @@ export const actionAvailabilitySchema = Joi.object({
       is: Joi.allow(COUNT).only(),
       then: Joi.number().integer()
     })
+})
+
+const unavailableReasonSchema = Joi.object({
+  code: Joi.string()
+    .valid(...UNAVAILABLE_REASON_CODES)
+    .required(),
+  reason: Joi.string().required(),
+  metadata: Joi.object().optional()
 })
 
 const actionSchema = Joi.object({
@@ -29,6 +38,8 @@ const actionSchema = Joi.object({
   version: Joi.string().optional(),
   guidanceUrl: Joi.string().uri().optional(),
   availability: actionAvailabilitySchema.optional(),
+  isAvailable: Joi.boolean().required(),
+  unavailableReason: unavailableReasonSchema.optional(),
   quantityRequired: Joi.boolean().required(),
   displayUnit: Joi.string().allow(null).optional(),
   displayUnitPlural: Joi.string().allow(null).optional()
