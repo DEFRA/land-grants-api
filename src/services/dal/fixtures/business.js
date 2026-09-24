@@ -77,8 +77,9 @@ export const BUSINESS_WITH_MULTIPLE_PARCELS = {
       status: 'SIGNED',
       paymentSchedules: [
         ACTION_BN1,
-        { ...ACTION_BN2, parcelName: '0002' },
-        { ...ACTION_AF1, parcelName: 'NY0002' }
+        { ...ACTION_BN2, parcelName: '0002', sheetName: 'NY0002' },
+        { ...ACTION_CLIG3, parcelName: '0002', sheetName: 'NY0002' },
+        { ...ACTION_AF1, parcelName: '0003', sheetName: 'NY0003' }
       ]
     }
   ]

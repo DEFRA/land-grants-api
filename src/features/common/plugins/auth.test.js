@@ -16,6 +16,11 @@ vi.mock('~/src/features/common/helpers/logging/logger.js', () => ({
 }))
 
 const VALID_TOKEN = 'my-service-token'
+const GAS_TOKEN = 'gas-service-token'
+const GAS_TOKEN_HASH = crypto
+  .createHash('sha256')
+  .update(GAS_TOKEN, 'utf8')
+  .digest('hex')
 const ENCRYPTION_KEY = 'encryption-key-123456789012345678901234'
 
 function encryptToken(token, encryptionKey) {
@@ -61,6 +66,22 @@ describe('auth plugin', () => {
       })
 
       const request = { headers: { authorization: `Bearer ${encodedHeader}` } }
+      const h = createHMock()
+      const authenticateFn = createAuthenticateFn()
+
+      const result = await authenticateFn(request, h)
+      expect(result).toBe('ok')
+      expect(h.authenticated).toHaveBeenCalledWith({
+        credentials: { authenticated: true }
+      })
+    })
+
+    it('authenticates GAS when its bearer token matches the configured hash', async () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'auth.gasTokenHash') return GAS_TOKEN_HASH
+      })
+
+      const request = { headers: { authorization: `Bearer ${GAS_TOKEN}` } }
       const h = createHMock()
       const authenticateFn = createAuthenticateFn()
 

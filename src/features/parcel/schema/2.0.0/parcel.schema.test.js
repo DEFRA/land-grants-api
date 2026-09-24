@@ -105,6 +105,26 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeUndefined()
     })
 
+    it('should validate with displayUnit and displayUnitPlural', () => {
+      const valid = {
+        ...validResponse,
+        parcels: [
+          {
+            ...mockParcelWithActions.parcel,
+            actions: [
+              {
+                ...mockParcelWithActions.parcel.actions[0],
+                displayUnit: 'sheep',
+                displayUnitPlural: 'sheep'
+              }
+            ]
+          }
+        ]
+      }
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
     it('should validate action without availability', () => {
       const result = parcelsSuccessResponseSchema.validate(validResponse)
       expect(result.error).toBeUndefined()

@@ -1,17 +1,21 @@
-import { validateApplication } from './application-validation.service.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
-import { saveApplication } from '../mutations/saveApplication.mutation.js'
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
+import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { getActions } from '~/src/features/actions/service/action.service.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
+import { saveApplication } from '../mutations/saveApplication.mutation.js'
+import { validateApplication } from './application-validation.service.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
-import { getActions } from '~/src/features/actions/service/action.service.js'
 
-vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 vi.mock('../mutations/saveApplication.mutation.js')
 vi.mock('../transformers/application.transformer.js')
-vi.mock('./land-parcel-validation.service.js')
 vi.mock('../validation/application.validation.js')
+vi.mock('./land-parcel-validation.service.js')
 vi.mock('~/src/features/actions/service/action.service.js')
+vi.mock('~/src/features/agreements/transformers/filters.js')
+vi.mock('~/src/features/agreements/repo.js')
+vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockSaveApplication = saveApplication
@@ -140,6 +144,19 @@ describe('Application Validation Service', () => {
 
   const mockApplicationValidationRunId = 'val-run-123'
 
+  const agreements = {
+    '9238-SX0679': [
+      {
+        actionCode: 'CMOR1',
+        quantity: 15000,
+        unit: 'sqm',
+        startDate: new Date('2000-01-01'),
+        endDate: new Date('2200-01-01')
+      }
+    ],
+    '9239-SX0680': []
+  }
+
   beforeEach(() => {
     mockGetActions.mockResolvedValue(mockEnabledActions)
     mockValidateRequest.mockResolvedValue(null)
@@ -147,6 +164,8 @@ describe('Application Validation Service', () => {
     mockValidateLandParcelActions.mockResolvedValue(mockParcelResults[0])
     mockApplicationDataTransformer.mockReturnValue(mockApplicationData)
     mockSaveApplication.mockResolvedValue(mockApplicationValidationRunId)
+    getAgreements.mockResolvedValue(agreements)
+    expiredActionsFilter.mockReturnValue(true)
   })
 
   afterEach(() => {
@@ -195,23 +214,19 @@ describe('Application Validation Service', () => {
       expect(mockValidateLandParcelActions).toHaveBeenCalledTimes(2)
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         1,
-        mockSbi,
         mockLandAction[0],
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null,
-        undefined
+        agreements['9238-SX0679']
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
-        mockSbi,
         mockLandAction[1],
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null,
-        undefined
+        agreements['9239-SX0680']
       )
 
       expect(mockApplicationDataTransformer).toHaveBeenCalledWith(
@@ -233,10 +248,20 @@ describe('Application Validation Service', () => {
           data: mockApplicationData
         }
       )
+      expect(getAgreements).toHaveBeenCalledWith(
+        mockSbi,
+        [
+          ['9238', 'SX0679'],
+          ['9239', 'SX0680']
+        ],
+        null,
+        mockPostgresDb,
+        mockLogger
+      )
     })
 
-    test('should forward an explicit referenceDate to validateLandParcelActions', async () => {
-      const mockReferenceDate = new Date('2024-01-15T10:00:00Z')
+    test('should use the referenceDate to filter agreements where provided', async () => {
+      const referenceDate = new Date('2020-01-01T00:00:00Z')
 
       mockValidateLandParcelActions
         .mockResolvedValueOnce(mockParcelResults[0])
@@ -249,28 +274,46 @@ describe('Application Validation Service', () => {
         mockSbi,
         mockRequesterUsername,
         mockRequest,
-        mockReferenceDate
+        referenceDate
       )
 
+      expect(expiredActionsFilter).toHaveBeenCalledWith(
+        expect.anything(),
+        referenceDate
+      )
+    })
+
+    test('should provide an empty array of agreements if none were found', async () => {
+      getAgreements.mockResolvedValue({})
+      mockValidateLandParcelActions
+        .mockResolvedValueOnce(mockParcelResults[0])
+        .mockResolvedValueOnce(mockParcelResults[1])
+
+      await validateApplication(
+        mockLandAction,
+        mockApplicationId,
+        mockCrn,
+        mockSbi,
+        mockRequesterUsername,
+        mockRequest
+      )
+
+      expect(mockValidateLandParcelActions).toHaveBeenCalledTimes(2)
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         1,
-        mockSbi,
         mockLandAction[0],
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null,
-        mockReferenceDate
+        []
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
-        mockSbi,
         mockLandAction[1],
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        null,
-        mockReferenceDate
+        []
       )
     })
 

@@ -23,6 +23,7 @@ export class InfeasibleAreaError extends Error {
       `For land parcel ${sheetId}-${parcelId}, there isn't enough land cover area for the existing actions. Please contact the RPA and give them this message.`
     )
     this.name = 'InfeasibleAreaError'
+    this.statusCode = 422
   }
 }
 

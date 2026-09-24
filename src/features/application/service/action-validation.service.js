@@ -3,6 +3,7 @@ import {
   getDataLayerQueryAccumulated,
   getDataLayerQueryUnion
 } from '../../data-layers/queries/getDataLayer.query.js'
+import { getBoundaryIntersection } from '../../data-layers/queries/getBoundaryIntersection.query.js'
 import {
   HECTARES,
   METERS,
@@ -21,10 +22,11 @@ import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
-import { createFilterActionByUnit } from '../../common/helpers/filter-action-by-unit.js'
+import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
- * Find the available area for a land action, only for land-area-based (hectare) actions
+ * Find the available area for a land action, only for land-area-based (hectare or sqm) actions
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
@@ -46,12 +48,24 @@ async function getAvailableArea(
   // are treated as "existing" demand when computing this action's available area.
   // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
   // for area, so they're excluded rather than mismeasured as hectares.
-
-  const filterActionByUnit = createFilterActionByUnit(actions, HECTARES)
+  // Each sibling's own configured unit decides whether its quantity needs
+  // converting from hectares, or is already area-native (e.g. sqm). Where
+  // there is no enabled-action config, fall back to hectares.
+  const findConfiguredUnit = (code) =>
+    actions.find((config) => config.code === code)?.applicationUnitOfMeasurement
   const siblingActions = landAction.actions
     .filter((a) => a !== action)
-    .filter(filterActionByUnit)
-    .map((a) => ({ actionCode: a.code, areaSqm: haToSqm(a.quantity) }))
+    .filter((a) => {
+      const configuredUnit = findConfiguredUnit(a.code)
+      return configuredUnit === undefined || isAreaUnit(configuredUnit)
+    })
+    .map((a) => ({
+      actionCode: a.code,
+      areaSqm:
+        (findConfiguredUnit(a.code) ?? HECTARES) === HECTARES
+          ? haToSqm(a.quantity)
+          : a.quantity
+    }))
 
   // Agreements arrive in every unit; only area-based ones compete for area.
   const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
@@ -117,7 +131,7 @@ export const validateLandAction = async (
   let availableArea = null
   let availableLength = null
 
-  if (unit === HECTARES) {
+  if (isAreaUnit(unit)) {
     availableArea = await getAvailableArea(
       action,
       actions,
@@ -144,7 +158,8 @@ export const validateLandAction = async (
     availableArea,
     availableLength,
     agreements,
-    request
+    request,
+    unit
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
@@ -169,6 +184,7 @@ export const validateLandAction = async (
  * @param {AvailableLength|null} availableLength
  * @param {AgreementAction[]} agreements
  * @param {{logger: object, server: {postgresDb: object}}} request
+ * @param {string} [unit] - The action's applicationUnitOfMeasurement
  * @returns {Promise<RuleEngineApplication>}
  */
 const buildRuleEngineApplication = async (
@@ -177,15 +193,27 @@ const buildRuleEngineApplication = async (
   availableArea,
   availableLength,
   agreements,
-  request
+  request,
+  unit
 ) => {
   const { sheetId, parcelId } = landAction
   const db = request.server.postgresDb
   const logger = request.logger
 
-  const [intersections, landParcel] = await Promise.all([
+  const [
+    intersections,
+    boundaryIntersections,
+    landParcel,
+    landCovers,
+    landCoversForAction
+  ] = await Promise.all([
     getIntersections(sheetId, parcelId, db, logger),
-    getLandData(sheetId, parcelId, db, logger)
+    unit === METERS
+      ? getBoundaryIntersections(sheetId, parcelId, db, logger)
+      : null,
+    getLandData(sheetId, parcelId, db, logger),
+    getLandCoversForParcel(sheetId, parcelId, db, logger),
+    getLandCoversForAction(action.code, db, logger)
   ])
 
   return {
@@ -194,7 +222,9 @@ const buildRuleEngineApplication = async (
       availableLength,
       action
     ),
+    applicationUnitOfMeasurement: unit,
     actionCodeAppliedFor: action.code,
+    actionLandCovers: landCoversForAction ?? [],
     landParcel: {
       availableAreaSqm: availableArea?.availableAreaSqm ?? null,
       availability:
@@ -209,7 +239,9 @@ const buildRuleEngineApplication = async (
         : null,
       existingAgreements: agreements,
       intersections,
-      parcelSizeSqm: landParcel?.[0]?.area ?? 0
+      boundaryIntersections,
+      parcelSizeSqm: landParcel?.[0]?.area ?? 0,
+      landCovers: landCovers ?? []
     }
   }
 }
@@ -260,6 +292,39 @@ async function getIntersections(sheetId, parcelId, db, logger) {
 }
 
 /**
+ * Measures the parcel boundary against each layer a linear action can need
+ * consent for. A layer is null when its query failed, so its rule can fail closed.
+ * @param {string} sheetId
+ * @param {string} parcelId
+ * @param {object} db
+ * @param {object} logger
+ * @returns {Promise<BoundaryIntersections>}
+ */
+async function getBoundaryIntersections(sheetId, parcelId, db, logger) {
+  const [sssi, historicFeatures] = await Promise.all([
+    getBoundaryIntersection(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.sssi,
+      db,
+      logger
+    ),
+    getBoundaryIntersection(
+      sheetId,
+      parcelId,
+      DATA_LAYER_TYPES.historic_features,
+      db,
+      logger
+    )
+  ])
+
+  return {
+    sssi,
+    historic_features: historicFeatures
+  }
+}
+
+/**
  * get the applied for quantity based on available area and length.
  * @param {number} availableArea
  * @param {AvailableLength|null} availableLength
@@ -280,6 +345,7 @@ function getAppliedForQuantity(availableArea, availableLength, action) {
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
+ * @import { BoundaryIntersections } from '~/src/features/data-layers/data-layers.d.js'
  * @import { ActionRuleResult, Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'

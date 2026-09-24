@@ -22,7 +22,8 @@ import {
   getActionsForParcelWithHEFERConsentRequired
 } from '../../service/2.0.0/parcel.service.js'
 import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
+import { getAgreements } from '~/src/features/agreements/repo.js'
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 
 /**
  * Validate SSSI consent required
@@ -89,7 +90,7 @@ const ParcelsControllerV2 = {
       // @ts-expect-error - postgresDb
       const postgresDb = request.server.postgresDb
       // @ts-expect-error - payload
-      const { parcelIds, fields } = request.payload
+      const { parcelIds, fields, sbi } = request.payload
       logInfo(request.logger, {
         category: 'parcel',
         message: 'Fetch parcels',
@@ -146,6 +147,18 @@ const ParcelsControllerV2 = {
         postgresDb
       )
 
+      /** @type {AgreementsByParcel} */
+      let agreements = {}
+      if (fields.some((f) => f.startsWith('actions'))) {
+        agreements = await getAgreements(
+          sbi,
+          validationResponse.parcels.map((p) => [p.parcel_id, p.sheet_id]),
+          defraIdToken,
+          postgresDb,
+          request.logger
+        )
+      }
+
       const responseParcels = await Promise.all(
         validationResponse.parcels.map(async (parcel) => {
           return getActionsForParcel(
@@ -155,7 +168,9 @@ const ParcelsControllerV2 = {
             validationResponse.enabledActions,
             compatibilityCheckFn,
             request,
-            defraIdToken
+            (agreements[`${parcel.parcel_id}-${parcel.sheet_id}`] || []).filter(
+              (a) => expiredActionsFilter(a)
+            )
           )
         })
       )
@@ -200,8 +215,8 @@ const ParcelsControllerV2 = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof InfeasibleAreaError) {
-        return Boom.boomify(error, { statusCode: 422 })
+      if (error.statusCode) {
+        return Boom.boomify(error, { statusCode: error.statusCode })
       }
       const errorMessage = 'Error fetching parcels'
       // @ts-expect-error - payload
@@ -222,4 +237,5 @@ export { ParcelsControllerV2 }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'
+ * @import { AgreementsByParcel } from '~/src/features/agreements/agreements.d.js'
  */

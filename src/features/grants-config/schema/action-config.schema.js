@@ -1,12 +1,15 @@
 import Joi from 'joi'
 import { AVAILABILITY_TYPES } from '~/src/features/common/constants/action_availability.js'
+import { UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
 
 export const actionConfigInputSchema = Joi.object({
   code: Joi.string().required(),
   semanticVersion: Joi.string().required(),
   displayOrder: Joi.number().optional(),
   startDate: Joi.string().isoDate().optional(),
-  applicationUnitOfMeasurement: Joi.string().optional(),
+  applicationUnitOfMeasurement: Joi.string()
+    .valid(...UNIT_TYPES)
+    .required(),
   durationYears: Joi.number().optional(),
   payment: Joi.object().allow(null).optional(),
   paymentMethod: Joi.object().optional(),
@@ -18,6 +21,8 @@ export const actionConfigInputSchema = Joi.object({
   groupId: Joi.number().integer().allow(null).optional(),
   enabled: Joi.boolean().optional(),
   display: Joi.boolean().optional(),
+  displayUnit: Joi.string().optional(),
+  displayUnitPlural: Joi.string().optional(),
   guidanceUrl: Joi.string().uri().optional(),
   availability: Joi.object({
     type: Joi.string()

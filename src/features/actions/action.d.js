@@ -26,6 +26,8 @@
  * @property {object} paymentMethod
  * @property {string} [guidanceUrl]
  * @property {ActionAvailability} [availability]
+ * @property {string} [displayUnit]
+ * @property {string} [displayUnitPlural]
  */
 
 /**
@@ -57,6 +59,9 @@
  * @property {number} minimumIntersectionPercent
  * @property {number} tolerancePercent
  * @property {string} caveatDescription
+ * @property {string} [caveatCode]
+ * @property {number} [toleranceMeters]
+ * @property {string} [failureMessage]
  */
 
 /**

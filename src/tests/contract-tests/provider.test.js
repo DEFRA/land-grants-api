@@ -12,7 +12,7 @@ import { findMaximumAvailableArea } from '~/src/features/available-area/availabl
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
-import { getAgreementsForParcel } from '~/src/features/agreements/queries/getAgreementsForParcel.query.js'
+import { getAgreementsForParcels } from '~/src/features/agreements/queries/getAgreementsForParcels.query.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { getEnabledActions } from '~/src/features/actions/queries/getEnabledActions.query.js'
@@ -60,7 +60,7 @@ vi.mock(
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
-vi.mock('~/src/features/agreements/queries/getAgreementsForParcel.query.js')
+vi.mock('~/src/features/agreements/queries/getAgreementsForParcels.query.js')
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js'
 )
@@ -97,7 +97,7 @@ const mockGetActionsByVersion = getActionsByVersion
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 const mockFindMaximumAvailableArea = findMaximumAvailableArea
 const mockFormatExplanationSections = formatExplanationSections
-const mockGetAgreementsForParcel = getAgreementsForParcel
+const mockGetAgreementsForParcels = getAgreementsForParcels
 const mockGetAvailableAreaDataRequirements = getAvailableAreaDataRequirements
 const mockSaveApplication = saveApplication
 const mockCompatibilityCheckFn = vi.fn()
@@ -235,7 +235,7 @@ const pactVerifierOptions = async () => {
       mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
       mockFindMaximumAvailableArea.mockReturnValue(mockLpResult)
       mockFormatExplanationSections.mockReturnValue([])
-      mockGetAgreementsForParcel.mockResolvedValue([])
+      mockGetAgreementsForParcels.mockResolvedValue({})
       mockSaveApplication.mockResolvedValue(251)
       mockGetApplicationValidationRun.mockImplementation(
         mockGetApplicationValidationRunResult
