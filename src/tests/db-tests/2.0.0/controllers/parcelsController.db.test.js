@@ -181,4 +181,99 @@ describe('Parcels Controller 2.0.0', () => {
       }
     ])
   })
+
+  describe('linear actions', () => {
+    // ST_Perimeter of NY8836-6516 in the seeded extract
+    const parcelId = 'NY8836-6516'
+    const perimeterMeters = 2389
+
+    const bnd1 = {
+      enabled: true,
+      code: 'BND1',
+      groupId: 3,
+      groupName: 'Boundaries',
+      payment: { ratePerUnitGbp: 0.27 },
+      applicationUnitOfMeasurement: 'm',
+      durationYears: 3,
+      startDate: '2025-01-01',
+      version: 1,
+      display: true,
+      description: 'Maintain dry stone walls',
+      semanticVersion: '1.0.0',
+      rules: []
+    }
+
+    // Metre agreements are dropped on ingest, so anything competing for the
+    // boundary reaches us from the DAL rather than the agreements table
+    const dalAgreement = (actionCode, quantity) => ({
+      '6516-NY8836': [
+        {
+          actionCode,
+          quantity,
+          unit: 'm',
+          startDate: new Date('2025-01-01'),
+          endDate: new Date('2030-01-01')
+        }
+      ]
+    })
+
+    const availabilityOf = (data) => data.parcels[0].actions[0].availability
+
+    const requestActions = async () => {
+      const { h, getResponse } = createResponseCapture()
+
+      await ParcelsControllerV2.handler(
+        {
+          payload: {
+            parcelIds: [parcelId],
+            fields: ['actions'],
+            plannedActions: []
+          },
+          headers: { 'x-forwarded-authorization': 'dummy' },
+          logger,
+          server: { postgresDb: connection }
+        },
+        h
+      )
+
+      return getResponse()
+    }
+
+    beforeEach(() => {
+      mockGetEnabledActions.mockResolvedValue([bnd1])
+    })
+
+    test('should report the whole perimeter when only an area agreement is recorded', async () => {
+      // The parcel carries a live agreement of 251980 sqm; an area never
+      // competes for a boundary, whatever its compatibility
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters
+      })
+    })
+
+    test('should deduct an incompatible metre agreement from the perimeter', async () => {
+      mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
+
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters - 300
+      })
+    })
+
+    test('should leave the perimeter intact for a compatible metre agreement', async () => {
+      mockGetAgreements.mockResolvedValue(dalAgreement('CNUM1', 300))
+
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters
+      })
+    })
+  })
 })

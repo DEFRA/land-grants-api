@@ -13,6 +13,8 @@ import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parc
 import { executeSingleRuleForEnabledActions } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
+import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
@@ -32,7 +34,7 @@ import { logValidationWarn } from '~/src/features/common/helpers/logging/log-hel
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
- * @import {AacContext} from '~/src/features/available-area/available-area.d.js'
+ * @import {AacContext, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
  */
 
 /**
@@ -72,6 +74,18 @@ export function splitParcelId(id, logger) {
 }
 
 /**
+ * The unit an existing action competes in. Enabled-action config wins; where
+ * there is none for its code, the action's own unit is all we have to go on.
+ * @param {AgreementAction} existingAction - The existing or planned action
+ * @param {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
+ * @returns {string|undefined} The unit it competes in
+ */
+function unitCompetedFor(existingAction, unitByActionCode) {
+  const configuredUnit = unitByActionCode[existingAction.actionCode]
+  return configuredUnit === undefined ? existingAction.unit : configuredUnit
+}
+
+/**
  * Compute a single action's entry for the parcel actions response, running it
  * through the AAC when its unit competes for area. Always returns the action,
  * even at zero available area - A.C.: given a land parcel has no available
@@ -85,7 +99,7 @@ export function splitParcelId(id, logger) {
  * availability in place instead of updating it to zero.
  * @param {Action} action - The action to compute
  * @param {AgreementAction[]} actions - The existing/planned actions competing for area
- * @param {Record<string, string|undefined>} unitsByCode - Configured unit of measurement by action code
+ * @param {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
  * @param {object} context
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {Function} context.compatibilityCheckFn - The compatibility check function
@@ -97,7 +111,7 @@ export function splitParcelId(id, logger) {
 async function buildActionWithAvailableArea(
   action,
   actions,
-  unitsByCode,
+  unitByActionCode,
   context
 ) {
   const {
@@ -114,13 +128,9 @@ async function buildActionWithAvailableArea(
   }
 
   // Non-area actions also shouldn't be taken into consideration for AACs for other actions
-  // Where there is no enabled-action config, fall back to the action's own unit
-  const areaActions = actions.filter((a) => {
-    const configuredUnit = unitsByCode[a.actionCode]
-    return configuredUnit === undefined
-      ? isAreaUnit(a.unit)
-      : isAreaUnit(configuredUnit)
-  })
+  const areaActions = actions.filter((existingAction) =>
+    isAreaUnit(unitCompetedFor(existingAction, unitByActionCode))
+  )
   const transformedActions = plannedActionsTransformer(areaActions)
 
   const aacDataRequirements = await getAvailableAreaDataRequirements(
@@ -157,7 +167,87 @@ async function buildActionWithAvailableArea(
 }
 
 /**
- * Get parcel actions with available area
+ * Compute a linear action's entry, deducting the boundary already committed to
+ * incompatible actions. A perimeter that could not be read leaves the action
+ * unrestricted rather than reporting a ceiling nobody has measured.
+ * @param {Action} action - The action to compute
+ * @param {AgreementAction[]} actions - The existing/planned actions competing for the boundary
+ * @param {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
+ * @param {object} context
+ * @param {boolean} context.showActionResults - Whether to show action results
+ * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
+ * @param {number|null} context.boundaryLengthMeters - The parcel's perimeter
+ * @returns {object} The transformed action
+ */
+function buildActionWithAvailableLength(
+  action,
+  actions,
+  unitByActionCode,
+  context
+) {
+  const { showActionResults, compatibilityCheckFn, boundaryLengthMeters } =
+    context
+
+  if (boundaryLengthMeters === null) {
+    return actionTransformer(action, undefined, showActionResults)
+  }
+
+  // Only metres compete for the boundary
+  const lengthActions = actions
+    .filter(
+      (existingAction) =>
+        unitCompetedFor(existingAction, unitByActionCode) === METERS
+    )
+    .map((existingAction) => ({
+      actionCode: existingAction.actionCode,
+      boundaryLengthMeters: existingAction.quantity
+    }))
+
+  const availableLength = calculateAvailableLength(
+    action.code,
+    lengthActions,
+    compatibilityCheckFn,
+    boundaryLengthMeters
+  )
+
+  return actionTransformer(action, availableLength, showActionResults)
+}
+
+/**
+ * The parcel's perimeter, read once and only when something displayed competes
+ * for it. Null when nothing does, and null when the geometry could not be read.
+ * @param {Action[]} displayedActions - The actions this parcel will report
+ * @param {LandParcelDb} parcel - The parcel
+ * @param {Pool} postgresDb - The postgres database
+ * @param {Logger} logger - The logger
+ * @returns {Promise<number|null>} The perimeter in metres
+ */
+async function getBoundaryLengthMeters(
+  displayedActions,
+  parcel,
+  postgresDb,
+  logger
+) {
+  const hasLinearAction = displayedActions.some(
+    (displayedAction) => displayedAction.applicationUnitOfMeasurement === METERS
+  )
+
+  if (!hasLinearAction) {
+    return null
+  }
+
+  const boundary = await getLandParcelBoundary(
+    parcel.sheet_id,
+    parcel.parcel_id,
+    postgresDb,
+    logger
+  )
+
+  return boundary?.boundaryLengthMeters ?? null
+}
+
+/**
+ * Get parcel actions with their availability
  * @param {LandParcelDb} parcel - The parcel
  * @param {AgreementAction[]} actions - The actions to get
  * @param {boolean} showActionResults - Whether to show action results
@@ -165,9 +255,9 @@ async function buildActionWithAvailableArea(
  * @param {Function} compatibilityCheckFn - The compatibility check function
  * @param {Pool} postgresDb - The postgres database
  * @param {Logger} logger - The logger
- * @returns {Promise<any[]>} The parcel actions with available area
+ * @returns {Promise<any[]>} The parcel actions with their availability
  */
-async function getParcelActionsWithAvailableArea(
+async function getParcelActionsWithAvailability(
   parcel,
   actions,
   showActionResults,
@@ -176,25 +266,53 @@ async function getParcelActionsWithAvailableArea(
   postgresDb,
   logger
 ) {
-  const actionsWithAvailableArea = []
-  const unitsByCode = enabledActions.reduce(
-    (acc, e) => ({ ...acc, [e.code]: e.applicationUnitOfMeasurement }),
+  const actionsWithAvailability = []
+
+  const unitByActionCode = enabledActions.reduce(
+    (acc, enabledAction) => ({
+      ...acc,
+      [enabledAction.code]: enabledAction.applicationUnitOfMeasurement
+    }),
     {}
   )
 
-  for (const action of enabledActions.filter((a) => a.display)) {
-    const actionWithAvailableArea = await buildActionWithAvailableArea(
-      action,
-      actions,
-      unitsByCode,
-      { showActionResults, compatibilityCheckFn, parcel, postgresDb, logger }
-    )
+  const displayedActions = enabledActions.filter(
+    (enabledAction) => enabledAction.display
+  )
 
-    actionsWithAvailableArea.push(actionWithAvailableArea)
+  const boundaryLengthMeters = await getBoundaryLengthMeters(
+    displayedActions,
+    parcel,
+    postgresDb,
+    logger
+  )
+
+  for (const action of displayedActions) {
+    const actionWithAvailability =
+      action.applicationUnitOfMeasurement === METERS
+        ? buildActionWithAvailableLength(action, actions, unitByActionCode, {
+            showActionResults,
+            compatibilityCheckFn,
+            boundaryLengthMeters
+          })
+        : await buildActionWithAvailableArea(
+            action,
+            actions,
+            unitByActionCode,
+            {
+              showActionResults,
+              compatibilityCheckFn,
+              parcel,
+              postgresDb,
+              logger
+            }
+          )
+
+    actionsWithAvailability.push(actionWithAvailability)
   }
 
-  const unavailableActions = actionsWithAvailableArea.filter(
-    (a) => !a.isAvailable
+  const unavailableActions = actionsWithAvailability.filter(
+    (actionWithAvailability) => !actionWithAvailability.isAvailable
   )
 
   if (unavailableActions.length > 0) {
@@ -209,7 +327,7 @@ async function getParcelActionsWithAvailableArea(
     })
   }
 
-  return actionsWithAvailableArea
+  return actionsWithAvailability
 }
 
 export async function getActionsForParcel(
@@ -238,7 +356,7 @@ export async function getActionsForParcel(
   if (fields.some((f) => f.startsWith('actions'))) {
     const mergedActions = mergeAgreementsTransformer(agreements, plannedActions)
 
-    const actionsWithAvailableArea = await getParcelActionsWithAvailableArea(
+    const actionsWithAvailability = await getParcelActionsWithAvailability(
       parcel,
       mergedActions,
       showActionResults,
@@ -248,8 +366,9 @@ export async function getActionsForParcel(
       request.logger
     )
 
-    parcelResponse.actions = actionsWithAvailableArea
+    parcelResponse.actions = actionsWithAvailability
   }
+
   return parcelResponse
 }
 
