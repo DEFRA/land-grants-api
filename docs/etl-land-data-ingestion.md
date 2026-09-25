@@ -147,6 +147,22 @@ cd land-grants-api/scripts
 node ingest-land-data.js
 ```
 
+### Updating the compatibility matrix and land use matrix
+
+The RPA export spreadsheets (Option Compatibility Matrix `.xlsx` and Land Use Application Matrix `.xls`) can be passed to the script either:
+
+- as `.csv` files: open each spreadsheet in Excel, FreeOffice, LibreOffice, etc. and save it as "CSV UTF-8" (no other tooling needed), or
+- as the original `.xls`/`.xlsx` files, which are converted with LibreOffice (`soffice` must be on the `PATH`).
+
+```
+node scripts/convert-matrix-spreadsheets.js <option-compatibility-matrix.xlsx|.csv> <land-use-application-matrix.xls|.csv> 2026
+node scripts/generate-land-cover-codes-actions.js src/land-data/land_cover_codes/land-codes.csv src/land-data/land_cover_codes/code-mapping.csv
+node scripts/generate-land-cover-codes-actions-sql.js src/land-data/land_cover_codes/land_cover_codes_actions.csv src/land-data/migration/land-cover-codes-actions-vN.sql.gz
+```
+
+- The compatibility matrix is loaded locally with `npm run dev:ingest`, remotely by copying `compatibility-matrix.csv` to `scripts/ingestion-data/compatibility_matrix/` and running `ingest-land-data.js`.
+- The land use matrix is loaded by a Liquibase migration: add a new changeset referencing `land-cover-codes-actions-vN.sql`, then run `npm run extractsql && npm run docker:migrate:up` locally. It is applied remotely when the migrations run on deploy.
+
 ### Testing locally
 
 In order to test data ingestion locally, we have configured localstack to creates an s3 bucket `s3://land-data/`.
