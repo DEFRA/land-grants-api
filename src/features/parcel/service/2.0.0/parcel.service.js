@@ -26,6 +26,10 @@ import {
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
+import {
+  areaUnavailableReason,
+  lengthUnavailableReason
+} from './unavailability.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
@@ -34,19 +38,8 @@ import { logValidationWarn } from '~/src/features/common/helpers/logging/log-hel
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
- * @import {AacContext, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
+ * @import {CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
  */
-
-/**
- * The area recorded against a parcel's existing actions. Reported when it
- * cannot be arranged on the land, which is the figure the RPA needs to see.
- * @param {AacContext|null} context - Context from the area calculation
- * @returns {number} The committed area in square metres
- */
-function existingActionsArea(context) {
-  const existingActions = context?.existingActions ?? []
-  return existingActions.reduce((total, a) => total + a.areaSqm, 0)
-}
 
 /**
  * Split id into sheet id and parcel id
@@ -151,9 +144,9 @@ async function buildActionWithAvailableArea(
 
   const availableArea = {
     ...lpResult,
-    existingActionsAreaSqm: lpResult.feasible
+    unavailableReason: lpResult.feasible
       ? undefined
-      : existingActionsArea(lpResult.context),
+      : areaUnavailableReason(lpResult),
     explanations: formatExplanationSections(lpResult.context, {
       targetAction: action.code,
       availableAreaSqm: lpResult.availableAreaSqm,
@@ -210,7 +203,20 @@ function buildActionWithAvailableLength(
     boundaryLengthMeters
   )
 
-  return actionTransformer(action, availableLength, showActionResults)
+  const unavailableReason = lengthUnavailableReason(action, availableLength)
+
+  // Nothing the applicant could enter would be accepted, so there is no
+  // ceiling to offer; the length they do have is in the reason's metadata
+  const availability = unavailableReason
+    ? {
+        ...availableLength,
+        availableLength: 0,
+        feasible: false,
+        unavailableReason
+      }
+    : availableLength
+
+  return actionTransformer(action, availability, showActionResults)
 }
 
 /**
