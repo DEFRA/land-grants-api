@@ -312,4 +312,46 @@ describe('actionTransformer 2.0.0', () => {
       explanations: ['why it did not fit']
     })
   })
+
+  test('should report the available length for a metre-based action', () => {
+    const action = {
+      ...defaultAction,
+      code: 'BND1',
+      applicationUnitOfMeasurement: 'm'
+    }
+
+    const result = actionTransformer(action, { availableLength: 240 })
+
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 240 },
+      quantityRequired: true,
+      isAvailable: true
+    })
+  })
+
+  test('should report a metre-based action with no length left as zero, not unrestricted', () => {
+    const action = {
+      ...defaultAction,
+      code: 'BND1',
+      applicationUnitOfMeasurement: 'm'
+    }
+
+    const result = actionTransformer(action, { availableLength: 0 })
+
+    expect(result.availability).toEqual({ unit: 'm', value: 0 })
+  })
+
+  test('should not read an area figure for a metre-based action', () => {
+    const action = {
+      ...defaultAction,
+      code: 'BND1',
+      applicationUnitOfMeasurement: 'm'
+    }
+
+    const result = actionTransformer(action, { availableAreaSqm: 5000 })
+
+    expect(result.availability).toEqual({ unit: 'm', value: null })
+  })
 })
