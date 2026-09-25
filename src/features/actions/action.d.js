@@ -62,6 +62,7 @@
  * @property {string} [caveatCode]
  * @property {number} [toleranceMeters]
  * @property {string} [failureMessage]
+ * @property {number} [minimumLengthM]
  */
 
 /**
