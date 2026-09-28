@@ -3,6 +3,27 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+/**
+ * The share of the boundary lying inside the layer, to match the percentage the
+ * area consent rules report to Caseworking and GAS. Rounded as they are, to two
+ * decimals. Informational only - the caveat is still decided on toleranceMeters.
+ * @param {number} intersectingLengthMeters - The boundary inside the layer
+ * @param {number} boundaryLengthMeters - The parcel's whole perimeter
+ * @returns {number} The overlap as a percentage, to two decimals
+ */
+function calculatePercentageOverlap(
+  intersectingLengthMeters,
+  boundaryLengthMeters
+) {
+  if (boundaryLengthMeters <= 0) {
+    return 0
+  }
+
+  const overlapPercent = (intersectingLengthMeters / boundaryLengthMeters) * 100
+
+  return Number.parseFloat(overlapPercent.toFixed(2))
+}
+
 // Boundary-length counterpart to sssi/hefer-consent-required, for linear actions
 export const boundaryIntersectionConsentRequired = {
   /**
@@ -84,7 +105,11 @@ export const boundaryIntersectionConsentRequired = {
           actionCode,
           parcelId,
           sheetId,
-          intersectingLengthMeters,
+          percentageOverlap: calculatePercentageOverlap(
+            intersectingLengthMeters,
+            boundaryLengthMeters
+          ),
+          overlapLengthMeters: intersectingLengthMeters,
           boundaryLengthMeters
         }
       }

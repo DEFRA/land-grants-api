@@ -10,6 +10,12 @@ const defaultAction = {
 }
 
 describe('actionTransformer 2.0.0', () => {
+  const linearAction = {
+    ...defaultAction,
+    code: 'BND1',
+    applicationUnitOfMeasurement: 'm'
+  }
+
   test('should transform action with available area', () => {
     const action = { ...defaultAction, semanticVersion: '2.0.0' }
     const availableArea = { availableAreaHectares: 500 }
@@ -271,8 +277,16 @@ describe('actionTransformer 2.0.0', () => {
       feasible: false,
       availableAreaHectares: 0,
       availableAreaSqm: 0,
-      totalValidLandCoverSqm: 41200,
-      existingActionsAreaSqm: 58300
+      unavailableReason: {
+        code: 'existing-actions-do-not-fit',
+        reason:
+          'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+        metadata: {
+          totalValidLandCoverHa: 4.12,
+          existingActionsAreaHa: 5.83,
+          existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
+        }
+      }
     }
 
     const result = actionTransformer(defaultAction, availableArea)
@@ -288,8 +302,9 @@ describe('actionTransformer 2.0.0', () => {
         reason:
           'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
         metadata: {
-          totalValidLandCoverSqm: 41200,
-          existingActionsAreaSqm: 58300
+          totalValidLandCoverHa: 4.12,
+          existingActionsAreaHa: 5.83,
+          existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
         }
       }
     })
@@ -314,13 +329,7 @@ describe('actionTransformer 2.0.0', () => {
   })
 
   test('should report the available length for a metre-based action', () => {
-    const action = {
-      ...defaultAction,
-      code: 'BND1',
-      applicationUnitOfMeasurement: 'm'
-    }
-
-    const result = actionTransformer(action, { availableLength: 240 })
+    const result = actionTransformer(linearAction, { availableLength: 240 })
 
     expect(result).toEqual({
       code: 'BND1',
@@ -332,25 +341,13 @@ describe('actionTransformer 2.0.0', () => {
   })
 
   test('should report a metre-based action with no length left as zero, not unrestricted', () => {
-    const action = {
-      ...defaultAction,
-      code: 'BND1',
-      applicationUnitOfMeasurement: 'm'
-    }
-
-    const result = actionTransformer(action, { availableLength: 0 })
+    const result = actionTransformer(linearAction, { availableLength: 0 })
 
     expect(result.availability).toEqual({ unit: 'm', value: 0 })
   })
 
   test('should not read an area figure for a metre-based action', () => {
-    const action = {
-      ...defaultAction,
-      code: 'BND1',
-      applicationUnitOfMeasurement: 'm'
-    }
-
-    const result = actionTransformer(action, { availableAreaSqm: 5000 })
+    const result = actionTransformer(linearAction, { availableAreaSqm: 5000 })
 
     expect(result.availability).toEqual({ unit: 'm', value: null })
   })

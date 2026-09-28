@@ -81,7 +81,7 @@ describe('applicationValidationResponseSchemaV2', () => {
   })
 
   describe('sssi-consent-required (boundary intersection rule)', () => {
-    it('accepts a caveat with intersectingLengthMeters and boundaryLengthMeters', () => {
+    it('accepts a caveat with overlapLengthMeters and boundaryLengthMeters', () => {
       const { error } = applicationValidationResponseSchemaV2.validate(
         buildResponse({
           code: 'ne-consent-required',
@@ -90,7 +90,7 @@ describe('applicationValidationResponseSchemaV2', () => {
             actionCode: 'BND1',
             parcelId: '7704',
             sheetId: 'SD6855',
-            intersectingLengthMeters: 897,
+            overlapLengthMeters: 897,
             boundaryLengthMeters: 3518
           }
         })
@@ -107,7 +107,7 @@ describe('applicationValidationResponseSchemaV2', () => {
             actionCode: 'BND1',
             parcelId: '0556',
             sheetId: 'NT9728',
-            intersectingLengthMeters: 1734,
+            overlapLengthMeters: 1734,
             boundaryLengthMeters: 1734
           }
         })
