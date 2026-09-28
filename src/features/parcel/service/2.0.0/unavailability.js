@@ -13,7 +13,7 @@ import {
  * The rules that gate an action on how much boundary is left. A linear action
  * configured with one of these cannot be applied for when it fails.
  */
-const LENGTH_RULE_NAMES = ['minimum-length', 'available-length']
+const LENGTH_RULE_NAMES = new Set(['minimum-length', 'available-length'])
 
 /**
  * The area recorded against a parcel's existing actions. Reported when it
@@ -66,7 +66,7 @@ export function lengthUnavailableReason(action, availableLength) {
   const metadata = { boundaryLengthMeters, incompatibleLengthMeters }
 
   const rule = action.rules?.find((r) =>
-    LENGTH_RULE_NAMES.includes(r.type ?? r.name)
+    LENGTH_RULE_NAMES.has(r.type ?? r.name)
   )
 
   if (!rule) {

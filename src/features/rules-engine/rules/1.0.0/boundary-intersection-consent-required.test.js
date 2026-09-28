@@ -59,11 +59,38 @@ describe('boundaryIntersectionConsentRequired', () => {
           actionCode: 'BND1',
           parcelId: '7704',
           sheetId: 'SD6855',
-          intersectingLengthMeters: 180,
+          percentageOverlap: 5.12, // 180 / 3518
+          overlapLengthMeters: 180,
           boundaryLengthMeters: 3518
         }
       }
     })
+  })
+
+  test('reports the share of the boundary inside the layer to two decimals', () => {
+    const application = createApplication({
+      sssi: { intersectingLengthMeters: 329, boundaryLengthMeters: 2425 }
+    })
+
+    const result = boundaryIntersectionConsentRequired.execute(
+      application,
+      createRule()
+    )
+
+    expect(result.caveat.metadata.percentageOverlap).toBe(13.57)
+  })
+
+  test('reports no overlap share when the boundary could not be measured', () => {
+    const application = createApplication({
+      sssi: { intersectingLengthMeters: 40, boundaryLengthMeters: 0 }
+    })
+
+    const result = boundaryIntersectionConsentRequired.execute(
+      application,
+      createRule()
+    )
+
+    expect(result.caveat.metadata.percentageOverlap).toBe(0)
   })
 
   test('passes without a caveat when the boundary is nowhere near the layer', () => {
@@ -136,7 +163,8 @@ describe('boundaryIntersectionConsentRequired', () => {
         actionCode: 'BND1',
         parcelId: '7704',
         sheetId: 'SD6855',
-        intersectingLengthMeters: 60,
+        percentageOverlap: 3.46, // 60 / 1734
+        overlapLengthMeters: 60,
         boundaryLengthMeters: 1734
       }
     })
