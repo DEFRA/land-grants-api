@@ -9,9 +9,32 @@ import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { logInfo } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { withRetries } from '~/src/features/common/helpers/retry.js'
 
 function prettyDate(d) {
   return d.toISOString().split('T')[0]
+}
+
+/**
+ * Log agreements from DAL in a readable way
+ * @param {{[key: string]: AgreementAction[]}} results - retrieved agreements to summarise and log
+ * @param {string} sbi - The SBI we retrieved, to include in the log
+ * @param {object} logger
+ */
+function logResults(results, sbi, logger) {
+  const summary = Object.entries(results).flatMap(([parcel, actions]) =>
+    actions.map(
+      (a) =>
+        `${parcel}: ${a.actionCode}: ${a.quantity} ${a.unit}, ${prettyDate(a.startDate)}-${prettyDate(a.endDate)}`
+    )
+  )
+  const resultCount = Object.values(results).flat().length
+  logInfo(logger, {
+    category: 'agreements',
+    operation: 'Fetch agreements from DAL',
+    context: { sbi },
+    message: `Retrieved ${resultCount} agreements: [${summary.join(', ')}]`
+  })
 }
 
 /**
@@ -49,54 +72,46 @@ export async function getAgreements(sbi, defraIdToken, logger) {
     entraHeader = { Authorization: `Bearer ${entraToken}` }
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders,
-      ...entraHeader
+  const requestBody = await withRetries(
+    async () => {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders,
+          ...entraHeader
+        },
+        body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
+      })
+
+      if (!response.ok) {
+        if (response.status === statusCodes.unauthorized) {
+          throw new UnauthorizedError(sbi)
+        }
+
+        throw new HTTPError(sbi, response.status, response.statusText)
+      }
+
+      const body = await response.json()
+
+      if (body.errors && body.errors.length > 0) {
+        throw new GraphQLError(sbi, body.errors)
+      }
+      return body
     },
-    body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
-  })
-
-  if (!response.ok) {
-    if (response.status === statusCodes.notFound) {
-      return {}
-    }
-
-    if (response.status === statusCodes.unauthorized) {
-      throw new UnauthorizedError(sbi)
-    }
-
-    throw new HTTPError(sbi, response.status, response.statusText)
-  }
-
-  const body = await response.json()
-
-  if (body.errors && body.errors.length > 0) {
-    throw new GraphQLError(sbi, body.errors)
-  }
-
-  const results = dalBusinessToAgreements(body.data.business)
-
-  const summary = Object.entries(results).flatMap(([parcel, actions]) =>
-    actions.map(
-      (a) =>
-        `${parcel}: ${a.actionCode}: ${a.quantity} ${a.unit}, ${prettyDate(a.startDate)}-${prettyDate(a.endDate)}`
-    )
+    // Retry on DAL 5xx errors only
+    (err) =>
+      err.dalStatusCode && err.dalStatusCode >= 500 && err.dalStatusCode <= 599,
+    config.get('dal.requestRetries')
   )
-  const resultCount = Object.values(results).flat().length
-  logInfo(logger, {
-    category: 'agreements',
-    operation: 'Fetch agreements from DAL',
-    context: { sbi },
-    message: `Retrieved ${resultCount} agreements: [${summary.join(', ')}]`
-  })
+
+  const results = dalBusinessToAgreements(requestBody.data.business)
+  logResults(results, sbi, logger)
 
   return results
 }
 
 /**
- * @import { AgreementsByParcel } from '~/src/features/agreements/agreements.d.js'
+ * @import { AgreementAction, AgreementsByParcel } from '~/src/features/agreements/agreements.d.js'
  * @import { Logger } from '~/src/features/common/logger.d.js'
  */

@@ -27,6 +27,7 @@ export class HTTPError extends DALError {
    */
   constructor(sbi, status, statusText) {
     super(sbi, `${status}: ${statusText}`, statusCodes.internalServerError)
+    this.dalStatusCode = status
   }
 }
 
