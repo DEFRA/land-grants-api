@@ -57,7 +57,7 @@ describe('lengthActionsTransformer', () => {
 
     const result = lengthActionsTransformer(actions)
 
-    expect(result).toEqual([{ actionCode: 'BND1', boundaryLengthMeters: 300 }])
+    expect(result).toEqual([{ actionCode: 'BND1', billedLengthMeters: 300 }])
   })
 
   test('should transform every action it is given', () => {
@@ -69,8 +69,8 @@ describe('lengthActionsTransformer', () => {
     const result = lengthActionsTransformer(actions)
 
     expect(result).toEqual([
-      { actionCode: 'BND1', boundaryLengthMeters: 300 },
-      { actionCode: 'BND2', boundaryLengthMeters: 120 }
+      { actionCode: 'BND1', billedLengthMeters: 300 },
+      { actionCode: 'BND2', billedLengthMeters: 120 }
     ])
   })
 

@@ -1,5 +1,6 @@
 import { getActionsForParcel } from './parcel.service.js'
-import { getDisplayedActions, getUnitByActionCode } from './action-units.js'
+import { getDisplayedActions } from './action-units.js'
+import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
   areaActionsTransformer,
   sizeTransformer
@@ -672,7 +673,7 @@ describe('Parcel Service 2.0.0', () => {
 
         expect(calculateAvailableLength).toHaveBeenCalledWith(
           'BND1',
-          [{ actionCode: 'BND2', boundaryLengthMeters: 300 }],
+          [{ actionCode: 'BND2', billedLengthMeters: 300 }],
           mockCompatibilityCheckFn,
           1800
         )

@@ -6,6 +6,7 @@ import {
   lengthActionsTransformer,
   areaActionsTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+import { unitCompetedFor } from '~/src/features/common/helpers/action-unit.js'
 
 /**
  * @import {AgreementAction} from '~/src/features/agreements/agreements.d.js'
@@ -28,33 +29,6 @@ import {
  */
 export function getDisplayedActions(enabledActions) {
   return enabledActions.filter((enabledAction) => enabledAction.display)
-}
-
-/**
- * The configured unit of measurement for every enabled action, keyed by code.
- * Does not depend on the parcel, so a request works it out once.
- * @param {Action[]} enabledActions - The enabled actions
- * @returns {Record<string, string|undefined>} The unit by action code
- */
-export function getUnitByActionCode(enabledActions) {
-  return Object.fromEntries(
-    enabledActions.map(({ code, applicationUnitOfMeasurement }) => [
-      code,
-      applicationUnitOfMeasurement
-    ])
-  )
-}
-
-/**
- * The unit an existing action competes in. Enabled-action config wins; where
- * there is none for its code, the action's own unit is all we have to go on.
- * @param {AgreementAction} existingAction - The existing or planned action
- * @param {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
- * @returns {string|undefined} The unit it competes in
- */
-function unitCompetedFor(existingAction, unitByActionCode) {
-  const configuredUnit = unitByActionCode[existingAction.actionCode]
-  return configuredUnit === undefined ? existingAction.unit : configuredUnit
 }
 
 /**

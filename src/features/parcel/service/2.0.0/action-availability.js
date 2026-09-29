@@ -48,7 +48,7 @@ function buildActionWithAvailableArea(
     availableAreaDataRequirements
   )
 
-  const availableArea = {
+  const areaCalculation = {
     ...lpResult,
     unavailableReason: lpResult.feasible
       ? undefined
@@ -62,7 +62,7 @@ function buildActionWithAvailableArea(
     })
   }
 
-  return actionTransformer(action, availableArea, showActionResults)
+  return actionTransformer(action, areaCalculation, showActionResults)
 }
 
 /**
@@ -95,7 +95,7 @@ function buildActionWithAvailableLength(
 
   // Nothing the applicant could enter would be accepted, so there is no
   // ceiling to offer; the length they do have is in the reason's metadata
-  const availability = unavailableReason
+  const lengthCalculation = unavailableReason
     ? {
         ...availableLength,
         availableLength: 0,
@@ -104,7 +104,7 @@ function buildActionWithAvailableLength(
       }
     : availableLength
 
-  return actionTransformer(action, availability, showActionResults)
+  return actionTransformer(action, lengthCalculation, showActionResults)
 }
 
 /**

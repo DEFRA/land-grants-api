@@ -19,6 +19,7 @@ import {
 import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
+import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
 
 vi.mock(
   '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js',
@@ -72,6 +73,9 @@ vi.mock('~/src/features/parcel/queries/getLandData.query.js', () => ({
 vi.mock('~/src/features/available-length/availableLength.js', () => ({
   getAvailableLength: vi.fn()
 }))
+vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js', () => ({
+  getLandParcelBoundary: vi.fn()
+}))
 vi.mock(
   '~/src/features/parcel/queries/getLandCoversForParcel.query.js',
   () => ({
@@ -123,6 +127,9 @@ const mockGetAvailableLength = vi.mocked(getAvailableLength)
 const mockGetLandCoversForParcel = vi.mocked(getLandCoversForParcel)
 const mockGetLandCoversForAction = vi.mocked(getLandCoversForAction)
 const mockGetBoundaryIntersection = vi.mocked(getBoundaryIntersection)
+const mockGetLandParcelBoundary = vi.mocked(getLandParcelBoundary)
+
+const PARCEL_PERIMETER_METERS = 1000
 
 describe('Action Validation Service', () => {
   const mockLogger = {
@@ -227,10 +234,13 @@ describe('Action Validation Service', () => {
       intersectionAreaHa: 0.1
     })
     mockGetLandData.mockResolvedValue([{ area: 5000 }])
-    mockGetAvailableLength.mockResolvedValue({
+    mockGetAvailableLength.mockReturnValue({
       availableLength: 200,
       boundaryLengthMeters: 1000,
       incompatibleLengthMeters: 800
+    })
+    mockGetLandParcelBoundary.mockResolvedValue({
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS
     })
     mockGetBoundaryIntersection.mockImplementation(
       (_sheetId, _parcelId, dataLayerTypeId) =>
@@ -705,7 +715,7 @@ describe('Action Validation Service', () => {
         mockAgreements,
         mockCompatibilityCheckFn,
         mockLandAction,
-        mockRequest
+        PARCEL_PERIMETER_METERS
       )
       expect(mockGetAvailableAreaDataRequirements).not.toHaveBeenCalled()
       expect(mockFindMaximumAvailableArea).not.toHaveBeenCalled()
@@ -717,6 +727,33 @@ describe('Action Validation Service', () => {
           boundaryLength: { totalMeters: 1000, incompatibleMeters: 800 }
         })
       })
+    })
+
+    test('should report a zero perimeter when the parcel boundary cannot be read', async () => {
+      mockGetLandParcelBoundary.mockResolvedValue(null)
+      const meterAction = { code: 'BND1', quantity: 150 }
+      const actionConfigWithBnd1 = [
+        ...mockActionConfig,
+        { code: 'BND1', applicationUnitOfMeasurement: 'm' }
+      ]
+
+      await validateLandAction(
+        meterAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(mockGetAvailableLength).toHaveBeenCalledWith(
+        meterAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        0
+      )
     })
 
     test('should supply no boundary length breakdown for area-based actions', async () => {
@@ -742,7 +779,7 @@ describe('Action Validation Service', () => {
         ...mockActionConfig,
         { code: 'BND1', applicationUnitOfMeasurement: 'm' }
       ]
-      mockGetAvailableLength.mockResolvedValue(null)
+      mockGetAvailableLength.mockReturnValue(null)
 
       await validateLandAction(
         meterAction,

@@ -23,6 +23,7 @@ import { areaActionsTransformer } from '../../parcel/transformers/parcelActions.
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import { getLandParcelBoundary } from '../../parcel/queries/getParcelBoundary.query.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
@@ -141,14 +142,24 @@ export const validateLandAction = async (
       request
     )
   }
+
   if (unit === METERS) {
-    availableLength = await getAvailableLength(
+    const boundary = await getLandParcelBoundary(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
+    )
+
+    const boundaryLengthMeters = boundary?.boundaryLengthMeters ?? 0
+
+    availableLength = getAvailableLength(
       action,
       actions,
       agreements,
       compatibilityCheckFn,
       landAction,
-      request
+      boundaryLengthMeters
     )
   }
 
@@ -163,6 +174,7 @@ export const validateLandAction = async (
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
+
   const ruleResult = executeRules(
     rules,
     {
@@ -173,6 +185,7 @@ export const validateLandAction = async (
     },
     ruleToExecute?.rules
   )
+
   return actionResultTransformer(action, actions, availableArea, ruleResult)
 }
 

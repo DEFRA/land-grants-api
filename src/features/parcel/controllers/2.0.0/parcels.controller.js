@@ -16,10 +16,8 @@ import {
   logValidationWarn
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { getActionsForParcel } from '../../service/2.0.0/parcel.service.js'
-import {
-  getDisplayedActions,
-  getUnitByActionCode
-} from '../../service/2.0.0/action-units.js'
+import { getDisplayedActions } from '../../service/2.0.0/action-units.js'
+import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
   addSssiConsentRequired,
   addHeferRequired

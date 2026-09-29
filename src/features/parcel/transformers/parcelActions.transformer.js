@@ -5,6 +5,7 @@ import { HECTARES } from '~/src/features/common/constants/unit_type.js'
  * Attach application unit of measurement to size; this is used both for total parcel size (which
  * will usually be provided with unit = hectares) and for action areas and available areas
  * @param {number} area - The area to transform
+ * @param {string} unit - The unit the area is measured in
  * @returns {{unit: string, value: number}} The transformed size
  */
 function sizeTransformer(area, unit) {
@@ -25,15 +26,16 @@ function areaActionsTransformer(actions) {
 }
 
 /**
- * Transform existing and planned actions to actions with their boundary length in metres.
- * Callers pass only the actions competing for the boundary.
- * @param {AgreementAction[] | null} actions - The existing and planned actions to transform
+ * Transform existing and planned actions to actions with their billed length in metres.
+ * Callers pass only the actions competing for the boundary. Sibling actions in an
+ * application carry their code as `code`; agreement actions carry it as `actionCode`.
+ * @param {Array<{code?: string, actionCode?: string, quantity: number}> | null} actions - The existing and planned actions to transform
  * @returns {ActionWithLength[]} The transformed actions
  */
 function lengthActionsTransformer(actions) {
   return (actions ?? []).map((a) => ({
-    actionCode: a.actionCode,
-    boundaryLengthMeters: a.quantity
+    actionCode: /** @type {string} */ (a.code ?? a.actionCode),
+    billedLengthMeters: a.quantity
   }))
 }
 
