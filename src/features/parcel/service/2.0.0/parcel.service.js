@@ -1,18 +1,22 @@
 import { HECTARES } from '~/src/features/common/constants/unit_type.js'
-import { sizeTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+import {
+  areaActionsTransformer,
+  lengthActionsTransformer,
+  sizeTransformer
+} from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
-import { getCompetingActions } from './action-units.js'
+import { actionsByCompetingUnit } from '~/src/features/common/helpers/action-unit.js'
+import { getBoundaryLengthMeters } from '~/src/features/parcel/boundary-length.js'
 import { buildActionWithAvailability } from './action-availability.js'
-import { getBoundaryLengthMeters } from './boundary-length.js'
 
 /**
  * @import {LandParcelDb} from '~/src/features/parcel/parcel.d.js'
  * @import {AgreementAction} from '~/src/features/agreements/agreements.d.js'
  * @import {Logger} from '~/src/features/common/logger.d.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
- * @import {PreparedActions} from './action-units.js'
+ * @import {PreparedActions} from '~/src/features/parcel/parcel.d.js'
  */
 
 /**
@@ -45,7 +49,12 @@ async function getActionsWithAvailability(
     logger
   )
 
-  const competingActions = getCompetingActions(actions, unitByActionCode)
+  const { area, length } = actionsByCompetingUnit(actions, unitByActionCode)
+
+  const competingActions = {
+    area: areaActionsTransformer(area),
+    length: lengthActionsTransformer(length)
+  }
 
   for (const displayedAction of displayedActions) {
     const actionWithAvailability = await buildActionWithAvailability(

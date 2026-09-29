@@ -2,7 +2,6 @@ import createTestServer from '~/src/tests/test-server.js'
 import { UnauthorizedError } from '~/src/services/dal/errors.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getActionsForParcel } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
-import { getDisplayedActions } from '~/src/features/parcel/service/2.0.0/action-units.js'
 import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
   addSssiConsentRequired,
@@ -390,7 +389,7 @@ describe('Parcels Controller 2.0.0', () => {
         }),
         true,
         {
-          displayedActions: getDisplayedActions(mockEnabledActions),
+          displayedActions: mockEnabledActions.filter((a) => a.display),
           unitByActionCode: getUnitByActionCode(mockEnabledActions)
         },
         expect.any(Function),
@@ -471,7 +470,7 @@ describe('Parcels Controller 2.0.0', () => {
         }),
         false,
         {
-          displayedActions: getDisplayedActions(mockEnabledActions),
+          displayedActions: mockEnabledActions.filter((a) => a.display),
           unitByActionCode: getUnitByActionCode(mockEnabledActions)
         },
         expect.any(Function),
@@ -798,7 +797,7 @@ describe('Parcels Controller 2.0.0', () => {
         }),
         false,
         {
-          displayedActions: getDisplayedActions(mockEnabledActions),
+          displayedActions: mockEnabledActions.filter((a) => a.display),
           unitByActionCode: getUnitByActionCode(mockEnabledActions)
         },
         expect.any(Function),
@@ -1352,7 +1351,7 @@ describe('Parcels Controller 2.0.0', () => {
         }),
         false,
         {
-          displayedActions: getDisplayedActions(mockEnabledActions),
+          displayedActions: mockEnabledActions.filter((a) => a.display),
           unitByActionCode: getUnitByActionCode(mockEnabledActions)
         },
         expect.any(Function),

@@ -1,5 +1,4 @@
 import { getActionsForParcel } from './parcel.service.js'
-import { getDisplayedActions } from './action-units.js'
 import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
   areaActionsTransformer,
@@ -35,7 +34,7 @@ vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 // The two views of enabled-action config that a request works out once,
 // as parcels.controller builds them
 const prepared = (enabledActions) => ({
-  displayedActions: getDisplayedActions(enabledActions),
+  displayedActions: enabledActions.filter((a) => a.display),
   unitByActionCode: getUnitByActionCode(enabledActions)
 })
 

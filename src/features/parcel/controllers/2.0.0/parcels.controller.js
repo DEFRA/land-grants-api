@@ -16,7 +16,6 @@ import {
   logValidationWarn
 } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { getActionsForParcel } from '../../service/2.0.0/parcel.service.js'
-import { getDisplayedActions } from '../../service/2.0.0/action-units.js'
 import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
   addSssiConsentRequired,
@@ -162,11 +161,16 @@ const ParcelsControllerV2 = {
         )
       }
 
+      const displayedActions = validationResponse.enabledActions.filter(
+        (enabledAction) => enabledAction.display
+      )
+      const unitByActionCode = getUnitByActionCode(
+        validationResponse.enabledActions
+      )
+
       const preparedActions = {
-        displayedActions: getDisplayedActions(
-          validationResponse.enabledActions
-        ),
-        unitByActionCode: getUnitByActionCode(validationResponse.enabledActions)
+        displayedActions,
+        unitByActionCode
       }
 
       const responseParcels = await Promise.all(
@@ -174,7 +178,7 @@ const ParcelsControllerV2 = {
           const currentAgreements = agreementsForParcel(agreements, {
             parcelId: parcel.parcel_id,
             sheetId: parcel.sheet_id
-          }).filter((a) => expiredActionsFilter(a))
+          }).filter((agreementAction) => expiredActionsFilter(agreementAction))
 
           return getActionsForParcel(
             parcel,
