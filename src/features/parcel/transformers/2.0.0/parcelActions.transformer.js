@@ -1,34 +1,14 @@
 import { TOTAL } from '~/src/features/common/constants/action_availability.js'
 import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
-import {
-  EXISTING_ACTIONS_DO_NOT_FIT,
-  EXISTING_ACTIONS_DO_NOT_FIT_REASON
-} from '~/src/features/parcel/constants/unavailable-reasons.js'
 import { sizeTransformer } from '../parcelActions.transformer.js'
 
 /**
  * Whatever availability calculation ran for an action's unit: the area result
- * for land, the length result for a boundary. Every field is optional because
- * which of them is present depends on which calculation ran.
- * @typedef {Partial<AvailableAreaForAction & AvailableLength>} ActionAvailability
+ * for land, the length result for a boundary, plus the reason when it put the
+ * action out of reach. Every field is optional because which of them is present
+ * depends on which calculation ran.
+ * @typedef {Partial<AvailableAreaForAction & AvailableLength> & {unavailableReason?: object}} ActionAvailability
  */
-
-/**
- * Why an area action cannot be applied for. The figures let the RPA see how far
- * the recorded actions overrun the land they are recorded against.
- * @param {ActionAvailability} calculation - The infeasible area result
- * @returns {object} The unavailable reason
- */
-function unavailableReasonTransformer({
-  totalValidLandCoverSqm,
-  existingActionsAreaSqm
-}) {
-  return {
-    code: EXISTING_ACTIONS_DO_NOT_FIT,
-    reason: EXISTING_ACTIONS_DO_NOT_FIT_REASON,
-    metadata: { totalValidLandCoverSqm, existingActionsAreaSqm }
-  }
-}
 
 /**
  * How much an action still has available, in whatever it is measured by: land
@@ -74,9 +54,7 @@ function actionTransformer(action, calculation = null, showResults = false) {
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
     isAvailable,
-    unavailableReason: isAvailable
-      ? undefined
-      : unavailableReasonTransformer(calculation),
+    unavailableReason: isAvailable ? undefined : calculation?.unavailableReason,
     quantityRequired: action?.availability?.type !== TOTAL,
     displayUnit: action?.displayUnit,
     displayUnitPlural: action?.displayUnitPlural,

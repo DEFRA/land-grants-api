@@ -183,9 +183,12 @@ describe('Parcels Controller 2.0.0', () => {
   })
 
   describe('linear actions', () => {
-    // ST_Perimeter of NY8836-6516 in the seeded extract
+    // ST_Perimeter of each parcel in the seeded extract. SD6252-3622 is the
+    // shortest carrying agreements, and the two it has are areas
     const parcelId = 'NY8836-6516'
     const perimeterMeters = 2389
+    const shortParcelId = 'SD6252-3622'
+    const shortPerimeterMeters = 295
 
     const bnd1 = {
       enabled: true,
@@ -217,15 +220,27 @@ describe('Parcels Controller 2.0.0', () => {
       ]
     })
 
-    const availabilityOf = (data) => data.parcels[0].actions[0].availability
+    const actionOf = (data) => data.parcels[0].actions[0]
+    const availabilityOf = (data) => actionOf(data).availability
 
-    const requestActions = async () => {
+    const withMinimumLength = (minimumLengthM) => ({
+      ...bnd1,
+      rules: [
+        {
+          name: 'minimum-length',
+          description: `Is the applied for length at least ${minimumLengthM} m?`,
+          config: { minimumLengthM }
+        }
+      ]
+    })
+
+    const requestActions = async (target = parcelId) => {
       const { h, getResponse } = createResponseCapture()
 
       await ParcelsControllerV2.handler(
         {
           payload: {
-            parcelIds: [parcelId],
+            parcelIds: [target],
             fields: ['actions'],
             plannedActions: []
           },
@@ -241,6 +256,42 @@ describe('Parcels Controller 2.0.0', () => {
 
     beforeEach(() => {
       mockGetEnabledActions.mockResolvedValue([bnd1])
+    })
+
+    test('should offer no ceiling when agreements leave less than the minimum', async () => {
+      mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
+      mockGetAgreements.mockResolvedValue(
+        dalAgreement('BND2', perimeterMeters - 9)
+      )
+
+      const { data } = await requestActions()
+
+      expect(actionOf(data)).toEqual(
+        expect.objectContaining({
+          isAvailable: false,
+          availability: { unit: 'm', value: 0 },
+          unavailableReason: expect.objectContaining({
+            code: 'existing-actions-exceed-available-length'
+          })
+        })
+      )
+    })
+
+    test('should report a parcel whose whole perimeter is under the minimum as too short', async () => {
+      mockGetEnabledActions.mockResolvedValue([
+        withMinimumLength(shortPerimeterMeters + 5)
+      ])
+
+      const { data } = await requestActions(shortParcelId)
+
+      expect(actionOf(data)).toEqual(
+        expect.objectContaining({
+          isAvailable: false,
+          unavailableReason: expect.objectContaining({
+            code: 'parcel-too-short-for-action'
+          })
+        })
+      )
     })
 
     test('should report the whole perimeter when only an area agreement is recorded', async () => {
