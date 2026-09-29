@@ -17,3 +17,10 @@ const AREA_UNITS = new Set([HECTARES, SQM])
  * @returns {boolean}
  */
 export const isAreaUnit = (unit) => AREA_UNITS.has(unit ?? '')
+
+/**
+ * Whether a quantity in this unit competes for a parcel's boundary
+ * @param {string|undefined} unit
+ * @returns {boolean}
+ */
+export const isLengthUnit = (unit) => unit === METERS

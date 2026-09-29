@@ -1,6 +1,9 @@
 import * as dal from '~/src/services/dal/index.js'
 import * as db from '~/src/features/agreements/queries/getAgreementsForParcels.query.js'
-import { getAgreements } from '~/src/features/agreements/repo.js'
+import {
+  getAgreements,
+  agreementsForParcel
+} from '~/src/features/agreements/repo.js'
 
 vi.mock('~/src/features/agreements/queries/getAgreementsForParcels.query.js')
 vi.mock('~/src/services/dal/index.js')
@@ -81,5 +84,27 @@ describe('getAgreements', () => {
       mockLogger
     )
     expect(dal.getAgreements).toHaveBeenCalledWith(sbi, token, mockLogger)
+  })
+})
+
+describe('agreementsForParcel', () => {
+  const actions = [{ actionCode: 'UPL1', quantity: 10, unit: 'ha' }]
+
+  it('should return the actions held against the parcel', () => {
+    const agreements = { [fullParcelId]: actions }
+
+    expect(agreementsForParcel(agreements, { parcelId, sheetId })).toEqual(
+      actions
+    )
+  })
+
+  it('should return an empty array when the parcel has no agreements', () => {
+    expect(agreementsForParcel({}, { parcelId, sheetId })).toEqual([])
+  })
+
+  it('should key on parcel then sheet, not sheet then parcel', () => {
+    const agreements = { [`${sheetId}-${parcelId}`]: actions }
+
+    expect(agreementsForParcel(agreements, { parcelId, sheetId })).toEqual([])
   })
 })

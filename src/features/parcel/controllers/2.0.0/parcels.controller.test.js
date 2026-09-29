@@ -1,26 +1,44 @@
 import createTestServer from '~/src/tests/test-server.js'
 import { UnauthorizedError } from '~/src/services/dal/errors.js'
 import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { getActionsForParcel } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import {
-  getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired,
-  getActionsForParcelWithHEFERConsentRequired
-} from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+  getDisplayedActions,
+  getUnitByActionCode
+} from '~/src/features/parcel/service/2.0.0/action-units.js'
+import {
+  addSssiConsentRequired,
+  addHeferRequired
+} from '~/src/features/parcel/service/2.0.0/consent.service.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { parcel } from '~/src/features/parcel/index.js'
 
-vi.mock('~/src/features/agreements/repo.js')
+vi.mock('~/src/features/agreements/repo.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    getAgreements: vi.fn()
+  }
+})
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
-vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
+vi.mock(
+  '~/src/features/parcel/service/2.0.0/parcel.service.js',
+  async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+      ...actual,
+      getActionsForParcel: vi.fn()
+    }
+  }
+)
+vi.mock('~/src/features/parcel/service/2.0.0/consent.service.js')
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 
 const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
-const mockGetActionsForParcelWithSSSIConsentRequired =
-  getActionsForParcelWithSSSIConsentRequired
-const mockGetActionsForParcelWithHEFERConsentRequired =
-  getActionsForParcelWithHEFERConsentRequired
+const mockGetActionsForParcelWithSSSIConsentRequired = addSssiConsentRequired
+const mockGetActionsForParcelWithHEFERConsentRequired = addHeferRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
 
 const sbi = '012345678'
@@ -373,7 +391,10 @@ describe('Parcels Controller 2.0.0', () => {
           fields: ['actions.results']
         }),
         true,
-        mockEnabledActions,
+        {
+          displayedActions: getDisplayedActions(mockEnabledActions),
+          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+        },
         expect.any(Function),
         expect.anything(),
         defaultAgreements
@@ -451,14 +472,17 @@ describe('Parcels Controller 2.0.0', () => {
           fields: ['actions']
         }),
         false,
-        mockEnabledActions,
+        {
+          displayedActions: getDisplayedActions(mockEnabledActions),
+          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+        },
         expect.any(Function),
         expect.anything(),
         defaultAgreements
       )
     })
 
-    test('should return 200 and call getActionsForParcelWithSSSIConsentRequired when requesting actions.sssiConsentRequired with single parcel', async () => {
+    test('should return 200 and call addSssiConsentRequired when requesting actions.sssiConsentRequired with single parcel', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -530,7 +554,7 @@ describe('Parcels Controller 2.0.0', () => {
       ).not.toHaveBeenCalled()
     })
 
-    test('should not call getActionsForParcelWithSSSIConsentRequired when not requesting actions.sssiConsentRequired', async () => {
+    test('should not call addSssiConsentRequired when not requesting actions.sssiConsentRequired', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -569,7 +593,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect(response.statusCode).toBe(401)
     })
 
-    test('should return 200 and call getActionsForParcelWithHEFERConsentRequired when requesting actions.heferRequired', async () => {
+    test('should return 200 and call addHeferRequired when requesting actions.heferRequired', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -612,7 +636,7 @@ describe('Parcels Controller 2.0.0', () => {
       )
     })
 
-    test('should not call getActionsForParcelWithHEFERConsentRequired when not requesting actions.heferRequired', async () => {
+    test('should not call addHeferRequired when not requesting actions.heferRequired', async () => {
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
@@ -775,7 +799,10 @@ describe('Parcels Controller 2.0.0', () => {
           plannedActions
         }),
         false,
-        mockEnabledActions,
+        {
+          displayedActions: getDisplayedActions(mockEnabledActions),
+          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+        },
         expect.any(Function),
         expect.anything(),
         defaultAgreements
@@ -1180,7 +1207,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 when getActionsForParcelWithSSSIConsentRequired throws error', async () => {
+    test('should return 500 when addSssiConsentRequired throws error', async () => {
       mockGetActionsForParcelWithSSSIConsentRequired.mockRejectedValue(
         new Error('Failed to get SSSI consent required')
       )
@@ -1206,7 +1233,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should return 500 when getActionsForParcelWithHEFERConsentRequired throws error', async () => {
+    test('should return 500 when addHeferRequired throws error', async () => {
       mockGetActionsForParcelWithHEFERConsentRequired.mockRejectedValue(
         new Error('Failed to get HEFER consent required')
       )
@@ -1326,7 +1353,10 @@ describe('Parcels Controller 2.0.0', () => {
           fields: ['actions']
         }),
         false,
-        mockEnabledActions,
+        {
+          displayedActions: getDisplayedActions(mockEnabledActions),
+          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+        },
         expect.any(Function),
         expect.anything(),
         defaultAgreements

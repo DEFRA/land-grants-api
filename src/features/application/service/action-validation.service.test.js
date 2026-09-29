@@ -7,7 +7,7 @@ import { getAvailableAreaDataRequirements } from '~/src/features/available-area/
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
-import { plannedActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+import { areaActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { getLandData } from '~/src/features/parcel/queries/getLandData.query.js'
 import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
@@ -57,7 +57,7 @@ vi.mock('~/src/features/rules-engine/rulesEngine.js', () => ({
 vi.mock(
   '~/src/features/parcel/transformers/parcelActions.transformer.js',
   () => ({
-    plannedActionsTransformer: vi.fn()
+    areaActionsTransformer: vi.fn()
   })
 )
 vi.mock(
@@ -114,7 +114,7 @@ const mockGetAvailableAreaDataRequirements = vi.mocked(
 const mockFindMaximumAvailableArea = vi.mocked(findMaximumAvailableArea)
 const mockFormatExplanationSections = vi.mocked(formatExplanationSections)
 const mockExecuteRules = vi.mocked(executeRules)
-const mockPlannedActionsTransformer = vi.mocked(plannedActionsTransformer)
+const mockPlannedActionsTransformer = vi.mocked(areaActionsTransformer)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
 const mockGetDataLayerQueryAccumulated = vi.mocked(getDataLayerQueryAccumulated)
 const mockGetDataLayerQueryUnion = vi.mocked(getDataLayerQueryUnion)

@@ -29,6 +29,19 @@ export async function getAgreements(sbi, parcels, defraIdToken, db, logger) {
 }
 
 /**
- * @import { AgreementsByParcel } from '~/src/features/agreements/agreements.d.js'
+ * One parcel's agreement actions. AgreementsByParcel is keyed parcel-then-sheet,
+ * the inverse of how the composite key is usually written, so use this rather
+ * than building the key at the call site. The parcel is named rather than
+ * positional for the same reason: a missed key returns nothing, it does not fail.
+ * @param {AgreementsByParcel} agreements - Agreements keyed by parcelId-sheetId
+ * @param {{parcelId: string, sheetId: string}} parcel - The parcel to look up
+ * @returns {AgreementAction[]} The parcel's agreement actions, or an empty array
+ */
+export function agreementsForParcel(agreements, { parcelId, sheetId }) {
+  return agreements[`${parcelId}-${sheetId}`] ?? []
+}
+
+/**
+ * @import { AgreementsByParcel, AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { Logger } from '~/src/features/common/logger.d.js'
  */
