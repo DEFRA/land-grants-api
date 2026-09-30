@@ -1,7 +1,16 @@
-import { PublishCommand, SNSClient } from '@aws-sdk/client-sns'
+import { SNSClient } from '@aws-sdk/client-sns'
+import { publishAuditEvent } from '@defra/fcp-audit-publisher'
+
 import { config } from '~/src/config/index.js'
 import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
 import { extractIp } from '~/src/features/common/helpers/request-ip.js'
+
+export class InvalidEventType extends Error {
+  constructor(eventType) {
+    super(`Invalid audit event type: ${eventType}`)
+    this.eventType = eventType
+  }
+}
 
 /**
  * Resolves the correlation id to record on audit events from the tracing header.
@@ -27,11 +36,13 @@ export const AuditEvent = Object.freeze({
 })
 
 // Human-readable description for each audit event, used in security.details.message
-const eventMessages = {
+export const eventMessages = {
   [AuditEvent.SFI_PAYMENT_CALCULATED]: 'Payment calculation completed',
   [AuditEvent.SFI_APPLICATION_VALIDATED]:
     'Application eligibility validation completed',
   [AuditEvent.WMP_PAYMENT_CALCULATED]: 'WMP payment calculation completed',
+  [AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED]:
+    'WMP total payment calculation completed',
   [AuditEvent.WMP_VALIDATED]: 'WMP validation completed'
 }
 
@@ -42,36 +53,44 @@ const eventTransactionCodes = {}
 // one yet - they are not forwarded to the SOC, so they carry no security block.
 const eventPmcCodes = {}
 
-// Audit event type for each audit event, used in audit.eventtype
-const eventTypes = {
+// Audit event type for each audit event, sent as details.eventType
+export const eventTypes = {
   [AuditEvent.SFI_PAYMENT_CALCULATED]: 'GrantsPaymentCalculated',
   [AuditEvent.SFI_APPLICATION_VALIDATED]: 'GrantsApplicationValidated',
   [AuditEvent.WMP_PAYMENT_CALCULATED]: 'GrantsWmpPaymentCalculated',
+  [AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED]: 'GrantsWmpPaymentTotalCalculated',
   [AuditEvent.WMP_VALIDATED]: 'GrantsWmpValidated'
 }
 
 // Entities for each audit event, used in audit.entities
-// action must be one of: created, read, updated, deleted, submitted, accepted, rejected, withdrawn
-const eventEntities = {
-  [AuditEvent.SFI_PAYMENT_CALCULATED]: (context) => [
-    { entity: 'payment', action: 'read', entityid: context.applicationId }
+// N.B. entityid can be an empty string when no logical ID is present, but cannot be undefined
+export const eventEntities = {
+  [AuditEvent.SFI_PAYMENT_CALCULATED]: () => [
+    { entity: 'paymentSchedule', action: 'calculate', entityid: '' }
   ],
   [AuditEvent.SFI_APPLICATION_VALIDATED]: (context) => [
     {
       entity: 'application',
-      action: 'created',
+      action: 'create',
       entityid: context.applicationId
     }
   ],
-  [AuditEvent.WMP_PAYMENT_CALCULATED]: (context) => [
+  [AuditEvent.WMP_PAYMENT_CALCULATED]: () => [
     {
-      entity: 'payment',
-      action: 'read',
-      entityid: context.parcelIds?.join(',')
+      entity: 'paymentSchedule',
+      action: 'calculate',
+      entityid: ''
     }
   ],
-  [AuditEvent.WMP_VALIDATED]: (context) => [
-    { entity: 'wmp', action: 'read', entityid: context.parcelIds?.join(',') }
+  [AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED]: () => [
+    {
+      entity: 'paymentSchedule',
+      action: 'calculate',
+      entityid: ''
+    }
+  ],
+  [AuditEvent.WMP_VALIDATED]: () => [
+    { entity: 'wmp', action: 'validate', entityid: '' }
   ]
 }
 
@@ -91,18 +110,23 @@ const buildAuditPayload = (
   // Events are only forwarded to the SOC once a pmc code has been agreed
   // with the security team; until then the payload carries no `security`
   // block at all (not just one with empty/undefined fields).
-  const hasSecurity = eventPmcCodes[event] != null
+  const hasSecurity = eventPmcCodes[event] !== undefined
+  const entitiesFunc = eventEntities[event]
+
+  if (!entitiesFunc) {
+    throw new InvalidEventType(event)
+  }
 
   return {
-    sessionid: context.sessionId,
-    user: context.user,
+    application: 'Grants',
+    component: config.get('serviceName'),
     correlationid: context.correlationId,
     datetime: new Date().toISOString(),
     environment: `cdp-${config.get('cdpEnvironment')}`,
-    version: '0.1.0',
-    application: 'Grants',
-    component: config.get('serviceName'),
     ip: extractIp(request),
+    sessionid: context.sessionId,
+    user: context.user,
+    version: '0.1.0',
 
     ...(hasSecurity && {
       security: {
@@ -117,10 +141,9 @@ const buildAuditPayload = (
     }),
 
     audit: {
-      eventtype: eventTypes[event],
-      entities: eventEntities[event]?.(context) ?? [],
+      entities: entitiesFunc(context),
       status,
-      details: context,
+      details: { eventType: eventTypes[event], ...context },
       accounts: {
         sbi: context.identifiers?.sbi,
         frn: context.identifiers?.frn,
@@ -158,21 +181,20 @@ export const auditEvent = async (
   request = null
 ) => {
   const logger = createLogger()
-  const auditPayload = JSON.stringify(
-    buildAuditPayload(event, context, status, request)
-  )
+  const auditPayload = buildAuditPayload(event, context, status, request)
+  const client = getSnsClient()
+
+  const auditConfig = {
+    snsClient: client,
+    sns: { topicArn: config.get('sns.auditTopicArn') },
+    generateCorrelationId: false
+  }
+
   try {
-    await getSnsClient().send(
-      new PublishCommand({
-        TopicArn: config.get('sns.auditTopicArn'),
-        Message: auditPayload
-      })
-    )
+    await publishAuditEvent(auditPayload, auditConfig)
+
     logger.info(`Audit event successfully published: ${event}`)
   } catch (error) {
-    logger.warn(
-      error,
-      `Failed to publish audit event: ${event} ${auditPayload}`
-    )
+    logger.error(error, `Failed to publish audit event: ${event}`)
   }
 }
