@@ -8,6 +8,8 @@ import { parse } from 'csv-parse/sync'
 // Generates a gzipped Liquibase SQL file that replaces the contents of land_cover_codes_actions
 // with the rows of the land_cover_codes_actions.csv produced by generate-land-cover-codes-actions.js.
 
+const COLUMNS = ['action code', 'land cover code', 'land cover class code']
+
 main().catch((error) => {
   console.error(error.message)
   process.exitCode = 1
@@ -36,6 +38,8 @@ async function main() {
     throw new Error(`No rows found in ${inputPath}`)
   }
 
+  assertColumns(rows, COLUMNS, inputPath)
+
   const values = rows.map(
     (row) =>
       `  (${[
@@ -62,6 +66,26 @@ async function main() {
   await fs.writeFile(outputPath, gzipSync(sql))
 
   console.log(`Generated ${rows.length} rows in ${outputPath}`)
+}
+
+/**
+ * Throws if the CSV does not contain the expected columns. Without this a
+ * mis-named header writes the string 'undefined' into the migration silently.
+ * @param {Record<string, string>[]} rows - Parsed CSV rows.
+ * @param {string[]} columns - Expected column names.
+ * @param {string} inputPath - Path used in the error message.
+ */
+function assertColumns(rows, columns, inputPath) {
+  const actualColumns = Object.keys(rows[0] ?? {})
+  const missingColumns = columns.filter(
+    (column) => !actualColumns.includes(column)
+  )
+
+  if (missingColumns.length > 0) {
+    throw new Error(
+      `${inputPath} is missing column(s): ${missingColumns.join(', ')}`
+    )
+  }
 }
 
 /**
