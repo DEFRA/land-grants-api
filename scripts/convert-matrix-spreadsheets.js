@@ -212,6 +212,10 @@ function buildLandCodesRows(rows) {
     }
   }
 
+  if (uniqueRows.size === 0) {
+    throw new Error('No land use matrix rows found')
+  }
+
   return [...uniqueRows.values()]
 }
 
