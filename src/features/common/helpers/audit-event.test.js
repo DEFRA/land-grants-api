@@ -1,3 +1,10 @@
+import { publishAuditEvent } from '@defra/fcp-audit-publisher'
+
+const { validateAuditEvent } = await vi.importActual(
+  '@defra/fcp-audit-publisher'
+)
+const topicArn = 'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api'
+
 const mockConfigGet = vi.hoisted(() =>
   vi.fn((key) => {
     const configMap = {
@@ -5,8 +12,7 @@ const mockConfigGet = vi.hoisted(() =>
       serviceName: 'land-grants-api',
       'aws.region': 'eu-west-2',
       'sns.endpoint': 'http://localhost:4566',
-      'sns.auditTopicArn':
-        'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api',
+      'sns.auditTopicArn': topicArn,
       'tracing.header': 'x-cdp-request-id'
     }
     return configMap[key]
@@ -15,6 +21,13 @@ const mockConfigGet = vi.hoisted(() =>
 
 const mockExtractIp = vi.hoisted(() => vi.fn())
 
+const EVENT_TYPE = 'SFI_PAYMENT_CALCULATED'
+
+function getPublishedPayload() {
+  return publishAuditEvent.mock.lastCall[0]
+}
+
+vi.mock('@defra/fcp-audit-publisher')
 vi.mock('~/src/config/index.js', () => ({ config: { get: mockConfigGet } }))
 
 vi.mock('~/src/features/common/helpers/request-ip.js', () => ({
@@ -22,22 +35,24 @@ vi.mock('~/src/features/common/helpers/request-ip.js', () => ({
 }))
 
 describe('AuditEvent', () => {
-  let AuditEvent
+  let AuditEvent, eventMessages, eventTypes, eventEntities
 
   beforeEach(async () => {
     vi.resetModules()
     vi.doMock('@aws-sdk/client-sns', () => ({
       SNSClient: vi.fn().mockImplementation(function () {
         this.send = vi.fn().mockResolvedValue({})
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
       })
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
-      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+      createLogger: vi.fn(() => ({
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn()
+      }))
     }))
-    ;({ AuditEvent } = await import('./audit-event.js'))
+    ;({ AuditEvent, eventEntities, eventMessages, eventTypes } =
+      await import('./audit-event.js'))
   })
 
   afterEach(() => {
@@ -45,17 +60,21 @@ describe('AuditEvent', () => {
     vi.clearAllMocks()
   })
 
-  test('is frozen', () => {
-    expect(Object.isFrozen(AuditEvent)).toBe(true)
-  })
-
-  test('contains expected event keys', () => {
-    expect(AuditEvent.SFI_PAYMENT_CALCULATED).toBe('SFI_PAYMENT_CALCULATED')
-    expect(AuditEvent.SFI_APPLICATION_VALIDATED).toBe(
-      'SFI_APPLICATION_VALIDATED'
-    )
-    expect(AuditEvent.WMP_PAYMENT_CALCULATED).toBe('WMP_PAYMENT_CALCULATED')
-    expect(AuditEvent.WMP_VALIDATED).toBe('WMP_VALIDATED')
+  test('event configs are present for all event types', () => {
+    Object.values(AuditEvent).forEach((eventType) => {
+      expect(
+        eventEntities[eventType],
+        `eventEntities[${eventType}] should exist`
+      ).not.toBeUndefined()
+      expect(
+        eventMessages[eventType],
+        `eventMessages[${eventType}] should exist`
+      ).not.toBeUndefined()
+      expect(
+        eventTypes[eventType],
+        `eventTypes[${eventType}] should exist`
+      ).not.toBeUndefined()
+    })
   })
 
   test('cannot be mutated', () => {
@@ -68,31 +87,24 @@ describe('AuditEvent', () => {
 
 describe('auditEvent', () => {
   let auditEvent
-  let mockSend
+  let InvalidEventType
   let mockLogger
   let SNSClient
-  let PublishCommand
-
-  const UNMAPPED_EVENT = 'SOME_EVENT_NOT_YET_WIRED_UP'
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn().mockResolvedValue({})
-    mockLogger = { info: vi.fn(), warn: vi.fn() }
+    mockLogger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
     mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => mockLogger)
     }))
-    ;({ auditEvent } = await import('./audit-event.js'))
-    ;({ SNSClient, PublishCommand } = await import('@aws-sdk/client-sns'))
+    ;({ auditEvent, InvalidEventType } = await import('./audit-event.js'))
+    ;({ SNSClient } = await import('@aws-sdk/client-sns'))
+
+    publishAuditEvent.mockImplementation(null)
   })
 
   afterEach(() => {
@@ -100,13 +112,8 @@ describe('auditEvent', () => {
     vi.clearAllMocks()
   })
 
-  const getPublishedPayload = () => {
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    return JSON.parse(publishCommandInstance.input.Message)
-  }
-
   test('creates SNSClient with correct region and endpoint', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(EVENT_TYPE, {})
 
     expect(SNSClient).toHaveBeenCalledWith({
       region: 'eu-west-2',
@@ -115,12 +122,11 @@ describe('auditEvent', () => {
   })
 
   test('publishes to the correct topic ARN', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(EVENT_TYPE, {})
 
-    expect(PublishCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        TopicArn: 'arn:aws:sns:eu-west-2:000000000000:fcp_audit_land_grants_api'
-      })
+    expect(publishAuditEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ sns: { topicArn } })
     )
   })
 
@@ -131,13 +137,12 @@ describe('auditEvent', () => {
       user: 'test.user@defra.gov.uk'
     }
 
-    await auditEvent(UNMAPPED_EVENT, context)
+    await auditEvent(EVENT_TYPE, context)
 
     expect(getPublishedPayload()).toMatchObject({
       sessionid: 'session-abc',
       user: 'test.user@defra.gov.uk',
       correlationid: 'corr-xyz',
-      datetime: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       environment: 'cdp-test',
       application: 'Grants',
       component: 'land-grants-api'
@@ -145,7 +150,7 @@ describe('auditEvent', () => {
   })
 
   test('sessionid and user are undefined when absent from context', async () => {
-    await auditEvent(UNMAPPED_EVENT, { correlationId: 'corr-xyz' })
+    await auditEvent(EVENT_TYPE, { correlationId: 'corr-xyz' })
 
     const payload = getPublishedPayload()
     expect(payload.sessionid).toBeUndefined()
@@ -153,7 +158,7 @@ describe('auditEvent', () => {
   })
 
   test('omits the security block entirely for an event with no pmc code', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(EVENT_TYPE, {})
 
     expect(getPublishedPayload().security).toBeUndefined()
   })
@@ -164,13 +169,14 @@ describe('auditEvent', () => {
       identifiers: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
     }
 
-    await auditEvent(UNMAPPED_EVENT, context)
+    await auditEvent(EVENT_TYPE, context)
 
     const { audit } = getPublishedPayload()
 
-    expect(audit.eventtype).toBeUndefined()
     expect(audit).toMatchObject({
-      entities: [],
+      entities: [
+        { action: 'calculate', entity: 'paymentSchedule', entityid: '' }
+      ],
       status: 'success',
       details: context,
       accounts: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
@@ -178,7 +184,7 @@ describe('auditEvent', () => {
   })
 
   test('audit.accounts populates only known fields', async () => {
-    await auditEvent(UNMAPPED_EVENT, {
+    await auditEvent(EVENT_TYPE, {
       identifiers: { sbi: 111111111 }
     })
 
@@ -193,73 +199,55 @@ describe('auditEvent', () => {
     mockExtractIp.mockReturnValue('10.0.0.5')
     const mockRequest = { headers: { 'x-forwarded-for': '10.0.0.5' } }
 
-    await auditEvent(UNMAPPED_EVENT, {}, 'success', mockRequest)
+    await auditEvent(EVENT_TYPE, {}, 'success', mockRequest)
 
     expect(mockExtractIp).toHaveBeenCalledWith(mockRequest)
     expect(getPublishedPayload().ip).toBe('10.0.0.5')
   })
 
   test('ip is populated from extractIp(null) when no request is available', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(EVENT_TYPE, {})
 
     expect(mockExtractIp).toHaveBeenCalledWith(null)
     expect(getPublishedPayload().ip).toBe('192.168.1.100')
   })
 
   test('passes failure status through to the published payload', async () => {
-    await auditEvent(UNMAPPED_EVENT, {}, 'failure')
+    await auditEvent(EVENT_TYPE, {}, 'failure')
 
-    expect(getPublishedPayload().audit.status).toBe('failure')
+    const payload = getPublishedPayload()
+    expect(payload.audit.status).toBe('failure')
   })
 
-  test('handles empty context gracefully', async () => {
-    await auditEvent(UNMAPPED_EVENT)
+  test('will fail audit event validation and be rejected when context is empty', async () => {
+    await auditEvent(EVENT_TYPE)
 
     const payload = getPublishedPayload()
     expect(payload.correlationid).toBeUndefined()
-    expect(payload.audit.entities).toEqual([])
+    expect(validateAuditEvent(payload).valid).toBe(false)
   })
 
   test('defaults status to success when not provided', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
+    await auditEvent(EVENT_TYPE, {})
 
     expect(getPublishedPayload().audit.status).toBe('success')
   })
 
-  test('message is valid JSON', async () => {
-    await auditEvent(UNMAPPED_EVENT, {})
-
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    expect(() => JSON.parse(publishCommandInstance.input.Message)).not.toThrow()
-  })
-
-  test('logs info when the audit event is successfully published', async () => {
-    const context = { correlationId: 'corr-xyz' }
-
-    await auditEvent(UNMAPPED_EVENT, context)
-
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Audit event successfully published: ${UNMAPPED_EVENT}`
-    )
+  test('throws InvalidEventType when event type is unknown', async () => {
+    const t = 'SOME_UNKNOWN_EVENT_TYPE'
+    await expect(auditEvent(t, {})).rejects.toThrow(new InvalidEventType(t))
   })
 })
 
 describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
   let auditEvent
   let AuditEvent
-  let mockSend
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn().mockResolvedValue({})
     mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
@@ -271,11 +259,6 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
     vi.resetModules()
     vi.clearAllMocks()
   })
-
-  const getPublishedPayload = () => {
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    return JSON.parse(publishCommandInstance.input.Message)
-  }
 
   test('does not include a security block', async () => {
     await auditEvent(AuditEvent.SFI_PAYMENT_CALCULATED, {
@@ -298,12 +281,14 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
-      eventtype: 'GrantsPaymentCalculated',
-      entities: [{ entity: 'payment', action: 'read', entityid: 'app-1' }],
+      entities: [
+        { entity: 'paymentSchedule', action: 'calculate', entityid: '' }
+      ],
       status: 'success',
-      details: context,
+      details: { eventType: 'GrantsPaymentCalculated', ...context },
       accounts: { sbi: 123456789 }
     })
+    expect(validateAuditEvent(payload).valid).toBe(true)
   })
 
   test('is traceable to a named user and session when provided', async () => {
@@ -335,19 +320,12 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
 describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
   let auditEvent
   let AuditEvent
-  let mockSend
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn().mockResolvedValue({})
     mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
@@ -359,11 +337,6 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
     vi.resetModules()
     vi.clearAllMocks()
   })
-
-  const getPublishedPayload = () => {
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    return JSON.parse(publishCommandInstance.input.Message)
-  }
 
   test('does not include a security block', async () => {
     await auditEvent(AuditEvent.SFI_APPLICATION_VALIDATED, {
@@ -401,33 +374,26 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
-      eventtype: 'GrantsApplicationValidated',
       entities: [
-        { entity: 'application', action: 'created', entityid: 'app-1' }
+        { entity: 'application', action: 'create', entityid: 'app-1' }
       ],
       status: 'success',
-      details: context,
+      details: { eventType: 'GrantsApplicationValidated', ...context },
       accounts: { sbi: 123456789, crn: 'CRN-001' }
     })
+    expect(validateAuditEvent(payload).valid).toBe(true)
   })
 })
 
 describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
   let auditEvent
   let AuditEvent
-  let mockSend
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn().mockResolvedValue({})
     mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
@@ -439,11 +405,6 @@ describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
     vi.resetModules()
     vi.clearAllMocks()
   })
-
-  const getPublishedPayload = () => {
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    return JSON.parse(publishCommandInstance.input.Message)
-  }
 
   test('does not include a security block', async () => {
     await auditEvent(AuditEvent.WMP_PAYMENT_CALCULATED, {
@@ -465,44 +426,29 @@ describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
-      eventtype: 'GrantsWmpPaymentCalculated',
       entities: [
         {
-          entity: 'payment',
-          action: 'read',
-          entityid: 'SX067-99238,SX067-99239'
+          entity: 'paymentSchedule',
+          action: 'calculate',
+          entityid: ''
         }
       ],
       status: 'success',
-      details: context
+      details: { eventType: 'GrantsWmpPaymentCalculated', ...context }
     })
-  })
-
-  test('entity id is undefined when parcelIds is absent', async () => {
-    await auditEvent(AuditEvent.WMP_PAYMENT_CALCULATED, {})
-
-    expect(getPublishedPayload().audit.entities).toEqual([
-      { entity: 'payment', action: 'read', entityid: undefined }
-    ])
+    expect(validateAuditEvent(payload).valid).toBe(true)
   })
 })
 
-describe('auditEvent - WMP_VALIDATED', () => {
+describe('auditEvent - WMP_PAYMENT_TOTAL_CALCULATED', () => {
   let auditEvent
   let AuditEvent
-  let mockSend
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn().mockResolvedValue({})
     mockExtractIp.mockReturnValue('192.168.1.100')
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
@@ -515,10 +461,60 @@ describe('auditEvent - WMP_VALIDATED', () => {
     vi.clearAllMocks()
   })
 
-  const getPublishedPayload = () => {
-    const [publishCommandInstance] = mockSend.mock.calls[0]
-    return JSON.parse(publishCommandInstance.input.Message)
-  }
+  test('does not include a security block', async () => {
+    await auditEvent(AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED, {
+      parcelIds: ['SX067-99238']
+    })
+
+    expect(getPublishedPayload().security).toBeUndefined()
+  })
+
+  test('publishes correct audit fields, including the WMP payment calculation details', async () => {
+    const context = {
+      correlationId: 'corr-xyz',
+      parcelIds: ['SX067-99238', 'SX067-99239'],
+      request: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 },
+      response: { agreementTotalPence: 150000 }
+    }
+
+    await auditEvent(AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED, context)
+
+    const payload = getPublishedPayload()
+    expect(payload.audit).toMatchObject({
+      entities: [
+        {
+          entity: 'paymentSchedule',
+          action: 'calculate',
+          entityid: ''
+        }
+      ],
+      status: 'success',
+      details: { eventType: 'GrantsWmpPaymentTotalCalculated', ...context }
+    })
+    expect(validateAuditEvent(payload).valid).toBe(true)
+  })
+})
+
+describe('auditEvent - WMP_VALIDATED', () => {
+  let auditEvent
+  let AuditEvent
+
+  beforeEach(async () => {
+    vi.resetModules()
+    mockExtractIp.mockReturnValue('192.168.1.100')
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn()
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn() }))
+    }))
+    ;({ auditEvent, AuditEvent } = await import('./audit-event.js'))
+  })
+
+  afterEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
 
   test('does not include a security block', async () => {
     await auditEvent(AuditEvent.WMP_VALIDATED, {
@@ -539,11 +535,11 @@ describe('auditEvent - WMP_VALIDATED', () => {
 
     const payload = getPublishedPayload()
     expect(payload.audit).toMatchObject({
-      eventtype: 'GrantsWmpValidated',
-      entities: [{ entity: 'wmp', action: 'read', entityid: 'SX067-99238' }],
+      entities: [{ entity: 'wmp', action: 'validate', entityid: '' }],
       status: 'success',
-      details: context
+      details: { eventType: 'GrantsWmpValidated', ...context }
     })
+    expect(validateAuditEvent(payload).valid).toBe(true)
   })
 })
 
@@ -573,24 +569,15 @@ describe('getCorrelationId', () => {
 
 describe('auditEvent error handling', () => {
   let auditEvent
-  let mockSend
   let mockLogger
-
-  const UNMAPPED_EVENT = 'SOME_EVENT_NOT_YET_WIRED_UP'
 
   beforeEach(async () => {
     vi.resetModules()
-    mockSend = vi.fn()
-    mockLogger = { info: vi.fn(), warn: vi.fn() }
+    mockLogger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() }
     mockExtractIp.mockReturnValue('192.168.1.100')
 
     vi.doMock('@aws-sdk/client-sns', () => ({
-      SNSClient: vi.fn().mockImplementation(function () {
-        this.send = mockSend
-      }),
-      PublishCommand: vi.fn().mockImplementation(function (input) {
-        this.input = input
-      })
+      SNSClient: vi.fn()
     }))
     vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
       createLogger: vi.fn(() => mockLogger)
@@ -603,39 +590,9 @@ describe('auditEvent error handling', () => {
     vi.clearAllMocks()
   })
 
-  test('logs warning when SNS publish fails', async () => {
-    const testError = new Error('SNS publish failed')
-    const context = { correlationId: 'corr-xyz' }
-    mockSend.mockRejectedValue(testError)
-
-    await auditEvent(UNMAPPED_EVENT, context)
-
-    const publishedMessage = mockSend.mock.calls[0][0].input.Message
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      testError,
-      `Failed to publish audit event: ${UNMAPPED_EVENT} ${publishedMessage}`
-    )
-  })
-
   test('does not throw when SNS publish fails', async () => {
-    mockSend.mockRejectedValue(new Error('SNS publish failed'))
+    publishAuditEvent.mockRejectedValue(new Error('SNS publish failed'))
 
-    await expect(auditEvent(UNMAPPED_EVENT, {})).resolves.not.toThrow()
-  })
-
-  test('handles AWS SDK errors gracefully', async () => {
-    const awsError = new Error('AccessDenied')
-    awsError.code = 'AccessDenied'
-    mockSend.mockRejectedValue(awsError)
-
-    await auditEvent(UNMAPPED_EVENT, {})
-
-    const publishedMessage = mockSend.mock.calls[0][0].input.Message
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      awsError,
-      `Failed to publish audit event: ${UNMAPPED_EVENT} ${publishedMessage}`
-    )
+    await expect(auditEvent(EVENT_TYPE, {})).resolves.not.toThrow()
   })
 })
