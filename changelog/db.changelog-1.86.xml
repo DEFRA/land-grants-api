@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="update-land-cover-codes-actions-sfi-2026" author="system">
+    <comment>Replace land cover codes actions with the SFI 2026 Land Use Application matrix (includes _26 option codes)</comment>
+    <sqlFile path="land-cover-codes-actions-v3.sql" splitStatements="true" relativeToChangelogFile="true" stripComments="true"/>
+  </changeSet>
+</databaseChangeLog>
