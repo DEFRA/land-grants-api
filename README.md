@@ -102,22 +102,22 @@ npm run dev:setup
 
 #### Ingest data into your local database
 
-In order to ingest data into your database, edit the file `scripts/local-ingest`, and set the path to you data directory, currently set to `./ingestion-data/data/`.
+The local ingest reads from `./src/land-data`, set as `ingestDataFolder` in `scripts/local-ingest-service.js`. Each resource has a folder named after it, and those names must match the entries in `ENTITY_TYPES` (`src/features/common/constants/entity_types.js`).
 
 We support the ingestion of the following resources:
 
-- ingestion-data
-  - data
-    - parcels
-    - covers
-    - moorland
-    - agreements
-    - compatibility_matrix
-    - sssi
-    - registered_battlefields
-    - shine
-    - scheduled_monuments
-    - registered_parks_gardens
+- src/land-data
+  - land_parcels
+  - land_covers
+  - moorland_designations
+  - agreements
+  - compatibility_matrix
+  - sssi
+  - registered_battlefields
+  - shine
+  - scheduled_monuments
+  - registered_parks_gardens
+  - action_sssi_hf_mapping
 
 Run the local ingest script for each resource type:
 
