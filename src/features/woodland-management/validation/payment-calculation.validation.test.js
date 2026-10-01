@@ -1,8 +1,8 @@
 import { validatePaymentCalculationRequest } from './payment-calculation.validation.js'
-import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import { splitParcelId } from '~/src/features/parcel/helpers/parcel-id.js'
 import { getAndValidateParcels } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 
-vi.mock('~/src/features/parcel/service/2.0.0/parcel.service.js')
+vi.mock('~/src/features/parcel/helpers/parcel-id.js')
 vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 
 describe('validatePaymentCalculationRequest', () => {
@@ -52,8 +52,8 @@ describe('validatePaymentCalculationRequest', () => {
     await validatePaymentCalculationRequest(parcelIds, mockRequest)
 
     expect(splitParcelId).toHaveBeenCalledTimes(2)
-    expect(splitParcelId).toHaveBeenCalledWith('SX067-99238', mockLogger)
-    expect(splitParcelId).toHaveBeenCalledWith('SX067-99239', mockLogger)
+    expect(splitParcelId).toHaveBeenCalledWith('SX067-99238')
+    expect(splitParcelId).toHaveBeenCalledWith('SX067-99239')
   })
 
   test('should pass the mapped parcels and request to getAndValidateParcels', async () => {

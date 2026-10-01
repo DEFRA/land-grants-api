@@ -15,7 +15,7 @@ import { validateWoodlandManagementPlan } from '../service/wmp-service.js'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
-import { splitParcelId } from '../../parcel/service/2.0.0/parcel.service.js'
+import { splitParcelId } from '../../parcel/helpers/parcel-id.js'
 import {
   AuditEvent,
   auditEvent,
@@ -71,7 +71,7 @@ export const ValidateWMPController = {
       })
 
       const parcelSheetIds = parcelIds.map((parcelId) =>
-        splitParcelId(parcelId, request.logger)
+        splitParcelId(parcelId)
       )
       const { parcels, errors } = await getAndValidateParcels(
         parcelSheetIds,

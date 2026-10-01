@@ -7,14 +7,14 @@ import { sizeTransformer } from '../parcelActions.transformer.js'
  * for land, the length result for a boundary, plus the reason when it put the
  * action out of reach. Every field is optional because which of them is present
  * depends on which calculation ran.
- * @typedef {Partial<AvailableAreaForAction & AvailableLength> & {unavailableReason?: object}} ActionAvailability
+ * @typedef {Partial<AvailableAreaForAction & AvailableLength> & {unavailableReason?: object}} ActionCalculation
  */
 
 /**
  * How much an action still has available, in whatever it is measured by: land
  * in hectares or square metres, or boundary in metres for a linear action.
  * @param {string} unit - The action's application unit of measurement
- * @param {ActionAvailability | null} calculation - The calculation that ran for it
+ * @param {ActionCalculation | null} calculation - The calculation that ran for it
  * @returns {number | undefined} The quantity still available
  */
 function availableQuantity(unit, calculation) {
@@ -28,20 +28,32 @@ function availableQuantity(unit, calculation) {
 }
 
 /**
+ * What an action reports as still available, in its own unit. A calculation
+ * that produced no usable figure reports null rather than a number nobody
+ * worked out.
+ * @param {Action} action - The action being reported
+ * @param {ActionCalculation | null} calculation - The calculation that ran for it
+ * @returns {{unit: string, value: number|null}} The availability to report
+ */
+function actionAvailability(action, calculation) {
+  const unit = action.applicationUnitOfMeasurement
+
+  const quantity = availableQuantity(unit, calculation)
+
+  const hasQuantity = quantity !== undefined && Number.isFinite(quantity)
+
+  return hasQuantity ? sizeTransformer(quantity, unit) : { unit, value: null }
+}
+
+/**
  * Transform parcel and actions to land parcel and actions for v2
  * @param {Action} action - The actions to merge
- * @param {ActionAvailability | null} calculation - The availability calculation that ran for this action's unit
+ * @param {ActionCalculation | null} calculation - The availability calculation that ran for this action's unit
  * @param {boolean} showResults - Whether to include results
  * @returns {object} The land action data with available area
  */
 function actionTransformer(action, calculation = null, showResults = false) {
-  const unit = action.applicationUnitOfMeasurement
-  const quantity = availableQuantity(unit, calculation)
-
-  const availability =
-    quantity !== undefined && Number.isFinite(quantity)
-      ? sizeTransformer(quantity, unit)
-      : { unit, value: null }
+  const availability = actionAvailability(action, calculation)
 
   // A count action runs no calculation at all and a length one reports no
   // feasibility, so only an explicit false means the land could not be arranged.

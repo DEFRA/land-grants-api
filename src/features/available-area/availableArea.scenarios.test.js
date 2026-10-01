@@ -15,8 +15,8 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
       { applyingForAction, existingActions, expectedAvailableArea },
       { compatibilityCheckFn, dataRequirements }
     ) => {
-      // Recreate the aacDataRequirements object with the pre-computed data
-      const aacDataRequirements = {
+      // Recreate the availableAreaDataRequirements object with the pre-computed data
+      const availableAreaDataRequirements = {
         landCoverCodesForAppliedForAction:
           dataRequirements.landCoverCodesForAppliedForAction,
         landCoversForParcel: dataRequirements.landCoversForParcel,
@@ -35,7 +35,7 @@ describe('Available Area Calculation Service - Scenario Tests', () => {
         applyingForAction,
         existingActions,
         compatibilityCheckFn,
-        aacDataRequirements
+        availableAreaDataRequirements
       )
       console.log(`Tested scenario: ${name}`)
       const sections = formatExplanationSections(result.context, {

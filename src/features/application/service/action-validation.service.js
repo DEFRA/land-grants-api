@@ -19,10 +19,11 @@ import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaI
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { getSdaIntersectPercentage } from '~/src/features/parcel/queries/getSdaIntersectPercentage.js'
 import { haToSqm } from '~/src/features/common/helpers/measurement.js'
-import { plannedActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
+import { areaActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getAvailableLength } from '../../available-length/availableLength.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import { getLandParcelBoundary } from '../../parcel/queries/getParcelBoundary.query.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 /**
@@ -70,11 +71,11 @@ async function getAvailableArea(
   // Agreements arrive in every unit; only area-based ones compete for area.
   const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
   const existingActions = [
-    ...plannedActionsTransformer(areaAgreements),
+    ...areaActionsTransformer(areaAgreements),
     ...siblingActions
   ]
 
-  const aacDataRequirements = await getAvailableAreaDataRequirements(
+  const availableAreaDataRequirements = await getAvailableAreaDataRequirements(
     action.code,
     landAction.sheetId,
     landAction.parcelId,
@@ -87,7 +88,7 @@ async function getAvailableArea(
     action.code,
     existingActions,
     compatibilityCheckFn,
-    aacDataRequirements
+    availableAreaDataRequirements
   )
 
   return {
@@ -96,7 +97,7 @@ async function getAvailableArea(
       targetAction: action.code,
       availableAreaSqm: lpResult.availableAreaSqm,
       totalValidLandCoverSqm: lpResult.totalValidLandCoverSqm,
-      landCoverToString: aacDataRequirements.landCoverToString,
+      landCoverToString: availableAreaDataRequirements.landCoverToString,
       feasible: lpResult.feasible
     })
   }
@@ -141,14 +142,24 @@ export const validateLandAction = async (
       request
     )
   }
+
   if (unit === METERS) {
-    availableLength = await getAvailableLength(
+    const boundary = await getLandParcelBoundary(
+      landAction.sheetId,
+      landAction.parcelId,
+      request.server.postgresDb,
+      request.logger
+    )
+
+    const boundaryLengthMeters = boundary?.boundaryLengthMeters ?? 0
+
+    availableLength = getAvailableLength(
       action,
       actions,
       agreements,
       compatibilityCheckFn,
       landAction,
-      request
+      boundaryLengthMeters
     )
   }
 
@@ -163,6 +174,7 @@ export const validateLandAction = async (
   )
 
   const ruleToExecute = actions.find((a) => a.code === action.code)
+
   const ruleResult = executeRules(
     rules,
     {
@@ -173,6 +185,7 @@ export const validateLandAction = async (
     },
     ruleToExecute?.rules
   )
+
   return actionResultTransformer(action, actions, availableArea, ruleResult)
 }
 

@@ -1,10 +1,10 @@
 import * as parcelValidation from './parcel.validation.js'
-import { splitParcelId } from '../../service/2.0.0/parcel.service.js'
+import { splitParcelId } from '../../helpers/parcel-id.js'
 import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getLandData } from '../../queries/getLandData.query.js'
 
 // Mock the dependencies
-vi.mock('../../service/2.0.0/parcel.service.js')
+vi.mock('../../helpers/parcel-id.js')
 vi.mock('../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js')
 vi.mock('../../queries/getLandData.query.js')
 
@@ -96,8 +96,8 @@ describe('Parcel Validation 2.0.0', () => {
       })
 
       expect(splitParcelId).toHaveBeenCalledTimes(2)
-      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9238', mockLogger)
-      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9239', mockLogger)
+      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9238')
+      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9239')
       expect(getActionsByLatestVersion).toHaveBeenCalledWith(
         mockLogger,
         mockPostgresDb
@@ -256,9 +256,9 @@ describe('Parcel Validation 2.0.0', () => {
       await parcelValidation.getDataAndValidateRequest(parcelIds, mockRequest)
 
       expect(splitParcelId).toHaveBeenCalledTimes(3)
-      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9238', mockLogger)
-      expect(splitParcelId).toHaveBeenCalledWith('TY1234-5678', mockLogger)
-      expect(splitParcelId).toHaveBeenCalledWith('AB9999-1111', mockLogger)
+      expect(splitParcelId).toHaveBeenCalledWith('SX0679-9238')
+      expect(splitParcelId).toHaveBeenCalledWith('TY1234-5678')
+      expect(splitParcelId).toHaveBeenCalledWith('AB9999-1111')
     })
 
     test('should handle mixed validation results', async () => {
