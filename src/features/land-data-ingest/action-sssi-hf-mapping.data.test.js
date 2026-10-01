@@ -31,17 +31,29 @@ describe('Action sssi and historic_features mapping', () => {
     hfEligible: row.hfEligible
   })
 
-  // These three are enabled area actions whose policy differs from the
-  // permissive default, so a missing row over-states their available area.
-  // Comparing the whole row fails when the _26 row is absent, and reading the
-  // legacy row without a guard fails when that is absent instead.
-  test.each(['CNUM2_26', 'CSAM3_26', 'SCR2_26'])(
-    '%s inherits the eligibility of its legacy counterpart',
+  test.each([
+    'CLIG3_26',
+    'CNUM2_26',
+    'CSAM3_26',
+    'SCR2_26',
+    'UPL1_26',
+    'UPL2_26',
+    'UPL3_26',
+    'UPL8_26',
+    'UPL10_26',
+    'WBD1_26'
+  ])('%s inherits the eligibility of its legacy counterpart', (actionCode) => {
+    expect(rowFor(actionCode)).toEqual({
+      actionCode,
+      ...eligibilityOf(rowFor(legacyCodeFor(actionCode)))
+    })
+  })
+
+  // Linear actions never reach the available area calculation
+  test.each([['BND1_26']])(
+    '%s holds no row because it is a linear action',
     (actionCode) => {
-      expect(rowFor(actionCode)).toEqual({
-        actionCode,
-        ...eligibilityOf(rowFor(legacyCodeFor(actionCode)))
-      })
+      expect(rowFor(actionCode)).toBeUndefined()
     }
   )
 
