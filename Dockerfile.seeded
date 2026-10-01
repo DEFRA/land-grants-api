@@ -61,13 +61,7 @@ COPY --from=ingest-prep /app/node_modules ./app/node_modules
 COPY --from=ingest-prep /app/src ./app/src
 COPY --from=ingest-prep /app/scripts ./app/scripts
 
-# Install Node.js in the db-build stage
-USER root
-RUN apt-get update && \
-    apt-get install -y curl && \
-    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
-    apt-get install -y nodejs && \
-    rm -rf /var/lib/apt/lists/*
+COPY --from=node:24-bullseye-slim /usr/local/bin/node /usr/local/bin/node
 USER postgres
 
 RUN initdb -D "$PGDATA" && \
