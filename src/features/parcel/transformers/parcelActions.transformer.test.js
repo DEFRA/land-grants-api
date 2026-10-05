@@ -1,5 +1,6 @@
 import {
-  plannedActionsTransformer,
+  areaActionsTransformer,
+  lengthActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
   heferRequiredActionTransformer
@@ -14,11 +15,11 @@ describe('sizeTransformer', () => {
   })
 })
 
-describe('plannedActionsTransformer', () => {
+describe('areaActionsTransformer', () => {
   test('should transform current actions to actions with sqm', () => {
     const plannedActions = [{ actionCode: 'UPL1', quantity: 190, unit: 'sqm' }]
 
-    const result = plannedActionsTransformer(plannedActions)
+    const result = areaActionsTransformer(plannedActions)
 
     expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 190 }])
   })
@@ -28,7 +29,7 @@ describe('plannedActionsTransformer', () => {
       { actionCode: 'UPL1', quantity: 5.1267, unit: 'ha' }
     ]
 
-    const result = plannedActionsTransformer(plannedActions)
+    const result = areaActionsTransformer(plannedActions)
 
     expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 51267 }])
   })
@@ -36,7 +37,7 @@ describe('plannedActionsTransformer', () => {
   test('should return empty array when plannedActions is null', () => {
     const plannedActions = null
 
-    const result = plannedActionsTransformer(plannedActions)
+    const result = areaActionsTransformer(plannedActions)
 
     expect(result).toEqual([])
   })
@@ -44,9 +45,41 @@ describe('plannedActionsTransformer', () => {
   test('should transform current actions to actions when area is already sqm', () => {
     const plannedActions = [{ actionCode: 'UPL1', quantity: 1000, unit: 'sqm' }]
 
-    const result = plannedActionsTransformer(plannedActions)
+    const result = areaActionsTransformer(plannedActions)
 
     expect(result).toEqual([{ actionCode: 'UPL1', areaSqm: 1000 }])
+  })
+})
+
+describe('lengthActionsTransformer', () => {
+  test('should transform current actions to actions with boundary length', () => {
+    const actions = [{ actionCode: 'BND1', quantity: 300, unit: 'm' }]
+
+    const result = lengthActionsTransformer(actions)
+
+    expect(result).toEqual([{ actionCode: 'BND1', billedLengthMeters: 300 }])
+  })
+
+  test('should transform every action it is given', () => {
+    const actions = [
+      { actionCode: 'BND1', quantity: 300, unit: 'm' },
+      { actionCode: 'BND2', quantity: 120, unit: 'm' }
+    ]
+
+    const result = lengthActionsTransformer(actions)
+
+    expect(result).toEqual([
+      { actionCode: 'BND1', billedLengthMeters: 300 },
+      { actionCode: 'BND2', billedLengthMeters: 120 }
+    ])
+  })
+
+  test('should return empty array when actions is null', () => {
+    const actions = null
+
+    const result = lengthActionsTransformer(actions)
+
+    expect(result).toEqual([])
   })
 })
 

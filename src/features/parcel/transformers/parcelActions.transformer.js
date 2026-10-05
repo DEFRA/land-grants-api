@@ -5,6 +5,7 @@ import { HECTARES } from '~/src/features/common/constants/unit_type.js'
  * Attach application unit of measurement to size; this is used both for total parcel size (which
  * will usually be provided with unit = hectares) and for action areas and available areas
  * @param {number} area - The area to transform
+ * @param {string} unit - The unit the area is measured in
  * @returns {{unit: string, value: number}} The transformed size
  */
 function sizeTransformer(area, unit) {
@@ -12,15 +13,29 @@ function sizeTransformer(area, unit) {
 }
 
 /**
- * Transform current actions to actions with area in square meters. Only applicable to actions
- * where applicationUnitOfMeasurement is HECTARES.
- * @param {AgreementAction[] | null} plannedActions - The planned actions to transform
- * @returns {ActionRequest[]} The transformed current actions
+ * Transform existing and planned actions to actions with their area in square metres.
+ * Callers pass only the actions competing for the parcel's land.
+ * @param {AgreementAction[] | null} actions - The existing and planned actions to transform
+ * @returns {ActionRequest[]} The transformed actions
  */
-function plannedActionsTransformer(plannedActions) {
-  return (plannedActions ?? []).map((a) => ({
+function areaActionsTransformer(actions) {
+  return (actions ?? []).map((a) => ({
     actionCode: a.actionCode,
     areaSqm: a.unit === HECTARES ? haToSqm(a.quantity) : a.quantity
+  }))
+}
+
+/**
+ * Transform existing and planned actions to actions with their billed length in metres.
+ * Callers pass only the actions competing for the boundary. Sibling actions in an
+ * application carry their code as `code`; agreement actions carry it as `actionCode`.
+ * @param {Array<{code?: string, actionCode?: string, quantity: number}> | null} actions - The existing and planned actions to transform
+ * @returns {ActionWithLength[]} The transformed actions
+ */
+function lengthActionsTransformer(actions) {
+  return (actions ?? []).map((a) => ({
+    actionCode: /** @type {string} */ (a.code ?? a.actionCode),
+    billedLengthMeters: a.quantity
   }))
 }
 
@@ -70,7 +85,8 @@ function heferRequiredActionTransformer(responseParcels, heferRequiredAction) {
 }
 
 export {
-  plannedActionsTransformer,
+  areaActionsTransformer,
+  lengthActionsTransformer,
   sizeTransformer,
   sssiConsentRequiredActionTransformer,
   heferRequiredActionTransformer
@@ -80,4 +96,5 @@ export {
  * @import { AgreementAction } from "../../agreements/agreements.d.js"
  * @import { Action, ActionRequest } from "../../actions/action.d.js"
  * @import { AvailableAreaForAction } from "~/src/features/available-area/available-area.d.js"
+ * @import { ActionWithLength } from "~/src/features/available-length/available-length.d.js"
  */

@@ -26,7 +26,7 @@ import {
 import { parcel } from '~/src/features/parcel/index.js'
 import { payments } from '~/src/features/payment/index.js'
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
-import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import { splitParcelId } from '~/src/features/parcel/helpers/parcel-id.js'
 import { validateApplication } from '~/src/features/application/service/application-validation.service.js'
 import { getMoorlandIntersectPercentage } from '~/src/features/parcel/queries/getMoorlandIntersectPercentage.js'
 import { getLfaIntersectPercentage } from '~/src/features/parcel/queries/getLfaIntersectPercentage.js'
@@ -210,7 +210,7 @@ const pactVerifierOptions = async () => {
         mockGetLandData.mockResolvedValue(allParcels)
       },
       'has woodland parcels': ({ parcelIds }) => {
-        const { sheetId, parcelId } = splitParcelId(parcelIds[0], logger)
+        const { sheetId, parcelId } = splitParcelId(parcelIds[0])
         const allParcels = []
         const parcel = createParcel(sheetId, parcelId)
         allParcels.push(parcel)

@@ -1,4 +1,4 @@
-import { splitParcelId } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
+import { splitParcelId } from '~/src/features/parcel/helpers/parcel-id.js'
 // import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getAndValidateParcels } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 
@@ -16,7 +16,7 @@ export const validatePaymentCalculationRequest = async (parcelIds, request) => {
   const errors = []
 
   const parcels = parcelIds.map((parcel) => {
-    const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+    const { sheetId, parcelId } = splitParcelId(parcel)
     return { sheetId, parcelId }
   })
 

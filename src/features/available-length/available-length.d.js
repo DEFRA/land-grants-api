@@ -8,5 +8,5 @@
 /**
  * @typedef {object} ActionWithLength
  * @property {string} actionCode - The action's code
- * @property {number} boundaryLengthMeters - The boundary length committed to this action, in metres
+ * @property {number} billedLengthMeters - The length billed for this action, in metres, as recorded on an agreement or entered on an application
  */

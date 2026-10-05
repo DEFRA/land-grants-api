@@ -1,4 +1,4 @@
-import { splitParcelId } from '../../service/2.0.0/parcel.service.js'
+import { splitParcelId } from '../../helpers/parcel-id.js'
 import { getActionsByLatestVersion } from '../../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getLandData } from '../../queries/getLandData.query.js'
 
@@ -56,7 +56,7 @@ export const getDataAndValidateRequest = async (
   const errors = []
 
   const parcels = parcelIds.map((parcel) => {
-    const { sheetId, parcelId } = splitParcelId(parcel, request.logger)
+    const { sheetId, parcelId } = splitParcelId(parcel)
     return { sheetId, parcelId }
   })
 

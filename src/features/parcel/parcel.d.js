@@ -19,3 +19,15 @@
  * @typedef {object} LandParcelBoundary
  * @property {number} boundaryLengthMeters
  */
+
+/**
+ * The views of the enabled-action config that every parcel in a request shares.
+ * Neither depends on the parcel, so a request works them out once.
+ * @typedef {object} PreparedActions
+ * @property {Action[]} displayedActions - The enabled actions this request reports
+ * @property {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
+ */
+
+/**
+ * @import { Action } from '~/src/features/actions/action.d.js'
+ */
