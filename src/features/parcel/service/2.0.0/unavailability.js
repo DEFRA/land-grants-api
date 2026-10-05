@@ -16,34 +16,21 @@ import {
 const LENGTH_RULE_NAMES = new Set(['minimum-length', 'available-length'])
 
 /**
- * The area recorded against a parcel's existing actions. Reported when it
- * cannot be arranged on the land, which is the figure the RPA needs to see.
- * @param {ActionWithArea[]} existingActions - The actions already on the parcel
- * @returns {number} The committed area in square metres
- */
-function existingActionsArea(existingActions) {
-  return existingActions.reduce((total, action) => total + action.areaSqm, 0)
-}
-
-/**
- * Why an area action cannot be applied for. The figures let the RPA see how far
- * the recorded actions overrun the land they are recorded against, and which
- * actions are doing the overrunning. Hectares throughout, as the rest of the
+ * Why an area action cannot be applied for, naming the existing actions recorded
+ * against the parcel so the RPA knows what to look at. No totals: actions can
+ * stack, so their areas cannot be summed, and the valid land cover belongs to
+ * the action applied for rather than to them. Hectares, as the rest of the
  * response reports land.
  * @param {AvailableAreaForActionLp} lpResult - The infeasible area result
  * @returns {object} The unavailable reason
  */
 export function areaUnavailableReason(lpResult) {
-  const { totalValidLandCoverSqm } = lpResult
   const existingActions = lpResult.context?.existingActions ?? []
-  const existingActionsAreaSqm = existingActionsArea(existingActions)
 
   return {
     code: EXISTING_ACTIONS_DO_NOT_FIT,
     reason: EXISTING_ACTIONS_DO_NOT_FIT_REASON,
     metadata: {
-      totalValidLandCoverHa: sqmToHaRounded(totalValidLandCoverSqm),
-      existingActionsAreaHa: sqmToHaRounded(existingActionsAreaSqm),
       existingActions: existingActions.map(({ actionCode, areaSqm }) => ({
         actionCode,
         areaHa: sqmToHaRounded(areaSqm)
@@ -119,7 +106,7 @@ export function lengthUnavailableReason(action, availableLength) {
 }
 
 /**
- * @import {ActionWithArea, AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
+ * @import {AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
  * @import {AvailableLength} from '~/src/features/available-length/available-length.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */

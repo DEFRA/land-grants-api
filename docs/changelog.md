@@ -84,8 +84,6 @@ consumers may key their own copy off it rather than show the reason text.
     "code": "existing-actions-do-not-fit",
     "reason": "Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.",
     "metadata": {
-      "totalValidLandCoverHa": 4.12,
-      "existingActionsAreaHa": 5.83,
       "existingActions": [
         { "actionCode": "CMOR1", "areaHa": 3.2 },
         { "actionCode": "UPL1", "areaHa": 2.63 }

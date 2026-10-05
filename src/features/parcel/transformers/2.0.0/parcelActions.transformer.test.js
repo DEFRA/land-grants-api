@@ -282,8 +282,6 @@ describe('actionTransformer 2.0.0', () => {
         reason:
           'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
         metadata: {
-          totalValidLandCoverHa: 4.12,
-          existingActionsAreaHa: 5.83,
           existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
         }
       }
@@ -302,8 +300,6 @@ describe('actionTransformer 2.0.0', () => {
         reason:
           'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
         metadata: {
-          totalValidLandCoverHa: 4.12,
-          existingActionsAreaHa: 5.83,
           existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
         }
       }

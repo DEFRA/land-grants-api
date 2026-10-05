@@ -472,7 +472,7 @@ describe('Parcel Service 2.0.0', () => {
     })
 
     describe('when the existing actions do not fit the parcel', () => {
-      // 5.83 ha of actions recorded against 4.12 ha of eligible cover
+      // Two existing actions the LP could not arrange on the parcel's land covers
       const infeasibleResult = {
         context: {
           existingActions: [
@@ -526,8 +526,6 @@ describe('Parcel Service 2.0.0', () => {
               reason:
                 'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
               metadata: {
-                totalValidLandCoverHa: 4.12,
-                existingActionsAreaHa: 5.83, // 3.2 + 2.63
                 existingActions: [
                   { actionCode: 'CMOR1', areaHa: 3.2 },
                   { actionCode: 'UPL1', areaHa: 2.63 }
