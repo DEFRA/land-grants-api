@@ -28,7 +28,9 @@ function availableQuantity(unit, calculation) {
 }
 
 /**
- * What an action reports as still available, in its own unit. A calculation
+ * What an action reports as still available, in its own unit. An unavailable
+ * action reports zero, whatever its calculation left: nothing the applicant
+ * could enter would be accepted, so there is no ceiling to offer. A calculation
  * that produced no usable figure reports null rather than a number nobody
  * worked out.
  * @param {Action} action - The action being reported
@@ -37,6 +39,10 @@ function availableQuantity(unit, calculation) {
  */
 function actionAvailability(action, calculation) {
   const unit = action.applicationUnitOfMeasurement
+
+  if (calculation?.unavailableReason) {
+    return { unit, value: 0 }
+  }
 
   const quantity = availableQuantity(unit, calculation)
 
@@ -55,18 +61,14 @@ function actionAvailability(action, calculation) {
 function actionTransformer(action, calculation = null, showResults = false) {
   const availability = actionAvailability(action, calculation)
 
-  // A count action runs no calculation at all and a length one reports no
-  // feasibility, so only an explicit false means the land could not be arranged.
-  const isAvailable = calculation?.feasible !== false
-
   const response = {
     code: action.code,
     description: action.description,
     version: action.semanticVersion,
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
-    isAvailable,
-    unavailableReason: isAvailable ? undefined : calculation?.unavailableReason,
+    isAvailable: !calculation?.unavailableReason,
+    unavailableReason: calculation?.unavailableReason,
     quantityRequired: action?.availability?.type !== TOTAL,
     displayUnit: action?.displayUnit,
     displayUnitPlural: action?.displayUnitPlural,

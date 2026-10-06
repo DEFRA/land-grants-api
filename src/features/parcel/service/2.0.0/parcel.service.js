@@ -9,6 +9,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { actionsByCompetingUnit } from '~/src/features/common/helpers/action-unit.js'
 import { getBoundaryLengthMeters } from '~/src/features/parcel/boundary-length.js'
+import { EXISTING_ACTIONS_DO_NOT_FIT } from '~/src/features/parcel/constants/unavailable-reasons.js'
 import { buildActionWithAvailability } from './action-availability.js'
 
 /**
@@ -40,6 +41,7 @@ async function getActionsWithAvailability(
   logger
 ) {
   const actionsWithAvailability = []
+
   const { displayedActions, unitByActionCode } = preparedActions
 
   const boundaryLengthMeters = await getBoundaryLengthMeters(
@@ -73,18 +75,20 @@ async function getActionsWithAvailability(
     actionsWithAvailability.push(actionWithAvailability)
   }
 
-  const unavailableActions = actionsWithAvailability.filter(
-    (actionWithAvailability) => !actionWithAvailability.isAvailable
+  const actionsThatDoNotFit = actionsWithAvailability.filter(
+    (actionWithAvailability) =>
+      actionWithAvailability.unavailableReason?.code ===
+      EXISTING_ACTIONS_DO_NOT_FIT
   )
 
-  if (unavailableActions.length > 0) {
+  if (actionsThatDoNotFit.length > 0) {
     logValidationWarn(logger, {
-      operation: 'Available area calculation',
-      errors: 'Existing actions do not fit the parcel land covers',
+      operation: 'Action availability',
+      errors: 'Existing actions do not fit the parcel',
       context: {
         sheetId: parcel.sheet_id,
         parcelId: parcel.parcel_id,
-        actionCodes: unavailableActions.map((a) => a.code).join(',')
+        actionCodes: actionsThatDoNotFit.map((a) => a.code).join(',')
       }
     })
   }

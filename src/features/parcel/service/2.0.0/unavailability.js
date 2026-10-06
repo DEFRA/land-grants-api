@@ -1,19 +1,11 @@
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
-import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
-import { rules } from '~/src/features/rules-engine/rules/index.js'
 import {
   EXISTING_ACTIONS_DO_NOT_FIT,
+  EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
-  EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH,
-  EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH_REASON,
+  INSUFFICIENT_LENGTH_REMAINING,
   PARCEL_TOO_SHORT_FOR_ACTION
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
-
-/**
- * The rules that gate an action on how much boundary is left. A linear action
- * configured with one of these cannot be applied for when it fails.
- */
-const LENGTH_RULE_NAMES = new Set(['minimum-length', 'available-length'])
 
 /**
  * Why an area action cannot be applied for, naming the existing actions recorded
@@ -40,73 +32,68 @@ export function areaUnavailableReason(lpResult) {
 }
 
 /**
- * Why a linear action cannot be applied for, or undefined when it can. A rule
- * that rejects the whole available length supplies its own wording; without one
- * configured, only a boundary with nothing left on it puts the action beyond
- * reach.
- * @param {Action} action - The action being applied for
- * @param {AvailableLength} availableLength - The boundary still claimable
- * @returns {object|undefined} The unavailable reason
+ * Why a linear action cannot be applied for when its existing actions claim
+ * more than the whole boundary. The length equivalent of an infeasible area,
+ * and likewise an RPA matter, so the actions are named.
+ * @param {ActionWithLength[]} incompatibleActions - The actions claiming the boundary
+ * @returns {object} The unavailable reason
  */
-export function lengthUnavailableReason(action, availableLength) {
-  const { boundaryLengthMeters, incompatibleLengthMeters } = availableLength
-  const metadata = { boundaryLengthMeters, incompatibleLengthMeters }
-
-  const rule = action.rules?.find((r) =>
-    LENGTH_RULE_NAMES.has(r.type ?? r.name)
-  )
-
-  if (!rule) {
-    return availableLength.availableLength === 0
-      ? {
-          code: EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH,
-          reason: EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH_REASON,
-          metadata
-        }
-      : undefined
-  }
-
-  // Applying for everything that is left, so only the rule's own floor and
-  // ceiling can reject it
-  const application = {
-    appliedForQuantity: availableLength.availableLength,
-    actionCodeAppliedFor: action.code,
-    landParcel: {
-      availability: availableLength.availableLength,
-      availableAreaSqm: null,
-      parcelSizeSqm: 0,
-      existingAgreements: [],
-      intersections: {},
-      boundaryLength: {
-        totalMeters: boundaryLengthMeters,
-        incompatibleMeters: incompatibleLengthMeters
-      }
+export function exceedsBoundaryReason(incompatibleActions) {
+  return {
+    code: EXISTING_ACTIONS_DO_NOT_FIT,
+    reason: EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
+    metadata: {
+      existingActions: incompatibleActions.map(
+        ({ actionCode, billedLengthMeters }) => ({
+          actionCode,
+          billedLengthMeters
+        })
+      )
     }
   }
+}
 
-  const { results, passed } = executeRules(rules, application, [rule])
-
-  if (passed) {
-    return undefined
-  }
-
-  const minimumLengthMeters = rule.config?.minimumLengthM
+/**
+ * Why a linear action cannot be applied for when its length rule rejects what
+ * is left, in the rule's own wording: either the boundary was never long
+ * enough, or the existing actions fit but leave too little of it.
+ * @param {AvailableLength} availableLength - The boundary still claimable
+ * @param {LengthRuleResult} lengthRuleResult - The rule's failed verdict
+ * @returns {object} The unavailable reason
+ */
+export function lengthRuleReason(availableLength, lengthRuleResult) {
+  const { boundaryLengthMeters, incompatibleActions } = availableLength
+  const { reason, minimumLengthMeters } = lengthRuleResult
 
   const parcelTooShort =
     minimumLengthMeters !== undefined &&
     boundaryLengthMeters < minimumLengthMeters
 
+  if (parcelTooShort) {
+    return {
+      code: PARCEL_TOO_SHORT_FOR_ACTION,
+      reason,
+      metadata: { boundaryLengthMeters, minimumLengthMeters }
+    }
+  }
+
   return {
-    code: parcelTooShort
-      ? PARCEL_TOO_SHORT_FOR_ACTION
-      : EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH,
-    reason: results[0].reason,
-    metadata: { ...metadata, minimumLengthMeters }
+    code: INSUFFICIENT_LENGTH_REMAINING,
+    reason,
+    metadata: {
+      existingActions: incompatibleActions.map(
+        ({ actionCode, billedLengthMeters }) => ({
+          actionCode,
+          billedLengthMeters
+        })
+      ),
+      minimumLengthMeters
+    }
   }
 }
 
 /**
  * @import {AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
- * @import {AvailableLength} from '~/src/features/available-length/available-length.d.js'
- * @import {Action} from '~/src/features/actions/action.d.js'
+ * @import {AvailableLength, ActionWithLength} from '~/src/features/available-length/available-length.d.js'
+ * @import {LengthRuleResult} from '~/src/features/parcel/parcel.d.js'
  */

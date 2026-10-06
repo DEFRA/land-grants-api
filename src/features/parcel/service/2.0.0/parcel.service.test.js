@@ -52,6 +52,23 @@ describe('Parcel Service 2.0.0', () => {
     let mockRequest
     let mockCompatibilityCheckFn
 
+    // Second argument of the actionTransformer call for that action code:
+    // the availability the service worked out for it
+    const actionAvailabilityFor = (code) => {
+      const [, actionAvailability] = actionTransformer.mock.calls.find(
+        ([action]) => action.code === code
+      )
+      return actionAvailability
+    }
+
+    // The warning reads the transformed action, so carry the reason through
+    const passUnavailableReasonThrough = () =>
+      actionTransformer.mockImplementation((action, calculation) => ({
+        code: action.code,
+        description: action.description,
+        unavailableReason: calculation?.unavailableReason
+      }))
+
     beforeEach(() => {
       vi.clearAllMocks()
 
@@ -471,42 +488,8 @@ describe('Parcel Service 2.0.0', () => {
       expect(mergeAgreementsTransformer).toHaveBeenCalledWith([upl1], [])
     })
 
-    describe('when the existing actions do not fit the parcel', () => {
-      // Two existing actions the LP could not arrange on the parcel's land covers
-      const infeasibleResult = {
-        context: {
-          existingActions: [
-            { actionCode: 'CMOR1', areaSqm: 32000 },
-            { actionCode: 'UPL1', areaSqm: 26300 }
-          ]
-        },
-        availableAreaSqm: 0,
-        totalValidLandCoverSqm: 41200,
-        feasible: false
-      }
-
-      test('should still return every displayed action', async () => {
-        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
-
-        const result = await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared(mockEnabledActionsForParcel),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
-
-        expect(result.actions).toEqual([
-          { code: 'UPL1', description: 'Action 1' },
-          { code: 'HEF1', description: 'Action 3' }
-        ])
-      })
-
-      test('should report why the existing actions do not fit', async () => {
-        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
-
+    describe('area availability', () => {
+      test('should not report a reason when the calculation is feasible', async () => {
         await getActionsForParcel(
           mockParcel,
           mockPayload,
@@ -517,65 +500,93 @@ describe('Parcel Service 2.0.0', () => {
           []
         )
 
-        expect(actionTransformer).toHaveBeenCalledWith(
-          mockEnabledActionsForParcel[0],
-          expect.objectContaining({
-            feasible: false,
-            unavailableReason: {
-              code: 'existing-actions-do-not-fit',
-              reason:
-                'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
-              metadata: {
-                existingActions: [
-                  { actionCode: 'CMOR1', areaHa: 3.2 },
-                  { actionCode: 'UPL1', areaHa: 2.63 }
-                ]
-              }
+        const actionAvailability = actionAvailabilityFor('UPL1')
+
+        expect(actionAvailability.unavailableReason).toBeUndefined()
+      })
+
+      describe('when the existing actions do not fit the parcel', () => {
+        // Two existing actions the LP could not arrange on the parcel's land covers
+        const infeasibleResult = {
+          context: {
+            existingActions: [
+              { actionCode: 'CMOR1', areaSqm: 32000 },
+              { actionCode: 'UPL1', areaSqm: 26300 }
+            ]
+          },
+          availableAreaSqm: 0,
+          totalValidLandCoverSqm: 41200,
+          feasible: false
+        }
+
+        test('should still return every displayed action', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+          const result = await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          expect(result.actions).toEqual([
+            { code: 'UPL1', description: 'Action 1' },
+            { code: 'HEF1', description: 'Action 3' }
+          ])
+        })
+
+        test('should report why the existing actions do not fit', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+          await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          const actionAvailability = actionAvailabilityFor('UPL1')
+
+          expect(actionAvailability.unavailableReason).toEqual({
+            code: 'existing-actions-do-not-fit',
+            reason:
+              'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+            metadata: {
+              existingActions: [
+                { actionCode: 'CMOR1', areaHa: 3.2 },
+                { actionCode: 'UPL1', areaHa: 2.63 }
+              ]
             }
-          }),
-          false
-        )
+          })
+        })
+
+        test('should warn once, naming the parcel and every action affected', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+          passUnavailableReasonThrough()
+
+          await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          expect(mockLogger.warn).toHaveBeenCalledTimes(1)
+          const [, message] = mockLogger.warn.mock.calls[0]
+          expect(message).toContain('sheetId=SX0679')
+          expect(message).toContain('parcelId=9238')
+          expect(message).toContain('actionCodes=UPL1,HEF1')
+        })
       })
-
-      test('should warn once, naming the parcel and every action affected', async () => {
-        findMaximumAvailableArea.mockReturnValue(infeasibleResult)
-
-        await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared(mockEnabledActionsForParcel),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
-
-        expect(mockLogger.warn).toHaveBeenCalledTimes(1)
-        const [, message] = mockLogger.warn.mock.calls[0]
-        expect(message).toContain('sheetId=SX0679')
-        expect(message).toContain('parcelId=9238')
-        expect(message).toContain('actionCodes=UPL1,HEF1')
-      })
-    })
-
-    test('should not report a reason when the calculation is feasible', async () => {
-      await getActionsForParcel(
-        mockParcel,
-        mockPayload,
-        false,
-        prepared(mockEnabledActionsForParcel),
-        mockCompatibilityCheckFn,
-        mockRequest,
-        []
-      )
-
-      expect(actionTransformer).toHaveBeenCalledWith(
-        mockEnabledActionsForParcel[0],
-        expect.not.objectContaining({
-          unavailableReason: expect.anything()
-        }),
-        false
-      )
     })
 
     describe('linear actions', () => {
@@ -586,30 +597,38 @@ describe('Parcel Service 2.0.0', () => {
         display: true
       }
       const bnd2 = { ...bnd1, code: 'BND2', description: 'Maintain hedgerows' }
-      let linearEnabledActions
 
-      beforeEach(() => {
-        linearEnabledActions = [bnd1, mockEnabledActionsForParcel[0]]
-        getLandParcelBoundary.mockResolvedValue({
-          boundaryLengthMeters: 1800
-        })
-        calculateAvailableLength.mockReturnValue({
-          availableLength: 240,
-          boundaryLengthMeters: 1800,
-          incompatibleLengthMeters: 1560
-        })
-      })
-
-      test('should report the available length', async () => {
-        await getActionsForParcel(
+      // Every request also carries an area action, as a real parcel would
+      const requestActions = (actions) =>
+        getActionsForParcel(
           mockParcel,
           mockPayload,
           false,
-          prepared(linearEnabledActions),
+          prepared([...actions, mockEnabledActionsForParcel[0]]),
           mockCompatibilityCheckFn,
           mockRequest,
           []
         )
+
+      // What calculateAvailableLength reports, varied only where a test cares
+      const lengthResult = (overrides = {}) => ({
+        availableLength: 240,
+        boundaryLengthMeters: 1800,
+        incompatibleLengthMeters: 1560,
+        exceedsBoundary: false,
+        incompatibleActions: [],
+        ...overrides
+      })
+
+      beforeEach(() => {
+        getLandParcelBoundary.mockResolvedValue({
+          boundaryLengthMeters: 1800
+        })
+        calculateAvailableLength.mockReturnValue(lengthResult())
+      })
+
+      test('should report the available length', async () => {
+        await requestActions([bnd1])
 
         expect(actionTransformer).toHaveBeenCalledWith(
           bnd1,
@@ -619,15 +638,7 @@ describe('Parcel Service 2.0.0', () => {
       })
 
       test('should read the parcel boundary once however many linear actions there are', async () => {
-        await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared([bnd1, bnd2, mockEnabledActionsForParcel[0]]),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
+        await requestActions([bnd1, bnd2])
 
         expect(getLandParcelBoundary).toHaveBeenCalledTimes(1)
         expect(getLandParcelBoundary).toHaveBeenCalledWith(
@@ -639,15 +650,7 @@ describe('Parcel Service 2.0.0', () => {
       })
 
       test('should not read the parcel boundary when nothing displayed is measured in metres', async () => {
-        await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared(mockEnabledActionsForParcel),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
+        await requestActions([])
 
         expect(getLandParcelBoundary).not.toHaveBeenCalled()
       })
@@ -658,15 +661,7 @@ describe('Parcel Service 2.0.0', () => {
           { actionCode: 'UPL1', quantity: 2, unit: 'ha' }
         ])
 
-        await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared(linearEnabledActions),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
+        await requestActions([bnd1])
 
         expect(calculateAvailableLength).toHaveBeenCalledWith(
           'BND1',
@@ -676,188 +671,182 @@ describe('Parcel Service 2.0.0', () => {
         )
       })
 
-      describe('when the boundary cannot meet the configured minimum', () => {
-        // Second argument of the actionTransformer call for that action code:
-        // the availability the service worked out for it
-        const actionAvailabilityFor = (code) => {
-          const [, actionAvailability] = actionTransformer.mock.calls.find(
-            ([action]) => action.code === code
-          )
-          return actionAvailability
-        }
-
-        beforeEach(() => {
-          linearEnabledActions = [
-            {
-              ...bnd1,
-              rules: [
-                {
-                  name: 'minimum-length',
-                  description: 'Is the applied for length at least 20 m?',
-                  config: { minimumLengthM: 20 }
-                }
-              ]
-            },
-            mockEnabledActionsForParcel[0]
-          ]
-          calculateAvailableLength.mockReturnValue({
-            availableLength: 12,
-            boundaryLengthMeters: 1800,
-            incompatibleLengthMeters: 1788
-          })
-        })
-
-        test('should mark the action unavailable when existing actions leave too little', async () => {
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared(linearEnabledActions),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability).toEqual(
-            expect.objectContaining({
-              feasible: false,
-              unavailableReason: expect.objectContaining({
-                code: 'existing-actions-exceed-available-length',
-                metadata: {
-                  boundaryLengthMeters: 1800,
-                  incompatibleLengthMeters: 1788,
-                  minimumLengthMeters: 20
-                }
-              })
-            })
-          )
-        })
-
-        test('should report a parcel too short for the action when its whole boundary is under the minimum', async () => {
-          getLandParcelBoundary.mockResolvedValue({ boundaryLengthMeters: 15 })
-          calculateAvailableLength.mockReturnValue({
-            availableLength: 15,
-            boundaryLengthMeters: 15,
-            incompatibleLengthMeters: 0
-          })
-
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared(linearEnabledActions),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability.unavailableReason.code).toBe(
-            'parcel-too-short-for-action'
-          )
-        })
-
-        test('should offer no ceiling for an unavailable action', async () => {
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared(linearEnabledActions),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability.availableLength).toBe(0)
-        })
-
-        test('should take the reason from the rule that rejected it', async () => {
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared(linearEnabledActions),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability.unavailableReason.reason).toBe(
-            'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)'
-          )
-        })
-
-        test('should leave an action available when the length meets its minimum', async () => {
-          calculateAvailableLength.mockReturnValue({
-            availableLength: 240,
-            boundaryLengthMeters: 1800,
-            incompatibleLengthMeters: 1560
-          })
-
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared(linearEnabledActions),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability).toEqual({
-            availableLength: 240,
-            boundaryLengthMeters: 1800,
-            incompatibleLengthMeters: 1560
-          })
-        })
-
-        test('should mark an action with no length rule unavailable at zero', async () => {
-          calculateAvailableLength.mockReturnValue({
-            availableLength: 0,
-            boundaryLengthMeters: 1800,
-            incompatibleLengthMeters: 1800
-          })
-
-          await getActionsForParcel(
-            mockParcel,
-            mockPayload,
-            false,
-            prepared([bnd1, mockEnabledActionsForParcel[0]]),
-            mockCompatibilityCheckFn,
-            mockRequest,
-            []
-          )
-
-          const actionAvailability = actionAvailabilityFor('BND1')
-
-          expect(actionAvailability.feasible).toBe(false)
-        })
-      })
-
       test('should leave a linear action unrestricted when the boundary cannot be read', async () => {
         getLandParcelBoundary.mockResolvedValue(null)
 
-        await getActionsForParcel(
-          mockParcel,
-          mockPayload,
-          false,
-          prepared(linearEnabledActions),
-          mockCompatibilityCheckFn,
-          mockRequest,
-          []
-        )
+        await requestActions([bnd1])
 
         expect(calculateAvailableLength).not.toHaveBeenCalled()
         expect(actionTransformer).toHaveBeenCalledWith(bnd1, undefined, false)
+      })
+
+      describe('availability', () => {
+        const bnd1WithMinimum = {
+          ...bnd1,
+          rules: [
+            {
+              name: 'minimum-length',
+              description: 'Is the applied for length at least 20 m?',
+              config: { minimumLengthM: 20 }
+            }
+          ]
+        }
+
+        describe('when existing actions exceed the boundary', () => {
+          beforeEach(() => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                boundaryLengthMeters: 1120,
+                incompatibleLengthMeters: 1121,
+                exceedsBoundary: true,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1121 }
+                ]
+              })
+            )
+          })
+
+          test('should report that existing actions do not fit, naming them', async () => {
+            await requestActions([bnd1])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'existing-actions-do-not-fit',
+              reason:
+                'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.',
+              metadata: {
+                existingActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1121 }
+                ]
+              }
+            })
+          })
+
+          test('should warn that existing actions do not fit', async () => {
+            passUnavailableReasonThrough()
+
+            await requestActions([bnd1])
+
+            const [, message] = mockLogger.warn.mock.calls[0]
+
+            expect(message).toContain('actionCodes=BND1')
+          })
+
+          test('should report existing actions not fitting ahead of a parcel too short for the action', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                boundaryLengthMeters: 15,
+                incompatibleLengthMeters: 16,
+                exceedsBoundary: true
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason.code).toBe(
+              'existing-actions-do-not-fit'
+            )
+          })
+        })
+
+        describe('when the action has a minimum length', () => {
+          test("should report too little length remaining when the existing actions fit but leave less than the minimum, in the rule's own words", async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 12,
+                incompatibleLengthMeters: 1788,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1788 }
+                ]
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'insufficient-length-remaining',
+              reason:
+                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)',
+              metadata: {
+                existingActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1788 }
+                ],
+                minimumLengthMeters: 20
+              }
+            })
+          })
+
+          test('should not warn when the existing actions only leave too little for the minimum', async () => {
+            passUnavailableReasonThrough()
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({ availableLength: 12 })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            expect(mockLogger.warn).not.toHaveBeenCalled()
+          })
+
+          test("should report a parcel too short for the action, in the rule's own words", async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 15,
+                boundaryLengthMeters: 15,
+                incompatibleLengthMeters: 0
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'parcel-too-short-for-action',
+              reason:
+                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (15 m)',
+              metadata: { boundaryLengthMeters: 15, minimumLengthMeters: 20 }
+            })
+          })
+
+          test('should leave the action available when what is left meets the minimum', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({ availableLength: 240 })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toBeUndefined()
+          })
+        })
+
+        describe('when the action has no minimum length', () => {
+          test('should leave the action available at zero when the existing actions fill the boundary exactly', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                incompatibleLengthMeters: 1800,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1800 }
+                ]
+              })
+            )
+
+            await requestActions([bnd1])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toBeUndefined()
+          })
+        })
       })
     })
   })
