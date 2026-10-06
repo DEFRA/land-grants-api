@@ -3,17 +3,16 @@
 // already chosen it. The code is the contract; grants-ui may key its own copy
 // off it rather than show the reason text.
 export const EXISTING_ACTIONS_DO_NOT_FIT = 'existing-actions-do-not-fit'
-export const EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH =
-  'existing-actions-exceed-available-length'
 export const PARCEL_TOO_SHORT_FOR_ACTION = 'parcel-too-short-for-action'
+export const INSUFFICIENT_LENGTH_REMAINING = 'insufficient-length-remaining'
 
 export const UNAVAILABLE_REASON_CODES = [
   EXISTING_ACTIONS_DO_NOT_FIT,
-  EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH,
-  PARCEL_TOO_SHORT_FOR_ACTION
+  PARCEL_TOO_SHORT_FOR_ACTION,
+  INSUFFICIENT_LENGTH_REMAINING
 ]
 
 export const EXISTING_ACTIONS_DO_NOT_FIT_REASON =
   'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.'
-export const EXISTING_ACTIONS_EXCEED_AVAILABLE_LENGTH_REASON =
+export const EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON =
   'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.'

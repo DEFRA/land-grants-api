@@ -7,9 +7,11 @@ import { findMaximumAvailableArea } from '~/src/features/available-area/availabl
 import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { executeLengthRule, findLengthRule } from './length-rule.js'
 import {
   areaUnavailableReason,
-  lengthUnavailableReason
+  exceedsBoundaryReason,
+  lengthRuleReason
 } from './unavailability.js'
 
 /**
@@ -67,7 +69,9 @@ function buildActionWithAvailableArea(
 
 /**
  * Compute a linear action's entry, deducting the boundary already committed to
- * incompatible actions.
+ * incompatible actions. Actions that exceed the boundary outrank the action's
+ * length rule: when the records cannot be right, that is what needs resolving
+ * first.
  * @param {Action} action - The action to compute
  * @param {ActionWithLength[]} lengthActions - The existing/planned actions competing for the boundary
  * @param {number} boundaryLengthMeters - The parcel's perimeter
@@ -91,20 +95,37 @@ function buildActionWithAvailableLength(
     boundaryLengthMeters
   )
 
-  const unavailableReason = lengthUnavailableReason(action, availableLength)
+  if (availableLength.exceedsBoundary) {
+    const lengthCalculation = {
+      ...availableLength,
+      unavailableReason: exceedsBoundaryReason(
+        availableLength.incompatibleActions
+      )
+    }
 
-  // Nothing the applicant could enter would be accepted, so there is no
-  // ceiling to offer; the length they do have is in the reason's metadata
-  const lengthCalculation = unavailableReason
-    ? {
+    return actionTransformer(action, lengthCalculation, showActionResults)
+  }
+
+  const lengthRule = findLengthRule(action)
+
+  if (lengthRule) {
+    const lengthRuleResult = executeLengthRule(
+      lengthRule,
+      action.code,
+      availableLength
+    )
+
+    if (!lengthRuleResult.passed) {
+      const lengthCalculation = {
         ...availableLength,
-        availableLength: 0,
-        feasible: false,
-        unavailableReason
+        unavailableReason: lengthRuleReason(availableLength, lengthRuleResult)
       }
-    : availableLength
 
-  return actionTransformer(action, lengthCalculation, showActionResults)
+      return actionTransformer(action, lengthCalculation, showActionResults)
+    }
+  }
+
+  return actionTransformer(action, availableLength, showActionResults)
 }
 
 /**

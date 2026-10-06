@@ -20,24 +20,30 @@ export function calculateAvailableLength(
   compatibilityCheckFn,
   boundaryLengthMeters
 ) {
-  const incompatibleLengthMeters = existingActions
-    .filter(
-      (existingAction) =>
-        !compatibilityCheckFn(existingAction.actionCode, actionCode)
-    )
-    .reduce(
-      (total, existingAction) =>
-        total + Math.round(existingAction.billedLengthMeters),
-      0
-    )
+  const incompatibleActions = existingActions.filter(
+    (existingAction) =>
+      !compatibilityCheckFn(existingAction.actionCode, actionCode)
+  )
+
+  const incompatibleLengthMeters = incompatibleActions.reduce(
+    (total, incompatibleAction) =>
+      total + Math.round(incompatibleAction.billedLengthMeters),
+    0
+  )
+
+  const availableLength = Math.max(
+    0,
+    boundaryLengthMeters - incompatibleLengthMeters
+  )
+
+  const exceedsBoundary = boundaryLengthMeters < incompatibleLengthMeters
 
   return {
-    availableLength: Math.max(
-      0,
-      boundaryLengthMeters - incompatibleLengthMeters
-    ),
+    availableLength,
     boundaryLengthMeters,
-    incompatibleLengthMeters
+    incompatibleLengthMeters,
+    incompatibleActions,
+    exceedsBoundary
   }
 }
 
