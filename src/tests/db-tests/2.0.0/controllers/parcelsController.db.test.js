@@ -212,7 +212,7 @@ describe('Parcels Controller 2.0.0', () => {
       mockGetEnabledActions.mockResolvedValue([bnd1])
     })
 
-    test('should offer no ceiling when agreements leave less than the minimum', async () => {
+    test('should report too little length remaining, with no ceiling, when agreements leave less than the minimum', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
       mockGetAgreements.mockResolvedValue(
         dalAgreement('BND2', perimeterMeters - 9)
@@ -225,8 +225,34 @@ describe('Parcels Controller 2.0.0', () => {
           isAvailable: false,
           availability: { unit: 'm', value: 0 },
           unavailableReason: expect.objectContaining({
-            code: 'existing-actions-exceed-available-length'
+            code: 'insufficient-length-remaining',
+            metadata: {
+              existingActions: [
+                { actionCode: 'BND2', billedLengthMeters: perimeterMeters - 9 }
+              ],
+              minimumLengthMeters: 20
+            }
           })
+        })
+      )
+    })
+
+    test('should report that existing actions do not fit when agreements exceed the perimeter', async () => {
+      mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
+      mockGetAgreements.mockResolvedValue(
+        dalAgreement('BND2', perimeterMeters + 1)
+      )
+
+      const { data } = await requestActions()
+
+      expect(actionOf(data).unavailableReason).toEqual(
+        expect.objectContaining({
+          code: 'existing-actions-do-not-fit',
+          metadata: {
+            existingActions: [
+              { actionCode: 'BND2', billedLengthMeters: perimeterMeters + 1 }
+            ]
+          }
         })
       )
     })

@@ -274,7 +274,6 @@ describe('actionTransformer 2.0.0', () => {
 
   test('should report an action as unavailable when the existing actions do not fit', () => {
     const availableArea = {
-      feasible: false,
       availableAreaHectares: 0,
       availableAreaSqm: 0,
       unavailableReason: {
@@ -282,8 +281,6 @@ describe('actionTransformer 2.0.0', () => {
         reason:
           'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
         metadata: {
-          totalValidLandCoverHa: 4.12,
-          existingActionsAreaHa: 5.83,
           existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
         }
       }
@@ -302,8 +299,6 @@ describe('actionTransformer 2.0.0', () => {
         reason:
           'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
         metadata: {
-          totalValidLandCoverHa: 4.12,
-          existingActionsAreaHa: 5.83,
           existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
         }
       }
@@ -312,10 +307,9 @@ describe('actionTransformer 2.0.0', () => {
 
   test('should still include results for an unavailable action when showResults is true', () => {
     const availableArea = {
-      feasible: false,
       availableAreaHectares: 0,
+      unavailableReason: { code: 'existing-actions-do-not-fit' },
       totalValidLandCoverSqm: 41200,
-      existingActionsAreaSqm: 58300,
       explanations: ['why it did not fit']
     }
 
@@ -325,6 +319,31 @@ describe('actionTransformer 2.0.0', () => {
       totalValidLandCoverSqm: 41200,
       stacks: undefined,
       explanations: ['why it did not fit']
+    })
+  })
+
+  test('should report zero for an unavailable action whatever its calculation left', () => {
+    const unavailableReason = {
+      code: 'existing-actions-do-not-fit',
+      reason:
+        'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.',
+      metadata: {
+        existingActions: [{ actionCode: 'BND2', billedLengthMeters: 1788 }]
+      }
+    }
+
+    const result = actionTransformer(linearAction, {
+      availableLength: 12,
+      unavailableReason
+    })
+
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 0 },
+      quantityRequired: true,
+      isAvailable: false,
+      unavailableReason
     })
   })
 
@@ -340,10 +359,16 @@ describe('actionTransformer 2.0.0', () => {
     })
   })
 
-  test('should report a metre-based action with no length left as zero, not unrestricted', () => {
+  test('should report a metre-based action with no length left as available at zero, not unrestricted', () => {
     const result = actionTransformer(linearAction, { availableLength: 0 })
 
-    expect(result.availability).toEqual({ unit: 'm', value: 0 })
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 0 },
+      quantityRequired: true,
+      isAvailable: true
+    })
   })
 
   test('should not read an area figure for a metre-based action', () => {
