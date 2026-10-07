@@ -7,11 +7,14 @@ import { findMaximumAvailableArea } from '~/src/features/available-area/availabl
 import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
-import { executeLengthRule, findLengthRule } from './length-rule.js'
+import {
+  executeMinimumLengthRule,
+  findMinimumLengthRule
+} from './minimum-length-rule.js'
 import {
   areaUnavailableReason,
   exceedsBoundaryReason,
-  lengthRuleReason
+  minimumLengthReason
 } from './unavailability.js'
 
 /**
@@ -70,8 +73,8 @@ function buildActionWithAvailableArea(
 /**
  * Compute a linear action's entry, deducting the boundary already committed to
  * incompatible actions. Actions that exceed the boundary outrank the action's
- * length rule: when the records cannot be right, that is what needs resolving
- * first.
+ * minimum-length rule: when the records cannot be right, that is what needs
+ * resolving first.
  * @param {Action} action - The action to compute
  * @param {ActionWithLength[]} lengthActions - The existing/planned actions competing for the boundary
  * @param {number} boundaryLengthMeters - The parcel's perimeter
@@ -106,19 +109,22 @@ function buildActionWithAvailableLength(
     return actionTransformer(action, lengthCalculation, showActionResults)
   }
 
-  const lengthRule = findLengthRule(action)
+  const minimumLengthRule = findMinimumLengthRule(action)
 
-  if (lengthRule) {
-    const lengthRuleResult = executeLengthRule(
-      lengthRule,
+  if (minimumLengthRule) {
+    const minimumLengthRuleResult = executeMinimumLengthRule(
+      minimumLengthRule,
       action.code,
       availableLength
     )
 
-    if (!lengthRuleResult.passed) {
+    if (!minimumLengthRuleResult.passed) {
       const lengthCalculation = {
         ...availableLength,
-        unavailableReason: lengthRuleReason(availableLength, lengthRuleResult)
+        unavailableReason: minimumLengthReason(
+          availableLength,
+          minimumLengthRuleResult
+        )
       }
 
       return actionTransformer(action, lengthCalculation, showActionResults)

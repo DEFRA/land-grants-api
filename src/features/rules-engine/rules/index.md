@@ -7,3 +7,4 @@
 - [Parcel covers has an intersection with historic features (HEFER)](1.0.0/hefer-consent-required.md)
 - [Parcel boundary has an intersection with a data layer (SSSI / HEFER, linear actions)](1.0.0/boundary-intersection-consent-required.md)
 - [Minimum length](1.0.0/minimum-length.md)
+- [Applied for total or partial available length](1.0.0/applied-for-total-or-partial-available-length.md)

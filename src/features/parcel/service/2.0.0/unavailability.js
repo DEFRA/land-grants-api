@@ -54,16 +54,16 @@ export function exceedsBoundaryReason(incompatibleActions) {
 }
 
 /**
- * Why a linear action cannot be applied for when its length rule rejects what
- * is left, in the rule's own wording: either the boundary was never long
- * enough, or the existing actions fit but leave too little of it.
+ * Why a linear action cannot be applied for when its minimum-length rule
+ * rejects what is left, in the rule's own wording: either the boundary was
+ * never long enough, or the existing actions fit but leave too little of it.
  * @param {AvailableLength} availableLength - The boundary still claimable
- * @param {LengthRuleResult} lengthRuleResult - The rule's failed verdict
+ * @param {MinimumLengthRuleResult} minimumLengthRuleResult - The rule's failed verdict
  * @returns {object} The unavailable reason
  */
-export function lengthRuleReason(availableLength, lengthRuleResult) {
+export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
   const { boundaryLengthMeters, incompatibleActions } = availableLength
-  const { reason, minimumLengthMeters } = lengthRuleResult
+  const { reason, minimumLengthMeters } = minimumLengthRuleResult
 
   const parcelTooShort =
     minimumLengthMeters !== undefined &&
@@ -95,5 +95,5 @@ export function lengthRuleReason(availableLength, lengthRuleResult) {
 /**
  * @import {AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
  * @import {AvailableLength, ActionWithLength} from '~/src/features/available-length/available-length.d.js'
- * @import {LengthRuleResult} from '~/src/features/parcel/parcel.d.js'
+ * @import {MinimumLengthRuleResult} from '~/src/features/parcel/parcel.d.js'
  */

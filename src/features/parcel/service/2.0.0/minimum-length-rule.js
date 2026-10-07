@@ -1,27 +1,24 @@
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 
-// Not available-length: applying for exactly what is left, it always passes
-const LENGTH_RULE_NAME = 'minimum-length'
-
 /**
- * The action's length rule, if it is configured with one.
+ * The action's minimum-length rule, if it is configured with one.
  * @param {Action} action - The action being applied for
- * @returns {ActionRule|undefined} The length rule
+ * @returns {ActionRule|undefined} The minimum-length rule
  */
-export function findLengthRule(action) {
-  return action.rules?.find((r) => (r.type ?? r.name) === LENGTH_RULE_NAME)
+export function findMinimumLengthRule(action) {
+  return action.rules?.find((r) => (r.type ?? r.name) === 'minimum-length')
 }
 
 /**
- * Run a length rule as if applying for everything still claimable, so only the
- * rule's minimum can reject it.
- * @param {ActionRule} rule - The length rule to run
+ * Run the minimum-length rule as if applying for everything still claimable, so
+ * only the rule's minimum can reject it.
+ * @param {ActionRule} rule - The minimum-length rule to run
  * @param {string} actionCode - The action being applied for
  * @param {AvailableLength} availableLength - The boundary still claimable
- * @returns {LengthRuleResult} The rule's verdict
+ * @returns {MinimumLengthRuleResult} The rule's verdict
  */
-export function executeLengthRule(rule, actionCode, availableLength) {
+export function executeMinimumLengthRule(rule, actionCode, availableLength) {
   const {
     availableLength: claimableLength,
     boundaryLengthMeters,
@@ -57,6 +54,6 @@ export function executeLengthRule(rule, actionCode, availableLength) {
 /**
  * @import {Action, ActionRule} from '~/src/features/actions/action.d.js'
  * @import {AvailableLength} from '~/src/features/available-length/available-length.d.js'
- * @import {LengthRuleResult} from '~/src/features/parcel/parcel.d.js'
+ * @import {MinimumLengthRuleResult} from '~/src/features/parcel/parcel.d.js'
  * @import {RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
  */

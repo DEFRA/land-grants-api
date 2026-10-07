@@ -29,9 +29,7 @@ describe('minimumLength', () => {
     )
 
     expect(result.passed).toBe(false)
-    expect(result.reason).toEqual(
-      'Enter a value that is no less than the minimum length for this action 20 m'
-    )
+    expect(result.reason).toEqual('The length must be at least 20 m')
   })
 
   test('should fail when the configured minimum exceeds the available length', () => {
@@ -46,16 +44,13 @@ describe('minimumLength', () => {
     )
   })
 
-  test('should fail when the applied for length is above the available length', () => {
+  test('should leave an applied for length above the available length to the available length rule', () => {
     const result = minimumLength.execute(
       createApplication(350, 300),
       createRule()
     )
 
-    expect(result.passed).toBe(false)
-    expect(result.reason).toEqual(
-      'Enter a value that is no more than the available length for this land parcel 300 m'
-    )
+    expect(result.passed).toBe(true)
   })
 
   test('should pass when the applied for length equals the configured minimum', () => {
