@@ -54,22 +54,12 @@ export const minimumLength = {
       }
     }
 
-    if (minimumLengthM > appliedForQuantity) {
+    if (appliedForQuantity < minimumLengthM) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `Enter a value that is no less than the minimum length for this action ${minimumLengthM} m`,
-        explanations
-      }
-    }
-
-    if (availability < appliedForQuantity) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: `Enter a value that is no more than the available length for this land parcel ${availability} m`,
+        reason: `The length must be at least ${minimumLengthM} m`,
         explanations
       }
     }
