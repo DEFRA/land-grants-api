@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="440" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">Worked example: 1000 m field, half wall / half hedgebank</text>
+
+  <!-- the field with two boundary halves -->
+  <g>
+    <text x="230" y="70" text-anchor="middle" font-weight="bold">The parcel (perimeter 1000 m)</text>
+    <!-- field body -->
+    <rect x="120" y="90" width="220" height="220" fill="#eef6e6" stroke="none"/>
+    <!-- hedgebank half (top + left) -->
+    <polyline points="120,310 120,90 340,90" fill="none" stroke="#548235" stroke-width="8"/>
+    <!-- wall half (right + bottom) -->
+    <polyline points="340,90 340,310 120,310" fill="none" stroke="#6c8ebf" stroke-width="8"/>
+    <text x="230" y="205" text-anchor="middle" font-size="13">field</text>
+    <text x="215" y="335" text-anchor="middle" fill="#6c8ebf">stone wall — 500 m (BND1)</text>
+    <text x="245" y="82"  text-anchor="middle" fill="#548235">hedgebank — 500 m (BND2)</text>
+  </g>
+
+  <!-- the calculation -->
+  <g font-size="15">
+    <text x="470" y="70" font-weight="bold">Available length for BND1 (both-sides)</text>
+
+    <text x="470" y="110">Base = P = <tspan font-weight="bold">1000 m</tspan></text>
+
+    <text x="470" y="150">Existing BND2 from SitiAgri = 1000 m</text>
+    <text x="470" y="172" font-size="13" fill="#555">(both faces of the 500 m hedgebank, single-side units)</text>
+
+    <text x="470" y="212">BND2 is single-side, target is both-sides</text>
+    <text x="470" y="234">&#8594; <tspan font-weight="bold">halve</tspan> the deduction: 1000 &#247; 2 = 500 m</text>
+
+    <line x1="470" y1="255" x2="860" y2="255" stroke="#7f7f7f" stroke-width="1"/>
+
+    <text x="470" y="290" font-weight="bold">Available = 1000 &#8722; 500 = 500 m</text>
+
+    <rect x="470" y="310" width="390" height="70" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="490" y="340">Correct: the free stone-wall half (500 m)</text>
+    <text x="490" y="363">is available for BND1. Naive subtraction gave 0.</text>
+  </g>
+
+  <text x="450" y="415" text-anchor="middle" font-style="italic" font-size="13">The deduction is halved because a single-side action only consumes one side-metre per metre.</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="380" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">Stacking: compatible actions share the length</text>
+
+  <!-- Left: compatible (not deducted) -->
+  <g>
+    <text x="230" y="70" text-anchor="middle" font-weight="bold" fill="#548235">Compatible &#8212; NOT deducted</text>
+    <!-- boundary line -->
+    <rect x="70" y="120" width="320" height="26" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="230" y="138" text-anchor="middle" font-size="13">boundary length</text>
+    <!-- both occupy same length -->
+    <rect x="70" y="160" width="320" height="20" fill="#9bc16b" stroke="#548235" stroke-width="1"/>
+    <text x="230" y="175" text-anchor="middle" font-size="12">existing CHRW2 (hedge)</text>
+    <rect x="70" y="185" width="320" height="20" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <text x="230" y="200" text-anchor="middle" font-size="12">applying for BND2 (hedgebank)</text>
+    <text x="230" y="250" text-anchor="middle" font-size="13">Hedge sits on the bank &#8212; same ground.</text>
+    <text x="230" y="272" text-anchor="middle" font-weight="bold">CHRW2 does not reduce BND2's available length.</text>
+  </g>
+
+  <!-- divider -->
+  <line x1="450" y1="90" x2="450" y2="310" stroke="#cccccc" stroke-width="1" stroke-dasharray="6 6"/>
+
+  <!-- Right: incompatible (deducted) -->
+  <g>
+    <text x="670" y="70" text-anchor="middle" font-weight="bold" fill="#a94442">Incompatible &#8212; deducted</text>
+    <rect x="510" y="120" width="320" height="26" fill="#f2dede" stroke="#a94442" stroke-width="2"/>
+    <text x="670" y="138" text-anchor="middle" font-size="13">boundary length</text>
+    <rect x="510" y="160" width="150" height="20" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="1"/>
+    <text x="585" y="175" text-anchor="middle" font-size="12">existing BND1 (wall)</text>
+    <rect x="670" y="160" width="160" height="20" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <text x="750" y="175" text-anchor="middle" font-size="12">room left for BND2</text>
+    <text x="670" y="250" text-anchor="middle" font-size="13">A wall can't share a hedgebank's ground.</text>
+    <text x="670" y="272" text-anchor="middle" font-weight="bold">BND1's length is subtracted from BND2's total.</text>
+  </g>
+
+  <text x="450" y="345" text-anchor="middle" font-style="italic" font-size="13">Only lengths of INCOMPATIBLE existing actions are subtracted; compatible ones are skipped.</text>
+</svg>

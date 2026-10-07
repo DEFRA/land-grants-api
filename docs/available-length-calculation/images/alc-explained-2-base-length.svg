@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="380" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">Base available length from the perimeter</text>
+
+  <!-- Left: the parcel -->
+  <g>
+    <text x="200" y="70" text-anchor="middle" font-weight="bold">A land parcel</text>
+    <rect x="90" y="90" width="220" height="180" fill="#eef6e6" stroke="#548235" stroke-width="4"/>
+    <text x="200" y="185" text-anchor="middle" fill="#548235">perimeter = P</text>
+    <text x="200" y="290" text-anchor="middle" font-style="italic" font-size="13">the physical boundary all the way round</text>
+  </g>
+
+  <!-- Right: both-sides vs single-side -->
+  <g>
+    <text x="620" y="70" text-anchor="middle" font-weight="bold">How much can be claimed?</text>
+
+    <!-- both-sides -->
+    <rect x="440" y="95" width="360" height="80" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+    <text x="460" y="130" font-weight="bold" fill="#2f5496">Both-sides (BND1)</text>
+    <text x="460" y="155">one metre covers both sides &#8594; base = <tspan font-weight="bold">P</tspan></text>
+
+    <!-- single-side -->
+    <rect x="440" y="195" width="360" height="100" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="460" y="230" font-weight="bold" fill="#548235">Single-side (BND2, CHRW2)</text>
+    <text x="460" y="255">each side is a separate metre to claim</text>
+    <text x="460" y="278">&#8594; base = <tspan font-weight="bold">2 &#215; P</tspan></text>
+  </g>
+
+  <text x="450" y="345" text-anchor="middle" font-style="italic" font-size="13">Do NOT double the perimeter for both-sides actions; DO double it for single-side actions.</text>
+</svg>

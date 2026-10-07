@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="360" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">Boundary cross-sections (looking along the boundary)</text>
+
+  <!-- Panel 1: dry stone wall (both-sides) -->
+  <g>
+    <text x="150" y="70" text-anchor="middle" font-weight="bold">BND1 — Dry stone wall</text>
+    <text x="150" y="90" text-anchor="middle" fill="#6c8ebf">Both-sides action</text>
+    <!-- ground -->
+    <line x1="40" y1="290" x2="260" y2="290" stroke="#8a6d3b" stroke-width="3"/>
+    <!-- wall -->
+    <rect x="120" y="150" width="60" height="140" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="2"/>
+    <line x1="150" y1="150" x2="150" y2="290" stroke="#7f7f7f" stroke-width="1" stroke-dasharray="4 4"/>
+    <!-- side arrows -->
+    <text x="95"  y="225" text-anchor="middle">side A</text>
+    <text x="205" y="225" text-anchor="middle">side B</text>
+    <text x="150" y="325" text-anchor="middle" font-style="italic">one structure, paid for both sides</text>
+  </g>
+
+  <!-- Panel 2: stone-faced hedgebank (single-side x2) -->
+  <g>
+    <text x="450" y="70" text-anchor="middle" font-weight="bold">BND2 — Stone-faced hedgebank</text>
+    <text x="450" y="90" text-anchor="middle" fill="#548235">Single-side action</text>
+    <line x1="340" y1="290" x2="560" y2="290" stroke="#8a6d3b" stroke-width="3"/>
+    <!-- two walls with earth between -->
+    <rect x="400" y="170" width="30" height="120" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="2"/>
+    <rect x="470" y="170" width="30" height="120" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="2"/>
+    <rect x="430" y="185" width="40" height="105" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <text x="450" y="245" text-anchor="middle" font-size="12">earth</text>
+    <text x="380" y="150" text-anchor="middle">side A</text>
+    <text x="520" y="150" text-anchor="middle">side B</text>
+    <text x="450" y="325" text-anchor="middle" font-style="italic">two faces, each maintained &amp; paid separately</text>
+  </g>
+
+  <!-- Panel 3: hedge on hedgebank (stacked) -->
+  <g>
+    <text x="750" y="70" text-anchor="middle" font-weight="bold">BND2 + CHRW2 stacked</text>
+    <text x="750" y="90" text-anchor="middle" fill="#548235">Compatible — share the length</text>
+    <line x1="640" y1="290" x2="860" y2="290" stroke="#8a6d3b" stroke-width="3"/>
+    <rect x="700" y="190" width="30" height="100" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="2"/>
+    <rect x="770" y="190" width="30" height="100" fill="#c9c9c9" stroke="#7f7f7f" stroke-width="2"/>
+    <rect x="730" y="200" width="40" height="90" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <!-- hedge on top -->
+    <ellipse cx="750" cy="175" rx="55" ry="35" fill="#9bc16b" stroke="#548235" stroke-width="2"/>
+    <text x="750" y="180" text-anchor="middle" font-size="12">hedge</text>
+    <text x="750" y="325" text-anchor="middle" font-style="italic">hedge sits on the earth of the bank</text>
+  </g>
+</svg>
