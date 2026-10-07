@@ -29,26 +29,28 @@ describe('Parcels Controller 2.0.0', () => {
     mockGetEnabledActions.mockResolvedValue(actions)
   })
 
-  test('should return a 200 status code with groups when groups field is requested', async () => {
+  const requestParcels = async (parcelIds, fields) => {
     const { h, getResponse } = createResponseCapture()
 
     await ParcelsControllerV2.handler(
       {
-        payload: {
-          parcelIds: ['SD5649-9215'],
-          fields: ['groups'],
-          plannedActions: []
-        },
+        payload: { parcelIds, fields, plannedActions: [] },
         headers: { 'x-forwarded-authorization': 'dummy' },
         logger,
-        server: {
-          postgresDb: connection
-        }
+        server: { postgresDb: connection }
       },
       h
     )
 
-    const { data, statusCode } = getResponse()
+    return getResponse()
+  }
+
+  test('should return a 200 status code with groups when groups field is requested', async () => {
+    const { data, statusCode } = await requestParcels(
+      ['SD5649-9215'],
+      ['groups']
+    )
+
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
     expect(data.groups).toEqual([
@@ -61,54 +63,23 @@ describe('Parcels Controller 2.0.0', () => {
   })
 
   test('should not return groups when groups field is not requested', async () => {
-    const { h, getResponse } = createResponseCapture()
+    const { data, statusCode } = await requestParcels(['SD5649-9215'], ['size'])
 
-    await ParcelsControllerV2.handler(
-      {
-        payload: {
-          parcelIds: ['SD5649-9215'],
-          fields: ['size'],
-          plannedActions: []
-        },
-        headers: { 'x-forwarded-authorization': 'dummy' },
-        logger,
-        server: {
-          postgresDb: connection
-        }
-      },
-      h
-    )
-
-    const { data, statusCode } = getResponse()
     expect(statusCode).toBe(200)
     expect(data.groups).toBeUndefined()
   })
 
   test('should return a 200 status code and valid parcel when sssiConsentRequired is requested', async () => {
-    const { h, getResponse } = createResponseCapture()
-
-    await ParcelsControllerV2.handler(
-      {
-        payload: {
-          parcelIds: ['SD5649-9215'],
-          fields: [
-            'size',
-            'actions',
-            'actions.sssiConsentRequired',
-            'actions.heferRequired'
-          ],
-          plannedActions: []
-        },
-        headers: { 'x-forwarded-authorization': 'dummy' },
-        logger,
-        server: {
-          postgresDb: connection
-        }
-      },
-      h
+    const { data, statusCode } = await requestParcels(
+      ['SD5649-9215'],
+      [
+        'size',
+        'actions',
+        'actions.sssiConsentRequired',
+        'actions.heferRequired'
+      ]
     )
 
-    const { data, statusCode } = getResponse()
     expect(statusCode).toBe(200)
     expect(data.message).toBe('success')
     expect(data.parcels).toEqual([
@@ -128,6 +99,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             quantityRequired: true,
+            isAvailable: true,
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             sssiConsentRequired: false,
@@ -142,6 +114,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             quantityRequired: true,
+            isAvailable: true,
             ratePerUnitGbp: 20,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -155,6 +128,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             quantityRequired: true,
+            isAvailable: true,
             ratePerUnitGbp: 53,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -168,6 +142,7 @@ describe('Parcels Controller 2.0.0', () => {
               value: 762.9068
             },
             quantityRequired: true,
+            isAvailable: true,
             ratePerUnitGbp: 66,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -176,5 +151,160 @@ describe('Parcels Controller 2.0.0', () => {
         ]
       }
     ])
+  })
+
+  describe('linear actions', () => {
+    // ST_Perimeter of each parcel in the seeded extract. SD6252-3622 is the
+    // shortest carrying agreements, and the two it has are areas
+    const parcelId = 'NY8836-6516'
+    const perimeterMeters = 2389
+    const shortParcelId = 'SD6252-3622'
+    const shortPerimeterMeters = 295
+
+    const bnd1 = {
+      enabled: true,
+      code: 'BND1',
+      groupId: 3,
+      groupName: 'Boundaries',
+      payment: { ratePerUnitGbp: 0.27 },
+      applicationUnitOfMeasurement: 'm',
+      durationYears: 3,
+      startDate: '2025-01-01',
+      version: 1,
+      display: true,
+      description: 'Maintain dry stone walls',
+      semanticVersion: '1.0.0',
+      rules: []
+    }
+
+    // Metre agreements are dropped on ingest, so anything competing for the
+    // boundary reaches us from the DAL rather than the agreements table
+    const dalAgreement = (actionCode, quantity) => ({
+      '6516-NY8836': [
+        {
+          actionCode,
+          quantity,
+          unit: 'm',
+          startDate: new Date('2025-01-01'),
+          endDate: new Date('2030-01-01')
+        }
+      ]
+    })
+
+    const actionOf = (data) => data.parcels[0].actions[0]
+    const availabilityOf = (data) => actionOf(data).availability
+
+    const withMinimumLength = (minimumLengthM) => ({
+      ...bnd1,
+      rules: [
+        {
+          name: 'minimum-length',
+          description: `Is the applied for length at least ${minimumLengthM} m?`,
+          config: { minimumLengthM }
+        }
+      ]
+    })
+
+    const requestActions = (target = parcelId) =>
+      requestParcels([target], ['actions'])
+
+    beforeEach(() => {
+      mockGetEnabledActions.mockResolvedValue([bnd1])
+    })
+
+    test('should report too little length remaining, with no ceiling, when agreements leave less than the minimum', async () => {
+      mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
+      mockGetAgreements.mockResolvedValue(
+        dalAgreement('BND2', perimeterMeters - 9)
+      )
+
+      const { data } = await requestActions()
+
+      expect(actionOf(data)).toEqual(
+        expect.objectContaining({
+          isAvailable: false,
+          availability: { unit: 'm', value: 0 },
+          unavailableReason: expect.objectContaining({
+            code: 'insufficient-length-remaining',
+            metadata: {
+              existingActions: [
+                { actionCode: 'BND2', billedLengthMeters: perimeterMeters - 9 }
+              ],
+              minimumLengthMeters: 20
+            }
+          })
+        })
+      )
+    })
+
+    test('should report that existing actions do not fit when agreements exceed the perimeter', async () => {
+      mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
+      mockGetAgreements.mockResolvedValue(
+        dalAgreement('BND2', perimeterMeters + 1)
+      )
+
+      const { data } = await requestActions()
+
+      expect(actionOf(data).unavailableReason).toEqual(
+        expect.objectContaining({
+          code: 'existing-actions-do-not-fit',
+          metadata: {
+            existingActions: [
+              { actionCode: 'BND2', billedLengthMeters: perimeterMeters + 1 }
+            ]
+          }
+        })
+      )
+    })
+
+    test('should report a parcel whose whole perimeter is under the minimum as too short', async () => {
+      mockGetEnabledActions.mockResolvedValue([
+        withMinimumLength(shortPerimeterMeters + 5)
+      ])
+
+      const { data } = await requestActions(shortParcelId)
+
+      expect(actionOf(data)).toEqual(
+        expect.objectContaining({
+          isAvailable: false,
+          unavailableReason: expect.objectContaining({
+            code: 'parcel-too-short-for-action'
+          })
+        })
+      )
+    })
+
+    test('should report the whole perimeter when only an area agreement is recorded', async () => {
+      // The parcel carries a live agreement of 251980 sqm; an area never
+      // competes for a boundary, whatever its compatibility
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters
+      })
+    })
+
+    test('should deduct an incompatible metre agreement from the perimeter', async () => {
+      mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
+
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters - 300
+      })
+    })
+
+    test('should leave the perimeter intact for a compatible metre agreement', async () => {
+      mockGetAgreements.mockResolvedValue(dalAgreement('CNUM1', 300))
+
+      const { data } = await requestActions()
+
+      expect(availabilityOf(data)).toEqual({
+        unit: 'm',
+        value: perimeterMeters
+      })
+    })
   })
 })

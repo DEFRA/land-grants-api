@@ -10,6 +10,12 @@ const defaultAction = {
 }
 
 describe('actionTransformer 2.0.0', () => {
+  const linearAction = {
+    ...defaultAction,
+    code: 'BND1',
+    applicationUnitOfMeasurement: 'm'
+  }
+
   test('should transform action with available area', () => {
     const action = { ...defaultAction, semanticVersion: '2.0.0' }
     const availableArea = { availableAreaHectares: 500 }
@@ -24,6 +30,7 @@ describe('actionTransformer 2.0.0', () => {
         value: 500
       },
       quantityRequired: true,
+      isAvailable: true,
       version: '2.0.0'
     })
   })
@@ -37,7 +44,8 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availability: { unit: 'ha', value: null },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -48,7 +56,8 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availability: { unit: 'ha', value: null },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -64,7 +73,8 @@ describe('actionTransformer 2.0.0', () => {
         code: 'ACTION1',
         description: 'Test Action',
         availability: { unit, value: null },
-        quantityRequired: true
+        quantityRequired: true,
+        isAvailable: true
       })
     }
   )
@@ -83,7 +93,8 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'ha',
         value: 0
       },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -98,7 +109,8 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availability: { unit: 'ha', value: null },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -120,6 +132,7 @@ describe('actionTransformer 2.0.0', () => {
         value: 500
       },
       quantityRequired: true,
+      isAvailable: true,
       results: {
         totalValidLandCoverSqm: 5000000,
         stacks: [{ stack: 'data' }],
@@ -145,7 +158,8 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'ha',
         value: 500
       },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -158,7 +172,8 @@ describe('actionTransformer 2.0.0', () => {
       code: 'ACTION1',
       description: 'Test Action',
       availability: { unit: 'ha', value: null },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -182,7 +197,8 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'ha',
         value: null
       },
-      quantityRequired: false
+      quantityRequired: false,
+      isAvailable: true
     })
   })
 
@@ -206,7 +222,8 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'sqm',
         value: 150
       },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -227,7 +244,8 @@ describe('actionTransformer 2.0.0', () => {
         unit: 'sqm',
         value: 0
       },
-      quantityRequired: true
+      quantityRequired: true,
+      isAvailable: true
     })
   })
 
@@ -248,8 +266,114 @@ describe('actionTransformer 2.0.0', () => {
         value: null
       },
       quantityRequired: true,
+      isAvailable: true,
       displayUnit: 'tomato',
       displayUnitPlural: 'tomatoes'
     })
+  })
+
+  test('should report an action as unavailable when the existing actions do not fit', () => {
+    const availableArea = {
+      availableAreaHectares: 0,
+      availableAreaSqm: 0,
+      unavailableReason: {
+        code: 'existing-actions-do-not-fit',
+        reason:
+          'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+        metadata: {
+          existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
+        }
+      }
+    }
+
+    const result = actionTransformer(defaultAction, availableArea)
+
+    expect(result).toEqual({
+      code: 'ACTION1',
+      description: 'Test Action',
+      availability: { unit: 'ha', value: 0 },
+      quantityRequired: true,
+      isAvailable: false,
+      unavailableReason: {
+        code: 'existing-actions-do-not-fit',
+        reason:
+          'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+        metadata: {
+          existingActions: [{ actionCode: 'CMOR1', areaHa: 3.2 }]
+        }
+      }
+    })
+  })
+
+  test('should still include results for an unavailable action when showResults is true', () => {
+    const availableArea = {
+      availableAreaHectares: 0,
+      unavailableReason: { code: 'existing-actions-do-not-fit' },
+      totalValidLandCoverSqm: 41200,
+      explanations: ['why it did not fit']
+    }
+
+    const result = actionTransformer(defaultAction, availableArea, true)
+
+    expect(result.results).toEqual({
+      totalValidLandCoverSqm: 41200,
+      stacks: undefined,
+      explanations: ['why it did not fit']
+    })
+  })
+
+  test('should report zero for an unavailable action whatever its calculation left', () => {
+    const unavailableReason = {
+      code: 'existing-actions-do-not-fit',
+      reason:
+        'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.',
+      metadata: {
+        existingActions: [{ actionCode: 'BND2', billedLengthMeters: 1788 }]
+      }
+    }
+
+    const result = actionTransformer(linearAction, {
+      availableLength: 12,
+      unavailableReason
+    })
+
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 0 },
+      quantityRequired: true,
+      isAvailable: false,
+      unavailableReason
+    })
+  })
+
+  test('should report the available length for a metre-based action', () => {
+    const result = actionTransformer(linearAction, { availableLength: 240 })
+
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 240 },
+      quantityRequired: true,
+      isAvailable: true
+    })
+  })
+
+  test('should report a metre-based action with no length left as available at zero, not unrestricted', () => {
+    const result = actionTransformer(linearAction, { availableLength: 0 })
+
+    expect(result).toEqual({
+      code: 'BND1',
+      description: 'Test Action',
+      availability: { unit: 'm', value: 0 },
+      quantityRequired: true,
+      isAvailable: true
+    })
+  })
+
+  test('should not read an area figure for a metre-based action', () => {
+    const result = actionTransformer(linearAction, { availableAreaSqm: 5000 })
+
+    expect(result.availability).toEqual({ unit: 'm', value: null })
   })
 })

@@ -1,589 +1,49 @@
+import { getActionsForParcel } from './parcel.service.js'
+import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
-  getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired,
-  getActionsForParcelWithHEFERConsentRequired,
-  splitParcelId
-} from './parcel.service.js'
-import {
-  plannedActionsTransformer,
+  areaActionsTransformer,
   sizeTransformer
 } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
-import {
-  DATA_LAYER_TYPES,
-  getDataLayerQueryAccumulated,
-  getDataLayerQueryUnion
-} from '~/src/features/data-layers/queries/getDataLayer.query.js'
-import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js'
-import {
-  findMaximumAvailableArea,
-  throwIfInfeasible
-} from '~/src/features/available-area/availableArea.js'
+import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
+import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 
-// The consent transformers run for real so the consent tests assert on the
-// flags an applicant sees, not on what the rules engine was called with
 vi.mock(
   '~/src/features/parcel/transformers/parcelActions.transformer.js',
   async (importOriginal) => {
     const actual = await importOriginal()
     return {
       ...actual,
-      plannedActionsTransformer: vi.fn(),
+      areaActionsTransformer: vi.fn(),
       sizeTransformer: vi.fn()
     }
   }
 )
-vi.mock('~/src/features/data-layers/queries/getDataLayer.query.js')
-vi.mock('~/src/features/data-layers/queries/getBoundaryIntersection.query.js')
 vi.mock('~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js')
 vi.mock('~/src/features/available-area/availableArea.js')
+vi.mock('~/src/features/available-length/availableLength.js')
+vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js')
 vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 
+// The two views of enabled-action config that a request works out once,
+// as parcels.controller builds them
+const prepared = (enabledActions) => ({
+  displayedActions: enabledActions.filter((a) => a.display),
+  unitByActionCode: getUnitByActionCode(enabledActions)
+})
+
 describe('Parcel Service 2.0.0', () => {
   const mockLogger = {
     error: vi.fn(),
-    info: vi.fn()
+    info: vi.fn(),
+    warn: vi.fn()
   }
-
-  describe('splitParcelId', () => {
-    test('should split valid parcel id into sheetId and parcelId', () => {
-      const result = splitParcelId('SX0679-9238', mockLogger)
-      expect(result).toEqual({
-        sheetId: 'SX0679',
-        parcelId: '9238'
-      })
-    })
-
-    test('should throw error for invalid input', () => {
-      expect(() => splitParcelId('SX0679-', mockLogger)).toThrow(
-        'Unable to split parcel id'
-      )
-    })
-
-    test('should throw error for empty input', () => {
-      expect(() => splitParcelId(null, mockLogger)).toThrow(
-        'Unable to split parcel id'
-      )
-    })
-  })
-
-  describe('consent flags', () => {
-    const parcelIds = ['SX0679-9238']
-    const postgresDb = {}
-
-    const responseParcels = [
-      {
-        parcelId: '9238',
-        sheetId: 'SX0679',
-        size: { unit: 'ha', value: 1.0 },
-        actions: [
-          {
-            code: 'UPL1',
-            description: 'Action 1',
-            availableArea: { unit: 'ha', value: 0.5 }
-          },
-          {
-            code: 'UPL2',
-            description: 'Action 2',
-            availableArea: { unit: 'ha', value: 0.3 }
-          }
-        ]
-      }
-    ]
-
-    const areaAction = (code, rule) => ({
-      applicationUnitOfMeasurement: 'ha',
-      code,
-      description: `Action ${code}`,
-      enabled: true,
-      display: true,
-      rules: rule ? [rule] : []
-    })
-
-    const linearAction = (code, rule, display = true) => ({
-      applicationUnitOfMeasurement: 'm',
-      code,
-      description: `Action ${code}`,
-      enabled: true,
-      display,
-      rules: rule ? [rule] : []
-    })
-
-    const boundaryRule = (name, layerName, caveatCode) => ({
-      name,
-      type: 'boundary-intersection-consent-required',
-      version: '1.0.0',
-      config: {
-        layerName,
-        caveatCode,
-        caveatDescription: 'Consent is required',
-        toleranceMeters: 0
-      }
-    })
-
-    const responseParcelsWithBnd1 = [
-      {
-        ...responseParcels[0],
-        actions: [
-          ...responseParcels[0].actions,
-          {
-            code: 'BND1',
-            description: 'Action BND1',
-            availableArea: { unit: 'm', value: null }
-          }
-        ]
-      }
-    ]
-
-    const flagsOf = (parcels, flag) =>
-      Object.fromEntries(parcels[0].actions.map((a) => [a.code, a[flag]]))
-
-    beforeEach(() => {
-      vi.clearAllMocks()
-    })
-
-    describe('getActionsForParcelWithSSSIConsentRequired', () => {
-      const sssiRule = {
-        name: 'sssi-consent-required',
-        version: '1.0.0',
-        config: {
-          layerName: 'sssi',
-          caveatDescription: 'A consent is required from Natural England',
-          tolerancePercent: 1
-        }
-      }
-      const enabledActions = [areaAction('UPL1', sssiRule), areaAction('UPL2')]
-
-      beforeEach(() => {
-        getDataLayerQueryAccumulated.mockResolvedValue({
-          intersectingAreaPercentage: 25.5,
-          intersectionAreaHa: 0.25
-        })
-      })
-
-      test('queries the sssi layer for the requested parcel', async () => {
-        await getActionsForParcelWithSSSIConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(getDataLayerQueryAccumulated).toHaveBeenCalledWith(
-          'SX0679',
-          '9238',
-          DATA_LAYER_TYPES.sssi,
-          postgresDb,
-          mockLogger
-        )
-      })
-
-      test('flags an action whose sssi rule raises a caveat and not one without the rule', async () => {
-        const result = await getActionsForParcelWithSSSIConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-          UPL1: true,
-          UPL2: false
-        })
-      })
-
-      test('does not flag an action when the intersection is within tolerance', async () => {
-        getDataLayerQueryAccumulated.mockResolvedValue({
-          intersectingAreaPercentage: 0,
-          intersectionAreaHa: 0
-        })
-
-        const result = await getActionsForParcelWithSSSIConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-          UPL1: false,
-          UPL2: false
-        })
-      })
-
-      test('adds the flag to every action while preserving the rest of the parcel', async () => {
-        const result = await getActionsForParcelWithSSSIConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(result).toEqual([
-          {
-            ...responseParcels[0],
-            actions: [
-              { ...responseParcels[0].actions[0], sssiConsentRequired: true },
-              { ...responseParcels[0].actions[1], sssiConsentRequired: false }
-            ]
-          }
-        ])
-      })
-
-      test('flags nothing when no actions are enabled', async () => {
-        const result = await getActionsForParcelWithSSSIConsentRequired(
-          parcelIds,
-          responseParcels,
-          [],
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-          UPL1: false,
-          UPL2: false
-        })
-      })
-
-      test('propagates an error from the sssi query', async () => {
-        getDataLayerQueryAccumulated.mockRejectedValue(
-          new Error('Database connection failed')
-        )
-
-        await expect(
-          getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcels,
-            enabledActions,
-            mockLogger,
-            postgresDb
-          )
-        ).rejects.toThrow('Database connection failed')
-      })
-
-      describe('with a linear action', () => {
-        const sssiBoundaryRule = boundaryRule(
-          'sssi-consent-required',
-          'sssi',
-          'ne-consent-required'
-        )
-        const actionsWithBnd1 = [
-          ...enabledActions,
-          linearAction('BND1', sssiBoundaryRule)
-        ]
-
-        beforeEach(() => {
-          getDataLayerQueryAccumulated.mockResolvedValue({
-            intersectingAreaPercentage: 0,
-            intersectionAreaHa: 0
-          })
-          getBoundaryIntersection.mockResolvedValue({
-            intersectingLengthMeters: 897,
-            boundaryLengthMeters: 3518
-          })
-        })
-
-        test('queries the sssi boundary intersection for the requested parcel', async () => {
-          await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(getBoundaryIntersection).toHaveBeenCalledWith(
-            'SX0679',
-            '9238',
-            DATA_LAYER_TYPES.sssi,
-            postgresDb,
-            mockLogger
-          )
-        })
-
-        test('flags the linear action on a boundary the area rule misses, leaving the area action unflagged', async () => {
-          const result = await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-            UPL1: false,
-            UPL2: false,
-            BND1: true
-          })
-        })
-
-        test('does not flag the linear action when its boundary touches nothing', async () => {
-          getBoundaryIntersection.mockResolvedValue({
-            intersectingLengthMeters: 0,
-            boundaryLengthMeters: 927
-          })
-
-          const result = await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-            UPL1: false,
-            UPL2: false,
-            BND1: false
-          })
-        })
-
-        test('does not flag the linear action when the boundary query fails', async () => {
-          getBoundaryIntersection.mockResolvedValue(null)
-
-          const result = await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(flagsOf(result, 'sssiConsentRequired')).toEqual({
-            UPL1: false,
-            UPL2: false,
-            BND1: false
-          })
-        })
-
-        test('does not query the boundary when no displayed action is measured in metres', async () => {
-          await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcels,
-            enabledActions,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(getBoundaryIntersection).not.toHaveBeenCalled()
-        })
-
-        test('does not query the boundary when the only linear action is hidden', async () => {
-          await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcels,
-            [...enabledActions, linearAction('BND1', sssiBoundaryRule, false)],
-            mockLogger,
-            postgresDb
-          )
-
-          expect(getBoundaryIntersection).not.toHaveBeenCalled()
-        })
-      })
-    })
-
-    describe('getActionsForParcelWithHEFERConsentRequired', () => {
-      const heferRule = {
-        name: 'hefer-consent-required',
-        version: '1.0.0',
-        config: {
-          layerName: 'historic_features',
-          caveatDescription: 'A HEFER is needed from Historic England',
-          tolerancePercent: 0
-        }
-      }
-      const enabledActions = [areaAction('UPL1', heferRule), areaAction('UPL2')]
-
-      beforeEach(() => {
-        getDataLayerQueryUnion.mockResolvedValue({
-          intersectingAreaPercentage: 15.2,
-          intersectionAreaHa: 0.15
-        })
-      })
-
-      test('queries the historic features layer for the requested parcel', async () => {
-        await getActionsForParcelWithHEFERConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(getDataLayerQueryUnion).toHaveBeenCalledWith(
-          'SX0679',
-          '9238',
-          DATA_LAYER_TYPES.historic_features,
-          postgresDb,
-          mockLogger
-        )
-      })
-
-      test('flags an action whose hefer rule raises a caveat and not one without the rule', async () => {
-        const result = await getActionsForParcelWithHEFERConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'heferRequired')).toEqual({
-          UPL1: true,
-          UPL2: false
-        })
-      })
-
-      test('does not flag an action when the intersection is within tolerance', async () => {
-        getDataLayerQueryUnion.mockResolvedValue({
-          intersectingAreaPercentage: 0,
-          intersectionAreaHa: 0
-        })
-
-        const result = await getActionsForParcelWithHEFERConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'heferRequired')).toEqual({
-          UPL1: false,
-          UPL2: false
-        })
-      })
-
-      test('adds the flag to every action while preserving the rest of the parcel', async () => {
-        const result = await getActionsForParcelWithHEFERConsentRequired(
-          parcelIds,
-          responseParcels,
-          enabledActions,
-          mockLogger,
-          postgresDb
-        )
-
-        expect(result).toEqual([
-          {
-            ...responseParcels[0],
-            actions: [
-              { ...responseParcels[0].actions[0], heferRequired: true },
-              { ...responseParcels[0].actions[1], heferRequired: false }
-            ]
-          }
-        ])
-      })
-
-      test('flags nothing when no actions are enabled', async () => {
-        const result = await getActionsForParcelWithHEFERConsentRequired(
-          parcelIds,
-          responseParcels,
-          [],
-          mockLogger,
-          postgresDb
-        )
-
-        expect(flagsOf(result, 'heferRequired')).toEqual({
-          UPL1: false,
-          UPL2: false
-        })
-      })
-
-      test('propagates an error from the historic features query', async () => {
-        getDataLayerQueryUnion.mockRejectedValue(
-          new Error('Database connection failed')
-        )
-
-        await expect(
-          getActionsForParcelWithHEFERConsentRequired(
-            parcelIds,
-            responseParcels,
-            enabledActions,
-            mockLogger,
-            postgresDb
-          )
-        ).rejects.toThrow('Database connection failed')
-      })
-
-      describe('with a linear action', () => {
-        const heferBoundaryRule = boundaryRule(
-          'hefer-consent-required',
-          'historic_features',
-          'hefer-consent-required'
-        )
-        const actionsWithBnd1 = [
-          ...enabledActions,
-          linearAction('BND1', heferBoundaryRule)
-        ]
-
-        beforeEach(() => {
-          getDataLayerQueryUnion.mockResolvedValue({
-            intersectingAreaPercentage: 0,
-            intersectionAreaHa: 0
-          })
-          getBoundaryIntersection.mockResolvedValue({
-            intersectingLengthMeters: 929,
-            boundaryLengthMeters: 10334
-          })
-        })
-
-        test('queries the historic features boundary intersection for the requested parcel', async () => {
-          await getActionsForParcelWithHEFERConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(getBoundaryIntersection).toHaveBeenCalledWith(
-            'SX0679',
-            '9238',
-            DATA_LAYER_TYPES.historic_features,
-            postgresDb,
-            mockLogger
-          )
-        })
-
-        test('flags the linear action whose boundary crosses historic features', async () => {
-          const result = await getActionsForParcelWithHEFERConsentRequired(
-            parcelIds,
-            responseParcelsWithBnd1,
-            actionsWithBnd1,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(flagsOf(result, 'heferRequired')).toEqual({
-            UPL1: false,
-            UPL2: false,
-            BND1: true
-          })
-        })
-
-        test('does not query the boundary when no displayed action is measured in metres', async () => {
-          await getActionsForParcelWithHEFERConsentRequired(
-            parcelIds,
-            responseParcels,
-            enabledActions,
-            mockLogger,
-            postgresDb
-          )
-
-          expect(getBoundaryIntersection).not.toHaveBeenCalled()
-        })
-      })
-    })
-  })
 
   describe('getActionsForParcel', () => {
     let mockParcel
@@ -591,6 +51,23 @@ describe('Parcel Service 2.0.0', () => {
     let mockEnabledActionsForParcel
     let mockRequest
     let mockCompatibilityCheckFn
+
+    // Second argument of the actionTransformer call for that action code:
+    // the availability the service worked out for it
+    const actionAvailabilityFor = (code) => {
+      const [, actionAvailability] = actionTransformer.mock.calls.find(
+        ([action]) => action.code === code
+      )
+      return actionAvailability
+    }
+
+    // The warning reads the transformed action, so carry the reason through
+    const passUnavailableReasonThrough = () =>
+      actionTransformer.mockImplementation((action, calculation) => ({
+        code: action.code,
+        description: action.description,
+        unavailableReason: calculation?.unavailableReason
+      }))
 
     beforeEach(() => {
       vi.clearAllMocks()
@@ -636,7 +113,7 @@ describe('Parcel Service 2.0.0', () => {
       mockCompatibilityCheckFn = vi.fn()
 
       mergeAgreementsTransformer.mockReturnValue([])
-      plannedActionsTransformer.mockReturnValue([])
+      areaActionsTransformer.mockReturnValue([])
       sizeTransformer.mockImplementation((value) => ({ unit: 'ha', value }))
       getAvailableAreaDataRequirements.mockResolvedValue({
         landCoverToString: 'grass'
@@ -647,7 +124,6 @@ describe('Parcel Service 2.0.0', () => {
         totalValidLandCoverSqm: 5000,
         feasible: true
       })
-      throwIfInfeasible.mockImplementation(() => undefined)
       formatExplanationSections.mockReturnValue([])
       actionTransformer.mockImplementation((action) => ({
         code: action.code,
@@ -660,7 +136,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         { ...mockPayload, fields: [] },
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -677,7 +153,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         { ...mockPayload, fields: ['size'] },
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -691,7 +167,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -723,14 +199,14 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         false,
-        [
+        prepared([
           {
             applicationUnitOfMeasurement: 'count',
             code: 'WBD1',
             description: 'Manage ponds',
             display: true
           }
-        ],
+        ]),
         mockCompatibilityCheckFn,
         mockRequest,
         'token'
@@ -744,7 +220,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         false,
-        [mockEnabledActionsForParcel[2]],
+        prepared([mockEnabledActionsForParcel[2]]),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -778,7 +254,7 @@ describe('Parcel Service 2.0.0', () => {
           mockParcel,
           mockPayload,
           false,
-          [mockEnabledActionsForParcel[actionIndex]],
+          prepared([mockEnabledActionsForParcel[actionIndex]]),
           mockCompatibilityCheckFn,
           mockRequest,
           'token'
@@ -807,7 +283,7 @@ describe('Parcel Service 2.0.0', () => {
         }
       ]
       mergeAgreementsTransformer.mockReturnValue(plannedActions)
-      plannedActionsTransformer.mockReturnValue([
+      areaActionsTransformer.mockReturnValue([
         { actionCode: 'HEF1', areaSqm: 100 },
         { actionCode: 'UPL1', areaSqm: 20000 }
       ])
@@ -816,7 +292,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         { ...mockPayload, plannedActions },
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         'token'
@@ -825,7 +301,7 @@ describe('Parcel Service 2.0.0', () => {
       // Computing UPL1's (ha) available area now also considers the
       // existing HEF1 (sqm) agreement as area demand - the AAC's own
       // land-cover eligibility decides whether they actually compete.
-      expect(plannedActionsTransformer).toHaveBeenCalledWith(plannedActions)
+      expect(areaActionsTransformer).toHaveBeenCalledWith(plannedActions)
     })
 
     test('should exclude configured non-area (count) actions from area demand', async () => {
@@ -846,7 +322,7 @@ describe('Parcel Service 2.0.0', () => {
         }
       ]
       mergeAgreementsTransformer.mockReturnValue(plannedActions)
-      plannedActionsTransformer.mockReturnValue([
+      areaActionsTransformer.mockReturnValue([
         { actionCode: 'UPL1', areaSqm: 100 }
       ])
 
@@ -864,16 +340,14 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         { ...mockPayload, plannedActions },
         false,
-        enabledActionsWithCount,
+        prepared(enabledActionsWithCount),
         mockCompatibilityCheckFn,
         mockRequest,
         []
       )
 
-      expect(plannedActionsTransformer).toHaveBeenCalledTimes(1)
-      expect(plannedActionsTransformer).toHaveBeenCalledWith([
-        plannedActions[1]
-      ])
+      expect(areaActionsTransformer).toHaveBeenCalledTimes(1)
+      expect(areaActionsTransformer).toHaveBeenCalledWith([plannedActions[1]])
 
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledTimes(1)
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
@@ -919,7 +393,7 @@ describe('Parcel Service 2.0.0', () => {
         }
       ]
       mergeAgreementsTransformer.mockReturnValue(plannedActions)
-      plannedActionsTransformer.mockReturnValue([
+      areaActionsTransformer.mockReturnValue([
         { actionCode: 'LEGACY_AREA', areaSqm: 100 }
       ])
 
@@ -927,13 +401,13 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         { ...mockPayload, plannedActions },
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
       )
 
-      expect(plannedActionsTransformer).toHaveBeenCalledWith([
+      expect(areaActionsTransformer).toHaveBeenCalledWith([
         plannedActions[0],
         plannedActions[1]
       ])
@@ -944,7 +418,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         false,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -961,7 +435,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         true,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -979,7 +453,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         undefined,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         []
@@ -1005,7 +479,7 @@ describe('Parcel Service 2.0.0', () => {
         mockParcel,
         mockPayload,
         undefined,
-        mockEnabledActionsForParcel,
+        prepared(mockEnabledActionsForParcel),
         mockCompatibilityCheckFn,
         mockRequest,
         [upl1]
@@ -1014,23 +488,366 @@ describe('Parcel Service 2.0.0', () => {
       expect(mergeAgreementsTransformer).toHaveBeenCalledWith([upl1], [])
     })
 
-    test('should propagate error when the available area is infeasible', async () => {
-      const infeasibleError = new Error('Infeasible area')
-      throwIfInfeasible.mockImplementation(() => {
-        throw infeasibleError
-      })
-
-      await expect(
-        getActionsForParcel(
+    describe('area availability', () => {
+      test('should not report a reason when the calculation is feasible', async () => {
+        await getActionsForParcel(
           mockParcel,
           mockPayload,
           false,
-          mockEnabledActionsForParcel,
+          prepared(mockEnabledActionsForParcel),
           mockCompatibilityCheckFn,
           mockRequest,
           []
         )
-      ).rejects.toThrow('Infeasible area')
+
+        const actionAvailability = actionAvailabilityFor('UPL1')
+
+        expect(actionAvailability.unavailableReason).toBeUndefined()
+      })
+
+      describe('when the existing actions do not fit the parcel', () => {
+        // Two existing actions the LP could not arrange on the parcel's land covers
+        const infeasibleResult = {
+          context: {
+            existingActions: [
+              { actionCode: 'CMOR1', areaSqm: 32000 },
+              { actionCode: 'UPL1', areaSqm: 26300 }
+            ]
+          },
+          availableAreaSqm: 0,
+          totalValidLandCoverSqm: 41200,
+          feasible: false
+        }
+
+        test('should still return every displayed action', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+          const result = await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          expect(result.actions).toEqual([
+            { code: 'UPL1', description: 'Action 1' },
+            { code: 'HEF1', description: 'Action 3' }
+          ])
+        })
+
+        test('should report why the existing actions do not fit', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+
+          await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          const actionAvailability = actionAvailabilityFor('UPL1')
+
+          expect(actionAvailability.unavailableReason).toEqual({
+            code: 'existing-actions-do-not-fit',
+            reason:
+              'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.',
+            metadata: {
+              existingActions: [
+                { actionCode: 'CMOR1', areaHa: 3.2 },
+                { actionCode: 'UPL1', areaHa: 2.63 }
+              ]
+            }
+          })
+        })
+
+        test('should warn once, naming the parcel and every action affected', async () => {
+          findMaximumAvailableArea.mockReturnValue(infeasibleResult)
+          passUnavailableReasonThrough()
+
+          await getActionsForParcel(
+            mockParcel,
+            mockPayload,
+            false,
+            prepared(mockEnabledActionsForParcel),
+            mockCompatibilityCheckFn,
+            mockRequest,
+            []
+          )
+
+          expect(mockLogger.warn).toHaveBeenCalledTimes(1)
+          const [, message] = mockLogger.warn.mock.calls[0]
+          expect(message).toContain('sheetId=SX0679')
+          expect(message).toContain('parcelId=9238')
+          expect(message).toContain('actionCodes=UPL1,HEF1')
+        })
+      })
+    })
+
+    describe('linear actions', () => {
+      const bnd1 = {
+        applicationUnitOfMeasurement: 'm',
+        code: 'BND1',
+        description: 'Maintain dry stone walls',
+        display: true
+      }
+      const bnd2 = { ...bnd1, code: 'BND2', description: 'Maintain hedgerows' }
+
+      // Every request also carries an area action, as a real parcel would
+      const requestActions = (actions) =>
+        getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          prepared([...actions, mockEnabledActionsForParcel[0]]),
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+      // What calculateAvailableLength reports, varied only where a test cares
+      const lengthResult = (overrides = {}) => ({
+        availableLength: 240,
+        boundaryLengthMeters: 1800,
+        incompatibleLengthMeters: 1560,
+        exceedsBoundary: false,
+        incompatibleActions: [],
+        ...overrides
+      })
+
+      beforeEach(() => {
+        getLandParcelBoundary.mockResolvedValue({
+          boundaryLengthMeters: 1800
+        })
+        calculateAvailableLength.mockReturnValue(lengthResult())
+      })
+
+      test('should report the available length', async () => {
+        await requestActions([bnd1])
+
+        expect(actionTransformer).toHaveBeenCalledWith(
+          bnd1,
+          expect.objectContaining({ availableLength: 240 }),
+          false
+        )
+      })
+
+      test('should read the parcel boundary once however many linear actions there are', async () => {
+        await requestActions([bnd1, bnd2])
+
+        expect(getLandParcelBoundary).toHaveBeenCalledTimes(1)
+        expect(getLandParcelBoundary).toHaveBeenCalledWith(
+          'SX0679',
+          '9238',
+          mockRequest.server.postgresDb,
+          mockLogger
+        )
+      })
+
+      test('should not read the parcel boundary when nothing displayed is measured in metres', async () => {
+        await requestActions([])
+
+        expect(getLandParcelBoundary).not.toHaveBeenCalled()
+      })
+
+      test('should deduct only the existing actions measured in metres', async () => {
+        mergeAgreementsTransformer.mockReturnValue([
+          { actionCode: 'BND2', quantity: 300, unit: 'm' },
+          { actionCode: 'UPL1', quantity: 2, unit: 'ha' }
+        ])
+
+        await requestActions([bnd1])
+
+        expect(calculateAvailableLength).toHaveBeenCalledWith(
+          'BND1',
+          [{ actionCode: 'BND2', billedLengthMeters: 300 }],
+          mockCompatibilityCheckFn,
+          1800
+        )
+      })
+
+      test('should leave a linear action unrestricted when the boundary cannot be read', async () => {
+        getLandParcelBoundary.mockResolvedValue(null)
+
+        await requestActions([bnd1])
+
+        expect(calculateAvailableLength).not.toHaveBeenCalled()
+        expect(actionTransformer).toHaveBeenCalledWith(bnd1, undefined, false)
+      })
+
+      describe('availability', () => {
+        const bnd1WithMinimum = {
+          ...bnd1,
+          rules: [
+            {
+              name: 'minimum-length',
+              description: 'Is the applied for length at least 20 m?',
+              config: { minimumLengthM: 20 }
+            }
+          ]
+        }
+
+        describe('when existing actions exceed the boundary', () => {
+          beforeEach(() => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                boundaryLengthMeters: 1120,
+                incompatibleLengthMeters: 1121,
+                exceedsBoundary: true,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1121 }
+                ]
+              })
+            )
+          })
+
+          test('should report that existing actions do not fit, naming them', async () => {
+            await requestActions([bnd1])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'existing-actions-do-not-fit',
+              reason:
+                'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.',
+              metadata: {
+                existingActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1121 }
+                ]
+              }
+            })
+          })
+
+          test('should warn that existing actions do not fit', async () => {
+            passUnavailableReasonThrough()
+
+            await requestActions([bnd1])
+
+            const [, message] = mockLogger.warn.mock.calls[0]
+
+            expect(message).toContain('actionCodes=BND1')
+          })
+
+          test('should report existing actions not fitting ahead of a parcel too short for the action', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                boundaryLengthMeters: 15,
+                incompatibleLengthMeters: 16,
+                exceedsBoundary: true
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason.code).toBe(
+              'existing-actions-do-not-fit'
+            )
+          })
+        })
+
+        describe('when the action has a minimum length', () => {
+          test("should report too little length remaining when the existing actions fit but leave less than the minimum, in the rule's own words", async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 12,
+                incompatibleLengthMeters: 1788,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1788 }
+                ]
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'insufficient-length-remaining',
+              reason:
+                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)',
+              metadata: {
+                existingActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1788 }
+                ],
+                minimumLengthMeters: 20
+              }
+            })
+          })
+
+          test('should not warn when the existing actions only leave too little for the minimum', async () => {
+            passUnavailableReasonThrough()
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({ availableLength: 12 })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            expect(mockLogger.warn).not.toHaveBeenCalled()
+          })
+
+          test("should report a parcel too short for the action, in the rule's own words", async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 15,
+                boundaryLengthMeters: 15,
+                incompatibleLengthMeters: 0
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toEqual({
+              code: 'parcel-too-short-for-action',
+              reason:
+                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (15 m)',
+              metadata: { boundaryLengthMeters: 15, minimumLengthMeters: 20 }
+            })
+          })
+
+          test('should leave the action available when what is left meets the minimum', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({ availableLength: 240 })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toBeUndefined()
+          })
+        })
+
+        describe('when the action has no minimum length', () => {
+          test('should leave the action available at zero when the existing actions fill the boundary exactly', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                incompatibleLengthMeters: 1800,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1800 }
+                ]
+              })
+            )
+
+            await requestActions([bnd1])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason).toBeUndefined()
+          })
+        })
+      })
     })
   })
 })

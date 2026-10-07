@@ -322,6 +322,12 @@ const config = convict({
       format: Boolean,
       default: true,
       env: 'DAL_USE_ENTRA_AUTH'
+    },
+    requestRetries: {
+      doc: 'How many times to retry the request to the DAL on 5xx error',
+      format: Number,
+      default: 3,
+      env: 'DAL_REQUEST_RETRIES'
     }
   },
   azure: {

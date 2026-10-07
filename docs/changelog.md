@@ -56,16 +56,72 @@ Updated response:
       {
         "code": "CMOR1",
         "description": "Assess moorland and produce a written record",
-        "availableArea": {
+        "availability": {
           "unit": "ha",
           "value": 74.017
         },
+        "isAvailable": true,
         "ratePerUnitGbp": 10.6,
         "ratePerAgreementPerYearGbp": 272,
         "sssiConsentRequired": false
       },
       ...
 ```
+
+### Action availability
+
+Every action carries `isAvailable`. An action that cannot be applied for on the
+parcel at all reports `false`, with an `unavailableReason` giving a code, a
+human-readable default and the figures behind it. The code is the contract;
+consumers may key their own copy off it rather than show the reason text.
+
+```
+{
+  "code": "CMOR1",
+  "availability": { "unit": "ha", "value": 0 },
+  "isAvailable": false,
+  "unavailableReason": {
+    "code": "existing-actions-do-not-fit",
+    "reason": "Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.",
+    "metadata": {
+      "existingActions": [
+        { "actionCode": "CMOR1", "areaHa": 3.2 },
+        { "actionCode": "UPL1", "areaHa": 2.63 }
+      ]
+    }
+  }
+}
+```
+
+| Code                            | Raised when                                                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `existing-actions-do-not-fit`   | The parcel's recorded actions cannot all be accommodated - they cannot be arranged on its land covers, or overrun its boundary |
+| `parcel-too-short-for-action`   | The parcel's whole perimeter is below the action's configured minimum length                                                   |
+| `insufficient-length-remaining` | The recorded actions fit, but leave less boundary than the action's configured minimum length                                  |
+
+Only `existing-actions-do-not-fit` points to a problem with the parcel's records;
+the other two are the action simply not fitting what is there.
+
+An unavailable action reports an `availability.value` of `0`, whatever its unit.
+There is no quantity a consumer could submit that validation would accept, so
+there is no ceiling to offer; the real figure is in `unavailableReason.metadata`.
+
+The `metadata` attribute is diagnostic only - no consumer behaviour should
+depend on a field being present, so fields may be added or removed without
+notice.
+
+An infeasible area calculation previously returned **422 for the whole request**,
+hiding every other action on the parcel including those that never competed for
+the land - that status is no longer returned by this endpoint.
+
+### Available length
+
+An action measured in `m` now reports the boundary still claimable: the parcel
+perimeter less the metres committed to incompatible actions, in whole metres -
+it previously reported `null`, leaving consumers without a ceiling.
+
+A perimeter that cannot be read reports `null` rather than `0`, so an unreadable
+boundary is never mistaken for one with nothing left on it.
 
 ### API Endpoints
 

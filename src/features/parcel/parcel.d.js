@@ -19,3 +19,22 @@
  * @typedef {object} LandParcelBoundary
  * @property {number} boundaryLengthMeters
  */
+
+/**
+ * The views of the enabled-action config that every parcel in a request shares.
+ * Neither depends on the parcel, so a request works them out once.
+ * @typedef {object} PreparedActions
+ * @property {Action[]} displayedActions - The enabled actions this request reports
+ * @property {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
+ */
+
+/**
+ * @typedef {object} MinimumLengthRuleResult
+ * @property {boolean} passed - Whether the rule accepts everything that is left
+ * @property {string} [reason] - The rule's own wording when it does not
+ * @property {number} [minimumLengthMeters] - The rule's configured minimum, when it has one
+ */
+
+/**
+ * @import { Action } from '~/src/features/actions/action.d.js'
+ */

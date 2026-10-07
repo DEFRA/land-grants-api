@@ -1,26 +1,65 @@
 import { TOTAL } from '~/src/features/common/constants/action_availability.js'
-import { HECTARES } from '~/src/features/common/constants/unit_type.js'
+import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
 import { sizeTransformer } from '../parcelActions.transformer.js'
+
+/**
+ * Whatever availability calculation ran for an action's unit: the area result
+ * for land, the length result for a boundary, plus the reason when it put the
+ * action out of reach. Every field is optional because which of them is present
+ * depends on which calculation ran.
+ * @typedef {Partial<AvailableAreaForAction & AvailableLength> & {unavailableReason?: object}} ActionCalculation
+ */
+
+/**
+ * How much an action still has available, in whatever it is measured by: land
+ * in hectares or square metres, or boundary in metres for a linear action.
+ * @param {string} unit - The action's application unit of measurement
+ * @param {ActionCalculation | null} calculation - The calculation that ran for it
+ * @returns {number | undefined} The quantity still available
+ */
+function availableQuantity(unit, calculation) {
+  if (unit === HECTARES) {
+    return calculation?.availableAreaHectares
+  }
+  if (unit === METERS) {
+    return calculation?.availableLength
+  }
+  return calculation?.availableAreaSqm
+}
+
+/**
+ * What an action reports as still available, in its own unit. An unavailable
+ * action reports zero, whatever its calculation left: nothing the applicant
+ * could enter would be accepted, so there is no ceiling to offer. A calculation
+ * that produced no usable figure reports null rather than a number nobody
+ * worked out.
+ * @param {Action} action - The action being reported
+ * @param {ActionCalculation | null} calculation - The calculation that ran for it
+ * @returns {{unit: string, value: number|null}} The availability to report
+ */
+function actionAvailability(action, calculation) {
+  const unit = action.applicationUnitOfMeasurement
+
+  if (calculation?.unavailableReason) {
+    return { unit, value: 0 }
+  }
+
+  const quantity = availableQuantity(unit, calculation)
+
+  const hasQuantity = quantity !== undefined && Number.isFinite(quantity)
+
+  return hasQuantity ? sizeTransformer(quantity, unit) : { unit, value: null }
+}
 
 /**
  * Transform parcel and actions to land parcel and actions for v2
  * @param {Action} action - The actions to merge
- * @param {AvailableAreaForAction | null} availableArea - Total Available Area
+ * @param {ActionCalculation | null} calculation - The availability calculation that ran for this action's unit
  * @param {boolean} showResults - Whether to include results
  * @returns {object} The land action data with available area
  */
-function actionTransformer(action, availableArea = null, showResults = false) {
-  const unit = action.applicationUnitOfMeasurement
-  const areaValue =
-    unit === HECTARES
-      ? availableArea?.availableAreaHectares
-      : availableArea?.availableAreaSqm
-
-  const aa = Number.isFinite(areaValue)
-    ? sizeTransformer(areaValue ?? 0, unit)
-    : undefined
-
-  const availability = { unit, value: null, ...aa }
+function actionTransformer(action, calculation = null, showResults = false) {
+  const availability = actionAvailability(action, calculation)
 
   const response = {
     code: action.code,
@@ -28,6 +67,8 @@ function actionTransformer(action, availableArea = null, showResults = false) {
     version: action.semanticVersion,
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
+    isAvailable: !calculation?.unavailableReason,
+    unavailableReason: calculation?.unavailableReason,
     quantityRequired: action?.availability?.type !== TOTAL,
     displayUnit: action?.displayUnit,
     displayUnitPlural: action?.displayUnitPlural,
@@ -35,13 +76,10 @@ function actionTransformer(action, availableArea = null, showResults = false) {
   }
 
   if (showResults) {
+    const { totalValidLandCoverSqm, stacks, explanations } = calculation ?? {}
     return {
       ...response,
-      results: {
-        totalValidLandCoverSqm: availableArea?.totalValidLandCoverSqm,
-        stacks: availableArea?.stacks,
-        explanations: availableArea?.explanations
-      }
+      results: { totalValidLandCoverSqm, stacks, explanations }
     }
   }
 
@@ -52,5 +90,6 @@ export { actionTransformer }
 
 /**
  * @import { AvailableAreaForAction } from "~/src/features/available-area/available-area.d.js"
+ * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */

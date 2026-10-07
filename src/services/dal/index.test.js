@@ -1,5 +1,10 @@
 import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
+import {
+  GraphQLError,
+  HTTPError,
+  UnauthorizedError
+} from '~/src/services/dal/errors.js'
 import { SIMPLE_BUSINESS } from '~/src/services/dal/fixtures/business.js'
 import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -7,13 +12,13 @@ import { getAgreements } from './index.js'
 
 const stubEndpoint = 'http://stub-dal/graphql'
 const dalResponse = { data: { business: SIMPLE_BUSINESS } }
-const response404 = {
+const errorResponse = {
   errors: [
     {
-      message: 'Rural payments organisation not found',
-      locations: [{ line: 1, column: 32 }],
+      message: "variable 'sbi' must match pattern ^[1-9][0-9]{8}$",
+      locations: [{ line: 2, column: 3 }],
       path: ['business'],
-      extensions: { code: 'NOT FOUND' }
+      extensions: { code: 'BAD_USER_INPUT' }
     }
   ]
 }
@@ -29,6 +34,7 @@ describe('getAgreements', () => {
       'dal.apiEndpoint',
       'dal.serviceAccount',
       'dal.useEntraAuth',
+      'dal.requestRetries',
       'featureFlags.useDal'
     ].forEach((v) => {
       config.set(v, config.default(v))
@@ -40,6 +46,7 @@ describe('getAgreements', () => {
     config.set('dal.serviceAccount', 'land-grants-api@defra.gov.uk')
     config.set('dal.useEntraAuth', true)
     config.set('featureFlags.useDal', true)
+    config.set('dal.requestRetries', 0)
 
     vi.clearAllMocks()
     global.fetch = vi.fn()
@@ -72,26 +79,98 @@ describe('getAgreements', () => {
     expect(getToken).toHaveBeenCalled()
   })
 
-  it('throws when the DAL response is not ok', async () => {
-    fetch.mockResolvedValue({
-      ok: false,
-      status: 500,
-      statusText: 'Internal Server Error'
-    })
+  it('throws when the DAL HTTP response is not ok', async () => {
+    const status = 500
+    const statusText = 'Internal Server Error'
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow()
+    const expectedError = new HTTPError(sbi, status, statusText)
+
+    fetch.mockResolvedValue({ ok: false, status, statusText })
+
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
   })
 
-  it('returns an empty object when DAL 404s', async () => {
+  it('throws when the DAL response is 200 but contains errors', async () => {
+    const expectedError = new GraphQLError(sbi, errorResponse.errors)
+
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(errorResponse)
+    })
+
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
+  })
+
+  it('throws an UnauthorizedError when DAL response is 401', async () => {
+    const expectedError = new UnauthorizedError(sbi)
+
     fetch.mockResolvedValue({
       ok: false,
-      status: 404,
-      statusText: 'Not Found',
-      json: () => Promise.resolve(response404)
+      status: 401,
+      statusText: 'Unauthorized',
+      json: () => Promise.resolve({ error: 'Unauthorized' })
     })
-    const result = await getAgreements(sbi, 'dummy', mockLogger)
 
-    expect(result).toEqual({})
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
+  })
+
+  it('retries the request up to retry limit when DAL HTTP response is a 5xx', async () => {
+    config.set('dal.requestRetries', 3)
+    const status = 500
+    const statusText = 'Internal Server Error'
+
+    const expected = dalBusinessToAgreements(dalResponse.data.business)
+
+    fetch
+      .mockResolvedValueOnce({ ok: false, status, statusText })
+      .mockResolvedValueOnce({ ok: false, status, statusText })
+      .mockResolvedValueOnce({ ok: false, status, statusText })
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(dalResponse)
+    })
+
+    const actual = await getAgreements(sbi, 'dummy', mockLogger)
+    expect(actual).toEqual(expected)
+
+    expect(fetch).toHaveBeenCalledTimes(4)
+  })
+
+  it('does not retry the request when the DAL HTTP response is a 4xx', async () => {
+    config.set('dal.requestRetries', 3)
+    const status = 400
+    const statusText = 'Bad Request'
+
+    const expectedError = new HTTPError(sbi, status, statusText)
+
+    fetch.mockResolvedValueOnce({ ok: false, status, statusText })
+
+    const actual = getAgreements(sbi, 'dummy', mockLogger)
+    await expect(actual).rejects.toThrow(expectedError)
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not retry the request when the DAL has GraphQL errors', async () => {
+    config.set('dal.requestRetries', 3)
+    const expectedError = new GraphQLError(sbi, errorResponse.errors)
+
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(errorResponse)
+    })
+
+    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+      expectedError
+    )
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 
   it('returns an empty object when feature flag is off', async () => {

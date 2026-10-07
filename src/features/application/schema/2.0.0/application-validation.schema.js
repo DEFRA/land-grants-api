@@ -32,7 +32,7 @@ const applicationValidationResponseSchemaV2 = Joi.object({
               sheetId: Joi.string().required(),
               percentageOverlap: Joi.number().optional(),
               overlapAreaHectares: Joi.number().optional(),
-              intersectingLengthMeters: Joi.number().integer().optional(),
+              overlapLengthMeters: Joi.number().integer().optional(),
               boundaryLengthMeters: Joi.number().integer().optional()
             })
           })

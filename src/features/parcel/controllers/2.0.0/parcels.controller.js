@@ -2,7 +2,6 @@ import Boom from '@hapi/boom'
 import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import {
   errorResponseSchema,
-  unprocessableEntityResponseSchema,
   internalServerErrorResponseSchema
 } from '~/src/features/common/schema/index.js'
 import {
@@ -16,14 +15,17 @@ import {
   logInfo,
   logValidationWarn
 } from '~/src/features/common/helpers/logging/log-helpers.js'
+import { getActionsForParcel } from '../../service/2.0.0/parcel.service.js'
+import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
-  getActionsForParcel,
-  getActionsForParcelWithSSSIConsentRequired,
-  getActionsForParcelWithHEFERConsentRequired
-} from '../../service/2.0.0/parcel.service.js'
+  addSssiConsentRequired,
+  addHeferRequired
+} from '../../service/2.0.0/consent.service.js'
 import { actionGroupsTransformer } from '../../transformers/2.0.0/group.transformer.js'
-import { InfeasibleAreaError } from '~/src/features/available-area/availableArea.js'
-import { getAgreements } from '~/src/features/agreements/repo.js'
+import {
+  getAgreements,
+  agreementsForParcel
+} from '~/src/features/agreements/repo.js'
 import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 
 /**
@@ -74,7 +76,6 @@ const ParcelsControllerV2 = {
       status: {
         200: parcelsSuccessResponseSchema,
         404: errorResponseSchema,
-        422: unprocessableEntityResponseSchema,
         500: internalServerErrorResponseSchema
       }
     }
@@ -160,18 +161,33 @@ const ParcelsControllerV2 = {
         )
       }
 
+      const displayedActions = validationResponse.enabledActions.filter(
+        (enabledAction) => enabledAction.display
+      )
+      const unitByActionCode = getUnitByActionCode(
+        validationResponse.enabledActions
+      )
+
+      const preparedActions = {
+        displayedActions,
+        unitByActionCode
+      }
+
       const responseParcels = await Promise.all(
         validationResponse.parcels.map(async (parcel) => {
+          const currentAgreements = agreementsForParcel(agreements, {
+            parcelId: parcel.parcel_id,
+            sheetId: parcel.sheet_id
+          }).filter((agreementAction) => expiredActionsFilter(agreementAction))
+
           return getActionsForParcel(
             parcel,
             request.payload,
             showActionResults,
-            validationResponse.enabledActions,
+            preparedActions,
             compatibilityCheckFn,
             request,
-            (agreements[`${parcel.parcel_id}-${parcel.sheet_id}`] || []).filter(
-              (a) => expiredActionsFilter(a)
-            )
+            currentAgreements
           )
         })
       )
@@ -179,25 +195,23 @@ const ParcelsControllerV2 = {
       let transformedResponseParcels = responseParcels
 
       if (fields.includes('actions.sssiConsentRequired')) {
-        transformedResponseParcels =
-          await getActionsForParcelWithSSSIConsentRequired(
-            parcelIds,
-            responseParcels,
-            validationResponse.enabledActions,
-            request.logger,
-            postgresDb
-          )
+        transformedResponseParcels = await addSssiConsentRequired(
+          parcelIds,
+          responseParcels,
+          validationResponse.enabledActions,
+          request.logger,
+          postgresDb
+        )
       }
 
       if (fields.includes('actions.heferRequired')) {
-        transformedResponseParcels =
-          await getActionsForParcelWithHEFERConsentRequired(
-            parcelIds,
-            transformedResponseParcels,
-            validationResponse.enabledActions,
-            request.logger,
-            postgresDb
-          )
+        transformedResponseParcels = await addHeferRequired(
+          parcelIds,
+          transformedResponseParcels,
+          validationResponse.enabledActions,
+          request.logger,
+          postgresDb
+        )
       }
 
       let transformedGroups
@@ -216,8 +230,8 @@ const ParcelsControllerV2 = {
         })
         .code(statusCodes.ok)
     } catch (error) {
-      if (error instanceof InfeasibleAreaError) {
-        return Boom.boomify(error, { statusCode: 422 })
+      if (error.statusCode) {
+        return Boom.boomify(error, { statusCode: error.statusCode })
       }
       const errorMessage = 'Error fetching parcels'
       // @ts-expect-error - payload

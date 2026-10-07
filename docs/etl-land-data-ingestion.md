@@ -128,15 +128,19 @@ We have a script which carries out the steps above,
 
 For this to work you will need to add the relevant client IDs and secrets to the environment variables in a `.env` file in the project root, see `.env.example` for details.
 
-The data files to import should be placed in the `land-grants-api/scripts/ingestion-data/` directory, in folders named after each resource, e.g.
+The data files to import should be placed in the `land-grants-api/scripts/ingestion-data/data/` directory, in folders named after each resource. The folder name must match the resource exactly as it appears in the `resources` array at the top of the script, e.g.
 
 ```
-land-grants-api/scripts/ingestion-data/parcels/
-land-grants-api/scripts/ingestion-data/moorland/
-land-grants-api/scripts/ingestion-data/covers/
-land-grants-api/scripts/ingestion-data/agreements/
-land-grants-api/scripts/ingestion-data/compatibility-matrix/
+land-grants-api/scripts/ingestion-data/data/land_parcels/
+land-grants-api/scripts/ingestion-data/data/land_covers/
+land-grants-api/scripts/ingestion-data/data/moorland_designations/
+land-grants-api/scripts/ingestion-data/data/agreements/
+land-grants-api/scripts/ingestion-data/data/compatibility_matrix/
 ```
+
+`ingestion-data/` itself holds the raw CSVs as received; `ingestion-data/data/` holds what gets uploaded. For the larger datasets those differ, because `split-land-data.sh` chunks a raw CSV into pieces small enough to upload and writes them to `data/`.
+
+Note that `split-land-data.sh` **empties `ingestion-data/data/` before it splits**, so run it before staging anything else you intend to upload.
 
 Once these are in place, you can choose which resources and environments to run the ingestion for by editing the arrays at the top of `land-grants-api/scripts/ingest-land-data.js`
 
@@ -146,6 +150,22 @@ Then run the script using node:
 cd land-grants-api/scripts
 node ingest-land-data.js
 ```
+
+### Updating the compatibility matrix and land use matrix
+
+The RPA export spreadsheets (Option Compatibility Matrix `.xlsx` and Land Use Application Matrix `.xls`) can be passed to the script either:
+
+- as `.csv` files: open each spreadsheet in Excel, FreeOffice, LibreOffice, etc. and save it as "CSV UTF-8" (no other tooling needed), or
+- as the original `.xls`/`.xlsx` files, which are converted with LibreOffice (`soffice` must be on the `PATH`).
+
+```
+node scripts/convert-matrix-spreadsheets.js <option-compatibility-matrix.xlsx|.csv> <land-use-application-matrix.xls|.csv> 2026
+node scripts/generate-land-cover-codes-actions.js src/land-data/land_cover_codes/land-codes.csv src/land-data/land_cover_codes/code-mapping.csv
+node scripts/generate-land-cover-codes-actions-sql.js src/land-data/land_cover_codes/land_cover_codes_actions.csv src/land-data/migration/land-cover-codes-actions-vN.sql.gz
+```
+
+- The compatibility matrix is loaded locally with `npm run dev:ingest`, remotely by copying `compatibility-matrix.csv` to `scripts/ingestion-data/data/compatibility_matrix/` and running `ingest-land-data.js`. Trim the `resources` array to the resource you are loading, or the script will look for a folder per resource and fail on the first one missing.
+- The land use matrix is loaded by a Liquibase migration: add a new changeset referencing `land-cover-codes-actions-vN.sql`, then run `npm run extractsql && npm run docker:migrate:up` locally. It is applied remotely when the migrations run on deploy.
 
 ### Testing locally
 

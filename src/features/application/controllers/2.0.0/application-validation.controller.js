@@ -221,6 +221,12 @@ const handleValidationError = async (error, request) => {
     request
   )
 
+  // @ts-expect-error - defined only on some error types
+  const status = error.statusCode
+  if (status) {
+    return Boom.boomify(error, { statusCode: status })
+  }
+
   return Boom.internal(`Error validating application: ${error.message}`)
 }
 
