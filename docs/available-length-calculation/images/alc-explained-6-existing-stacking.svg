@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" font-family="Arial, Helvetica, sans-serif" font-size="15">
+  <!-- PLACEHOLDER: for designer refinement -->
+  <rect x="0" y="0" width="900" height="470" fill="#ffffff"/>
+  <text x="450" y="30" text-anchor="middle" font-size="18" font-weight="bold">Existing actions that stack with each other</text>
+  <text x="450" y="54" text-anchor="middle" font-size="14">1000 m boundary: hedgebank (BND2) + hedge (CHRW2) on 3/4, applying for BND1</text>
+
+  <!-- The boundary as a bar, 3/4 covered -->
+  <g>
+    <text x="70" y="92" font-weight="bold">The physical boundary (1000 m)</text>
+    <!-- full bar outline -->
+    <rect x="70" y="100" width="760" height="30" fill="#ffffff" stroke="#7f7f7f" stroke-width="2"/>
+    <!-- covered 3/4 -->
+    <rect x="70" y="100" width="570" height="30" fill="#eef6e6" stroke="none"/>
+    <line x1="640" y1="100" x2="640" y2="130" stroke="#7f7f7f" stroke-width="2" stroke-dasharray="4 4"/>
+    <text x="355" y="120" text-anchor="middle" font-size="13">covered: 750 m</text>
+    <text x="735" y="120" text-anchor="middle" font-size="13">bare: 250 m</text>
+    <!-- stacked labels on covered part -->
+    <rect x="70" y="140" width="570" height="20" fill="#d5b48a" stroke="#8a6d3b" stroke-width="1"/>
+    <text x="355" y="155" text-anchor="middle" font-size="12">BND2 hedgebank — 1500 side-metres (both faces)</text>
+    <rect x="70" y="163" width="570" height="20" fill="#9bc16b" stroke="#548235" stroke-width="1"/>
+    <text x="355" y="178" text-anchor="middle" font-size="12">CHRW2 hedge — 750 side-metres (stacked on top)</text>
+    <text x="355" y="205" text-anchor="middle" font-style="italic" font-size="12">same 750 m — they share the ground</text>
+  </g>
+
+  <!-- Wrong way -->
+  <g>
+    <rect x="70" y="230" width="360" height="150" fill="#f2dede" stroke="#a94442" stroke-width="2"/>
+    <text x="90" y="258" font-weight="bold" fill="#a94442">Wrong: sum the deductions</text>
+    <text x="90" y="285" font-size="14">BND2 halved: 1500 &#247; 2 = 750 m</text>
+    <text x="90" y="308" font-size="14">CHRW2 halved: 750 &#247; 2 = 375 m</text>
+    <text x="90" y="331" font-size="14">1000 &#8722; 750 &#8722; 375 = &#8722;125</text>
+    <text x="90" y="360" font-size="15" font-weight="bold">&#8594; clamped to 0 m (looks full)</text>
+  </g>
+
+  <!-- Right way -->
+  <g>
+    <rect x="470" y="230" width="360" height="150" fill="#e2f0d9" stroke="#548235" stroke-width="2"/>
+    <text x="490" y="258" font-weight="bold" fill="#548235">Right: arrange first</text>
+    <text x="490" y="285" font-size="14">BND2 &amp; CHRW2 stack &#8594; footprints</text>
+    <text x="490" y="305" font-size="14">overlap, take the larger = 1500</text>
+    <text x="490" y="331" font-size="14">2000 &#8722; 1500 = 500 side-metres</text>
+    <text x="490" y="360" font-size="15" font-weight="bold">&#8594; BND1 = 500 &#247; 2 = 250 m</text>
+  </g>
+
+  <text x="450" y="425" text-anchor="middle" font-style="italic" font-size="13">The heaviest mutually-incompatible group is {BND1, BND2} = 1500; the stacked hedge adds nothing.</text>
+  <text x="450" y="448" text-anchor="middle" font-size="13">250 m of BND1 is available — exactly the bare quarter of the boundary.</text>
+</svg>
