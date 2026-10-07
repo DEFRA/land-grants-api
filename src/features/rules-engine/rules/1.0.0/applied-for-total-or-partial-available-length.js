@@ -1,9 +1,14 @@
 /**
+ * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
+ * @import { ActionRule } from '~/src/features/actions/action.d.js'
+ */
+
+/**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
-export const appliedForAvailableLength = {
+export const appliedForTotalOrPartialAvailableLength = {
   execute: (application, rule) => {
     const {
       appliedForQuantity,
@@ -14,14 +19,14 @@ export const appliedForAvailableLength = {
 
     const explanations = [
       {
-        title: 'Total available boundary length',
+        title: 'Total or partial available length',
         lines: [
           `The available boundary length was (${availability} m) the applicant applied for (${appliedForQuantity} m)`
         ]
       }
     ]
 
-    if (appliedForQuantity > availability) {
+    if (availability < appliedForQuantity) {
       return {
         name,
         passed: false,
@@ -31,27 +36,12 @@ export const appliedForAvailableLength = {
       }
     }
 
-    if (appliedForQuantity < availability) {
-      return {
-        name,
-        passed: false,
-        description: rule.description,
-        reason: `Enter a value that is no less than the available length for this land parcel ${availability} m`,
-        explanations
-      }
-    }
-
     return {
       name,
       passed: true,
       description: rule.description,
-      reason: `Parcel length matches the applied for length`,
+      reason: `The applied for length (${appliedForQuantity} m) is no more than the available length (${availability} m)`,
       explanations
     }
   }
 }
-
-/**
- * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
- * @import { ActionRule } from '~/src/features/actions/action.d.js'
- */

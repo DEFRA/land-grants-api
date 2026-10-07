@@ -1,4 +1,7 @@
-import { executeLengthRule, findLengthRule } from './length-rule.js'
+import {
+  executeMinimumLengthRule,
+  findMinimumLengthRule
+} from './minimum-length-rule.js'
 
 const minimumLength = (minimumLengthM, overrides = {}) => ({
   name: 'minimum-length',
@@ -8,8 +11,8 @@ const minimumLength = (minimumLengthM, overrides = {}) => ({
 })
 
 const availableLengthRule = {
-  name: 'available-length',
-  description: 'Is the applied for length the whole available length?',
+  name: 'applied-for-total-or-partial-available-length',
+  description: 'Is the applied for length no more than the available length?',
   config: {}
 }
 
@@ -20,11 +23,11 @@ const consentRule = {
   config: { layerName: 'sssi' }
 }
 
-describe('findLengthRule', () => {
+describe('findMinimumLengthRule', () => {
   test('should find a minimum-length rule by its name', () => {
     const rule = minimumLength(20)
 
-    const found = findLengthRule({ rules: [consentRule, rule] })
+    const found = findMinimumLengthRule({ rules: [consentRule, rule] })
 
     expect(found).toBe(rule)
   })
@@ -35,33 +38,35 @@ describe('findLengthRule', () => {
       type: 'minimum-length'
     })
 
-    const found = findLengthRule({ rules: [rule] })
+    const found = findMinimumLengthRule({ rules: [rule] })
 
     expect(found).toBe(rule)
   })
 
-  test('should not let an available-length rule listed first hide the minimum', () => {
+  test('should not let an available length rule listed first hide the minimum', () => {
     const rule = minimumLength(20)
 
-    const found = findLengthRule({ rules: [availableLengthRule, rule] })
+    const found = findMinimumLengthRule({ rules: [availableLengthRule, rule] })
 
     expect(found).toBe(rule)
   })
 
   test('should find nothing for an action whose rules gate nothing on length', () => {
-    const found = findLengthRule({ rules: [consentRule, availableLengthRule] })
+    const found = findMinimumLengthRule({
+      rules: [consentRule, availableLengthRule]
+    })
 
     expect(found).toBeUndefined()
   })
 
   test('should find nothing for an action with no rules', () => {
-    const found = findLengthRule({})
+    const found = findMinimumLengthRule({})
 
     expect(found).toBeUndefined()
   })
 })
 
-describe('executeLengthRule', () => {
+describe('executeMinimumLengthRule', () => {
   const BOUNDARY_METERS = 1800
 
   const leaving = (claimableMeters) => ({
@@ -76,7 +81,7 @@ describe('executeLengthRule', () => {
     const rule = minimumLength(20)
     const availableLength = leaving(240)
 
-    const result = executeLengthRule(rule, 'BND1', availableLength)
+    const result = executeMinimumLengthRule(rule, 'BND1', availableLength)
 
     expect(result.passed).toBe(true)
   })
@@ -85,7 +90,7 @@ describe('executeLengthRule', () => {
     const rule = minimumLength(20)
     const availableLength = leaving(20)
 
-    const result = executeLengthRule(rule, 'BND1', availableLength)
+    const result = executeMinimumLengthRule(rule, 'BND1', availableLength)
 
     expect(result.passed).toBe(true)
   })
@@ -94,7 +99,7 @@ describe('executeLengthRule', () => {
     const rule = minimumLength(20)
     const availableLength = leaving(12)
 
-    const result = executeLengthRule(rule, 'BND1', availableLength)
+    const result = executeMinimumLengthRule(rule, 'BND1', availableLength)
 
     expect(result).toEqual({
       passed: false,
