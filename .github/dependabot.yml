@@ -63,11 +63,19 @@ updates:
           - '@types/*'
 
     ignore:
-      - dependency-name: 'eslint-*'
+      # neostandard peer-depends on eslint 9.x
       - dependency-name: 'eslint'
-      - dependency-name: '@typescript-eslint/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'eslint-*'
+        update-types: ['version-update:semver-major']
       - dependency-name: '@types/node'
         versions: ['>=25']
+      # hapi-swagger peer-depends on joi 17.x; lift when it supports 18
+      - dependency-name: 'joi'
+        update-types: ['version-update:semver-major']
+      # TS 7 fails lint:types; lift once the migration is done
+      - dependency-name: 'typescript'
+        update-types: ['version-update:semver-major']
 
     # Schedule run every Monday, local time
     schedule:
