@@ -110,7 +110,7 @@
     "simple-git": "^4.0.2",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "typescript-eslint": "8.70.1",
+    "typescript-eslint": "8.71.0",
     "vitest": "^4.1.11",
     "vitest-fetch-mock": "^0.4.5"
   }
