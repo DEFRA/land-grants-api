@@ -100,6 +100,9 @@ updates:
     ignore:
       - dependency-name: 'node'
         versions: ['>=25']
+      # Aurora PostgreSQL 16 in CDP; lift when CDP upgrades
+      - dependency-name: 'postgis/postgis'
+        versions: ['>=17']
 
     # Schedule run every Monday, local time
     schedule:
