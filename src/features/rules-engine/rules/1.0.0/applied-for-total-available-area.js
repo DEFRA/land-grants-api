@@ -1,4 +1,5 @@
 import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.js'
+import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
@@ -11,6 +12,14 @@ import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.
  * @returns {RuleResultItem} - The result of the rule
  */
 export const appliedForTotalAvailableArea = {
+  requires: [
+    {
+      type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
+    },
+    {
+      type: REQUIRED_RULE_DATA.AVAILABLE_AREA
+    }
+  ],
   execute: (application, rule) => {
     const {
       appliedForQuantity,

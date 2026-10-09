@@ -2,6 +2,9 @@ import {
   calculateAvailableLength,
   getAvailableLength
 } from './availableLength.js'
+import { getLandParcelBoundary } from '../parcel/queries/getParcelBoundary.query.js'
+
+vi.mock('../parcel/queries/getParcelBoundary.query.js')
 
 const PARCEL_PERIMETER_METERS = 1000
 
@@ -21,22 +24,28 @@ describe('getAvailableLength', () => {
   }
 
   const compatibilityCheckFn = vi.fn()
+  const mockDb = {}
+  const mockLogger = { info: vi.fn(), error: vi.fn() }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    getLandParcelBoundary.mockResolvedValue({
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS
+    })
   })
 
-  it('returns the full boundary length when there are no incompatible actions', () => {
-    const action = { code: 'BND1', quantity: 50 }
+  it('returns the full boundary length when there are no incompatible actions', async () => {
+    const action = { code: '', quantity: 50 }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result).toEqual({
@@ -48,18 +57,19 @@ describe('getAvailableLength', () => {
     })
   })
 
-  it('gathers incompatible sibling actions on the same parcel', () => {
+  it('subtracts the length of incompatible sibling actions on the same parcel', async () => {
     const action = { code: 'CHRW2', quantity: 50 }
     const sibling = { code: 'BND1', quantity: 100 }
     compatibilityCheckFn.mockImplementation((code) => code !== sibling.code)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, sibling] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([
@@ -67,70 +77,74 @@ describe('getAvailableLength', () => {
     ])
   })
 
-  it('excludes the action itself from sibling actions', () => {
+  it('excludes the action itself from sibling actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([])
   })
 
-  it('excludes sibling actions whose unit of measurement is not metres', () => {
+  it('excludes sibling actions whose unit of measurement is not meters', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const nonLengthSibling = { code: 'CMOR1', quantity: 100 }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, nonLengthSibling] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([])
   })
 
-  it('excludes sibling actions whose code is not configured, since nothing says they compete for the boundary', () => {
+  it('excludes sibling actions whose code is not configured, since nothing says they compete for the boundary', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const unknownSibling = { code: 'UNKNOWN', quantity: 100 }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [],
       compatibilityCheckFn,
       { ...landAction, actions: [action, unknownSibling] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([])
   })
 
-  it('gathers incompatible existing agreement actions', () => {
+  it('subtracts the length of incompatible existing agreement actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
     compatibilityCheckFn.mockImplementation(
       (code) => code !== agreement.actionCode
     )
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [agreement],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([
@@ -138,43 +152,170 @@ describe('getAvailableLength', () => {
     ])
   })
 
-  it('excludes agreement actions whose unit is not metres', () => {
+  it('excludes agreement actions whose unit is not meters', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const areaAgreement = { actionCode: 'CMOR1', quantity: 15000, unit: 'sqm' }
     const countAgreement = { actionCode: 'WBD1', quantity: 800, unit: 'count' }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [areaAgreement, countAgreement],
       compatibilityCheckFn,
       { ...landAction, actions: [action] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
     expect(result.incompatibleActions).toEqual([])
   })
 
-  it('gathers incompatible actions from both agreements and sibling actions', () => {
+  it('combines incompatible lengths from both agreements and sibling actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
     const sibling = { code: 'BND2', quantity: 100 }
     const agreement = { actionCode: 'CHRW2', quantity: 200, unit: 'm' }
     compatibilityCheckFn.mockReturnValue(false)
 
-    const result = getAvailableLength(
+    const result = await getAvailableLength(
       action,
       actions,
       [agreement],
       compatibilityCheckFn,
       { ...landAction, actions: [action, sibling] },
-      PARCEL_PERIMETER_METERS
+      mockDb,
+      mockLogger
     )
 
-    expect(result.incompatibleActions).toEqual([
-      { actionCode: 'CHRW2', billedLengthMeters: 200 },
-      { actionCode: 'BND2', billedLengthMeters: 100 }
-    ])
+    expect(result).toEqual({
+      availableLength: 700,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 300,
+      exceedsBoundary: false,
+      incompatibleActions: [
+        { actionCode: 'CHRW2', billedLengthMeters: 200 },
+        { actionCode: 'BND2', billedLengthMeters: 100 }
+      ]
+    })
+  })
+
+  it('rounds fractional quantities when summing incompatible lengths', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+    const agreement = { actionCode: 'BND2', quantity: 200.6, unit: 'm' }
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = await getAvailableLength(
+      action,
+      actions,
+      [agreement],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({
+      availableLength: 799,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 201,
+      exceedsBoundary: false,
+      incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 200.6 }]
+    })
+  })
+
+  it('reads the boundary of the parcel the action is applied for', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+
+    await getAvailableLength(
+      action,
+      actions,
+      [],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockDb,
+      mockLogger
+    )
+
+    expect(getLandParcelBoundary).toHaveBeenCalledTimes(1)
+    expect(getLandParcelBoundary).toHaveBeenCalledWith(
+      'SH123',
+      '9456',
+      mockDb,
+      mockLogger
+    )
+  })
+
+  it('returns zero available length when the parcel has no readable boundary', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+    getLandParcelBoundary.mockResolvedValue(null)
+
+    const result = await getAvailableLength(
+      action,
+      actions,
+      [],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: 0,
+      incompatibleLengthMeters: 0,
+      exceedsBoundary: false,
+      incompatibleActions: []
+    })
+  })
+
+  it('reports the incompatible length even when the boundary cannot be read', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+    const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
+    compatibilityCheckFn.mockReturnValue(false)
+    getLandParcelBoundary.mockResolvedValue(null)
+
+    const result = await getAvailableLength(
+      action,
+      actions,
+      [agreement],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: 0,
+      incompatibleLengthMeters: 200,
+      exceedsBoundary: true,
+      incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 200 }]
+    })
+  })
+
+  it('clamps the available length at zero when the incompatible length exceeds the boundary', async () => {
+    const action = { code: 'BND1', quantity: 50 }
+    // BND2 is paid per side, so a 1000 m boundary can legitimately carry 1500 m
+    const agreement = { actionCode: 'BND2', quantity: 1500, unit: 'm' }
+    compatibilityCheckFn.mockReturnValue(false)
+
+    const result = await getAvailableLength(
+      action,
+      actions,
+      [agreement],
+      compatibilityCheckFn,
+      { ...landAction, actions: [action] },
+      mockDb,
+      mockLogger
+    )
+
+    expect(result).toEqual({
+      availableLength: 0,
+      boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+      incompatibleLengthMeters: 1500,
+      exceedsBoundary: true,
+      incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 1500 }]
+    })
   })
 })
 

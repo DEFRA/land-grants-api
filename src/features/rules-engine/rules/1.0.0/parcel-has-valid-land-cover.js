@@ -3,7 +3,13 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+
 export const parcelHasValidLandCover = {
+  requires: [
+    { type: REQUIRED_RULE_DATA.LAND_COVERS },
+    { type: REQUIRED_RULE_DATA.ACTION_LAND_COVERS }
+  ],
   /**
    * @param {RuleEngineApplication} application - The application to execute the rule on
    * @param {ActionRule} rule - The rule to execute
