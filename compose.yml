@@ -45,6 +45,8 @@ services:
       - land-grants-net
 
   land-grants-backend-postgres:
+    # postgis/postgis publishes amd64 only; this lets it build on Apple Silicon
+    platform: linux/amd64
     build:
       context: ./docker
       dockerfile: ../Dockerfile.postgis
