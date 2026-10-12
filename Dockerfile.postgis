@@ -4,7 +4,7 @@
 # positioning parcels about a metre from where they should be - see
 # docker/proj-data/README.md for more details.
 
-ARG POSTGIS_VERSION=16-3.4
+ARG POSTGIS_VERSION=16-3.5
 
 FROM postgis/postgis:${POSTGIS_VERSION}
 
