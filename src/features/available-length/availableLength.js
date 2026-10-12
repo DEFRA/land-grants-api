@@ -4,6 +4,7 @@ import {
   unitCompetedFor
 } from '../common/helpers/action-unit.js'
 import { lengthActionsTransformer } from '../parcel/transformers/parcelActions.transformer.js'
+import { getLandParcelBoundary } from '../parcel/queries/getParcelBoundary.query.js'
 
 /**
  * Deducts the boundary already committed to incompatible actions from a parcel's
@@ -51,21 +52,23 @@ export function calculateAvailableLength(
  * Gathers the actions competing for a parcel's boundary and works out how much
  * of it is left for the one being applied for. The perimeter is read by the
  * caller, so this module stays free of I/O.
- * @param {ActionRequest} action - The action
+ * @param {Pick<ActionRequest, 'code'>} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
- * @param {LandAction} landAction - The land action
- * @param {number} boundaryLengthMeters - The parcel's perimeter in metres
- * @returns {AvailableLength} The validation result
+ * @param {Omit<LandAction, 'sbi'>} landAction - The land action
+ * @param {object} db - The database connection
+ * @param {object} logger - The logger
+ * @returns {Promise<AvailableLength>} The validation result
  */
-export function getAvailableLength(
+export async function getAvailableLength(
   action,
   actions,
   agreements,
   compatibilityCheckFn,
   landAction,
-  boundaryLengthMeters
+  db,
+  logger
 ) {
   const unitByActionCode = getUnitByActionCode(actions)
 
@@ -82,6 +85,17 @@ export function getAvailableLength(
     ...lengthAgreements,
     ...siblingActions
   ])
+
+  const boundaryResult = await getLandParcelBoundary(
+    landAction.sheetId,
+    landAction.parcelId,
+    db,
+    logger
+  )
+
+  // A boundary that cannot be read reports zero, as does one committed beyond
+  // its own length - the two are told apart by the figures returned alongside.
+  const boundaryLengthMeters = boundaryResult?.boundaryLengthMeters ?? 0
 
   return calculateAvailableLength(
     action.code,

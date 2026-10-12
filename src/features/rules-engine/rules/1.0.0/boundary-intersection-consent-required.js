@@ -1,3 +1,5 @@
+import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+
 /**
  * @import { RuleEngineApplication, RuleResultItem } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
@@ -26,6 +28,7 @@ function calculatePercentageOverlap(
 
 // Boundary-length counterpart to sssi/hefer-consent-required, for linear actions
 export const boundaryIntersectionConsentRequired = {
+  requires: [{ type: REQUIRED_RULE_DATA.BOUNDARY_INTERSECTION }],
   /**
    * @param {RuleEngineApplication} application - The application to execute the rule on
    * @param {ActionRule} rule - The rule to execute

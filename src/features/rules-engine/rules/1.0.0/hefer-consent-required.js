@@ -3,12 +3,15 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
 export const heferConsentRequired = {
+  requires: [{ type: REQUIRED_RULE_DATA.INTERSECTION }],
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
     const name = `${rule.name}`
