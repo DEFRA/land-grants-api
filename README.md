@@ -135,7 +135,7 @@ If you have issues running this, and ot throws errors like : `No space left on d
 
 ```
 land-grants-backend-postgres:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.5
     shm_size: 2gb
 ```
 
