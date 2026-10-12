@@ -33,14 +33,15 @@
 
 /**
  * @typedef {object} LandParcel
- * @property {number|null} availableAreaSqm
- * @property {number} parcelSizeSqm
- * @property {number} availability
+ * @property {number|null} [availableAreaSqm]
+ * @property {number} [parcelSizeSqm]
+ * @property {number} [availability]
  * @property {BoundaryLength|null} [boundaryLength]
- * @property {Array} existingAgreements
- * @property {object} intersections
+ * @property {any[] | undefined} [existingAgreements]
+ * @property {object} [intersections]
  * @property {{landCoverClassCode:string, areaSqm: number}[]} [landCovers]
  * @property {Partial<BoundaryIntersections>|null} [boundaryIntersections]
+ * @property {object | null} [availableArea]
  */
 
 /**

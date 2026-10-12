@@ -1,3 +1,5 @@
+import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
@@ -9,6 +11,14 @@
  * @returns {RuleResultItem} - The result of the rule
  */
 export const appliedForTotalOrPartialAvailableLength = {
+  requires: [
+    {
+      type: REQUIRED_RULE_DATA.AVAILABLE_LENGTH
+    },
+    {
+      type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
+    }
+  ],
   execute: (application, rule) => {
     const {
       appliedForQuantity,
