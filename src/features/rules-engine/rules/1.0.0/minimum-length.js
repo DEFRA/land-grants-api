@@ -11,7 +11,10 @@ import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
  * @returns {RuleResultItem} - The result of the rule
  */
 export const minimumLength = {
-  requires: [{ type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY }],
+  requires: [
+    { type: REQUIRED_RULE_DATA.AVAILABLE_LENGTH },
+    { type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY }
+  ],
   execute: (application, rule) => {
     const {
       appliedForQuantity,

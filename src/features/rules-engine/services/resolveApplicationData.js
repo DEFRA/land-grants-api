@@ -1,5 +1,6 @@
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { requirementProviders } from './dataProviders.js'
+import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 
 /**
  *
@@ -38,15 +39,18 @@ export const resolveApplicationData = async (
   baseApplication,
   ctx
 ) => {
-  const requirements = (actionRules ?? []).flatMap((rule) => {
-    const rqrs = rules[ruleKeyFor(rule)]?.requires ?? []
-    // if its an intersection type or boundary intersection,
-    // we need to read the layerName from the rule.config
-    if (rule.config?.layerName) {
-      return rqrs.map((req) => ({ ...req, layer: rule.config.layerName }))
-    }
-    return rqrs
-  })
+  const requirements = (actionRules ?? [])
+    .flatMap((rule) => {
+      const rqrs = rules[ruleKeyFor(rule)]?.requires ?? []
+      // if its an intersection type or boundary intersection,
+      // we need to read the layerName from the rule.config
+      if (rule.config?.layerName) {
+        return rqrs.map((req) => ({ ...req, layer: rule.config.layerName }))
+      }
+      return rqrs
+    })
+    // The caller supplies the applied-for quantity, so it has no provider
+    .filter((req) => req.type !== REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY)
 
   // Dedupe by provider key so the same data is only fetched once even if several
   // rules ask for it (e.g. two rules both needing the sssi intersection).

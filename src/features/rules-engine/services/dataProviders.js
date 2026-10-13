@@ -113,8 +113,8 @@ export const requirementProviders = {
       return strategy(ctx)
     },
     apply: (application, req, value) => {
-      application.boundaryIntersection ??= {}
-      application.boundaryIntersection[req.layer] = value
+      application.landParcel.boundaryIntersections ??= {}
+      application.landParcel.boundaryIntersections[req.layer] = value
     }
   },
   [REQUIRED_RULE_DATA.PARCEL_SIZE]: {
@@ -178,7 +178,11 @@ export const requirementProviders = {
       )
     },
     apply: (application, _req, value) => {
-      application.landParcel.availableLength = value
+      application.landParcel.availability = value.availableLength
+      application.landParcel.boundaryLength = {
+        totalMeters: value.boundaryLengthMeters,
+        incompatibleMeters: value.incompatibleLengthMeters
+      }
     }
   },
   [REQUIRED_RULE_DATA.LAND_COVERS]: {
