@@ -93,7 +93,6 @@
  * @typedef {object} ActionEligibility
  * @property {number} id
  * @property {string} code
- * @property {string} description
  * @property {boolean} sssi_eligible
  * @property {boolean} hf_eligible
  * @property {string} ingest_id

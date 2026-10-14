@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="add-description-to-actions-config" author="system">
+    <comment>
+      Adds description to the versioned actions_config rows. Copies the current
+      actions.description into every actions_config row for that code (not just
+      the active one), as move-guidance-url-availability-to-actions-config did.
+      New versions take the description from their action config file.
+    </comment>
+    <sql>
+      ALTER TABLE actions_config ADD COLUMN description TEXT;
+
+      UPDATE actions_config ac
+      SET description = a.description
+      FROM actions a
+      WHERE ac.code = a.code
+        AND a.description IS NOT NULL;
+    </sql>
+    <rollback>
+      ALTER TABLE actions_config DROP COLUMN description;
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>

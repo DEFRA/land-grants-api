@@ -50,24 +50,32 @@ async function deactivateSupersededConfig(
  * Insert the new action config version row.
  * is_active is TRUE only if no active row remains after deactivateSupersededConfig.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, groupId: number|null }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null }} params
  * @returns {Promise<void>}
  */
 async function insertConfigVersion(
   client,
-  { code, config, major, minor, patch, displayOrder, groupId }
+  { code, config, major, minor, patch, displayOrder, description, groupId }
 ) {
   await client.query(
     `INSERT INTO actions_config
-       (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order, group_id)
-     VALUES (
-       $1,
-       (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
-       $2,
-       NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE),
-       NOW(), $3, $4, $5, $6, $7
-     )`,
-    [code, JSON.stringify(config), major, minor, patch, displayOrder, groupId]
+     (code, version, config, is_active, last_updated_at, major_version, minor_version, patch_version, display_order,
+      group_id, description)
+     VALUES ($1,
+             (SELECT CAST(COALESCE(MAX(version::integer), 0) + 1 AS text) FROM actions_config WHERE code = $1),
+             $2,
+             NOT EXISTS(SELECT 1 FROM actions_config WHERE code = $1 AND is_active = TRUE),
+             NOW(), $3, $4, $5, $6, $7, $8)`,
+    [
+      code,
+      JSON.stringify(config),
+      major,
+      minor,
+      patch,
+      displayOrder,
+      groupId,
+      description
+    ]
   )
 }
 

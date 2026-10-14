@@ -29,9 +29,6 @@ describe('Get Action Eligibility Query', () => {
 
     expect(cmor1.id).toBe(1)
     expect(cmor1.code).toBe('CMOR1')
-    expect(cmor1.description).toBe(
-      'Assess moorland and produce a written record'
-    )
     expect(cmor1.sssi_eligible).toBe(true)
     expect(cmor1.hf_eligible).toBe(true)
     // Only set when a config release applies the SSSI/HF mapping CSV
