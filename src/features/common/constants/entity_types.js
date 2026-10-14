@@ -18,8 +18,7 @@ export const ENTITY_TYPES = [
   { name: 'registered_battlefields', truncateTable: false },
   { name: 'shine', truncateTable: false },
   { name: 'scheduled_monuments', truncateTable: false },
-  { name: 'registered_parks_gardens', truncateTable: false },
-  { name: 'action_sssi_hf_mapping', truncateTable: false }
+  { name: 'registered_parks_gardens', truncateTable: false }
 ]
 
 /**

@@ -96,7 +96,8 @@ describe('Get Actions Query', () => {
     expect(lastUpdated).not.toBeNull()
     expect(sssiEligible).toBe(true)
     expect(hfEligible).toBe(true)
-    expect(ingestId).not.toBeNull()
+    // Only set when a config release applies the SSSI/HF mapping CSV
+    expect(ingestId).toBeNull()
   })
 
   test('should not return UPL4', async () => {

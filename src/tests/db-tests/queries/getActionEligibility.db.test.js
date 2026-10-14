@@ -34,7 +34,8 @@ describe('Get Action Eligibility Query', () => {
     )
     expect(cmor1.sssi_eligible).toBe(true)
     expect(cmor1.hf_eligible).toBe(true)
-    expect(cmor1.ingest_id).not.toBeNull()
-    expect(cmor1.last_updated).not.toBeNull()
+    // Only set when a config release applies the SSSI/HF mapping CSV
+    expect(cmor1.ingest_id).toBeNull()
+    expect(cmor1.last_updated).toBeNull()
   })
 })
