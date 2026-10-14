@@ -230,17 +230,16 @@ describe('requirementProviders', () => {
       )
     })
 
-    it('stores each layer on the application, not the parcel', () => {
+    it('stores each layer under the parcel boundary intersections', () => {
       const application = emptyApplication()
 
       provider.apply(application, { layer: 'sssi' }, { a: 1 })
       provider.apply(application, { layer: 'historic_features' }, { b: 2 })
 
-      expect(application.boundaryIntersection).toEqual({
+      expect(application.landParcel.boundaryIntersections).toEqual({
         sssi: { a: 1 },
         historic_features: { b: 2 }
       })
-      expect(application.landParcel).toEqual({})
     })
   })
 
@@ -342,13 +341,39 @@ describe('requirementProviders', () => {
       )
     })
 
-    it('stores the available length on the parcel', () => {
+    it('stores the available length as the parcel availability', () => {
       const application = emptyApplication()
-      const availableLength = { availableLength: 800 }
 
-      provider.apply(application, {}, availableLength)
+      provider.apply(
+        application,
+        {},
+        {
+          availableLength: 800,
+          boundaryLengthMeters: 927,
+          incompatibleLengthMeters: 127
+        }
+      )
 
-      expect(application.landParcel.availableLength).toBe(availableLength)
+      expect(application.landParcel.availability).toBe(800)
+    })
+
+    it('stores the boundary and the length committed to incompatible actions', () => {
+      const application = emptyApplication()
+
+      provider.apply(
+        application,
+        {},
+        {
+          availableLength: 800,
+          boundaryLengthMeters: 927,
+          incompatibleLengthMeters: 127
+        }
+      )
+
+      expect(application.landParcel.boundaryLength).toEqual({
+        totalMeters: 927,
+        incompatibleMeters: 127
+      })
     })
   })
 

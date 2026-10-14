@@ -13,9 +13,7 @@ import { processActionConfigFile } from '~/src/features/grants-config/service/gr
 async function processMessage(message, s3Client, db, logger, options) {
   const { grantsConfigBucket } = options
 
-  logger.info(
-    `Received SQS grants-config-broker message: ${JSON.stringify(message, null, 2)}`
-  )
+  logger.info(`Received SQS grants-config-broker message: ${message.MessageId}`)
 
   if (!message.Body) {
     throw new Error(`SQS message ${message.MessageId} has no body`)

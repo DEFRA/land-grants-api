@@ -190,19 +190,24 @@ describe('grantsConfigSqsPlugin', () => {
       expect(result).toBe(message)
     })
 
-    test('logs error and rethrows when processMessage throws', async () => {
+    test('rethrows when processMessage throws', async () => {
       const { processMessage } =
         await import('~/src/features/grants-config/handlers/grants-config-update.handler.js')
-      const error = new Error('processing failed')
-      processMessage.mockRejectedValueOnce(error)
+      processMessage.mockRejectedValueOnce(new Error('processing failed'))
       const message = { MessageId: 'msg-err', Body: '{}' }
 
       await expect(handleMessage(message)).rejects.toThrow('processing failed')
+    })
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        error,
-        expect.stringContaining('Failed to process')
-      )
+    test('leaves logging a failure to the processing_error event', async () => {
+      const { processMessage } =
+        await import('~/src/features/grants-config/handlers/grants-config-update.handler.js')
+      processMessage.mockRejectedValueOnce(new Error('processing failed'))
+      const message = { MessageId: 'msg-err', Body: '{}' }
+
+      await handleMessage(message).catch(() => undefined)
+
+      expect(mockLogger.error).not.toHaveBeenCalled()
     })
 
     test('does not return message when processMessage throws', async () => {
@@ -219,17 +224,18 @@ describe('grantsConfigSqsPlugin', () => {
     })
   })
 
-  test('logs processing_error events', () => {
+  test('logs processing_error events with the failed message id and body', () => {
     grantsConfigSqsPlugin.plugin.register(server, options)
 
     const handler = mockConsumer.on.mock.calls.find(
       (c) => c[0] === 'processing_error'
     )[1]
     const error = new Error('processing error')
-    handler(error)
+    const body = '["land-grants/1.0.0/actions/PA3/pa3-1.0.0.json"]'
+    handler(error, { MessageId: 'msg-err', Body: body })
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      error,
+      { err: error, messageId: 'msg-err', body },
       expect.stringContaining('processing error')
     )
   })

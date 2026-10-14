@@ -1,5 +1,6 @@
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { requirementProviders } from './dataProviders.js'
+import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 
 /**
  *
@@ -24,6 +25,13 @@ export const excludeRulesRequiring = (actionRules, excludedType) =>
       )
   )
 
+// Already on the application, so nothing needs fetching
+const TYPES_WITHOUT_PROVIDERS = new Set([
+  REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
+])
+
+const needsProvider = (req) => !TYPES_WITHOUT_PROVIDERS.has(req.type)
+
 /**
  * Collects the data requirements declared by an action's rules, dedupes them, fetches
  * only what is needed (in parallel), and folds the results into the application. The
@@ -38,15 +46,17 @@ export const resolveApplicationData = async (
   baseApplication,
   ctx
 ) => {
-  const requirements = (actionRules ?? []).flatMap((rule) => {
-    const rqrs = rules[ruleKeyFor(rule)]?.requires ?? []
-    // if its an intersection type or boundary intersection,
-    // we need to read the layerName from the rule.config
-    if (rule.config?.layerName) {
-      return rqrs.map((req) => ({ ...req, layer: rule.config.layerName }))
-    }
-    return rqrs
-  })
+  const requirements = (actionRules ?? [])
+    .flatMap((rule) => {
+      const rqrs = rules[ruleKeyFor(rule)]?.requires ?? []
+      // if its an intersection type or boundary intersection,
+      // we need to read the layerName from the rule.config
+      if (rule.config?.layerName) {
+        return rqrs.map((req) => ({ ...req, layer: rule.config.layerName }))
+      }
+      return rqrs
+    })
+    .filter(needsProvider)
 
   // Dedupe by provider key so the same data is only fetched once even if several
   // rules ask for it (e.g. two rules both needing the sssi intersection).
