@@ -239,9 +239,9 @@ describe('resolveApplicationData', () => {
     expect(application.landParcel.parcelSizeSqm).toBe(12000)
   })
 
-  it('does not warn about the applied-for quantity, which the caller supplies', async () => {
+  it('does not look for a provider for a requirement that has none by design', async () => {
     await resolveApplicationData(
-      [{ name: 'needs-quantity-and-size' }],
+      [{ name: 'needs-quantity-and-size' }], // the quantity is already on the application, so it neither needs nor has a provider
       baseApplication(),
       ctx
     )
