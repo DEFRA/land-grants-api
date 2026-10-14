@@ -206,4 +206,20 @@ describe('processMessage', () => {
       )
     })
   })
+
+  describe('logging', () => {
+    test('logs a received message by its id, not its full contents', async () => {
+      await processMessage(
+        buildMessage(),
+        mockS3Client,
+        mockDb,
+        mockLogger,
+        options
+      )
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Received SQS grants-config-broker message: msg-1'
+      )
+    })
+  })
 })

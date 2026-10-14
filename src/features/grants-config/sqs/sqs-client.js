@@ -18,28 +18,20 @@ export const grantsConfigSqsPlugin = {
       const app = Consumer.create({
         queueUrl: options.queueUrl,
         handleMessage: async (message) => {
-          try {
-            await processMessage(
-              message,
-              server.s3,
-              server.postgresDb,
-              server.logger,
-              {
-                grantsConfigBucket: options.grantsConfigBucket
-              }
-            )
-            server.logger.info(
-              `Successfully processed grants-config-broker message: ${message.MessageId}`
-            )
+          await processMessage(
+            message,
+            server.s3,
+            server.postgresDb,
+            server.logger,
+            {
+              grantsConfigBucket: options.grantsConfigBucket
+            }
+          )
+          server.logger.info(
+            `Successfully processed grants-config-broker message: ${message.MessageId}`
+          )
 
-            return message
-          } catch (err) {
-            server.logger.error(
-              err,
-              'Failed to process grants-config-broker message'
-            )
-            throw err
-          }
+          return message
         },
         sqs: sqsClient,
         batchSize: 1,
@@ -54,9 +46,9 @@ export const grantsConfigSqsPlugin = {
         server.logger.error(err, 'grants-config-broker SQS Consumer error')
       })
 
-      app.on('processing_error', (err) => {
+      app.on('processing_error', (err, message) => {
         server.logger.error(
-          err,
+          { err, messageId: message.MessageId, body: message.Body },
           'grants-config-broker SQS message processing error'
         )
       })

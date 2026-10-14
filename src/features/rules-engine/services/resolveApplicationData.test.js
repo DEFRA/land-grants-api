@@ -228,15 +228,25 @@ describe('resolveApplicationData', () => {
 
   it('warns about and skips a requirement no provider supplies', async () => {
     const application = await resolveApplicationData(
-      [{ name: 'needs-quantity-and-size' }],
+      [{ name: 'needs-unknown' }, { name: 'needs-size' }],
       baseApplication(),
       ctx
     )
 
     expect(logger.warn).toHaveBeenCalledWith(
-      "No provider for requirement type 'APPLIED_FOR_QUANTITY'"
+      "No provider for requirement type 'UNKNOWN'"
     )
     expect(application.landParcel.parcelSizeSqm).toBe(12000)
+  })
+
+  it('does not look for a provider for a requirement that has none by design', async () => {
+    await resolveApplicationData(
+      [{ name: 'needs-quantity-and-size' }], // the quantity is already on the application, so it neither needs nor has a provider
+      baseApplication(),
+      ctx
+    )
+
+    expect(logger.warn).not.toHaveBeenCalled()
   })
 
   it('skips a requirement no provider supplies when there is no logger', async () => {
