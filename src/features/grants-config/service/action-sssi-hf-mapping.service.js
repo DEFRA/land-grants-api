@@ -11,7 +11,7 @@ const entityType = { name: 'action_sssi_hf_mapping', truncateTable: false }
  * Download the action SSSI/HF mapping CSV from S3 and apply it to the actions table.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('@aws-sdk/client-s3').S3Client} s3Client
- * @param {string} s3Key - S3 object key, e.g. 'land-grants/0.24.0/actions/action_sssi_hf_mapping.csv'
+ * @param {string} s3Key - S3 object key, e.g. 'land-grants/0.24.0/actions/actions_mapping.csv'
  * @param {string} bucket - S3 bucket name
  * @returns {Promise<void>}
  */

@@ -210,10 +210,20 @@ describe('processMessage', () => {
       expect(processActionSssiHfMappingFile).not.toHaveBeenCalled()
     })
 
-    test('routes the sssi hf mapping csv to the mapping service', async () => {
+    test('ignores the pre-rename sssi hf mapping csv', async () => {
+      const message = buildMessage({
+        manifest: ['land-grants/0.1.1/actions/action_sssi_hf_mapping.csv']
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(processActionSssiHfMappingFile).not.toHaveBeenCalled()
+    })
+
+    test('routes the actions mapping csv to the mapping service', async () => {
       const message = buildMessage({
         manifest: [
-          'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+          'land-grants/0.1.1/actions/actions_mapping.csv',
           'land-grants/0.1.1/metadata.json'
         ]
       })
@@ -224,15 +234,15 @@ describe('processMessage', () => {
       expect(processActionSssiHfMappingFile).toHaveBeenCalledWith(
         mockLogger,
         mockS3Client,
-        'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+        'land-grants/0.1.1/actions/actions_mapping.csv',
         'configs-bucket'
       )
     })
 
-    test('applies the sssi hf mapping after the action configs', async () => {
+    test('applies the actions mapping after the action configs', async () => {
       const message = buildMessage({
         manifest: [
-          'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+          'land-grants/0.1.1/actions/actions_mapping.csv',
           'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json'
         ]
       })
