@@ -172,20 +172,23 @@ npm run dev
 
 ###### Subcommands
 
-| Subcommand                                 | Description                                                                                              |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| _(no args)_                                | Start the broker with no config changes (useful for a restart)                                           |
-| `add <version> <sem-ver>`                  | Create a synthetic **TEST01** action config and start the broker                                         |
-| `update <action-code> <version> <sem-ver>` | Copy the given action from `grants-config-land-grants`, set a new semantic version, and start the broker |
-| `inspect [action-code...]`                 | Print SQS queues, S3 bucket contents, and `actions_config` DB rows — then exit (defaults to PA3, TEST01) |
+| Subcommand                                                  | Description                                                                                                                                             |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no args)_                                                 | Start the broker with no config changes (useful for a restart)                                                                                          |
+| `add <action-code> <version> <sem-ver> [has-sssi] [has-hf]` | Create a synthetic action config, add its row to `actions/actions_mapping.csv` (`0`/`1`, default `1`) and start the broker                              |
+| `update <action-code> <version> <sem-ver>`                  | Copy the given action from `grants-config-land-grants`, set a new semantic version, publish it with `actions/actions_mapping.csv`, and start the broker |
+| `inspect [action-code...]`                                  | Print SQS queues, S3 bucket contents, `actions_config` and `actions` DB rows — then exit (defaults to PA3, TEST1)                                       |
 
 > **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
 
 ###### Examples
 
 ```bash
-# Publish a brand-new action code (TEST01) and start the broker
-./scripts/start-config-broker.sh add 0.0.5 1.0.0
+# Publish a brand-new action code (TEST1) and start the broker
+./scripts/start-config-broker.sh add TEST1 0.0.5 1.0.0
+
+# Publish TEST2 as SSSI eligible but not HF eligible
+./scripts/start-config-broker.sh add TEST2 0.0.6 1.0.0 1 0
 
 # Republish PA3 with a new semantic version and start the broker
 ./scripts/start-config-broker.sh update PA3 0.0.6 2.0.0
@@ -236,7 +239,7 @@ aws s3 ls s3://configs-bucket --recursive
 **Inspect a config file directly from S3:**
 
 ```bash
-aws s3 cp s3://configs-bucket/land-grants/0.0.5/actions/PA3/pa3-2.0.0.json -
+aws s3 cp s3://configs-bucket/land-grants/0.0.5/actions_config/PA3/pa3-2.0.0.json -
 ```
 
 **Manually publish an SNS message** (useful when re-testing without restarting the broker — the broker will not re-deploy a version it has already recorded in MongoDB):
@@ -244,7 +247,7 @@ aws s3 cp s3://configs-bucket/land-grants/0.0.5/actions/PA3/pa3-2.0.0.json -
 ```bash
 aws sns publish \
   --topic-arn arn:aws:sns:eu-west-2:000000000000:gfr__sns___config_update \
-  --message '["land-grants/0.0.5/actions/PA3/pa3-2.0.0.json","land-grants/0.0.5/metadata.json"]' \
+  --message '["land-grants/0.0.5/actions_config/PA3/pa3-2.0.0.json","land-grants/0.0.5/actions/actions_mapping.csv","land-grants/0.0.5/metadata.json"]' \
   --message-attributes '{
     "grant":   {"DataType":"String","StringValue":"land-grants"},
     "version": {"DataType":"String","StringValue":"0.0.5"},
@@ -258,7 +261,11 @@ aws sns publish \
 ```bash
 docker exec -it land-grants-api-land-grants-backend-postgres-1 psql \
   -U land_grants_api -d land_grants_api \
-  -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code IN ('PA3','TEST01') ORDER BY code, id;"
+  -c "SELECT code, semantic_version, version, is_active, description FROM actions_config WHERE code IN ('PA3','TEST1') ORDER BY code, id;"
+
+docker exec -it land-grants-api-land-grants-backend-postgres-1 psql \
+  -U land_grants_api -d land_grants_api \
+  -c "SELECT code, sssi_eligible, hf_eligible, ingest_id FROM actions WHERE code IN ('PA3','TEST1') ORDER BY code;"
 ```
 
 #### Local data

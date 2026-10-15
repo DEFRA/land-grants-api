@@ -10,7 +10,7 @@ vi.mock('~/src/features/land-data-ingest/service/import-land-data.service.js')
 describe('processActionSssiHfMappingFile', () => {
   let mockLogger
   let mockS3Client
-  const s3Key = 'land-grants/0.24.0/actions/action_sssi_hf_mapping.csv'
+  const s3Key = 'land-grants/0.24.0/actions/actions_mapping.csv'
   const bucket = 'configs-bucket'
 
   beforeEach(() => {

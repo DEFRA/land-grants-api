@@ -11,7 +11,7 @@ import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 
 const GRANTS_CONFIG_S3_KEY =
-  'land-grants/0.0.0-test/actions/action_sssi_hf_mapping.csv'
+  'land-grants/0.0.0-test/actions/actions_mapping.csv'
 
 const MAPPING_CSV = [
   'action_code,has_sssi,has_hf',
