@@ -15,7 +15,14 @@ async function getActionsByLatestVersion(logger, db) {
     const query = `
       SELECT * FROM (
         SELECT DISTINCT ON (a.code)
-          a.*,
+          a.id,
+          a.code,
+          a.enabled,
+          a.display,
+          a.sssi_eligible,
+          a.hf_eligible,
+          a.ingest_id,
+          ac.description,
           ac.version,
           ac.major_version,
           ac.minor_version,

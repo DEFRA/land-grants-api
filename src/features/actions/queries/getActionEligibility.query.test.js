@@ -56,7 +56,6 @@ describe('getActionEligibility', () => {
           SELECT
             id,
             code,
-            description,
             sssi_eligible,
             hf_eligible,
             ingest_id,

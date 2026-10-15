@@ -15,7 +15,6 @@ export async function getActionEligibility(logger, db) {
           SELECT
             id,
             code,
-            description,
             sssi_eligible,
             hf_eligible,
             ingest_id,

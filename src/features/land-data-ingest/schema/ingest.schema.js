@@ -20,8 +20,7 @@ const initiateLandDataUploadRequestSchema = Joi.object({
       'registered_battlefields',
       'shine',
       'scheduled_monuments',
-      'registered_parks_gardens',
-      'action_sssi_hf_mapping'
+      'registered_parks_gardens'
     ),
   ingestId: Joi.number(),
   filename: Joi.string()

@@ -1,8 +1,12 @@
 import { processMessage } from './grants-config-update.handler.js'
 
 import { processActionConfigFile } from '~/src/features/grants-config/service/grants-config.service.js'
+import { processActionSssiHfMappingFile } from '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
 
 vi.mock('~/src/features/grants-config/service/grants-config.service.js')
+vi.mock(
+  '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
+)
 
 function buildMessage({
   grant = 'land-grants',
@@ -10,7 +14,7 @@ function buildMessage({
   status = 'active',
   path = 'dev-grants-config-c63f2',
   manifest = [
-    'land-grants/0.1.1/actions/PA3/pa3-1.0.0.json',
+    'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json',
     'land-grants/0.1.1/metadata.json'
   ]
 } = {}) {
@@ -37,6 +41,7 @@ describe('processMessage', () => {
     mockS3Client = {}
     mockDb = {}
     processActionConfigFile.mockResolvedValue(undefined)
+    processActionSssiHfMappingFile.mockResolvedValue(undefined)
   })
 
   describe('grant filtering', () => {
@@ -70,7 +75,9 @@ describe('processMessage', () => {
     test('skips a message when grant attribute is absent', async () => {
       const noGrantMessage = {
         MessageId: 'msg-no-grant',
-        Body: JSON.stringify(['land-grants/0.1.1/actions/PA3/pa3-1.0.0.json']),
+        Body: JSON.stringify([
+          'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json'
+        ]),
         MessageAttributes: {
           status: { DataType: 'String', StringValue: 'active' }
         }
@@ -147,7 +154,7 @@ describe('processMessage', () => {
         mockLogger,
         mockS3Client,
         mockDb,
-        'land-grants/0.1.1/actions/PA3/pa3-1.0.0.json',
+        'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json',
         'configs-bucket'
       )
     })
@@ -168,8 +175,8 @@ describe('processMessage', () => {
     test('processes multiple action files in the manifest', async () => {
       const message = buildMessage({
         manifest: [
-          'land-grants/0.1.1/actions/PA3/pa3-1.0.0.json',
-          'land-grants/0.1.1/actions/CSAM3/csam3-1.0.0.json',
+          'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json',
+          'land-grants/0.1.1/actions_config/CSAM3/csam3-1.0.0.json',
           'land-grants/0.1.1/metadata.json'
         ]
       })
@@ -189,6 +196,51 @@ describe('processMessage', () => {
       expect(processActionConfigFile).not.toHaveBeenCalled()
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('No action config files found')
+      )
+    })
+
+    test('ignores json files outside actions_config', async () => {
+      const message = buildMessage({
+        manifest: ['land-grants/0.1.1/actions/PA3/pa3-1.0.0.json']
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(processActionConfigFile).not.toHaveBeenCalled()
+      expect(processActionSssiHfMappingFile).not.toHaveBeenCalled()
+    })
+
+    test('routes the sssi hf mapping csv to the mapping service', async () => {
+      const message = buildMessage({
+        manifest: [
+          'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+          'land-grants/0.1.1/metadata.json'
+        ]
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(processActionConfigFile).not.toHaveBeenCalled()
+      expect(processActionSssiHfMappingFile).toHaveBeenCalledWith(
+        mockLogger,
+        mockS3Client,
+        'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+        'configs-bucket'
+      )
+    })
+
+    test('applies the sssi hf mapping after the action configs', async () => {
+      const message = buildMessage({
+        manifest: [
+          'land-grants/0.1.1/actions/action_sssi_hf_mapping.csv',
+          'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json'
+        ]
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(processActionConfigFile.mock.invocationCallOrder[0]).toBeLessThan(
+        processActionSssiHfMappingFile.mock.invocationCallOrder[0]
       )
     })
 

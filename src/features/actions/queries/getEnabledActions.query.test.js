@@ -103,7 +103,14 @@ describe('getEnabledActions', () => {
 
     const expectedQuery = `
       SELECT
-        a.*,
+        a.id,
+        a.code,
+        a.enabled,
+        a.display,
+        a.sssi_eligible,
+        a.hf_eligible,
+        a.ingest_id,
+        ac.description,
         ac.version,
         ac.config->>'start_date' as start_date,
         ac.config->>'application_unit_of_measurement' as application_unit_of_measurement,

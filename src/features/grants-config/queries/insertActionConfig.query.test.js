@@ -212,6 +212,32 @@ describe('insertActionConfig', () => {
     expect(insertParams[4]).toBe(0) // patch
     expect(insertParams[5]).toBe(0) // displayOrder
     expect(insertParams[6]).toBeNull() // groupId
+    expect(insertParams[7]).toBe('Woodland management plan') // description
+  })
+
+  test('inserts the description into the config version row', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
+    )
+    const sql = insertCall[0].replaceAll(/\s+/g, ' ')
+    expect(sql).toContain('display_order, group_id, description)')
+    expect(sql).toContain('$6, $7, $8)')
+  })
+
+  test('inserts a null description when the config has none', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      description: null
+    })
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
+    )
+    expect(insertCall[1][7]).toBeNull()
   })
 
   test('returns true on success', async () => {

@@ -117,7 +117,6 @@ We support the ingestion of the following resources:
   - shine
   - scheduled_monuments
   - registered_parks_gardens
-  - action_sssi_hf_mapping
 
 Run the local ingest script for each resource type:
 
