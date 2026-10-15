@@ -1,4 +1,11 @@
 import { processActionConfigFile } from '~/src/features/grants-config/service/grants-config.service.js'
+import { processActionSssiHfMappingFile } from '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
+
+const isActionConfigKey = (key) =>
+  key.includes('/actions_config/') && key.endsWith('.json')
+
+const isActionSssiHfMappingKey = (key) =>
+  key.endsWith('/actions/action_sssi_hf_mapping.csv')
 
 /**
  * Process a single SQS message from the grants_config_broker_update queue.
@@ -38,9 +45,10 @@ async function processMessage(message, s3Client, db, logger, options) {
     return
   }
 
-  const actionKeys = manifest.filter((key) => key.includes('/actions/'))
+  const actionKeys = manifest.filter(isActionConfigKey)
+  const mappingKeys = manifest.filter(isActionSssiHfMappingKey)
 
-  if (actionKeys.length === 0) {
+  if (actionKeys.length === 0 && mappingKeys.length === 0) {
     logger.info(
       `No action config files found in manifest for grant="${grant}" version="${version}" — nothing to process`
     )
@@ -48,11 +56,21 @@ async function processMessage(message, s3Client, db, logger, options) {
   }
 
   logger.info(
-    `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s))`
+    `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s), ${mappingKeys.length} mapping file(s))`
   )
 
   for (const key of actionKeys) {
     await processActionConfigFile(logger, s3Client, db, key, grantsConfigBucket)
+  }
+
+  // Applied after the action configs so actions inserted above pick up their mapping
+  for (const key of mappingKeys) {
+    await processActionSssiHfMappingFile(
+      logger,
+      s3Client,
+      key,
+      grantsConfigBucket
+    )
   }
 }
 

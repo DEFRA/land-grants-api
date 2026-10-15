@@ -1,20 +1,42 @@
 import {
   createTestS3Client,
-  uploadLandDataFixture,
+  uploadTestFile,
   ensureBucketExists,
   deleteFiles
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
+import { S3_CONFIG } from '~/src/tests/db-tests/setup/test-config.js'
 
-import { importLandData } from '~/src/features/land-data-ingest/workers/import-land-data.js'
+import { processMessage } from '~/src/features/grants-config/handlers/grants-config-update.handler.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 
-const S3_KEYS = [
-  'action_sssi_hf_mapping/action_sssi_hf_mapping.csv',
-  'action_sssi_hf_mapping/action_sssi_hf_mapping.zip'
-]
+const GRANTS_CONFIG_S3_KEY =
+  'land-grants/0.0.0-test/actions/action_sssi_hf_mapping.csv'
+
+const MAPPING_CSV = [
+  'action_code,has_sssi,has_hf',
+  'CMOR1,1,1',
+  'UPL1,0,1',
+  'UPL2,1,0',
+  'UPL3,0,0',
+  'UPL4,0,0',
+  'CSAM3,0,0'
+].join('\n')
+
+// Published by grants-config-land-grants via the grants-config-broker, which
+// uploads files without a content type - S3 then reports binary/octet-stream.
+const brokerMessage = (manifest) => ({
+  MessageId: 'action-sssi-hf-mapping-import',
+  Body: JSON.stringify(manifest),
+  MessageAttributes: {
+    grant: { DataType: 'String', StringValue: 'land-grants' },
+    version: { DataType: 'String', StringValue: '0.0.0-test' },
+    status: { DataType: 'String', StringValue: 'active' }
+  }
+})
 
 describe('Action SSSI HF mapping import', () => {
+  const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
   let s3Client
   let connection
 
@@ -29,44 +51,53 @@ describe('Action SSSI HF mapping import', () => {
   })
 
   afterEach(async () => {
-    await deleteFiles(s3Client, S3_KEYS)
+    await deleteFiles(s3Client, [GRANTS_CONFIG_S3_KEY])
   })
 
-  test.each(S3_KEYS.map((key) => [key]))(
-    'should import action sssi hf mapping data and return 200 ok (%s)',
-    async (s3key) => {
-      await uploadLandDataFixture(s3Client, 'action_sssi_hf_mapping.csv', s3key)
+  test('applies the mapping from the broker manifest to the actions table', async () => {
+    await uploadTestFile(
+      s3Client,
+      GRANTS_CONFIG_S3_KEY,
+      MAPPING_CSV,
+      S3_CONFIG.bucket,
+      'binary/octet-stream'
+    )
 
-      const result = await importLandData({ s3key })
+    await processMessage(
+      brokerMessage([
+        GRANTS_CONFIG_S3_KEY,
+        'land-grants/0.0.0-test/metadata.json'
+      ]),
+      s3Client,
+      connection,
+      logger,
+      { grantsConfigBucket: S3_CONFIG.bucket }
+    )
 
-      expect(result).toEqual({
-        message: 'Land data imported successfully',
-        dataChanged: true
-      })
+    const actions = await getRecordsByQuery(
+      connection,
+      'SELECT * FROM actions WHERE sssi_eligible IS NOT TRUE OR hf_eligible IS NOT TRUE'
+    )
+    const eligibilityOf = (code) => {
+      const action = actions.find((a) => a.code === code)
+      return { sssi: action.sssi_eligible, hf: action.hf_eligible }
+    }
 
-      const actions = await getRecordsByQuery(
-        connection,
-        'SELECT * FROM actions WHERE sssi_eligible IS NOT TRUE OR hf_eligible IS NOT TRUE'
-      )
-      expect(actions).toHaveLength(5)
-      expect(actions.map((a) => a.code)).to.include(
-        'UPL3',
-        'UPL4',
-        'UPL1',
-        'UPL2',
-        'CSAM3'
-      )
-      expect(actions.find((a) => a.code === 'UPL1').sssi_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'UPL2').hf_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'UPL3').hf_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'UPL3').sssi_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'UPL4').hf_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'UPL4').sssi_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'CSAM3').hf_eligible).toBe(false)
-      expect(actions.find((a) => a.code === 'CSAM3').sssi_eligible).toBe(false)
-      expect(actions[0].ingest_id).toBeDefined()
-      expect(actions[0].last_updated).toBeDefined()
-    },
-    10000
-  )
+    expect(actions.map((a) => a.code).sort()).toEqual([
+      'CSAM3',
+      'UPL1',
+      'UPL2',
+      'UPL3',
+      'UPL4'
+    ])
+    expect(eligibilityOf('UPL1')).toEqual({ sssi: false, hf: true })
+    expect(eligibilityOf('UPL2')).toEqual({ sssi: true, hf: false })
+    expect(eligibilityOf('UPL3')).toEqual({ sssi: false, hf: false })
+    expect(eligibilityOf('UPL4')).toEqual({ sssi: false, hf: false })
+    expect(eligibilityOf('CSAM3')).toEqual({ sssi: false, hf: false })
+    expect([...new Set(actions.map((a) => a.ingest_id))]).toEqual([
+      GRANTS_CONFIG_S3_KEY
+    ])
+    expect(actions[0].last_updated).toBeDefined()
+  }, 10000)
 })
