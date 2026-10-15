@@ -4,7 +4,8 @@ import {
   EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
   INSUFFICIENT_LENGTH_REMAINING,
-  PARCEL_TOO_SHORT_FOR_ACTION
+  PARCEL_TOO_SHORT_FOR_ACTION,
+  RULE_FAILED
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 /**
@@ -14,7 +15,7 @@ import {
  * the action applied for rather than to them. Hectares, as the rest of the
  * response reports land.
  * @param {AvailableAreaForActionLp} lpResult - The infeasible area result
- * @returns {object} The unavailable reason
+ * @returns {UnavailableReasonResult} The unavailable reason
  */
 export function areaUnavailableReason(lpResult) {
   const existingActions = lpResult.context?.existingActions ?? []
@@ -36,7 +37,7 @@ export function areaUnavailableReason(lpResult) {
  * more than the whole boundary. The length equivalent of an infeasible area,
  * and likewise an RPA matter, so the actions are named.
  * @param {ActionWithLength[]} incompatibleActions - The actions claiming the boundary
- * @returns {object} The unavailable reason
+ * @returns {UnavailableReasonResult} The unavailable reason
  */
 export function exceedsBoundaryReason(incompatibleActions) {
   return {
@@ -59,7 +60,7 @@ export function exceedsBoundaryReason(incompatibleActions) {
  * never long enough, or the existing actions fit but leave too little of it.
  * @param {AvailableLength} availableLength - The boundary still claimable
  * @param {MinimumLengthRuleResult} minimumLengthRuleResult - The rule's failed verdict
- * @returns {object} The unavailable reason
+ * @returns {UnavailableReasonResult} The unavailable reason
  */
 export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
   const { boundaryLengthMeters, incompatibleActions } = availableLength
@@ -92,8 +93,38 @@ export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
   }
 }
 
+const ruleFailedFilter = (f) => !f.passed
+
+/**
+ * return rule failed unavailable reason
+ * @param {RulesResult} rulesResult
+ * @returns {UnavailableReasonResult | undefined}
+ */
+export function ruleFailedReason(rulesResult) {
+  const failedRulesResults = (rulesResult?.results ?? []).filter(
+    ruleFailedFilter
+  )
+  if (failedRulesResults.length === 0) {
+    return undefined
+  }
+
+  return {
+    code: RULE_FAILED,
+    reason: failedRulesResults.map((r) => r.reason).join(', '),
+    metadata: {
+      results: failedRulesResults.map((r) => ({
+        name: r.name,
+        description: r.description,
+        explanations: r.explanations
+      }))
+    }
+  }
+}
+
 /**
  * @import {AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
  * @import {AvailableLength, ActionWithLength} from '~/src/features/available-length/available-length.d.js'
  * @import {MinimumLengthRuleResult} from '~/src/features/parcel/parcel.d.js'
+ * @import {UnavailableReasonResult} from '~/src/features/parcel/unavailability.d.js'
+ * @import {RulesResult} from '~/src/features/rules-engine/rules.d.js'
  */

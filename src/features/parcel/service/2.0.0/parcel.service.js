@@ -5,13 +5,15 @@ import { logValidationWarn } from '~/src/features/common/helpers/logging/log-hel
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getBoundaryLengthMeters } from '~/src/features/parcel/boundary-length.js'
 import { EXISTING_ACTIONS_DO_NOT_FIT } from '~/src/features/parcel/constants/unavailable-reasons.js'
-
 import { buildActionWithAvailability } from './action-availability.js'
 import {
   areaActionsTransformer,
   lengthActionsTransformer,
   sizeTransformer
 } from '../../transformers/parcelActions.transformer.js'
+import { runParcelRules } from './parcel-rules.service.js'
+import { ruleFailedReason } from './unavailability.js'
+import { config } from '~/src/config/index.js'
 
 /**
  * Get parcel actions with their availability
@@ -65,6 +67,25 @@ async function getActionsWithAvailability(
       }
     )
 
+    if (
+      config.get('featureFlags.enableRulesOnParcel') &&
+      showActionResults &&
+      actionWithAvailability.isAvailable
+    ) {
+      await runRules(
+        {
+          displayedAction,
+          actions,
+          displayedActions,
+          compatibilityCheckFn,
+          parcel,
+          actionWithAvailability
+        },
+        postgresDb,
+        logger
+      )
+    }
+
     actionsWithAvailability.push(actionWithAvailability)
   }
 
@@ -87,6 +108,34 @@ async function getActionsWithAvailability(
   }
 
   return actionsWithAvailability
+}
+
+async function runRules(
+  {
+    displayedAction,
+    actions,
+    displayedActions,
+    compatibilityCheckFn,
+    parcel,
+    actionWithAvailability
+  },
+  postgresDb,
+  logger
+) {
+  const rulesResult = await runParcelRules(displayedAction, actions, {
+    enabledActions: displayedActions,
+    compatibilityCheckFn,
+    parcel,
+    postgresDb,
+    logger
+  })
+  if (!rulesResult.passed) {
+    const unavailableReason = ruleFailedReason(rulesResult)
+    if (unavailableReason) {
+      actionWithAvailability.isAvailable = false
+      actionWithAvailability.unavailableReason = ruleFailedReason(rulesResult)
+    }
+  }
 }
 
 export async function getActionsForParcel(

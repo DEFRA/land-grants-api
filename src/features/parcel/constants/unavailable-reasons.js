@@ -5,11 +5,13 @@
 export const EXISTING_ACTIONS_DO_NOT_FIT = 'existing-actions-do-not-fit'
 export const PARCEL_TOO_SHORT_FOR_ACTION = 'parcel-too-short-for-action'
 export const INSUFFICIENT_LENGTH_REMAINING = 'insufficient-length-remaining'
+export const RULE_FAILED = 'rule-failed'
 
 export const UNAVAILABLE_REASON_CODES = [
   EXISTING_ACTIONS_DO_NOT_FIT,
   PARCEL_TOO_SHORT_FOR_ACTION,
-  INSUFFICIENT_LENGTH_REMAINING
+  INSUFFICIENT_LENGTH_REMAINING,
+  RULE_FAILED
 ]
 
 export const EXISTING_ACTIONS_DO_NOT_FIT_REASON =
