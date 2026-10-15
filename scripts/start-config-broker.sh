@@ -14,6 +14,8 @@ BROKER_DIR="../grants-config-broker"
 COMPOSE_FILE="$BROKER_DIR/compose.yml"
 GRANT_NAME="land-grants"
 GRANT_CONFIG_SOURCE="../grants-config-land-grants"
+SOURCE_CONFIG_DIR="$GRANT_CONFIG_SOURCE/configurations/$GRANT_NAME"
+MAPPING_FILE="actions/actions_mapping.csv"
 
 # ---------------------------------------------------------------------------
 # Splash / help
@@ -45,17 +47,20 @@ print_help() {
   echo
   echo -e "${BOLD}SUBCOMMANDS${RESET}"
   echo -e "  ${GREEN}(no args)${RESET}                                       Start the broker without any config setup"
-  echo -e "  ${GREEN}add${RESET} <grant-version> <sem-ver>                  Create a TEST01 action config and start"
+  echo -e "  ${GREEN}add${RESET} <action-code> <grant-version> <sem-ver> [has-sssi] [has-hf]"
+  echo "                                                  Create a new action config, add it to the actions mapping"
+  echo "                                                  CSV (has-sssi/has-hf: 0 or 1, default 1) and start"
   echo -e "  ${GREEN}update${RESET} <action-code> <grant-version> <sem-ver> Republish an existing action with a new semantic version and start"
   echo -e "  ${GREEN}inspect${RESET} [action-code...]                       Print SQS queues, S3 contents, and DB rows then exit"
   echo -e "  ${GREEN}-h${RESET}, ${GREEN}--help${RESET}                                   Show this help message"
   echo
   echo -e "${BOLD}EXAMPLES${RESET}"
-  echo "  $(basename "$0")                        # restart broker, no config changes"
-  echo "  $(basename "$0") add 0.0.5 1.0.0        # publish TEST01 v1.0.0 under grant release 0.0.5"
-  echo "  $(basename "$0") update PA3 0.0.6 2.0.0    # republish PA3 with semanticVersion 2.0.0"
-  echo "  $(basename "$0") update HEF1 0.0.7 1.2.0   # republish HEF1 with semanticVersion 1.2.0"
-  echo "  $(basename "$0") inspect HEF1            # inspect current LocalStack (floci) + DB state"
+  echo "  $(basename "$0")                            # restart broker, no config changes"
+  echo "  $(basename "$0") add TEST1 0.0.5 1.0.0      # publish TEST1 v1.0.0 under grant release 0.0.5"
+  echo "  $(basename "$0") add TEST2 0.0.6 1.0.0 1 0  # publish TEST2, SSSI eligible but not HF eligible"
+  echo "  $(basename "$0") update PA3 0.0.6 2.0.0     # republish PA3 with semanticVersion 2.0.0"
+  echo "  $(basename "$0") update HEF1 0.0.7 1.2.0    # republish HEF1 with semanticVersion 1.2.0"
+  echo "  $(basename "$0") inspect HEF1               # inspect current LocalStack (floci) + DB state"
   echo
 }
 
@@ -76,6 +81,35 @@ environments:
     status: active
 EOF
   echo -e "  ${YELLOW}release.yml${RESET}   $config_dir/release.yml"
+}
+
+# Every file under the versioned directory is published, so start it empty
+# rather than republishing whatever an earlier run left there.
+make_versioned_dir() {
+  VERSIONED_DIR="$BROKER_DIR/config/${GRANT_NAME}@$1"
+  rm -rf "$VERSIONED_DIR"
+  mkdir -p "$VERSIONED_DIR/actions_config" "$VERSIONED_DIR/actions"
+}
+
+# Publish the actions mapping CSV alongside the action configs, as a config
+# release does, so land-grants-api applies it after inserting them.
+copy_actions_mapping() {
+  local source_file="$SOURCE_CONFIG_DIR/$MAPPING_FILE"
+  if [[ ! -f "$source_file" ]]; then
+    echo -e "${BOLD}Error:${RESET} no actions mapping found at $source_file" >&2
+    exit 1
+  fi
+  cp "$source_file" "$VERSIONED_DIR/$MAPPING_FILE"
+}
+
+# Add (or replace) the row for an action code in the published mapping CSV
+set_actions_mapping_row() {
+  local action_code="$1" has_sssi="$2" has_hf="$3"
+  local mapping="$VERSIONED_DIR/$MAPPING_FILE"
+  awk -F, -v code="$action_code" '$1 != code' "$mapping" > "$mapping.tmp"
+  echo "$action_code,$has_sssi,$has_hf" >> "$mapping.tmp"
+  mv "$mapping.tmp" "$mapping"
+  echo -e "  ${YELLOW}mapping${RESET}       $mapping ($action_code,$has_sssi,$has_hf)"
 }
 
 start_broker() {
@@ -114,7 +148,7 @@ case "${1:-}" in
     shift
     ACTION_CODES=("$@")
     if [[ ${#ACTION_CODES[@]} -eq 0 ]]; then
-      ACTION_CODES=(PA3 TEST01)
+      ACTION_CODES=(PA3 TEST1)
     fi
 
     print_splash
@@ -132,30 +166,49 @@ case "${1:-}" in
     echo "=== actions_config (${ACTION_CODES[*]}) ==="
     docker exec land-grants-api-land-grants-backend-postgres-1 psql \
       -U land_grants_api -d land_grants_api \
-      -c "SELECT code, semantic_version, version, is_active FROM actions_config WHERE code IN ($CODES_LIST) ORDER BY code, id;"
+      -c "SELECT code, semantic_version, version, is_active, description FROM actions_config WHERE code IN ($CODES_LIST) ORDER BY code, id;"
+
+    echo ""
+    echo "=== actions (${ACTION_CODES[*]}) ==="
+    docker exec land-grants-api-land-grants-backend-postgres-1 psql \
+      -U land_grants_api -d land_grants_api \
+      -c "SELECT code, enabled, display, sssi_eligible, hf_eligible, ingest_id, last_updated FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
 
     exit 0
     ;;
 
   add)
-    GRANT_VERSION="${2:-}"
-    SEMANTIC_VERSION="${3:-}"
-    if [[ -z "$GRANT_VERSION" || -z "$SEMANTIC_VERSION" ]]; then
-      echo -e "${BOLD}Usage:${RESET} $0 add <grant-version> <semantic-version>" >&2
+    ACTION_CODE="${2:-}"
+    GRANT_VERSION="${3:-}"
+    SEMANTIC_VERSION="${4:-}"
+    HAS_SSSI="${5:-1}"
+    HAS_HF="${6:-1}"
+    if [[ -z "$ACTION_CODE" || -z "$GRANT_VERSION" || -z "$SEMANTIC_VERSION" ]]; then
+      echo -e "${BOLD}Usage:${RESET} $0 add <action-code> <grant-version> <semantic-version> [has-sssi] [has-hf]" >&2
+      exit 1
+    fi
+    if [[ ! "$HAS_SSSI" =~ ^[01]$ || ! "$HAS_HF" =~ ^[01]$ ]]; then
+      echo -e "${BOLD}Error:${RESET} has-sssi and has-hf must be 0 or 1" >&2
+      exit 1
+    fi
+    if [[ -d "$SOURCE_CONFIG_DIR/actions_config/$ACTION_CODE" ]]; then
+      echo -e "${BOLD}Error:${RESET} $ACTION_CODE already exists in $SOURCE_CONFIG_DIR/actions_config, use update" >&2
       exit 1
     fi
 
     print_splash
-    echo -e "  ${BOLD}Mode:${RESET} add TEST01 @ ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
+    echo -e "  ${BOLD}Mode:${RESET} add ${ACTION_CODE} @ ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
     echo
 
-    VERSIONED_DIR="$BROKER_DIR/config/${GRANT_NAME}@${GRANT_VERSION}"
     make_release_yml "$GRANT_VERSION"
+    make_versioned_dir "$GRANT_VERSION"
 
-    mkdir -p "$VERSIONED_DIR/actions/TEST01"
-    cat > "$VERSIONED_DIR/actions/TEST01/test01-${SEMANTIC_VERSION}.json" << EOF
+    ACTION_FILE="$VERSIONED_DIR/actions_config/$ACTION_CODE/${ACTION_CODE,,}-${SEMANTIC_VERSION}.json"
+    mkdir -p "$(dirname "$ACTION_FILE")"
+    cat > "$ACTION_FILE" << EOF
 {
-  "code": "TEST01",
+  "code": "$ACTION_CODE",
+  "description": "Local test action $ACTION_CODE",
   "semanticVersion": "$SEMANTIC_VERSION",
   "startDate": "2025-01-01",
   "applicationUnitOfMeasurement": "ha",
@@ -163,13 +216,16 @@ case "${1:-}" in
   "payment": null,
   "landCoverClassCodes": [],
   "rules": [],
-  "sssiEligible": true,
-  "hfEligible": true,
   "groupId": null,
-  "displayOrder": 0
+  "displayOrder": 0,
+  "enabled": true,
+  "display": true
 }
 EOF
-    echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions/TEST01/test01-${SEMANTIC_VERSION}.json"
+    echo -e "  ${YELLOW}action config${RESET} $ACTION_FILE"
+
+    copy_actions_mapping
+    set_actions_mapping_row "$ACTION_CODE" "$HAS_SSSI" "$HAS_HF"
 
     start_broker
     ;;
@@ -183,7 +239,7 @@ EOF
       exit 1
     fi
 
-    SOURCE_ACTION_DIR="$GRANT_CONFIG_SOURCE/configurations/land-grants/actions/$ACTION_CODE"
+    SOURCE_ACTION_DIR="$SOURCE_CONFIG_DIR/actions_config/$ACTION_CODE"
     if [[ ! -d "$SOURCE_ACTION_DIR" ]]; then
       echo -e "${BOLD}Error:${RESET} no config found for $ACTION_CODE at $SOURCE_ACTION_DIR" >&2
       exit 1
@@ -193,13 +249,13 @@ EOF
     echo -e "  ${BOLD}Mode:${RESET} update $ACTION_CODE → semanticVersion ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
     echo
 
-    VERSIONED_DIR="$BROKER_DIR/config/${GRANT_NAME}@${GRANT_VERSION}"
     make_release_yml "$GRANT_VERSION"
+    make_versioned_dir "$GRANT_VERSION"
 
-    mkdir -p "$VERSIONED_DIR/actions/$ACTION_CODE"
-    cp "$SOURCE_ACTION_DIR/"*.json "$VERSIONED_DIR/actions/$ACTION_CODE/"
+    mkdir -p "$VERSIONED_DIR/actions_config/$ACTION_CODE"
+    cp "$SOURCE_ACTION_DIR/"*.json "$VERSIONED_DIR/actions_config/$ACTION_CODE/"
 
-    find "$VERSIONED_DIR/actions/$ACTION_CODE" -name "*.json" | while read -r file; do
+    find "$VERSIONED_DIR/actions_config/$ACTION_CODE" -name "*.json" | while read -r file; do
       dir=$(dirname "$file")
       basename=$(basename "$file")
       old_version=$(jq -r '.semanticVersion' "$file")
@@ -207,7 +263,10 @@ EOF
       jq --arg v "$SEMANTIC_VERSION" '.semanticVersion = $v' "$file" > "$dir/$new_basename"
       [[ "$basename" != "$new_basename" ]] && rm -f "$file"
     done
-    echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions/$ACTION_CODE/ (semanticVersion → $SEMANTIC_VERSION)"
+    echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions_config/$ACTION_CODE/ (semanticVersion → $SEMANTIC_VERSION)"
+
+    copy_actions_mapping
+    echo -e "  ${YELLOW}mapping${RESET}       $VERSIONED_DIR/$MAPPING_FILE"
 
     start_broker
     ;;
