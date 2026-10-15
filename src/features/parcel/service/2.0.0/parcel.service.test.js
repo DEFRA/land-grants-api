@@ -11,6 +11,8 @@ import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBo
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
+import { runParcelRules } from '~/src/features/parcel/service/2.0.0/parcel-rules.service.js'
+import { config } from '~/src/config/index.js'
 
 vi.mock(
   '~/src/features/parcel/transformers/parcelActions.transformer.js',
@@ -30,6 +32,7 @@ vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js')
 vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
+vi.mock('~/src/features/parcel/service/2.0.0/parcel-rules.service.js')
 
 // The two views of enabled-action config that a request works out once,
 // as parcels.controller builds them
@@ -129,6 +132,7 @@ describe('Parcel Service 2.0.0', () => {
         code: action.code,
         description: action.description
       }))
+      runParcelRules.mockResolvedValue({ passed: true, results: [] })
     })
 
     test('should return parcelId and sheetId', async () => {
@@ -847,6 +851,160 @@ describe('Parcel Service 2.0.0', () => {
             expect(actionAvailability.unavailableReason).toBeUndefined()
           })
         })
+      })
+    })
+
+    describe('parcel rules', () => {
+      const failedRulesResult = {
+        passed: false,
+        results: [
+          {
+            name: 'sssi-consent-required',
+            description: 'Is consent needed from Natural England?',
+            passed: false,
+            reason: 'Consent is needed from Natural England',
+            explanations: [{ title: 'SSSI', lines: ['Parcel is in an SSSI'] }]
+          },
+          {
+            name: 'parcel-has-intersection-with-data-layer',
+            description: 'Is the parcel in a moorland?',
+            passed: true,
+            reason: 'Parcel is in a moorland',
+            explanations: []
+          }
+        ]
+      }
+
+      // What the availability calculation concluded before the rules are run
+      const reportAvailability = (isAvailable) =>
+        actionTransformer.mockImplementation((action) => ({
+          code: action.code,
+          description: action.description,
+          isAvailable
+        }))
+
+      const requestActions = (showActionResults) =>
+        getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          showActionResults,
+          prepared([mockEnabledActionsForParcel[0]]),
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+      beforeEach(() => {
+        config.set('featureFlags.enableRulesOnParcel', true)
+      })
+
+      afterEach(() => {
+        config.set('featureFlags.enableRulesOnParcel', false)
+      })
+
+      test('should not run the rules when the feature flag is disabled', async () => {
+        config.set('featureFlags.enableRulesOnParcel', false)
+        reportAvailability(true)
+
+        const result = await requestActions(true)
+
+        expect(runParcelRules).not.toHaveBeenCalled()
+        expect(result.actions).toEqual([
+          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+        ])
+      })
+
+      test('should not run the rules when action results are not requested', async () => {
+        reportAvailability(true)
+
+        await requestActions(false)
+
+        expect(runParcelRules).not.toHaveBeenCalled()
+      })
+
+      test('should not run the rules for an action that is already unavailable', async () => {
+        reportAvailability(false)
+
+        await requestActions(true)
+
+        expect(runParcelRules).not.toHaveBeenCalled()
+      })
+
+      test('should run the rules for an available action with the request context', async () => {
+        const plannedActions = [
+          { actionCode: 'CMOR1', quantity: 1, unit: 'ha' }
+        ]
+        mergeAgreementsTransformer.mockReturnValue(plannedActions)
+        reportAvailability(true)
+
+        await requestActions(true)
+
+        expect(runParcelRules).toHaveBeenCalledTimes(1)
+        expect(runParcelRules).toHaveBeenCalledWith(
+          mockEnabledActionsForParcel[0],
+          plannedActions,
+          {
+            enabledActions: [mockEnabledActionsForParcel[0]],
+            compatibilityCheckFn: mockCompatibilityCheckFn,
+            parcel: mockParcel,
+            postgresDb: mockRequest.server.postgresDb,
+            logger: mockLogger
+          }
+        )
+      })
+
+      test('should mark the action unavailable, reporting the failed rules as the reason', async () => {
+        reportAvailability(true)
+        runParcelRules.mockResolvedValue(failedRulesResult)
+
+        const result = await requestActions(true)
+
+        expect(result.actions).toEqual([
+          {
+            code: 'UPL1',
+            description: 'Action 1',
+            isAvailable: false,
+            unavailableReason: {
+              code: 'rule-failed',
+              reason: 'Consent is needed from Natural England',
+              metadata: {
+                results: [
+                  {
+                    name: 'sssi-consent-required',
+                    description: 'Is consent needed from Natural England?',
+                    explanations: [
+                      { title: 'SSSI', lines: ['Parcel is in an SSSI'] }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ])
+      })
+
+      test('should leave the action available when the rules do not pass but no individual rule failed', async () => {
+        reportAvailability(true)
+        runParcelRules.mockResolvedValue({
+          passed: false,
+          results: [failedRulesResult.results[1]]
+        })
+
+        const result = await requestActions(true)
+
+        expect(result.actions).toEqual([
+          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+        ])
+      })
+
+      test('should leave the action available when the rules pass', async () => {
+        reportAvailability(true)
+
+        const result = await requestActions(true)
+
+        expect(result.actions).toEqual([
+          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+        ])
       })
     })
   })
