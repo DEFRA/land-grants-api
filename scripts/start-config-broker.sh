@@ -203,7 +203,8 @@ case "${1:-}" in
     make_release_yml "$GRANT_VERSION"
     make_versioned_dir "$GRANT_VERSION"
 
-    ACTION_FILE="$VERSIONED_DIR/actions_config/$ACTION_CODE/${ACTION_CODE,,}-${SEMANTIC_VERSION}.json"
+    ACTION_CODE_LOWER=$(echo "$ACTION_CODE" | tr '[:upper:]' '[:lower:]')
+    ACTION_FILE="$VERSIONED_DIR/actions_config/$ACTION_CODE/${ACTION_CODE_LOWER}-${SEMANTIC_VERSION}.json"
     mkdir -p "$(dirname "$ACTION_FILE")"
     cat > "$ACTION_FILE" << EOF
 {
