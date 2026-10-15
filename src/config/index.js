@@ -358,6 +358,12 @@ const config = convict({
       format: Boolean,
       default: !(isProduction || isLocal),
       env: 'FEATURE_USE_DAL'
+    },
+    enableRulesOnParcel: {
+      doc: 'Run the rules on /parcels',
+      format: Boolean,
+      default: false,
+      env: 'RULES_ON_PARCEL'
     }
   }
 })
