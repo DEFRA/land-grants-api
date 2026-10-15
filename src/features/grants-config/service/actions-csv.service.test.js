@@ -1,5 +1,5 @@
 import { Readable } from 'node:stream'
-import { processActionSssiHfMappingFile } from './action-sssi-hf-mapping.service.js'
+import { processActionsCsvFile } from './actions-csv.service.js'
 
 import { getFile } from '~/src/features/common/s3/s3.js'
 import { importData } from '~/src/features/land-data-ingest/service/import-land-data.service.js'
@@ -7,11 +7,12 @@ import { importData } from '~/src/features/land-data-ingest/service/import-land-
 vi.mock('~/src/features/common/s3/s3.js')
 vi.mock('~/src/features/land-data-ingest/service/import-land-data.service.js')
 
-describe('processActionSssiHfMappingFile', () => {
+describe('processActionsCsvFile', () => {
   let mockLogger
   let mockS3Client
-  const s3Key = 'land-grants/0.24.0/actions/actions_mapping.csv'
+  const s3Key = 'land-grants/0.24.0/actions/actions_sidedness.csv'
   const bucket = 'configs-bucket'
+  const entityName = 'actions_sidedness'
 
   beforeEach(() => {
     mockLogger = { info: vi.fn(), error: vi.fn() }
@@ -20,34 +21,36 @@ describe('processActionSssiHfMappingFile', () => {
     getFile.mockResolvedValue({
       Body: {
         transformToWebStream: () =>
-          new Response('action_code,has_sssi,has_hf\nUPL1,1,1\n').body
+          new Response('action_code,sidedness\nBND2,single-side\n').body
       }
     })
     importData.mockResolvedValue(true)
   })
 
   test('fetches the csv from the config bucket', async () => {
-    await processActionSssiHfMappingFile(
+    await processActionsCsvFile(
       mockLogger,
       mockS3Client,
       s3Key,
-      bucket
+      bucket,
+      entityName
     )
 
     expect(getFile).toHaveBeenCalledWith(mockS3Client, bucket, s3Key)
   })
 
-  test('imports the csv as the action_sssi_hf_mapping entity, tagged with the s3 key', async () => {
-    await processActionSssiHfMappingFile(
+  test('imports the csv as the given entity, tagged with the s3 key', async () => {
+    await processActionsCsvFile(
       mockLogger,
       mockS3Client,
       s3Key,
-      bucket
+      bucket,
+      entityName
     )
 
     expect(importData).toHaveBeenCalledWith(
       expect.any(Readable),
-      { name: 'action_sssi_hf_mapping', truncateTable: false },
+      { name: 'actions_sidedness', truncateTable: false },
       s3Key,
       undefined,
       mockLogger
@@ -61,21 +64,22 @@ describe('processActionSssiHfMappingFile', () => {
       return true
     })
 
-    await processActionSssiHfMappingFile(
+    await processActionsCsvFile(
       mockLogger,
       mockS3Client,
       s3Key,
-      bucket
+      bucket,
+      entityName
     )
 
-    expect(body).toBe('action_code,has_sssi,has_hf\nUPL1,1,1\n')
+    expect(body).toBe('action_code,sidedness\nBND2,single-side\n')
   })
 
   test('propagates import failures', async () => {
     importData.mockRejectedValue(new Error('copy failed'))
 
     await expect(
-      processActionSssiHfMappingFile(mockLogger, mockS3Client, s3Key, bucket)
+      processActionsCsvFile(mockLogger, mockS3Client, s3Key, bucket, entityName)
     ).rejects.toThrow('copy failed')
   })
 })

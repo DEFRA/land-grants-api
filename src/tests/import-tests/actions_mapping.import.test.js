@@ -26,7 +26,7 @@ const MAPPING_CSV = [
 // Published by grants-config-land-grants via the grants-config-broker, which
 // uploads files without a content type - S3 then reports binary/octet-stream.
 const brokerMessage = (manifest) => ({
-  MessageId: 'action-sssi-hf-mapping-import',
+  MessageId: 'actions-mapping-import',
   Body: JSON.stringify(manifest),
   MessageAttributes: {
     grant: { DataType: 'String', StringValue: 'land-grants' },
@@ -35,7 +35,7 @@ const brokerMessage = (manifest) => ({
   }
 })
 
-describe('Action SSSI HF mapping import', () => {
+describe('Actions mapping import', () => {
   const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
   let s3Client
   let connection

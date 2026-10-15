@@ -16,6 +16,7 @@ GRANT_NAME="land-grants"
 GRANT_CONFIG_SOURCE="../grants-config-land-grants"
 SOURCE_CONFIG_DIR="$GRANT_CONFIG_SOURCE/configurations/$GRANT_NAME"
 MAPPING_FILE="actions/actions_mapping.csv"
+SIDEDNESS_FILE="actions/actions_sidedness.csv"
 
 # ---------------------------------------------------------------------------
 # Splash / help
@@ -102,6 +103,15 @@ copy_actions_mapping() {
   cp "$source_file" "$VERSIONED_DIR/$MAPPING_FILE"
 }
 
+# Publish the actions sidedness CSV too, once the config repo has one
+copy_actions_sidedness() {
+  local source_file="$SOURCE_CONFIG_DIR/$SIDEDNESS_FILE"
+  if [[ -f "$source_file" ]]; then
+    cp "$source_file" "$VERSIONED_DIR/$SIDEDNESS_FILE"
+    echo -e "  ${YELLOW}sidedness${RESET}     $VERSIONED_DIR/$SIDEDNESS_FILE"
+  fi
+}
+
 # Add (or replace) the row for an action code in the published mapping CSV
 set_actions_mapping_row() {
   local action_code="$1" has_sssi="$2" has_hf="$3"
@@ -172,7 +182,7 @@ case "${1:-}" in
     echo "=== actions (${ACTION_CODES[*]}) ==="
     docker exec land-grants-api-land-grants-backend-postgres-1 psql \
       -U land_grants_api -d land_grants_api \
-      -c "SELECT code, enabled, display, sssi_eligible, hf_eligible, ingest_id, last_updated FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
+      -c "SELECT code, enabled, display, sssi_eligible, hf_eligible, sidedness, ingest_id, last_updated FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
 
     exit 0
     ;;
@@ -225,6 +235,7 @@ EOF
     echo -e "  ${YELLOW}action config${RESET} $ACTION_FILE"
 
     copy_actions_mapping
+    copy_actions_sidedness
     set_actions_mapping_row "$ACTION_CODE" "$HAS_SSSI" "$HAS_HF"
 
     start_broker
@@ -266,6 +277,7 @@ EOF
     echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions_config/$ACTION_CODE/ (semanticVersion → $SEMANTIC_VERSION)"
 
     copy_actions_mapping
+    copy_actions_sidedness
     echo -e "  ${YELLOW}mapping${RESET}       $VERSIONED_DIR/$MAPPING_FILE"
 
     start_broker
