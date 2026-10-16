@@ -1,11 +1,26 @@
 import { processActionConfigFile } from '~/src/features/grants-config/service/grants-config.service.js'
-import { processActionSssiHfMappingFile } from '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
+import { processActionsCsvFile } from '~/src/features/grants-config/service/actions-csv.service.js'
 
 const isActionConfigKey = (key) =>
   key.includes('/actions_config/') && key.endsWith('.json')
 
-const isActionsMappingKey = (key) =>
-  key.endsWith('/actions/actions_mapping.csv')
+// Each CSV under actions/ is applied by the SQL for the entity of the same name,
+// in this order: the register of action codes first, then the facts that refer to it
+const ACTIONS_CSV_ENTITIES = ['actions_mapping', 'actions_sidedness']
+
+/**
+ * The actions CSV files in a manifest, each with the entity that applies it.
+ * A manifest holds one config version, so at most one of each.
+ * @param {string[]} manifest
+ * @returns {{ key: string, entityName: string }[]}
+ */
+const findActionsCsvFiles = (manifest) =>
+  ACTIONS_CSV_ENTITIES.flatMap((entityName) => {
+    const key = manifest.find((manifestKey) =>
+      manifestKey.endsWith(`/actions/${entityName}.csv`)
+    )
+    return key ? [{ key, entityName }] : []
+  })
 
 /**
  * Process a single SQS message from the grants_config_broker_update queue.
@@ -46,10 +61,9 @@ async function processMessage(message, s3Client, db, logger, options) {
   }
 
   const actionKeys = manifest.filter(isActionConfigKey)
-  // A manifest holds one config version, so at most one mapping file
-  const mappingKey = manifest.find(isActionsMappingKey)
+  const actionsCsvFiles = findActionsCsvFiles(manifest)
 
-  if (actionKeys.length === 0 && !mappingKey) {
+  if (actionKeys.length === 0 && actionsCsvFiles.length === 0) {
     logger.info(
       `No action config files found in manifest for grant="${grant}" version="${version}" — nothing to process`
     )
@@ -57,20 +71,21 @@ async function processMessage(message, s3Client, db, logger, options) {
   }
 
   logger.info(
-    `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s), ${mappingKey ? 1 : 0} mapping file(s))`
+    `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s), ${actionsCsvFiles.length} actions csv file(s))`
   )
 
   for (const key of actionKeys) {
     await processActionConfigFile(logger, s3Client, db, key, grantsConfigBucket)
   }
 
-  // Applied after the action configs so actions inserted above pick up their mapping
-  if (mappingKey) {
-    await processActionSssiHfMappingFile(
+  // Applied after the action configs so actions inserted above pick up their values
+  for (const { key, entityName } of actionsCsvFiles) {
+    await processActionsCsvFile(
       logger,
       s3Client,
-      mappingKey,
-      grantsConfigBucket
+      key,
+      grantsConfigBucket,
+      entityName
     )
   }
 }
