@@ -880,7 +880,8 @@ describe('Parcel Service 2.0.0', () => {
         actionTransformer.mockImplementation((action) => ({
           code: action.code,
           description: action.description,
-          isAvailable
+          isAvailable,
+          availability: { unit: 'ha', value: 1.5 }
         }))
 
       const requestActions = (showActionResults) =>
@@ -910,16 +911,21 @@ describe('Parcel Service 2.0.0', () => {
 
         expect(runParcelRules).not.toHaveBeenCalled()
         expect(result.actions).toEqual([
-          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+          {
+            code: 'UPL1',
+            description: 'Action 1',
+            isAvailable: true,
+            availability: { unit: 'ha', value: 1.5 }
+          }
         ])
       })
 
-      test('should not run the rules when action results are not requested', async () => {
+      test('should run the rules even when action results are not requested', async () => {
         reportAvailability(true)
 
         await requestActions(false)
 
-        expect(runParcelRules).not.toHaveBeenCalled()
+        expect(runParcelRules).toHaveBeenCalledTimes(1)
       })
 
       test('should not run the rules for an action that is already unavailable', async () => {
@@ -964,6 +970,7 @@ describe('Parcel Service 2.0.0', () => {
             code: 'UPL1',
             description: 'Action 1',
             isAvailable: false,
+            availability: { unit: 'ha', value: 1.5 },
             unavailableReason: {
               code: 'rule-failed',
               reason: 'Consent is needed from Natural England',
@@ -993,7 +1000,12 @@ describe('Parcel Service 2.0.0', () => {
         const result = await requestActions(true)
 
         expect(result.actions).toEqual([
-          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+          {
+            code: 'UPL1',
+            description: 'Action 1',
+            isAvailable: true,
+            availability: { unit: 'ha', value: 1.5 }
+          }
         ])
       })
 
@@ -1003,7 +1015,12 @@ describe('Parcel Service 2.0.0', () => {
         const result = await requestActions(true)
 
         expect(result.actions).toEqual([
-          { code: 'UPL1', description: 'Action 1', isAvailable: true }
+          {
+            code: 'UPL1',
+            description: 'Action 1',
+            isAvailable: true,
+            availability: { unit: 'ha', value: 1.5 }
+          }
         ])
       })
     })
