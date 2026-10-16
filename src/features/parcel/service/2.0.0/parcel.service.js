@@ -69,7 +69,6 @@ async function getActionsWithAvailability(
 
     if (
       config.get('featureFlags.enableRulesOnParcel') &&
-      showActionResults &&
       actionWithAvailability.isAvailable
     ) {
       await runRules(
