@@ -100,4 +100,92 @@ describe('Actions mapping import', () => {
     ])
     expect(actions[0].last_updated).toBeDefined()
   }, 10000)
+
+  describe('for a code with no action config', () => {
+    // A code no other test or migration uses, so it can be inserted and removed freely
+    const NEW_CODE = 'MAP_ONLY1'
+    const ACTION_CONFIG_S3_KEY = `land-grants/0.0.0-test/actions_config/${NEW_CODE}/map_only1-1.0.0.json`
+
+    const process = (manifest) =>
+      processMessage(brokerMessage(manifest), s3Client, connection, logger, {
+        grantsConfigBucket: S3_CONFIG.bucket
+      })
+
+    const actionRow = async () => {
+      const [row] = await getRecordsByQuery(
+        connection,
+        'SELECT code, enabled, display, sssi_eligible, hf_eligible, ingest_id FROM actions WHERE code = $1',
+        [NEW_CODE]
+      )
+      return row
+    }
+
+    const deleteNewCode = async () => {
+      await getRecordsByQuery(
+        connection,
+        'DELETE FROM actions_config WHERE code = $1',
+        [NEW_CODE]
+      )
+      await getRecordsByQuery(
+        connection,
+        'DELETE FROM actions WHERE code = $1',
+        [NEW_CODE]
+      )
+    }
+
+    beforeAll(async () => {
+      await deleteNewCode()
+      await uploadTestFile(
+        s3Client,
+        GRANTS_CONFIG_S3_KEY,
+        `${MAPPING_CSV}\n${NEW_CODE},0,1`,
+        S3_CONFIG.bucket,
+        'binary/octet-stream'
+      )
+      await process([GRANTS_CONFIG_S3_KEY])
+    })
+
+    afterAll(async () => {
+      await deleteFiles(s3Client, [ACTION_CONFIG_S3_KEY])
+      await deleteNewCode()
+    })
+
+    test('creates its actions row from the mapping alone', async () => {
+      expect(await actionRow()).toEqual({
+        code: NEW_CODE,
+        enabled: null,
+        display: null,
+        sssi_eligible: false,
+        hf_eligible: true,
+        ingest_id: GRANTS_CONFIG_S3_KEY
+      })
+    })
+
+    test('keeps the mapped eligibility when its action config arrives later', async () => {
+      await uploadTestFile(
+        s3Client,
+        ACTION_CONFIG_S3_KEY,
+        JSON.stringify({
+          code: NEW_CODE,
+          semanticVersion: '1.0.0',
+          description: 'Mapping only test action',
+          applicationUnitOfMeasurement: 'ha',
+          enabled: true,
+          display: true
+        }),
+        S3_CONFIG.bucket,
+        'binary/octet-stream'
+      )
+      await process([ACTION_CONFIG_S3_KEY])
+
+      expect(await actionRow()).toEqual({
+        code: NEW_CODE,
+        enabled: true,
+        display: true,
+        sssi_eligible: false,
+        hf_eligible: true,
+        ingest_id: GRANTS_CONFIG_S3_KEY
+      })
+    })
+  })
 })
