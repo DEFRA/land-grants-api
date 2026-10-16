@@ -1,12 +1,10 @@
 import { processMessage } from './grants-config-update.handler.js'
 
 import { processActionConfigFile } from '~/src/features/grants-config/service/grants-config.service.js'
-import { processActionSssiHfMappingFile } from '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
+import { processActionsCsvFile } from '~/src/features/grants-config/service/actions-csv.service.js'
 
 vi.mock('~/src/features/grants-config/service/grants-config.service.js')
-vi.mock(
-  '~/src/features/grants-config/service/action-sssi-hf-mapping.service.js'
-)
+vi.mock('~/src/features/grants-config/service/actions-csv.service.js')
 
 function buildMessage({
   grant = 'land-grants',
@@ -41,7 +39,7 @@ describe('processMessage', () => {
     mockS3Client = {}
     mockDb = {}
     processActionConfigFile.mockResolvedValue(undefined)
-    processActionSssiHfMappingFile.mockResolvedValue(undefined)
+    processActionsCsvFile.mockResolvedValue(undefined)
   })
 
   describe('grant filtering', () => {
@@ -207,52 +205,79 @@ describe('processMessage', () => {
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
       expect(processActionConfigFile).not.toHaveBeenCalled()
-      expect(processActionSssiHfMappingFile).not.toHaveBeenCalled()
+      expect(processActionsCsvFile).not.toHaveBeenCalled()
     })
 
-    test('ignores the pre-rename sssi hf mapping csv', async () => {
-      const message = buildMessage({
-        manifest: ['land-grants/0.1.1/actions/action_sssi_hf_mapping.csv']
-      })
+    test.each([
+      ['actions_mapping.csv', 'actions_mapping'],
+      ['actions_sidedness.csv', 'actions_sidedness']
+    ])(
+      'routes actions/%s to the actions csv service as %s',
+      async (fileName, entityName) => {
+        const key = `land-grants/0.1.1/actions/${fileName}`
+        const message = buildMessage({
+          manifest: [key, 'land-grants/0.1.1/metadata.json']
+        })
 
-      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+        await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionSssiHfMappingFile).not.toHaveBeenCalled()
-    })
+        expect(processActionsCsvFile).toHaveBeenCalledWith(
+          mockLogger,
+          mockS3Client,
+          key,
+          'configs-bucket',
+          entityName
+        )
+      }
+    )
 
-    test('routes the actions mapping csv to the mapping service', async () => {
+    test.each(['actions_mapping.csv', 'actions_sidedness.csv'])(
+      'applies actions/%s after the action configs',
+      async (fileName) => {
+        const message = buildMessage({
+          manifest: [
+            `land-grants/0.1.1/actions/${fileName}`,
+            'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json'
+          ]
+        })
+
+        await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+        expect(
+          processActionConfigFile.mock.invocationCallOrder[0]
+        ).toBeLessThan(processActionsCsvFile.mock.invocationCallOrder[0])
+      }
+    )
+
+    test('applies actions_mapping before actions_sidedness, whatever the manifest order', async () => {
       const message = buildMessage({
         manifest: [
-          'land-grants/0.1.1/actions/actions_mapping.csv',
-          'land-grants/0.1.1/metadata.json'
+          'land-grants/0.1.1/actions/actions_sidedness.csv',
+          'land-grants/0.1.1/actions/actions_mapping.csv'
         ]
       })
 
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionConfigFile).not.toHaveBeenCalled()
-      expect(processActionSssiHfMappingFile).toHaveBeenCalledWith(
-        mockLogger,
-        mockS3Client,
-        'land-grants/0.1.1/actions/actions_mapping.csv',
-        'configs-bucket'
-      )
+      expect(
+        processActionsCsvFile.mock.calls.map(
+          ([, , , , entityName]) => entityName
+        )
+      ).toEqual(['actions_mapping', 'actions_sidedness'])
     })
 
-    test('applies the actions mapping after the action configs', async () => {
-      const message = buildMessage({
-        manifest: [
-          'land-grants/0.1.1/actions/actions_mapping.csv',
-          'land-grants/0.1.1/actions_config/PA3/pa3-1.0.0.json'
-        ]
-      })
+    test.each(['action_sssi_hf_mapping.csv', 'actions_unknown.csv'])(
+      'ignores the unrecognised csv actions/%s',
+      async (fileName) => {
+        const message = buildMessage({
+          manifest: [`land-grants/0.1.1/actions/${fileName}`]
+        })
 
-      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+        await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionConfigFile.mock.invocationCallOrder[0]).toBeLessThan(
-        processActionSssiHfMappingFile.mock.invocationCallOrder[0]
-      )
-    })
+        expect(processActionsCsvFile).not.toHaveBeenCalled()
+      }
+    )
 
     test('logs the version from message attributes', async () => {
       await processMessage(

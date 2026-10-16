@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="add-sidedness-to-actions" author="system">
+    <comment>
+      Adds the sidedness of a linear action code, set from actions_sidedness.csv.
+      No default: NULL means never set, which the length calculation treats as both-sides.
+    </comment>
+    <sql>
+      ALTER TABLE actions ADD COLUMN sidedness TEXT
+        CONSTRAINT actions_sidedness_check CHECK (sidedness IN ('single-side', 'both-sides'));
+    </sql>
+    <rollback>
+      ALTER TABLE actions DROP COLUMN sidedness;
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>
