@@ -231,8 +231,9 @@ describe('processMessage', () => {
       }
     )
 
+    // Only the mapping creates actions rows, and an action config can only update one
     test.each(['actions_mapping.csv', 'actions_sidedness.csv'])(
-      'applies actions/%s after the action configs',
+      'applies actions/%s before the action configs',
       async (fileName) => {
         const message = buildMessage({
           manifest: [
@@ -243,9 +244,9 @@ describe('processMessage', () => {
 
         await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-        expect(
+        expect(processActionsCsvFile.mock.invocationCallOrder[0]).toBeLessThan(
           processActionConfigFile.mock.invocationCallOrder[0]
-        ).toBeLessThan(processActionsCsvFile.mock.invocationCallOrder[0])
+        )
       }
     )
 

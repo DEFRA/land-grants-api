@@ -7,7 +7,7 @@ SELECT
     tmp.hf_eligible,
     $1,
     now()
-FROM action_sssi_hf_mapping_tmp tmp
+FROM actions_mapping_tmp tmp
 ON CONFLICT (code) DO UPDATE
 SET
     sssi_eligible = EXCLUDED.sssi_eligible,
