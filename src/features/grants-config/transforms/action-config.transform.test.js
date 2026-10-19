@@ -72,26 +72,6 @@ describe('transformActionConfig', () => {
     expect(result.description).toBeNull()
   })
 
-  test('extracts sssiEligible and hfEligible when present', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      sssiEligible: false,
-      hfEligible: false
-    })
-    expect(result.sssiEligible).toBe(false)
-    expect(result.hfEligible).toBe(false)
-  })
-
-  test('defaults sssiEligible to true when absent', () => {
-    const result = transformActionConfig(pa3Json)
-    expect(result.sssiEligible).toBe(true)
-  })
-
-  test('defaults hfEligible to true when absent', () => {
-    const result = transformActionConfig(pa3Json)
-    expect(result.hfEligible).toBe(true)
-  })
-
   test('extracts groupId when present', () => {
     const result = transformActionConfig({ ...pa3Json, groupId: 2 })
     expect(result.groupId).toBe(2)

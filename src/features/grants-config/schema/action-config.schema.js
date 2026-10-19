@@ -16,8 +16,6 @@ export const actionConfigInputSchema = Joi.object({
   landCoverClassCodes: Joi.array().items(Joi.string()).optional(),
   rules: Joi.array().items(Joi.object()).optional(),
   description: Joi.string().optional(),
-  sssiEligible: Joi.boolean().optional(),
-  hfEligible: Joi.boolean().optional(),
   groupId: Joi.number().integer().allow(null).optional(),
   enabled: Joi.boolean().optional(),
   display: Joi.boolean().optional(),

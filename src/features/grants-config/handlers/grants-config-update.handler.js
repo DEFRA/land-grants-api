@@ -74,11 +74,8 @@ async function processMessage(message, s3Client, db, logger, options) {
     `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s), ${actionsCsvFiles.length} actions csv file(s))`
   )
 
-  for (const key of actionKeys) {
-    await processActionConfigFile(logger, s3Client, db, key, grantsConfigBucket)
-  }
-
-  // Applied after the action configs so actions inserted above pick up their values
+  // Applied before the action configs: only the mapping creates actions rows,
+  // and an action config can only update an existing one
   for (const { key, entityName } of actionsCsvFiles) {
     await processActionsCsvFile(
       logger,
@@ -87,6 +84,10 @@ async function processMessage(message, s3Client, db, logger, options) {
       grantsConfigBucket,
       entityName
     )
+  }
+
+  for (const key of actionKeys) {
+    await processActionConfigFile(logger, s3Client, db, key, grantsConfigBucket)
   }
 }
 

@@ -1,25 +1,28 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
- * Upsert the core actions row.
+ * Update the core actions row. Only the actions mapping CSV creates actions
+ * rows, so a config for a code it has not created fails rather than inserting one.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
- * @param {{ code: string, enabled: boolean, display: boolean, description: string|null, sssiEligible: boolean, hfEligible: boolean }} params
+ * @param {{ code: string, enabled: boolean, display: boolean, description: string|null }} params
  * @returns {Promise<void>}
  */
-async function upsertAction(client, params) {
-  const { code, enabled, display, description, sssiEligible, hfEligible } =
-    params
-
-  await client.query(
-    `INSERT INTO actions (code, enabled, display, description, sssi_eligible, hf_eligible, last_updated)
-     VALUES ($1, $2, $3, $4, $5, $6, NOW())
-     ON CONFLICT (code) DO UPDATE SET
-       description = COALESCE(EXCLUDED.description, actions.description),
-       enabled = EXCLUDED.enabled,
-       display = EXCLUDED.display,
-       last_updated = NOW()`,
-    [code, enabled, display, description, sssiEligible, hfEligible]
+async function updateAction(client, { code, enabled, display, description }) {
+  const result = await client.query(
+    `UPDATE actions SET
+       description = COALESCE($4, description),
+       enabled = $2,
+       display = $3,
+       last_updated = NOW()
+     WHERE code = $1`,
+    [code, enabled, display, description]
   )
+
+  if (result.rowCount === 0) {
+    throw new Error(
+      `No actions row for code=${code}: add it to the actions mapping CSV`
+    )
+  }
 }
 
 /**
@@ -85,7 +88,7 @@ async function insertConfigVersion(
  * new semantic version is strictly higher, then inserts the new row.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, sssiEligible: boolean, hfEligible: boolean, groupId: number|null, enabled: boolean, display: boolean }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null, enabled: boolean, display: boolean }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {
@@ -94,7 +97,7 @@ async function insertActionConfig(logger, db, params) {
     client = await db.connect()
     await client.query('BEGIN')
 
-    await upsertAction(client, params)
+    await updateAction(client, params)
     await deactivateSupersededConfig(client, params)
     await insertConfigVersion(client, params)
 
