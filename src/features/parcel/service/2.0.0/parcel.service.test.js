@@ -12,7 +12,6 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { runParcelRules } from '~/src/features/parcel/service/2.0.0/parcel-rules.service.js'
-import { config } from '~/src/config/index.js'
 
 vi.mock(
   '~/src/features/parcel/transformers/parcelActions.transformer.js',
@@ -894,31 +893,6 @@ describe('Parcel Service 2.0.0', () => {
           mockRequest,
           []
         )
-
-      beforeEach(() => {
-        config.set('featureFlags.enableRulesOnParcel', true)
-      })
-
-      afterEach(() => {
-        config.set('featureFlags.enableRulesOnParcel', false)
-      })
-
-      test('should not run the rules when the feature flag is disabled', async () => {
-        config.set('featureFlags.enableRulesOnParcel', false)
-        reportAvailability(true)
-
-        const result = await requestActions(true)
-
-        expect(runParcelRules).not.toHaveBeenCalled()
-        expect(result.actions).toEqual([
-          {
-            code: 'UPL1',
-            description: 'Action 1',
-            isAvailable: true,
-            availability: { unit: 'ha', value: 1.5 }
-          }
-        ])
-      })
 
       test('should run the rules even when action results are not requested', async () => {
         reportAvailability(true)
