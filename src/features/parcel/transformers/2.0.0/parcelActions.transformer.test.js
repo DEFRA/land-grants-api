@@ -1,4 +1,5 @@
 import { actionTransformer } from './parcelActions.transformer.js'
+import { noAvailabilityReason } from '~/src/features/parcel/service/2.0.0/unavailability.js'
 
 const defaultAction = {
   code: 'ACTION1',
@@ -94,7 +95,8 @@ describe('actionTransformer 2.0.0', () => {
         value: 0
       },
       quantityRequired: true,
-      isAvailable: true
+      isAvailable: false,
+      unavailableReason: noAvailabilityReason
     })
   })
 
@@ -245,7 +247,8 @@ describe('actionTransformer 2.0.0', () => {
         value: 0
       },
       quantityRequired: true,
-      isAvailable: true
+      isAvailable: false,
+      unavailableReason: noAvailabilityReason
     })
   })
 
@@ -274,8 +277,8 @@ describe('actionTransformer 2.0.0', () => {
 
   test('should report an action as unavailable when the existing actions do not fit', () => {
     const availableArea = {
-      availableAreaHectares: 0,
-      availableAreaSqm: 0,
+      availableAreaHectares: 1.0,
+      availableAreaSqm: 10000,
       unavailableReason: {
         code: 'existing-actions-do-not-fit',
         reason:
@@ -291,7 +294,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'ACTION1',
       description: 'Test Action',
-      availability: { unit: 'ha', value: 0 },
+      availability: { unit: 'ha', value: 1.0 },
       quantityRequired: true,
       isAvailable: false,
       unavailableReason: {
@@ -307,7 +310,7 @@ describe('actionTransformer 2.0.0', () => {
 
   test('should still include results for an unavailable action when showResults is true', () => {
     const availableArea = {
-      availableAreaHectares: 0,
+      availableAreaHectares: 1.0,
       unavailableReason: { code: 'existing-actions-do-not-fit' },
       totalValidLandCoverSqm: 41200,
       explanations: ['why it did not fit']
@@ -340,7 +343,7 @@ describe('actionTransformer 2.0.0', () => {
     expect(result).toEqual({
       code: 'BND1',
       description: 'Test Action',
-      availability: { unit: 'm', value: 0 },
+      availability: { unit: 'm', value: 12 },
       quantityRequired: true,
       isAvailable: false,
       unavailableReason
@@ -367,7 +370,8 @@ describe('actionTransformer 2.0.0', () => {
       description: 'Test Action',
       availability: { unit: 'm', value: 0 },
       quantityRequired: true,
-      isAvailable: true
+      isAvailable: false,
+      unavailableReason: noAvailabilityReason
     })
   })
 
