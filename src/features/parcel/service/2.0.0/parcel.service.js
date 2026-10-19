@@ -13,7 +13,6 @@ import {
 } from '../../transformers/parcelActions.transformer.js'
 import { runParcelRules } from './parcel-rules.service.js'
 import { ruleFailedReason } from './unavailability.js'
-import { config } from '~/src/config/index.js'
 
 /**
  * Get parcel actions with their availability
@@ -67,10 +66,7 @@ async function getActionsWithAvailability(
       }
     )
 
-    if (
-      config.get('featureFlags.enableRulesOnParcel') &&
-      actionWithAvailability.isAvailable
-    ) {
+    if (actionWithAvailability.isAvailable) {
       await runRules(
         {
           displayedAction,
