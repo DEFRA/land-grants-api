@@ -72,17 +72,6 @@ describe('transformActionConfig', () => {
     expect(result.description).toBeNull()
   })
 
-  // Eligibility comes only from the actions mapping CSV
-  test('does not carry sssiEligible or hfEligible from the config', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      sssiEligible: false,
-      hfEligible: false
-    })
-    expect(result).not.toHaveProperty('sssiEligible')
-    expect(result).not.toHaveProperty('hfEligible')
-  })
-
   test('extracts groupId when present', () => {
     const result = transformActionConfig({ ...pa3Json, groupId: 2 })
     expect(result.groupId).toBe(2)
