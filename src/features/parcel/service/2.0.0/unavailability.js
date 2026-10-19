@@ -4,6 +4,8 @@ import {
   EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
   INSUFFICIENT_LENGTH_REMAINING,
+  NO_AVAILABILITY,
+  NO_AVAILABILITY_REASON,
   PARCEL_TOO_SHORT_FOR_ACTION,
   RULE_FAILED
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
@@ -119,6 +121,15 @@ export function ruleFailedReason(rulesResult) {
       }))
     }
   }
+}
+
+/**
+ * Not available because availability (in terms of area, length, etc.) was calculated as 0
+ */
+export const noAvailabilityReason = {
+  code: NO_AVAILABILITY,
+  reason: NO_AVAILABILITY_REASON,
+  metadata: {}
 }
 
 /**

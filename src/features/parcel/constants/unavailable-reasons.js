@@ -6,15 +6,20 @@ export const EXISTING_ACTIONS_DO_NOT_FIT = 'existing-actions-do-not-fit'
 export const PARCEL_TOO_SHORT_FOR_ACTION = 'parcel-too-short-for-action'
 export const INSUFFICIENT_LENGTH_REMAINING = 'insufficient-length-remaining'
 export const RULE_FAILED = 'rule-failed'
+export const NO_AVAILABILITY = 'no-availability'
 
 export const UNAVAILABLE_REASON_CODES = [
   EXISTING_ACTIONS_DO_NOT_FIT,
   PARCEL_TOO_SHORT_FOR_ACTION,
   INSUFFICIENT_LENGTH_REMAINING,
-  RULE_FAILED
+  RULE_FAILED,
+  NO_AVAILABILITY
 ]
 
 export const EXISTING_ACTIONS_DO_NOT_FIT_REASON =
   'Your existing actions do not fit on this land parcel. Please contact the RPA to resolve this.'
 export const EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON =
   'Your existing actions do not fit on the available length for this land parcel. Please contact the RPA to resolve this.'
+
+export const NO_AVAILABILITY_REASON =
+  'There is no remaining availability for this action'
