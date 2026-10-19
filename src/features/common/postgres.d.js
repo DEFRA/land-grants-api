@@ -1,6 +1,7 @@
 /**
  * @typedef {object} QueryResult
  * @property {any[]} rows
+ * @property {number | null} [rowCount] - Rows inserted, updated or deleted by the query
  */
 
 /**

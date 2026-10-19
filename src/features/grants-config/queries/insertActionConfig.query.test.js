@@ -18,8 +18,6 @@ describe('insertActionConfig', () => {
     patch: 0,
     displayOrder: 0,
     description: 'Woodland management plan',
-    sssiEligible: true,
-    hfEligible: true,
     groupId: null,
     enabled: true,
     display: true
@@ -27,7 +25,7 @@ describe('insertActionConfig', () => {
 
   beforeEach(() => {
     mockClient = {
-      query: vi.fn().mockResolvedValue({ rows: [] }),
+      query: vi.fn().mockResolvedValue({ rows: [], rowCount: 1 }),
       release: vi.fn()
     }
     mockDb = {
@@ -39,78 +37,41 @@ describe('insertActionConfig', () => {
     }
   })
 
-  test('executes BEGIN, upsert actions, UPDATE, INSERT and COMMIT in order', async () => {
+  const actionsUpdate = () =>
+    mockClient.query.mock.calls.find(
+      (c) => typeof c[0] === 'string' && c[0].includes('UPDATE actions SET')
+    )
+
+  test('executes BEGIN, UPDATE actions, UPDATE actions_config, INSERT and COMMIT in order', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     const calls = mockClient.query.mock.calls.map((c) =>
       typeof c[0] === 'string' ? c[0].trim() : c[0]
     )
     expect(calls[0]).toBe('BEGIN')
-    expect(calls[1]).toContain('INSERT INTO actions')
+    expect(calls[1]).toContain('UPDATE actions SET')
     expect(calls[2]).toContain('UPDATE actions_config')
     expect(calls[3]).toContain('INSERT INTO actions_config')
     expect(calls[4]).toBe('COMMIT')
   })
 
-  test('upserts action with enabled, display, description, sssiEligible and hfEligible from params', async () => {
+  test('never inserts an actions row', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', true, true]
-    )
+    const sql = mockClient.query.mock.calls.map((c) => c[0]).join('\n')
+    expect(sql).not.toMatch(/INSERT INTO actions\s*\(/)
   })
 
-  test('passes null description when absent', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      description: null
-    })
-
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, null, true, true]
-    )
-  })
-
-  test('carries guidanceUrl and availability inside config into actions_config, not actions', async () => {
+  test('updates enabled, display and description by code', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).not.toContain('guidance_url')
-    expect(upsertCall[0]).not.toContain('availability')
-
-    const insertCall = mockClient.query.mock.calls.find(
-      (c) =>
-        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
-    )
-    expect(insertCall[1][1]).toBe(JSON.stringify(params.config))
-  })
-
-  test('uses COALESCE so null description does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain(
-      'COALESCE(EXCLUDED.description, actions.description)'
-    )
-  })
-
-  test('sets sssi_eligible and hf_eligible to false when params are false', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      sssiEligible: false,
-      hfEligible: false
-    })
-
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      ['PA3', true, true, 'Woodland management plan', false, false]
-    )
+    expect(actionsUpdate()[0]).toContain('WHERE code = $1')
+    expect(actionsUpdate()[1]).toEqual([
+      'PA3',
+      true,
+      true,
+      'Woodland management plan'
+    ])
   })
 
   test('passes enabled and display from params, not hardcoded TRUE', async () => {
@@ -120,10 +81,65 @@ describe('insertActionConfig', () => {
       display: false
     })
 
-    expect(mockClient.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO actions'),
-      ['PA3', false, false, 'Woodland management plan', true, true]
+    expect(actionsUpdate()[1]).toEqual([
+      'PA3',
+      false,
+      false,
+      'Woodland management plan'
+    ])
+  })
+
+  test('uses COALESCE so null description does not overwrite existing', async () => {
+    await insertActionConfig(mockLogger, mockDb, {
+      ...params,
+      description: null
+    })
+
+    expect(actionsUpdate()[0]).toContain('COALESCE($4, description)')
+    expect(actionsUpdate()[1]).toEqual(['PA3', true, true, null])
+  })
+
+  test('does not update sssi_eligible or hf_eligible', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    expect(actionsUpdate()[0]).not.toContain('sssi_eligible')
+    expect(actionsUpdate()[0]).not.toContain('hf_eligible')
+  })
+
+  test('sets last_updated to NOW()', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    expect(actionsUpdate()[0]).toContain('last_updated = NOW()')
+  })
+
+  test('carries guidanceUrl and availability inside config into actions_config, not actions', async () => {
+    await insertActionConfig(mockLogger, mockDb, params)
+
+    expect(actionsUpdate()[0]).not.toContain('guidance_url')
+    expect(actionsUpdate()[0]).not.toContain('availability')
+
+    const insertCall = mockClient.query.mock.calls.find(
+      (c) =>
+        typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
     )
+    expect(insertCall[1][1]).toBe(JSON.stringify(params.config))
+  })
+
+  test('rolls back without inserting a config version when the code has no actions row', async () => {
+    mockClient.query
+      .mockResolvedValueOnce({ rows: [] }) // BEGIN
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // UPDATE actions
+
+    const result = await insertActionConfig(mockLogger, mockDb, params)
+
+    const calls = mockClient.query.mock.calls.map((c) => c[0])
+    expect(result).toBe(false)
+    expect(calls).toContain('ROLLBACK')
+    expect(calls).not.toContain('COMMIT')
+    expect(
+      calls.some((sql) => sql.includes('INSERT INTO actions_config'))
+    ).toBe(false)
+    expect(mockLogger.error).toHaveBeenCalled()
   })
 
   test('passes groupId to actions_config insert', async () => {
@@ -134,40 +150,6 @@ describe('insertActionConfig', () => {
         typeof c[0] === 'string' && c[0].includes('INSERT INTO actions_config')
     )
     expect(insertCall[1][6]).toBe(3)
-  })
-
-  test('does not update sssi_eligible or hf_eligible on conflict', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain('ON CONFLICT')
-    expect(upsertCall[0]).not.toContain(
-      'sssi_eligible = EXCLUDED.sssi_eligible'
-    )
-    expect(upsertCall[0]).not.toContain('hf_eligible = EXCLUDED.hf_eligible')
-  })
-
-  test('updates enabled and display on conflict', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain('enabled = EXCLUDED.enabled')
-    expect(upsertCall[0]).toContain('display = EXCLUDED.display')
-  })
-
-  test('sets last_updated to NOW() on insert and updates it on conflict', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    const upsertCall = mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('INSERT INTO actions')
-    )
-    expect(upsertCall[0]).toContain('last_updated')
-    expect(upsertCall[0]).toContain('NOW()')
-    expect(upsertCall[0]).toContain('last_updated = NOW()')
   })
 
   test('deactivates existing active config only when new version is higher', async () => {
@@ -253,7 +235,7 @@ describe('insertActionConfig', () => {
   test('rolls back and returns false on INSERT error', async () => {
     mockClient.query
       .mockResolvedValueOnce({ rows: [] }) // BEGIN
-      .mockResolvedValueOnce({ rows: [] }) // INSERT INTO actions (upsert)
+      .mockResolvedValueOnce({ rows: [], rowCount: 1 }) // UPDATE actions
       .mockResolvedValueOnce({ rows: [] }) // UPDATE
       .mockRejectedValueOnce(new Error('Insert failed'))
 
@@ -272,7 +254,7 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('rolls back and returns false when action upsert fails', async () => {
+  test('rolls back and returns false when the actions update fails', async () => {
     mockClient.query
       .mockResolvedValueOnce({ rows: [] }) // BEGIN
       .mockRejectedValueOnce(new Error('FK violation'))
@@ -289,7 +271,7 @@ describe('insertActionConfig', () => {
   test('releases the client after an error', async () => {
     mockClient.query
       .mockResolvedValueOnce({}) // BEGIN
-      .mockResolvedValueOnce({}) // INSERT INTO actions (upsert)
+      .mockResolvedValueOnce({ rowCount: 1 }) // UPDATE actions
       .mockResolvedValueOnce({}) // UPDATE
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({}) // ROLLBACK
