@@ -223,7 +223,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect(actionOf(data)).toEqual(
         expect.objectContaining({
           isAvailable: false,
-          availability: { unit: 'm', value: 0 },
+          availability: { unit: 'm', value: 9 },
           unavailableReason: expect.objectContaining({
             code: 'insufficient-length-remaining',
             metadata: {

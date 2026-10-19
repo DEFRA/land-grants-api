@@ -1,5 +1,6 @@
-import { TOTAL } from '~/src/features/common/constants/action_availability.js'
 import { HECTARES, METERS } from '~/src/features/common/constants/unit_type.js'
+import { TOTAL } from '~/src/features/common/constants/action_availability.js'
+import { noAvailabilityReason } from '~/src/features/parcel/service/2.0.0/unavailability.js'
 import { sizeTransformer } from '../parcelActions.transformer.js'
 
 /**
@@ -40,10 +41,6 @@ function availableQuantity(unit, calculation) {
 function actionAvailability(action, calculation) {
   const unit = action.applicationUnitOfMeasurement
 
-  if (calculation?.unavailableReason) {
-    return { unit, value: 0 }
-  }
-
   const quantity = availableQuantity(unit, calculation)
 
   const hasQuantity = quantity !== undefined && Number.isFinite(quantity)
@@ -61,14 +58,18 @@ function actionAvailability(action, calculation) {
 function actionTransformer(action, calculation = null, showResults = false) {
   const availability = actionAvailability(action, calculation)
 
+  const unavailableReason =
+    calculation?.unavailableReason ||
+    (availability.value === 0 ? noAvailabilityReason : undefined)
+
   const response = {
     code: action.code,
     description: action.description,
     version: action.semanticVersion,
     guidanceUrl: action.guidanceUrl ?? undefined,
     availability,
-    isAvailable: !calculation?.unavailableReason,
-    unavailableReason: calculation?.unavailableReason,
+    isAvailable: !unavailableReason,
+    unavailableReason,
     quantityRequired: action?.availability?.type !== TOTAL,
     displayUnit: action?.displayUnit,
     displayUnitPlural: action?.displayUnitPlural,
