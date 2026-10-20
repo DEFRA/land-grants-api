@@ -218,6 +218,34 @@ describe('Parcel Service 2.0.0', () => {
       expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
     })
 
+    test('should return the actions in the order they are displayed, however long each takes', async () => {
+      const preparedActions = prepared(mockEnabledActionsForParcel)
+      const [firstCode] = preparedActions.displayedActions.map((a) => a.code)
+      getAvailableAreaDataRequirements.mockImplementation(
+        (code) =>
+          new Promise((resolve) => {
+            setTimeout(
+              () => resolve({ landCoverToString: 'grass' }),
+              code === firstCode ? 20 : 0
+            )
+          })
+      )
+
+      const result = await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        preparedActions,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        []
+      )
+
+      expect(result.actions.map((a) => a.code)).toEqual(
+        preparedActions.displayedActions.map((a) => a.code)
+      )
+    })
+
     test('should run building (sqm) actions through AACs', async () => {
       await getActionsForParcel(
         mockParcel,
