@@ -1,7 +1,7 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
- * Update the core actions row. Only the actions mapping CSV creates actions
+ * Update the core actions row. Only the actions eligibility CSV creates actions
  * rows, so a config for a code it has not created fails rather than inserting one.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
  * @param {{ code: string, enabled: boolean, display: boolean, description: string|null }} params
@@ -20,7 +20,7 @@ async function updateAction(client, { code, enabled, display, description }) {
 
   if (result.rowCount === 0) {
     throw new Error(
-      `No actions row for code=${code}: add it to the actions mapping CSV`
+      `No actions row for code=${code}: add it to the actions eligibility CSV`
     )
   }
 }

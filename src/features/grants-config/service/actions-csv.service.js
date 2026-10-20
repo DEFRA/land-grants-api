@@ -6,9 +6,9 @@ import { importData } from '~/src/features/land-data-ingest/service/import-land-
  * Download an actions CSV published with the land-grants config from S3 and apply it to the actions table.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('@aws-sdk/client-s3').S3Client} s3Client
- * @param {string} s3Key - S3 object key, e.g. 'land-grants/0.24.0/actions/actions_mapping.csv'
+ * @param {string} s3Key - S3 object key, e.g. 'land-grants/0.24.0/actions/actions_eligibility.csv'
  * @param {string} bucket - S3 bucket name
- * @param {string} entityName - Selects the SQL that applies it, e.g. 'actions_mapping'
+ * @param {string} entityName - Selects the SQL that applies it, e.g. 'actions_eligibility'
  * @returns {Promise<void>}
  */
 async function processActionsCsvFile(

@@ -15,8 +15,7 @@ COMPOSE_FILE="$BROKER_DIR/compose.yml"
 GRANT_NAME="land-grants"
 GRANT_CONFIG_SOURCE="../grants-config-land-grants"
 SOURCE_CONFIG_DIR="$GRANT_CONFIG_SOURCE/configurations/$GRANT_NAME"
-MAPPING_FILE="actions/actions_mapping.csv"
-SIDEDNESS_FILE="actions/actions_sidedness.csv"
+ELIGIBILITY_FILE="actions/actions_eligibility.csv"
 
 # ---------------------------------------------------------------------------
 # Splash / help
@@ -49,7 +48,7 @@ print_help() {
   echo -e "${BOLD}SUBCOMMANDS${RESET}"
   echo -e "  ${GREEN}(no args)${RESET}                                       Start the broker without any config setup"
   echo -e "  ${GREEN}add${RESET} <action-code> <grant-version> <sem-ver> [has-sssi] [has-hf]"
-  echo "                                                  Create a new action config, add it to the actions mapping"
+  echo "                                                  Create a new action config, add it to the actions eligibility"
   echo "                                                  CSV (has-sssi/has-hf: 0 or 1, default 1) and start"
   echo -e "  ${GREEN}update${RESET} <action-code> <grant-version> <sem-ver> Republish an existing action with a new semantic version and start"
   echo -e "  ${GREEN}inspect${RESET} [action-code...]                       Print SQS queues, S3 contents, and DB rows then exit"
@@ -92,34 +91,26 @@ make_versioned_dir() {
   mkdir -p "$VERSIONED_DIR/actions_config" "$VERSIONED_DIR/actions"
 }
 
-# Publish the actions mapping CSV alongside the action configs, as a config
-# release does, so land-grants-api applies it after inserting them.
-copy_actions_mapping() {
-  local source_file="$SOURCE_CONFIG_DIR/$MAPPING_FILE"
+# Publish the actions eligibility CSV alongside the action configs, as a config
+# release does, so land-grants-api creates their actions rows before inserting them.
+copy_actions_eligibility() {
+  local source_file="$SOURCE_CONFIG_DIR/$ELIGIBILITY_FILE"
   if [[ ! -f "$source_file" ]]; then
-    echo -e "${BOLD}Error:${RESET} no actions mapping found at $source_file" >&2
+    echo -e "${BOLD}Error:${RESET} no actions eligibility file found at $source_file" >&2
     exit 1
   fi
-  cp "$source_file" "$VERSIONED_DIR/$MAPPING_FILE"
+  cp "$source_file" "$VERSIONED_DIR/$ELIGIBILITY_FILE"
 }
 
-# Publish the actions sidedness CSV too, once the config repo has one
-copy_actions_sidedness() {
-  local source_file="$SOURCE_CONFIG_DIR/$SIDEDNESS_FILE"
-  if [[ -f "$source_file" ]]; then
-    cp "$source_file" "$VERSIONED_DIR/$SIDEDNESS_FILE"
-    echo -e "  ${YELLOW}sidedness${RESET}     $VERSIONED_DIR/$SIDEDNESS_FILE"
-  fi
-}
-
-# Add (or replace) the row for an action code in the published mapping CSV
-set_actions_mapping_row() {
+# Add (or replace) the row for an action code in the published eligibility CSV.
+# The synthetic action is measured in hectares, so its sidedness is blank.
+set_actions_eligibility_row() {
   local action_code="$1" has_sssi="$2" has_hf="$3"
-  local mapping="$VERSIONED_DIR/$MAPPING_FILE"
-  awk -F, -v code="$action_code" '$1 != code' "$mapping" > "$mapping.tmp"
-  echo "$action_code,$has_sssi,$has_hf" >> "$mapping.tmp"
-  mv "$mapping.tmp" "$mapping"
-  echo -e "  ${YELLOW}mapping${RESET}       $mapping ($action_code,$has_sssi,$has_hf)"
+  local eligibility="$VERSIONED_DIR/$ELIGIBILITY_FILE"
+  awk -F, -v code="$action_code" '$1 != code' "$eligibility" > "$eligibility.tmp"
+  echo "$action_code,$has_sssi,$has_hf," >> "$eligibility.tmp"
+  mv "$eligibility.tmp" "$eligibility"
+  echo -e "  ${YELLOW}eligibility${RESET}   $eligibility ($action_code,$has_sssi,$has_hf)"
 }
 
 start_broker() {
@@ -235,9 +226,8 @@ case "${1:-}" in
 EOF
     echo -e "  ${YELLOW}action config${RESET} $ACTION_FILE"
 
-    copy_actions_mapping
-    copy_actions_sidedness
-    set_actions_mapping_row "$ACTION_CODE" "$HAS_SSSI" "$HAS_HF"
+    copy_actions_eligibility
+    set_actions_eligibility_row "$ACTION_CODE" "$HAS_SSSI" "$HAS_HF"
 
     start_broker
     ;;
@@ -277,9 +267,8 @@ EOF
     done
     echo -e "  ${YELLOW}action config${RESET} $VERSIONED_DIR/actions_config/$ACTION_CODE/ (semanticVersion → $SEMANTIC_VERSION)"
 
-    copy_actions_mapping
-    copy_actions_sidedness
-    echo -e "  ${YELLOW}mapping${RESET}       $VERSIONED_DIR/$MAPPING_FILE"
+    copy_actions_eligibility
+    echo -e "  ${YELLOW}eligibility${RESET}   $VERSIONED_DIR/$ELIGIBILITY_FILE"
 
     start_broker
     ;;

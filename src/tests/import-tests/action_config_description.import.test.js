@@ -16,9 +16,10 @@ import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getAct
 // A code no other test or migration uses, so it can be inserted and removed freely
 const TEST_CODE = 'DESC_TEST1'
 const ACTION_CONFIG_S3_KEY = `land-grants/0.0.0-test/actions_config/${TEST_CODE}/desc_test1-1.0.0.json`
-// Only the actions mapping creates actions rows, so the code needs a row there too.
-// A key of its own, so it never collides with the mapping import test's upload.
-const MAPPING_S3_KEY = 'land-grants/0.0.0-desc-test/actions/actions_mapping.csv'
+// Only the actions eligibility file creates actions rows, so the code needs a row there too.
+// A key of its own, so it never collides with the eligibility import test's upload.
+const ELIGIBILITY_S3_KEY =
+  'land-grants/0.0.0-desc-test/actions/actions_eligibility.csv'
 
 const actionConfig = {
   code: TEST_CODE,
@@ -68,14 +69,14 @@ describe('Action config description', () => {
     )
     await uploadTestFile(
       s3Client,
-      MAPPING_S3_KEY,
-      `action_code,has_sssi,has_hf\n${TEST_CODE},1,1`,
+      ELIGIBILITY_S3_KEY,
+      `action_code,has_sssi,has_hf,sidedness\n${TEST_CODE},1,1,`,
       S3_CONFIG.bucket,
       'binary/octet-stream'
     )
     await processMessage(
       brokerMessage([
-        MAPPING_S3_KEY,
+        ELIGIBILITY_S3_KEY,
         ACTION_CONFIG_S3_KEY,
         'land-grants/0.0.0-test/metadata.json'
       ]),
@@ -87,7 +88,7 @@ describe('Action config description', () => {
   }, 10000)
 
   afterAll(async () => {
-    await deleteFiles(s3Client, [ACTION_CONFIG_S3_KEY, MAPPING_S3_KEY])
+    await deleteFiles(s3Client, [ACTION_CONFIG_S3_KEY, ELIGIBILITY_S3_KEY])
     await deleteTestAction()
     await connection.end()
   })

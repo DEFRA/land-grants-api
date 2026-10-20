@@ -96,7 +96,7 @@ describe('Get Actions Query', () => {
     expect(lastUpdated).not.toBeNull()
     expect(sssiEligible).toBe(true)
     expect(hfEligible).toBe(true)
-    // Only set when a config release applies the SSSI/HF mapping CSV
+    // Only set when a config release applies the actions eligibility CSV
     expect(ingestId).toBeNull()
   })
 
