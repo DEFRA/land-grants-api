@@ -40,30 +40,21 @@ function logResults(results, sbi, logger) {
 /**
  * Fetches existing Siti Agri agreements for a business from the DAL
  * @param {string} sbi - Single Business Identifier
- * @param {string|null} defraIdToken - The external user token to use for auth (if null, use s2s auth)
+ * @param {DALAuth} auth - Auth details for the end user, either internal or external
  * @param {Logger} logger - Logger object
  * @returns {Promise<AgreementsByParcel>} The existing agreements for the SBI
  */
-export async function getAgreements(sbi, defraIdToken, logger) {
+export async function getAgreements(sbi, auth, logger) {
   if (!config.get('featureFlags.useDal')) {
     return {}
   }
 
   const endpoint = config.get('dal.apiEndpoint')
+  const authHeader =
+    auth.type === 'internal' ? 'Email' : 'X-Forwarded-Authorization'
 
-  // Use X-Forwarded-Authorization to pass along the end user's defra ID token if available.
-  // For requests without an end user present, we use our "robot" service account auth instead
   /** @type {object} */
-  const authHeaders =
-    defraIdToken !== null
-      ? {
-          'Gateway-Type': 'external',
-          'X-Forwarded-Authorization': defraIdToken
-        }
-      : {
-          'Gateway-Type': 'internal',
-          Email: config.get('dal.serviceAccount')
-        }
+  const authHeaders = { 'Gateway-Type': auth.type, [authHeader]: auth.value }
 
   let entraHeader = {}
 
@@ -113,5 +104,6 @@ export async function getAgreements(sbi, defraIdToken, logger) {
 
 /**
  * @import { AgreementAction, AgreementsByParcel } from '~/src/features/agreements/agreements.d.js'
+ * @import { DALAuth } from '~/src/services/dal/auth.d.js'
  * @import { Logger } from '~/src/features/common/logger.d.js'
  */

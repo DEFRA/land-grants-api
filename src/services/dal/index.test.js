@@ -26,13 +26,15 @@ const errorResponse = {
 const mockLogger = { info: vi.fn() }
 vi.mock('~/src/services/entra/index.js')
 
+const externalAuth = { type: 'external', value: 'dummy' }
+const internalAuth = { type: 'internal', value: 'dummy@defra.gov.uk' }
+
 describe('getAgreements', () => {
   const sbi = '123456789'
 
   afterEach(() => {
     ;[
       'dal.apiEndpoint',
-      'dal.serviceAccount',
       'dal.useEntraAuth',
       'dal.requestRetries',
       'featureFlags.useDal'
@@ -43,7 +45,6 @@ describe('getAgreements', () => {
 
   beforeEach(() => {
     config.set('dal.apiEndpoint', stubEndpoint)
-    config.set('dal.serviceAccount', 'land-grants-api@defra.gov.uk')
     config.set('dal.useEntraAuth', true)
     config.set('featureFlags.useDal', true)
     config.set('dal.requestRetries', 0)
@@ -59,7 +60,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve(dalResponse)
     })
 
-    const result = await getAgreements(sbi, 'dummy', mockLogger)
+    const result = await getAgreements(sbi, externalAuth, mockLogger)
 
     expect(fetch).toHaveBeenCalledWith(
       stubEndpoint,
@@ -79,6 +80,32 @@ describe('getAgreements', () => {
     expect(getToken).toHaveBeenCalled()
   })
 
+  it('should authenticate with internal user email correctly', async () => {
+    fetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(dalResponse)
+    })
+
+    const result = await getAgreements(sbi, internalAuth, mockLogger)
+
+    expect(fetch).toHaveBeenCalledWith(
+      stubEndpoint,
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer dummy-entra-token',
+          'Content-Type': 'application/json',
+          Email: 'dummy@defra.gov.uk',
+          'Gateway-Type': 'internal'
+        }),
+        body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
+      })
+    )
+    expect(result).toEqual(dalBusinessToAgreements(dalResponse.data.business))
+
+    expect(getToken).toHaveBeenCalled()
+  })
+
   it('throws when the DAL HTTP response is not ok', async () => {
     const status = 500
     const statusText = 'Internal Server Error'
@@ -87,7 +114,7 @@ describe('getAgreements', () => {
 
     fetch.mockResolvedValue({ ok: false, status, statusText })
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+    await expect(getAgreements(sbi, externalAuth, mockLogger)).rejects.toThrow(
       expectedError
     )
   })
@@ -100,7 +127,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve(errorResponse)
     })
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+    await expect(getAgreements(sbi, externalAuth, mockLogger)).rejects.toThrow(
       expectedError
     )
   })
@@ -115,7 +142,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve({ error: 'Unauthorized' })
     })
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+    await expect(getAgreements(sbi, externalAuth, mockLogger)).rejects.toThrow(
       expectedError
     )
   })
@@ -136,7 +163,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve(dalResponse)
     })
 
-    const actual = await getAgreements(sbi, 'dummy', mockLogger)
+    const actual = await getAgreements(sbi, externalAuth, mockLogger)
     expect(actual).toEqual(expected)
 
     expect(fetch).toHaveBeenCalledTimes(4)
@@ -151,7 +178,7 @@ describe('getAgreements', () => {
 
     fetch.mockResolvedValueOnce({ ok: false, status, statusText })
 
-    const actual = getAgreements(sbi, 'dummy', mockLogger)
+    const actual = getAgreements(sbi, externalAuth, mockLogger)
     await expect(actual).rejects.toThrow(expectedError)
 
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -166,7 +193,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve(errorResponse)
     })
 
-    await expect(getAgreements(sbi, 'dummy', mockLogger)).rejects.toThrow(
+    await expect(getAgreements(sbi, externalAuth, mockLogger)).rejects.toThrow(
       expectedError
     )
 
@@ -175,34 +202,10 @@ describe('getAgreements', () => {
 
   it('returns an empty object when feature flag is off', async () => {
     config.set('featureFlags.useDal', false)
-    const result = await getAgreements(sbi, 'dummy', mockLogger)
+    const result = await getAgreements(sbi, externalAuth, mockLogger)
 
     expect(fetch).not.toBeCalled()
     expect(result).toEqual({})
-  })
-
-  it('uses the robot service account for auth when missing a defra ID token', async () => {
-    fetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(dalResponse)
-    })
-
-    const result = await getAgreements(sbi, null, mockLogger)
-
-    expect(fetch).toHaveBeenCalledWith(
-      stubEndpoint,
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          Authorization: 'Bearer dummy-entra-token',
-          'Content-Type': 'application/json',
-          'Gateway-Type': 'internal',
-          Email: 'land-grants-api@defra.gov.uk'
-        }),
-        body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
-      })
-    )
-    expect(result).toEqual(dalBusinessToAgreements(dalResponse.data.business))
   })
 
   it('does not use entra auth if switched off', async () => {
@@ -213,7 +216,7 @@ describe('getAgreements', () => {
       json: () => Promise.resolve(dalResponse)
     })
 
-    await getAgreements(sbi, 'dummy', mockLogger)
+    await getAgreements(sbi, externalAuth, mockLogger)
 
     expect(fetch).toHaveBeenCalledWith(
       stubEndpoint,

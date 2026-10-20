@@ -151,11 +151,12 @@ const ParcelsControllerV2 = {
 
       /** @type {AgreementsByParcel} */
       let agreements = {}
+
       if (fields.some((f) => f.startsWith('actions'))) {
         agreements = await getAgreements(
           sbi,
           validationResponse.parcels.map((p) => [p.parcel_id, p.sheet_id]),
-          defraIdToken,
+          { type: 'external', value: defraIdToken },
           postgresDb,
           request.logger
         )
