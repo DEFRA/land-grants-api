@@ -1,0 +1,18 @@
+{
+  "name": "@defra/land-grants-rule-schemas",
+  "version": "0.0.0",
+  "description": "Joi schemas for the config each land-grants-api rule reads",
+  "type": "module",
+  "main": "dist/schemas.js",
+  "exports": "./dist/schemas.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "node scripts/build.js"
+  },
+  "peerDependencies": {
+    "joi": "^17.13.4"
+  },
+  "license": "OGL-UK-3.0"
+}

@@ -113,5 +113,8 @@
     "typescript-eslint": "8.71.1",
     "vitest": "^5.0.3",
     "vitest-fetch-mock": "^0.4.5"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

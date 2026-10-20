@@ -1,4 +1,4 @@
-import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+import { REQUIRED_RULE_DATA } from '../../../services/requiredRuleData.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'

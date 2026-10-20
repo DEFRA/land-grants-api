@@ -1,5 +1,5 @@
 import { woodlandTotalArea } from './woodland-total-area.js'
-import { haToSqm } from '../../../common/helpers/measurement.js'
+import { haToSqm } from '../../../../common/helpers/measurement.js'
 
 const ruleDescription =
   'Has the total available area for the woodland management plan been applied for?'

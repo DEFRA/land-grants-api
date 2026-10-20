@@ -3,7 +3,7 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
-import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+import { REQUIRED_RULE_DATA } from '../../../services/requiredRuleData.js'
 
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
