@@ -34,24 +34,23 @@ export async function getAvailableAreaDataRequirements(
   postgresDb,
   logger
 ) {
-  const landCoverCodesForAppliedForAction = await getLandCoversForAction(
-    actionCodeAppliedFor,
-    postgresDb,
-    logger
-  )
-
-  const landCoversForParcel = await getLandCoversForParcel(
-    sheetId,
-    parcelId,
-    postgresDb,
-    logger
-  )
-
-  const landCoversForExistingActions = await getLandCoversForActions(
-    existingActions.map((a) => a.actionCode),
-    postgresDb,
-    logger
-  )
+  const [
+    landCoverCodesForAppliedForAction,
+    landCoversForParcel,
+    landCoversForExistingActions,
+    { sssiOverlap, hfOverlap, sssiAndHfOverlap },
+    actionEligibility
+  ] = await Promise.all([
+    getLandCoversForAction(actionCodeAppliedFor, postgresDb, logger),
+    getLandCoversForParcel(sheetId, parcelId, postgresDb, logger),
+    getLandCoversForActions(
+      existingActions.map((a) => a.actionCode),
+      postgresDb,
+      logger
+    ),
+    getLandCoverIntersections(sheetId, parcelId, postgresDb, logger),
+    getActionEligibility(logger, postgresDb)
+  ])
 
   const landCoverCodesForExistingActions = Object.keys(
     landCoversForExistingActions
@@ -72,11 +71,6 @@ export async function getAvailableAreaDataRequirements(
   const landCoverToString = createLandCoverCodeToString(landCoverDefinitions)
 
   const aggregatedLandCovers = aggregateLandCovers(landCoversForParcel)
-
-  const { sssiOverlap, hfOverlap, sssiAndHfOverlap } =
-    await getLandCoverIntersections(sheetId, parcelId, postgresDb, logger)
-
-  const actionEligibility = await getActionEligibility(logger, postgresDb)
 
   const sssiActionEligibility = createActionEligibilityMap(
     actionEligibility,
