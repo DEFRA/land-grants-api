@@ -146,6 +146,7 @@ function buildActionWithAvailableLength(
  * @param {LandParcelDb} context.parcel - The parcel
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
+ * @param {Map<string, Promise<unknown>>} [context.parcelDataCache] - Parcel data shared across the request's actions
  * @returns {Promise<object>} The transformed action
  */
 export async function buildActionWithAvailability(
@@ -159,7 +160,8 @@ export async function buildActionWithAvailability(
     boundaryLengthMeters,
     parcel,
     postgresDb,
-    logger
+    logger,
+    parcelDataCache
   } = context
   const unit = action.applicationUnitOfMeasurement
 
@@ -171,7 +173,8 @@ export async function buildActionWithAvailability(
         parcel.parcel_id,
         competingActions.area,
         postgresDb,
-        logger
+        logger,
+        parcelDataCache
       )
 
     return buildActionWithAvailableArea(

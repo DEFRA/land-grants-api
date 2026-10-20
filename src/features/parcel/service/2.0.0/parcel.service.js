@@ -34,8 +34,6 @@ async function getActionsWithAvailability(
   postgresDb,
   logger
 ) {
-  const actionsWithAvailability = []
-
   const { displayedActions, unitByActionCode } = preparedActions
 
   const boundaryLengthMeters = await getBoundaryLengthMeters(
@@ -52,37 +50,44 @@ async function getActionsWithAvailability(
     length: lengthActionsTransformer(length)
   }
 
-  for (const displayedAction of displayedActions) {
-    const actionWithAvailability = await buildActionWithAvailability(
-      displayedAction,
-      competingActions,
-      {
-        showActionResults,
-        compatibilityCheckFn,
-        boundaryLengthMeters,
-        parcel,
-        postgresDb,
-        logger
-      }
-    )
+  // The parcel's land covers and intersections are the same for every action
+  const parcelDataCache = new Map()
 
-    if (actionWithAvailability.isAvailable) {
-      await runRules(
+  // Each action's availability is worked out independently, so run them together
+  const actionsWithAvailability = await Promise.all(
+    displayedActions.map(async (displayedAction) => {
+      const actionWithAvailability = await buildActionWithAvailability(
+        displayedAction,
+        competingActions,
         {
-          displayedAction,
-          actions,
-          displayedActions,
+          showActionResults,
           compatibilityCheckFn,
+          boundaryLengthMeters,
           parcel,
-          actionWithAvailability
-        },
-        postgresDb,
-        logger
+          postgresDb,
+          logger,
+          parcelDataCache
+        }
       )
-    }
 
-    actionsWithAvailability.push(actionWithAvailability)
-  }
+      if (actionWithAvailability.isAvailable) {
+        await runRules(
+          {
+            displayedAction,
+            actions,
+            displayedActions,
+            compatibilityCheckFn,
+            parcel,
+            actionWithAvailability
+          },
+          postgresDb,
+          logger
+        )
+      }
+
+      return actionWithAvailability
+    })
+  )
 
   const actionsThatDoNotFit = actionsWithAvailability.filter(
     (actionWithAvailability) =>
