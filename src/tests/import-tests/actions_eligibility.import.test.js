@@ -11,22 +11,24 @@ import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { getRecordsByQuery } from '~/src/tests/import-tests/setup/db-helper.js'
 
 const GRANTS_CONFIG_S3_KEY =
-  'land-grants/0.0.0-test/actions/actions_mapping.csv'
+  'land-grants/0.0.0-test/actions/actions_eligibility.csv'
 
-const MAPPING_CSV = [
-  'action_code,has_sssi,has_hf',
-  'CMOR1,1,1',
-  'UPL1,0,1',
-  'UPL2,1,0',
-  'UPL3,0,0',
-  'UPL4,0,0',
-  'CSAM3,0,0'
+const ELIGIBILITY_CSV = [
+  'action_code,has_sssi,has_hf,sidedness',
+  'CMOR1,1,1,',
+  'UPL1,0,1,',
+  'UPL2,1,0,',
+  'UPL3,0,0,',
+  'UPL4,0,0,',
+  'CSAM3,0,0,',
+  'BND1,1,1,both-sides',
+  'BND2,1,1,single-side'
 ].join('\n')
 
 // Published by grants-config-land-grants via the grants-config-broker, which
 // uploads files without a content type - S3 then reports binary/octet-stream.
 const brokerMessage = (manifest) => ({
-  MessageId: 'actions-mapping-import',
+  MessageId: 'actions-eligibility-import',
   Body: JSON.stringify(manifest),
   MessageAttributes: {
     grant: { DataType: 'String', StringValue: 'land-grants' },
@@ -35,7 +37,7 @@ const brokerMessage = (manifest) => ({
   }
 })
 
-describe('Actions mapping import', () => {
+describe('Actions eligibility import', () => {
   const logger = { info: vi.fn(), error: vi.fn(), warn: vi.fn() }
   let s3Client
   let connection
@@ -54,11 +56,11 @@ describe('Actions mapping import', () => {
     await deleteFiles(s3Client, [GRANTS_CONFIG_S3_KEY])
   })
 
-  test('applies the mapping from the broker manifest to the actions table', async () => {
+  test('applies the eligibility from the broker manifest to the actions table', async () => {
     await uploadTestFile(
       s3Client,
       GRANTS_CONFIG_S3_KEY,
-      MAPPING_CSV,
+      ELIGIBILITY_CSV,
       S3_CONFIG.bucket,
       'binary/octet-stream'
     )
@@ -101,6 +103,98 @@ describe('Actions mapping import', () => {
     expect(actions[0].last_updated).toBeDefined()
   }, 10000)
 
+  test('stores each sidedness, and a blank one as none', async () => {
+    await uploadTestFile(
+      s3Client,
+      GRANTS_CONFIG_S3_KEY,
+      ELIGIBILITY_CSV,
+      S3_CONFIG.bucket,
+      'binary/octet-stream'
+    )
+
+    await processMessage(
+      brokerMessage([GRANTS_CONFIG_S3_KEY]),
+      s3Client,
+      connection,
+      logger,
+      { grantsConfigBucket: S3_CONFIG.bucket }
+    )
+
+    const actions = await getRecordsByQuery(
+      connection,
+      'SELECT code, sidedness FROM actions WHERE code = ANY($1) ORDER BY code',
+      [['BND1', 'BND2', 'CMOR1']]
+    )
+
+    expect(actions).toEqual([
+      { code: 'BND1', sidedness: 'both-sides' },
+      { code: 'BND2', sidedness: 'single-side' },
+      { code: 'CMOR1', sidedness: null }
+    ])
+  }, 10000)
+
+  describe('when a sidedness is invalid', () => {
+    // A code no other test or migration uses, so it can be inserted and removed freely
+    const SIDED_CODE = 'SIDED_TEST1'
+    let failure
+
+    const actionRow = async () => {
+      const [row] = await getRecordsByQuery(
+        connection,
+        'SELECT sssi_eligible, hf_eligible, sidedness FROM actions WHERE code = $1',
+        [SIDED_CODE]
+      )
+      return row
+    }
+
+    const publish = async (csv) => {
+      await uploadTestFile(
+        s3Client,
+        GRANTS_CONFIG_S3_KEY,
+        csv,
+        S3_CONFIG.bucket,
+        'binary/octet-stream'
+      )
+      await processMessage(
+        brokerMessage([GRANTS_CONFIG_S3_KEY]),
+        s3Client,
+        connection,
+        logger,
+        { grantsConfigBucket: S3_CONFIG.bucket }
+      )
+    }
+
+    const deleteSidedCode = () =>
+      getRecordsByQuery(connection, 'DELETE FROM actions WHERE code = $1', [
+        SIDED_CODE
+      ])
+
+    beforeAll(async () => {
+      await deleteSidedCode()
+      await publish(`${ELIGIBILITY_CSV}\n${SIDED_CODE},1,1,single-side`)
+
+      failure = await publish(
+        `${ELIGIBILITY_CSV}\n${SIDED_CODE},0,0,one-side`
+      ).catch((error) => error)
+    }, 10000)
+
+    afterAll(async () => {
+      await deleteSidedCode()
+    })
+
+    test('fails the config update', () => {
+      expect(failure).toBeInstanceOf(Error)
+    })
+
+    test('changes nothing on the row, including its eligibility', async () => {
+      expect(await actionRow()).toEqual({
+        sssi_eligible: true,
+        hf_eligible: true,
+        sidedness: 'single-side'
+      })
+    })
+  })
+
   describe('for a code with no action config', () => {
     // A code no other test or migration uses, so it can be inserted and removed freely
     const NEW_CODE = 'MAP_ONLY1'
@@ -114,7 +208,7 @@ describe('Actions mapping import', () => {
     const actionRow = async () => {
       const [row] = await getRecordsByQuery(
         connection,
-        'SELECT code, enabled, display, sssi_eligible, hf_eligible, ingest_id FROM actions WHERE code = $1',
+        'SELECT code, enabled, display, sssi_eligible, hf_eligible, sidedness, ingest_id FROM actions WHERE code = $1',
         [NEW_CODE]
       )
       return row
@@ -138,7 +232,7 @@ describe('Actions mapping import', () => {
       await uploadTestFile(
         s3Client,
         GRANTS_CONFIG_S3_KEY,
-        `${MAPPING_CSV}\n${NEW_CODE},0,1`,
+        `${ELIGIBILITY_CSV}\n${NEW_CODE},0,1,single-side`,
         S3_CONFIG.bucket,
         'binary/octet-stream'
       )
@@ -150,25 +244,26 @@ describe('Actions mapping import', () => {
       await deleteNewCode()
     })
 
-    test('creates its actions row from the mapping alone', async () => {
+    test('creates its actions row, with its sidedness, from the eligibility file alone', async () => {
       expect(await actionRow()).toEqual({
         code: NEW_CODE,
         enabled: null,
         display: null,
         sssi_eligible: false,
         hf_eligible: true,
+        sidedness: 'single-side',
         ingest_id: GRANTS_CONFIG_S3_KEY
       })
     })
 
-    test('keeps the mapped eligibility when its action config arrives later', async () => {
+    test('keeps the eligibility and sidedness when its action config arrives later', async () => {
       await uploadTestFile(
         s3Client,
         ACTION_CONFIG_S3_KEY,
         JSON.stringify({
           code: NEW_CODE,
           semanticVersion: '1.0.0',
-          description: 'Mapping only test action',
+          description: 'Eligibility only test action',
           applicationUnitOfMeasurement: 'ha',
           enabled: true,
           display: true
@@ -184,13 +279,14 @@ describe('Actions mapping import', () => {
         display: true,
         sssi_eligible: false,
         hf_eligible: true,
+        sidedness: 'single-side',
         ingest_id: GRANTS_CONFIG_S3_KEY
       })
     })
   })
 
-  describe('for an action config with no mapping row', () => {
-    // A code no other test or migration uses, and never added to the mapping
+  describe('for an action config with no eligibility row', () => {
+    // A code no other test or migration uses, and never added to the eligibility file
     const UNMAPPED_CODE = 'UNMAPPED1'
     const ACTION_CONFIG_S3_KEY = `land-grants/0.0.0-test/actions_config/${UNMAPPED_CODE}/unmapped1-1.0.0.json`
 

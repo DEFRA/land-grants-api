@@ -10,9 +10,9 @@ vi.mock('~/src/features/land-data-ingest/service/import-land-data.service.js')
 describe('processActionsCsvFile', () => {
   let mockLogger
   let mockS3Client
-  const s3Key = 'land-grants/0.24.0/actions/actions_sidedness.csv'
+  const s3Key = 'land-grants/0.24.0/actions/actions_eligibility.csv'
   const bucket = 'configs-bucket'
-  const entityName = 'actions_sidedness'
+  const entityName = 'actions_eligibility'
 
   beforeEach(() => {
     mockLogger = { info: vi.fn(), error: vi.fn() }
@@ -21,7 +21,9 @@ describe('processActionsCsvFile', () => {
     getFile.mockResolvedValue({
       Body: {
         transformToWebStream: () =>
-          new Response('action_code,sidedness\nBND2,single-side\n').body
+          new Response(
+            'action_code,has_sssi,has_hf,sidedness\nBND2,1,1,single-side\n'
+          ).body
       }
     })
     importData.mockResolvedValue(true)
@@ -50,7 +52,7 @@ describe('processActionsCsvFile', () => {
 
     expect(importData).toHaveBeenCalledWith(
       expect.any(Readable),
-      { name: 'actions_sidedness', truncateTable: false },
+      { name: 'actions_eligibility', truncateTable: false },
       s3Key,
       undefined,
       mockLogger
@@ -72,7 +74,9 @@ describe('processActionsCsvFile', () => {
       entityName
     )
 
-    expect(body).toBe('action_code,sidedness\nBND2,single-side\n')
+    expect(body).toBe(
+      'action_code,has_sssi,has_hf,sidedness\nBND2,1,1,single-side\n'
+    )
   })
 
   test('propagates import failures', async () => {

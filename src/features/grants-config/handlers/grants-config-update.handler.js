@@ -4,9 +4,8 @@ import { processActionsCsvFile } from '~/src/features/grants-config/service/acti
 const isActionConfigKey = (key) =>
   key.includes('/actions_config/') && key.endsWith('.json')
 
-// Each CSV under actions/ is applied by the SQL for the entity of the same name,
-// in this order: the register of action codes first, then the facts that refer to it
-const ACTIONS_CSV_ENTITIES = ['actions_mapping', 'actions_sidedness']
+// Each CSV under actions/ is applied by the SQL for the entity of the same name
+const ACTIONS_CSV_ENTITIES = ['actions_eligibility']
 
 /**
  * The actions CSV files in a manifest, each with the entity that applies it.
@@ -74,7 +73,7 @@ async function processMessage(message, s3Client, db, logger, options) {
     `Processing grants-config for grant="${grant}" version="${version}" (${actionKeys.length} action file(s), ${actionsCsvFiles.length} actions csv file(s))`
   )
 
-  // Applied before the action configs: only the mapping creates actions rows,
+  // Applied before the action configs: only the eligibility file creates actions rows,
   // and an action config can only update an existing one
   for (const { key, entityName } of actionsCsvFiles) {
     await processActionsCsvFile(

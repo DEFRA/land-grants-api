@@ -172,12 +172,12 @@ npm run dev
 
 ###### Subcommands
 
-| Subcommand                                                  | Description                                                                                                                                                                                              |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no args)_                                                 | Start the broker with no config changes (useful for a restart)                                                                                                                                           |
-| `add <action-code> <version> <sem-ver> [has-sssi] [has-hf]` | Create a synthetic action config, add its row to `actions/actions_mapping.csv` (`0`/`1`, default `1`) and start the broker                                                                               |
-| `update <action-code> <version> <sem-ver>`                  | Copy the given action from `grants-config-land-grants`, set a new semantic version, publish it with `actions/actions_mapping.csv` (and `actions/actions_sidedness.csv` if present), and start the broker |
-| `inspect [action-code...]`                                  | Print SQS queues, S3 bucket contents, `actions_config` and `actions` DB rows — then exit (defaults to PA3, TEST1)                                                                                        |
+| Subcommand                                                  | Description                                                                                                                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no args)_                                                 | Start the broker with no config changes (useful for a restart)                                                                                              |
+| `add <action-code> <version> <sem-ver> [has-sssi] [has-hf]` | Create a synthetic action config, add its row to `actions/actions_eligibility.csv` (`0`/`1`, default `1`) and start the broker                              |
+| `update <action-code> <version> <sem-ver>`                  | Copy the given action from `grants-config-land-grants`, set a new semantic version, publish it with `actions/actions_eligibility.csv`, and start the broker |
+| `inspect [action-code...]`                                  | Print SQS queues, S3 bucket contents, `actions_config` and `actions` DB rows — then exit (defaults to PA3, TEST1)                                           |
 
 > **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
 
@@ -247,7 +247,7 @@ aws s3 cp s3://configs-bucket/land-grants/0.0.5/actions_config/PA3/pa3-2.0.0.jso
 ```bash
 aws sns publish \
   --topic-arn arn:aws:sns:eu-west-2:000000000000:gfr__sns___config_update \
-  --message '["land-grants/0.0.5/actions_config/PA3/pa3-2.0.0.json","land-grants/0.0.5/actions/actions_mapping.csv","land-grants/0.0.5/metadata.json"]' \
+  --message '["land-grants/0.0.5/actions_config/PA3/pa3-2.0.0.json","land-grants/0.0.5/actions/actions_eligibility.csv","land-grants/0.0.5/metadata.json"]' \
   --message-attributes '{
     "grant":   {"DataType":"String","StringValue":"land-grants"},
     "version": {"DataType":"String","StringValue":"0.0.5"},
