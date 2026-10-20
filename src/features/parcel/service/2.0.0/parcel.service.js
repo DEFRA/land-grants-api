@@ -50,6 +50,9 @@ async function getActionsWithAvailability(
     length: lengthActionsTransformer(length)
   }
 
+  // The parcel's land covers and intersections are the same for every action
+  const parcelDataCache = new Map()
+
   // Each action's availability is worked out independently, so run them together
   const actionsWithAvailability = await Promise.all(
     displayedActions.map(async (displayedAction) => {
@@ -62,7 +65,8 @@ async function getActionsWithAvailability(
           boundaryLengthMeters,
           parcel,
           postgresDb,
-          logger
+          logger,
+          parcelDataCache
         }
       )
 

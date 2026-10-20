@@ -16,6 +16,25 @@ import { getLandCoverIntersections } from '~/src/features/land-covers/queries/ge
 import { getActionEligibility } from '~/src/features/actions/queries/getActionEligibility.query.js'
 
 /**
+ * Fetches through the request's cache when the caller supplies one, so data that is
+ * the same for every action on a parcel is fetched once per request.
+ * @template T
+ * @param {Map<string, Promise<unknown>> | undefined} cache - Fetches shared across the request's actions
+ * @param {string} key - The cache key
+ * @param {() => Promise<T>} fetch - Fetches the data
+ * @returns {Promise<T>} The fetched data
+ */
+function fetchOnce(cache, key, fetch) {
+  if (!cache) {
+    return fetch()
+  }
+  if (!cache.has(key)) {
+    cache.set(key, fetch())
+  }
+  return /** @type {Promise<T>} */ (cache.get(key))
+}
+
+/**
  * Fetches the land cover codes for the action being applied for, the land covers for the parcel,
  * and the land covers for existing actions.
  * @param {string} actionCodeAppliedFor - The action code being applied for
@@ -24,6 +43,7 @@ import { getActionEligibility } from '~/src/features/actions/queries/getActionEl
  * @param {Action[]} existingActions - The list of existing actions
  * @param {Pool} postgresDb - The Postgres database connection
  * @param {Logger} logger - The logger object
+ * @param {Map<string, Promise<unknown>>} [cache] - Parcel data shared across the actions of one request
  * @returns {Promise<AvailableAreaDataRequirements>} - An object containing land cover codes for the action, land covers for the parcel, and land covers for existing actions
  */
 export async function getAvailableAreaDataRequirements(
@@ -32,7 +52,8 @@ export async function getAvailableAreaDataRequirements(
   parcelId,
   existingActions,
   postgresDb,
-  logger
+  logger,
+  cache
 ) {
   const [
     landCoverCodesForAppliedForAction,
@@ -42,14 +63,20 @@ export async function getAvailableAreaDataRequirements(
     actionEligibility
   ] = await Promise.all([
     getLandCoversForAction(actionCodeAppliedFor, postgresDb, logger),
-    getLandCoversForParcel(sheetId, parcelId, postgresDb, logger),
+    fetchOnce(cache, `landCoversForParcel:${sheetId}-${parcelId}`, () =>
+      getLandCoversForParcel(sheetId, parcelId, postgresDb, logger)
+    ),
     getLandCoversForActions(
       existingActions.map((a) => a.actionCode),
       postgresDb,
       logger
     ),
-    getLandCoverIntersections(sheetId, parcelId, postgresDb, logger),
-    getActionEligibility(logger, postgresDb)
+    fetchOnce(cache, `landCoverIntersections:${sheetId}-${parcelId}`, () =>
+      getLandCoverIntersections(sheetId, parcelId, postgresDb, logger)
+    ),
+    fetchOnce(cache, 'actionEligibility', () =>
+      getActionEligibility(logger, postgresDb)
+    )
   ])
 
   const landCoverCodesForExistingActions = Object.keys(

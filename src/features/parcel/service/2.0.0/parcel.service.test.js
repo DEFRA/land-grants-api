@@ -185,7 +185,8 @@ describe('Parcel Service 2.0.0', () => {
         '9238',
         [],
         mockRequest.server.postgresDb,
-        mockRequest.logger
+        mockRequest.logger,
+        expect.any(Map)
       )
       expect(getAvailableAreaDataRequirements).toHaveBeenCalledWith(
         'HEF1',
@@ -193,7 +194,8 @@ describe('Parcel Service 2.0.0', () => {
         '9238',
         [],
         mockRequest.server.postgresDb,
-        mockRequest.logger
+        mockRequest.logger,
+        expect.any(Map)
       )
     })
 
@@ -216,6 +218,24 @@ describe('Parcel Service 2.0.0', () => {
       )
 
       expect(getAvailableAreaDataRequirements).not.toHaveBeenCalled()
+    })
+
+    test("should share one parcel data cache across the parcel's actions", async () => {
+      await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        prepared(mockEnabledActionsForParcel),
+        mockCompatibilityCheckFn,
+        mockRequest,
+        []
+      )
+
+      const caches = getAvailableAreaDataRequirements.mock.calls.map(
+        ([, , , , , , cache]) => cache
+      )
+      expect(caches.length).toBeGreaterThan(1)
+      expect(new Set(caches).size).toBe(1)
     })
 
     test('should return the actions in the order they are displayed, however long each takes', async () => {
@@ -246,6 +266,27 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
+    test('should not share the parcel data cache between requests', async () => {
+      const request = () =>
+        getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          prepared([mockEnabledActionsForParcel[0]]),
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+      await request()
+      await request()
+
+      const [first, second] = getAvailableAreaDataRequirements.mock.calls.map(
+        ([, , , , , , cache]) => cache
+      )
+      expect(first).not.toBe(second)
+    })
+
     test('should run building (sqm) actions through AACs', async () => {
       await getActionsForParcel(
         mockParcel,
@@ -264,7 +305,8 @@ describe('Parcel Service 2.0.0', () => {
         '9238',
         [],
         mockRequest.server.postgresDb,
-        mockRequest.logger
+        mockRequest.logger,
+        expect.any(Map)
       )
     })
 
@@ -387,7 +429,8 @@ describe('Parcel Service 2.0.0', () => {
         '9238',
         [{ actionCode: 'UPL1', areaSqm: 100 }],
         mockRequest.server.postgresDb,
-        mockRequest.logger
+        mockRequest.logger,
+        expect.any(Map)
       )
 
       expect(findMaximumAvailableArea).toHaveBeenCalledTimes(1)

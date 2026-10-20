@@ -23,14 +23,15 @@ describe('getAvailableAreaDataRequirements', () => {
   const logger = { info: vi.fn(), error: vi.fn() }
   const existingActions = [{ actionCode: 'CMOR1', areaSqm: 1000 }]
 
-  const requirementsFor = (actionCode) =>
+  const requirementsFor = (actionCode, cache) =>
     getAvailableAreaDataRequirements(
       actionCode,
       'SX0679',
       '9238',
       existingActions,
       db,
-      logger
+      logger,
+      cache
     )
 
   beforeEach(() => {
@@ -84,5 +85,77 @@ describe('getAvailableAreaDataRequirements', () => {
       db,
       logger
     )
+  })
+
+  it('fetches the parcel data again for every call without a cache', async () => {
+    await requirementsFor('UPL1')
+    await requirementsFor('UPL2')
+
+    expect(getLandCoversForParcel).toHaveBeenCalledTimes(2)
+    expect(getLandCoverIntersections).toHaveBeenCalledTimes(2)
+    expect(getActionEligibility).toHaveBeenCalledTimes(2)
+  })
+
+  describe('with a cache shared across actions', () => {
+    it('fetches the parcel land covers, intersections and action eligibility once', async () => {
+      const cache = new Map()
+
+      const upl1 = await requirementsFor('UPL1', cache)
+      const upl2 = await requirementsFor('UPL2', cache)
+
+      expect(getLandCoversForParcel).toHaveBeenCalledTimes(1)
+      expect(getLandCoverIntersections).toHaveBeenCalledTimes(1)
+      expect(getActionEligibility).toHaveBeenCalledTimes(1)
+      expect(upl2.landCoversForParcel).toEqual(upl1.landCoversForParcel)
+      expect(upl2.sssiOverlap).toEqual(upl1.sssiOverlap)
+    })
+
+    it('still fetches the data that depends on the action for every action', async () => {
+      const cache = new Map()
+
+      const upl1 = await requirementsFor('UPL1', cache)
+      const upl2 = await requirementsFor('UPL2', cache)
+
+      expect(getLandCoversForAction).toHaveBeenCalledTimes(2)
+      expect(getLandCoverDefinitions).toHaveBeenCalledTimes(2)
+      expect(upl1.landCoverCodesForAppliedForAction).toEqual([
+        { landCoverCode: 'UPL1-cover' }
+      ])
+      expect(upl2.landCoverCodesForAppliedForAction).toEqual([
+        { landCoverCode: 'UPL2-cover' }
+      ])
+    })
+
+    it('shares a fetch still in flight', async () => {
+      const cache = new Map()
+
+      await Promise.all([
+        requirementsFor('UPL1', cache),
+        requirementsFor('UPL2', cache)
+      ])
+
+      expect(getLandCoversForParcel).toHaveBeenCalledTimes(1)
+      expect(getLandCoverIntersections).toHaveBeenCalledTimes(1)
+      expect(getActionEligibility).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps each parcel apart', async () => {
+      const cache = new Map()
+
+      await requirementsFor('UPL1', cache)
+      await getAvailableAreaDataRequirements(
+        'UPL1',
+        'SX0679',
+        '1111',
+        existingActions,
+        db,
+        logger,
+        cache
+      )
+
+      expect(getLandCoversForParcel).toHaveBeenCalledTimes(2)
+      expect(getLandCoverIntersections).toHaveBeenCalledTimes(2)
+      expect(getActionEligibility).toHaveBeenCalledTimes(1)
+    })
   })
 })
