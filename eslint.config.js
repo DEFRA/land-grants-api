@@ -1,19 +1,19 @@
-import { defineConfig } from 'eslint/config'
-import neostandard from 'neostandard'
+import { defineConfig, globalIgnores } from 'eslint/config'
+import { neostandard, resolveIgnoresFromGitignore } from 'neostandard'
 import jsdoc from 'eslint-plugin-jsdoc'
 import tseslint from 'typescript-eslint'
 import importPlugin from 'eslint-plugin-import'
 
 export default defineConfig(
+  globalIgnores([
+    ...resolveIgnoresFromGitignore(),
+    '.public/**',
+    'src/__fixtures__/**',
+    '.server/**',
+    'coverage/**'
+  ]),
   ...neostandard({
     env: ['node', 'vitest'],
-    ignores: [
-      ...neostandard.resolveIgnoresFromGitignore(),
-      '.public/**',
-      'src/__fixtures__/**',
-      '.server/**',
-      'coverage/**'
-    ],
     noJsx: true,
     noStyle: true
   }),
