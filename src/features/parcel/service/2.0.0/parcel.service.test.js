@@ -857,6 +857,26 @@ describe('Parcel Service 2.0.0', () => {
             })
           })
 
+          test('should report no availability rather than too little length when the existing actions leave none', async () => {
+            calculateAvailableLength.mockReturnValue(
+              lengthResult({
+                availableLength: 0,
+                incompatibleLengthMeters: 1800,
+                incompatibleActions: [
+                  { actionCode: 'BND2', billedLengthMeters: 1800 }
+                ]
+              })
+            )
+
+            await requestActions([bnd1WithMinimum])
+
+            const actionAvailability = actionAvailabilityFor('BND1')
+
+            expect(actionAvailability.unavailableReason.code).toBe(
+              'no-availability'
+            )
+          })
+
           test('should not warn when the existing actions only leave too little for the minimum', async () => {
             passUnavailableReasonThrough()
             calculateAvailableLength.mockReturnValue(

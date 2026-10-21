@@ -3,6 +3,7 @@ import {
   EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
   INSUFFICIENT_LENGTH_REMAINING,
+  NO_AVAILABILITY,
   PARCEL_TOO_SHORT_FOR_ACTION,
   RULE_FAILED
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
@@ -128,6 +129,24 @@ describe('minimumLengthReason', () => {
     )
 
     expect(result.code).toBe(INSUFFICIENT_LENGTH_REMAINING)
+  })
+
+  test('should report no availability when the existing actions leave no length at all', () => {
+    const result = minimumLengthReason(
+      { availableLength: 0, boundaryLengthMeters: 60, incompatibleActions },
+      { reason: 'Not enough length left', minimumLengthMeters: 20 }
+    )
+
+    expect(result.code).toBe(NO_AVAILABILITY)
+  })
+
+  test('should still report the parcel too short when it has no length left', () => {
+    const result = minimumLengthReason(
+      { availableLength: 0, boundaryLengthMeters: 15, incompatibleActions },
+      { reason: 'Boundary is too short', minimumLengthMeters: 20 }
+    )
+
+    expect(result.code).toBe(PARCEL_TOO_SHORT_FOR_ACTION)
   })
 
   test('should report insufficient length remaining when the rule gives no minimum', () => {

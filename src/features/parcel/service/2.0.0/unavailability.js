@@ -60,12 +60,18 @@ export function exceedsBoundaryReason(incompatibleActions) {
  * Why a linear action cannot be applied for when its minimum-length rule
  * rejects what is left, in the rule's own wording: either the boundary was
  * never long enough, or the existing actions fit but leave too little of it.
+ * When they leave none of it, the minimum is beside the point, so it reports
+ * no availability as any other action left with nothing would.
  * @param {AvailableLength} availableLength - The boundary still claimable
  * @param {MinimumLengthRuleResult} minimumLengthRuleResult - The rule's failed verdict
  * @returns {UnavailableReasonResult} The unavailable reason
  */
 export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
-  const { boundaryLengthMeters, incompatibleActions } = availableLength
+  const {
+    availableLength: remainingLengthMeters,
+    boundaryLengthMeters,
+    incompatibleActions
+  } = availableLength
   const { reason, minimumLengthMeters } = minimumLengthRuleResult
 
   const parcelTooShort =
@@ -78,6 +84,10 @@ export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
       reason,
       metadata: { boundaryLengthMeters, minimumLengthMeters }
     }
+  }
+
+  if (remainingLengthMeters === 0) {
+    return noAvailabilityReason
   }
 
   return {
