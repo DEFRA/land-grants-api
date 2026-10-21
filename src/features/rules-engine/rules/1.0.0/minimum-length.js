@@ -12,8 +12,9 @@ import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
  */
 export const minimumLength = {
   requires: [
-    { type: REQUIRED_RULE_DATA.AVAILABLE_LENGTH },
-    { type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY }
+    // The applied-for quantity is not declared, so /parcels keeps this rule
+    // and runs it before anything is applied for
+    { type: REQUIRED_RULE_DATA.AVAILABLE_LENGTH }
   ],
   execute: (application, rule) => {
     const {
@@ -22,6 +23,7 @@ export const minimumLength = {
     } = application
     const { minimumLengthM } = rule.config ?? {}
     const name = rule.name
+    const hasAppliedFor = appliedForQuantity !== undefined
 
     if (!minimumLengthM) {
       return {
@@ -39,7 +41,9 @@ export const minimumLength = {
     }
 
     const lines = [
-      `The minimum allowable length is (${minimumLengthM} m), the available length was (${availability} m) and the applicant applied for (${appliedForQuantity} m)`
+      hasAppliedFor
+        ? `The minimum allowable length is (${minimumLengthM} m), the available length was (${availability} m) and the applicant applied for (${appliedForQuantity} m)`
+        : `The minimum allowable length is (${minimumLengthM} m) and the available length was (${availability} m)`
     ]
 
     if (boundaryLength) {
@@ -60,7 +64,7 @@ export const minimumLength = {
       }
     }
 
-    if (appliedForQuantity < minimumLengthM) {
+    if (hasAppliedFor && appliedForQuantity < minimumLengthM) {
       return {
         name,
         passed: false,
