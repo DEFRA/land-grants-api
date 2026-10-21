@@ -3,7 +3,7 @@ import { getAuthHeader } from './setup/auth-helpers.js'
 
 const headers = {
   Authorization: getAuthHeader(),
-  'X-Forwarded-Authorization': 'dummy'
+  'Defra-Email': 'dummy@defra.gov.uk'
 }
 
 describe('Case Management Adapter Endpoints', () => {
@@ -11,7 +11,10 @@ describe('Case Management Adapter Endpoints', () => {
 
   beforeAll(async () => {
     const response = await httpClient.post('/api/v2/application/validate', {
-      headers,
+      headers: {
+        Authorization: headers.Authorization,
+        'X-Forwarded-Authorization': 'dummy'
+      },
       body: {
         applicationId: 'appid-cma-1',
         requester: 'test-user',

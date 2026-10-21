@@ -16,6 +16,7 @@ import { validateRequest } from '../validation/application.validation.js'
  * @param {string} sbi - The sbi
  * @param {string} requesterUsername - The requester username
  * @param {object} request - The request
+ * @param {string} caseworkerEmail - The email of the caseworker requesting application validation
  * @param {Date} [referenceDate] - The date to check active agreements against; defaults to now.
  * @returns {Promise<{validationErrors: object[] | null, applicationData: object, applicationValidationRunId: string | null}>} The validation errors, application data and validation run id
  */
@@ -26,6 +27,7 @@ export const validateApplication = async (
   sbi,
   requesterUsername,
   request,
+  caseworkerEmail,
   referenceDate
 ) => {
   const actions = await getActions(
@@ -62,7 +64,7 @@ export const validateApplication = async (
   const allAgreements = await getAgreements(
     sbi,
     landAction.map((a) => [a.parcelId, a.sheetId]),
-    null, // No DEFRA token on caseworker route
+    { type: 'internal', value: caseworkerEmail },
     request.server.postgresDb,
     request.logger
   )

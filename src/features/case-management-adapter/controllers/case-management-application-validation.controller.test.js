@@ -16,6 +16,16 @@ vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockAuditEvent = auditEvent
 
+const defaultRequest = {
+  method: 'POST',
+  url: '/case-management-adapter/application/validation-run/rerun',
+  headers: { 'Defra-Email': 'dummy@defra.gov.uk' },
+  payload: {
+    requesterUsername: 'test.user@example.com',
+    id: 1
+  }
+}
+
 describe('Case Management Application Validation Controller', () => {
   const server = Hapi.server()
 
@@ -111,14 +121,7 @@ describe('Case Management Application Validation Controller', () => {
         applicationValidationRunId: 1
       })
 
-      const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com',
-          id: 1
-        }
-      }
+      const request = defaultRequest
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, payload } = await server.inject(request)
@@ -148,6 +151,7 @@ describe('Case Management Application Validation Controller', () => {
           logger: expect.any(Object),
           server: expect.objectContaining({ postgresDb: expect.any(Object) })
         }),
+        'dummy@defra.gov.uk',
         mockCreatedAt
       )
 
@@ -178,17 +182,40 @@ describe('Case Management Application Validation Controller', () => {
       )
     })
 
+    test('should return 401 when Defra-Email is missing', async () => {
+      vi.mocked(getApplicationValidationRun).mockResolvedValue(
+        mockApplicationValidationRun
+      )
+      vi.mocked(validateApplication).mockResolvedValue({
+        validationErrors: null,
+        applicationData: mockApplicationData,
+        applicationValidationRunId: 1
+      })
+
+      const request = {
+        ...defaultRequest,
+        headers: { ...defaultRequest.headers, 'Defra-Email': undefined }
+      }
+
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject(request)
+
+      expect(statusCode).toBe(401)
+
+      expect(getApplicationValidationRun).toHaveBeenCalledWith(
+        expect.any(Object),
+        mockPostgresDb,
+        1
+      )
+
+      expect(validateApplication).not.toHaveBeenCalled()
+      expect(mockAuditEvent).not.toHaveBeenCalled()
+    })
+
     test('should return 404 when application validation run is not found', async () => {
       vi.mocked(getApplicationValidationRun).mockResolvedValue(null)
 
-      const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com',
-          id: 999
-        }
-      }
+      const request = defaultRequest
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, payload } = await server.inject(request)
@@ -200,7 +227,7 @@ describe('Case Management Application Validation Controller', () => {
       expect(getApplicationValidationRun).toHaveBeenCalledWith(
         expect.any(Object),
         mockPostgresDb,
-        999
+        1
       )
 
       expect(validateApplication).not.toHaveBeenCalled()
@@ -213,14 +240,7 @@ describe('Case Management Application Validation Controller', () => {
       )
       validateApplication.mockRejectedValue(new UnauthorizedError('123456789'))
 
-      const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com',
-          id: 1
-        }
-      }
+      const request = defaultRequest
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject(request)
@@ -230,11 +250,8 @@ describe('Case Management Application Validation Controller', () => {
 
     test('should return 400 when payload is missing requesterUsername', async () => {
       const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          id: 1
-        }
+        ...defaultRequest,
+        payload: { ...defaultRequest.payload, requesterUsername: undefined }
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -247,11 +264,8 @@ describe('Case Management Application Validation Controller', () => {
 
     test('should return 400 when payload is missing id', async () => {
       const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com'
-        }
+        ...defaultRequest,
+        payload: { ...defaultRequest.payload, id: undefined }
       }
 
       /** @type { Hapi.ServerInjectResponse<object> } */
@@ -285,14 +299,7 @@ describe('Case Management Application Validation Controller', () => {
         applicationValidationRunId: null
       })
 
-      const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com',
-          id: 1
-        }
-      }
+      const request = defaultRequest
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, payload } = await server.inject(request)
@@ -328,14 +335,7 @@ describe('Case Management Application Validation Controller', () => {
         new Error('Validation service failed')
       )
 
-      const request = {
-        method: 'POST',
-        url: '/case-management-adapter/application/validation-run/rerun',
-        payload: {
-          requesterUsername: 'test.user@example.com',
-          id: 1
-        }
-      }
+      const request = defaultRequest
 
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode, payload } = await server.inject(request)

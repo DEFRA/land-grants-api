@@ -24,6 +24,8 @@ const mockValidateLandParcelActions = validateLandParcelActions
 const mockValidateRequest = validateRequest
 const mockGetActions = getActions
 
+const dalAuth = { type: 'internal', value: 'dummy@defra.gov.uk' }
+
 describe('Application Validation Service', () => {
   const mockLogger = {
     info: vi.fn(),
@@ -41,7 +43,8 @@ describe('Application Validation Service', () => {
     logger: mockLogger,
     server: {
       postgresDb: mockPostgresDb
-    }
+    },
+    headers: { 'defra-email': dalAuth.value }
   }
 
   const mockLandAction = [
@@ -184,7 +187,8 @@ describe('Application Validation Service', () => {
         mockCrn,
         mockSbi,
         mockRequesterUsername,
-        mockRequest
+        mockRequest,
+        dalAuth.value
       )
 
       expect(result).toEqual({
@@ -254,7 +258,7 @@ describe('Application Validation Service', () => {
           ['9238', 'SX0679'],
           ['9239', 'SX0680']
         ],
-        null,
+        dalAuth,
         mockPostgresDb,
         mockLogger
       )
@@ -274,6 +278,7 @@ describe('Application Validation Service', () => {
         mockSbi,
         mockRequesterUsername,
         mockRequest,
+        dalAuth.value,
         referenceDate
       )
 
@@ -295,7 +300,8 @@ describe('Application Validation Service', () => {
         mockCrn,
         mockSbi,
         mockRequesterUsername,
-        mockRequest
+        mockRequest,
+        dalAuth.value
       )
 
       expect(mockValidateLandParcelActions).toHaveBeenCalledTimes(2)
@@ -328,7 +334,8 @@ describe('Application Validation Service', () => {
         mockCrn,
         mockSbi,
         mockRequesterUsername,
-        mockRequest
+        mockRequest,
+        dalAuth.value
       )
 
       expect(result).toEqual({
@@ -384,7 +391,8 @@ describe('Application Validation Service', () => {
         mockCrn,
         mockSbi,
         mockRequesterUsername,
-        mockRequest
+        mockRequest,
+        dalAuth.value
       )
 
       expect(result).toEqual({

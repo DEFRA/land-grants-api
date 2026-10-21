@@ -43,7 +43,7 @@ export const validateRequestData = async (
  * @param {import('@hapi/hapi').Request} request
  * @param {object} postgresDb
  * @param {string} sbi
- * @param {string|null} defraIdToken
+ * @param {string} defraIdToken
  * @param {object} data
  * @param {Array} data.landActions
  * @param {Array} data.actions
@@ -63,7 +63,7 @@ export const validateAllLandParcels = async (
   const allAgreements = await getAgreements(
     sbi,
     landActions.map((a) => [a.parcelId, a.sheetId]),
-    defraIdToken,
+    { type: 'external', value: defraIdToken },
     postgresDb,
     request.logger
   )

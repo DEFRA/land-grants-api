@@ -1,26 +1,27 @@
 import Boom from '@hapi/boom'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+
 import {
-  errorResponseSchema,
-  internalServerErrorResponseSchema
-} from '~/src/features/common/schema/index.js'
-import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
+  AuditEvent,
+  auditEvent,
+  getCorrelationId
+} from '~/src/features/common/helpers/audit-event.js'
 import {
   caseManagementApplicationValidationRerunRequestSchema,
   caseManagementApplicationValidationReRunResponseSchema
 } from '../schema/application-validation.schema.js'
-import { validateApplication } from '../../application/service/application-validation.service.js'
+import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
+import {
+  errorResponseSchema,
+  internalServerErrorResponseSchema
+} from '~/src/features/common/schema/index.js'
 import {
   logResourceNotFound,
   logValidationWarn,
   logBusinessError,
   logInfo
 } from '~/src/features/common/helpers/logging/log-helpers.js'
-import {
-  AuditEvent,
-  auditEvent,
-  getCorrelationId
-} from '~/src/features/common/helpers/audit-event.js'
+import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { validateApplication } from '../../application/service/application-validation.service.js'
 
 /**
  * Builds the shared portion of a case management application validation
@@ -87,6 +88,11 @@ const runCaseManagementValidation = async (
     created_at: createdAt
   } = applicationValidationRun
 
+  const caseworkerEmail = /** @type {string} */ (request.headers['defra-email'])
+  if (!caseworkerEmail) {
+    return Boom.unauthorized('Defra-Email header is required')
+  }
+
   // Case Management always references the validation run created when the
   // application was originally submitted, so its created_at is the
   // application's true creation date.
@@ -98,6 +104,7 @@ const runCaseManagementValidation = async (
       sbi,
       requesterUsername,
       request,
+      caseworkerEmail,
       new Date(createdAt)
     )
 
