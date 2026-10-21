@@ -12,5 +12,6 @@ rmSync(dist, { recursive: true, force: true })
 cpSync(rules, dist, {
   recursive: true,
   filter: (src) =>
-    statSync(src).isDirectory() || /(^|\/)schemas\.js$|\.schema\.js$/.test(src)
+    statSync(src).isDirectory() ||
+    /(^|\/)(schemas|rule-key)\.js$|\.schema\.js$/.test(src)
 })
