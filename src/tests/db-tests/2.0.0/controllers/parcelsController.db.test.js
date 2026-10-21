@@ -237,6 +237,23 @@ describe('Parcels Controller 2.0.0', () => {
       )
     })
 
+    test('should report no availability, rather than too little length, when agreements use the whole perimeter', async () => {
+      mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
+      mockGetAgreements.mockResolvedValue(dalAgreement('BND2', perimeterMeters))
+
+      const { data } = await requestActions()
+
+      expect(actionOf(data)).toEqual(
+        expect.objectContaining({
+          isAvailable: false,
+          availability: { unit: 'm', value: 0 },
+          unavailableReason: expect.objectContaining({
+            code: 'no-availability'
+          })
+        })
+      )
+    })
+
     test('should report that existing actions do not fit when agreements exceed the perimeter', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
       mockGetAgreements.mockResolvedValue(
