@@ -161,7 +161,7 @@ describe('Validation Service', () => {
           ['9238', 'SX0679'],
           ['9239', 'SX0680']
         ],
-        defraIdToken,
+        { type: 'external', value: defraIdToken },
         mockPostgresDb,
         mockLogger
       )
@@ -223,7 +223,7 @@ describe('Validation Service', () => {
           ['9238', 'SX0679'],
           ['9239', 'SX0680']
         ],
-        defraIdToken,
+        { type: 'external', value: defraIdToken },
         mockPostgresDb,
         mockLogger
       )

@@ -308,12 +308,6 @@ const config = convict({
       default: '',
       env: 'DAL_API_ENDPOINT'
     },
-    serviceAccount: {
-      doc: 'Robot account email address to use for service to service auth',
-      format: String,
-      default: 'land-grants-api@defra.gov.uk',
-      env: 'DAL_SERVICE_ACCOUNT'
-    },
     useEntraAuth: {
       doc:
         'Whether to authenticate to DAL with an ENTRA token. This is REQUIRED in all ' +

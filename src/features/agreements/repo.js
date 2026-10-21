@@ -9,15 +9,15 @@ import { getAgreements as getFromDal } from '~/src/services/dal/index.js'
  * Expired agreements are filtered out here.
  * @param {string} sbi - The SBI for the business owning the parcels
  * @param {Array.<[string, string]>} parcels - Parcels for which to fetch agreements, as [parcelId, sheetId]
- * @param {string|null} defraIdToken - The user's defra ID token (JWT)
+ * @param {DALAuth} auth - DAL authentication details for the end user
  * @param {any} db - Database connection
  * @param {Logger} logger - Logger object
  * @returns {Promise<AgreementsByParcel>} The agreements
  */
-export async function getAgreements(sbi, parcels, defraIdToken, db, logger) {
+export async function getAgreements(sbi, parcels, auth, db, logger) {
   const [dbResults, dalResults] = await Promise.all([
     getFromDb(parcels, db, logger),
-    getFromDal(sbi, defraIdToken, logger)
+    getFromDal(sbi, auth, logger)
   ])
 
   const combined = dbResults
@@ -43,5 +43,6 @@ export function agreementsForParcel(agreements, { parcelId, sheetId }) {
 
 /**
  * @import { AgreementsByParcel, AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { DALAuth } from '~/src/services/dal/auth.d.js'
  * @import { Logger } from '~/src/features/common/logger.d.js'
  */
