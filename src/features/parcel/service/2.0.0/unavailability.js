@@ -3,10 +3,8 @@ import {
   EXISTING_ACTIONS_DO_NOT_FIT,
   EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
-  INSUFFICIENT_LENGTH_REMAINING,
   NO_AVAILABILITY,
   NO_AVAILABILITY_REASON,
-  PARCEL_TOO_SHORT_FOR_ACTION,
   RULE_FAILED
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
@@ -56,55 +54,6 @@ export function exceedsBoundaryReason(incompatibleActions) {
   }
 }
 
-/**
- * Why a linear action cannot be applied for when its minimum-length rule
- * rejects what is left, in the rule's own wording: either the boundary was
- * never long enough, or the existing actions fit but leave too little of it.
- * When they leave none of it, the minimum is beside the point, so it reports
- * no availability as any other action left with nothing would.
- * @param {AvailableLength} availableLength - The boundary still claimable
- * @param {MinimumLengthRuleResult} minimumLengthRuleResult - The rule's failed verdict
- * @returns {UnavailableReasonResult} The unavailable reason
- */
-export function minimumLengthReason(availableLength, minimumLengthRuleResult) {
-  const {
-    availableLength: remainingLengthMeters,
-    boundaryLengthMeters,
-    incompatibleActions
-  } = availableLength
-  const { reason, minimumLengthMeters } = minimumLengthRuleResult
-
-  const parcelTooShort =
-    minimumLengthMeters !== undefined &&
-    boundaryLengthMeters < minimumLengthMeters
-
-  if (parcelTooShort) {
-    return {
-      code: PARCEL_TOO_SHORT_FOR_ACTION,
-      reason,
-      metadata: { boundaryLengthMeters, minimumLengthMeters }
-    }
-  }
-
-  if (remainingLengthMeters === 0) {
-    return noAvailabilityReason
-  }
-
-  return {
-    code: INSUFFICIENT_LENGTH_REMAINING,
-    reason,
-    metadata: {
-      existingActions: incompatibleActions.map(
-        ({ actionCode, billedLengthMeters }) => ({
-          actionCode,
-          billedLengthMeters
-        })
-      ),
-      minimumLengthMeters
-    }
-  }
-}
-
 const ruleFailedFilter = (f) => !f.passed
 
 /**
@@ -144,8 +93,7 @@ export const noAvailabilityReason = {
 
 /**
  * @import {AvailableAreaForActionLp} from '~/src/features/available-area/available-area.d.js'
- * @import {AvailableLength, ActionWithLength} from '~/src/features/available-length/available-length.d.js'
- * @import {MinimumLengthRuleResult} from '~/src/features/parcel/parcel.d.js'
+ * @import {ActionWithLength} from '~/src/features/available-length/available-length.d.js'
  * @import {UnavailableReasonResult} from '~/src/features/parcel/unavailability.d.js'
  * @import {RulesResult} from '~/src/features/rules-engine/rules.d.js'
  */

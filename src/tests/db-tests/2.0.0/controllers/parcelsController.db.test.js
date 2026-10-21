@@ -212,7 +212,7 @@ describe('Parcels Controller 2.0.0', () => {
       mockGetEnabledActions.mockResolvedValue([bnd1])
     })
 
-    test('should report too little length remaining, with no ceiling, when agreements leave less than the minimum', async () => {
+    test('should report the failed minimum-length rule when agreements leave less than the minimum', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
       mockGetAgreements.mockResolvedValue(
         dalAgreement('BND2', perimeterMeters - 9)
@@ -225,13 +225,9 @@ describe('Parcels Controller 2.0.0', () => {
           isAvailable: false,
           availability: { unit: 'm', value: 9 },
           unavailableReason: expect.objectContaining({
-            code: 'insufficient-length-remaining',
-            metadata: {
-              existingActions: [
-                { actionCode: 'BND2', billedLengthMeters: perimeterMeters - 9 }
-              ],
-              minimumLengthMeters: 20
-            }
+            code: 'rule-failed',
+            reason:
+              'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (9 m)'
           })
         })
       )
@@ -274,7 +270,7 @@ describe('Parcels Controller 2.0.0', () => {
       )
     })
 
-    test('should report a parcel whose whole perimeter is under the minimum as too short', async () => {
+    test('should report the failed minimum-length rule when the whole perimeter is under the minimum', async () => {
       mockGetEnabledActions.mockResolvedValue([
         withMinimumLength(shortPerimeterMeters + 5)
       ])
@@ -285,7 +281,8 @@ describe('Parcels Controller 2.0.0', () => {
         expect.objectContaining({
           isAvailable: false,
           unavailableReason: expect.objectContaining({
-            code: 'parcel-too-short-for-action'
+            code: 'rule-failed',
+            reason: `The minimum allowable length for this action (${shortPerimeterMeters + 5} m) is more than the available length for this land parcel (${shortPerimeterMeters} m)`
           })
         })
       )

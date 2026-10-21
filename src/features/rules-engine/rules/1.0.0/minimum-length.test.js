@@ -163,4 +163,42 @@ describe('minimumLength', () => {
     expect(result.name).toBe('custom-rule-name')
     expect(result.description).toBe('Custom description')
   })
+
+  describe('without an applied-for quantity, as /parcels asks', () => {
+    test('should fail when the available length is below the minimum', () => {
+      const result = minimumLength.execute(
+        createApplication(undefined, 12),
+        createRule()
+      )
+
+      expect(result.passed).toBe(false)
+      expect(result.reason).toEqual(
+        'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)'
+      )
+    })
+
+    test('should pass when the available length meets the minimum', () => {
+      const result = minimumLength.execute(
+        createApplication(undefined, 20),
+        createRule()
+      )
+
+      expect(result.passed).toBe(true)
+    })
+
+    test('should explain the minimum and the available length without an applied for length', () => {
+      const result = minimumLength.execute(
+        createApplication(undefined, 300),
+        createRule()
+      )
+
+      expect(result.explanations[0].lines[0]).toEqual(
+        'The minimum allowable length is (20 m) and the available length was (300 m)'
+      )
+    })
+  })
+
+  test('should not declare the applied-for quantity, so /parcels keeps the rule', () => {
+    expect(minimumLength.requires).toEqual([{ type: 'AVAILABLE_LENGTH' }])
+  })
 })
