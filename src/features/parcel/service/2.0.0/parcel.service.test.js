@@ -829,76 +829,72 @@ describe('Parcel Service 2.0.0', () => {
         })
 
         describe('when the action has a minimum length', () => {
-          test("should report too little length remaining when the existing actions fit but leave less than the minimum, in the rule's own words", async () => {
-            calculateAvailableLength.mockReturnValue(
-              lengthResult({
-                availableLength: 12,
-                incompatibleLengthMeters: 1788,
-                incompatibleActions: [
-                  { actionCode: 'BND2', billedLengthMeters: 1788 }
-                ]
+          // An available action, so its rules run
+          beforeEach(() => {
+            actionTransformer.mockImplementation((action) => ({
+              code: action.code,
+              description: action.description,
+              isAvailable: true
+            }))
+          })
+
+          test('should leave the minimum to the rules, handing them the length it calculated', async () => {
+            const availableLength = lengthResult({ availableLength: 12 })
+            calculateAvailableLength.mockReturnValue(availableLength)
+
+            await requestActions([bnd1WithMinimum])
+
+            expect(actionAvailabilityFor('BND1').unavailableReason).toBe(
+              undefined
+            )
+            expect(runParcelRules).toHaveBeenCalledWith(
+              bnd1WithMinimum,
+              [],
+              expect.objectContaining({ availableLength })
+            )
+          })
+
+          test('should report the failed minimum-length rule as the reason', async () => {
+            runParcelRules.mockImplementation((action) =>
+              Promise.resolve(
+                action.code === 'BND1'
+                  ? {
+                      passed: false,
+                      results: [
+                        {
+                          name: 'minimum-length',
+                          description:
+                            'Is the applied for length at least 20 m?',
+                          passed: false,
+                          reason:
+                            'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)',
+                          explanations: []
+                        }
+                      ]
+                    }
+                  : { passed: true, results: [] }
+              )
+            )
+
+            const result = await requestActions([bnd1WithMinimum])
+
+            const bnd1Result = result.actions.find((a) => a.code === 'BND1')
+            expect(bnd1Result.isAvailable).toBe(false)
+            expect(bnd1Result.unavailableReason).toEqual(
+              expect.objectContaining({
+                code: 'rule-failed',
+                reason:
+                  'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)'
               })
             )
-
-            await requestActions([bnd1WithMinimum])
-
-            const actionAvailability = actionAvailabilityFor('BND1')
-
-            expect(actionAvailability.unavailableReason).toEqual({
-              code: 'insufficient-length-remaining',
-              reason:
-                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (12 m)',
-              metadata: {
-                existingActions: [
-                  { actionCode: 'BND2', billedLengthMeters: 1788 }
-                ],
-                minimumLengthMeters: 20
-              }
-            })
           })
 
-          test('should not warn when the existing actions only leave too little for the minimum', async () => {
-            passUnavailableReasonThrough()
-            calculateAvailableLength.mockReturnValue(
-              lengthResult({ availableLength: 12 })
-            )
+          test('should hand the rules no length for an area action', async () => {
+            await requestActions([])
 
-            await requestActions([bnd1WithMinimum])
+            const [, , context] = runParcelRules.mock.calls[0]
 
-            expect(mockLogger.warn).not.toHaveBeenCalled()
-          })
-
-          test("should report a parcel too short for the action, in the rule's own words", async () => {
-            calculateAvailableLength.mockReturnValue(
-              lengthResult({
-                availableLength: 15,
-                boundaryLengthMeters: 15,
-                incompatibleLengthMeters: 0
-              })
-            )
-
-            await requestActions([bnd1WithMinimum])
-
-            const actionAvailability = actionAvailabilityFor('BND1')
-
-            expect(actionAvailability.unavailableReason).toEqual({
-              code: 'parcel-too-short-for-action',
-              reason:
-                'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (15 m)',
-              metadata: { boundaryLengthMeters: 15, minimumLengthMeters: 20 }
-            })
-          })
-
-          test('should leave the action available when what is left meets the minimum', async () => {
-            calculateAvailableLength.mockReturnValue(
-              lengthResult({ availableLength: 240 })
-            )
-
-            await requestActions([bnd1WithMinimum])
-
-            const actionAvailability = actionAvailabilityFor('BND1')
-
-            expect(actionAvailability.unavailableReason).toBeUndefined()
+            expect(context.availableLength).toBeUndefined()
           })
         })
 
