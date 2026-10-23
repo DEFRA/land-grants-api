@@ -99,6 +99,12 @@ async function getActionsWithAvailability(
     })
   )
 
+  logActionsThatDoNotFit(actionsWithAvailability, parcel, logger)
+
+  return actionsWithAvailability
+}
+
+function logActionsThatDoNotFit(actionsWithAvailability, parcel, logger) {
   const actionsThatDoNotFit = actionsWithAvailability.filter(
     (actionWithAvailability) =>
       actionWithAvailability.unavailableReason?.code ===
@@ -116,8 +122,6 @@ async function getActionsWithAvailability(
       }
     })
   }
-
-  return actionsWithAvailability
 }
 
 async function runRules(
