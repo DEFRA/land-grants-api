@@ -4,6 +4,8 @@ How the API decides which actions can share the same ground, and how that affect
 
 **Status.** "How it works today" describes `main`. "What we want to change" depends on LDR LGA-008, which is still proposed. If this document and LGA-008 disagree, LGA-008 wins and this document is wrong.
 
+**Order of work.** LGA-008 plans supplemental actions first and stackable actions second. Both share one data change (storing the matrix `TYPE`) and one engine (`availableArea.js`). That order matters for step 1 below.
+
 **Background reading (optional).** `aac-explained.md` explains the available area calculation (AAC) in plain terms. You don't need it to follow this page.
 
 ---
@@ -53,7 +55,7 @@ Each row has an action code, a second action code, a year, and a **type** that s
 | Type | Meaning | Relevant here? |
 | --- | --- | --- |
 | `BASECO` | The two actions can share the same area | **Yes.** This is "stackable" |
-| `BASEPA` | The two actions can't be on the same parcel | **Yes.** This is "parcel-exclusive" |
+| `BASEPA` | The two actions may not be on the same parcel (rare). 310 rows in 2026 | **Yes.** This is "parcel-exclusive". The code currently reads it the wrong way round, as "compatible" |
 | `SUPBAS`, `SUPBPA`, `SUPAGR` | Supplement-to-base relationships | No. Supplemental work only |
 
 Things that are true of the 2026 file and that the code can rely on:
@@ -114,7 +116,7 @@ How to build it, applied once when the matrix is loaded:
 2. `BASEPA` in either direction makes the pair parcel-exclusive. If the same pair is also `BASECO`, **parcel-exclusive wins** and we log a warning naming the pair.
 3. A self-pair is compatible only if a `BASECO` self row exists.
 4. A pair with no `BASECO` row is incompatible.
-5. `SUP*` rows are ignored here.
+5. `SUP*` rows are ignored when deciding **stackable** pairs. But while supplemental work has not shipped, a supplement and its base must still be allowed to overlap, so keep `SUP*` pairs compatible in the model for now (see the note in build step 1).
 
 Implementation notes:
 
@@ -230,7 +232,7 @@ What to do:
 
 Done when: every existing test passes with the same results as before, and the code no longer scans every row for each pair.
 
-For now, still treat `BASEPA` rows the way the code does today. Changing that is step 2.
+For now, keep treating **every** row type as "compatible", including `BASEPA` and `SUP*`, exactly as the code does today. Changing `BASEPA` is step 2. Dropping `SUP*` is part of the supplemental work: a supplement has to overlap its base, and until that work adds a rule saying so, the compatible row is the only thing allowing it. If step 1 stopped treating `SUP*` as compatible, CCT6 would suddenly be blocked from sharing ground with CCT2.
 
 **Step 2: Block parcel-exclusive actions (first behaviour change)**
 
@@ -241,15 +243,30 @@ What to do:
 
 Done when: AB2 on a parcel that already has RP32 returns 0 ha and `PARCEL_EXCLUSIVE`, and AB2 with RP32 only on a *different* parcel still works normally.
 
-Before you start, check the first open question in section 7 (what `BASEPA` really means) has been answered.
-
 **Step 3: Exact stack calculation (optional)**
 
 Don't start this unless we have a real parcel where the current calculation gives the wrong answer (problem 3 in section 4), or the supplemental work needs it. If you do build it, follow section 5.3, and if a parcel has more than 16 actions, use the current calculation instead.
 
 ### Test plan
 
-LGA-008 scenarios ST-01 to ST-14 are the source of truth. Unit tests inject a policy fixture rather than reading the live matrix.
+LGA-008 scenarios ST-01 to ST-14 are the source of truth. Unit tests inject a policy fixture rather than reading the live matrix. All use a 10 ha parcel with every action eligible. A, B and C are made-up codes. "Today" shows where the current engine gives a different answer.
+
+| ID | Matrix rows | Already on parcel | Applying for | Expected | Today |
+| --- | --- | --- | --- | --- | --- |
+| ST-01 | none | nothing | A 10 ha | 10 ha, pass | same |
+| ST-02 | A–B | B 4 ha | A 10 ha | 10 ha, pass | same |
+| ST-03 | none | B 4 ha | A 6 ha | 6 ha, pass | same |
+| ST-04 | none | B 4 ha | A 7 ha | 6 ha, fail `EXCEEDS_AVAILABLE` | same |
+| ST-05 | B–C | B 6, C 6 | A 4 ha | 4 ha, pass | same |
+| ST-06 | A–B, B–C | B 6, C 6 | A 10 ha | 4 ha, fail (not transitive) | same |
+| ST-07 | none | B 6, C 6 | A 1 ha | 0 ha, fail `EXISTING_INFEASIBLE` | same |
+| ST-08 | none | A 3 | A 7 ha | 7 ha, pass (no self-stacking) | same |
+| ST-09 | five actions in a ring | A1–A5, 3.6 ha each | T 1 ha | 1.0 ha, pass | **2.8 ha** |
+| ST-10 | A–B, B–C | B 6, C 6 (same application) | A 4 ha | 4 ha, pass | same |
+| ST-11 | RP32–AB2 `BASEPA` | RP32 1 ha, this parcel | AB2 5 ha | 0 ha, fail `PARCEL_EXCLUSIVE` | **10 ha, pass** |
+| ST-12 | RP32–AB2 `BASEPA` | RP32, other parcel only | AB2 5 ha | 10 ha, pass | same |
+| ST-13 | B→A `BASECO` only | B 4 ha | A 10 ha | 10 ha, pass (direction ignored) | same |
+| ST-14 | A→B `BASECO`, B→A `BASEPA` | B 4 ha | A 5 ha | 0 ha, fail `PARCEL_EXCLUSIVE`, warning logged | **10 ha, pass** |
 
 | Area | Cases |
 | --- | --- |
@@ -268,6 +285,7 @@ Properties worth generating:
 
 Tracked in LGA-008. Until answered, the behaviour above is the default.
 
-- Does `BASEPA` really mean "can't be on the same parcel", or is it a general marker? The RPA describes it as the latter and as little used. Confirm before step 2.
+Settled: `BASEPA` means the two actions may not be on the same parcel (parcel-exclusive).
+
 - Should `BASEPA` beat `BASECO` for a pair that has both?
 - Is step 3 needed at all?
