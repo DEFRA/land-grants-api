@@ -4,6 +4,7 @@ import { actionsByCompetingUnit } from '~/src/features/common/helpers/action-uni
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { getBoundaryLengthMeters } from '~/src/features/parcel/boundary-length.js'
+import { getSidednessForActions } from '~/src/features/parcel/boundary-sidedness.js'
 import { EXISTING_ACTIONS_DO_NOT_FIT } from '~/src/features/parcel/constants/unavailable-reasons.js'
 import { buildActionWithAvailability } from './action-availability.js'
 import {
@@ -50,6 +51,14 @@ async function getActionsWithAvailability(
     length: lengthActionsTransformer(length)
   }
 
+  const sidednessByActionCode = await getSidednessForActions(
+    boundaryLengthMeters,
+    displayedActions,
+    competingActions.length,
+    postgresDb,
+    logger
+  )
+
   // The parcel's land covers and intersections are the same for every action
   const parcelDataCache = new Map()
 
@@ -63,6 +72,7 @@ async function getActionsWithAvailability(
           showActionResults,
           compatibilityCheckFn,
           boundaryLengthMeters,
+          sidednessByActionCode,
           parcel,
           postgresDb,
           logger,
@@ -89,6 +99,12 @@ async function getActionsWithAvailability(
     })
   )
 
+  logActionsThatDoNotFit(actionsWithAvailability, parcel, logger)
+
+  return actionsWithAvailability
+}
+
+function logActionsThatDoNotFit(actionsWithAvailability, parcel, logger) {
   const actionsThatDoNotFit = actionsWithAvailability.filter(
     (actionWithAvailability) =>
       actionWithAvailability.unavailableReason?.code ===
@@ -106,8 +122,6 @@ async function getActionsWithAvailability(
       }
     })
   }
-
-  return actionsWithAvailability
 }
 
 async function runRules(
