@@ -30,8 +30,8 @@ describe('Get Agreements For Parcel Query', () => {
   }, 10000)
 
   test('should return 1 action when parcel is present', async () => {
-    const sheetId = 'SE0034'
-    const parcelId = '3133'
+    const sheetId = 'SE0001'
+    const parcelId = '1000'
 
     const actions = await getAgreementsForParcels(
       [[parcelId, sheetId]],
@@ -40,20 +40,20 @@ describe('Get Agreements For Parcel Query', () => {
     )
 
     expect(actions).toStrictEqual({
-      '3133-SE0034': [
+      '1000-SE0001': [
         {
           actionCode: 'MOR1',
-          quantity: 484547,
+          quantity: 20002,
           unit: 'sqm',
-          startDate: new Date('2024-07-01T00:00:00.000Z'),
-          endDate: new Date('2027-06-30T00:00:00.000Z')
+          startDate: new Date('2020-01-01T00:00:00.000Z'),
+          endDate: new Date('2021-01-01T00:00:00.000Z')
         },
         {
           actionCode: 'UP3',
-          quantity: 484547,
+          quantity: 20001,
           unit: 'sqm',
-          startDate: new Date('2019-01-01T00:00:00.000Z'),
-          endDate: new Date('2028-12-31T00:00:00.000Z')
+          startDate: new Date('2022-01-01T00:00:00.000Z'),
+          endDate: new Date('2023-01-01T00:00:00.000Z')
         }
       ]
     })
@@ -63,45 +63,45 @@ describe('Get Agreements For Parcel Query', () => {
 
   test('should return actions for multiple parcels', async () => {
     const parcels = [
-      ['3133', 'SE0034'],
-      ['3027', 'NT9116'],
-      ['4688', 'NT9116']
+      ['1000', 'SE0001'],
+      ['1001', 'NT0001'],
+      ['1002', 'NT0001']
     ]
 
     const actions = await getAgreementsForParcels(parcels, connection, logger)
 
     expect(actions).toStrictEqual({
-      '3133-SE0034': [
+      '1000-SE0001': [
         {
           actionCode: 'MOR1',
-          quantity: 484547,
+          quantity: 20002,
           unit: 'sqm',
-          startDate: new Date('2024-07-01T00:00:00.000Z'),
-          endDate: new Date('2027-06-30T00:00:00.000Z')
+          startDate: new Date('2020-01-01T00:00:00.000Z'),
+          endDate: new Date('2021-01-01T00:00:00.000Z')
         },
         {
           actionCode: 'UP3',
-          quantity: 484547,
+          quantity: 20001,
           unit: 'sqm',
-          startDate: new Date('2019-01-01T00:00:00.000Z'),
-          endDate: new Date('2028-12-31T00:00:00.000Z')
+          startDate: new Date('2022-01-01T00:00:00.000Z'),
+          endDate: new Date('2023-01-01T00:00:00.000Z')
         }
       ],
-      '3027-NT9116': [
+      '1001-NT0001': [
         {
           actionCode: 'MOR1',
-          endDate: new Date('2027-04-30T00:00:00.000Z'),
-          quantity: 245930,
-          startDate: new Date('2024-05-01T00:00:00.000Z'),
+          endDate: new Date('2022-01-01T00:00:00.000Z'),
+          quantity: 10002,
+          startDate: new Date('2021-01-01T00:00:00.000Z'),
           unit: 'sqm'
         }
       ],
-      '4688-NT9116': [
+      '1002-NT0001': [
         {
           actionCode: 'MOR1',
-          endDate: new Date('2027-04-30T00:00:00.000Z'),
-          quantity: 371,
-          startDate: new Date('2024-05-01T00:00:00.000Z'),
+          endDate: new Date('2022-01-01T00:00:00.000Z'),
+          quantity: 10001,
+          startDate: new Date('2021-01-01T00:00:00.000Z'),
           unit: 'sqm'
         }
       ]
