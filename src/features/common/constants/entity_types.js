@@ -13,7 +13,6 @@ export const ENTITY_TYPES = [
     pairedWith: 'land_parcels'
   },
   { name: 'compatibility_matrix', truncateTable: true },
-  { name: 'agreements', truncateTable: true },
   { name: 'sssi', truncateTable: false },
   { name: 'registered_battlefields', truncateTable: false },
   { name: 'shine', truncateTable: false },
