@@ -36,3 +36,4 @@ jobs:
           dockerfile: ./Dockerfile.seeded
           context: .
           version: latest
+          push: false
