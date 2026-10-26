@@ -56,10 +56,8 @@ async function getActionsWithAvailability(
   // Each action's availability is worked out independently, so run them together
   const actionsWithAvailability = await Promise.all(
     displayedActions.map(async (displayedAction) => {
-      const actionWithAvailability = await buildActionWithAvailability(
-        displayedAction,
-        competingActions,
-        {
+      const { actionWithAvailability, availableLength } =
+        await buildActionWithAvailability(displayedAction, competingActions, {
           showActionResults,
           compatibilityCheckFn,
           boundaryLengthMeters,
@@ -67,8 +65,7 @@ async function getActionsWithAvailability(
           postgresDb,
           logger,
           parcelDataCache
-        }
-      )
+        })
 
       if (actionWithAvailability.isAvailable) {
         await runRules(
@@ -78,7 +75,8 @@ async function getActionsWithAvailability(
             displayedActions,
             compatibilityCheckFn,
             parcel,
-            actionWithAvailability
+            actionWithAvailability,
+            availableLength
           },
           postgresDb,
           logger
@@ -117,7 +115,8 @@ async function runRules(
     displayedActions,
     compatibilityCheckFn,
     parcel,
-    actionWithAvailability
+    actionWithAvailability,
+    availableLength
   },
   postgresDb,
   logger
@@ -127,7 +126,8 @@ async function runRules(
     compatibilityCheckFn,
     parcel,
     postgresDb,
-    logger
+    logger,
+    availableLength
   })
   if (!rulesResult.passed) {
     const unavailableReason = ruleFailedReason(rulesResult)

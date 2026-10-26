@@ -2,14 +2,11 @@ import {
   EXISTING_ACTIONS_DO_NOT_FIT,
   EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
   EXISTING_ACTIONS_DO_NOT_FIT_REASON,
-  INSUFFICIENT_LENGTH_REMAINING,
-  PARCEL_TOO_SHORT_FOR_ACTION,
   RULE_FAILED
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
 import {
   areaUnavailableReason,
   exceedsBoundaryReason,
-  minimumLengthReason,
   ruleFailedReason
 } from './unavailability.js'
 
@@ -84,63 +81,6 @@ describe('exceedsBoundaryReason', () => {
 
   test('should return no existing actions when there are none', () => {
     expect(exceedsBoundaryReason([]).metadata.existingActions).toEqual([])
-  })
-})
-
-describe('minimumLengthReason', () => {
-  const incompatibleActions = [
-    { actionCode: 'BND1', billedLengthMeters: 60, lengthMeters: 65 }
-  ]
-
-  test('should report the parcel too short when the boundary is under the minimum', () => {
-    const result = minimumLengthReason(
-      { boundaryLengthMeters: 15, incompatibleActions },
-      { reason: 'Boundary is too short', minimumLengthMeters: 20 }
-    )
-
-    expect(result).toEqual({
-      code: PARCEL_TOO_SHORT_FOR_ACTION,
-      reason: 'Boundary is too short',
-      metadata: { boundaryLengthMeters: 15, minimumLengthMeters: 20 }
-    })
-  })
-
-  test('should report insufficient length remaining when the boundary meets the minimum', () => {
-    const result = minimumLengthReason(
-      { boundaryLengthMeters: 70, incompatibleActions },
-      { reason: 'Not enough length left', minimumLengthMeters: 20 }
-    )
-
-    expect(result).toEqual({
-      code: INSUFFICIENT_LENGTH_REMAINING,
-      reason: 'Not enough length left',
-      metadata: {
-        existingActions: [{ actionCode: 'BND1', billedLengthMeters: 60 }],
-        minimumLengthMeters: 20
-      }
-    })
-  })
-
-  test('should treat a boundary exactly at the minimum as long enough', () => {
-    const result = minimumLengthReason(
-      { boundaryLengthMeters: 20, incompatibleActions },
-      { reason: 'Not enough length left', minimumLengthMeters: 20 }
-    )
-
-    expect(result.code).toBe(INSUFFICIENT_LENGTH_REMAINING)
-  })
-
-  test('should report insufficient length remaining when the rule gives no minimum', () => {
-    const result = minimumLengthReason(
-      { boundaryLengthMeters: 5, incompatibleActions: [] },
-      { reason: 'Not enough length left' }
-    )
-
-    expect(result).toEqual({
-      code: INSUFFICIENT_LENGTH_REMAINING,
-      reason: 'Not enough length left',
-      metadata: { existingActions: [], minimumLengthMeters: undefined }
-    })
   })
 })
 

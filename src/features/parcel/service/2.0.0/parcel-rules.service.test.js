@@ -9,7 +9,8 @@ vi.mock('~/src/features/rules-engine/rules/index.js', () => ({
   rules: {
     'needs-quantity-1.0.0': { requires: [{ type: 'APPLIED_FOR_QUANTITY' }] },
     'needs-size-1.0.0': { requires: [{ type: 'PARCEL_SIZE' }] },
-    'needs-nothing-1.0.0': {}
+    'needs-nothing-1.0.0': {},
+    'needs-length-1.0.0': { requires: [{ type: 'AVAILABLE_LENGTH' }] }
   }
 }))
 vi.mock('~/src/features/rules-engine/rulesEngine.js')
@@ -155,5 +156,45 @@ describe('runParcelRules', () => {
     )
 
     expect(executeRules).toHaveBeenCalledWith(rules, expect.any(Object), [])
+  })
+
+  describe('for a linear action', () => {
+    const lengthRule = { name: 'needs-length' }
+    const linearAction = {
+      code: 'BND1',
+      applicationUnitOfMeasurement: 'm',
+      rules: [lengthRule, plainRule]
+    }
+
+    const availableLength = {
+      availableLength: 12,
+      boundaryLengthMeters: 1800,
+      incompatibleLengthMeters: 1788,
+      incompatibleActions: [],
+      exceedsBoundary: false
+    }
+
+    test('should hand the rules the available length it was given', async () => {
+      await runParcelRules(linearAction, existingActions, {
+        ...context,
+        availableLength
+      })
+
+      const [parcelRules, , requirementContext] =
+        resolveApplicationData.mock.calls[0]
+
+      expect(parcelRules).toEqual([lengthRule, plainRule])
+      expect(requirementContext.availableLength).toBe(availableLength)
+    })
+
+    test('should not run rules needing the available length when it was not worked out', async () => {
+      await runParcelRules(linearAction, existingActions, context)
+
+      const [parcelRules, , requirementContext] =
+        resolveApplicationData.mock.calls[0]
+
+      expect(parcelRules).toEqual([plainRule])
+      expect(requirementContext.availableLength).toBeUndefined()
+    })
   })
 })

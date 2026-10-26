@@ -12,7 +12,9 @@ Checks run in this order, and the order matters:
 2. Configured minimum is greater than the available length
 3. Applied for length is below the configured minimum
 
-The second check runs before the third so that an applicant on a parcel with no room left is told the action does not fit, rather than being told to enter more length than the parcel holds. The `/parcels` endpoint also relies on it: it runs this rule as if applying for the whole available length, and reports the second check's wording as the reason the action is unavailable.
+The second check runs before the third so that an applicant on a parcel with no room left is told the action does not fit, rather than being told to enter more length than the parcel holds.
+
+The applied-for quantity is optional. The `/parcels` endpoint runs this rule before anything is applied for, with the available length it has already calculated, so only the first two checks apply there. A failure makes the action unavailable with the `rule-failed` code and the second check's wording as the reason. An action with no length left at all is reported as `no-availability` before its rules run.
 
 ## Why the available length can be zero
 

@@ -8,13 +8,8 @@ import { calculateAvailableLength } from '~/src/features/available-length/availa
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
-  executeMinimumLengthRule,
-  findMinimumLengthRule
-} from './minimum-length-rule.js'
-import {
   areaUnavailableReason,
-  exceedsBoundaryReason,
-  minimumLengthReason
+  exceedsBoundaryReason
 } from './unavailability.js'
 
 /**
@@ -23,7 +18,15 @@ import {
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {ActionWithArea, AvailableAreaDataRequirements, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
- * @import {ActionWithLength} from '~/src/features/available-length/available-length.d.js'
+ * @import {ActionWithLength, AvailableLength} from '~/src/features/available-length/available-length.d.js'
+ */
+
+/**
+ * An action's response entry, and the available length it was worked out from
+ * when it is linear, for the action's rules to check without recalculating.
+ * @typedef {object} ActionWithAvailability
+ * @property {object} actionWithAvailability - The transformed action
+ * @property {AvailableLength} [availableLength] - The boundary still claimable
  */
 
 /**
@@ -36,7 +39,7 @@ import {
  * @param {object} context
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
- * @returns {object} The transformed action
+ * @returns {ActionWithAvailability} The transformed action
  */
 function buildActionWithAvailableArea(
   action,
@@ -67,21 +70,27 @@ function buildActionWithAvailableArea(
     })
   }
 
-  return actionTransformer(action, areaCalculation, showActionResults)
+  return {
+    actionWithAvailability: actionTransformer(
+      action,
+      areaCalculation,
+      showActionResults
+    )
+  }
 }
 
 /**
  * Compute a linear action's entry, deducting the boundary already committed to
- * incompatible actions. Actions that exceed the boundary outrank the action's
- * minimum-length rule: when the records cannot be right, that is what needs
- * resolving first.
+ * incompatible actions. Actions that exceed the boundary make it unavailable
+ * before its rules run: when the records cannot be right, that is what needs
+ * resolving first. Its minimum length is the minimum-length rule's to check.
  * @param {Action} action - The action to compute
  * @param {ActionWithLength[]} lengthActions - The existing/planned actions competing for the boundary
  * @param {number} boundaryLengthMeters - The parcel's perimeter
  * @param {object} context
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
- * @returns {object} The transformed action
+ * @returns {ActionWithAvailability} The transformed action and its available length
  */
 function buildActionWithAvailableLength(
   action,
@@ -106,32 +115,24 @@ function buildActionWithAvailableLength(
       )
     }
 
-    return actionTransformer(action, lengthCalculation, showActionResults)
-  }
-
-  const minimumLengthRule = findMinimumLengthRule(action)
-
-  if (minimumLengthRule) {
-    const minimumLengthRuleResult = executeMinimumLengthRule(
-      minimumLengthRule,
-      action.code,
+    return {
+      actionWithAvailability: actionTransformer(
+        action,
+        lengthCalculation,
+        showActionResults
+      ),
       availableLength
-    )
-
-    if (!minimumLengthRuleResult.passed) {
-      const lengthCalculation = {
-        ...availableLength,
-        unavailableReason: minimumLengthReason(
-          availableLength,
-          minimumLengthRuleResult
-        )
-      }
-
-      return actionTransformer(action, lengthCalculation, showActionResults)
     }
   }
 
-  return actionTransformer(action, availableLength, showActionResults)
+  return {
+    actionWithAvailability: actionTransformer(
+      action,
+      availableLength,
+      showActionResults
+    ),
+    availableLength
+  }
 }
 
 /**
@@ -147,7 +148,7 @@ function buildActionWithAvailableLength(
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
  * @param {Map<string, Promise<unknown>>} [context.parcelDataCache] - Parcel data shared across the request's actions
- * @returns {Promise<object>} The transformed action
+ * @returns {Promise<ActionWithAvailability>} The transformed action, and its available length when linear
  */
 export async function buildActionWithAvailability(
   action,
@@ -195,5 +196,11 @@ export async function buildActionWithAvailability(
   }
 
   // No ceiling to report: a count action, or a perimeter that could not be read
-  return actionTransformer(action, undefined, showActionResults)
+  return {
+    actionWithAvailability: actionTransformer(
+      action,
+      undefined,
+      showActionResults
+    )
+  }
 }

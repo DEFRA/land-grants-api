@@ -164,9 +164,15 @@ export const requirementProviders = {
         compatibilityCheckFn,
         landAction,
         db,
-        logger
+        logger,
+        availableLength
       }
     ) => {
+      // Already worked out by the caller, as /parcels does, so not fetched again
+      if (availableLength) {
+        return availableLength
+      }
+
       return getAvailableLength(
         action,
         actions,

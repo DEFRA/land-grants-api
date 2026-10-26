@@ -323,6 +323,15 @@ describe('requirementProviders', () => {
       expect(provider.dedupeKey({})).toBe('availableLength')
     })
 
+    it('uses the available length the caller already worked out, without fetching it', async () => {
+      const availableLength = { availableLength: 12 }
+
+      const value = await provider.fetch({}, { ...ctx, availableLength })
+
+      expect(value).toBe(availableLength)
+      expect(getAvailableLength).not.toHaveBeenCalled()
+    })
+
     it('works out the available length from the whole context', async () => {
       const availableLength = { availableLength: 800 }
       getAvailableLength.mockResolvedValue(availableLength)

@@ -9,6 +9,8 @@ import {
 /**
  * Run an action's rules that don't depend on an applied-for quantity. /parcels
  * is asked before anything has been applied for, so those rules can't run yet.
+ * Rules needing the available length run only when it was calculated: without
+ * it, as for a perimeter that could not be read, there is nothing to check.
  * @param {Action} action - The action whose rules to run
  * @param {AgreementAction[]} actions - The existing/planned actions on the parcel
  * @param {object} context
@@ -17,16 +19,30 @@ import {
  * @param {LandParcelDb} context.parcel - The parcel
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
+ * @param {AvailableLength} [context.availableLength] - The boundary still claimable, for a linear action
  * @returns {Promise<RulesResult>} The rule results
  */
 export async function runParcelRules(action, actions, context) {
-  const { enabledActions, compatibilityCheckFn, parcel, postgresDb, logger } =
-    context
+  const {
+    enabledActions,
+    compatibilityCheckFn,
+    parcel,
+    postgresDb,
+    logger,
+    availableLength
+  } = context
 
-  const parcelRules = excludeRulesRequiring(
+  const quantityFreeRules = excludeRulesRequiring(
     action.rules,
     REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
   )
+
+  const parcelRules = availableLength
+    ? quantityFreeRules
+    : excludeRulesRequiring(
+        quantityFreeRules,
+        REQUIRED_RULE_DATA.AVAILABLE_LENGTH
+      )
 
   /** @type {Partial<RuleEngineApplication>} */
   const baseApplication = {
@@ -53,7 +69,8 @@ export async function runParcelRules(action, actions, context) {
         actions: []
       },
       db: postgresDb,
-      logger
+      logger,
+      availableLength
     }
   )
 
@@ -78,4 +95,5 @@ export async function runParcelRules(action, actions, context) {
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {RuleEngineApplication, LandParcel} from '~/src/features/rules-engine/rules.d.js'
  * @import {CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
+ * @import {AvailableLength} from '~/src/features/available-length/available-length.d.js'
  */
