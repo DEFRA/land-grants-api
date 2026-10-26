@@ -29,12 +29,5 @@
  */
 
 /**
- * @typedef {object} MinimumLengthRuleResult
- * @property {boolean} passed - Whether the rule accepts everything that is left
- * @property {string} [reason] - The rule's own wording when it does not
- * @property {number} [minimumLengthMeters] - The rule's configured minimum, when it has one
- */
-
-/**
  * @import { Action } from '~/src/features/actions/action.d.js'
  */

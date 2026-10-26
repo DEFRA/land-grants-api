@@ -93,18 +93,22 @@ consumers may key their own copy off it rather than show the reason text.
 }
 ```
 
-| Code                            | Raised when                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `existing-actions-do-not-fit`   | The parcel's recorded actions cannot all be accommodated - they cannot be arranged on its land covers, or overrun its boundary |
-| `parcel-too-short-for-action`   | The parcel's whole perimeter is below the action's configured minimum length                                                   |
-| `insufficient-length-remaining` | The recorded actions fit, but leave less boundary than the action's configured minimum length                                  |
+| Code                          | Raised when                                                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `existing-actions-do-not-fit` | The parcel's recorded actions cannot all be accommodated - they cannot be arranged on its land covers, or overrun its boundary |
+| `no-availability`             | The calculated availability is `0` - nothing is left for the action                                                            |
+| `rule-failed`                 | One of the action's rules that needs no applied-for quantity failed, such as a linear action's `minimum-length`                |
 
 Only `existing-actions-do-not-fit` points to a problem with the parcel's records;
-the other two are the action simply not fitting what is there.
+the others are the action simply not fitting what is there.
 
-An unavailable action reports an `availability.value` of `0`, whatever its unit.
-There is no quantity a consumer could submit that validation would accept, so
-there is no ceiling to offer; the real figure is in `unavailableReason.metadata`.
+`availability.value` reports the calculated figure even when the action is
+unavailable for another reason, such as a failed rule.
+
+`parcel-too-short-for-action` and `insufficient-length-remaining` are no longer
+returned. A linear action whose available length is below its minimum is now
+reported by its `minimum-length` rule, as `rule-failed`, with the rule's own
+reason text; one with no length left at all is reported as `no-availability`.
 
 The `metadata` attribute is diagnostic only - no consumer behaviour should
 depend on a field being present, so fields may be added or removed without
