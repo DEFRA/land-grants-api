@@ -1,6 +1,5 @@
 -- Upsert so a code in the eligibility file creates its actions row even before (or
--- without) an action config. enabled/display stay NULL until a config sets them.
-INSERT INTO actions (code, sssi_eligible, hf_eligible, sidedness, ingest_id, last_updated)
+INSERT INTO actions (code, sssi_eligible, hf_eligible, sidedness, updated_by, last_updated)
 SELECT
     tmp.action_code,
     tmp.sssi_eligible,
@@ -14,5 +13,5 @@ SET
     sssi_eligible = EXCLUDED.sssi_eligible,
     hf_eligible = EXCLUDED.hf_eligible,
     sidedness = EXCLUDED.sidedness,
-    ingest_id = EXCLUDED.ingest_id,
+    updated_by = EXCLUDED.updated_by,
     last_updated = EXCLUDED.last_updated;

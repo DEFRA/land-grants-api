@@ -66,27 +66,7 @@ describe('insertActionConfig', () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     expect(actionsUpdate()[0]).toContain('WHERE code = $1')
-    expect(actionsUpdate()[1]).toEqual([
-      'PA3',
-      true,
-      true,
-      'Woodland management plan'
-    ])
-  })
-
-  test('passes enabled and display from params, not hardcoded TRUE', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      enabled: false,
-      display: false
-    })
-
-    expect(actionsUpdate()[1]).toEqual([
-      'PA3',
-      false,
-      false,
-      'Woodland management plan'
-    ])
+    expect(actionsUpdate()[1]).toEqual(['PA3', 'Woodland management plan'])
   })
 
   test('uses COALESCE so null description does not overwrite existing', async () => {
@@ -95,8 +75,8 @@ describe('insertActionConfig', () => {
       description: null
     })
 
-    expect(actionsUpdate()[0]).toContain('COALESCE($4, description)')
-    expect(actionsUpdate()[1]).toEqual(['PA3', true, true, null])
+    expect(actionsUpdate()[0]).toContain('COALESCE($2, description)')
+    expect(actionsUpdate()[1]).toEqual(['PA3', null])
   })
 
   test('does not update sssi_eligible or hf_eligible', async () => {

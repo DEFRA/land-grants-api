@@ -131,24 +131,36 @@ describe('transformActionConfig', () => {
     expect(result.config.display_unit_plural).toBeNull()
   })
 
-  test('extracts enabled from input', () => {
-    const result = transformActionConfig(pa3Json)
-    expect(result.enabled).toBe(true)
+  test('sets config.enabled', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      enabled: false
+    })
+    expect(result.config.enabled).toBe(false)
   })
 
-  test('extracts display from input, including false', () => {
-    const result = transformActionConfig(pa3Json)
-    expect(result.display).toBe(false)
+  test('sets config.display', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      display: false
+    })
+    expect(result.config.display).toBe(false)
   })
 
-  test('defaults enabled to true when absent', () => {
-    const result = transformActionConfig({ ...pa3Json, enabled: undefined })
-    expect(result.enabled).toBe(true)
+  test('defaults config.enabled to true when absent', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      enabled: undefined
+    })
+    expect(result.config.enabled).toBe(true)
   })
 
-  test('defaults display to true when absent', () => {
-    const result = transformActionConfig({ ...pa3Json, display: undefined })
-    expect(result.display).toBe(true)
+  test('defaults config.display to true when absent', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      display: undefined
+    })
+    expect(result.config.display).toBe(true)
   })
 
   test('maps camelCase fields to snake_case config JSONB keys', () => {
@@ -164,7 +176,9 @@ describe('transformActionConfig', () => {
       guidance_url: null,
       availability: null,
       display_unit: 'blueberry',
-      display_unit_plural: 'blueberries'
+      display_unit_plural: 'blueberries',
+      enabled: true,
+      display: false
     })
   })
 
@@ -358,7 +372,6 @@ describe('transformActionConfig', () => {
     expect(result.config).not.toHaveProperty('code')
     expect(result.config).not.toHaveProperty('semanticVersion')
     expect(result.config).not.toHaveProperty('displayOrder')
-    expect(result.config).not.toHaveProperty('enabled')
     expect(result.config).not.toHaveProperty('description')
   })
 })

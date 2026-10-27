@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="migrate-action-data-to-action-config" author="system">
+    <comment>
+        Move enabled and display values from action to the current active actions_config record
+    </comment>
+    <sql>
+      UPDATE actions_config ac
+      SET config = config || jsonb_build_object('enabled', a.enabled, 'display', a.display)
+      FROM actions a
+      WHERE ac.code = a.code AND ac.is_active;
+    </sql>
+  </changeSet>
+
+  <changeSet id="update-actions-table-columns" author="system">
+    <comment>
+      Move enabled and display to actions_config table, rename ingest_id to reflect usage
+    </comment>
+    <sql>
+      ALTER TABLE actions DROP COLUMN enabled;
+      ALTER TABLE actions DROP COLUMN display;
+      ALTER TABLE actions RENAME COLUMN ingest_id TO updated_by;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

@@ -58,7 +58,7 @@ describe('getActionEligibility', () => {
             code,
             sssi_eligible,
             hf_eligible,
-            ingest_id,
+            updated_by,
             last_updated
           FROM actions
         `

@@ -1,5 +1,5 @@
-import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { actionConfigTransformer } from '~/src/features/actions/transformers/1.0.0/actionConfig.transformer.js'
+import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
  * Get enabled action configs
@@ -16,11 +16,9 @@ async function getEnabledActions(logger, db) {
       SELECT
         a.id,
         a.code,
-        a.enabled,
-        a.display,
         a.sssi_eligible,
         a.hf_eligible,
-        a.ingest_id,
+        a.updated_by,
         ac.description,
         ac.version,
         ac.config->>'start_date' as start_date,
@@ -32,10 +30,12 @@ async function getEnabledActions(logger, db) {
         ac.config->>'guidance_url' as guidance_url,
         ac.config->'availability' as availability,
         ac.last_updated_at as last_updated,
-        ac.semantic_version as semantic_version
+        ac.semantic_version as semantic_version,
+        ac.config->'display' as display,
+        ac.config->'enabled' as enabled
       FROM actions a
       JOIN actions_config ac ON a.code = ac.code
-      WHERE a.enabled = TRUE AND ac.is_active = TRUE
+      WHERE COALESCE((ac.config->'enabled')::BOOLEAN, TRUE) AND ac.is_active
     `
     const result = await client.query(query)
 

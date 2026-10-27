@@ -167,13 +167,13 @@ case "${1:-}" in
     echo "=== actions_config (${ACTION_CODES[*]}) ==="
     docker exec land-grants-api-land-grants-backend-postgres-1 psql \
       -U land_grants_api -d land_grants_api \
-      -c "SELECT code, semantic_version, version, is_active, description FROM actions_config WHERE code IN ($CODES_LIST) ORDER BY code, id;"
+      -c "SELECT * FROM actions_config WHERE code IN ($CODES_LIST) ORDER BY code, id;"
 
     echo ""
     echo "=== actions (${ACTION_CODES[*]}) ==="
     docker exec land-grants-api-land-grants-backend-postgres-1 psql \
       -U land_grants_api -d land_grants_api \
-      -c "SELECT code, enabled, display, sssi_eligible, hf_eligible, sidedness, ingest_id, last_updated FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
+      -c "SELECT * FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
 
     exit 0
     ;;

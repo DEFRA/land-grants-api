@@ -17,11 +17,17 @@ describe('Get Action Configs By Version Query', () => {
   })
 
   const expectedActions = {
-    SAM1: '1.0.0',
+    UPL5: '1.0.0',
+    UPL4: '1.0.0',
     CSAM1: '1.0.1',
-    SPM4: '1.0.0',
+    UPL9: '1.0.0',
     OFM3: '1.0.0',
     PA3: '1.1.0',
+    SAM1: '1.0.0',
+    SPM4: '1.0.0',
+    SPM5: '1.0.0',
+    UPL7: '1.0.0',
+    UPL6: '1.0.0',
     CMOR1: '2.0.0',
     UPL1: '3.1.0',
     UPL2: '3.1.0',

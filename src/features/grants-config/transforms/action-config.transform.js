@@ -4,7 +4,7 @@ import { actionConfigInputSchema } from '../schema/action-config.schema.js'
  * Transform an action config JSON (camelCase from land-grants-config repo)
  * into the shape stored in the actions_config DB table.
  * @param {object} actionJson - Raw action JSON from S3
- * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null, enabled: boolean, display: boolean, config: object }}
+ * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null, config: object }}
  */
 export function transformActionConfig(actionJson) {
   const { error } = actionConfigInputSchema.validate(actionJson)
@@ -33,9 +33,7 @@ function buildDefaults(actionJson) {
   return {
     displayOrder: actionJson.displayOrder ?? 0,
     description: actionJson.description ?? null,
-    groupId: actionJson.groupId ?? null,
-    enabled: actionJson.enabled ?? true,
-    display: actionJson.display ?? true
+    groupId: actionJson.groupId ?? null
   }
 }
 
@@ -51,7 +49,9 @@ function buildConfig(actionJson) {
     guidance_url: actionJson.guidanceUrl ?? null,
     availability: actionJson.availability ?? null,
     display_unit: actionJson.displayUnit ?? null,
-    display_unit_plural: actionJson.displayUnitPlural ?? null
+    display_unit_plural: actionJson.displayUnitPlural ?? null,
+    enabled: actionJson.enabled ?? true,
+    display: actionJson.display ?? true
   }
 }
 

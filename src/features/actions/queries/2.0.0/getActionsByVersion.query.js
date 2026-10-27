@@ -12,11 +12,9 @@ const getActionsByVersionSql = `
         SELECT DISTINCT ON (a.code)
           a.id,
           a.code,
-          a.enabled,
-          a.display,
           a.sssi_eligible,
           a.hf_eligible,
-          a.ingest_id,
+          a.updated_by,
           ac.description,
           ac.version,
           ac.major_version,
@@ -34,13 +32,15 @@ const getActionsByVersionSql = `
           ac.semantic_version AS semantic_version,
           ac.group_id AS group_id,
           ag.name AS group_name,
-          ac.display_order AS display_order
+          ac.display_order AS display_order,
+          COALESCE((ac.config->>'display')::BOOLEAN, FALSE) as display,
+          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT JOIN requested r ON r.code = a.code
         LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
-        WHERE a.enabled = true
-        AND (
+        WHERE
+        (
           r.code IS NULL
           OR r.version IS NULL
           OR (
