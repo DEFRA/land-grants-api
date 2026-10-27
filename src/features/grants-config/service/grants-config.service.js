@@ -27,8 +27,6 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     displayOrder,
     description,
     groupId,
-    enabled,
-    display,
     config
   } = transformActionConfig(json)
 
@@ -64,9 +62,7 @@ async function processActionConfigFile(logger, s3Client, db, s3Key, bucket) {
     patch,
     displayOrder,
     description,
-    groupId,
-    enabled,
-    display
+    groupId
   })
 
   if (!inserted) {

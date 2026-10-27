@@ -4,18 +4,16 @@ import { logDatabaseError } from '~/src/features/common/helpers/logging/log-help
  * Update the core actions row. Only the actions eligibility CSV creates actions
  * rows, so a config for a code it has not created fails rather than inserting one.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
- * @param {{ code: string, enabled: boolean, display: boolean, description: string|null }} params
+ * @param {{ code: string, description: string|null }} params
  * @returns {Promise<void>}
  */
-async function updateAction(client, { code, enabled, display, description }) {
+async function updateAction(client, { code, description }) {
   const result = await client.query(
     `UPDATE actions SET
-       description = COALESCE($4, description),
-       enabled = $2,
-       display = $3,
+       description = COALESCE($2, description),
        last_updated = NOW()
      WHERE code = $1`,
-    [code, enabled, display, description]
+    [code, description]
   )
 
   if (result.rowCount === 0) {
@@ -88,7 +86,7 @@ async function insertConfigVersion(
  * new semantic version is strictly higher, then inserts the new row.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
- * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null, enabled: boolean, display: boolean }} params
+ * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null }} params
  * @returns {Promise<boolean>} true on success
  */
 async function insertActionConfig(logger, db, params) {

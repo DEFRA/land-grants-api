@@ -29,7 +29,8 @@ describe('getActionsByVersion', () => {
           semantic_version: '2.0.0',
           group_id: 1,
           group_name: 'Upland',
-          display_order: 1
+          display_order: 1,
+          updated_by: 'land-grants/0.28.0/actions/actions_eligibility.csv'
         },
         {
           code: 'CMOR1',
@@ -50,7 +51,8 @@ describe('getActionsByVersion', () => {
           semantic_version: '3.1.0',
           group_id: 2,
           group_name: 'Moorland',
-          display_order: 2
+          display_order: 2,
+          updated_by: 'land-grants/0.28.0/actions/actions_eligibility.csv'
         }
       ]
     }
@@ -75,7 +77,8 @@ describe('getActionsByVersion', () => {
         semanticVersion: '2.0.0',
         groupId: 1,
         groupName: 'Upland',
-        displayOrder: 1
+        displayOrder: 1,
+        updatedBy: 'land-grants/0.28.0/actions/actions_eligibility.csv'
       },
       {
         code: 'CMOR1',
@@ -96,7 +99,8 @@ describe('getActionsByVersion', () => {
         semanticVersion: '3.1.0',
         groupId: 2,
         groupName: 'Moorland',
-        displayOrder: 2
+        displayOrder: 2,
+        updatedBy: 'land-grants/0.28.0/actions/actions_eligibility.csv'
       }
     ]
 
