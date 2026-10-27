@@ -48,7 +48,7 @@ describe('Case Management Application Validation Run Controller', () => {
         sbi: '123456789',
         crn: '123456789',
         data: {
-          sbi: 106284736,
+          sbi: 123456789,
           date: '2025-09-30T08:29:21.263Z',
           hasPassed: false,
           requester: 'grants-ui',
@@ -71,7 +71,7 @@ describe('Case Management Application Validation Run Controller', () => {
             ],
             agreementLevelActions: []
           },
-          applicantCrn: '1102838829',
+          applicantCrn: '1111111111',
           applicationId: 'app-validation-test1',
           parcelLevelResults: [
             {
