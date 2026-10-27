@@ -1,29 +1,6 @@
 import { logDatabaseError } from '~/src/features/common/helpers/logging/log-helpers.js'
 
 /**
- * Update the core actions row. Only the actions eligibility CSV creates actions
- * rows, so a config for a code it has not created fails rather than inserting one.
- * @param {import('~/src/features/common/postgres.d.js').DbClient} client
- * @param {{ code: string, description: string|null }} params
- * @returns {Promise<void>}
- */
-async function updateAction(client, { code, description }) {
-  const result = await client.query(
-    `UPDATE actions SET
-       description = COALESCE($2, description),
-       last_updated = NOW()
-     WHERE code = $1`,
-    [code, description]
-  )
-
-  if (result.rowCount === 0) {
-    throw new Error(
-      `No actions row for code=${code}: add it to the actions eligibility CSV`
-    )
-  }
-}
-
-/**
  * Deactivate the existing active config row only when the new semantic version is strictly higher.
  * @param {import('~/src/features/common/postgres.d.js').DbClient} client
  * @param {{ code: string, major: number, minor: number, patch: number }} params
@@ -84,6 +61,8 @@ async function insertConfigVersion(
  * Insert a new action config version into the DB.
  * Wraps in a transaction: deactivates the existing active row only when the
  * new semantic version is strictly higher, then inserts the new row.
+ * Only the actions eligibility CSV creates actions rows, so a config for a code
+ * it has not created fails on the actions_config.code foreign key.
  * @param {import('~/src/features/common/logger.d.js').Logger} logger
  * @param {import('~/src/features/common/postgres.d.js').Pool} db
  * @param {{ code: string, config: object, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null }} params
@@ -95,7 +74,6 @@ async function insertActionConfig(logger, db, params) {
     client = await db.connect()
     await client.query('BEGIN')
 
-    await updateAction(client, params)
     await deactivateSupersededConfig(client, params)
     await insertConfigVersion(client, params)
 

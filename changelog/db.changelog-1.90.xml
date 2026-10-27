@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="drop-description-from-actions" author="system">
+    <comment>
+      Drop actions.description, now redundant: the description is read from the
+      versioned actions_config rows (see add-description-to-actions-config)
+    </comment>
+    <sql>
+      ALTER TABLE actions DROP COLUMN description;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

@@ -37,66 +37,20 @@ describe('insertActionConfig', () => {
     }
   })
 
-  const actionsUpdate = () =>
-    mockClient.query.mock.calls.find(
-      (c) => typeof c[0] === 'string' && c[0].includes('UPDATE actions SET')
-    )
-
-  test('executes BEGIN, UPDATE actions, UPDATE actions_config, INSERT and COMMIT in order', async () => {
+  test('executes BEGIN, UPDATE actions_config, INSERT and COMMIT in order', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
 
     const calls = mockClient.query.mock.calls.map((c) =>
       typeof c[0] === 'string' ? c[0].trim() : c[0]
     )
     expect(calls[0]).toBe('BEGIN')
-    expect(calls[1]).toContain('UPDATE actions SET')
-    expect(calls[2]).toContain('UPDATE actions_config')
-    expect(calls[3]).toContain('INSERT INTO actions_config')
-    expect(calls[4]).toBe('COMMIT')
+    expect(calls[1]).toContain('UPDATE actions_config')
+    expect(calls[2]).toContain('INSERT INTO actions_config')
+    expect(calls[3]).toBe('COMMIT')
   })
 
-  test('never inserts an actions row', async () => {
+  test('carries guidanceUrl and availability inside config into actions_config', async () => {
     await insertActionConfig(mockLogger, mockDb, params)
-
-    const sql = mockClient.query.mock.calls.map((c) => c[0]).join('\n')
-    expect(sql).not.toMatch(/INSERT INTO actions\s*\(/)
-  })
-
-  test('updates enabled, display and description by code', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    expect(actionsUpdate()[0]).toContain('WHERE code = $1')
-    expect(actionsUpdate()[1]).toEqual(['PA3', 'Woodland management plan'])
-  })
-
-  test('uses COALESCE so null description does not overwrite existing', async () => {
-    await insertActionConfig(mockLogger, mockDb, {
-      ...params,
-      description: null
-    })
-
-    expect(actionsUpdate()[0]).toContain('COALESCE($2, description)')
-    expect(actionsUpdate()[1]).toEqual(['PA3', null])
-  })
-
-  test('does not update sssi_eligible or hf_eligible', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    expect(actionsUpdate()[0]).not.toContain('sssi_eligible')
-    expect(actionsUpdate()[0]).not.toContain('hf_eligible')
-  })
-
-  test('sets last_updated to NOW()', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    expect(actionsUpdate()[0]).toContain('last_updated = NOW()')
-  })
-
-  test('carries guidanceUrl and availability inside config into actions_config, not actions', async () => {
-    await insertActionConfig(mockLogger, mockDb, params)
-
-    expect(actionsUpdate()[0]).not.toContain('guidance_url')
-    expect(actionsUpdate()[0]).not.toContain('availability')
 
     const insertCall = mockClient.query.mock.calls.find(
       (c) =>
@@ -105,10 +59,15 @@ describe('insertActionConfig', () => {
     expect(insertCall[1][1]).toBe(JSON.stringify(params.config))
   })
 
-  test('rolls back without inserting a config version when the code has no actions row', async () => {
+  test('rolls back when the code has no actions row', async () => {
     mockClient.query
       .mockResolvedValueOnce({ rows: [] }) // BEGIN
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // UPDATE actions
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 }) // UPDATE actions_config
+      .mockRejectedValueOnce(
+        new Error(
+          'insert or update on table "actions_config" violates foreign key constraint "fk_actions_config_code"'
+        )
+      ) // INSERT actions_config
 
     const result = await insertActionConfig(mockLogger, mockDb, params)
 
@@ -116,9 +75,6 @@ describe('insertActionConfig', () => {
     expect(result).toBe(false)
     expect(calls).toContain('ROLLBACK')
     expect(calls).not.toContain('COMMIT')
-    expect(
-      calls.some((sql) => sql.includes('INSERT INTO actions_config'))
-    ).toBe(false)
     expect(mockLogger.error).toHaveBeenCalled()
   })
 
@@ -215,7 +171,6 @@ describe('insertActionConfig', () => {
   test('rolls back and returns false on INSERT error', async () => {
     mockClient.query
       .mockResolvedValueOnce({ rows: [] }) // BEGIN
-      .mockResolvedValueOnce({ rows: [], rowCount: 1 }) // UPDATE actions
       .mockResolvedValueOnce({ rows: [] }) // UPDATE
       .mockRejectedValueOnce(new Error('Insert failed'))
 
@@ -234,10 +189,10 @@ describe('insertActionConfig', () => {
     )
   })
 
-  test('rolls back and returns false when the actions update fails', async () => {
+  test('rolls back and returns false when the actions_config update fails', async () => {
     mockClient.query
       .mockResolvedValueOnce({ rows: [] }) // BEGIN
-      .mockRejectedValueOnce(new Error('FK violation'))
+      .mockRejectedValueOnce(new Error('Update failed'))
 
     const result = await insertActionConfig(mockLogger, mockDb, params)
 
@@ -251,7 +206,6 @@ describe('insertActionConfig', () => {
   test('releases the client after an error', async () => {
     mockClient.query
       .mockResolvedValueOnce({}) // BEGIN
-      .mockResolvedValueOnce({ rowCount: 1 }) // UPDATE actions
       .mockResolvedValueOnce({}) // UPDATE
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({}) // ROLLBACK

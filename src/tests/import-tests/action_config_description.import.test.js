@@ -93,29 +93,6 @@ describe('Action config description', () => {
     await connection.end()
   })
 
-  test('migration copies the action description into every config version for that code', async () => {
-    const mismatched = await getRecordsByQuery(
-      connection,
-      `SELECT ac.code, ac.semantic_version, ac.description, a.description AS action_description
-       FROM actions_config ac
-       JOIN actions a ON a.code = ac.code
-       WHERE a.description IS NOT NULL
-         AND ac.description IS DISTINCT FROM a.description
-         AND ac.code <> $1`,
-      [TEST_CODE]
-    )
-    const [{ count }] = await getRecordsByQuery(
-      connection,
-      `SELECT COUNT(*)::int AS count
-       FROM actions_config ac
-       JOIN actions a ON a.code = ac.code
-       WHERE a.description IS NOT NULL`
-    )
-
-    expect(count).toBeGreaterThan(0)
-    expect(mismatched).toEqual([])
-  })
-
   test('stores the description from a published action config on its config version', async () => {
     const configs = await getRecordsByQuery(
       connection,
@@ -128,16 +105,7 @@ describe('Action config description', () => {
     ])
   })
 
-  // actions.description is kept only until it is dropped, so no read may depend on it
-  describe('when actions.description differs from the config description', () => {
-    beforeAll(async () => {
-      await getRecordsByQuery(
-        connection,
-        "UPDATE actions SET description = 'Stale actions description' WHERE code = $1",
-        [TEST_CODE]
-      )
-    })
-
+  describe('when reading actions', () => {
     const descriptionOf = (actions) =>
       actions.find((action) => action.code === TEST_CODE)?.description
 
