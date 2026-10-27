@@ -32,7 +32,7 @@ describe('Get Actions By Latest Version Query', () => {
       groupName,
       sssi_eligible: sssiEligible,
       hf_eligible: hfEligible,
-      ingest_id: ingestId,
+      updatedBy,
       ...cmor1
     } = actions.find((a) => a.code === 'CMOR1')
 
@@ -115,7 +115,7 @@ describe('Get Actions By Latest Version Query', () => {
     expect(sssiEligible).toBe(true)
     expect(hfEligible).toBe(true)
     // Only set when a config release applies the actions eligibility CSV
-    expect(ingestId).toBeNull()
+    expect(updatedBy).toBeNull()
   })
 
   test('should not return UPL4', async () => {

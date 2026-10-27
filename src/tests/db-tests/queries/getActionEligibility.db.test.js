@@ -32,7 +32,7 @@ describe('Get Action Eligibility Query', () => {
     expect(cmor1.sssi_eligible).toBe(true)
     expect(cmor1.hf_eligible).toBe(true)
     // Only set when a config release applies the actions eligibility CSV
-    expect(cmor1.ingest_id).toBeNull()
+    expect(cmor1.updated_by).toBeNull()
     expect(cmor1.last_updated).toBeNull()
   })
 })
