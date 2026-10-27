@@ -28,6 +28,7 @@
  * @property {ActionAvailability} [availability]
  * @property {string} [displayUnit]
  * @property {string} [displayUnitPlural]
+ * @property {string} updatedBy
  */
 
 /**
@@ -95,6 +96,6 @@
  * @property {string} code
  * @property {boolean} sssi_eligible
  * @property {boolean} hf_eligible
- * @property {string} ingest_id
+ * @property {string} updated_by
  * @property {Date} last_updated
  */

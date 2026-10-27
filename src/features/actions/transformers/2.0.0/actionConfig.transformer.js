@@ -22,6 +22,7 @@ export function actionConfigTransformer(action) {
     guidance_url: guidanceUrl,
     display_unit: displayUnit,
     display_unit_plural: displayUnitPlural,
+    updated_by: updatedBy,
     ...actionObj
   } = action
   return {
@@ -42,6 +43,7 @@ export function actionConfigTransformer(action) {
     groupId,
     groupName,
     displayOrder,
-    paymentMethod
+    paymentMethod,
+    updatedBy
   }
 }

@@ -17,11 +17,9 @@ async function getActionsByLatestVersion(logger, db) {
         SELECT DISTINCT ON (a.code)
           a.id,
           a.code,
-          a.enabled,
-          a.display,
           a.sssi_eligible,
           a.hf_eligible,
-          a.ingest_id,
+          a.updated_by,
           ac.description,
           ac.version,
           ac.major_version,
@@ -42,13 +40,15 @@ async function getActionsByLatestVersion(logger, db) {
           ac.group_id as group_id,
           ag.name as group_name,
           ac.display_order as display_order,
-          ac.config->'payment_method' as payment_method
+          ac.config->'payment_method' as payment_method,
+          COALESCE((ac.config->>'display')::BOOLEAN, FALSE) as display,
+          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id
-        WHERE a.enabled = TRUE
         ORDER BY a.code, ac.major_version DESC, ac.minor_version DESC, ac.patch_version DESC
       ) subq
+      WHERE subq.enabled
       ORDER BY display_order ASC
     `
     const result = await client.query(query)

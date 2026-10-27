@@ -97,7 +97,7 @@ describe('Actions eligibility import', () => {
     expect(eligibilityOf('UPL3')).toEqual({ sssi: false, hf: false })
     expect(eligibilityOf('UPL4')).toEqual({ sssi: false, hf: false })
     expect(eligibilityOf('CSAM3')).toEqual({ sssi: false, hf: false })
-    expect([...new Set(actions.map((a) => a.ingest_id))]).toEqual([
+    expect([...new Set(actions.map((a) => a.updated_by))]).toEqual([
       GRANTS_CONFIG_S3_KEY
     ])
     expect(actions[0].last_updated).toBeDefined()
@@ -208,7 +208,7 @@ describe('Actions eligibility import', () => {
     const actionRow = async () => {
       const [row] = await getRecordsByQuery(
         connection,
-        'SELECT code, enabled, display, sssi_eligible, hf_eligible, sidedness, ingest_id FROM actions WHERE code = $1',
+        'SELECT code, sssi_eligible, hf_eligible, sidedness, updated_by FROM actions WHERE code = $1',
         [NEW_CODE]
       )
       return row
@@ -247,12 +247,10 @@ describe('Actions eligibility import', () => {
     test('creates its actions row, with its sidedness, from the eligibility file alone', async () => {
       expect(await actionRow()).toEqual({
         code: NEW_CODE,
-        enabled: null,
-        display: null,
         sssi_eligible: false,
         hf_eligible: true,
         sidedness: 'single-side',
-        ingest_id: GRANTS_CONFIG_S3_KEY
+        updated_by: GRANTS_CONFIG_S3_KEY
       })
     })
 
@@ -264,9 +262,7 @@ describe('Actions eligibility import', () => {
           code: NEW_CODE,
           semanticVersion: '1.0.0',
           description: 'Eligibility only test action',
-          applicationUnitOfMeasurement: 'ha',
-          enabled: true,
-          display: true
+          applicationUnitOfMeasurement: 'ha'
         }),
         S3_CONFIG.bucket,
         'binary/octet-stream'
@@ -275,12 +271,10 @@ describe('Actions eligibility import', () => {
 
       expect(await actionRow()).toEqual({
         code: NEW_CODE,
-        enabled: true,
-        display: true,
         sssi_eligible: false,
         hf_eligible: true,
         sidedness: 'single-side',
-        ingest_id: GRANTS_CONFIG_S3_KEY
+        updated_by: GRANTS_CONFIG_S3_KEY
       })
     })
   })
