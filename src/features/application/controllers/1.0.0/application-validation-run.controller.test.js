@@ -2,6 +2,8 @@ import { application } from '../../index.js'
 import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 import createTestServer from '~/src/tests/test-server.js'
 
+const crn = '1234567890'
+
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
   () => ({
@@ -47,7 +49,7 @@ describe('Application Validation Run Controller', () => {
         id: '123',
         application_id: '1f27e9de-8072-4b17-a870-5575c62a0787',
         sbi: '214314',
-        crn: '1937195628',
+        crn,
         created_at: new Date().toISOString(),
         data: {
           id: 1,
@@ -58,7 +60,7 @@ describe('Application Validation Run Controller', () => {
           hasPassed: false,
           created_at: new Date().toISOString(),
           application: {
-            applicantCrn: '1937195628',
+            applicantCrn: crn,
             agreementLevelActions: [],
             parcels: {
               sheetId: 'SI97386',
