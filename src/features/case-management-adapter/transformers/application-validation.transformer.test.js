@@ -1,5 +1,8 @@
 import { applicationValidationRunToCaseManagement } from './application-validation.transformer.js'
 
+const sbi = 123456789
+const crn = '1234567890'
+
 describe('applicationValidationRunToCaseManagement', () => {
   test('should return null when input is null', () => {
     expect(applicationValidationRunToCaseManagement(null)).toBeNull()
@@ -11,7 +14,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
   test('should handle empty parcelLevelResults', () => {
     const input = {
-      sbi: 106284736,
+      sbi,
       date: '2025-09-30T08:29:21.263Z',
       hasPassed: true,
       parcelLevelResults: [],
@@ -32,7 +35,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
   test('should handle multiple parcels', () => {
     const input = {
-      sbi: 106284736,
+      sbi,
       date: '2025-09-30T08:29:21.263Z',
       hasPassed: true,
       parcelLevelResults: [
@@ -89,7 +92,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
   test('should handle parcel with no actions', () => {
     const input = {
-      sbi: 106284736,
+      sbi,
       date: '2025-09-30T08:29:21.263Z',
       hasPassed: true,
       parcelLevelResults: [
@@ -121,7 +124,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
   test('should handle failed validation scenario', () => {
     const input = {
-      sbi: 106284736,
+      sbi,
       date: '2025-09-30T08:29:21.263Z',
       hasPassed: false,
       parcelLevelResults: [
@@ -777,7 +780,7 @@ describe('applicationValidationRunToCaseManagement', () => {
 
   test('should return response when input is valid', () => {
     const input = {
-      sbi: 106284736,
+      sbi,
       date: '2025-09-30T08:29:21.263Z',
       hasPassed: false,
       requester: 'grants-ui',
@@ -800,7 +803,7 @@ describe('applicationValidationRunToCaseManagement', () => {
         ],
         agreementLevelActions: []
       },
-      applicantCrn: '1102838829',
+      applicantCrn: crn,
       applicationId: 'app-validation-test1',
       parcelLevelResults: [
         {
