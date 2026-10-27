@@ -11,8 +11,8 @@ export const options = {
 const payload = JSON.stringify({
   applicationId: 'app-validation-test1',
   requester: 'grants-ui',
-  applicantCrn: '1102760349',
-  sbi: 121428499,
+  applicantCrn: '1111111111',
+  sbi: 123456789,
   landActions: [
     {
       parcelId: '8936',
