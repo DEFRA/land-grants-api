@@ -8,6 +8,7 @@ import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parc
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
 import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
+import { getSidednessByActionCode } from '~/src/features/actions/queries/getSidednessByActionCode.query.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
@@ -28,6 +29,7 @@ vi.mock('~/src/features/parcel/transformers/2.0.0/parcelActions.transformer.js')
 vi.mock('~/src/features/available-area/availableArea.js')
 vi.mock('~/src/features/available-length/availableLength.js')
 vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js')
+vi.mock('~/src/features/actions/queries/getSidednessByActionCode.query.js')
 vi.mock('~/src/features/available-area/explanations.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
@@ -694,10 +696,13 @@ describe('Parcel Service 2.0.0', () => {
         ...overrides
       })
 
+      const sidednessByActionCode = { BND1: 'both-sides', BND2: 'single-side' }
+
       beforeEach(() => {
         getLandParcelBoundary.mockResolvedValue({
           boundaryLengthMeters: 1800
         })
+        getSidednessByActionCode.mockResolvedValue(sidednessByActionCode)
         calculateAvailableLength.mockReturnValue(lengthResult())
       })
 
@@ -740,8 +745,21 @@ describe('Parcel Service 2.0.0', () => {
         expect(calculateAvailableLength).toHaveBeenCalledWith(
           'BND1',
           [{ actionCode: 'BND2', billedLengthMeters: 300 }],
-          mockCompatibilityCheckFn,
-          1800
+          expect.anything()
+        )
+      })
+
+      test('should give the calculation the compatibility, the perimeter and the sidedness', async () => {
+        await requestActions([bnd1])
+
+        expect(calculateAvailableLength).toHaveBeenCalledWith(
+          'BND1',
+          expect.anything(),
+          {
+            compatibilityCheckFn: mockCompatibilityCheckFn,
+            boundaryLengthMeters: 1800,
+            sidednessByActionCode
+          }
         )
       })
 
@@ -752,6 +770,52 @@ describe('Parcel Service 2.0.0', () => {
 
         expect(calculateAvailableLength).not.toHaveBeenCalled()
         expect(actionTransformer).toHaveBeenCalledWith(bnd1, undefined, false)
+      })
+
+      describe('sidedness', () => {
+        test('should read sidedness once however many linear actions there are', async () => {
+          await requestActions([bnd1, bnd2])
+
+          expect(getSidednessByActionCode).toHaveBeenCalledTimes(1)
+        })
+
+        test('should read the sidedness of every displayed linear action and every existing action measured in metres', async () => {
+          mergeAgreementsTransformer.mockReturnValue([
+            { actionCode: 'CHRW2', quantity: 300, unit: 'm' },
+            { actionCode: 'UPL1', quantity: 2, unit: 'ha' }
+          ])
+
+          await requestActions([bnd1, bnd2])
+
+          const [requestedCodes, db, logger] =
+            getSidednessByActionCode.mock.calls[0]
+
+          expect({ codes: new Set(requestedCodes), db, logger }).toEqual({
+            codes: new Set(['BND1', 'BND2', 'CHRW2']),
+            db: mockRequest.server.postgresDb,
+            logger: mockLogger
+          })
+        })
+
+        test('should not read sidedness when nothing displayed is measured in metres', async () => {
+          await requestActions([])
+
+          expect(getSidednessByActionCode).not.toHaveBeenCalled()
+        })
+
+        test('should not read sidedness when the boundary cannot be read', async () => {
+          getLandParcelBoundary.mockResolvedValue(null)
+
+          await requestActions([bnd1])
+
+          expect(getSidednessByActionCode).not.toHaveBeenCalled()
+        })
+
+        test('should fail the request rather than guess when sidedness cannot be read', async () => {
+          getSidednessByActionCode.mockRejectedValue(new Error('SELECT failed'))
+
+          await expect(requestActions([bnd1])).rejects.toThrow('SELECT failed')
+        })
       })
 
       describe('availability', () => {

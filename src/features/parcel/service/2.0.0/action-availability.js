@@ -18,7 +18,7 @@ import {
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  * @import {ActionWithArea, AvailableAreaDataRequirements, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
- * @import {ActionWithLength, AvailableLength} from '~/src/features/available-length/available-length.d.js'
+ * @import {ActionWithLength, AvailableLength, SidednessByActionCode} from '~/src/features/available-length/available-length.d.js'
  */
 
 /**
@@ -90,6 +90,7 @@ function buildActionWithAvailableArea(
  * @param {object} context
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
+ * @param {SidednessByActionCode} context.sidednessByActionCode - The sidedness of the codes on the boundary
  * @returns {ActionWithAvailability} The transformed action and its available length
  */
 function buildActionWithAvailableLength(
@@ -98,14 +99,14 @@ function buildActionWithAvailableLength(
   boundaryLengthMeters,
   context
 ) {
-  const { showActionResults, compatibilityCheckFn } = context
+  const { showActionResults, compatibilityCheckFn, sidednessByActionCode } =
+    context
 
-  const availableLength = calculateAvailableLength(
-    action.code,
-    lengthActions,
+  const availableLength = calculateAvailableLength(action.code, lengthActions, {
     compatibilityCheckFn,
-    boundaryLengthMeters
-  )
+    boundaryLengthMeters,
+    sidednessByActionCode
+  })
 
   if (availableLength.exceedsBoundary) {
     const lengthCalculation = {
@@ -144,6 +145,7 @@ function buildActionWithAvailableLength(
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
  * @param {number|null} context.boundaryLengthMeters - The parcel's perimeter
+ * @param {SidednessByActionCode} context.sidednessByActionCode - The sidedness of the codes on the boundary
  * @param {LandParcelDb} context.parcel - The parcel
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
@@ -159,6 +161,7 @@ export async function buildActionWithAvailability(
     showActionResults,
     compatibilityCheckFn,
     boundaryLengthMeters,
+    sidednessByActionCode,
     parcel,
     postgresDb,
     logger,
@@ -191,7 +194,7 @@ export async function buildActionWithAvailability(
       action,
       competingActions.length,
       boundaryLengthMeters,
-      { showActionResults, compatibilityCheckFn }
+      { showActionResults, compatibilityCheckFn, sidednessByActionCode }
     )
   }
 
