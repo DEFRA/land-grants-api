@@ -6,27 +6,86 @@ import {
 import { lengthActionsTransformer } from '../parcel/transformers/parcelActions.transformer.js'
 import { getLandParcelBoundary } from '../parcel/queries/getParcelBoundary.query.js'
 import { getSidednessByActionCode } from '../actions/queries/getSidednessByActionCode.query.js'
-import { billingFactorOf } from '~/src/features/common/constants/sidedness.js'
+import {
+  billingFactorOf,
+  sidednessOf
+} from '~/src/features/common/constants/sidedness.js'
+import { findMinimumBoundary, incompatibleWith } from './minimumBoundary.js'
 
 /**
- * The metres of boundary an existing action occupies, rounded up so a part
- * metre of boundary is never offered.
+ * An existing action with its sidedness and the metres of boundary it
+ * occupies, rounded up so a part metre of boundary is never offered.
  * @param {ActionWithLength} existingAction - The existing action
  * @param {SidednessByActionCode} sidednessByActionCode - The sidedness of the codes involved
- * @returns {number} The physical extent in whole metres
+ * @returns {Occupancy} The action and the boundary it occupies
  */
-const physicalExtentMeters = (existingAction, sidednessByActionCode) => {
+const occupancyOf = (existingAction, sidednessByActionCode) => {
   const { actionCode, billedLengthMeters } = existingAction
 
-  const billingFactor = billingFactorOf(sidednessByActionCode[actionCode])
+  const sidedness = sidednessOf(actionCode, sidednessByActionCode)
+  const occupiedMeters = Math.ceil(
+    billedLengthMeters / billingFactorOf(sidedness)
+  )
 
-  return Math.ceil(billedLengthMeters / billingFactor)
+  return { actionCode, billedLengthMeters, sidedness, occupiedMeters }
+}
+
+/**
+ * @param {Occupancy[]} occupancies - The boundary each existing action occupies
+ * @param {number} boundaryLengthMeters - The parcel's perimeter in whole metres
+ * @param {CompatibilityCheckFn} compatibilityCheckFn - Whether two actions can share a stretch of boundary
+ * @returns {boolean} Whether the actions can all fit the boundary
+ */
+const fitWithin = (occupancies, boundaryLengthMeters, compatibilityCheckFn) => {
+  const minimumBoundary = findMinimumBoundary(occupancies, compatibilityCheckFn)
+
+  return minimumBoundary.meters <= boundaryLengthMeters
+}
+
+/**
+ * @param {string} actionCode - The action code being applied for
+ * @param {Occupancy[]} existingOccupancies - The boundary each existing action occupies
+ * @param {{feasible: boolean, compatibilityCheckFn: CompatibilityCheckFn}} context - Whether the existing actions all fit, and whether two actions can share a stretch
+ * @returns {{actions: Occupancy[], meters: number}} The minimum boundary of the actions incompatible with the one applied for
+ */
+const findMinimumIncompatibleBoundary = (
+  actionCode,
+  existingOccupancies,
+  { feasible, compatibilityCheckFn }
+) => {
+  // When they cannot all fit, every existing action is reported as incompatible, so the reason names the ones that do not fit
+  const incompatibleOccupancies = feasible
+    ? incompatibleWith(actionCode, existingOccupancies, compatibilityCheckFn)
+    : existingOccupancies
+
+  return findMinimumBoundary(incompatibleOccupancies, compatibilityCheckFn)
+}
+
+/**
+ * @param {Sidedness} targetSidedness - The sidedness of the action applied for
+ * @param {number} boundaryLengthMeters - The parcel's perimeter in whole metres
+ * @param {number} incompatibleLengthMeters - The boundary taken by incompatible actions
+ * @returns {number} The free boundary, billed at the applied-for action's rate
+ */
+const availableLengthFor = (
+  targetSidedness,
+  boundaryLengthMeters,
+  incompatibleLengthMeters
+) => {
+  const availableBoundaryMeters = Math.max(
+    0,
+    boundaryLengthMeters - incompatibleLengthMeters
+  )
+
+  return availableBoundaryMeters * billingFactorOf(targetSidedness)
 }
 
 /**
  * Deducts the physical boundary occupied by incompatible actions from a
  * parcel's perimeter, and bills what is left at the applied-for action's rate.
- * Takes lengths that callers have gathered and filtered to metres.
+ * Incompatible actions that can share a stretch with each other are deducted
+ * once. When the existing actions cannot all fit the boundary, nothing is
+ * available. Takes lengths that callers have gathered and filtered to metres.
  * @param {string} actionCode - The action code being applied for
  * @param {ActionWithLength[]} existingActions - Actions already competing for the boundary
  * @param {BoundaryContext} boundary - The parcel's perimeter, compatibility and sidedness
@@ -37,32 +96,49 @@ export function calculateAvailableLength(
   existingActions,
   { compatibilityCheckFn, boundaryLengthMeters, sidednessByActionCode }
 ) {
-  const incompatibleActions = existingActions.filter(
-    (existingAction) =>
-      !compatibilityCheckFn(existingAction.actionCode, actionCode)
+  const existingOccupancies = existingActions.map((existingAction) =>
+    occupancyOf(existingAction, sidednessByActionCode)
   )
 
-  const incompatibleLengthMeters = incompatibleActions.reduce(
-    (total, incompatibleAction) =>
-      total + physicalExtentMeters(incompatibleAction, sidednessByActionCode),
-    0
+  const feasible = fitWithin(
+    existingOccupancies,
+    boundaryLengthMeters,
+    compatibilityCheckFn
   )
 
-  const availableBoundaryMeters = Math.max(
-    0,
-    boundaryLengthMeters - incompatibleLengthMeters
+  const minimumIncompatibleBoundary = findMinimumIncompatibleBoundary(
+    actionCode,
+    existingOccupancies,
+    { feasible, compatibilityCheckFn }
   )
-  const targetBillingFactor = billingFactorOf(sidednessByActionCode[actionCode])
-  const availableLength = availableBoundaryMeters * targetBillingFactor
 
-  const exceedsBoundary = boundaryLengthMeters < incompatibleLengthMeters
+  const incompatibleLengthMeters = minimumIncompatibleBoundary.meters
+
+  const availableLength = availableLengthFor(
+    sidednessOf(actionCode, sidednessByActionCode),
+    boundaryLengthMeters,
+    incompatibleLengthMeters
+  )
+
+  const incompatibleActions = minimumIncompatibleBoundary.actions.map(
+    ({ actionCode: code, billedLengthMeters }) => ({
+      actionCode: code,
+      billedLengthMeters
+    })
+  )
+
+  const explainedOccupancies = existingOccupancies.map((existingOccupancy) => ({
+    ...existingOccupancy,
+    deducted: minimumIncompatibleBoundary.actions.includes(existingOccupancy)
+  }))
 
   return {
     availableLength,
     boundaryLengthMeters,
     incompatibleLengthMeters,
     incompatibleActions,
-    exceedsBoundary
+    feasible,
+    explainedOccupancies
   }
 }
 
@@ -139,7 +215,7 @@ export async function getAvailableLength(
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { ActionWithLength, AvailableLength, BoundaryContext, SidednessByActionCode } from '~/src/features/available-length/available-length.d.js'
+ * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  */

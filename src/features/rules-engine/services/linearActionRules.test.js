@@ -75,7 +75,7 @@ describe('linear action rules with their data providers', () => {
       boundaryLengthMeters: availableLength + incompatibleLengthMeters,
       incompatibleLengthMeters,
       incompatibleActions: [],
-      exceedsBoundary: false
+      feasible: true
     })
 
   const givenBoundaryIntersection = (intersectingLengthMeters) =>

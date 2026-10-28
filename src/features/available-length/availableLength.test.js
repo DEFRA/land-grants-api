@@ -14,16 +14,41 @@ vi.mock('../actions/queries/getSidednessByActionCode.query.js')
 
 const PARCEL_PERIMETER_METERS = 1000
 
-// Every requested code as both-sides, which is what a code with no sidedness resolves to
-const resolveAllAsBothSides = (codes) =>
-  Promise.resolve(Object.fromEntries(codes.map((code) => [code, BOTH_SIDES])))
+// The linear actions as configured: BND2, CHRW2 and WBD2 stack with each
+// other; BND1 stacks with nothing; no action stacks with itself
+const LINEAR_SIDEDNESS = {
+  BND1: BOTH_SIDES,
+  BND2: SINGLE_SIDE,
+  CHRW2: SINGLE_SIDE,
+  WBD2: BOTH_SIDES
+}
+
+const STACKING_CODES = new Set(['BND2', 'CHRW2', 'WBD2'])
+
+const linearCompatibility = (code, otherCode) =>
+  code !== otherCode &&
+  STACKING_CODES.has(code) &&
+  STACKING_CODES.has(otherCode)
+
+// An existing action as the explanation lists it
+const explained = (
+  actionCode,
+  billedLengthMeters,
+  { sidedness, occupiedMeters, deducted }
+) => ({
+  actionCode,
+  billedLengthMeters,
+  sidedness,
+  occupiedMeters,
+  deducted
+})
 
 describe('getAvailableLength', () => {
-  // BND1, BND2 and ACT2 are linear actions measured in metres; CMOR1 is area-based
+  // BND1 and BND2 are the linear actions that can be applied for; CMOR1 is
+  // area-based. CHRW2 and WBD2 only reach a parcel as agreements
   const actions = [
     { code: 'BND1', applicationUnitOfMeasurement: 'm' },
     { code: 'BND2', applicationUnitOfMeasurement: 'm' },
-    { code: 'ACT2', applicationUnitOfMeasurement: 'm' },
     { code: 'CMOR1', applicationUnitOfMeasurement: 'ha' }
   ]
 
@@ -33,27 +58,33 @@ describe('getAvailableLength', () => {
     actions: []
   }
 
-  const compatibilityCheckFn = vi.fn()
   const mockDb = {}
   const mockLogger = { info: vi.fn(), error: vi.fn() }
+
+  // Answers as the query does, so a code it does not know is both-sides
+  const readLinearSidedness = (codes) =>
+    Promise.resolve(
+      Object.fromEntries(
+        codes.map((code) => [code, LINEAR_SIDEDNESS[code] ?? BOTH_SIDES])
+      )
+    )
 
   beforeEach(() => {
     vi.clearAllMocks()
     getLandParcelBoundary.mockResolvedValue({
       boundaryLengthMeters: PARCEL_PERIMETER_METERS
     })
-    getSidednessByActionCode.mockImplementation(resolveAllAsBothSides)
+    getSidednessByActionCode.mockImplementation(readLinearSidedness)
   })
 
   it('returns the full boundary length when there are no incompatible actions', async () => {
-    const action = { code: '', quantity: 50 }
-    compatibilityCheckFn.mockReturnValue(false)
+    const action = { code: 'BND1', quantity: 50 }
 
     const result = await getAvailableLength(
       action,
       actions,
       [],
-      compatibilityCheckFn,
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -63,24 +94,21 @@ describe('getAvailableLength', () => {
       availableLength: PARCEL_PERIMETER_METERS,
       boundaryLengthMeters: PARCEL_PERIMETER_METERS,
       incompatibleLengthMeters: 0,
-      exceedsBoundary: false,
-      incompatibleActions: []
+      feasible: true,
+      incompatibleActions: [],
+      explainedOccupancies: []
     })
   })
 
   it('subtracts the length of incompatible sibling actions on the same parcel', async () => {
-    const action = { code: 'CHRW2', quantity: 50 }
-    const sibling = { code: 'BND1', quantity: 100 }
-    compatibilityCheckFn.mockImplementation(
-      (code, otherCode) => code !== sibling.code && otherCode !== sibling.code
-    )
+    const action = { code: 'BND2', quantity: 50 }
 
     const result = await getAvailableLength(
       action,
       actions,
       [],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action, sibling] },
+      linearCompatibility,
+      { ...landAction, actions: [action, { code: 'BND1', quantity: 100 }] },
       mockDb,
       mockLogger
     )
@@ -92,13 +120,12 @@ describe('getAvailableLength', () => {
 
   it('excludes the action itself from sibling actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
       [],
-      compatibilityCheckFn,
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -109,15 +136,13 @@ describe('getAvailableLength', () => {
 
   it('excludes sibling actions whose unit of measurement is not meters', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const nonLengthSibling = { code: 'CMOR1', quantity: 100 }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
       [],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action, nonLengthSibling] },
+      linearCompatibility,
+      { ...landAction, actions: [action, { code: 'CMOR1', quantity: 100 }] },
       mockDb,
       mockLogger
     )
@@ -127,15 +152,13 @@ describe('getAvailableLength', () => {
 
   it('excludes sibling actions whose code is not configured, since nothing says they compete for the boundary', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const unknownSibling = { code: 'UNKNOWN', quantity: 100 }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
       [],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action, unknownSibling] },
+      linearCompatibility,
+      { ...landAction, actions: [action, { code: 'UNKNOWN', quantity: 100 }] },
       mockDb,
       mockLogger
     )
@@ -145,17 +168,12 @@ describe('getAvailableLength', () => {
 
   it('subtracts the length of incompatible existing agreement actions', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
-    compatibilityCheckFn.mockImplementation(
-      (code, otherCode) =>
-        code !== agreement.actionCode && otherCode !== agreement.actionCode
-    )
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
-      compatibilityCheckFn,
+      [{ actionCode: 'BND2', quantity: 200, unit: 'm' }],
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -168,15 +186,15 @@ describe('getAvailableLength', () => {
 
   it('excludes agreement actions whose unit is not meters', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const areaAgreement = { actionCode: 'CMOR1', quantity: 15000, unit: 'sqm' }
-    const countAgreement = { actionCode: 'WBD1', quantity: 800, unit: 'count' }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [areaAgreement, countAgreement],
-      compatibilityCheckFn,
+      [
+        { actionCode: 'CMOR1', quantity: 15000, unit: 'sqm' },
+        { actionCode: 'WBD1', quantity: 800, unit: 'count' }
+      ],
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -186,43 +204,51 @@ describe('getAvailableLength', () => {
   })
 
   it('combines incompatible lengths from both agreements and sibling actions', async () => {
-    const action = { code: 'BND1', quantity: 50 }
-    const sibling = { code: 'BND2', quantity: 100 }
-    const agreement = { actionCode: 'CHRW2', quantity: 200, unit: 'm' }
-    compatibilityCheckFn.mockReturnValue(false)
+    // BND1 does not stack with itself, so the agreement and the sibling lie end to end
+    const action = { code: 'BND2', quantity: 50 }
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
-      compatibilityCheckFn,
-      { ...landAction, actions: [action, sibling] },
+      [{ actionCode: 'BND1', quantity: 200, unit: 'm' }],
+      linearCompatibility,
+      { ...landAction, actions: [action, { code: 'BND1', quantity: 100 }] },
       mockDb,
       mockLogger
     )
 
     expect(result).toEqual({
-      availableLength: 700,
+      availableLength: 1400,
       boundaryLengthMeters: PARCEL_PERIMETER_METERS,
       incompatibleLengthMeters: 300,
-      exceedsBoundary: false,
+      feasible: true,
       incompatibleActions: [
-        { actionCode: 'CHRW2', billedLengthMeters: 200 },
-        { actionCode: 'BND2', billedLengthMeters: 100 }
+        { actionCode: 'BND1', billedLengthMeters: 200 },
+        { actionCode: 'BND1', billedLengthMeters: 100 }
+      ],
+      explainedOccupancies: [
+        explained('BND1', 200, {
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 200,
+          deducted: true
+        }),
+        explained('BND1', 100, {
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 100,
+          deducted: true
+        })
       ]
     })
   })
 
   it('rounds a fractional length up to the next whole metre', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200.4, unit: 'm' }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
-      compatibilityCheckFn,
+      [{ actionCode: 'BND1', quantity: 200.4, unit: 'm' }],
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -232,8 +258,15 @@ describe('getAvailableLength', () => {
       availableLength: 799,
       boundaryLengthMeters: PARCEL_PERIMETER_METERS,
       incompatibleLengthMeters: 201,
-      exceedsBoundary: false,
-      incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 200.4 }]
+      feasible: true,
+      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 200.4 }],
+      explainedOccupancies: [
+        explained('BND1', 200.4, {
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 201,
+          deducted: true
+        })
+      ]
     })
   })
 
@@ -244,7 +277,7 @@ describe('getAvailableLength', () => {
       action,
       actions,
       [],
-      compatibilityCheckFn,
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -267,7 +300,7 @@ describe('getAvailableLength', () => {
       action,
       actions,
       [],
-      compatibilityCheckFn,
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -277,22 +310,21 @@ describe('getAvailableLength', () => {
       availableLength: 0,
       boundaryLengthMeters: 0,
       incompatibleLengthMeters: 0,
-      exceedsBoundary: false,
-      incompatibleActions: []
+      feasible: true,
+      incompatibleActions: [],
+      explainedOccupancies: []
     })
   })
 
   it('reports the incompatible length even when the boundary cannot be read', async () => {
     const action = { code: 'BND1', quantity: 50 }
-    const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
-    compatibilityCheckFn.mockReturnValue(false)
     getLandParcelBoundary.mockResolvedValue(null)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
-      compatibilityCheckFn,
+      [{ actionCode: 'BND1', quantity: 200, unit: 'm' }],
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -302,22 +334,27 @@ describe('getAvailableLength', () => {
       availableLength: 0,
       boundaryLengthMeters: 0,
       incompatibleLengthMeters: 200,
-      exceedsBoundary: true,
-      incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 200 }]
+      feasible: false,
+      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 200 }],
+      explainedOccupancies: [
+        explained('BND1', 200, {
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 200,
+          deducted: true
+        })
+      ]
     })
   })
 
   it('clamps the available length at zero when the incompatible length exceeds the boundary', async () => {
     const action = { code: 'BND2', quantity: 50 }
-    // Impossible with good data: BND1 is both-sides, so 1500 m needs 1500 m of a 1000 m boundary
-    const agreement = { actionCode: 'BND1', quantity: 1500, unit: 'm' }
-    compatibilityCheckFn.mockReturnValue(false)
 
     const result = await getAvailableLength(
       action,
       actions,
-      [agreement],
-      compatibilityCheckFn,
+      // Impossible with good data: BND1 is both-sides, so 1500 m needs 1500 m of a 1000 m boundary
+      [{ actionCode: 'BND1', quantity: 1500, unit: 'm' }],
+      linearCompatibility,
       { ...landAction, actions: [action] },
       mockDb,
       mockLogger
@@ -327,23 +364,28 @@ describe('getAvailableLength', () => {
       availableLength: 0,
       boundaryLengthMeters: PARCEL_PERIMETER_METERS,
       incompatibleLengthMeters: 1500,
-      exceedsBoundary: true,
-      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 1500 }]
+      feasible: false,
+      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 1500 }],
+      explainedOccupancies: [
+        explained('BND1', 1500, {
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 1500,
+          deducted: true
+        })
+      ]
     })
   })
 
   describe('sidedness', () => {
     it('reads sidedness once', async () => {
       const action = { code: 'BND1', quantity: 50 }
-      const sibling = { code: 'ACT2', quantity: 100 }
-      const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
 
       await getAvailableLength(
         action,
         actions,
-        [agreement],
-        compatibilityCheckFn,
-        { ...landAction, actions: [action, sibling] },
+        [{ actionCode: 'CHRW2', quantity: 200, unit: 'm' }],
+        linearCompatibility,
+        { ...landAction, actions: [action, { code: 'BND2', quantity: 100 }] },
         mockDb,
         mockLogger
       )
@@ -353,15 +395,13 @@ describe('getAvailableLength', () => {
 
     it('reads the sidedness of the action applied for and of every action competing for the boundary', async () => {
       const action = { code: 'BND1', quantity: 50 }
-      const sibling = { code: 'ACT2', quantity: 100 }
-      const agreement = { actionCode: 'BND2', quantity: 200, unit: 'm' }
 
       await getAvailableLength(
         action,
         actions,
-        [agreement],
-        compatibilityCheckFn,
-        { ...landAction, actions: [action, sibling] },
+        [{ actionCode: 'CHRW2', quantity: 200, unit: 'm' }],
+        linearCompatibility,
+        { ...landAction, actions: [action, { code: 'BND2', quantity: 100 }] },
         mockDb,
         mockLogger
       )
@@ -370,7 +410,7 @@ describe('getAvailableLength', () => {
         getSidednessByActionCode.mock.calls[0]
 
       expect({ codes: new Set(requestedCodes), db, logger }).toEqual({
-        codes: new Set(['BND1', 'ACT2', 'BND2']),
+        codes: new Set(['BND1', 'BND2', 'CHRW2']),
         db: mockDb,
         logger: mockLogger
       })
@@ -378,18 +418,12 @@ describe('getAvailableLength', () => {
 
     it('halves a single-side agreement against a both-sides action', async () => {
       const action = { code: 'BND1', quantity: 50 }
-      const agreement = { actionCode: 'BND2', quantity: 1000, unit: 'm' }
-      compatibilityCheckFn.mockReturnValue(false)
-      getSidednessByActionCode.mockResolvedValue({
-        BND1: BOTH_SIDES,
-        BND2: SINGLE_SIDE
-      })
 
       const result = await getAvailableLength(
         action,
         actions,
-        [agreement],
-        compatibilityCheckFn,
+        [{ actionCode: 'BND2', quantity: 1000, unit: 'm' }],
+        linearCompatibility,
         { ...landAction, actions: [action] },
         mockDb,
         mockLogger
@@ -399,8 +433,15 @@ describe('getAvailableLength', () => {
         availableLength: 500,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 500,
-        exceedsBoundary: false,
-        incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 1000 }]
+        feasible: true,
+        incompatibleActions: [{ actionCode: 'BND2', billedLengthMeters: 1000 }],
+        explainedOccupancies: [
+          explained('BND2', 1000, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 500,
+            deducted: true
+          })
+        ]
       })
     })
 
@@ -413,7 +454,7 @@ describe('getAvailableLength', () => {
           action,
           actions,
           [],
-          compatibilityCheckFn,
+          linearCompatibility,
           { ...landAction, actions: [action] },
           mockDb,
           mockLogger
@@ -424,22 +465,6 @@ describe('getAvailableLength', () => {
 })
 
 describe('calculateAvailableLength', () => {
-  // The linear actions as configured: BND2, CHRW2 and WBD2 stack with each
-  // other; BND1 stacks with nothing; no action stacks with itself
-  const LINEAR_SIDEDNESS = {
-    BND1: BOTH_SIDES,
-    BND2: SINGLE_SIDE,
-    CHRW2: SINGLE_SIDE,
-    WBD2: BOTH_SIDES
-  }
-
-  const STACKING_CODES = new Set(['BND2', 'CHRW2', 'WBD2'])
-
-  const linearCompatibility = (code, otherCode) =>
-    code !== otherCode &&
-    STACKING_CODES.has(code) &&
-    STACKING_CODES.has(otherCode)
-
   const parcel = (overrides = {}) => ({
     compatibilityCheckFn: linearCompatibility,
     boundaryLengthMeters: PARCEL_PERIMETER_METERS,
@@ -460,8 +485,9 @@ describe('calculateAvailableLength', () => {
         availableLength: PARCEL_PERIMETER_METERS,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 0,
-        exceedsBoundary: false,
-        incompatibleActions: []
+        feasible: true,
+        incompatibleActions: [],
+        explainedOccupancies: []
       })
     })
 
@@ -472,8 +498,9 @@ describe('calculateAvailableLength', () => {
         availableLength: 2 * PARCEL_PERIMETER_METERS,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 0,
-        exceedsBoundary: false,
-        incompatibleActions: []
+        feasible: true,
+        incompatibleActions: [],
+        explainedOccupancies: []
       })
     })
 
@@ -488,13 +515,14 @@ describe('calculateAvailableLength', () => {
         availableLength: 0,
         boundaryLengthMeters: 0,
         incompatibleLengthMeters: 0,
-        exceedsBoundary: false,
-        incompatibleActions: []
+        feasible: true,
+        incompatibleActions: [],
+        explainedOccupancies: []
       })
     })
   })
 
-  describe('converting existing actions to physical extent', () => {
+  describe('converting existing actions to the boundary they occupy', () => {
     it('halves a single-side existing action against a both-sides action', () => {
       const result = calculateAvailableLength(
         'BND1',
@@ -506,8 +534,15 @@ describe('calculateAvailableLength', () => {
         availableLength: 500,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 500,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND2', 1000)]
+        feasible: true,
+        incompatibleActions: [existing('BND2', 1000)],
+        explainedOccupancies: [
+          explained('BND2', 1000, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 500,
+            deducted: true
+          })
+        ]
       })
     })
 
@@ -522,8 +557,15 @@ describe('calculateAvailableLength', () => {
         availableLength: 1000,
         boundaryLengthMeters: 800,
         incompatibleLengthMeters: 300,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND1', 300)]
+        feasible: true,
+        incompatibleActions: [existing('BND1', 300)],
+        explainedOccupancies: [
+          explained('BND1', 300, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 300,
+            deducted: true
+          })
+        ]
       })
     })
 
@@ -538,12 +580,19 @@ describe('calculateAvailableLength', () => {
         availableLength: 0,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: PARCEL_PERIMETER_METERS,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND2', 2 * PARCEL_PERIMETER_METERS)]
+        feasible: true,
+        incompatibleActions: [existing('BND2', 2 * PARCEL_PERIMETER_METERS)],
+        explainedOccupancies: [
+          explained('BND2', 2 * PARCEL_PERIMETER_METERS, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: PARCEL_PERIMETER_METERS,
+            deducted: true
+          })
+        ]
       })
     })
 
-    it('rounds an odd single-side length up to the next whole metre of extent', () => {
+    it('rounds an odd single-side length up to the next whole metre of boundary', () => {
       const result = calculateAvailableLength(
         'BND1',
         [existing('BND2', 1001)],
@@ -554,12 +603,19 @@ describe('calculateAvailableLength', () => {
         availableLength: 499,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 501,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND2', 1001)]
+        feasible: true,
+        incompatibleActions: [existing('BND2', 1001)],
+        explainedOccupancies: [
+          explained('BND2', 1001, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 501,
+            deducted: true
+          })
+        ]
       })
     })
 
-    it('rounds each fractional extent up before adding them', () => {
+    it('rounds the boundary each action occupies up before adding them', () => {
       // Two separate walls, such as an agreement and a sibling: BND1 does not stack with itself
       const result = calculateAvailableLength(
         'BND2',
@@ -571,8 +627,20 @@ describe('calculateAvailableLength', () => {
         availableLength: 1296,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 352,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND1', 200.4), existing('BND1', 150.3)]
+        feasible: true,
+        incompatibleActions: [existing('BND1', 200.4), existing('BND1', 150.3)],
+        explainedOccupancies: [
+          explained('BND1', 200.4, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 201,
+            deducted: true
+          }),
+          explained('BND1', 150.3, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 151,
+            deducted: true
+          })
+        ]
       })
     })
   })
@@ -585,8 +653,9 @@ describe('calculateAvailableLength', () => {
         availableLength: PARCEL_PERIMETER_METERS,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 0,
-        exceedsBoundary: false,
-        incompatibleActions: []
+        feasible: true,
+        incompatibleActions: [],
+        explainedOccupancies: []
       })
     })
 
@@ -601,8 +670,15 @@ describe('calculateAvailableLength', () => {
         availableLength: 600,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 400,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('HRW1', 400)]
+        feasible: true,
+        incompatibleActions: [existing('HRW1', 400)],
+        explainedOccupancies: [
+          explained('HRW1', 400, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 400,
+            deducted: true
+          })
+        ]
       })
     })
   })
@@ -619,8 +695,15 @@ describe('calculateAvailableLength', () => {
         availableLength: 1200,
         boundaryLengthMeters: 600,
         incompatibleLengthMeters: 0,
-        exceedsBoundary: false,
-        incompatibleActions: []
+        feasible: true,
+        incompatibleActions: [],
+        explainedOccupancies: [
+          explained('CHRW2', 1200, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 600,
+            deducted: false
+          })
+        ]
       })
     })
 
@@ -635,13 +718,215 @@ describe('calculateAvailableLength', () => {
         availableLength: 1600,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 200,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND1', 200)]
+        feasible: true,
+        incompatibleActions: [existing('BND1', 200)],
+        explainedOccupancies: [
+          explained('BND1', 200, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 200,
+            deducted: true
+          }),
+          explained('CHRW2', 100, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 50,
+            deducted: false
+          })
+        ]
       })
     })
   })
 
-  describe('when existing actions exceed the boundary', () => {
+  describe('arranging existing actions on the boundary', () => {
+    // Compatible only where a pair is listed, in either order
+    const compatibleOnly =
+      (...pairs) =>
+      (code, otherCode) =>
+        pairs.some(
+          ([first, second]) =>
+            (first === code && second === otherCode) ||
+            (first === otherCode && second === code)
+        )
+
+    it('deducts existing actions that stack with each other once', () => {
+      // A hedge on a hedgebank: both lie along the same 750 m, and BND1 can share neither
+      const result = calculateAvailableLength(
+        'BND1',
+        [existing('BND2', 1500), existing('CHRW2', 1500)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 250,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 750,
+        feasible: true,
+        incompatibleActions: [existing('BND2', 1500)],
+        explainedOccupancies: [
+          explained('BND2', 1500, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 750,
+            deducted: true
+          }),
+          explained('CHRW2', 1500, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 750,
+            deducted: false
+          })
+        ]
+      })
+    })
+
+    it('marks the equally heavy group whose first member comes earliest as deducted', () => {
+      // The same two actions as above in the other order, so CHRW2 is marked rather than BND2
+      const result = calculateAvailableLength(
+        'BND1',
+        [existing('CHRW2', 1500), existing('BND2', 1500)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 250,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 750,
+        feasible: true,
+        incompatibleActions: [existing('CHRW2', 1500)],
+        explainedOccupancies: [
+          explained('CHRW2', 1500, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 750,
+            deducted: true
+          }),
+          explained('BND2', 1500, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 750,
+            deducted: false
+          })
+        ]
+      })
+    })
+
+    it('adds up existing actions that are incompatible with each other', () => {
+      // HRW1 has no sidedness and stacks with nothing, so it sits beside BND1
+      const result = calculateAvailableLength(
+        'BND2',
+        [existing('BND1', 200), existing('HRW1', 150)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 1300,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 350,
+        feasible: true,
+        incompatibleActions: [existing('BND1', 200), existing('HRW1', 150)],
+        explainedOccupancies: [
+          explained('BND1', 200, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 200,
+            deducted: true
+          }),
+          explained('HRW1', 150, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 150,
+            deducted: true
+          })
+        ]
+      })
+    })
+
+    it('adds up two entries for the same code', () => {
+      // An agreement and a sibling: BND1 does not stack with itself
+      const result = calculateAvailableLength(
+        'BND2',
+        [existing('BND1', 300), existing('BND1', 200)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 1000,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 500,
+        feasible: true,
+        incompatibleActions: [existing('BND1', 300), existing('BND1', 200)],
+        explainedOccupancies: [
+          explained('BND1', 300, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 300,
+            deducted: true
+          }),
+          explained('BND1', 200, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 200,
+            deducted: true
+          })
+        ]
+      })
+    })
+
+    it('does not let the action applied for inherit compatibility through another action', () => {
+      // A stacks with B and B with C, but A does not stack with C, so C still takes its 600 m
+      const result = calculateAvailableLength(
+        'A',
+        [existing('B', 600), existing('C', 600)],
+        parcel({
+          compatibilityCheckFn: compatibleOnly(['A', 'B'], ['B', 'C']),
+          sidednessByActionCode: {}
+        })
+      )
+
+      expect(result).toEqual({
+        availableLength: 400,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 600,
+        feasible: true,
+        incompatibleActions: [existing('C', 600)],
+        explainedOccupancies: [
+          explained('B', 600, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 600,
+            deducted: false
+          }),
+          explained('C', 600, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 600,
+            deducted: true
+          })
+        ]
+      })
+    })
+  })
+
+  describe('explaining the result', () => {
+    it('lists each existing action with the boundary it occupies and whether it was deducted', () => {
+      const result = calculateAvailableLength(
+        'BND2',
+        [existing('CHRW2', 400), existing('BND1', 200)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 1600,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 200,
+        feasible: true,
+        incompatibleActions: [existing('BND1', 200)],
+        explainedOccupancies: [
+          explained('CHRW2', 400, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 200,
+            deducted: false
+          }),
+          explained('BND1', 200, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 200,
+            deducted: true
+          })
+        ]
+      })
+    })
+  })
+
+  describe('when existing actions do not fit the boundary', () => {
     it('clamps the available length at zero and reports the boundary as exceeded', () => {
       const result = calculateAvailableLength(
         'BND2',
@@ -653,8 +938,15 @@ describe('calculateAvailableLength', () => {
         availableLength: 0,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: 1200,
-        exceedsBoundary: true,
-        incompatibleActions: [existing('BND1', 1200)]
+        feasible: false,
+        incompatibleActions: [existing('BND1', 1200)],
+        explainedOccupancies: [
+          explained('BND1', 1200, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 1200,
+            deducted: true
+          })
+        ]
       })
     })
 
@@ -669,8 +961,68 @@ describe('calculateAvailableLength', () => {
         availableLength: 0,
         boundaryLengthMeters: PARCEL_PERIMETER_METERS,
         incompatibleLengthMeters: PARCEL_PERIMETER_METERS,
-        exceedsBoundary: false,
-        incompatibleActions: [existing('BND1', PARCEL_PERIMETER_METERS)]
+        feasible: true,
+        incompatibleActions: [existing('BND1', PARCEL_PERIMETER_METERS)],
+        explainedOccupancies: [
+          explained('BND1', PARCEL_PERIMETER_METERS, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: PARCEL_PERIMETER_METERS,
+            deducted: true
+          })
+        ]
+      })
+    })
+
+    it('is not feasible when existing actions cannot fit, even if each stacks with the action applied for', () => {
+      // Two WBD2 agreements cannot share a stretch, and need 1100 m of a 1000 m boundary
+      const result = calculateAvailableLength(
+        'BND2',
+        [existing('WBD2', 600), existing('WBD2', 500)],
+        parcel()
+      )
+
+      expect(result).toEqual({
+        availableLength: 0,
+        boundaryLengthMeters: PARCEL_PERIMETER_METERS,
+        incompatibleLengthMeters: 1100,
+        feasible: false,
+        incompatibleActions: [existing('WBD2', 600), existing('WBD2', 500)],
+        explainedOccupancies: [
+          explained('WBD2', 600, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 600,
+            deducted: true
+          }),
+          explained('WBD2', 500, {
+            sidedness: BOTH_SIDES,
+            occupiedMeters: 500,
+            deducted: true
+          })
+        ]
+      })
+    })
+
+    it('is not feasible when any existing action is on a parcel with no boundary', () => {
+      // The validation path passes 0 for a boundary it cannot read
+      const result = calculateAvailableLength(
+        'BND2',
+        [existing('CHRW2', 100)],
+        parcel({ boundaryLengthMeters: 0 })
+      )
+
+      expect(result).toEqual({
+        availableLength: 0,
+        boundaryLengthMeters: 0,
+        incompatibleLengthMeters: 50,
+        feasible: false,
+        incompatibleActions: [existing('CHRW2', 100)],
+        explainedOccupancies: [
+          explained('CHRW2', 100, {
+            sidedness: SINGLE_SIDE,
+            occupiedMeters: 50,
+            deducted: true
+          })
+        ]
       })
     })
   })
@@ -679,7 +1031,7 @@ describe('calculateAvailableLength', () => {
   describe('invariants', () => {
     const LINEAR_CODES = ['BND1', 'BND2', 'CHRW2', 'WBD2']
 
-    const billingFactorOf = (code) =>
+    const expectedBillingFactor = (code) =>
       LINEAR_SIDEDNESS[code] === SINGLE_SIDE ? 2 : 1
 
     // A fixed linear congruential sequence, so every run checks the same cases
@@ -711,12 +1063,17 @@ describe('calculateAvailableLength', () => {
         sidednessByActionCode: LINEAR_SIDEDNESS
       })
 
+    // Same actions in the same order
+    const sameActions = (actual, expected) =>
+      JSON.stringify(actual) === JSON.stringify(expected)
+
     it('never offers less than zero or more than the whole boundary in the action’s own units', () => {
       const violations = CASES.filter((testCase) => {
         const { availableLength } = calculate(testCase)
 
         const ceiling =
-          testCase.boundaryLengthMeters * billingFactorOf(testCase.targetCode)
+          testCase.boundaryLengthMeters *
+          expectedBillingFactor(testCase.targetCode)
 
         return availableLength < 0 || availableLength > ceiling
       })
@@ -731,7 +1088,7 @@ describe('calculateAvailableLength', () => {
         return (
           !Number.isInteger(availableLength) ||
           // Free boundary is whole metres, so a single-side figure is always even
-          availableLength % billingFactorOf(testCase.targetCode) !== 0
+          availableLength % expectedBillingFactor(testCase.targetCode) !== 0
         )
       })
 
@@ -748,7 +1105,11 @@ describe('calculateAvailableLength', () => {
         const original = calculate(testCase)
         const withReversed = calculate(testCaseReversed)
 
-        return original.availableLength !== withReversed.availableLength
+        // Which of two equally heavy groups is named can change, so compare the figures
+        return (
+          original.availableLength !== withReversed.availableLength ||
+          original.feasible !== withReversed.feasible
+        )
       })
 
       expect(violations).toEqual([])
@@ -798,9 +1159,81 @@ describe('calculateAvailableLength', () => {
         const lengthChanged =
           original.availableLength !== withCompatible.availableLength
         // Existing actions that no longer fit make the result 0 whatever stacks with what
-        const stillFits = !withCompatible.exceedsBoundary
+        const stillFits = withCompatible.feasible
 
         return stillFits && lengthChanged
+      })
+
+      expect(violations).toEqual([])
+    })
+
+    // Stacking can only save boundary, so the deduction lies between these two
+    it('deducts at least the longest incompatible action and at most all of them added up, while the actions fit', () => {
+      const violations = CASES.filter((testCase) => {
+        const result = calculate(testCase)
+
+        const occupiedByIncompatible = result.explainedOccupancies
+          .filter(
+            ({ actionCode }) =>
+              !linearCompatibility(actionCode, testCase.targetCode)
+          )
+          .map(({ occupiedMeters }) => occupiedMeters)
+
+        const longest = Math.max(0, ...occupiedByIncompatible)
+        const addedUp = occupiedByIncompatible.reduce(
+          (sum, meters) => sum + meters,
+          0
+        )
+
+        const outOfRange =
+          result.incompatibleLengthMeters < longest ||
+          result.incompatibleLengthMeters > addedUp
+
+        return result.feasible && outOfRange
+      })
+
+      expect(violations).toEqual([])
+    })
+
+    it('never deducts more than the boundary while the actions fit', () => {
+      const violations = CASES.filter((testCase) => {
+        const result = calculate(testCase)
+
+        return (
+          result.feasible &&
+          result.incompatibleLengthMeters > testCase.boundaryLengthMeters
+        )
+      })
+
+      expect(violations).toEqual([])
+    })
+
+    it('explains every existing action once, in the order given', () => {
+      const violations = CASES.filter((testCase) => {
+        const result = calculate(testCase)
+
+        const explainedActions = result.explainedOccupancies.map(
+          ({ actionCode, billedLengthMeters }) =>
+            existing(actionCode, billedLengthMeters)
+        )
+
+        return !sameActions(explainedActions, testCase.existingActions)
+      })
+
+      expect(violations).toEqual([])
+    })
+
+    it('marks as deducted exactly the actions it names', () => {
+      const violations = CASES.filter((testCase) => {
+        const result = calculate(testCase)
+
+        const markedDeducted = result.explainedOccupancies
+          .filter(({ deducted }) => deducted)
+          .map(({ actionCode, billedLengthMeters }) =>
+            existing(actionCode, billedLengthMeters)
+          )
+
+        return !sameActions(markedDeducted, result.incompatibleActions)
       })
 
       expect(violations).toEqual([])

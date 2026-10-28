@@ -691,7 +691,7 @@ describe('Parcel Service 2.0.0', () => {
         availableLength: 240,
         boundaryLengthMeters: 1800,
         incompatibleLengthMeters: 1560,
-        exceedsBoundary: false,
+        feasible: true,
         incompatibleActions: [],
         ...overrides
       })
@@ -837,7 +837,7 @@ describe('Parcel Service 2.0.0', () => {
                 availableLength: 0,
                 boundaryLengthMeters: 1120,
                 incompatibleLengthMeters: 1121,
-                exceedsBoundary: true,
+                feasible: false,
                 incompatibleActions: [
                   { actionCode: 'BND2', billedLengthMeters: 1121 }
                 ]
@@ -878,7 +878,7 @@ describe('Parcel Service 2.0.0', () => {
                 availableLength: 0,
                 boundaryLengthMeters: 15,
                 incompatibleLengthMeters: 16,
-                exceedsBoundary: true
+                feasible: false
               })
             )
 

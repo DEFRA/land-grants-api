@@ -9,7 +9,7 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
   areaUnavailableReason,
-  exceedsBoundaryReason
+  lengthUnavailableReason
 } from './unavailability.js'
 
 /**
@@ -108,12 +108,14 @@ function buildActionWithAvailableLength(
     sidednessByActionCode
   })
 
-  if (availableLength.exceedsBoundary) {
+  if (!availableLength.feasible) {
+    const unavailableReason = lengthUnavailableReason(
+      availableLength.incompatibleActions
+    )
+
     const lengthCalculation = {
       ...availableLength,
-      unavailableReason: exceedsBoundaryReason(
-        availableLength.incompatibleActions
-      )
+      unavailableReason
     }
 
     return {
