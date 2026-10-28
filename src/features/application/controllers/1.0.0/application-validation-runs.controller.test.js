@@ -3,7 +3,8 @@ import { getApplicationValidationRuns } from '../../queries/getApplicationValida
 import { applicationValidationRunTransformer } from '../../transformers/application.transformer.js'
 import createTestServer from '~/src/tests/test-server.js'
 
-const crn = '1234567890'
+const sbi = '800000001'
+const crn = '9000000001'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRuns.query.js'
@@ -44,14 +45,14 @@ describe('Application Validation Runs Controller', () => {
       {
         id: 1,
         application_id: '12345',
-        sbi: '214314',
+        sbi,
         crn,
         created_at: new Date().toISOString(),
         data: {
           id: 1,
           application_id: '12345',
           requester: 'GrantsUI',
-          sbi: '214314',
+          sbi,
           grantsApiVersion: '1.3.8',
           hasPassed: false,
           created_at: new Date().toISOString(),

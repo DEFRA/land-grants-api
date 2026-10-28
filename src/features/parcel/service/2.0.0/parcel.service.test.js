@@ -14,6 +14,8 @@ import { getAvailableAreaDataRequirements } from '~/src/features/available-area/
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { runParcelRules } from '~/src/features/parcel/service/2.0.0/parcel-rules.service.js'
 
+const sbi = '800000001'
+
 vi.mock(
   '~/src/features/parcel/transformers/parcelActions.transformer.js',
   async (importOriginal) => {
@@ -85,7 +87,7 @@ describe('Parcel Service 2.0.0', () => {
       mockPayload = {
         fields: ['size', 'actions'],
         plannedActions: [],
-        sbi: '123456789'
+        sbi
       }
 
       mockEnabledActionsForParcel = [

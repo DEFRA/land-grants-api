@@ -4,6 +4,9 @@ import {
   applicationValidationRunTransformer
 } from './application.transformer.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('actionResultTransformer', () => {
   test('should transform action result correctly', () => {
     const action = { code: 'UPL1' }
@@ -151,8 +154,6 @@ describe('applicationDataTransformer', () => {
 
   test('should transform application data when all parcels pass', () => {
     const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
     const requester = 'test@example.com'
     const landActions = [
       {
@@ -177,7 +178,7 @@ describe('applicationDataTransformer', () => {
 
     const result = applicationDataTransformer(
       applicationId,
-      applicantCrn,
+      crn,
       sbi,
       requester,
       landActions,
@@ -187,8 +188,8 @@ describe('applicationDataTransformer', () => {
     expect(result).toEqual({
       date: mockDate,
       applicationId: 'APP123',
-      applicantCrn: 'CRN456',
-      sbi: 'SBI789',
+      applicantCrn: crn,
+      sbi,
       requester: 'test@example.com',
       landGrantsApiVersion: process.env.SERVICE_VERSION ?? 'unknown',
       hasPassed: true,
@@ -212,8 +213,6 @@ describe('applicationDataTransformer', () => {
 
   test('should transform application data when some parcels fail', () => {
     const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
     const requester = 'test@example.com'
     const landActions = [
       {
@@ -238,7 +237,7 @@ describe('applicationDataTransformer', () => {
 
     const result = applicationDataTransformer(
       applicationId,
-      applicantCrn,
+      crn,
       sbi,
       requester,
       landActions,
@@ -250,15 +249,13 @@ describe('applicationDataTransformer', () => {
 
   test('should handle empty landActions and parcelResults', () => {
     const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
     const requester = 'test@example.com'
     const landActions = []
     const parcelResults = []
 
     const result = applicationDataTransformer(
       applicationId,
-      applicantCrn,
+      crn,
       sbi,
       requester,
       landActions,
@@ -272,8 +269,6 @@ describe('applicationDataTransformer', () => {
 
   test('should handle multiple parcels with mixed results', () => {
     const applicationId = 'APP123'
-    const applicantCrn = 'CRN456'
-    const sbi = 'SBI789'
     const requester = 'test@example.com'
     const landActions = [
       {
@@ -302,7 +297,7 @@ describe('applicationDataTransformer', () => {
 
     const result = applicationDataTransformer(
       applicationId,
-      applicantCrn,
+      crn,
       sbi,
       requester,
       landActions,

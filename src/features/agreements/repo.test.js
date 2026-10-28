@@ -5,10 +5,11 @@ import {
   agreementsForParcel
 } from '~/src/features/agreements/repo.js'
 
+const sbi = '800000001'
+
 vi.mock('~/src/features/agreements/queries/getAgreementsForParcels.query.js')
 vi.mock('~/src/services/dal/index.js')
 
-const sbi = '012345678'
 const parcelId = '0001'
 const sheetId = 'NY0001'
 const fullParcelId = `${parcelId}-${sheetId}`

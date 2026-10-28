@@ -1,6 +1,9 @@
 import { saveApplication } from '~/src/features/application/mutations/saveApplication.mutation.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('Save Application Mutation', () => {
   let logger, connection
 
@@ -19,8 +22,8 @@ describe('Save Application Mutation', () => {
   test('should save application', async () => {
     const application = {
       application_id: '123456789',
-      sbi: '123456789',
-      crn: '123456789',
+      sbi,
+      crn,
       data: {
         sheetId: 'SX0679',
         parcelId: '9238'
@@ -45,8 +48,8 @@ describe('Save Application Mutation', () => {
 
     const application = {
       application_id: '123456789',
-      sbi: '123456789',
-      crn: '123456789',
+      sbi,
+      crn,
       data: {
         sheetId: 'SX0679',
         parcelId: '9238'
