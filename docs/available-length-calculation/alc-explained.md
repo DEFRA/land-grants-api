@@ -438,11 +438,11 @@ flowchart TD
   rules-engine rule (`src/features/rules-engine/rules/1.0.0/minimum-length.md`) caps an
   application at the available length, failing with a clear message if more is applied for.
 
-  > **Note — current gap:** as written today, `availableLength.js` sums the raw lengths of
-  > incompatible actions. It does **not** yet apply the sidedness conversion, the base doubling,
-  > or the best-case arrangement, so it will under-report available length whenever existing
-  > actions stack with each other (as in Scenario D). Closing that gap is the work proposed in
-  > LDR-005.
+  > **Note: current gap.** `availableLength.js` converts each existing action to its physical
+  > extent and bills the free boundary at the new action's rate, but it still adds up the extents
+  > of every incompatible action. It does **not** yet apply the best-case arrangement, so it will
+  > under-report available length whenever existing actions stack with each other (as in
+  > Scenario D). Closing that gap is the remaining work proposed in LDR-005.
 
 - **Sidedness is intended to be a per-action config flag** (single-side vs both-sides), per
   LDR-005 — so introducing a new linear action needs no code change, just configuration.
