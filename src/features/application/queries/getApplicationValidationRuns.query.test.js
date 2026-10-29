@@ -1,5 +1,8 @@
 import { getApplicationValidationRuns } from './getApplicationValidationRuns.query.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('getApplicationValidationRuns', () => {
   let mockDb
   let mockLogger
@@ -16,8 +19,8 @@ describe('getApplicationValidationRuns', () => {
         {
           id: 'run-1',
           application_id: 'app-123',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1'],
             actions: ['action1'],
@@ -28,8 +31,8 @@ describe('getApplicationValidationRuns', () => {
         {
           id: 'run-2',
           application_id: 'app-123',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1', 'parcel2'],
             actions: ['action1', 'action2'],
@@ -40,8 +43,8 @@ describe('getApplicationValidationRuns', () => {
         {
           id: 'run-3',
           application_id: 'app-123',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1', 'parcel2', 'parcel3'],
             actions: ['action1', 'action2', 'action3'],
@@ -244,8 +247,8 @@ describe('getApplicationValidationRuns', () => {
       mockResult.rows = Array.from({ length: 100 }, (_, i) => ({
         id: `run-${i}`,
         application_id: 'app-123',
-        sbi: 'SBI001',
-        crn: 'CRN001',
+        sbi,
+        crn,
         data: { index: i },
         created_at: new Date(2024, 0, i + 1).toISOString()
       }))

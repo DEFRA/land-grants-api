@@ -1,5 +1,8 @@
 import { getLatestApplicationRunForAppId } from './getLatestApplicationRunForAppId.query.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('getLatestApplicationRunForAppId', () => {
   let mockDb
   let mockLogger
@@ -15,8 +18,8 @@ describe('getLatestApplicationRunForAppId', () => {
         {
           id: 'run-1',
           application_id: 'app-123',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1', 'parcel2'],
             actions: ['action1'],

@@ -5,6 +5,8 @@ import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getAgreements } from '~/src/services/dal/index.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 
+const sbi = '800000001'
+
 vi.mock('~/src/services/dal/index.js')
 vi.mock('~/src/features/common/helpers/audit-event.js')
 
@@ -46,7 +48,7 @@ describe('Application Validation Controller', () => {
             {
               sheetId: 'SD5649',
               parcelId: '9215',
-              sbi: '123456789',
+              sbi,
               actions: [
                 {
                   code: 'CMOR1',

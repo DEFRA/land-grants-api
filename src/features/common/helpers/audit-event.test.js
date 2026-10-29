@@ -1,5 +1,9 @@
 import { publishAuditEvent } from '@defra/fcp-audit-publisher'
 
+const sbi = 800000001
+const crn = '9000000001'
+const frn = `0${sbi}`
+
 const { validateAuditEvent } = await vi.importActual(
   '@defra/fcp-audit-publisher'
 )
@@ -166,7 +170,7 @@ describe('auditEvent', () => {
   test('publishes correct audit fields', async () => {
     const context = {
       correlationId: 'corr-xyz',
-      identifiers: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
+      identifiers: { sbi, frn, crn }
     }
 
     await auditEvent(EVENT_TYPE, context)
@@ -179,17 +183,17 @@ describe('auditEvent', () => {
       ],
       status: 'success',
       details: context,
-      accounts: { sbi: 123456789, frn: 1234567890, crn: 'CRN-001' }
+      accounts: { sbi, frn, crn }
     })
   })
 
   test('audit.accounts populates only known fields', async () => {
     await auditEvent(EVENT_TYPE, {
-      identifiers: { sbi: 111111111 }
+      identifiers: { sbi }
     })
 
     expect(getPublishedPayload().audit.accounts).toEqual({
-      sbi: 111111111,
+      sbi,
       frn: undefined,
       crn: undefined
     })
@@ -272,7 +276,7 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
     const context = {
       correlationId: 'corr-xyz',
       applicationId: 'app-1',
-      identifiers: { sbi: 123456789 },
+      identifiers: { sbi },
       request: { parcel: [{ sheetId: 'SD2324', parcelId: '1253' }] },
       response: { annualTotalPence: 100000, agreementTotalPence: 300000 }
     }
@@ -286,7 +290,7 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
       ],
       status: 'success',
       details: { eventType: 'GrantsPaymentCalculated', ...context },
-      accounts: { sbi: 123456789 }
+      accounts: { sbi }
     })
     expect(validateAuditEvent(payload).valid).toBe(true)
   })
@@ -350,7 +354,7 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
     const context = {
       correlationId: 'corr-xyz',
       applicationId: 'app-1',
-      identifiers: { sbi: 123456789, crn: 'CRN-001' },
+      identifiers: { sbi, crn },
       request: { landActions: [{ sheetId: 'SD2324', parcelId: '1253' }] },
       response: {
         valid: false,
@@ -379,7 +383,7 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
       ],
       status: 'success',
       details: { eventType: 'GrantsApplicationValidated', ...context },
-      accounts: { sbi: 123456789, crn: 'CRN-001' }
+      accounts: { sbi, crn }
     })
     expect(validateAuditEvent(payload).valid).toBe(true)
   })
