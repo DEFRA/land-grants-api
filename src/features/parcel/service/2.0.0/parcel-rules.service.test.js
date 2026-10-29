@@ -171,7 +171,7 @@ describe('runParcelRules', () => {
       boundaryLengthMeters: 1800,
       incompatibleLengthMeters: 1788,
       incompatibleActions: [],
-      exceedsBoundary: false
+      feasible: true
     }
 
     test('should hand the rules the available length it was given', async () => {
