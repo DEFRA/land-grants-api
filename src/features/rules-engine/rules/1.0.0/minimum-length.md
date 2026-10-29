@@ -4,7 +4,7 @@
 
 This rule checks that the length applied for on a linear action is at least the configured minimum. That the length is no more than the parcel has available is checked separately, by [applied-for-total-or-partial-available-length](applied-for-total-or-partial-available-length.md).
 
-The available length is the parcel boundary less any length already committed to incompatible actions, from both existing agreements and other actions in the same submission. It is supplied to the rule as `landParcel.availability`. Tickets and policy documents refer to it as the "Available length".
+The available length is the parcel boundary less the boundary already occupied by incompatible actions, from both existing agreements and other actions in the same submission. Incompatible actions that can share a stretch with each other are counted once, in the [best-case arrangement](../../../../../docs/available-length-calculation/alc-explained.md). It is supplied to the rule as `landParcel.availability`. Tickets and policy documents refer to it as the "Available length".
 
 Checks run in this order, and the order matters:
 
@@ -22,7 +22,9 @@ A boundary can be committed beyond its own length when the records disagree. Exi
 
 `landParcel.availability` is therefore floored at zero. An over-committed boundary reports zero rather than a negative figure, which would otherwise reach the applicant as "enter a value that is no more than -500 m". A parcel whose boundary geometry cannot be read also reports zero.
 
-The two are told apart by `landParcel.boundaryLength`, which carries the parcel's own `totalMeters` and the `incompatibleMeters` of boundary already occupied by incompatible actions, both in physical metres. The rule writes both into its explanation, so a caseworker can see whether a parcel has no boundary data or a boundary that is already spoken for. It is absent for actions that are not measured in metres, and the explanation omits that line when it is.
+When the existing actions cannot all fit the boundary, however they are arranged, the available length is zero whether or not they are incompatible with the action applied for.
+
+The two are told apart by `landParcel.boundaryLength`, which carries the parcel's own `totalMeters` and the `incompatibleMeters` of boundary already occupied by incompatible actions, both in physical metres. When the existing actions cannot all fit, `incompatibleMeters` is the boundary all of them need, so it is more than `totalMeters`. The rule writes both into its explanation, so a caseworker can see whether a parcel has no boundary data or a boundary that is already spoken for. It is absent for actions that are not measured in metres, and the explanation omits that line when it is.
 
 ## Configuration parameters
 

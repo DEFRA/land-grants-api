@@ -6,7 +6,7 @@ import {
 } from '~/src/features/parcel/constants/unavailable-reasons.js'
 import {
   areaUnavailableReason,
-  exceedsBoundaryReason,
+  lengthUnavailableReason,
   ruleFailedReason
 } from './unavailability.js'
 
@@ -60,9 +60,9 @@ describe('areaUnavailableReason', () => {
   })
 })
 
-describe('exceedsBoundaryReason', () => {
+describe('lengthUnavailableReason', () => {
   test('should name the actions claiming the boundary with their billed lengths', () => {
-    const result = exceedsBoundaryReason([
+    const result = lengthUnavailableReason([
       { actionCode: 'BND1', billedLengthMeters: 120, lengthMeters: 130 },
       { actionCode: 'BND2', billedLengthMeters: 80 }
     ])
@@ -80,7 +80,7 @@ describe('exceedsBoundaryReason', () => {
   })
 
   test('should return no existing actions when there are none', () => {
-    expect(exceedsBoundaryReason([]).metadata.existingActions).toEqual([])
+    expect(lengthUnavailableReason([]).metadata.existingActions).toEqual([])
   })
 })
 

@@ -33,13 +33,13 @@ export function areaUnavailableReason(lpResult) {
 }
 
 /**
- * Why a linear action cannot be applied for when its existing actions claim
- * more than the whole boundary. The length equivalent of an infeasible area,
- * and likewise an RPA matter, so the actions are named.
- * @param {ActionWithLength[]} incompatibleActions - The actions claiming the boundary
+ * Why a linear action cannot be applied for when its existing actions cannot
+ * all fit the boundary, however they are arranged. The length equivalent of an
+ * infeasible area, and likewise an RPA matter, so the actions are named.
+ * @param {ActionWithLength[]} incompatibleActions - The actions that do not fit
  * @returns {UnavailableReasonResult} The unavailable reason
  */
-export function exceedsBoundaryReason(incompatibleActions) {
+export function lengthUnavailableReason(incompatibleActions) {
   return {
     code: EXISTING_ACTIONS_DO_NOT_FIT,
     reason: EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
