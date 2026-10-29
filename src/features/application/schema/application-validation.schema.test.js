@@ -5,13 +5,16 @@ import {
   applicationValidationRunsBodyRequestSchema
 } from './application-validation.schema.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('Application Validation Schema', () => {
   describe('applicationValidationSchema', () => {
     const validData = {
       applicationId: 'app-123',
       requester: 'user@example.com',
-      applicantCrn: 'CRN123456',
-      sbi: '123456789',
+      applicantCrn: crn,
+      sbi,
       landActions: [
         {
           sheetId: 'sheet-1',
@@ -213,8 +216,8 @@ describe('Application Validation Schema', () => {
       applicationValidationRun: {
         id: 123,
         application_id: 'app-123',
-        sbi: '123456789',
-        crn: 'CRN123456',
+        sbi,
+        crn,
         data: { some: 'data' },
         created_at: new Date()
       }
@@ -246,8 +249,8 @@ describe('Application Validation Schema', () => {
         applicationValidationRun: {
           id: 'not-a-number',
           application_id: 'app-123',
-          sbi: '123456789',
-          crn: 'CRN123456',
+          sbi,
+          crn,
           data: { some: 'data' },
           created_at: new Date()
         }

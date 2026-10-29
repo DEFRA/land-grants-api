@@ -7,6 +7,8 @@ import {
   auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 
+const sbi = '800000001'
+
 vi.mock('../service/wmp-service.js')
 vi.mock('../transformer/wmp-payment-calculate.transformer.js')
 vi.mock('~/src/features/common/helpers/audit-event.js')
@@ -82,7 +84,7 @@ const createMockPaymentResponse = () => ({
 const validPayload = {
   totalAreaHa: 8,
   applicationId: 'app-123',
-  sbi: '123456789'
+  sbi
 }
 
 describe('Payment calculate total WMP controller', () => {
@@ -148,11 +150,11 @@ describe('Payment calculate total WMP controller', () => {
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         expect.objectContaining({
-          identifiers: { sbi: '123456789', crn: undefined },
+          identifiers: { sbi, crn: undefined },
           request: {
             totalAreaHa: 8,
             applicationId: 'app-123',
-            sbi: '123456789',
+            sbi,
             crn: undefined
           },
           response: createMockPaymentResponse()
@@ -170,7 +172,7 @@ describe('Payment calculate total WMP controller', () => {
         payload: {
           totalAreaHa: 8,
           applicationId: 'app-123',
-          sbi: '123456789'
+          sbi
         }
       })
 
@@ -206,7 +208,7 @@ describe('Payment calculate total WMP controller', () => {
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           applicationId: 'app-123',
-          sbi: '123456789'
+          sbi
         }
       })
 
@@ -239,7 +241,7 @@ describe('Payment calculate total WMP controller', () => {
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: {
           totalAreaHa: 8,
-          sbi: '123456789'
+          sbi
         }
       })
 
@@ -307,11 +309,11 @@ describe('Payment calculate total WMP controller', () => {
       expect(mockAuditEvent).toHaveBeenCalledWith(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         expect.objectContaining({
-          identifiers: { sbi: '123456789', crn: undefined },
+          identifiers: { sbi, crn: undefined },
           request: {
             totalAreaHa: 8,
             applicationId: 'app-123',
-            sbi: '123456789',
+            sbi,
             crn: undefined
           },
           error: 'Action not found'

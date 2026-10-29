@@ -10,6 +10,8 @@ import {
   validateAllLandParcels
 } from './validation.service.js'
 
+const sbi = '800000001'
+
 vi.mock('../validation/application.validation.js')
 vi.mock('./land-parcel-validation.service.js')
 vi.mock('~/src/features/agreements/repo.js')
@@ -75,7 +77,6 @@ describe('Validation Service', () => {
   }
 
   const mockApplicationId = 'APP-123456'
-  const mockSbi = '123456789'
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -91,7 +92,7 @@ describe('Validation Service', () => {
         landActions: mockLandActions,
         actions: mockActions,
         applicationId: mockApplicationId,
-        sbi: mockSbi
+        sbi
       })
 
       expect(result).toBeNull()
@@ -110,7 +111,7 @@ describe('Validation Service', () => {
         landActions: mockLandActions,
         actions: mockActions,
         applicationId: mockApplicationId,
-        sbi: mockSbi
+        sbi
       })
 
       expect(result).toEqual(Boom.badRequest('Invalid land action data'))
@@ -125,7 +126,6 @@ describe('Validation Service', () => {
 
   describe('validateAllLandParcels', () => {
     test('should return an array of parcel results when validation passes', async () => {
-      const sbi = '012345678'
       const defraIdToken = 'dummy'
       const mockParcelResult1 = { sheetId: 'SX0679', parcelId: '9238' }
       const mockParcelResult2 = { sheetId: 'SX0680', parcelId: '9239' }
@@ -185,7 +185,6 @@ describe('Validation Service', () => {
     })
 
     test('should provide an empty array of agreements if none were found', async () => {
-      const sbi = '012345678'
       const defraIdToken = 'dummy'
       const mockParcelResult1 = { sheetId: 'SX0679', parcelId: '9238' }
       const mockParcelResult2 = { sheetId: 'SX0680', parcelId: '9239' }

@@ -2,7 +2,8 @@ import { application } from '../../index.js'
 import { getApplicationValidationRun } from '../../queries/getApplicationValidationRun.query.js'
 import createTestServer from '~/src/tests/test-server.js'
 
-const crn = '1234567890'
+const sbi = '800000001'
+const crn = '9000000001'
 
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
@@ -48,14 +49,14 @@ describe('Application Validation Run Controller', () => {
       const applicationValidationRun = {
         id: '123',
         application_id: '1f27e9de-8072-4b17-a870-5575c62a0787',
-        sbi: '214314',
+        sbi,
         crn,
         created_at: new Date().toISOString(),
         data: {
           id: 1,
           application_id: '1f27e9de-8072-4b17-a870-5575c62a0787',
           requester: 'GrantsUI',
-          sbi: '214314',
+          sbi,
           grantsApiVersion: '1.3.8',
           hasPassed: false,
           created_at: new Date().toISOString(),

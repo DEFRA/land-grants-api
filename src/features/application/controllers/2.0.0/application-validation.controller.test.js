@@ -14,6 +14,9 @@ import {
   auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 vi.mock('~/src/features/actions/service/action.service.js', () => ({
   getActions: vi.fn()
 }))
@@ -35,8 +38,6 @@ const mockSaveApplication = vi.mocked(saveApplication)
 const mockValidateRequestData = vi.mocked(validateRequestData)
 const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
 const mockAuditEvent = vi.mocked(auditEvent)
-
-const sbi = '123456789'
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
@@ -190,7 +191,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId,
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -268,7 +269,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId,
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -280,7 +281,7 @@ describe('ApplicationValidationController', () => {
         AuditEvent.SFI_APPLICATION_VALIDATED,
         expect.objectContaining({
           applicationId,
-          identifiers: { sbi, crn: 'CRN-456' },
+          identifiers: { sbi, crn },
           request: { landActions: mockLandActions },
           response: expect.objectContaining({
             valid: true,
@@ -312,7 +313,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId,
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -334,7 +335,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -346,7 +347,7 @@ describe('ApplicationValidationController', () => {
         AuditEvent.SFI_APPLICATION_VALIDATED,
         expect.objectContaining({
           applicationId: 'APP-123',
-          identifiers: { sbi, crn: 'CRN-456' },
+          identifiers: { sbi, crn },
           request: { landActions: mockLandActions },
           error: 'Database connection failed'
         }),
@@ -363,7 +364,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId,
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -389,7 +390,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -417,7 +418,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -443,7 +444,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -482,7 +483,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -510,7 +511,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -534,7 +535,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -569,7 +570,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: []
         }
@@ -595,7 +596,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -622,7 +623,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }
@@ -651,7 +652,7 @@ describe('ApplicationValidationController', () => {
         payload: {
           applicationId: 'APP-123',
           requester: 'test-user',
-          applicantCrn: 'CRN-456',
+          applicantCrn: crn,
           sbi,
           landActions: mockLandActions
         }

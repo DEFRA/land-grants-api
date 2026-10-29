@@ -37,6 +37,9 @@ import {
 } from '~/src/features/data-layers/queries/getDataLayer.query.js'
 import { woodlandManagement } from '~/src/features/woodland-management/index.js'
 
+const sbi = 800000001
+const crn = '9000000001'
+
 vi.mock('~/src/features/parcel/queries/getLandData.query.js')
 vi.mock('~/src/features/actions/queries/getEnabledActions.query.js')
 vi.mock(
@@ -120,8 +123,8 @@ const mockGetApplicationValidationRunResult = (logger, db, id) => {
   }
   return {
     id,
-    sbi: 123456,
-    crn: '123456',
+    sbi,
+    crn,
     application_id: id,
     validation_run_id: 1,
     data: {

@@ -8,6 +8,9 @@ import {
   auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js'
 )
@@ -65,8 +68,8 @@ describe('Case Management Application Validation Controller', () => {
     const mockApplicationValidationRun = {
       id: 1,
       application_id: 'APP-123456',
-      sbi: '123456789',
-      crn: '1234567890',
+      sbi,
+      crn,
       created_at: mockCreatedAt,
       data: {
         application: {
@@ -89,8 +92,8 @@ describe('Case Management Application Validation Controller', () => {
     const mockApplicationData = {
       date: new Date('2025-10-09T00:00:00.000Z'),
       applicationId: 'APP-123456',
-      applicantCrn: '1234567890',
-      sbi: 123456789,
+      applicantCrn: crn,
+      sbi: Number(sbi),
       hasPassed: true,
       applicationLevelResults: {},
       application: {
@@ -178,7 +181,7 @@ describe('Case Management Application Validation Controller', () => {
             kind: undefined
           }
         },
-        'Case management application validation rerun completed [validationRunId=1 | applicationValidationRunId=1 | sbi=123456789 | crn=1234567890 | applicationId=APP-123456]'
+        `Case management application validation rerun completed [validationRunId=1 | applicationValidationRunId=1 | sbi=${sbi} | crn=${crn} | applicationId=APP-123456]`
       )
     })
 
@@ -238,7 +241,7 @@ describe('Case Management Application Validation Controller', () => {
       vi.mocked(getApplicationValidationRun).mockResolvedValue(
         mockApplicationValidationRun
       )
-      validateApplication.mockRejectedValue(new UnauthorizedError('123456789'))
+      validateApplication.mockRejectedValue(new UnauthorizedError(sbi))
 
       const request = defaultRequest
 
@@ -321,7 +324,7 @@ describe('Case Management Application Validation Controller', () => {
             type: 'warn'
           }
         },
-        'Validation failed: Case management application validation [sbi=123456789 | crn=1234567890 | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
+        `Validation failed: Case management application validation [sbi=${sbi} | crn=${crn} | validationRunId=1 | requesterUsername=test.user@example.com | applicationId=APP-123456]`
       )
 
       expect(mockAuditEvent).not.toHaveBeenCalled()

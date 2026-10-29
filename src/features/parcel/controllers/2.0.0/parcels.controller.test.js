@@ -11,6 +11,8 @@ import { getAgreements } from '~/src/features/agreements/repo.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { parcel } from '~/src/features/parcel/index.js'
 
+const sbi = '800000001'
+
 vi.mock('~/src/features/agreements/repo.js', async (importOriginal) => {
   const actual = await importOriginal()
   return {
@@ -37,8 +39,6 @@ const mockGetActionsForParcel = getActionsForParcel
 const mockGetActionsForParcelWithSSSIConsentRequired = addSssiConsentRequired
 const mockGetActionsForParcelWithHEFERConsentRequired = addHeferRequired
 const mockCreateCompatibilityMatrix = createCompatibilityMatrix
-
-const sbi = '012345678'
 
 const defaultAgreements = [
   {

@@ -1,7 +1,7 @@
 import { applicationValidationRunToCaseManagement } from './application-validation.transformer.js'
 
-const sbi = 123456789
-const crn = '1234567890'
+const sbi = 800000001
+const crn = '9000000001'
 
 describe('applicationValidationRunToCaseManagement', () => {
   test('should return null when input is null', () => {

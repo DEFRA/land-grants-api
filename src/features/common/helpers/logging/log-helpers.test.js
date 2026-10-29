@@ -7,6 +7,8 @@ import {
   logValidationWarn
 } from './log-helpers.js'
 
+const sbi = '800000001'
+
 describe('Log Helpers', () => {
   let mockLogger
 
@@ -178,12 +180,12 @@ describe('Log Helpers', () => {
     it('should log validation error with array of errors', () => {
       logValidationWarn(mockLogger, {
         operation: 'application validation',
-        errors: ['Invalid parcel ID', 'Action code not found', 'Missing SBI']
+        errors: ['Invalid parcel ID', 'Action code not found', 'Missing sbi']
       })
 
       const logData = mockLogger.warn.mock.calls[0][0]
       expect(logData.event.reason).toBe(
-        'Invalid parcel ID, Action code not found, Missing SBI'
+        'Invalid parcel ID, Action code not found, Missing sbi'
       )
     })
 
@@ -191,12 +193,12 @@ describe('Log Helpers', () => {
       logValidationWarn(mockLogger, {
         operation: 'application validation',
         errors: ['Invalid parcel'],
-        context: { applicationId: 'APP-123', sbi: '987654321' }
+        context: { applicationId: 'APP-123', sbi }
       })
 
       const message = mockLogger.warn.mock.calls[0][1]
       expect(message).toBe(
-        'Validation failed: application validation [applicationId=APP-123 | sbi=987654321]'
+        `Validation failed: application validation [applicationId=APP-123 | sbi=${sbi}]`
       )
     })
 
@@ -448,12 +450,12 @@ describe('Log Helpers', () => {
       logDatabaseError(mockLogger, {
         operation: 'getLandData',
         error: new Error('test'),
-        context: { sheetId: '123', parcelId: '456', sbi: '789' }
+        context: { sheetId: '123', parcelId: '456', sbi }
       })
 
       const message = mockLogger.error.mock.calls[0][1]
       expect(message).toMatch(
-        /Database operation failed: getLandData \[sheetId=123 \| parcelId=456 \| sbi=789\]/
+        `Database operation failed: getLandData [sheetId=123 | parcelId=456 | sbi=${sbi}]`
       )
     })
 

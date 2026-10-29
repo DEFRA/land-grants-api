@@ -2,6 +2,9 @@ import Hapi from '@hapi/hapi'
 import { caseManagementAdapter } from '../index.js'
 import { getApplicationValidationRun } from '~/src/features/application/queries/getApplicationValidationRun.query.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 vi.mock(
   '~/src/features/application/queries/getApplicationValidationRun.query.js',
   () => ({
@@ -45,10 +48,10 @@ describe('Case Management Application Validation Run Controller', () => {
       const applicationValidationRun = {
         id: 1,
         application_id: '123456789',
-        sbi: '123456789',
-        crn: '123456789',
+        sbi,
+        crn,
         data: {
-          sbi: 123456789,
+          sbi: Number(sbi),
           date: '2025-09-30T08:29:21.263Z',
           hasPassed: false,
           requester: 'grants-ui',
@@ -71,7 +74,7 @@ describe('Case Management Application Validation Run Controller', () => {
             ],
             agreementLevelActions: []
           },
-          applicantCrn: '1111111111',
+          applicantCrn: crn,
           applicationId: 'app-validation-test1',
           parcelLevelResults: [
             {

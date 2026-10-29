@@ -9,6 +9,8 @@ import {
 import createTestServer from '~/src/tests/test-server.js'
 import { quantityValidationFailAction } from '~/src/features/common/helpers/joi-validations.js'
 
+const sbi = '800000001'
+
 vi.mock('~/src/features/application/validation/application.validation.js')
 vi.mock('~/src/features/actions/service/action.service.js')
 vi.mock('~/src/features/common/helpers/audit-event.js')
@@ -18,7 +20,7 @@ const mockGetActions = getActions
 const mockAuditEvent = auditEvent
 
 const mockLandActions = {
-  sbi: '123456789',
+  sbi,
   parcel: [
     {
       sheetId: 'SX0679',
@@ -216,7 +218,7 @@ describe('Payment calculate controller V2', () => {
         method: 'POST',
         url: '/api/v2/payments/calculate',
         payload: {
-          sbi: '123456789',
+          sbi,
           parcel: [
             {
               sheetId: 'SX0679',

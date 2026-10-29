@@ -8,6 +8,9 @@ import { validateApplication } from './application-validation.service.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 import { validateRequest } from '../validation/application.validation.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 vi.mock('../mutations/saveApplication.mutation.js')
 vi.mock('../transformers/application.transformer.js')
 vi.mock('../validation/application.validation.js')
@@ -71,8 +74,6 @@ describe('Application Validation Service', () => {
   ]
 
   const mockApplicationId = 'APP-123456'
-  const mockCrn = '1234567890'
-  const mockSbi = '123456789'
   const mockRequesterUsername = 'test.user@example.com'
 
   const mockEnabledActions = [
@@ -139,8 +140,8 @@ describe('Application Validation Service', () => {
 
   const mockApplicationData = {
     applicationId: mockApplicationId,
-    crn: mockCrn,
-    sbi: mockSbi,
+    crn,
+    sbi,
     requesterUsername: mockRequesterUsername,
     parcels: mockParcelResults
   }
@@ -184,8 +185,8 @@ describe('Application Validation Service', () => {
       const result = await validateApplication(
         mockLandAction,
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockRequest,
         dalAuth.value
@@ -235,8 +236,8 @@ describe('Application Validation Service', () => {
 
       expect(mockApplicationDataTransformer).toHaveBeenCalledWith(
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockLandAction,
         [mockParcelResults[0], mockParcelResults[1]]
@@ -247,13 +248,13 @@ describe('Application Validation Service', () => {
         mockPostgresDb,
         {
           application_id: mockApplicationId,
-          sbi: mockSbi,
-          crn: mockCrn,
+          sbi,
+          crn,
           data: mockApplicationData
         }
       )
       expect(getAgreements).toHaveBeenCalledWith(
-        mockSbi,
+        sbi,
         [
           ['9238', 'SX0679'],
           ['9239', 'SX0680']
@@ -274,8 +275,8 @@ describe('Application Validation Service', () => {
       await validateApplication(
         mockLandAction,
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockRequest,
         dalAuth.value,
@@ -297,8 +298,8 @@ describe('Application Validation Service', () => {
       await validateApplication(
         mockLandAction,
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockRequest,
         dalAuth.value
@@ -331,8 +332,8 @@ describe('Application Validation Service', () => {
       const result = await validateApplication(
         mockLandAction,
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockRequest,
         dalAuth.value
@@ -353,7 +354,7 @@ describe('Application Validation Service', () => {
             reason: 'Invalid land action data'
           }
         },
-        'Validation failed: Application validation [sbi=123456789 | crn=1234567890 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
+        `Validation failed: Application validation [sbi=${sbi} | crn=${crn} | requesterUsername=test.user@example.com | applicationId=APP-123456]`
       )
 
       expect(mockGetActions).toHaveBeenCalledWith(
@@ -388,8 +389,8 @@ describe('Application Validation Service', () => {
       const result = await validateApplication(
         mockLandAction,
         mockApplicationId,
-        mockCrn,
-        mockSbi,
+        crn,
+        sbi,
         mockRequesterUsername,
         mockRequest,
         dalAuth.value
@@ -410,7 +411,7 @@ describe('Application Validation Service', () => {
             type: 'warn'
           }
         },
-        'Validation failed: Application validation [sbi=123456789 | crn=1234567890 | requesterUsername=test.user@example.com | applicationId=APP-123456]'
+        `Validation failed: Application validation [sbi=${sbi} | crn=${crn} | requesterUsername=test.user@example.com | applicationId=APP-123456]`
       )
     })
 
@@ -422,8 +423,8 @@ describe('Application Validation Service', () => {
         validateApplication(
           mockLandAction,
           mockApplicationId,
-          mockCrn,
-          mockSbi,
+          crn,
+          sbi,
           mockRequesterUsername,
           mockRequest
         )
@@ -447,8 +448,8 @@ describe('Application Validation Service', () => {
         validateApplication(
           mockLandAction,
           mockApplicationId,
-          mockCrn,
-          mockSbi,
+          crn,
+          sbi,
           mockRequesterUsername,
           mockRequest
         )
@@ -468,8 +469,8 @@ describe('Application Validation Service', () => {
         validateApplication(
           mockLandAction,
           mockApplicationId,
-          mockCrn,
-          mockSbi,
+          crn,
+          sbi,
           mockRequesterUsername,
           mockRequest
         )
@@ -488,8 +489,8 @@ describe('Application Validation Service', () => {
         validateApplication(
           mockLandAction,
           mockApplicationId,
-          mockCrn,
-          mockSbi,
+          crn,
+          sbi,
           mockRequesterUsername,
           mockRequest
         )
@@ -500,8 +501,8 @@ describe('Application Validation Service', () => {
         mockPostgresDb,
         {
           application_id: mockApplicationId,
-          sbi: mockSbi,
-          crn: mockCrn,
+          sbi,
+          crn,
           data: mockApplicationData
         }
       )

@@ -5,6 +5,8 @@ import {
   parcelsSuccessResponseSchema
 } from './parcel.schema.js'
 
+const sbi = '800000001'
+
 describe('Parcel Schema Validation v2', () => {
   describe('parcelsSuccessResponseSchema', () => {
     const validResponse = {
@@ -152,7 +154,7 @@ describe('Parcel Schema Validation v2', () => {
 
   describe('parcelsSchema', () => {
     const validParcelsRequest = {
-      sbi: '012345678',
+      sbi,
       parcelIds: ['SX0679-9238', 'AB1234-5678'],
       fields: ['size', 'actions'],
       plannedActions: [{ actionCode: 'UPL1', quantity: 0.00001, unit: 'ha' }]

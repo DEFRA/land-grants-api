@@ -1,12 +1,13 @@
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 const headers = {
   Authorization: getAuthHeader(),
   'X-Forwarded-Authorization': 'dummy'
 }
-
-const sbi = '123456789'
 
 describe('Application Validation Endpoints', () => {
   describe('POST /api/v2/application/validate', () => {
@@ -16,7 +17,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: 'appid-1',
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -48,7 +49,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: 'appid-2',
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -86,7 +87,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: 'appid-5',
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -112,7 +113,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: 'appid-6',
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -158,7 +159,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: 'appid-run-1',
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
@@ -227,7 +228,7 @@ describe('Application Validation Endpoints', () => {
         body: {
           applicationId: testApplicationId,
           requester: 'test-user',
-          applicantCrn: '1234567890',
+          applicantCrn: crn,
           sbi,
           landActions: [
             {
