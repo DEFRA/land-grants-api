@@ -3,8 +3,15 @@ import { logDatabaseError } from '../../common/helpers/logging/log-helpers.js'
 const mergeResults = (results) =>
   Object.assign({}, ...results.map((r) => r.rows[0]))
 
-const queryBatch = async (client, queries) =>
-  Promise.all(queries.map((sql) => client.query(sql)))
+// A pg client runs one query at a time, so issue them sequentially rather than
+// queueing them concurrently (deprecated in pg 8, removed in pg 9)
+const queryBatch = async (client, queries) => {
+  const results = []
+  for (const sql of queries) {
+    results.push(await client.query(sql))
+  }
+  return results
+}
 
 const countTableRows = (client) =>
   queryBatch(client, [

@@ -365,10 +365,9 @@ export async function completeAndPromotePaired(
   }
 
   if (promoted) {
-    await Promise.all([
-      truncateStagingTable(entityName, dbClient, logger),
-      truncateStagingTable(pairedEntityName, dbClient, logger)
-    ])
+    // Sequential: concurrent queries on one pg client are deprecated
+    await truncateStagingTable(entityName, dbClient, logger)
+    await truncateStagingTable(pairedEntityName, dbClient, logger)
   }
 
   if (pairAlreadyFailedError) {
