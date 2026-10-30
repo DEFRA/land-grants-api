@@ -8,27 +8,17 @@ import {
   BOTH_SIDES,
   SINGLE_SIDE
 } from '~/src/features/common/constants/sidedness.js'
+import {
+  LINEAR_SIDEDNESS,
+  PARCEL_PERIMETER_METERS,
+  compatibleOnly,
+  existing,
+  linearCompatibility,
+  parcel
+} from './testUtils.js'
 
 vi.mock('../parcel/queries/getParcelBoundary.query.js')
 vi.mock('../actions/queries/getSidednessByActionCode.query.js')
-
-const PARCEL_PERIMETER_METERS = 1000
-
-// The linear actions as configured: BND2, CHRW2 and WBD2 stack with each
-// other; BND1 stacks with nothing; no action stacks with itself
-const LINEAR_SIDEDNESS = {
-  BND1: BOTH_SIDES,
-  BND2: SINGLE_SIDE,
-  CHRW2: SINGLE_SIDE,
-  WBD2: BOTH_SIDES
-}
-
-const STACKING_CODES = new Set(['BND2', 'CHRW2', 'WBD2'])
-
-const linearCompatibility = (code, otherCode) =>
-  code !== otherCode &&
-  STACKING_CODES.has(code) &&
-  STACKING_CODES.has(otherCode)
 
 // An existing action as the explanation lists it
 const explained = (
@@ -465,18 +455,6 @@ describe('getAvailableLength', () => {
 })
 
 describe('calculateAvailableLength', () => {
-  const parcel = (overrides = {}) => ({
-    compatibilityCheckFn: linearCompatibility,
-    boundaryLengthMeters: PARCEL_PERIMETER_METERS,
-    sidednessByActionCode: LINEAR_SIDEDNESS,
-    ...overrides
-  })
-
-  const existing = (actionCode, billedLengthMeters) => ({
-    actionCode,
-    billedLengthMeters
-  })
-
   describe('with nothing competing for the boundary', () => {
     it('offers a both-sides action the whole perimeter', () => {
       const result = calculateAvailableLength('BND1', [], parcel())
@@ -737,16 +715,6 @@ describe('calculateAvailableLength', () => {
   })
 
   describe('arranging existing actions on the boundary', () => {
-    // Compatible only where a pair is listed, in either order
-    const compatibleOnly =
-      (...pairs) =>
-      (code, otherCode) =>
-        pairs.some(
-          ([first, second]) =>
-            (first === code && second === otherCode) ||
-            (first === otherCode && second === code)
-        )
-
     it('deducts existing actions that stack with each other once', () => {
       // A hedge on a hedgebank: both lie along the same 750 m, and BND1 can share neither
       const result = calculateAvailableLength(

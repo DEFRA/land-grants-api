@@ -10,6 +10,11 @@ import { calculateAvailableLength } from '~/src/features/available-length/availa
 import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
 import { getSidednessByActionCode } from '~/src/features/actions/queries/getSidednessByActionCode.query.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { formatLengthExplanationSections } from '~/src/features/available-length/explanations.js'
+import {
+  BOTH_SIDES,
+  SINGLE_SIDE
+} from '~/src/features/common/constants/sidedness.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import { mergeAgreementsTransformer } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { runParcelRules } from '~/src/features/parcel/service/2.0.0/parcel-rules.service.js'
@@ -31,6 +36,7 @@ vi.mock('~/src/features/available-length/availableLength.js')
 vi.mock('~/src/features/parcel/queries/getParcelBoundary.query.js')
 vi.mock('~/src/features/actions/queries/getSidednessByActionCode.query.js')
 vi.mock('~/src/features/available-area/explanations.js')
+vi.mock('~/src/features/available-length/explanations.js')
 vi.mock('~/src/features/available-area/availableAreaDataRequirements.js')
 vi.mock('~/src/features/agreements/transformers/agreements.transformer.js')
 vi.mock('~/src/features/parcel/service/2.0.0/parcel-rules.service.js')
@@ -704,6 +710,7 @@ describe('Parcel Service 2.0.0', () => {
         })
         getSidednessByActionCode.mockResolvedValue(sidednessByActionCode)
         calculateAvailableLength.mockReturnValue(lengthResult())
+        formatLengthExplanationSections.mockReturnValue([])
       })
 
       test('should report the available length', async () => {
@@ -770,6 +777,68 @@ describe('Parcel Service 2.0.0', () => {
 
         expect(calculateAvailableLength).not.toHaveBeenCalled()
         expect(actionTransformer).toHaveBeenCalledWith(bnd1, undefined, false)
+      })
+
+      describe('explanations', () => {
+        // As the formatter would return them, cut down to one section
+        const explanations = [
+          { title: 'Parcel boundary', content: ['Parcel boundary: 1800 m'] }
+        ]
+
+        test('should explain the available length the calculation reported, for the action applied for and its sidedness', async () => {
+          await requestActions([bnd2])
+
+          expect(formatLengthExplanationSections).toHaveBeenCalledWith(
+            lengthResult(),
+            { targetAction: 'BND2', targetSidedness: SINGLE_SIDE }
+          )
+        })
+
+        test('should explain a linear action with no sidedness as both-sides', async () => {
+          const hrw1 = {
+            ...bnd1,
+            code: 'HRW1',
+            description: 'Manage hedgerows'
+          }
+
+          await requestActions([hrw1])
+
+          expect(formatLengthExplanationSections).toHaveBeenCalledWith(
+            lengthResult(),
+            { targetAction: 'HRW1', targetSidedness: BOTH_SIDES }
+          )
+        })
+
+        test('should report the explanation alongside the available length', async () => {
+          formatLengthExplanationSections.mockReturnValue(explanations)
+
+          await requestActions([bnd1])
+
+          const actionAvailability = actionAvailabilityFor('BND1')
+
+          expect(actionAvailability.explanations).toEqual(explanations)
+        })
+
+        test('should report the explanation when existing actions do not fit the boundary', async () => {
+          calculateAvailableLength.mockReturnValue(
+            lengthResult({
+              availableLength: 0,
+              boundaryLengthMeters: 1120,
+              incompatibleLengthMeters: 1121,
+              feasible: false,
+              incompatibleActions: [
+                { actionCode: 'BND2', billedLengthMeters: 1121 }
+              ]
+            })
+          )
+          formatLengthExplanationSections.mockReturnValue(explanations)
+
+          await requestActions([bnd1])
+
+          const actionAvailability = actionAvailabilityFor('BND1')
+
+          expect(actionAvailability.explanations).toEqual(explanations)
+        })
       })
 
       describe('sidedness', () => {

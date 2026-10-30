@@ -5,6 +5,11 @@ import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getAgreements } from '~/src/services/dal/index.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
+import {
+  BOTH_SIDES,
+  SINGLE_SIDE,
+  billingFactorOf
+} from '~/src/features/common/constants/sidedness.js'
 
 vi.mock('~/src/services/dal/index.js')
 vi.mock(
@@ -191,8 +196,13 @@ describe('Parcels Controller 2.0.0', () => {
       ]
     })
 
+    // BND2 is single-side, so it is billed for both faces of the boundary it occupies
+    const bnd2Occupying = (occupiedMeters) =>
+      dalAgreement('BND2', occupiedMeters * billingFactorOf(SINGLE_SIDE))
+
     const actionOf = (data) => data.parcels[0].actions[0]
     const availabilityOf = (data) => actionOf(data).availability
+    const explanationsOf = (data) => actionOf(data).results.explanations
 
     const withMinimumLength = (minimumLengthM) => ({
       ...bnd1,
@@ -208,15 +218,46 @@ describe('Parcels Controller 2.0.0', () => {
     const requestActions = (target = parcelId) =>
       requestParcels([target], ['actions'])
 
+    const requestActionsWithResults = () =>
+      requestParcels([parcelId], ['actions', 'actions.results'])
+
+    // Sidedness reaches the actions table from the grants config, which the db seed does not load
+    const SEEDED_SIDEDNESS = { BND1: BOTH_SIDES, BND2: SINGLE_SIDE }
+
+    const insertSeededSidedness = () => {
+      const codes = Object.keys(SEEDED_SIDEDNESS)
+      const sidedness = Object.values(SEEDED_SIDEDNESS)
+
+      return connection.query(
+        'INSERT INTO actions (code, sidedness) SELECT * FROM unnest($1::text[], $2::text[])',
+        [codes, sidedness]
+      )
+    }
+
+    const deleteSeededSidedness = () => {
+      const codes = Object.keys(SEEDED_SIDEDNESS)
+
+      return connection.query('DELETE FROM actions WHERE code = ANY ($1)', [
+        codes
+      ])
+    }
+
+    beforeAll(async () => {
+      await deleteSeededSidedness()
+      await insertSeededSidedness()
+    })
+
+    afterAll(async () => {
+      await deleteSeededSidedness()
+    })
+
     beforeEach(() => {
       mockGetEnabledActions.mockResolvedValue([bnd1])
     })
 
     test('should report the failed minimum-length rule when agreements leave less than the minimum', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
-      mockGetAgreements.mockResolvedValue(
-        dalAgreement('BND2', perimeterMeters - 9)
-      )
+      mockGetAgreements.mockResolvedValue(bnd2Occupying(perimeterMeters - 9))
 
       const { data } = await requestActions()
 
@@ -235,7 +276,7 @@ describe('Parcels Controller 2.0.0', () => {
 
     test('should report no availability, rather than too little length, when agreements use the whole perimeter', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
-      mockGetAgreements.mockResolvedValue(dalAgreement('BND2', perimeterMeters))
+      mockGetAgreements.mockResolvedValue(bnd2Occupying(perimeterMeters))
 
       const { data } = await requestActions()
 
@@ -252,9 +293,7 @@ describe('Parcels Controller 2.0.0', () => {
 
     test('should report that existing actions do not fit when agreements exceed the perimeter', async () => {
       mockGetEnabledActions.mockResolvedValue([withMinimumLength(20)])
-      mockGetAgreements.mockResolvedValue(
-        dalAgreement('BND2', perimeterMeters + 1)
-      )
+      mockGetAgreements.mockResolvedValue(bnd2Occupying(perimeterMeters + 1))
 
       const { data } = await requestActions()
 
@@ -263,7 +302,11 @@ describe('Parcels Controller 2.0.0', () => {
           code: 'existing-actions-do-not-fit',
           metadata: {
             existingActions: [
-              { actionCode: 'BND2', billedLengthMeters: perimeterMeters + 1 }
+              {
+                actionCode: 'BND2',
+                billedLengthMeters:
+                  (perimeterMeters + 1) * billingFactorOf(SINGLE_SIDE)
+              }
             ]
           }
         })
@@ -299,14 +342,15 @@ describe('Parcels Controller 2.0.0', () => {
       })
     })
 
-    test('should deduct an incompatible metre agreement from the perimeter', async () => {
+    test('should deduct the boundary an incompatible metre agreement occupies from the perimeter', async () => {
+      // 300 m of single-side BND2 occupies 150 m of boundary
       mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
 
       const { data } = await requestActions()
 
       expect(availabilityOf(data)).toEqual({
         unit: 'm',
-        value: perimeterMeters - 300
+        value: perimeterMeters - 150
       })
     })
 
@@ -318,6 +362,78 @@ describe('Parcels Controller 2.0.0', () => {
       expect(availabilityOf(data)).toEqual({
         unit: 'm',
         value: perimeterMeters
+      })
+    })
+
+    describe('explanations', () => {
+      test('should explain the available length when action results are requested', async () => {
+        mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
+
+        const { data } = await requestActionsWithResults()
+
+        expect(explanationsOf(data)).toEqual([
+          {
+            title: 'Application',
+            content: ['Target action: BND1', 'Sidedness: both-sides']
+          },
+          {
+            title: 'Parcel boundary',
+            content: [`Parcel boundary: ${perimeterMeters} m`]
+          },
+          {
+            title: 'Existing actions on the boundary',
+            content: [
+              'BND2: billed 300 m, single-side, occupies 150 m of boundary, deducted'
+            ]
+          },
+          {
+            title: 'Result',
+            content: [
+              'Boundary occupied by incompatible actions: 150 m',
+              `Free boundary: ${perimeterMeters - 150} m`,
+              `Maximum available length for BND1: ${perimeterMeters - 150} m`
+            ]
+          }
+        ])
+      })
+
+      test('should explain why nothing is available when agreements exceed the perimeter', async () => {
+        mockGetAgreements.mockResolvedValue(bnd2Occupying(perimeterMeters + 1))
+
+        const { data } = await requestActionsWithResults()
+
+        expect(explanationsOf(data)).toEqual([
+          {
+            title: 'Application',
+            content: ['Target action: BND1', 'Sidedness: both-sides']
+          },
+          {
+            title: 'Parcel boundary',
+            content: [`Parcel boundary: ${perimeterMeters} m`]
+          },
+          {
+            title: 'Existing actions on the boundary',
+            content: [
+              `BND2: billed ${(perimeterMeters + 1) * billingFactorOf(SINGLE_SIDE)} m, single-side, occupies ${perimeterMeters + 1} m of boundary, deducted`
+            ]
+          },
+          {
+            title: 'Error - existing actions do not fit',
+            content: [
+              `The existing actions need ${perimeterMeters + 1} m of boundary however they are arranged, but the parcel boundary is only ${perimeterMeters} m. This requires a manual review and existing agreements may need adjusting.`
+            ]
+          },
+          {
+            title: 'Result',
+            content: ['Maximum available length for BND1: 0 m']
+          }
+        ])
+      })
+
+      test('should not report results when they are not requested', async () => {
+        const { data } = await requestActions()
+
+        expect(actionOf(data).results).toBeUndefined()
       })
     })
   })
