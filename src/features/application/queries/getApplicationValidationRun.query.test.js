@@ -1,5 +1,8 @@
 import { getApplicationValidationRun } from './getApplicationValidationRun.query.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('getApplicationValidationRun', () => {
   let mockDb
   let mockLogger
@@ -16,8 +19,8 @@ describe('getApplicationValidationRun', () => {
         {
           id: 'test-id-123',
           application_id: 'app-456',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1', 'parcel2'],
             actions: ['action1'],

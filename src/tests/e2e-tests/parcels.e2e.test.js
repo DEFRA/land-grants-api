@@ -1,6 +1,8 @@
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const sbi = '800000001'
+
 const headers = {
   Authorization: getAuthHeader(),
   'X-Forwarded-Authorization': 'dummy'
@@ -13,7 +15,7 @@ describe('Parcels Endpoints', () => {
         const response = await httpClient.post('/api/v2/parcels', {
           headers,
           body: {
-            sbi: '0123456789',
+            sbi,
             parcelIds: ['SD5649-9215'],
             fields: ['size', 'actions']
           }

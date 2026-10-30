@@ -1,6 +1,9 @@
 import { httpClient } from './setup/http-client.js'
 import { getAuthHeader } from './setup/auth-helpers.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 const headers = {
   Authorization: getAuthHeader(),
   'Defra-Email': 'dummy@defra.gov.uk'
@@ -18,8 +21,8 @@ describe('Case Management Adapter Endpoints', () => {
       body: {
         applicationId: 'appid-cma-1',
         requester: 'test-user',
-        applicantCrn: '1234567890',
-        sbi: '123456789',
+        applicantCrn: crn,
+        sbi,
         landActions: [
           {
             sheetId: 'SD5649',

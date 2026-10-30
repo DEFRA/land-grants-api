@@ -4,6 +4,9 @@ import http from 'k6/http'
 import { check } from 'k6'
 import { defaultOptions, url, accessToken } from './options.js'
 
+const sbi = 800000001
+const crn = '9000000001'
+
 export const options = {
   ...defaultOptions
 }
@@ -11,8 +14,8 @@ export const options = {
 const payload = JSON.stringify({
   applicationId: 'app-validation-test1',
   requester: 'grants-ui',
-  applicantCrn: '1111111111',
-  sbi: 123456789,
+  applicantCrn: crn,
+  sbi,
   landActions: [
     {
       parcelId: '8936',

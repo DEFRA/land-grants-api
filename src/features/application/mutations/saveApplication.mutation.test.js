@@ -1,5 +1,8 @@
 import { saveApplication } from './saveApplication.mutation.js'
 
+const sbi = '800000001'
+const crn = '9000000001'
+
 describe('saveApplication', () => {
   let mockDb
   let mockLogger
@@ -10,8 +13,8 @@ describe('saveApplication', () => {
   beforeEach(() => {
     testApplication = {
       application_id: 'app-123',
-      sbi: 'SBI001',
-      crn: 'CRN001',
+      sbi,
+      crn,
       data: {
         parcels: ['parcel1', 'parcel2'],
         actions: ['action1', 'action2'],
@@ -25,8 +28,8 @@ describe('saveApplication', () => {
         {
           id: 1,
           application_id: 'app-123',
-          sbi: 'SBI001',
-          crn: 'CRN001',
+          sbi,
+          crn,
           data: {
             parcels: ['parcel1', 'parcel2'],
             actions: ['action1', 'action2'],
@@ -74,8 +77,8 @@ describe('saveApplication', () => {
 
       expect(mockClient.query).toHaveBeenCalledWith(expectedQuery, [
         'app-123',
-        'SBI001',
-        'CRN001',
+        sbi,
+        crn,
         testApplication.data
       ])
     })
@@ -97,7 +100,7 @@ describe('saveApplication', () => {
             type: 'info'
           }
         },
-        'Saving application [applicationId=app-123 | sbi=SBI001 | crn=CRN001]'
+        `Saving application [applicationId=app-123 | sbi=${sbi} | crn=${crn}]`
       )
     })
 
@@ -110,8 +113,8 @@ describe('saveApplication', () => {
     test('should handle different application IDs', async () => {
       const differentApp = {
         application_id: 'app-999',
-        sbi: 'SBI999',
-        crn: 'CRN999',
+        sbi,
+        crn,
         data: { test: 'data' }
       }
 
@@ -121,8 +124,8 @@ describe('saveApplication', () => {
 
       expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
         'app-999',
-        'SBI999',
-        'CRN999',
+        sbi,
+        crn,
         { test: 'data' }
       ])
       expect(result).toBe(999)
@@ -152,8 +155,8 @@ describe('saveApplication', () => {
 
       const complexApp = {
         application_id: 'app-complex',
-        sbi: 'SBI002',
-        crn: 'CRN002',
+        sbi,
+        crn,
         data: complexData
       }
 
@@ -164,8 +167,8 @@ describe('saveApplication', () => {
 
       expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
         'app-complex',
-        'SBI002',
-        'CRN002',
+        sbi,
+        crn,
         complexData
       ])
       expect(result).toBe(42)
@@ -274,8 +277,8 @@ describe('saveApplication', () => {
 
       const appWithCircular = {
         application_id: 'app-circular',
-        sbi: 'SBI003',
-        crn: 'CRN003',
+        sbi,
+        crn,
         data: circularData
       }
 
@@ -307,8 +310,8 @@ describe('saveApplication', () => {
     test('should handle null data field', async () => {
       const appWithNullData = {
         application_id: 'app-null',
-        sbi: 'SBI004',
-        crn: 'CRN004',
+        sbi,
+        crn,
         data: null
       }
 
@@ -319,8 +322,8 @@ describe('saveApplication', () => {
 
       expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
         'app-null',
-        'SBI004',
-        'CRN004',
+        sbi,
+        crn,
         null
       ])
       expect(result).toBe(5)
@@ -329,8 +332,8 @@ describe('saveApplication', () => {
     test('should handle empty data object', async () => {
       const appWithEmptyData = {
         application_id: 'app-empty',
-        sbi: 'SBI005',
-        crn: 'CRN005',
+        sbi,
+        crn,
         data: {}
       }
 
@@ -341,8 +344,8 @@ describe('saveApplication', () => {
 
       expect(mockClient.query).toHaveBeenCalledWith(expect.any(String), [
         'app-empty',
-        'SBI005',
-        'CRN005',
+        sbi,
+        crn,
         {}
       ])
       expect(result).toBe(6)
@@ -399,7 +402,7 @@ describe('saveApplication', () => {
             type: 'info'
           })
         }),
-        'Saving application [applicationId=app-123 | sbi=SBI001 | crn=CRN001]'
+        `Saving application [applicationId=app-123 | sbi=${sbi} | crn=${crn}]`
       )
     })
 

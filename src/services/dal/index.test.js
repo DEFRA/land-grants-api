@@ -10,6 +10,8 @@ import { config } from '~/src/config/index.js'
 import { dalBusinessToAgreements } from '~/src/features/agreements/transformers/agreements.transformer.js'
 import { getAgreements } from './index.js'
 
+const sbi = '800000001'
+
 const stubEndpoint = 'http://stub-dal/graphql'
 const dalResponse = { data: { business: SIMPLE_BUSINESS } }
 const errorResponse = {
@@ -30,8 +32,6 @@ const externalAuth = { type: 'external', value: 'dummy' }
 const internalAuth = { type: 'internal', value: 'dummy@defra.gov.uk' }
 
 describe('getAgreements', () => {
-  const sbi = '123456789'
-
   afterEach(() => {
     ;[
       'dal.apiEndpoint',
