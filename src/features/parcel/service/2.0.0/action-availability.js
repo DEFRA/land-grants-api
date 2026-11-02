@@ -116,29 +116,11 @@ function buildActionWithAvailableLength(
     targetSidedness
   })
 
-  if (!availableLength.feasible) {
-    const unavailableReason = lengthUnavailableReason(
-      availableLength.incompatibleActions
-    )
-
-    const lengthCalculation = {
-      ...availableLength,
-      unavailableReason,
-      explanations
-    }
-
-    return {
-      actionWithAvailability: actionTransformer(
-        action,
-        lengthCalculation,
-        showActionResults
-      ),
-      availableLength
-    }
-  }
-
   const lengthCalculation = {
     ...availableLength,
+    unavailableReason: availableLength.feasible
+      ? undefined
+      : lengthUnavailableReason(availableLength.incompatibleActions),
     explanations
   }
 
