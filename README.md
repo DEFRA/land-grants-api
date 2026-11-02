@@ -12,7 +12,7 @@ To read more about Land Grants API see
 
 The capabilities of the `land-grants-api` include:
 
-- [Available area calculation](docs/aac-specification.md)
+- [Available area calculation](docs/available-area-calculation/aac-explained.md)
 - [Grant payment calculations](docs/payment-calculation.md)
 - [Case management integration](docs/case-management.md)
 
