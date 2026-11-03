@@ -69,7 +69,7 @@ export const minimumLength = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The length must be at least ${minimumLengthM} m`,
+        reason: `The minimum allowable length for this action is ${minimumLengthM} m`,
         explanations
       }
     }

@@ -29,7 +29,20 @@ describe('minimumLength', () => {
     )
 
     expect(result.passed).toBe(false)
-    expect(result.reason).toEqual('The length must be at least 20 m')
+    expect(result.reason).toEqual(
+      'The minimum allowable length for this action is 20 m'
+    )
+  })
+
+  test('should give the configured minimum when the applied for length is below it', () => {
+    const result = minimumLength.execute(
+      createApplication(24, 300),
+      createRule({ minimumLengthM: 25 })
+    )
+
+    expect(result.reason).toEqual(
+      'The minimum allowable length for this action is 25 m'
+    )
   })
 
   test('should fail when the configured minimum exceeds the available length', () => {

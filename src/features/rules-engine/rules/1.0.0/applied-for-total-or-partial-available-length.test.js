@@ -65,7 +65,7 @@ describe('appliedForTotalOrPartialAvailableLength', () => {
       passed: false,
       description: rule.description,
       reason:
-        'Enter a value that is no more than the available length for this land parcel 100 m',
+        'Enter a value that is no more than the available length for this land parcel',
       explanations: [
         {
           title: 'Total or partial available length',

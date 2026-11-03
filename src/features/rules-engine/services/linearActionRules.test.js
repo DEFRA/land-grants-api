@@ -113,6 +113,29 @@ describe('linear action rules with their data providers', () => {
     expect(resultFor(results, availableLengthRule.name).passed).toBe(true)
   })
 
+  it('tells the applicant to enter no more than the available length when they enter more', async () => {
+    givenAvailableLength(1600)
+
+    const results = await validate(linearActionRules, 1601)
+
+    expect(resultFor(results, availableLengthRule.name).reason).toBe(
+      'Enter a value that is no more than the available length for this land parcel'
+    )
+  })
+
+  it('tells the applicant only the minimum length when they enter less than it', async () => {
+    givenAvailableLength(1600)
+
+    const results = await validate(linearActionRules, 19)
+
+    const failureReasons = results
+      .filter((result) => !result.passed)
+      .map((result) => result.reason)
+    expect(failureReasons).toEqual([
+      'The minimum allowable length for this action is 20 m'
+    ])
+  })
+
   it('fails the minimum length when less than the minimum is available, with no available length rule configured', async () => {
     givenAvailableLength(10)
 
