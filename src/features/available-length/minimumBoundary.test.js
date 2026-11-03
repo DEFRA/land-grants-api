@@ -1,5 +1,6 @@
 import { BOTH_SIDES } from '~/src/features/common/constants/sidedness.js'
 import { findMinimumBoundary, incompatibleWith } from './minimumBoundary.js'
+import { compatibleOnly } from './testUtils.js'
 
 const occupancy = (actionCode, occupiedMeters) => ({
   actionCode,
@@ -7,15 +8,6 @@ const occupancy = (actionCode, occupiedMeters) => ({
   sidedness: BOTH_SIDES,
   occupiedMeters
 })
-
-// Compatible only where a pair is listed, in either order
-const compatibleOnly =
-  (...pairs) =>
-  (code1, code2) =>
-    pairs.some(
-      ([one, other]) =>
-        (one === code1 && other === code2) || (one === code2 && other === code1)
-    )
 
 describe('incompatibleWith', () => {
   it('keeps only the actions that cannot share with the one given, in the order given', () => {

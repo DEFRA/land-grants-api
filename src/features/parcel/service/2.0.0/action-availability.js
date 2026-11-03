@@ -6,6 +6,8 @@ import { actionTransformer } from '~/src/features/parcel/transformers/2.0.0/parc
 import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
 import { calculateAvailableLength } from '~/src/features/available-length/availableLength.js'
 import { formatExplanationSections } from '~/src/features/available-area/explanations.js'
+import { formatLengthExplanationSections } from '~/src/features/available-length/explanations.js'
+import { sidednessOf } from '~/src/features/common/constants/sidedness.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
 import {
   areaUnavailableReason,
@@ -108,30 +110,24 @@ function buildActionWithAvailableLength(
     sidednessByActionCode
   })
 
-  if (!availableLength.feasible) {
-    const unavailableReason = lengthUnavailableReason(
-      availableLength.incompatibleActions
-    )
+  const targetSidedness = sidednessOf(action.code, sidednessByActionCode)
+  const explanations = formatLengthExplanationSections(availableLength, {
+    targetAction: action.code,
+    targetSidedness
+  })
 
-    const lengthCalculation = {
-      ...availableLength,
-      unavailableReason
-    }
-
-    return {
-      actionWithAvailability: actionTransformer(
-        action,
-        lengthCalculation,
-        showActionResults
-      ),
-      availableLength
-    }
+  const lengthCalculation = {
+    ...availableLength,
+    unavailableReason: availableLength.feasible
+      ? undefined
+      : lengthUnavailableReason(availableLength.incompatibleActions),
+    explanations
   }
 
   return {
     actionWithAvailability: actionTransformer(
       action,
-      availableLength,
+      lengthCalculation,
       showActionResults
     ),
     availableLength
