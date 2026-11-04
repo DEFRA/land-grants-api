@@ -5,6 +5,10 @@ import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+// Shown to the applicant when they enter more than the available length
+export const ABOVE_AVAILABLE_LENGTH_REASON =
+  'Enter a value that is no more than the available length for this land parcel'
+
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
@@ -41,7 +45,7 @@ export const appliedForTotalOrPartialAvailableLength = {
         name,
         passed: false,
         description: rule.description,
-        reason: `Enter a value that is no more than the available length for this land parcel ${availability} m`,
+        reason: ABOVE_AVAILABLE_LENGTH_REASON,
         explanations
       }
     }

@@ -3,6 +3,8 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
+import { belowMinimumLengthReason } from '~/src/features/rules-engine/rules/1.0.0/minimum-length.js'
+import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length.js'
 
 // Real rules and real providers, with only the queries stubbed, so a rule
 // reading a field its provider does not write fails here
@@ -111,6 +113,27 @@ describe('linear action rules with their data providers', () => {
     const results = await validate(linearActionRules, 200)
 
     expect(resultFor(results, availableLengthRule.name).passed).toBe(true)
+  })
+
+  it('tells the applicant to enter no more than the available length when they enter more', async () => {
+    givenAvailableLength(1600)
+
+    const results = await validate(linearActionRules, 1601)
+
+    expect(resultFor(results, availableLengthRule.name).reason).toBe(
+      ABOVE_AVAILABLE_LENGTH_REASON
+    )
+  })
+
+  it('tells the applicant only the minimum length when they enter less than it', async () => {
+    givenAvailableLength(1600)
+
+    const results = await validate(linearActionRules, 19)
+
+    const failureReasons = results
+      .filter((result) => !result.passed)
+      .map((result) => result.reason)
+    expect(failureReasons).toEqual([belowMinimumLengthReason(20)])
   })
 
   it('fails the minimum length when less than the minimum is available, with no available length rule configured', async () => {
