@@ -42,6 +42,32 @@ const findActionsCsvFiles = (manifest) =>
   })
 
 /**
+ *
+ * @param {string | undefined} grant
+ * @param {string | undefined} status
+ * @param {string | undefined} version
+ * @param {import('~/src/features/common/logger.d.js').Logger} logger
+ * @returns boolean
+ */
+const shouldProcessMessage = (grant, status, version, logger) => {
+  if (grant !== 'land-grants') {
+    logger.info(
+      `Skipping grants-config message for grant="${grant}" version="${version}" (only "land-grants" is processed)`
+    )
+    return false
+  }
+
+  if (status !== 'active') {
+    logger.info(
+      `Skipping grants-config message with status="${status}" grant="${grant}" version="${version}" (only "active" is processed)`
+    )
+    return false
+  }
+
+  return true
+}
+
+/**
  * Process a single SQS message from the grants_config_broker_update queue.
  * Messages arrive via SNS raw delivery: body is the manifest array, attributes on message.MessageAttributes.
  * @param {import('@aws-sdk/client-sqs').Message} message - SQS message
@@ -65,17 +91,7 @@ async function processMessage(message, s3Client, db, logger, options) {
   const status = message.MessageAttributes?.status?.StringValue
   const version = message.MessageAttributes?.version?.StringValue
 
-  if (grant !== 'land-grants') {
-    logger.info(
-      `Skipping grants-config message for grant="${grant}" version="${version}" (only "land-grants" is processed)`
-    )
-    return
-  }
-
-  if (status !== 'active') {
-    logger.info(
-      `Skipping grants-config message with status="${status}" grant="${grant}" version="${version}" (only "active" is processed)`
-    )
+  if (!shouldProcessMessage(grant, status, version, logger)) {
     return
   }
 
