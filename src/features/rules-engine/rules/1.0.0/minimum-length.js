@@ -6,6 +6,13 @@
 import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
 
 /**
+ * @param {number} minimumLengthM - The action's configured minimum length in metres
+ * @returns {string} Shown to the applicant when they enter less than the minimum length
+ */
+export const belowMinimumLengthReason = (minimumLengthM) =>
+  `The minimum allowable length for this action is ${minimumLengthM} m`
+
+/**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
@@ -69,7 +76,7 @@ export const minimumLength = {
         name,
         passed: false,
         description: rule.description,
-        reason: `The length must be at least ${minimumLengthM} m`,
+        reason: belowMinimumLengthReason(minimumLengthM),
         explanations
       }
     }
