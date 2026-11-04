@@ -83,6 +83,7 @@ const createMockPaymentResponse = () => ({
 
 const validPayload = {
   totalAreaHa: 8,
+  originalTotalAreaHa: 8,
   applicationId: 'app-123',
   sbi
 }
@@ -153,6 +154,7 @@ describe('Payment calculate total WMP controller', () => {
           identifiers: { sbi, crn: undefined },
           request: {
             totalAreaHa: 8,
+            originalTotalAreaHa: 8,
             applicationId: 'app-123',
             sbi,
             crn: undefined
@@ -193,6 +195,54 @@ describe('Payment calculate total WMP controller', () => {
         createMockCalculationResult(),
         createMockAction(),
         new Date('2024-06-01')
+      )
+    })
+
+    test('should pass originalTotalAreaHa to calculation if lower than totalAreaHa', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
+        payload: { ...validPayload, originalTotalAreaHa: 6 }
+      })
+
+      expect(statusCode).toBe(200)
+      expect(mockCalculateWMPPayment).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        { totalWoodlandAreaSqm: 60000 }
+      )
+    })
+
+    test('should pass totalAreaHa to calculation if originalTotalAreaHa is missing', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
+        payload: { ...validPayload, originalTotalAreaHa: undefined }
+      })
+
+      expect(statusCode).toBe(200)
+      expect(mockCalculateWMPPayment).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        { totalWoodlandAreaSqm: 80000 }
+      )
+    })
+
+    test('should pass totalAreaHa to calculation if originalTotalAreaHa is higher', async () => {
+      /** @type { Hapi.ServerInjectResponse<object> } */
+      const { statusCode } = await server.inject({
+        method: 'POST',
+        url: '/api/v1/wmp/payments/calculate-by-total-area',
+        payload: { ...validPayload, originalTotalAreaHa: 12 }
+      })
+
+      expect(statusCode).toBe(200)
+      expect(mockCalculateWMPPayment).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        { totalWoodlandAreaSqm: 80000 }
       )
     })
   })
@@ -312,6 +362,7 @@ describe('Payment calculate total WMP controller', () => {
           identifiers: { sbi, crn: undefined },
           request: {
             totalAreaHa: 8,
+            originalTotalAreaHa: 8,
             applicationId: 'app-123',
             sbi,
             crn: undefined
