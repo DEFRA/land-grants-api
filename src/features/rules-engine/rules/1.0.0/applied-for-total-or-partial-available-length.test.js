@@ -1,4 +1,7 @@
-import { appliedForTotalOrPartialAvailableLength } from './applied-for-total-or-partial-available-length.js'
+import {
+  ABOVE_AVAILABLE_LENGTH_REASON,
+  appliedForTotalOrPartialAvailableLength
+} from './applied-for-total-or-partial-available-length.js'
 
 describe('appliedForTotalOrPartialAvailableLength', () => {
   const createApplication = (appliedForQuantity, availability) => ({
@@ -64,8 +67,7 @@ describe('appliedForTotalOrPartialAvailableLength', () => {
       name: 'applied-for-total-or-partial-available-length',
       passed: false,
       description: rule.description,
-      reason:
-        'Enter a value that is no more than the available length for this land parcel',
+      reason: ABOVE_AVAILABLE_LENGTH_REASON,
       explanations: [
         {
           title: 'Total or partial available length',
