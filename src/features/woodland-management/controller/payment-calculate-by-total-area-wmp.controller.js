@@ -21,13 +21,15 @@ import {
 const handleWmpPaymentTotalCalculationError = async (request, error) => {
   /** @type {paymentCalculateTotalWMPSchema} */
   // @ts-expect-error - payload
-  const { totalAreaHa, applicationId, sbi, crn } = request.payload
+  const { totalAreaHa, originalTotalAreaHa, applicationId, sbi, crn } =
+    request.payload
 
   logBusinessError(request.logger, {
     operation: 'Payment calculation: calculate total wmp payment',
     error,
     context: {
       totalAreaHa,
+      originalTotalAreaHa,
       applicationId,
       sbi,
       crn
@@ -38,7 +40,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
     {
       ...buildAuditContext(request, sbi, crn),
-      request: { totalAreaHa, applicationId, sbi, crn },
+      request: { totalAreaHa, originalTotalAreaHa, applicationId, sbi, crn },
       error: error.message
     },
     'failure',
@@ -93,19 +95,40 @@ export const PaymentsCalculateTotalWMPController = {
 
       /** @type {paymentCalculateTotalWMPSchema} */
       // @ts-expect-error - payload
-      const { totalAreaHa, applicationId, sbi, crn, startDate } =
-        request.payload
+      const {
+        // @ts-expect-error - payload
+        totalAreaHa,
+        // @ts-expect-error - payload
+        originalTotalAreaHa,
+        // @ts-expect-error - payload
+        applicationId,
+        // @ts-expect-error - payload
+        sbi,
+        // @ts-expect-error - payload
+        crn,
+        // @ts-expect-error - payload
+        startDate
+      } = request.payload
 
       logInfo(logger, {
         category: 'wmp',
         message: 'Payment Calculate total WMP',
-        context: { totalAreaHa, applicationId, sbi, crn }
+        context: { totalAreaHa, originalTotalAreaHa, applicationId, sbi, crn }
       })
+
+      // The forestry commission may adjust the original area on the agreement up or down. In
+      // general we take the adjusted figure (totalAreaHa) but if they adjust the area upward we
+      // must still cap the area to the original -- we should never pay out more than the original
+      // agreement.
+      const adjustedArea =
+        originalTotalAreaHa !== undefined && originalTotalAreaHa < totalAreaHa
+          ? originalTotalAreaHa
+          : totalAreaHa
 
       const { result: paymentResult, action } = await calculateWMPPayment(
         logger,
         postgresDb,
-        { totalWoodlandAreaSqm: haToSqm(totalAreaHa) }
+        { totalWoodlandAreaSqm: haToSqm(adjustedArea) }
       )
       const transformedPaymentResult = wmpPaymentCalculateTransformer(
         [],
@@ -118,7 +141,13 @@ export const PaymentsCalculateTotalWMPController = {
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         {
           ...buildAuditContext(request, sbi, crn),
-          request: { totalAreaHa, applicationId, sbi, crn },
+          request: {
+            totalAreaHa,
+            originalTotalAreaHa,
+            applicationId,
+            sbi,
+            crn
+          },
           response: transformedPaymentResult
         },
         'success',
