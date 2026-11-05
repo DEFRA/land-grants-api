@@ -15,7 +15,23 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
   try {
     client = await db.connect()
 
-    const query = `SELECT * FROM compatibility_matrix ${codes ? 'WHERE option_code = ANY ($1)' : ''}`
+    const query = `WITH year (year) as (
+        SELECT DISTINCT year
+        FROM compatibility_matrix
+        ORDER BY (year)::numeric DESC
+        LIMIT 1
+    )
+    SELECT
+        id,
+        option_code,
+        option_code_compat,
+        year,
+        type
+    FROM compatibility_matrix
+    WHERE
+        year in (select year from year)
+    AND type = 'BASECO'
+        ${codes ? 'AND option_code = ANY ($1)' : ''}`
     const result = await client.query(query, codes ? [codes] : null)
 
     logInfo(logger, {
