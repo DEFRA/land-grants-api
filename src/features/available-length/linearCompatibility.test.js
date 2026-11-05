@@ -12,7 +12,7 @@ vi.mock(
 
 // The matrix the land data ingest loads, converted from the RPA's spreadsheet
 const SEEDED_MATRIX_PATH = new URL(
-  '../../land-data/compatibility_matrix/compatibility-matrix.csv',
+  '../../land-data/compatibility_matrix/compatibility_matrix_0.1.0.csv',
   import.meta.url
 )
 
@@ -32,8 +32,8 @@ const readSeededMatrix = () => {
   const rows = parse(csv, { columns: true })
 
   return rows.map((row) => ({
-    optionCode: row['OPTION CODE'],
-    optionCodeCompat: row['OPTION CODE COMPAT']
+    optionCode: row.option_code,
+    optionCodeCompat: row.option_code_compat
   }))
 }
 

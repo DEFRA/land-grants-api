@@ -10,10 +10,15 @@ export AWS_SECRET_ACCESS_KEY=test
 export AWS_REGION=eu-west-2
 export AWS_ENDPOINT_URL=http://localhost:4566
 
-BROKER_DIR="../grants-config-broker"
+# Sibling repos are resolved from this script's location, so it can be run from any directory.
+# Layout: <workspace>/grants-config-broker, <workspace>/grants-config-land-grants,
+#         <workspace>/land-grants/land-grants-api/scripts/start-config-broker.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+BROKER_DIR="${BROKER_DIR:-$WORKSPACE_DIR/grants-config-broker}"
 COMPOSE_FILE="$BROKER_DIR/compose.yml"
 GRANT_NAME="land-grants"
-GRANT_CONFIG_SOURCE="../grants-config-land-grants"
+GRANT_CONFIG_SOURCE="${GRANT_CONFIG_SOURCE:-$WORKSPACE_DIR/grants-config-land-grants}"
 SOURCE_CONFIG_DIR="$GRANT_CONFIG_SOURCE/configurations/$GRANT_NAME"
 ELIGIBILITY_FILE="actions/actions_eligibility.csv"
 
@@ -51,6 +56,7 @@ print_help() {
   echo "                                                  Create a new action config, add it to the actions eligibility"
   echo "                                                  CSV (has-sssi/has-hf: 0 or 1, default 1) and start"
   echo -e "  ${GREEN}update${RESET} <action-code> <grant-version> <sem-ver> Republish an existing action with a new semantic version and start"
+  echo -e "  ${GREEN}compat${RESET} <grant-version>                         Publish only the compatibility matrix CSV and start"
   echo -e "  ${GREEN}inspect${RESET} [action-code...]                       Print SQS queues, S3 contents, and DB rows then exit"
   echo -e "  ${GREEN}-h${RESET}, ${GREEN}--help${RESET}                                   Show this help message"
   echo
@@ -60,6 +66,7 @@ print_help() {
   echo "  $(basename "$0") add TEST2 0.0.6 1.0.0 1 0  # publish TEST2, SSSI eligible but not HF eligible"
   echo "  $(basename "$0") update PA3 0.0.6 2.0.0     # republish PA3 with semanticVersion 2.0.0"
   echo "  $(basename "$0") update HEF1 0.0.7 1.2.0    # republish HEF1 with semanticVersion 1.2.0"
+  echo "  $(basename "$0") compat 0.0.8               # publish the compatibility matrix under grant release 0.0.8"
   echo "  $(basename "$0") inspect HEF1               # inspect current LocalStack (floci) + DB state"
   echo
 }
@@ -68,8 +75,26 @@ print_help() {
 # Helpers
 # ---------------------------------------------------------------------------
 
+require_semver() {
+  local label="$1" value="$2"
+  if [[ ! "$value" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo -e "${BOLD}Error:${RESET} $label must look like 1.2.3, got '$value'" >&2
+    exit 1
+  fi
+}
+
+require_dir() {
+  if [[ ! -d "$1" ]]; then
+    echo -e "${BOLD}Error:${RESET} $2 not found at $1" >&2
+    exit 1
+  fi
+}
+
 make_release_yml() {
   local grant_version="$1"
+  require_semver "grant-version" "$grant_version"
+  require_dir "$BROKER_DIR" "grants-config-broker (override with BROKER_DIR=...)"
+  require_dir "$SOURCE_CONFIG_DIR" "grant config (override with GRANT_CONFIG_SOURCE=...)"
   local config_dir="$BROKER_DIR/config"
   mkdir -p "$config_dir"
   cat > "$config_dir/release.yml" << EOF
@@ -111,6 +136,20 @@ set_actions_eligibility_row() {
   echo "$action_code,$has_sssi,$has_hf," >> "$eligibility.tmp"
   mv "$eligibility.tmp" "$eligibility"
   echo -e "  ${YELLOW}eligibility${RESET}   $eligibility ($action_code,$has_sssi,$has_hf)"
+}
+
+# Publish the compatibility matrix CSV as a config release does
+copy_compatibility_matrix() {
+  local source_dir="$SOURCE_CONFIG_DIR/compatibility_matrix"
+  if ! compgen -G "$source_dir/compatibility_matrix_*.csv" > /dev/null; then
+    echo -e "${BOLD}Error:${RESET} no compatibility_matrix_*.csv found in $source_dir" >&2
+    exit 1
+  fi
+  mkdir -p "$VERSIONED_DIR/compatibility_matrix"
+  cp "$source_dir"/compatibility_matrix_*.csv "$VERSIONED_DIR/compatibility_matrix/"
+  for file in "$VERSIONED_DIR/compatibility_matrix"/*.csv; do
+    echo -e "  ${YELLOW}compat matrix${RESET} $file"
+  done
 }
 
 start_broker() {
@@ -175,6 +214,12 @@ case "${1:-}" in
       -U land_grants_api -d land_grants_api \
       -c "SELECT * FROM actions WHERE code IN ($CODES_LIST) ORDER BY code;"
 
+    echo ""
+    echo "=== compatibility_matrix (rows per ingested file) ==="
+    docker exec land-grants-api-land-grants-backend-postgres-1 psql \
+      -U land_grants_api -d land_grants_api \
+      -c "SELECT updated_by, type, count(*) FROM compatibility_matrix GROUP BY updated_by, type ORDER BY updated_by, type;"
+
     exit 0
     ;;
 
@@ -196,6 +241,8 @@ case "${1:-}" in
       echo -e "${BOLD}Error:${RESET} $ACTION_CODE already exists in $SOURCE_CONFIG_DIR/actions_config, use update" >&2
       exit 1
     fi
+
+    require_semver "sem-ver" "$SEMANTIC_VERSION"
 
     print_splash
     echo -e "  ${BOLD}Mode:${RESET} add ${ACTION_CODE} @ ${SEMANTIC_VERSION} (grant ${GRANT_VERSION})"
@@ -241,6 +288,8 @@ EOF
       exit 1
     fi
 
+    require_semver "sem-ver" "$SEMANTIC_VERSION"
+
     SOURCE_ACTION_DIR="$SOURCE_CONFIG_DIR/actions_config/$ACTION_CODE"
     if [[ ! -d "$SOURCE_ACTION_DIR" ]]; then
       echo -e "${BOLD}Error:${RESET} no config found for $ACTION_CODE at $SOURCE_ACTION_DIR" >&2
@@ -269,6 +318,24 @@ EOF
 
     copy_actions_eligibility
     echo -e "  ${YELLOW}eligibility${RESET}   $VERSIONED_DIR/$ELIGIBILITY_FILE"
+
+    start_broker
+    ;;
+
+  compat)
+    GRANT_VERSION="${2:-}"
+    if [[ -z "$GRANT_VERSION" ]]; then
+      echo -e "${BOLD}Usage:${RESET} $0 compat <grant-version>" >&2
+      exit 1
+    fi
+
+    print_splash
+    echo -e "  ${BOLD}Mode:${RESET} compat (grant ${GRANT_VERSION})"
+    echo
+
+    make_release_yml "$GRANT_VERSION"
+    make_versioned_dir "$GRANT_VERSION"
+    copy_compatibility_matrix
 
     start_broker
     ;;

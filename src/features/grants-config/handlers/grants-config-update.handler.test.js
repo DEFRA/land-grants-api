@@ -1,10 +1,15 @@
 import { processMessage } from './grants-config-update.handler.js'
 
 import { processActionConfigFile } from '~/src/features/grants-config/service/grants-config.service.js'
-import { processActionsCsvFile } from '~/src/features/grants-config/service/actions-csv.service.js'
+import { importFileFromBucket } from '~/src/features/grants-config/service/import-file.service.js'
+import { isCompatibilityMatrixIngested } from '~/src/features/grants-config/queries/isCompatibilityMatrixIngested.query.js'
+import { getEntityByName } from '~/src/features/common/constants/entity_types.js'
 
 vi.mock('~/src/features/grants-config/service/grants-config.service.js')
-vi.mock('~/src/features/grants-config/service/actions-csv.service.js')
+vi.mock('~/src/features/grants-config/service/import-file.service.js')
+vi.mock(
+  '~/src/features/grants-config/queries/isCompatibilityMatrixIngested.query.js'
+)
 
 function buildMessage({
   grant = 'land-grants',
@@ -39,7 +44,8 @@ describe('processMessage', () => {
     mockS3Client = {}
     mockDb = {}
     processActionConfigFile.mockResolvedValue(undefined)
-    processActionsCsvFile.mockResolvedValue(undefined)
+    importFileFromBucket.mockResolvedValue(undefined)
+    isCompatibilityMatrixIngested.mockResolvedValue(false)
   })
 
   describe('grant filtering', () => {
@@ -205,7 +211,7 @@ describe('processMessage', () => {
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
       expect(processActionConfigFile).not.toHaveBeenCalled()
-      expect(processActionsCsvFile).not.toHaveBeenCalled()
+      expect(importFileFromBucket).not.toHaveBeenCalled()
     })
 
     test('routes actions/actions_eligibility.csv to the actions csv service as actions_eligibility', async () => {
@@ -216,13 +222,88 @@ describe('processMessage', () => {
 
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionsCsvFile).toHaveBeenCalledWith(
+      expect(importFileFromBucket).toHaveBeenCalledWith(
         mockLogger,
         mockS3Client,
         key,
         'configs-bucket',
-        'actions_eligibility'
+        getEntityByName('actions_eligibility')
       )
+    })
+
+    test('imports compatibility_matrix/compatibility_matrix_*.csv tagged with its filename', async () => {
+      const key =
+        'land-grants/0.1.1/compatibility_matrix/compatibility_matrix_0.1.0.csv'
+      const message = buildMessage({
+        manifest: [key, 'land-grants/0.1.1/metadata.json']
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(importFileFromBucket).toHaveBeenCalledTimes(1)
+      expect(importFileFromBucket).toHaveBeenCalledWith(
+        mockLogger,
+        mockS3Client,
+        key,
+        'configs-bucket',
+        getEntityByName('compatibility_matrix'),
+        'compatibility_matrix_0.1.0.csv'
+      )
+      expect(processActionConfigFile).not.toHaveBeenCalled()
+    })
+
+    test('skips a compatibility matrix file that has already been ingested', async () => {
+      isCompatibilityMatrixIngested.mockResolvedValue(true)
+      const key =
+        'land-grants/0.1.2/compatibility_matrix/compatibility_matrix_0.1.0.csv'
+
+      await processMessage(
+        buildMessage({ manifest: [key] }),
+        mockS3Client,
+        mockDb,
+        mockLogger,
+        options
+      )
+
+      expect(isCompatibilityMatrixIngested).toHaveBeenCalledWith(
+        mockLogger,
+        mockDb,
+        'compatibility_matrix_0.1.0.csv'
+      )
+      expect(importFileFromBucket).not.toHaveBeenCalled()
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'compatibility_matrix_0.1.0.csv has already been ingested'
+        )
+      )
+    })
+
+    test('does not import the compatibility matrix when the ingested check fails', async () => {
+      isCompatibilityMatrixIngested.mockRejectedValue(new Error('db down'))
+      const key =
+        'land-grants/0.1.1/compatibility_matrix/compatibility_matrix_0.1.0.csv'
+
+      await expect(
+        processMessage(
+          buildMessage({ manifest: [key] }),
+          mockS3Client,
+          mockDb,
+          mockLogger,
+          options
+        )
+      ).rejects.toThrow('db down')
+
+      expect(importFileFromBucket).not.toHaveBeenCalled()
+    })
+
+    test('ignores csv files in compatibility_matrix that do not match the naming pattern', async () => {
+      const message = buildMessage({
+        manifest: ['land-grants/0.1.1/compatibility_matrix/notes.csv']
+      })
+
+      await processMessage(message, mockS3Client, mockDb, mockLogger, options)
+
+      expect(importFileFromBucket).not.toHaveBeenCalled()
     })
 
     // Only the eligibility file creates actions rows, and an action config can only update one
@@ -236,7 +317,7 @@ describe('processMessage', () => {
 
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionsCsvFile.mock.invocationCallOrder[0]).toBeLessThan(
+      expect(importFileFromBucket.mock.invocationCallOrder[0]).toBeLessThan(
         processActionConfigFile.mock.invocationCallOrder[0]
       )
     })
@@ -254,7 +335,7 @@ describe('processMessage', () => {
 
       await processMessage(message, mockS3Client, mockDb, mockLogger, options)
 
-      expect(processActionsCsvFile).not.toHaveBeenCalled()
+      expect(importFileFromBucket).not.toHaveBeenCalled()
     })
 
     test('logs the version from message attributes', async () => {

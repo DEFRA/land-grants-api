@@ -91,6 +91,10 @@ export const ingestLandData = async () => {
 }
 
 function getFilesFromFolder(folder) {
+  if (!fs.existsSync(folder)) {
+    return []
+  }
+
   return fs
     .readdirSync(folder)
     .filter((file) => file.endsWith('.csv'))
