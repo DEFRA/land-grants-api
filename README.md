@@ -111,7 +111,6 @@ We support the ingestion of the following resources:
   - land_covers
   - moorland_designations
   - agreements
-  - compatibility_matrix
   - sssi
   - registered_battlefields
   - shine
@@ -121,6 +120,8 @@ We support the ingestion of the following resources:
 Run the local ingest script for each resource type:
 
 `node scripts/local-ingest`
+
+> The compatibility matrix is not part of the local ingest. It lives only in `grants-config-land-grants`, which every environment receives through the grants-config-broker. After `npm run dev:setup`, start the API (`npm run dev`) and load it, together with the current action configs, with `./scripts/start-config-broker.sh release` (see [Testing the grants-config-broker SQS integration](#testing-the-grants-config-broker-sqs-integration)). Until then the matrix is empty and no two actions are treated as compatible.
 
 #### Increase docker storage
 
@@ -150,10 +151,25 @@ npm run docker:localstack:up
 
 End-to-end local test flow: `grants-config-broker` → SNS → SQS → `land-grants-api`
 
+The grant config (action configs, `actions/actions_eligibility.csv` and the compatibility matrix) lives in [`grants-config-land-grants`](https://github.com/DEFRA/grants-config-land-grants), under `configurations/land-grants/`. The broker uploads a release of it to S3 and announces it on the `gfr__sns___config_update` SNS topic. That topic delivers to the `grants_config_broker_update` SQS queue, and land-grants-api's consumer (`src/features/grants-config`) imports, in order:
+
+1. `actions/actions_eligibility.csv`, which creates or updates the `actions` rows
+2. every `actions_config/**/*.json`, as new `actions_config` versions
+3. `compatibility_matrix/compatibility_matrix_<version>.csv`, which replaces the whole `compatibility_matrix` table, unless a file of that name has already been ingested (rows record their source file in `updated_by`)
+
 ##### Prerequisites
 
-- AWS CLI installed
-- `../grants-config-broker` and `../grants-config-land-grants` checked out as siblings of this repo
+- Docker, the AWS CLI and `jq` installed
+- `grants-config-broker` and `grants-config-land-grants` checked out next to this repo (e.g. `~/Workspace/land-grants-api`, `~/Workspace/grants-config-broker`, `~/Workspace/grants-config-land-grants`). A `land-grants/land-grants-api` layout with the other two repos one level higher also works.
+- `npm install` run once in `grants-config-broker`
+
+To use checkouts somewhere else, set these environment variables:
+
+| Variable              | Default                                 | Purpose                                                  |
+| --------------------- | --------------------------------------- | -------------------------------------------------------- |
+| `BROKER_DIR`          | `<workspace>/grants-config-broker`      | The broker checkout the script runs                      |
+| `GRANT_CONFIG_SOURCE` | `<workspace>/grants-config-land-grants` | Where the grant config is copied from                    |
+| `RELEASE_TIMEOUT`     | `120`                                   | Seconds `release` waits for the broker, then for the API |
 
 ##### 1. Start the land-grants-api stack
 
@@ -162,9 +178,11 @@ npm run dev:setup
 npm run dev
 ```
 
+The API must be running for its SQS consumer to pick up what the broker publishes. Messages published while it is stopped stay on the queue and are ingested when it starts.
+
 ##### 2. Run the config-broker helper script
 
-`scripts/start-config-broker.sh` manages the broker's config directory and starts the service. Run with `--help` to see all options:
+`scripts/start-config-broker.sh` writes the broker's `config/release.yml` and `config/land-grants@<version>/` from `grants-config-land-grants`, then starts the broker. Run with `--help` to see all options:
 
 ```bash
 ./scripts/start-config-broker.sh --help
@@ -172,29 +190,96 @@ npm run dev
 
 ###### Subcommands
 
-| Subcommand                                                  | Description                                                                                                                                                 |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no args)_                                                 | Start the broker with no config changes (useful for a restart)                                                                                              |
-| `add <action-code> <version> <sem-ver> [has-sssi] [has-hf]` | Create a synthetic action config, add its row to `actions/actions_eligibility.csv` (`0`/`1`, default `1`) and start the broker                              |
-| `update <action-code> <version> <sem-ver>`                  | Copy the given action from `grants-config-land-grants`, set a new semantic version, publish it with `actions/actions_eligibility.csv`, and start the broker |
-| `inspect [action-code...]`                                  | Print SQS queues, S3 bucket contents, `actions_config` and `actions` DB rows — then exit (defaults to PA3, TEST1)                                           |
+| Subcommand                                                  | Description                                                                                                                                                                                         |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `release [version]`                                         | `Publish the whole grant config`, wait until land-grants-api has consumed it, check the compatibility matrix landed, then stop the broker. Without `version`, bumps the latest one the broker knows |
+| `compat <version>`                                          | Publish only the compatibility matrix and start the broker in the foreground                                                                                                                        |
+| `add <action-code> <version> <sem-ver> [has-sssi] [has-hf]` | Create a synthetic action config, add its row to `actions/actions_eligibility.csv` (`0`/`1`, default `1`) and start the broker                                                                      |
+| `update <action-code> <version> <sem-ver>`                  | Copy the given action from `grants-config-land-grants`, set a new semantic version, publish it with `actions/actions_eligibility.csv`, and start the broker                                         |
+| _(no args)_                                                 | Start the broker with no config changes (useful for a restart)                                                                                                                                      |
+| `inspect [action-code...]`                                  | Print SQS queues, S3 bucket contents, `actions_config` and `actions` DB rows and compatibility matrix counts, then exit (defaults to PA3, TEST1)                                                    |
 
-> **Idempotency:** the broker skips versions already recorded in MongoDB. Bump `<version>` or `<sem-ver>` to exercise the insert path again.
+`<version>` is the grant release version the broker publishes under (`land-grants/<version>/...` in S3). `<sem-ver>` is the `semanticVersion` of an individual action config.
+
+> **Versions are single use.** The broker records every release in its MongoDB and ignores a version it already has: it logs `already deployed to S3, and no status change. Nothing happened!` and sends nothing. `release` picks an unused version for you and fails if you pass a used one. The other subcommands keep running without publishing, so pass them a version higher than any used before. To see which versions the broker has, run `ls ../grants-config-broker/config` or:
+>
+> ```bash
+> docker compose -f ../grants-config-broker/compose.yml exec mongodb \
+>   mongosh --quiet grants-config-broker \
+>   --eval "db.getCollection('config-versions').distinct('version', { grant: 'land-grants' })"
+> ```
+
+###### Seed your local database with the grant config: `release`
+
+Use `release` to bring your local database in line with `grants-config-land-grants`, for example after `npm run dev:setup`, after pulling new config, or after resetting your database:
+
+```bash
+npm run dev                                 # in one terminal
+./scripts/start-config-broker.sh release    # in another
+```
+
+```
+  Mode: release land-grants@0.0.23 from .../grants-config-land-grants/configurations/land-grants
+  grant config  .../grants-config-broker/config/land-grants@0.0.23 (79 files)
+  Starting broker in the background … (log: .../grants-config-broker/config/release-0.0.23.log)
+  ✓ broker released land-grants@0.0.23 and notified SNS
+  Waiting for land-grants-api to consume the message …
+  ✓ message consumed
+=== compatibility_matrix ===
+           updated_by           |  type  | count
+--------------------------------+--------+-------
+ compatibility_matrix_0.1.0.csv | BASECO | 80134
+ ...
+```
+
+It publishes whatever is in your `grants-config-land-grants` working copy, including uncommitted changes, so check out the branch or tag you want first. It is safe to run repeatedly: each run uses a new version, and land-grants-api skips action config versions (`code` + `semanticVersion`) it already has, as well as a compatibility matrix file that is already loaded. The eligibility CSV is applied every time.
+
+It exits with an error, and leaves the broker stopped, when:
+
+- floci, the queue or Postgres is not running: start them with `npm run dev:setup`
+- the version you passed has already been released: drop the argument or pass a higher one
+- land-grants-api has not consumed the message within `RELEASE_TIMEOUT` seconds: start it with `npm run dev`; the message is still queued and is ingested on start-up
+- no rows from the matrix file are in `compatibility_matrix` afterwards: check the land-grants-api logs for `grants-config-broker SQS message processing error`
+
+The broker's output is kept in `grants-config-broker/config/release-<version>.log`.
+
+###### Publish just the compatibility matrix: `compat`
+
+Use `compat` to test matrix ingestion on its own without republishing action configs. It copies `compatibility_matrix/compatibility_matrix_*.csv` from `grants-config-land-grants` and starts the broker in the foreground, so watch its log for `Deployed version land-grants @ <version> successfully`, then stop it with `Ctrl+C`:
+
+```bash
+./scripts/start-config-broker.sh compat 0.0.30
+./scripts/start-config-broker.sh inspect    # compatibility_matrix rows per file and type
+```
+
+To reload a matrix, replace the file in `grants-config-land-grants` with one under a new name (e.g. rename `compatibility_matrix_0.1.0.csv` to `compatibility_matrix_0.2.0.csv`) and publish it under a new `<version>`. Keep only one file in that folder: land-grants-api imports the first matching file in a release, so a leftover older file can be picked instead. Republishing the same file name is skipped by land-grants-api even under a new version.
 
 ###### Examples
 
 ```bash
+# Seed the local DB with the whole grant config, choosing the next unused version
+./scripts/start-config-broker.sh release
+
+# Same, under a specific version
+./scripts/start-config-broker.sh release 0.1.0
+
+# Allow more time when the API is slow to start
+RELEASE_TIMEOUT=300 ./scripts/start-config-broker.sh release
+
+# Release config from a different checkout of grants-config-land-grants
+GRANT_CONFIG_SOURCE=~/tmp/grants-config-land-grants ./scripts/start-config-broker.sh release
+
+# Publish only the compatibility matrix and start the broker
+./scripts/start-config-broker.sh compat 0.0.30
+
 # Publish a brand-new action code (TEST1) and start the broker
-./scripts/start-config-broker.sh add TEST1 0.0.5 1.0.0
+./scripts/start-config-broker.sh add TEST1 0.0.31 1.0.0
 
 # Publish TEST2 as SSSI eligible but not HF eligible
-./scripts/start-config-broker.sh add TEST2 0.0.6 1.0.0 1 0
+./scripts/start-config-broker.sh add TEST2 0.0.32 1.0.0 1 0
 
 # Republish PA3 with a new semantic version and start the broker
-./scripts/start-config-broker.sh update PA3 0.0.6 2.0.0
-
-# Republish HEF1 with a new semantic version and start the broker
-./scripts/start-config-broker.sh update HEF1 0.0.7 1.2.0
+./scripts/start-config-broker.sh update PA3 0.0.33 2.0.0
 
 # Restart the broker without touching config (previous run's files still in place)
 ./scripts/start-config-broker.sh
@@ -202,8 +287,8 @@ npm run dev
 # Check what landed in LocalStack and the DB
 ./scripts/start-config-broker.sh inspect
 
-# Check the DB row for a specific action
-./scripts/start-config-broker.sh inspect HEF1
+# Check the DB rows for specific actions
+./scripts/start-config-broker.sh inspect HEF1 PA3
 ```
 
 ##### Useful AWS CLI commands

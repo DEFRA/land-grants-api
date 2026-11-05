@@ -135,8 +135,9 @@ land-grants-api/scripts/ingestion-data/data/land_parcels/
 land-grants-api/scripts/ingestion-data/data/land_covers/
 land-grants-api/scripts/ingestion-data/data/moorland_designations/
 land-grants-api/scripts/ingestion-data/data/agreements/
-land-grants-api/scripts/ingestion-data/data/compatibility_matrix/
 ```
+
+The compatibility matrix is not loaded by this script; see [Updating the compatibility matrix and land use matrix](#updating-the-compatibility-matrix-and-land-use-matrix).
 
 `ingestion-data/` itself holds the raw CSVs as received; `ingestion-data/data/` holds what gets uploaded. For the larger datasets those differ, because `split-land-data.sh` chunks a raw CSV into pieces small enough to upload and writes them to `data/`.
 
@@ -164,7 +165,12 @@ node scripts/generate-land-cover-codes-actions.js src/land-data/land_cover_codes
 node scripts/generate-land-cover-codes-actions-sql.js src/land-data/land_cover_codes/land_cover_codes_actions.csv src/land-data/migration/land-cover-codes-actions-vN.sql.gz
 ```
 
-- The compatibility matrix is loaded locally with `npm run dev:ingest`, remotely by copying `compatibility-matrix.csv` to `scripts/ingestion-data/data/compatibility_matrix/` and running `ingest-land-data.js`. Trim the `resources` array to the resource you are loading, or the script will look for a folder per resource and fail on the first one missing.
+- The compatibility matrix is published through the grants-config-broker, not this ingest:
+  1. **Replace** the existing file in `grants-config-land-grants/configurations/land-grants/compatibility_matrix/` with the new one, named `compatibility_matrix_<new-version>.csv`. Keep only one file in that folder: land-grants-api imports the first matching file in a release, so an older file left beside the new one can be picked instead. Put the columns in the order `option_code,option_code_compat,type,year`, with that header row: the import skips the header and loads columns by position. Use a new `<version>` in the file name, because land-grants-api records the file name in `compatibility_matrix.updated_by` and skips a file it has already loaded.
+  2. Release that config through the broker. land-grants-api replaces the whole `compatibility_matrix` table with the file's rows.
+  3. Try it locally first with `./scripts/start-config-broker.sh compat <grant-version>` for the matrix on its own, or `./scripts/start-config-broker.sh release` for the whole config (see the README section [Testing the grants-config-broker SQS integration](../README.md#testing-the-grants-config-broker-sqs-integration)).
+  4. Do not copy it into this repo: `grants-config-land-grants` is the only copy. The local ingest no longer loads a matrix, and DB tests insert the few compatible pairs they need (`src/tests/db-tests/setup/compatibility-matrix.js`).
+
 - The land use matrix is loaded by a Liquibase migration: add a new changeset referencing `land-cover-codes-actions-vN.sql`, then run `npm run extractsql && npm run docker:migrate:up` locally. It is applied remotely when the migrations run on deploy.
 
 ### Testing locally
@@ -183,12 +189,12 @@ POST
     "form": {
         "file": {
             "fileId": "85c49b7d-cceb-434c-aa5b-f532ad1b12f9",
-            "filename": "compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f91.csv",
+            "filename": "parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv",
             "contentType": "text/csv",
             "fileStatus": "complete",
             "contentLength": 21602,
             "checksumSha256": "Y44BR07gRSUXka1XAZm3ZOdtRxo9SmK6RQqZQMjmMyk=",
-            "s3Key": "compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv",
+            "s3Key": "parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv",
             "s3Bucket": "land-data"
         }
     },
@@ -206,12 +212,6 @@ Import parcels:
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/parcels_head.csv s3://land-data/parcels/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
-```
-
-Import compatibility matrix
-
-```
-aws --endpoint-url=http://localhost:4566 s3 cp ingestion-data/compatibility-matrix.csv s3://land-data/compatibility_matrix/85c49b7d-cceb-434c-aa5b-f532ad1b12f9.csv
 ```
 
 Import moorland
@@ -242,12 +242,6 @@ List files in parcels
 
 ```
 aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/parcels/
-```
-
-List files in compatibility matrix
-
-```
-aws --endpoint-url=http://localhost:4566 s3 ls s3://land-data/compatibility_matrix/
 ```
 
 List files in moorland
