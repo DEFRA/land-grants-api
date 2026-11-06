@@ -71,10 +71,37 @@ describe('getCompatibilityMatrix', () => {
     expect(query).toContain('year in (select year from year)')
   })
 
-  test('should only select BASECO compatibility type', async () => {
+  test('should only select BASECO and SUPBAS compatibility types', async () => {
     await getCompatibilityMatrix(mockLogger, dbMock)
 
-    expect(queryOf()).toContain("AND type = 'BASECO'")
+    expect(queryOf()).toContain("AND type IN ('BASECO', 'SUPBAS')")
+  })
+
+  test('should filter by type alongside option codes', async () => {
+    await getCompatibilityMatrix(mockLogger, dbMock, ['CMOR1'])
+
+    expect(queryOf()).toMatch(
+      /AND type IN \('BASECO', 'SUPBAS'\)\s+AND option_code = ANY \(\$1\)/
+    )
+  })
+
+  test('should return both BASECO and SUPBAS rows', async () => {
+    const supbas = {
+      id: 2,
+      option_code: 'CMOR1',
+      option_code_compat: 'UPL1',
+      year: 2019,
+      type: 'SUPBAS'
+    }
+    queryMock.mockResolvedValue({ rows: [cm, supbas] })
+
+    const result = await getCompatibilityMatrix(mockLogger, dbMock)
+
+    expect(result).toEqual([
+      compatibilityMatrixTransformer(cm),
+      compatibilityMatrixTransformer(supbas)
+    ])
+    expect(result.map((r) => r.type)).toEqual(['BASECO', 'SUPBAS'])
   })
 
   test('should select the type column', async () => {

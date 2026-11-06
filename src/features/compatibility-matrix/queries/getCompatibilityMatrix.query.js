@@ -30,7 +30,7 @@ async function getCompatibilityMatrix(logger, db, codes = null) {
     FROM compatibility_matrix
     WHERE
         year in (select year from year)
-    AND type = 'BASECO'
+    AND type IN ('BASECO', 'SUPBAS')
         ${codes ? 'AND option_code = ANY ($1)' : ''}`
     const result = await client.query(query, codes ? [codes] : null)
 
