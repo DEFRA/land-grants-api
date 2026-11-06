@@ -52,14 +52,14 @@ describe('Compatibility matrix import', () => {
       const compatibilityMatrix = await getRecordsByQuery(
         connection,
         'SELECT * FROM compatibility_matrix WHERE option_code = $1',
-        ['AB1']
+        ['TE3']
       )
 
-      expect(compatibilityMatrix).toHaveLength(10)
-      expect(compatibilityMatrix[0].option_code).toBe('AB1')
-      expect(compatibilityMatrix[0].option_code_compat).toBe('AB4')
-      expect(compatibilityMatrix[0].year).toBe('2025')
-      expect(compatibilityMatrix[0].ingest_date).toBeDefined()
+      expect(compatibilityMatrix).toHaveLength(3)
+      expect(compatibilityMatrix[0].option_code).toBe('TE3')
+      expect(compatibilityMatrix[0].option_code_compat).toBe('BE3')
+      expect(compatibilityMatrix[0].year).toBe('2026')
+      expect(compatibilityMatrix[0].type).toBe('ELCPRV')
 
       const files = await listTestFiles(s3Client)
       expect(files).toContain(s3key)
