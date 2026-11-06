@@ -8,6 +8,7 @@ export function compatibilityMatrixTransformer(cm) {
     id: cm.id,
     optionCode: cm.option_code,
     optionCodeCompat: cm.option_code_compat,
-    year: cm.year
+    year: cm.year,
+    type: cm.type
   }
 }

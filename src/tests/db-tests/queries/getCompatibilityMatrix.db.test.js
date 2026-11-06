@@ -1,19 +1,32 @@
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
+import {
+  clearCompatibilityMatrix,
+  seedCompatibilityMatrix
+} from '~/src/tests/db-tests/setup/compatibility-matrix.js'
+
+const SOURCE = 'getCompatibilityMatrix.db.test'
 
 describe('Get Compatibility Matrix Query', () => {
   let logger, connection
 
-  beforeAll(() => {
+  beforeAll(async () => {
     logger = {
       info: vi.fn(),
       error: vi.fn()
     }
     connection = connectToTestDatabase()
+    await seedCompatibilityMatrix(connection, SOURCE, [
+      ['CMOR1', 'UPL1'],
+      ['UPL1', 'CMOR1'],
+      ['UPL1', 'UPL2'],
+      ['UPL2', 'UPL1']
+    ])
   })
 
   afterAll(async () => {
+    await clearCompatibilityMatrix(connection, SOURCE)
     await connection.end()
   })
 
@@ -21,10 +34,9 @@ describe('Get Compatibility Matrix Query', () => {
     const landCovers = await getCompatibilityMatrix(logger, connection, [
       'CMOR1'
     ])
-    const filteredResult = landCovers.filter(
-      (landCover) => landCover.optionCode === 'CMOR1'
-    )
-    expect(landCovers).toEqual(filteredResult)
+
+    expect(landCovers.length).toBeGreaterThan(0)
+    expect(landCovers.every((l) => l.optionCode === 'CMOR1')).toBe(true)
   })
 
   test('should return all optionCodes when no codes are provided', async () => {

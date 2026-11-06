@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+      <changeSet id="add-type-to-compatibility-matrix" author="system">
+          <comment>
+            add compatibility type, remove ingest_id and replace with updated_by
+          </comment>
+          <sql>
+            ALTER TABLE compatibility_matrix DROP COLUMN ingest_id;
+            ALTER TABLE compatibility_matrix ADD COLUMN type TEXT;
+            ALTER TABLE compatibility_matrix ADD COLUMN updated_by TEXT;
+          </sql>
+        </changeSet>
+
+        <changeSet id="add-compatibility-matrix-index" author="system">
+          <sql>
+            CREATE UNIQUE INDEX idx_compatibility_matrix_unique ON
+              compatibility_matrix (option_code, option_code_compat, type, year);
+          </sql>
+        </changeSet>
+
+</databaseChangeLog>

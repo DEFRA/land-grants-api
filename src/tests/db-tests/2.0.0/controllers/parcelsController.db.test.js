@@ -2,6 +2,10 @@ import { ParcelsControllerV2 } from '~/src/features/parcel/controllers/2.0.0/par
 import { actions } from '~/src/tests/db-tests/fixtures/actions.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
 import { createResponseCapture } from '~/src/tests/db-tests/setup/utils.js'
+import {
+  clearCompatibilityMatrix,
+  seedCompatibilityMatrix
+} from '~/src/tests/db-tests/setup/compatibility-matrix.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getAgreements } from '~/src/services/dal/index.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
@@ -165,6 +169,19 @@ describe('Parcels Controller 2.0.0', () => {
     const perimeterMeters = 2389
     const shortParcelId = 'SD6252-3622'
     const shortPerimeterMeters = 295
+    const compatibilitySource = 'parcelsController.db.test'
+
+    // CNUM1 can share a boundary with BND1; BND2 is left incompatible
+    beforeAll(async () => {
+      await seedCompatibilityMatrix(connection, compatibilitySource, [
+        ['BND1', 'CNUM1'],
+        ['CNUM1', 'BND1']
+      ])
+    })
+
+    afterAll(async () => {
+      await clearCompatibilityMatrix(connection, compatibilitySource)
+    })
 
     const bnd1 = {
       enabled: true,

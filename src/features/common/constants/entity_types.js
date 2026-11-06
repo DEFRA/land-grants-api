@@ -18,7 +18,8 @@ export const ENTITY_TYPES = [
   { name: 'registered_battlefields', truncateTable: false },
   { name: 'shine', truncateTable: false },
   { name: 'scheduled_monuments', truncateTable: false },
-  { name: 'registered_parks_gardens', truncateTable: false }
+  { name: 'registered_parks_gardens', truncateTable: false },
+  { name: 'actions_eligibility', truncateTable: false }
 ]
 
 /**

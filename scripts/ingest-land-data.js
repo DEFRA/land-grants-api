@@ -8,7 +8,6 @@ const environments = ['dev'] //, 'test', 'perf-test', 'ext-test'] // dev, test, 
 // The script expects folders named after each resource under scripts/ingestion-data/data/
 const resources = [
   'agreements',
-  'compatibility_matrix',
   'moorland_designations',
   'land_parcels',
   'land_covers',
