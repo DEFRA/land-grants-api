@@ -282,35 +282,11 @@ describe('getAvailableLength', () => {
     )
   })
 
-  it('returns zero available length when the parcel has no readable boundary', async () => {
+  it('fails rather than offering nothing when the parcel boundary cannot be read', async () => {
     const action = { code: 'BND1', quantity: 50 }
     getLandParcelBoundary.mockResolvedValue(null)
 
-    const result = await getAvailableLength(
-      action,
-      actions,
-      [],
-      linearCompatibility,
-      { ...landAction, actions: [action] },
-      mockDb,
-      mockLogger
-    )
-
-    expect(result).toEqual({
-      availableLength: 0,
-      boundaryLengthMeters: 0,
-      incompatibleLengthMeters: 0,
-      feasible: true,
-      incompatibleActions: [],
-      explainedOccupancies: []
-    })
-  })
-
-  it('reports the incompatible length even when the boundary cannot be read', async () => {
-    const action = { code: 'BND1', quantity: 50 }
-    getLandParcelBoundary.mockResolvedValue(null)
-
-    const result = await getAvailableLength(
+    const calculation = getAvailableLength(
       action,
       actions,
       [{ actionCode: 'BND1', quantity: 200, unit: 'm' }],
@@ -320,20 +296,9 @@ describe('getAvailableLength', () => {
       mockLogger
     )
 
-    expect(result).toEqual({
-      availableLength: 0,
-      boundaryLengthMeters: 0,
-      incompatibleLengthMeters: 200,
-      feasible: false,
-      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 200 }],
-      explainedOccupancies: [
-        explained('BND1', 200, {
-          sidedness: BOTH_SIDES,
-          occupiedMeters: 200,
-          deducted: true
-        })
-      ]
-    })
+    await expect(calculation).rejects.toThrow(
+      'Unable to read the boundary of land parcel SH123-9456'
+    )
   })
 
   it('clamps the available length at zero when the incompatible length exceeds the boundary', async () => {

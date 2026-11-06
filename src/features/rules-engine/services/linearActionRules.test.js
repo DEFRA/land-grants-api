@@ -2,14 +2,12 @@ import { resolveApplicationData } from './resolveApplicationData.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
-import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
 import { belowMinimumLengthReason } from '~/src/features/rules-engine/rules/1.0.0/minimum-length.js'
 import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length.js'
 
 // Real rules and real providers, with only the queries stubbed, so a rule
 // reading a field its provider does not write fails here
 vi.mock('~/src/features/data-layers/queries/getBoundaryIntersection.query.js')
-vi.mock('~/src/features/available-length/availableLength.js')
 
 const minimumLengthRule = {
   name: 'minimum-length',
@@ -68,17 +66,21 @@ describe('linear action rules with their data providers', () => {
     logger: { warn: vi.fn() }
   }
 
+  // Worked out before the rules run, as validation does
+  let availableLength
+
   const givenAvailableLength = (
-    availableLength,
+    availableLengthMeters,
     incompatibleLengthMeters = 0
-  ) =>
-    getAvailableLength.mockResolvedValue({
-      availableLength,
-      boundaryLengthMeters: availableLength + incompatibleLengthMeters,
+  ) => {
+    availableLength = {
+      availableLength: availableLengthMeters,
+      boundaryLengthMeters: availableLengthMeters + incompatibleLengthMeters,
       incompatibleLengthMeters,
       incompatibleActions: [],
       feasible: true
-    })
+    }
+  }
 
   const givenBoundaryIntersection = (intersectingLengthMeters) =>
     getBoundaryIntersection.mockResolvedValue({
@@ -90,7 +92,7 @@ describe('linear action rules with their data providers', () => {
     const application = await resolveApplicationData(
       actionRules,
       { appliedForQuantity, landParcel: { existingAgreements: [] } },
-      ctx
+      { ...ctx, availableLength }
     )
     return executeRules(rules, application, actionRules).results
   }
