@@ -49,13 +49,13 @@ export const validateLandAction = async (
   )
 
   if (availableLength?.feasible === false) {
-    const ruleResult = existingActionsDoNotFitResult(availableLength)
+    const doNotFitResult = existingActionsDoNotFitResult(availableLength)
 
     return actionResultTransformer({
       action,
       actions,
       availableLength,
-      ruleResult
+      ruleResult: doNotFitResult
     })
   }
 
