@@ -10,7 +10,6 @@ import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/
 import { getAgreements } from '~/src/services/dal/index.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
 import {
-  BOTH_SIDES,
   SINGLE_SIDE,
   billingFactorOf
 } from '~/src/features/common/constants/sidedness.js'
@@ -237,36 +236,6 @@ describe('Parcels Controller 2.0.0', () => {
 
     const requestActionsWithResults = () =>
       requestParcels([parcelId], ['actions', 'actions.results'])
-
-    // Sidedness reaches the actions table from the grants config, which the db seed does not load
-    const SEEDED_SIDEDNESS = { BND1: BOTH_SIDES, BND2: SINGLE_SIDE }
-
-    const insertSeededSidedness = () => {
-      const codes = Object.keys(SEEDED_SIDEDNESS)
-      const sidedness = Object.values(SEEDED_SIDEDNESS)
-
-      return connection.query(
-        'INSERT INTO actions (code, sidedness) SELECT * FROM unnest($1::text[], $2::text[])',
-        [codes, sidedness]
-      )
-    }
-
-    const deleteSeededSidedness = () => {
-      const codes = Object.keys(SEEDED_SIDEDNESS)
-
-      return connection.query('DELETE FROM actions WHERE code = ANY ($1)', [
-        codes
-      ])
-    }
-
-    beforeAll(async () => {
-      await deleteSeededSidedness()
-      await insertSeededSidedness()
-    })
-
-    afterAll(async () => {
-      await deleteSeededSidedness()
-    })
 
     beforeEach(() => {
       mockGetEnabledActions.mockResolvedValue([bnd1])

@@ -4,6 +4,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * @import { ActionRequest, ApplicationValidationRun } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import {ApplicationValidationRunList} from '~/src/features/application/application.d.js'
+ * @import { RulesResult } from '~/src/features/rules-engine/rules.d.js'
  */
 
 /**
@@ -11,7 +12,7 @@ import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - The actions
  * @param {object|null} availableArea - The available area
- * @param {object} ruleResult - The rule result
+ * @param {RulesResult} ruleResult - The rule result
  * @returns {object} The validation result
  */
 export const actionResultTransformer = (

@@ -20,9 +20,9 @@ The applied-for quantity is optional. The `/parcels` endpoint runs this rule bef
 
 A boundary can be committed beyond its own length when the records disagree. Existing actions are measured by the boundary they physically occupy, so a single-side action such as BND2 billed on both faces counts for half its billed length and does not cause this on its own. The causes are a parcel perimeter that differs from the boundary feature measured on the ground, legacy agreements never checked against that perimeter, and option codes absent from the compatibility matrix, which are treated as incompatible and deducted in full.
 
-`landParcel.availability` is therefore floored at zero. An over-committed boundary reports zero rather than a negative figure, which would otherwise reach the applicant as "enter a value that is no more than -500 m". A parcel whose boundary geometry cannot be read also reports zero.
+`landParcel.availability` is therefore floored at zero. An over-committed boundary reports zero rather than a negative figure, which would otherwise reach the applicant as "enter a value that is no more than -500 m". A parcel whose boundary geometry cannot be read fails validation with an error instead, since no length the applicant enters could fix it.
 
-When the existing actions cannot all fit the boundary, however they are arranged, the available length is zero whether or not they are incompatible with the action applied for.
+When the existing actions cannot all fit the boundary, however they are arranged, the available length is zero whether or not they are incompatible with the action applied for. Validation then reports that the existing actions do not fit, as `/parcels` does, and does not run this rule.
 
 The two are told apart by `landParcel.boundaryLength`, which carries the parcel's own `totalMeters` and the `incompatibleMeters` of boundary already occupied by incompatible actions, both in physical metres. When the existing actions cannot all fit, `incompatibleMeters` is the boundary all of them need, so it is more than `totalMeters`. The rule writes both into its explanation, so a caseworker can see whether a parcel has no boundary data or a boundary that is already spoken for. It is absent for actions that are not measured in metres, and the explanation omits that line when it is.
 
