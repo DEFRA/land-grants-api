@@ -10,17 +10,19 @@ const TEST_SIDEDNESS = { BND1: BOTH_SIDES, BND2: SINGLE_SIDE }
 /**
  * Writes the test sidedness, replacing rows a previous run against the same database left behind.
  * @param {Pool} connection - The test database
- * @returns {Promise<unknown>}
+ * @returns {Promise<void>}
  */
 export const insertTestSidedness = async (connection) => {
   const codes = Object.keys(TEST_SIDEDNESS)
 
   await connection.query('DELETE FROM actions WHERE code = ANY ($1)', [codes])
 
-  return connection.query(
-    'INSERT INTO actions (code, sidedness) SELECT * FROM unnest($1::text[], $2::text[])',
-    [codes, Object.values(TEST_SIDEDNESS)]
-  )
+  for (const [code, sidedness] of Object.entries(TEST_SIDEDNESS)) {
+    await connection.query(
+      'INSERT INTO actions (code, sidedness) VALUES ($1, $2)',
+      [code, sidedness]
+    )
+  }
 }
 
 /**
