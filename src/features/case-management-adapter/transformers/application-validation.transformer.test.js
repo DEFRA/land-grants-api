@@ -279,6 +279,59 @@ describe('applicationValidationRunToCaseManagement', () => {
     ])
   })
 
+  test('should create available length details with explanation sections for a linear action', () => {
+    const input = {
+      parcelLevelResults: [
+        {
+          sheetId: 'S1',
+          parcelId: 'P1',
+          actions: [
+            {
+              code: 'BND1',
+              hasPassed: true,
+              availableArea: null,
+              availableLength: {
+                lengthMeters: 700,
+                explanations: [
+                  {
+                    title: 'Section 1',
+                    content: ['Line 1', 'Line 2']
+                  },
+                  {
+                    title: 'Section 2',
+                    content: ['Line 3']
+                  }
+                ]
+              },
+              rules: []
+            }
+          ]
+        }
+      ]
+    }
+
+    const result = applicationValidationRunToCaseManagement(input)
+    const actionDetails = result[2]
+    const availableLengthDetails = actionDetails.items[0]
+
+    expect(availableLengthDetails).toEqual({
+      component: 'details',
+      summaryItems: [
+        {
+          text: 'Available length calculation explanation',
+          classes: 'govuk-details__summary-text'
+        }
+      ],
+      items: [
+        { component: 'paragraph', text: 'Section 1' },
+        { component: 'paragraph', text: 'Line 1' },
+        { component: 'paragraph', text: 'Line 2' },
+        { component: 'paragraph', text: 'Section 2' },
+        { component: 'paragraph', text: 'Line 3' }
+      ]
+    })
+  })
+
   test('should filter out null paragraph items from empty content strings', () => {
     const input = {
       parcelLevelResults: [

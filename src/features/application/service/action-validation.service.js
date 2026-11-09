@@ -35,9 +35,8 @@ export const validateLandAction = async (
     throw new Error('Unable to validate land action')
   }
 
-  const unit = actions.find(
-    (a) => a.code === action.code
-  )?.applicationUnitOfMeasurement
+  const actionConfig = actions.find((a) => a.code === action.code)
+  const unit = actionConfig?.applicationUnitOfMeasurement
 
   const appliedForQuantity = isAreaUnit(unit)
     ? action.quantity
@@ -50,15 +49,16 @@ export const validateLandAction = async (
   )
 
   if (availableLength?.feasible === false) {
-    return actionResultTransformer(
+    const ruleResult = existingActionsDoNotFitResult(availableLength)
+
+    return actionResultTransformer({
       action,
       actions,
-      null,
-      existingActionsDoNotFitResult(availableLength)
-    )
+      availableLength,
+      ruleResult
+    })
   }
 
-  const ruleToExecute = actions.find((a) => a.code === action.code)
   const application = await buildRuleEngineApplication(
     {
       action,
@@ -71,8 +71,10 @@ export const validateLandAction = async (
       availableLength
     },
     request,
-    ruleToExecute?.rules
+    actionConfig?.rules
   )
+
+  const availableArea = application.landParcel?.availableArea ?? null
 
   const ruleResult = executeRules(
     rules,
@@ -82,15 +84,16 @@ export const validateLandAction = async (
       sheetId: landAction.sheetId,
       actionCode: action.code
     },
-    ruleToExecute?.rules
+    actionConfig?.rules
   )
 
-  return actionResultTransformer(
+  return actionResultTransformer({
     action,
     actions,
-    application.landParcel?.availableArea ?? null,
+    availableArea,
+    availableLength,
     ruleResult
-  )
+  })
 }
 
 /**
@@ -98,7 +101,7 @@ export const validateLandAction = async (
  * @param {string | undefined} unit - The action's unit of measurement
  * @param {{action: ActionRequest, actions: Action[], agreements: AgreementAction[], compatibilityCheckFn: CompatibilityCheckFn, landAction: LandAction}} applicationData - The action and what competes with it
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<AvailableLength | undefined>} The available length, or undefined for an action not measured in metres
+ * @returns {Promise<TargetedAvailableLength | undefined>} The available length, or undefined for an action not measured in metres
  */
 const availableLengthFor = async (unit, applicationData, request) => {
   if (!isLengthUnit(unit)) {
@@ -194,5 +197,5 @@ const buildRuleEngineApplication = async (
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  * @import { RuleEngineApplication, LandParcel, RulesResult } from '~/src/features/rules-engine/rules.d.js'
  * @import { ApplicationData } from '~/src/features/rules-engine/data-requirements.d.js'
- * @import { AvailableLength } from '~/src/features/available-length/available-length.d.js'
+ * @import { AvailableLength, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  */
