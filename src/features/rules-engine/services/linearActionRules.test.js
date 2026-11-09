@@ -2,8 +2,8 @@ import { resolveApplicationData } from './resolveApplicationData.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
-import { belowMinimumLengthReason } from '~/src/features/rules-engine/rules/1.0.0/minimum-length.js'
-import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length.js'
+import { belowMinimumLengthReason } from '~/src/features/rules-engine/rules/1.0.0/minimum-length/minimum-length.js'
+import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length/applied-for-total-or-partial-available-length.js'
 
 // Real rules and real providers, with only the queries stubbed, so a rule
 // reading a field its provider does not write fails here
