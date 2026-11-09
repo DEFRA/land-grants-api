@@ -12,7 +12,6 @@ import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 import { getAvailableArea } from '../../application/service/get-available-area.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
-import { getAvailableLength } from '../../available-length/availableLength.js'
 
 const intersectionLayerStrategies = {
   moorland: async ({ landAction: { sheetId, parcelId }, db, logger }) => ({
@@ -155,34 +154,8 @@ export const requirementProviders = {
   },
   [REQUIRED_RULE_DATA.AVAILABLE_LENGTH]: {
     dedupeKey: () => 'availableLength',
-    fetch: async (
-      _req,
-      {
-        action,
-        actions,
-        agreements,
-        compatibilityCheckFn,
-        landAction,
-        db,
-        logger,
-        availableLength
-      }
-    ) => {
-      // Already worked out by the caller, as /parcels does, so not fetched again
-      if (availableLength) {
-        return availableLength
-      }
-
-      return getAvailableLength(
-        action,
-        actions,
-        agreements,
-        compatibilityCheckFn,
-        landAction,
-        db,
-        logger
-      )
-    },
+    // Worked out before the rules run, by both /parcels and validation, so the rules check the figure the caller acts on
+    fetch: (_req, { availableLength }) => availableLength,
     apply: (application, _req, value) => {
       application.landParcel.availability = value.availableLength
       application.landParcel.boundaryLength = {

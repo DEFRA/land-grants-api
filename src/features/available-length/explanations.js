@@ -60,7 +60,7 @@ const maximumLine = (targetAction, availableLength) =>
  * @param {AvailableLength} availableLength - The available length and the figures behind it
  * @returns {ExplanationSection} Why nothing is available when the existing actions cannot all fit
  */
-const doNotFitSection = ({
+export const doNotFitSection = ({
   incompatibleLengthMeters,
   boundaryLengthMeters
 }) => ({

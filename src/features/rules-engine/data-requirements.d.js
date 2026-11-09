@@ -7,6 +7,7 @@
  * @property {Function} compatibilityCheckFn
  * @property {string | undefined} unit
  * @property {number} appliedForQuantity
+ * @property {AvailableLength} [availableLength] - Worked out before the rules run, for a linear action
  */
 
 /**
@@ -18,7 +19,7 @@
  * @property {Function} compatibilityCheckFn
  * @property {string | undefined} [unit]
  * @property {number} [appliedForQuantity]
- * @property {AvailableLength} [availableLength] - Already worked out by the caller, so not fetched again
+ * @property {AvailableLength} [availableLength] - Worked out before the rules run, for a linear action
  * @property {object} db
  * @property {object} logger
  */

@@ -13,7 +13,6 @@ import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getB
 import { getAvailableArea } from '~/src/features/application/service/get-available-area.js'
 import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
 
 vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
@@ -36,7 +35,6 @@ vi.mock('~/src/features/parcel/queries/getLandCoversForParcel.query.js')
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
-vi.mock('~/src/features/available-length/availableLength.js')
 
 describe('requirementProviders', () => {
   const db = {}
@@ -323,31 +321,12 @@ describe('requirementProviders', () => {
       expect(provider.dedupeKey({})).toBe('availableLength')
     })
 
-    it('uses the available length the caller already worked out, without fetching it', async () => {
+    it('supplies the available length the caller worked out', async () => {
       const availableLength = { availableLength: 12 }
 
       const value = await provider.fetch({}, { ...ctx, availableLength })
 
       expect(value).toBe(availableLength)
-      expect(getAvailableLength).not.toHaveBeenCalled()
-    })
-
-    it('works out the available length from the whole context', async () => {
-      const availableLength = { availableLength: 800 }
-      getAvailableLength.mockResolvedValue(availableLength)
-
-      const value = await provider.fetch({}, ctx)
-
-      expect(value).toBe(availableLength)
-      expect(getAvailableLength).toHaveBeenCalledWith(
-        action,
-        actions,
-        agreements,
-        compatibilityCheckFn,
-        landAction,
-        db,
-        logger
-      )
     })
 
     it('stores the available length as the parcel availability', () => {
