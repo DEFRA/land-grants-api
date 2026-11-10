@@ -39,6 +39,11 @@ const actionSchema = Joi.object({
   guidanceUrl: Joi.string().uri().optional(),
   availability: actionAvailabilitySchema.optional(),
   isAvailable: Joi.boolean().required(),
+  hasSupplements: Joi.boolean()
+    .required()
+    .description(
+      'Whether the action has supplementary actions, so the parcels-supplements endpoint can be called for it'
+    ),
   unavailableReason: unavailableReasonSchema.optional(),
   quantityRequired: Joi.boolean().required(),
   displayUnit: Joi.string().allow(null).optional(),

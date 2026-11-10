@@ -9,7 +9,7 @@ import {
   parcelsSuccessResponseSchema
 } from '~/src/features/parcel/schema/2.0.0/parcel.schema.js'
 import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createCompatibilityLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import {
   logBusinessError,
   logInfo,
@@ -144,10 +144,12 @@ const ParcelsControllerV2 = {
         return Boom.notFound(validationResponse.errors.join(', '))
       }
 
-      const compatibilityCheckFn = await createCompatibilityMatrix(
-        request.logger,
-        postgresDb
-      )
+      const { compatibilityCheckFn, actionCodesWithSupplements } =
+        await createCompatibilityLookups(
+          request.logger,
+          postgresDb,
+          validationResponse.enabledActions.map((action) => action.code)
+        )
 
       /** @type {AgreementsByParcel} */
       let agreements = {}
@@ -171,7 +173,8 @@ const ParcelsControllerV2 = {
 
       const preparedActions = {
         displayedActions,
-        unitByActionCode
+        unitByActionCode,
+        actionCodesWithSupplements
       }
 
       const responseParcels = await Promise.all(
