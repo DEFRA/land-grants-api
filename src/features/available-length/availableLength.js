@@ -153,7 +153,7 @@ export function calculateAvailableLength(
  * @param {Omit<LandAction, 'sbi'>} landAction - The land action
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<AvailableLength>} The available length and the figures behind it
+ * @returns {Promise<TargetedAvailableLength>} The available length, the figures behind it and the sidedness it was billed at
  */
 export async function getAvailableLength(
   action,
@@ -209,18 +209,22 @@ export async function getAvailableLength(
     logger
   )
 
-  return calculateAvailableLength(action.code, existingActions, {
+  const calculation = calculateAvailableLength(action.code, existingActions, {
     compatibilityCheckFn,
     boundaryLengthMeters,
     sidednessByActionCode
   })
+
+  const targetSidedness = sidednessOf(action.code, sidednessByActionCode)
+
+  return { ...calculation, targetSidedness }
 }
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode } from '~/src/features/available-length/available-length.d.js'
+ * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  */

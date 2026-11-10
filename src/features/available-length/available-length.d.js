@@ -9,6 +9,11 @@
  */
 
 /**
+ * @typedef {AvailableLength & {targetSidedness: Sidedness}} TargetedAvailableLength
+ * The available length with the sidedness of the action applied for, which explaining it needs
+ */
+
+/**
  * @typedef {object} Occupancy
  * @property {string} actionCode - The action's code
  * @property {number} billedLengthMeters - The length billed for this action, in metres

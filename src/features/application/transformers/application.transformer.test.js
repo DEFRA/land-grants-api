@@ -3,6 +3,10 @@ import {
   applicationDataTransformer,
   applicationValidationRunTransformer
 } from './application.transformer.js'
+import {
+  BOTH_SIDES,
+  SINGLE_SIDE
+} from '~/src/features/common/constants/sidedness.js'
 
 const sbi = '800000001'
 const crn = '9000000001'
@@ -23,12 +27,12 @@ describe('actionResultTransformer', () => {
       results: [{ rule: 'test rule' }]
     }
 
-    const result = actionResultTransformer(
+    const result = actionResultTransformer({
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    })
 
     expect(result).toEqual({
       hasPassed: true,
@@ -38,6 +42,7 @@ describe('actionResultTransformer', () => {
         explanations: ['explanation1', 'explanation2'],
         areaInHa: 1
       },
+      availableLength: null,
       rules: [{ rule: 'test rule' }]
     })
   })
@@ -54,12 +59,12 @@ describe('actionResultTransformer', () => {
       results: [{ rule: 'test rule' }]
     }
 
-    const result = actionResultTransformer(
+    const result = actionResultTransformer({
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    })
 
     expect(result).toEqual({
       hasPassed: false,
@@ -69,6 +74,7 @@ describe('actionResultTransformer', () => {
         explanations: [],
         areaInHa: 0.5
       },
+      availableLength: null,
       rules: [{ rule: 'test rule' }]
     })
   })
@@ -85,12 +91,12 @@ describe('actionResultTransformer', () => {
       results: { rule: 'test rule' }
     }
 
-    const result = actionResultTransformer(
+    const result = actionResultTransformer({
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    })
 
     expect(result.availableArea.areaInHa).toBe(0)
   })
@@ -107,12 +113,12 @@ describe('actionResultTransformer', () => {
       results: { rule: 'test rule' }
     }
 
-    const result = actionResultTransformer(
+    const result = actionResultTransformer({
       action,
       actions,
       availableArea,
       ruleResult
-    )
+    })
 
     expect(result.availableArea.areaInHa).toBe(-0.1)
   })
@@ -131,9 +137,56 @@ describe('actionResultTransformer', () => {
       results: { rule: 'test rule' }
     }
 
-    const result = actionResultTransformer(action, actions, null, ruleResult)
+    const result = actionResultTransformer({
+      action,
+      actions,
+      availableArea: null,
+      ruleResult
+    })
 
     expect(result.availableArea).toBe(null)
+  })
+
+  describe('for a linear action', () => {
+    const action = { code: 'BND2' }
+    const actions = [{ code: 'BND2', semanticVersion: '1.1.0' }]
+    const ruleResult = { passed: true, results: [] }
+
+    // 300 m of a 1000 m boundary is taken, and BND2 bills both faces of the rest
+    const availableLength = {
+      availableLength: 1400,
+      boundaryLengthMeters: 1000,
+      incompatibleLengthMeters: 300,
+      feasible: true,
+      incompatibleActions: [{ actionCode: 'BND1', billedLengthMeters: 300 }],
+      explainedOccupancies: [
+        {
+          actionCode: 'BND1',
+          billedLengthMeters: 300,
+          sidedness: BOTH_SIDES,
+          occupiedMeters: 300,
+          deducted: true
+        }
+      ],
+      targetSidedness: SINGLE_SIDE
+    }
+
+    test('should give the available length with the sections explaining it', () => {
+      const result = actionResultTransformer({
+        action,
+        actions,
+        availableArea: null,
+        availableLength,
+        ruleResult
+      })
+
+      expect(result.availableLength).toEqual({
+        lengthMeters: 1400,
+        explanations: expect.arrayContaining([
+          { title: expect.any(String), content: expect.any(Array) }
+        ])
+      })
+    })
   })
 })
 
