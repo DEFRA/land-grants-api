@@ -1,4 +1,4 @@
-import { ruleConfigs, ruleSchema } from './schemas.js'
+import { configSchemaByRuleKey, ruleSchema } from './schemas.js'
 import { rules } from './index.js'
 
 // Real rule keys, since the schema only accepts rules the engine has
@@ -19,9 +19,11 @@ const ruleRunByType = {
   config: { caveatDescription: 'example caveat description' }
 }
 
-describe('ruleConfigs', () => {
+describe('configSchemaByRuleKey', () => {
   test('is keyed the same way as the rules engine registry', () => {
-    expect(Object.keys(ruleConfigs).sort()).toEqual(Object.keys(rules).sort())
+    expect(Object.keys(configSchemaByRuleKey).sort()).toEqual(
+      Object.keys(rules).sort()
+    )
   })
 })
 

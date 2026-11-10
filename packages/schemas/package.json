@@ -1,7 +1,7 @@
 {
-  "name": "@defra/land-grants-rule-schemas",
-  "version": "0.0.0",
-  "description": "Joi schemas for the config each land-grants-api rule reads",
+  "name": "@defra/land-grants-schemas",
+  "version": "0.0.1",
+  "description": "Joi schemas for land-grants-api",
   "type": "module",
   "main": "dist/schemas.js",
   "exports": "./dist/schemas.js",
