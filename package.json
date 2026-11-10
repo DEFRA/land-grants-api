@@ -89,8 +89,8 @@
     "unzipper": "^0.12.5"
   },
   "devDependencies": {
-    "@babel/cli": "^8.0.6",
-    "@babel/core": "^8.0.9",
+    "@babel/cli": "^8.1.0",
+    "@babel/core": "^8.1.0",
     "@babel/preset-env": "^8.0.7",
     "@mapbox/vector-tile": "^3.0.0",
     "@pact-foundation/pact": "^17.1.4",
