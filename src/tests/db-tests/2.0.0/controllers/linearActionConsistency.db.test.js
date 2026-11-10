@@ -93,14 +93,14 @@ describe('Linear actions on /parcels and /validate', () => {
   const bnd2Occupying = (occupiedMeters) =>
     dalAgreement('BND2', occupiedMeters * billingFactorOf(SINGLE_SIDE))
 
-  const requestParcels = async (plannedActions = []) => {
+  const requestParcels = async (plannedActions = [], fields = ['actions']) => {
     const { h, getResponse } = createResponseCapture()
 
     await ParcelsControllerV2.handler(
       {
         payload: {
           parcelIds: [`${sheetId}-${parcelId}`],
-          fields: ['actions'],
+          fields,
           plannedActions
         },
         headers: { 'x-forwarded-authorization': 'dummy' },
@@ -161,6 +161,13 @@ describe('Linear actions on /parcels and /validate', () => {
     validationResponse.data.actions.find(
       ({ actionCode }) => actionCode === 'BND1'
     ).rules
+
+  const summaryOf = (component) => component.summaryItems?.[0].text
+
+  const paragraphsOf = (explanations) =>
+    explanations
+      .flatMap(({ title, content }) => [title, ...content])
+      .map((text) => ({ component: 'paragraph', text }))
 
   const availableLengthResultIn = (validationResponse) =>
     bnd1RulesIn(validationResponse).find(
@@ -266,6 +273,28 @@ describe('Linear actions on /parcels and /validate', () => {
     const validationRun = await requestValidationRun(validation.data.id)
 
     expect(validationRun.statusCode).toBe(200)
+  })
+
+  test('should show a caseworker the same available length explanation as /parcels', async () => {
+    mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
+    const parcelsResponse = await requestParcels(
+      [],
+      ['actions', 'actions.results']
+    )
+    const { explanations } = bnd1On(parcelsResponse).results
+    const validation = await requestValidation([{ code: 'BND1', quantity: 50 }])
+
+    const validationRun = await requestValidationRun(validation.data.id)
+
+    const bnd1Details = validationRun.data.response.find(
+      (component) => summaryOf(component) === 'BND1'
+    )
+    const lengthPanel = bnd1Details.items.find(
+      (component) =>
+        summaryOf(component) === 'Available length calculation explanation'
+    )
+
+    expect(lengthPanel.items).toEqual(paragraphsOf(explanations))
   })
 
   test('should leave the action available on /parcels but fail /validate when the perimeter cannot be read', async () => {

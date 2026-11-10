@@ -73,18 +73,19 @@ const createDetailsComponent = (
 })
 
 /**
- * Creates available area calculation details component
- * @param {ExplanationSection[]} explanations - The available area explanations
+ * Creates a calculation explanation details component
+ * @param {string} title - The summary text naming the calculation
+ * @param {ExplanationSection[]} explanations - The calculation's explanations
  * @returns {DetailsComponent}
  */
-const createAvailableAreaDetails = (explanations) => {
+const createExplanationDetails = (title, explanations) => {
   const items = explanations.flatMap((explanation) => [
     createParagraphComponent(explanation.title),
     ...explanation.content.map((line) => createParagraphComponent(line))
   ])
 
   return createDetailsComponent(
-    'Available area calculation explanation',
+    title,
     items.filter((item) => item !== null)
   )
 }
@@ -119,11 +120,21 @@ const createActionDetails = (action) => {
 
   // Add available area explanation details
   if (action.availableArea) {
-    const availableAreaDetails = createAvailableAreaDetails(
+    const availableAreaDetails = createExplanationDetails(
+      'Available area calculation explanation',
       action.availableArea.explanations
     )
 
     actionItems.push(availableAreaDetails)
+  }
+
+  if (action.availableLength) {
+    const availableLengthDetails = createExplanationDetails(
+      'Available length calculation explanation',
+      action.availableLength.explanations
+    )
+
+    actionItems.push(availableLengthDetails)
   }
 
   for (const rule of action.rules) {
