@@ -1,31 +1,47 @@
 import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
+import { formatLengthExplanationSections } from '~/src/features/available-length/explanations.js'
 
 /**
  * @import { ActionRequest, ApplicationValidationRun } from '~/src/features/application/application.d.js'
+ * @import { TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import {ApplicationValidationRunList} from '~/src/features/application/application.d.js'
+ * @import { RulesResult } from '~/src/features/rules-engine/rules.d.js'
  */
 
 /**
  * Transform the action result
- * @param {ActionRequest} action - The action
- * @param {Action[]} actions - The actions
- * @param {object|null} availableArea - The available area
- * @param {object} ruleResult - The rule result
+ * @param {object} actionResult
+ * @param {ActionRequest} actionResult.action - The action
+ * @param {Action[]} actionResult.actions - The actions
+ * @param {object|null} [actionResult.availableArea] - The available area, for an area action
+ * @param {TargetedAvailableLength} [actionResult.availableLength] - The available length, for a linear action
+ * @param {RulesResult} actionResult.ruleResult - The rule result
  * @returns {object} The validation result
  */
-export const actionResultTransformer = (
+export const actionResultTransformer = ({
   action,
   actions,
   availableArea,
+  availableLength,
   ruleResult
-) => {
+}) => {
   const actionConfig = actions.find((a) => a.code === action.code)
 
-  const aa = availableArea
+  const availableAreaResult = availableArea
     ? {
         explanations: availableArea.explanations,
         areaInHa: sqmToHaRounded(availableArea.availableAreaSqm)
+      }
+    : null
+
+  const availableLengthResult = availableLength
+    ? {
+        lengthMeters: availableLength.availableLength,
+        explanations: formatLengthExplanationSections(availableLength, {
+          targetAction: action.code,
+          targetSidedness: availableLength.targetSidedness
+        })
       }
     : null
 
@@ -33,7 +49,8 @@ export const actionResultTransformer = (
     hasPassed: ruleResult.passed,
     code: action.code,
     actionConfigVersion: actionConfig?.semanticVersion,
-    availableArea: aa,
+    availableArea: availableAreaResult,
+    availableLength: availableLengthResult,
     rules: ruleResult.results
   }
 }

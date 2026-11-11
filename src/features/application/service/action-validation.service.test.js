@@ -4,6 +4,12 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { resolveApplicationData } from '~/src/features/rules-engine/services/resolveApplicationData.js'
+import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
+import { doNotFitSection } from '~/src/features/available-length/explanations.js'
+import {
+  EXISTING_ACTIONS_DO_NOT_FIT,
+  EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON
+} from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 vi.mock('~/src/features/rules-engine/rulesEngine.js', () => ({
   executeRules: vi.fn()
@@ -20,6 +26,8 @@ vi.mock(
     resolveApplicationData: vi.fn()
   })
 )
+
+vi.mock('~/src/features/available-length/availableLength.js')
 
 const mockExecuteRules = vi.mocked(executeRules)
 const mockActionResultTransformer = vi.mocked(actionResultTransformer)
@@ -117,12 +125,12 @@ describe('Action Validation Service', () => {
       )
 
       expect(result).toEqual(mockActionResult)
-      expect(mockActionResultTransformer).toHaveBeenCalledWith(
-        mockAction,
-        mockActionConfig,
-        null,
-        mockRuleResult
-      )
+      expect(mockActionResultTransformer).toHaveBeenCalledWith({
+        action: mockAction,
+        actions: mockActionConfig,
+        availableArea: null,
+        ruleResult: mockRuleResult
+      })
     })
 
     test('should resolve application data using the rules configured for the action', async () => {
@@ -357,6 +365,154 @@ describe('Action Validation Service', () => {
         )
       ).rejects.toThrow('Database connection failed')
       expect(mockExecuteRules).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('validateLandAction for a linear action', () => {
+    const linearAction = { code: 'BND1', quantity: 100 }
+    const linearLandAction = { ...mockLandAction, actions: [linearAction] }
+    const actionConfigWithBnd1 = [
+      ...mockActionConfig,
+      { code: 'BND1', applicationUnitOfMeasurement: 'm', rules: [] }
+    ]
+
+    const availableLengthOf = ({
+      availableLength,
+      feasible,
+      incompatibleLengthMeters = 500 - availableLength
+    }) => ({
+      availableLength,
+      boundaryLengthMeters: 500,
+      incompatibleLengthMeters,
+      incompatibleActions: [],
+      feasible,
+      explainedOccupancies: []
+    })
+
+    test('should report only that existing actions do not fit when they cannot all fit the boundary', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 0,
+        feasible: false,
+        incompatibleLengthMeters: 600
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [{ ruleResult }] = mockActionResultTransformer.mock.calls[0]
+      const { title, content } = doNotFitSection(availableLength)
+      expect(ruleResult).toEqual({
+        passed: false,
+        results: [
+          {
+            name: EXISTING_ACTIONS_DO_NOT_FIT,
+            passed: false,
+            description: expect.any(String),
+            reason: EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
+            explanations: [{ title, lines: content }]
+          }
+        ]
+      })
+    })
+
+    test('should check the rules against the available length worked out for the action', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 300,
+        feasible: true
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [, , ctx] = mockResolveApplicationData.mock.calls[0]
+      expect(ctx.availableLength).toBe(availableLength)
+    })
+
+    test('should carry the available length to the action result, so a caseworker can see how it was worked out', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 300,
+        feasible: true
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.availableLength).toBe(availableLength)
+    })
+
+    test('should carry the available length to the action result when the existing actions do not fit', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 0,
+        feasible: false,
+        incompatibleLengthMeters: 600
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.availableLength).toBe(availableLength)
+    })
+
+    test('should fail when the parcel boundary cannot be read', async () => {
+      vi.mocked(getAvailableLength).mockRejectedValue(
+        new Error('Unable to read the boundary of land parcel SX0679-9238')
+      )
+
+      const validation = validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      await expect(validation).rejects.toThrow(
+        'Unable to read the boundary of land parcel SX0679-9238'
+      )
+    })
+
+    test('should not work out an available length for an area action', async () => {
+      await validateLandAction(
+        mockAction,
+        mockActionConfig,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        mockLandAction,
+        mockRequest
+      )
+
+      expect(getAvailableLength).not.toHaveBeenCalled()
     })
   })
 })

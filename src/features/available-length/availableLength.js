@@ -143,9 +143,9 @@ export function calculateAvailableLength(
 }
 
 /**
- * Gathers the actions competing for a parcel's boundary and works out how much
- * of it is left for the one being applied for. The perimeter is read by the
- * caller, so this module stays free of I/O.
+ * Gathers the actions competing for a parcel's boundary, reads its perimeter
+ * and sidedness, and works out how much is left for the one being applied for.
+ * Validation's entry point; /parcels gathers these once per parcel itself.
  * @param {Pick<ActionRequest, 'code'>} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
@@ -153,7 +153,7 @@ export function calculateAvailableLength(
  * @param {Omit<LandAction, 'sbi'>} landAction - The land action
  * @param {object} db - The database connection
  * @param {object} logger - The logger
- * @returns {Promise<AvailableLength>} The validation result
+ * @returns {Promise<TargetedAvailableLength>} The available length, the figures behind it and the sidedness it was billed at
  */
 export async function getAvailableLength(
   action,
@@ -187,9 +187,14 @@ export async function getAvailableLength(
     logger
   )
 
-  // A boundary that cannot be read reports zero, as does one committed beyond
-  // its own length - the two are told apart by the figures returned alongside.
-  const boundaryLengthMeters = boundaryResult?.boundaryLengthMeters ?? 0
+  const boundaryLengthMeters = boundaryResult?.boundaryLengthMeters
+
+  // Reporting zero would blame the applicant's length, or their existing actions, for a data failure
+  if (boundaryLengthMeters == null) {
+    throw new Error(
+      `Unable to read the boundary of land parcel ${landAction.sheetId}-${landAction.parcelId}`
+    )
+  }
 
   const actionCodes = [
     ...new Set([
@@ -204,18 +209,22 @@ export async function getAvailableLength(
     logger
   )
 
-  return calculateAvailableLength(action.code, existingActions, {
+  const calculation = calculateAvailableLength(action.code, existingActions, {
     compatibilityCheckFn,
     boundaryLengthMeters,
     sidednessByActionCode
   })
+
+  const targetSidedness = sidednessOf(action.code, sidednessByActionCode)
+
+  return { ...calculation, targetSidedness }
 }
 
 /**
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode } from '~/src/features/available-length/available-length.d.js'
+ * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  */
