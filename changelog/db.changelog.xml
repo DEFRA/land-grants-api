@@ -97,4 +97,5 @@
   <include  file="changelog/db.changelog-1.90.xml"/>
   <include  file="changelog/db.changelog-1.91.xml"/>
   <include  file="changelog/db.changelog-1.92.xml"/>
+  <include  file="changelog/db.changelog-1.93.xml"/>
 </databaseChangeLog>

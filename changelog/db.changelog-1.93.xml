@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="delete-legacy-actions-config-without-json" author="system">
+    <comment>
+      Delete the legacy actions_config rows seeded by actions-data.sql for actions that have no
+      JSON action config in grants-config-land-grants. db.changelog-1.89 copied their legacy
+      enabled flag into the config, so some (e.g. SPM4) were still treated as enabled actions,
+      making SUPBAS base actions such as UPL1 report hasSupplements = true.
+      The actions rows are kept: they are owned by the actions_eligibility.csv ingest.
+      An explicit list is used so that actions ingested from grants-config are never removed.
+    </comment>
+    <sql>
+      DELETE FROM actions_config
+      WHERE code IN (
+        'CSAM1', 'OFM3', 'SAM1', 'SPM4', 'SPM5',
+        'UPL4', 'UPL5', 'UPL6', 'UPL7', 'UPL9'
+      );
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
