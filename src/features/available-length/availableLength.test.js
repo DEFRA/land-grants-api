@@ -86,7 +86,8 @@ describe('getAvailableLength', () => {
       incompatibleLengthMeters: 0,
       feasible: true,
       incompatibleActions: [],
-      explainedOccupancies: []
+      explainedOccupancies: [],
+      targetSidedness: BOTH_SIDES
     })
   })
 
@@ -227,7 +228,8 @@ describe('getAvailableLength', () => {
           occupiedMeters: 100,
           deducted: true
         })
-      ]
+      ],
+      targetSidedness: SINGLE_SIDE
     })
   })
 
@@ -256,7 +258,8 @@ describe('getAvailableLength', () => {
           occupiedMeters: 201,
           deducted: true
         })
-      ]
+      ],
+      targetSidedness: BOTH_SIDES
     })
   })
 
@@ -327,7 +330,8 @@ describe('getAvailableLength', () => {
           occupiedMeters: 1500,
           deducted: true
         })
-      ]
+      ],
+      targetSidedness: SINGLE_SIDE
     })
   })
 
@@ -396,7 +400,8 @@ describe('getAvailableLength', () => {
             occupiedMeters: 500,
             deducted: true
           })
-        ]
+        ],
+        targetSidedness: BOTH_SIDES
       })
     })
 

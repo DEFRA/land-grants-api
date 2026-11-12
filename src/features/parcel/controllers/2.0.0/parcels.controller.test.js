@@ -1,6 +1,6 @@
 import createTestServer from '~/src/tests/test-server.js'
 import { UnauthorizedError } from '~/src/services/dal/errors.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createCompatibilityLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getActionsForParcel } from '~/src/features/parcel/service/2.0.0/parcel.service.js'
 import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
 import {
@@ -38,7 +38,8 @@ const mockGetDataAndValidateRequest = getDataAndValidateRequest
 const mockGetActionsForParcel = getActionsForParcel
 const mockGetActionsForParcelWithSSSIConsentRequired = addSssiConsentRequired
 const mockGetActionsForParcelWithHEFERConsentRequired = addHeferRequired
-const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+const mockCreateCompatibilityLookups = createCompatibilityLookups
+const actionCodesWithSupplements = new Set(['BND1'])
 
 const defaultAgreements = [
   {
@@ -94,6 +95,7 @@ const mockActionsWithAvailability = [
     },
     quantityRequired: true,
     isAvailable: true,
+    hasSupplements: true,
     ratePerUnitGbp: 10.6,
     ratePerAgreementPerYearGbp: 272
   },
@@ -106,6 +108,7 @@ const mockActionsWithAvailability = [
     },
     quantityRequired: true,
     isAvailable: true,
+    hasSupplements: false,
     ratePerUnitGbp: 20.5,
     ratePerAgreementPerYearGbp: 0
   }
@@ -163,7 +166,10 @@ describe('Parcels Controller 2.0.0', () => {
 
       return Promise.resolve(result)
     })
-    mockCreateCompatibilityMatrix.mockResolvedValue(vi.fn())
+    mockCreateCompatibilityLookups.mockResolvedValue({
+      compatibilityCheckFn: vi.fn(),
+      actionCodesWithSupplements
+    })
     mockGetActionsForParcelWithSSSIConsentRequired.mockImplementation(
       (parcelIds, responseParcels) => {
         return Promise.resolve(
@@ -258,6 +264,8 @@ describe('Parcels Controller 2.0.0', () => {
       expect(parcels[0]).toHaveProperty('actions')
       expect(parcels[0].actions).toHaveLength(2)
       expect(parcels[0].actions[0].code).toBe('BND1')
+      expect(parcels[0].actions[0].hasSupplements).toBe(true)
+      expect(parcels[0].actions[1].hasSupplements).toBe(false)
       expect(getAgreements).toHaveBeenCalled()
       expect(mockGetActionsForParcel).toHaveBeenCalled()
       expect(
@@ -294,6 +302,7 @@ describe('Parcels Controller 2.0.0', () => {
                 },
                 quantityRequired: false,
                 isAvailable: true,
+                hasSupplements: false,
                 ratePerUnitGbp: 10.6,
                 ratePerAgreementPerYearGbp: 272
               }
@@ -390,7 +399,8 @@ describe('Parcels Controller 2.0.0', () => {
         true,
         {
           displayedActions: mockEnabledActions.filter((a) => a.display),
-          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+          unitByActionCode: getUnitByActionCode(mockEnabledActions),
+          actionCodesWithSupplements
         },
         expect.any(Function),
         expect.anything(),
@@ -471,7 +481,8 @@ describe('Parcels Controller 2.0.0', () => {
         false,
         {
           displayedActions: mockEnabledActions.filter((a) => a.display),
-          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+          unitByActionCode: getUnitByActionCode(mockEnabledActions),
+          actionCodesWithSupplements
         },
         expect.any(Function),
         expect.anything(),
@@ -798,7 +809,8 @@ describe('Parcels Controller 2.0.0', () => {
         false,
         {
           displayedActions: mockEnabledActions.filter((a) => a.display),
-          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+          unitByActionCode: getUnitByActionCode(mockEnabledActions),
+          actionCodesWithSupplements
         },
         expect.any(Function),
         expect.anything(),
@@ -814,6 +826,7 @@ describe('Parcels Controller 2.0.0', () => {
           availability: { unit: 'ha', value: 5 },
           quantityRequired: true,
           isAvailable: true,
+          hasSupplements: false,
           ratePerUnitGbp: 10,
           ratePerAgreementPerYearGbp: 0
         },
@@ -823,6 +836,7 @@ describe('Parcels Controller 2.0.0', () => {
           availability: { unit: 'ha', value: 10 },
           quantityRequired: true,
           isAvailable: true,
+          hasSupplements: false,
           ratePerUnitGbp: 10.6,
           ratePerAgreementPerYearGbp: 272
         },
@@ -832,6 +846,7 @@ describe('Parcels Controller 2.0.0', () => {
           availability: { unit: 'ha', value: 8 },
           quantityRequired: true,
           isAvailable: true,
+          hasSupplements: false,
           ratePerUnitGbp: 15,
           ratePerAgreementPerYearGbp: 0
         }
@@ -1152,8 +1167,8 @@ describe('Parcels Controller 2.0.0', () => {
       expect(statusCode).toBe(401)
     })
 
-    test('should return 500 when createCompatibilityMatrix throws error', async () => {
-      mockCreateCompatibilityMatrix.mockRejectedValue(
+    test('should return 500 when createCompatibilityLookups throws error', async () => {
+      mockCreateCompatibilityLookups.mockRejectedValue(
         new Error('Database connection error')
       )
 
@@ -1322,9 +1337,10 @@ describe('Parcels Controller 2.0.0', () => {
 
       await server.inject(request)
 
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+      expect(mockCreateCompatibilityLookups).toHaveBeenCalledWith(
         expect.anything(),
-        expect.anything()
+        expect.anything(),
+        mockEnabledActions.map((action) => action.code)
       )
     })
 
@@ -1352,7 +1368,8 @@ describe('Parcels Controller 2.0.0', () => {
         false,
         {
           displayedActions: mockEnabledActions.filter((a) => a.display),
-          unitByActionCode: getUnitByActionCode(mockEnabledActions)
+          unitByActionCode: getUnitByActionCode(mockEnabledActions),
+          actionCodesWithSupplements
         },
         expect.any(Function),
         expect.anything(),

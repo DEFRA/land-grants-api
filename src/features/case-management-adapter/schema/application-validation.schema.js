@@ -44,7 +44,7 @@ const summaryItemSchema = Joi.alternatives().try(
 const detailsComponentSchema = Joi.object({
   component: Joi.string().valid('details').required(),
   summaryItems: Joi.array().items(summaryItemSchema).min(MIN_LEVEL).required(),
-  items: Joi.array().items(Joi.link('#component')).min(MIN_LEVEL).required()
+  items: Joi.array().items(Joi.link('#component')).required()
 }).id('details')
 
 // Combined component schema (for use in details items)

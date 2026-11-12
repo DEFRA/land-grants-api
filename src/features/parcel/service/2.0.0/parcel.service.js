@@ -35,7 +35,11 @@ async function getActionsWithAvailability(
   postgresDb,
   logger
 ) {
-  const { displayedActions, unitByActionCode } = preparedActions
+  const {
+    displayedActions,
+    unitByActionCode,
+    actionCodesWithSupplements = new Set()
+  } = preparedActions
 
   const boundaryLengthMeters = await getBoundaryLengthMeters(
     parcel,
@@ -76,6 +80,10 @@ async function getActionsWithAvailability(
           logger,
           parcelDataCache
         })
+
+      actionWithAvailability.hasSupplements = actionCodesWithSupplements.has(
+        displayedAction.code
+      )
 
       if (actionWithAvailability.isAvailable) {
         await runRules(

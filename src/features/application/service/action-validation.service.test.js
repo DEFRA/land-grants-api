@@ -125,12 +125,12 @@ describe('Action Validation Service', () => {
       )
 
       expect(result).toEqual(mockActionResult)
-      expect(mockActionResultTransformer).toHaveBeenCalledWith(
-        mockAction,
-        mockActionConfig,
-        null,
-        mockRuleResult
-      )
+      expect(mockActionResultTransformer).toHaveBeenCalledWith({
+        action: mockAction,
+        actions: mockActionConfig,
+        availableArea: null,
+        ruleResult: mockRuleResult
+      })
     })
 
     test('should resolve application data using the rules configured for the action', async () => {
@@ -406,7 +406,7 @@ describe('Action Validation Service', () => {
         mockRequest
       )
 
-      const [, , , ruleResult] = mockActionResultTransformer.mock.calls[0]
+      const [{ ruleResult }] = mockActionResultTransformer.mock.calls[0]
       const { title, content } = doNotFitSection(availableLength)
       expect(ruleResult).toEqual({
         passed: false,
@@ -440,6 +440,47 @@ describe('Action Validation Service', () => {
 
       const [, , ctx] = mockResolveApplicationData.mock.calls[0]
       expect(ctx.availableLength).toBe(availableLength)
+    })
+
+    test('should carry the available length to the action result, so a caseworker can see how it was worked out', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 300,
+        feasible: true
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.availableLength).toBe(availableLength)
+    })
+
+    test('should carry the available length to the action result when the existing actions do not fit', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 0,
+        feasible: false,
+        incompatibleLengthMeters: 600
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.availableLength).toBe(availableLength)
     })
 
     test('should fail when the parcel boundary cannot be read', async () => {

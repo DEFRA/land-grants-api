@@ -14,11 +14,18 @@
  * @property {string} actionConfigVersion
  * @property {RuleResult[]} rules
  * @property {AvailableAreaResult} availableArea
+ * @property {AvailableLengthResult | null} [availableLength]
  */
 
 /**
  * @typedef {object} AvailableAreaResult
  * @property {number} areaInHa
+ * @property {ExplanationSection[]} explanations
+ */
+
+/**
+ * @typedef {object} AvailableLengthResult
+ * @property {number} lengthMeters
  * @property {ExplanationSection[]} explanations
  */
 

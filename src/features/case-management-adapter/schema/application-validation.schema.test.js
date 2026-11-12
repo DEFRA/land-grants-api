@@ -534,8 +534,8 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
       )
     })
 
-    it('should reject details with empty items array', () => {
-      const invalidResponse = {
+    it('should allow details with empty items array', () => {
+      const response = {
         message: 'Test message',
         response: [
           {
@@ -552,13 +552,8 @@ describe('caseManagementApplicationValidationRunResponseSchema', () => {
       }
 
       const { error } =
-        caseManagementApplicationValidationRunResponseSchema.validate(
-          invalidResponse
-        )
-      expect(error).toBeDefined()
-      expect(error.details[0].message).toContain(
-        'does not match any of the allowed types'
-      )
+        caseManagementApplicationValidationRunResponseSchema.validate(response)
+      expect(error).toBeUndefined()
     })
 
     it('should reject details missing summaryItems', () => {
