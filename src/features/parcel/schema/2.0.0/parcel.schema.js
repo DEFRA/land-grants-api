@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { COUNT, UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
 import { UNAVAILABLE_REASON_CODES } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
-const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
+export const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 
 export const actionAvailabilitySchema = Joi.object({
   unit: Joi.string().required(),
@@ -23,7 +23,7 @@ const unavailableReasonSchema = Joi.object({
   metadata: Joi.object().optional()
 })
 
-const actionSchema = Joi.object({
+export const actionSchema = Joi.object({
   code: Joi.string().required(),
   description: Joi.string().required(),
   results: Joi.object({
