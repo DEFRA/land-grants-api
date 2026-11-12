@@ -40,7 +40,8 @@ const mockParcelWithActions = {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272,
         quantityRequired: false,
-        isAvailable: true
+        isAvailable: true,
+        hasSupplements: false
       }
     ]
   }

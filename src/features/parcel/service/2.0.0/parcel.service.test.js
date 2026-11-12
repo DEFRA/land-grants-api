@@ -509,8 +509,28 @@ describe('Parcel Service 2.0.0', () => {
       )
 
       expect(result.actions).toEqual([
-        { code: 'UPL1', description: 'Action 1' },
-        { code: 'HEF1', description: 'Action 3' }
+        { code: 'UPL1', description: 'Action 1', hasSupplements: false },
+        { code: 'HEF1', description: 'Action 3', hasSupplements: false }
+      ])
+    })
+
+    test('should set hasSupplements on the actions that have supplements', async () => {
+      const result = await getActionsForParcel(
+        mockParcel,
+        mockPayload,
+        false,
+        {
+          ...prepared(mockEnabledActionsForParcel),
+          actionCodesWithSupplements: new Set(['UPL1'])
+        },
+        mockCompatibilityCheckFn,
+        mockRequest,
+        []
+      )
+
+      expect(result.actions).toEqual([
+        { code: 'UPL1', description: 'Action 1', hasSupplements: true },
+        { code: 'HEF1', description: 'Action 3', hasSupplements: false }
       ])
     })
 
@@ -617,8 +637,8 @@ describe('Parcel Service 2.0.0', () => {
           )
 
           expect(result.actions).toEqual([
-            { code: 'UPL1', description: 'Action 1' },
-            { code: 'HEF1', description: 'Action 3' }
+            { code: 'UPL1', description: 'Action 1', hasSupplements: false },
+            { code: 'HEF1', description: 'Action 3', hasSupplements: false }
           ])
         })
 
@@ -1146,6 +1166,7 @@ describe('Parcel Service 2.0.0', () => {
             code: 'UPL1',
             description: 'Action 1',
             isAvailable: false,
+            hasSupplements: false,
             availability: { unit: 'ha', value: 1.5 },
             unavailableReason: {
               code: 'rule-failed',
@@ -1180,6 +1201,7 @@ describe('Parcel Service 2.0.0', () => {
             code: 'UPL1',
             description: 'Action 1',
             isAvailable: true,
+            hasSupplements: false,
             availability: { unit: 'ha', value: 1.5 }
           }
         ])
@@ -1195,6 +1217,7 @@ describe('Parcel Service 2.0.0', () => {
             code: 'UPL1',
             description: 'Action 1',
             isAvailable: true,
+            hasSupplements: false,
             availability: { unit: 'ha', value: 1.5 }
           }
         ])

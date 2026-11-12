@@ -1,5 +1,8 @@
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import {
+  createCompatibilityMatrix,
+  createCompatibilityLookups
+} from '~/src/features/available-area/compatibilityMatrix.js'
 
 vi.mock(
   '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js',
@@ -100,6 +103,56 @@ describe('Compatibility Matrix', () => {
       await expect(
         createCompatibilityMatrix(mockLogger, codes)
       ).rejects.toThrow('Database connection failed')
+    })
+  })
+
+  describe('createCompatibilityLookups', () => {
+    const supbas = (optionCode, optionCodeCompat) => ({
+      optionCode,
+      optionCodeCompat,
+      type: 'SUPBAS'
+    })
+
+    test('reads the whole matrix once', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue([])
+
+      await createCompatibilityLookups(mockLogger, mockDb, ['AB1'])
+
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledTimes(1)
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
+        mockLogger,
+        mockDb
+      )
+    })
+
+    test('builds the compatibility check from the same rows', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue([
+        { optionCode: 'UPL1', optionCodeCompat: 'CMOR1', type: 'BASECO' }
+      ])
+
+      const { compatibilityCheckFn } = await createCompatibilityLookups(
+        mockLogger,
+        mockDb,
+        []
+      )
+
+      expect(compatibilityCheckFn('CMOR1', 'UPL1')).toBe(true)
+      expect(compatibilityCheckFn('UPL1', 'UPL2')).toBe(false)
+    })
+
+    test('returns the actions that are a base for a supported supplement', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue([
+        supbas('AB1', 'SP1'),
+        supbas('AB2', 'SP2')
+      ])
+
+      const { actionCodesWithSupplements } = await createCompatibilityLookups(
+        mockLogger,
+        mockDb,
+        ['AB1', 'AB2', 'SP1']
+      )
+
+      expect(actionCodesWithSupplements).toEqual(new Set(['AB1']))
     })
   })
 })

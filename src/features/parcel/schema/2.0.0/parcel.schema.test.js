@@ -356,6 +356,26 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeDefined()
     })
 
+    it('should reject an action without hasSupplements', () => {
+      const action = { ...mockParcelWithActions.parcel.actions[0] }
+      delete action.hasSupplements
+
+      const invalid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(invalid)
+      expect(result.error).toBeDefined()
+    })
+
+    it('should validate an action that has supplements', () => {
+      const action = {
+        ...mockParcelWithActions.parcel.actions[0],
+        hasSupplements: true
+      }
+
+      const valid = responseWithAction(action)
+      const result = parcelsSuccessResponseSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
     it('should reject an unavailable reason with an unrecognised code', () => {
       const action = {
         ...unavailableAction,

@@ -108,6 +108,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             quantityRequired: true,
             isAvailable: true,
+            hasSupplements: false,
             ratePerUnitGbp: 10.6,
             ratePerAgreementPerYearGbp: 272,
             sssiConsentRequired: false,
@@ -123,6 +124,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             quantityRequired: true,
             isAvailable: true,
+            hasSupplements: false,
             ratePerUnitGbp: 20,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -137,6 +139,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             quantityRequired: true,
             isAvailable: true,
+            hasSupplements: false,
             ratePerUnitGbp: 53,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -151,6 +154,7 @@ describe('Parcels Controller 2.0.0', () => {
             },
             quantityRequired: true,
             isAvailable: true,
+            hasSupplements: false,
             ratePerUnitGbp: 66,
             sssiConsentRequired: true,
             heferRequired: false,
@@ -159,6 +163,67 @@ describe('Parcels Controller 2.0.0', () => {
         ]
       }
     ])
+  })
+
+  describe('supplements', () => {
+    const compatibilitySource = 'parcelsController.db.test.supplements'
+
+    // CSAM1 is enabled, so it is a supplement we support; SP99 is not an enabled action
+    beforeAll(async () => {
+      await seedCompatibilityMatrix(
+        connection,
+        compatibilitySource,
+        [
+          ['UPL1', 'CSAM1'],
+          ['UPL2', 'SP99']
+        ],
+        { type: 'SUPBAS' }
+      )
+      await seedCompatibilityMatrix(connection, compatibilitySource, [
+        ['UPL3', 'CSAM1']
+      ])
+      await seedCompatibilityMatrix(
+        connection,
+        compatibilitySource,
+        [['CMOR1', 'CSAM1']],
+        { type: 'SUPBAS', year: 2025 }
+      )
+    })
+
+    afterAll(async () => {
+      await clearCompatibilityMatrix(connection, compatibilitySource)
+    })
+
+    const hasSupplementsByCode = async () => {
+      const { data, statusCode } = await requestParcels(
+        ['SD5649-9215'],
+        ['actions']
+      )
+
+      expect(statusCode).toBe(200)
+      return Object.fromEntries(
+        data.parcels[0].actions.map((action) => [
+          action.code,
+          action.hasSupplements
+        ])
+      )
+    }
+
+    test('should flag an action that is a SUPBAS base for a supported supplement', async () => {
+      expect((await hasSupplementsByCode()).UPL1).toBe(true)
+    })
+
+    test('should not flag an action whose only supplement is not supported', async () => {
+      expect((await hasSupplementsByCode()).UPL2).toBe(false)
+    })
+
+    test('should not flag an action that is only BASECO compatible with a supported action', async () => {
+      expect((await hasSupplementsByCode()).UPL3).toBe(false)
+    })
+
+    test('should not flag an action whose supplements are only listed for an older year', async () => {
+      expect((await hasSupplementsByCode()).CMOR1).toBe(false)
+    })
   })
 
   describe('linear actions', () => {
