@@ -11,7 +11,7 @@ WITH keys AS (
 -- Ingested rows carry no SRID and ST_Transform rejects SRID 0, so declare it
 -- here (repairing the data so the column carries its own SRID is outstanding).
 matched AS (
-  SELECT ST_Transform(
+  SELECT p.sheet_id, p.parcel_id, ST_Transform(
     ST_SetSRID(p.geom, ${BNG_SRID}),
     ${WGS84_LAT_LONG_SRID}
   ) AS geom_wgs84
@@ -23,6 +23,13 @@ extent AS (
 )
 SELECT
   (SELECT COUNT(*)::int FROM matched) AS found_count,
+  (SELECT json_agg(json_build_object(
+    'id', sheet_id || '-' || parcel_id,
+    'bounds', json_build_object(
+      'minLng', ST_XMin(geom_wgs84), 'minLat', ST_YMin(geom_wgs84),
+      'maxLng', ST_XMax(geom_wgs84), 'maxLat', ST_YMax(geom_wgs84)
+    )
+  ) ORDER BY sheet_id, parcel_id) FROM matched) AS parcels,
   ST_XMin(extent.env)                 AS min_lng,
   ST_YMin(extent.env)                 AS min_lat,
   ST_XMax(extent.env)                 AS max_lng,
@@ -38,7 +45,7 @@ FROM extent
  * @param {string[]} params.parcelKeys
  * @param {Pool} db
  * @param {Logger} logger
- * @returns {Promise<{ foundCount: number, bbox: { minLng: number, minLat: number, maxLng: number, maxLat: number } | null }>}
+ * @returns {Promise<{ foundCount: number, bbox: { minLng: number, minLat: number, maxLng: number, maxLat: number } | null, parcels: { id: string, bounds: { minLng: number, minLat: number, maxLng: number, maxLat: number } }[] }>}
  */
 export async function getParcelExtent({ sheetIds, parcelKeys }, db, logger) {
   let client
@@ -47,10 +54,11 @@ export async function getParcelExtent({ sheetIds, parcelKeys }, db, logger) {
     const result = await client.query(sql, [sheetIds, parcelKeys])
     const row = result.rows[0]
     if (!row || row.found_count === 0) {
-      return { foundCount: 0, bbox: null }
+      return { foundCount: 0, bbox: null, parcels: [] }
     }
     return {
       foundCount: row.found_count,
+      parcels: row.parcels ?? [],
       bbox: {
         minLng: Number(row.min_lng),
         minLat: Number(row.min_lat),

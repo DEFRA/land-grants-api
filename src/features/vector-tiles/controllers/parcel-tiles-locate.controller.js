@@ -18,7 +18,7 @@ import { getParcelExtent } from '~/src/features/vector-tiles/queries/getParcelEx
 /**
  * ParcelTilesLocateController
  * Given a list of land parcel ids, returns the WGS84 bounding box containing
- * the union of their geometries, for a client to fit its map viewport to.
+ * the union of their geometries, and each parcel's bounds, independent of vector tile resolution.
  * @satisfies {Partial<ServerRoute>}
  */
 const ParcelTilesLocateController = {
@@ -26,7 +26,7 @@ const ParcelTilesLocateController = {
     tags: ['api'],
     description: 'Get the WGS84 bounding box containing the given land parcels',
     notes:
-      'Returns { message, bbox: { minLng, minLat, maxLng, maxLat } } for the WGS84 bounding box of the union extent of the requested parcels.',
+      'Returns { message, bbox: { minLng, minLat, maxLng, maxLat } } for the WGS84 bounding box of the union extent of the requested parcels, plus parcels: [{ id, bounds }] for stable map clustering.',
     validate: {
       payload: parcelTilesLocatePayloadSchema
     },
@@ -59,7 +59,7 @@ const ParcelTilesLocateController = {
 
       const { sheetIds, parcelKeys } = parseParcelIds(parcelIds)
 
-      const { foundCount, bbox } = await getParcelExtent(
+      const { foundCount, bbox, parcels } = await getParcelExtent(
         { sheetIds, parcelKeys },
         postgresDb,
         request.logger
@@ -69,7 +69,9 @@ const ParcelTilesLocateController = {
         return Boom.notFound('No matching parcels found')
       }
 
-      return h.response({ message: 'success', bbox }).code(statusCodes.ok)
+      return h
+        .response({ message: 'success', bbox, parcels })
+        .code(statusCodes.ok)
     } catch (error) {
       logBusinessError(request.logger, {
         operation: 'Locate parcel tile',
