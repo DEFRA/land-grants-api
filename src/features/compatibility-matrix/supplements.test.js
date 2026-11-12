@@ -1,4 +1,7 @@
-import { getActionCodesWithSupplements } from './supplements.js'
+import {
+  getActionCodesWithSupplements,
+  getSupplementCodesForBase
+} from './supplements.js'
 
 const row = (optionCode, optionCodeCompat, type) => ({
   id: 1,
@@ -73,5 +76,37 @@ describe('getActionCodesWithSupplements', () => {
 
   test('returns an empty set for an empty matrix', () => {
     expect(getActionCodesWithSupplements([], ['GRH7'])).toEqual(new Set())
+  })
+})
+
+describe('getSupplementCodesForBase', () => {
+  const matrix = [
+    ...clig3Supplements,
+    row('LIG1', 'GRH11', 'SUPBAS'),
+    row('CLIG3', 'AGF1', 'BASECO')
+  ]
+
+  test('returns the supported supplements of the base action', () => {
+    expect(
+      getSupplementCodesForBase(matrix, 'CLIG3', [
+        'GRH7',
+        'GRH8',
+        'GRH10',
+        'GRH11',
+        'AGF1'
+      ])
+    ).toEqual(new Set(['GRH7', 'GRH8', 'GRH10']))
+  })
+
+  test('leaves out supplements that are not supported', () => {
+    expect(getSupplementCodesForBase(matrix, 'CLIG3', ['GRH7'])).toEqual(
+      new Set(['GRH7'])
+    )
+  })
+
+  test('returns an empty set for an action that is not a base', () => {
+    expect(getSupplementCodesForBase(matrix, 'GRH7', ['GRH7'])).toEqual(
+      new Set()
+    )
   })
 })
