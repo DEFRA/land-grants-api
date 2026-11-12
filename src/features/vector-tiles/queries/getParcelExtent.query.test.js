@@ -46,6 +46,7 @@ describe('getParcelExtent', () => {
     ])
     expect(result).toEqual({
       foundCount: 2,
+      parcels: [],
       bbox: {
         minLng: -2.615462,
         minLat: 53.919221,
@@ -54,6 +55,29 @@ describe('getParcelExtent', () => {
       }
     })
     expect(mockClient.release).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns full bounds for parcels independently of tile geometry', async () => {
+    const parcels = [
+      {
+        id: 'SD7547-4115',
+        bounds: { minLng: -2.6, minLat: 53.9, maxLng: -2.5, maxLat: 54 }
+      }
+    ]
+    mockClient.query.mockResolvedValue({
+      rows: [
+        {
+          found_count: 1,
+          parcels,
+          min_lng: -2.6,
+          min_lat: 53.9,
+          max_lng: -2.5,
+          max_lat: 54
+        }
+      ]
+    })
+    const result = await getParcelExtent(params, mockDb, mockLogger)
+    expect(result.parcels).toEqual(parcels)
   })
 
   it('returns foundCount 0 and null bbox when nothing matched', async () => {
@@ -71,7 +95,7 @@ describe('getParcelExtent', () => {
 
     const result = await getParcelExtent(params, mockDb, mockLogger)
 
-    expect(result).toEqual({ foundCount: 0, bbox: null })
+    expect(result).toEqual({ foundCount: 0, bbox: null, parcels: [] })
   })
 
   it('returns foundCount 0 when the query returns no rows', async () => {
@@ -79,7 +103,7 @@ describe('getParcelExtent', () => {
 
     const result = await getParcelExtent(params, mockDb, mockLogger)
 
-    expect(result).toEqual({ foundCount: 0, bbox: null })
+    expect(result).toEqual({ foundCount: 0, bbox: null, parcels: [] })
   })
 
   it('coerces numeric strings into numbers', async () => {
