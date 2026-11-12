@@ -13,12 +13,13 @@ describe('transformActionConfig', () => {
     displayUnitPlural: 'blueberries',
     durationYears: 10,
     enabled: true,
+    groupId: null,
     payment: null,
     paymentMethod: {
       name: 'wmp-calculation',
       config: { tiers: [] }
     },
-    rules: [{ name: 'some-rule', description: 'desc' }],
+    rules: [{ name: 'applied-for-total-available-area', description: 'desc' }],
     semanticVersion: '1.0.0',
     startDate: '2025-01-01'
   }
@@ -51,25 +52,9 @@ describe('transformActionConfig', () => {
     expect(result.displayOrder).toBe(0)
   })
 
-  test('defaults displayOrder to 0 when missing', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      displayOrder: undefined
-    })
-    expect(result.displayOrder).toBe(0)
-  })
-
-  test('extracts description when present', () => {
+  test('extracts description', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.description).toBe('Woodland management plan')
-  })
-
-  test('defaults description to null when absent', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      description: undefined
-    })
-    expect(result.description).toBeNull()
   })
 
   test('extracts groupId when present', () => {
@@ -77,7 +62,7 @@ describe('transformActionConfig', () => {
     expect(result.groupId).toBe(2)
   })
 
-  test('defaults groupId to null when absent', () => {
+  test('keeps a null groupId', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.groupId).toBeNull()
   })
@@ -147,22 +132,6 @@ describe('transformActionConfig', () => {
     expect(result.config.display).toBe(false)
   })
 
-  test('defaults config.enabled to true when absent', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      enabled: undefined
-    })
-    expect(result.config.enabled).toBe(true)
-  })
-
-  test('defaults config.display to true when absent', () => {
-    const result = transformActionConfig({
-      ...pa3Json,
-      display: undefined
-    })
-    expect(result.config.display).toBe(true)
-  })
-
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({
@@ -172,7 +141,9 @@ describe('transformActionConfig', () => {
       payment: null,
       payment_method: { name: 'wmp-calculation', config: { tiers: [] } },
       land_cover_class_codes: [],
-      rules: [{ name: 'some-rule', description: 'desc' }],
+      rules: [
+        { name: 'applied-for-total-available-area', description: 'desc' }
+      ],
       guidance_url: null,
       availability: null,
       display_unit: 'blueberry',
@@ -196,20 +167,6 @@ describe('transformActionConfig', () => {
       landCoverClassCodes: ['GRASS']
     })
     expect(result.config.land_cover_class_codes).toEqual(['GRASS'])
-  })
-
-  test('leaves optional config fields undefined when absent from input', () => {
-    const result = transformActionConfig({
-      code: 'PA3',
-      semanticVersion: '1.0.0',
-      applicationUnitOfMeasurement: 'ha',
-      payment: undefined,
-      rules: undefined
-    })
-    expect(result.config.duration_years).toBeUndefined()
-    expect(result.config.payment_method).toBeUndefined()
-    expect(result.config.rules).toEqual([])
-    expect(result.config.start_date).toBeUndefined()
   })
 
   test('throws when semanticVersion is missing', () => {
@@ -253,6 +210,23 @@ describe('transformActionConfig', () => {
       ).toThrow('"code" is required')
     })
 
+    test.each([
+      'description',
+      'display',
+      'displayOrder',
+      'durationYears',
+      'enabled',
+      'groupId',
+      'payment',
+      'paymentMethod',
+      'rules',
+      'startDate'
+    ])('throws when %s is missing', (field) => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, [field]: undefined })
+      ).toThrow(`"${field}" is required`)
+    })
+
     test('collects multiple errors when both required fields are absent', () => {
       expect(() =>
         transformActionConfig({
@@ -260,7 +234,7 @@ describe('transformActionConfig', () => {
           code: undefined,
           semanticVersion: undefined
         })
-      ).toThrow('Invalid action config')
+      ).toThrow('"code" is required; "semanticVersion" is required')
     })
 
     test('throws when displayOrder is not a number', () => {
@@ -269,14 +243,19 @@ describe('transformActionConfig', () => {
       ).toThrow('Invalid action config')
     })
 
-    test('does not throw for unknown top-level fields', () => {
+    test('throws for an unknown top-level field', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, notAField: true })
+      ).toThrow('"notAField" is not allowed')
+    })
+
+    test('throws for a rule the rules engine does not have', () => {
       expect(() =>
         transformActionConfig({
           ...pa3Json,
-          description: 'extra',
-          enabled: true
+          rules: [{ name: 'made-up-rule', description: 'desc' }]
         })
-      ).not.toThrow()
+      ).toThrow('"made-up-rule-1.0.0" is an unknown rule')
     })
 
     test('does not throw when payment is null', () => {
@@ -285,16 +264,10 @@ describe('transformActionConfig', () => {
       ).not.toThrow()
     })
 
-    test('does not throw when groupId is null', () => {
-      expect(() =>
-        transformActionConfig({ ...pa3Json, groupId: null })
-      ).not.toThrow()
-    })
-
-    test('does not throw when availability is null', () => {
+    test('throws when availability is null', () => {
       expect(() =>
         transformActionConfig({ ...pa3Json, availability: null })
-      ).not.toThrow()
+      ).toThrow('"availability" must be of type object')
     })
 
     test.each(AVAILABILITY_TYPES)(
@@ -334,6 +307,12 @@ describe('transformActionConfig', () => {
           guidanceUrl: 'not-a-url'
         })
       ).toThrow('Invalid action config')
+    })
+
+    test('throws when startDate is not a date', () => {
+      expect(() =>
+        transformActionConfig({ ...pa3Json, startDate: 'first of January' })
+      ).toThrow('"startDate" must be in iso format')
     })
 
     test('throws when applicationUnitOfMeasurement is missing', () => {
