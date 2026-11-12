@@ -52,6 +52,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Create Test Coverage Reports
         run: |
@@ -64,3 +65,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Publish Schemas Package
+        # Until the npm credentials are in place, a failed publish must not fail the deploy
+        continue-on-error: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=$(node -p "require('./packages/schemas/package.json').version")
+          if npm view "@defra/land-grants-schemas@$version" version > /dev/null 2>&1; then
+            echo "@defra/land-grants-schemas@$version is already published"
+          else
+            npm publish --workspace packages/schemas --ignore-scripts=false
+          fi
