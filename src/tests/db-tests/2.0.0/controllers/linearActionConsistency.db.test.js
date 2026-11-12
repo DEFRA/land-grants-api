@@ -169,6 +169,20 @@ describe('Linear actions on /parcels and /validate', () => {
       .flatMap(({ title, content }) => [title, ...content])
       .map((text) => ({ component: 'paragraph', text }))
 
+  // The validation run knows what was applied for, which /parcels cannot
+  const withLengthAppliedFor = (explanations, appliedForMeters) =>
+    explanations.map((section) =>
+      section.title === 'Application'
+        ? {
+            ...section,
+            content: [
+              ...section.content,
+              `Length applied for: ${appliedForMeters} m`
+            ]
+          }
+        : section
+    )
+
   const availableLengthResultIn = (validationResponse) =>
     bnd1RulesIn(validationResponse).find(
       ({ name }) => name === availableLengthRule.name
@@ -275,7 +289,7 @@ describe('Linear actions on /parcels and /validate', () => {
     expect(validationRun.statusCode).toBe(200)
   })
 
-  test('should show a caseworker the same available length explanation as /parcels', async () => {
+  test('should show a caseworker the available length explanation /parcels gives, with the length applied for', async () => {
     mockGetAgreements.mockResolvedValue(dalAgreement('BND2', 300))
     const parcelsResponse = await requestParcels(
       [],
@@ -283,6 +297,7 @@ describe('Linear actions on /parcels and /validate', () => {
     )
     const { explanations } = bnd1On(parcelsResponse).results
     const validation = await requestValidation([{ code: 'BND1', quantity: 50 }])
+    const expectedExplanations = withLengthAppliedFor(explanations, 50)
 
     const validationRun = await requestValidationRun(validation.data.id)
 
@@ -294,7 +309,7 @@ describe('Linear actions on /parcels and /validate', () => {
         summaryOf(component) === 'Available length calculation explanation'
     )
 
-    expect(lengthPanel.items).toEqual(paragraphsOf(explanations))
+    expect(lengthPanel.items).toEqual(paragraphsOf(expectedExplanations))
   })
 
   test('should leave the action available on /parcels but fail /validate when the perimeter cannot be read', async () => {

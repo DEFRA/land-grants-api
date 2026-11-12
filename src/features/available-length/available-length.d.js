@@ -35,6 +35,13 @@
  */
 
 /**
+ * @typedef {object} LengthExplanationTarget
+ * @property {string} targetAction - The action code being applied for
+ * @property {Sidedness} targetSidedness - The sidedness of the action applied for
+ * @property {number} [appliedForLengthMeters] - The length applied for, as the rules check it; absent when nothing has been applied for yet
+ */
+
+/**
  * @typedef {object} BoundaryContext
  * @property {CompatibilityCheckFn} compatibilityCheckFn - Whether two actions can share a stretch of boundary
  * @property {number} boundaryLengthMeters - The parcel's perimeter in whole metres

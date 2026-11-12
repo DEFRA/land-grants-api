@@ -1,6 +1,10 @@
 import { calculateAvailableLength } from './availableLength.js'
 import { formatLengthExplanationSections } from './explanations.js'
 import { LINEAR_SIDEDNESS, existing, parcel } from './testUtils.js'
+import {
+  BOTH_SIDES,
+  SINGLE_SIDE
+} from '~/src/features/common/constants/sidedness.js'
 
 describe('formatLengthExplanationSections', () => {
   it('lists each existing action with the boundary it occupies and whether it was deducted', () => {
@@ -143,5 +147,63 @@ describe('formatLengthExplanationSections', () => {
         content: ['Maximum available length for BND2: 0 m']
       }
     ])
+  })
+
+  describe('the length applied for', () => {
+    const applicationSectionOf = (sections) =>
+      sections.find(({ title }) => title === 'Application')
+
+    it('is shown after the sidedness when it is given', () => {
+      // Applying for 600 m of BND1 on a 1000 m boundary with nothing on it
+      const availableLength = calculateAvailableLength('BND1', [], parcel())
+
+      const sections = formatLengthExplanationSections(availableLength, {
+        targetAction: 'BND1',
+        targetSidedness: BOTH_SIDES,
+        appliedForLengthMeters: 600
+      })
+
+      expect(applicationSectionOf(sections).content).toEqual([
+        'Target action: BND1',
+        'Sidedness: both-sides',
+        'Length applied for: 600 m'
+      ])
+    })
+
+    it('is left out when it is not given, as when /parcels offers the length', () => {
+      // Offering BND1 on a 1000 m boundary with nothing on it, before anything is applied for
+      const availableLength = calculateAvailableLength('BND1', [], parcel())
+
+      const sections = formatLengthExplanationSections(availableLength, {
+        targetAction: 'BND1',
+        targetSidedness: BOTH_SIDES
+      })
+
+      expect(applicationSectionOf(sections).content).toEqual([
+        'Target action: BND1',
+        'Sidedness: both-sides'
+      ])
+    })
+
+    it('is shown when the existing actions do not fit the boundary', () => {
+      // Applying for 50 m of BND2 on a 1000 m boundary that already has BND1 (1200 m), which cannot fit
+      const availableLength = calculateAvailableLength(
+        'BND2',
+        [existing('BND1', 1200)],
+        parcel()
+      )
+
+      const sections = formatLengthExplanationSections(availableLength, {
+        targetAction: 'BND2',
+        targetSidedness: SINGLE_SIDE,
+        appliedForLengthMeters: 50
+      })
+
+      expect(applicationSectionOf(sections).content).toEqual([
+        'Target action: BND2',
+        'Sidedness: single-side',
+        'Length applied for: 50 m'
+      ])
+    })
   })
 })
