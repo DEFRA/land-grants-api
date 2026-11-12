@@ -51,6 +51,17 @@ describe('ParcelTilesLocateController', () => {
   it('returns the bounding box containing the requested parcels', async () => {
     mockGetParcelExtent.mockResolvedValue({
       foundCount: 1,
+      parcels: [
+        {
+          id: 'SD7547-4115',
+          bounds: {
+            minLng: -2.615462,
+            minLat: 53.919221,
+            maxLng: -2.549834,
+            maxLat: 53.951681
+          }
+        }
+      ],
       bbox: {
         minLng: -2.615462,
         minLat: 53.919221,
@@ -68,6 +79,7 @@ describe('ParcelTilesLocateController', () => {
     expect(response.statusCode).toBe(200)
     const body = JSON.parse(response.payload)
     expect(body.message).toBe('success')
+    expect(body.parcels).toEqual([{ id: 'SD7547-4115', bounds: body.bbox }])
     expect(body.bbox).toEqual({
       minLng: -2.615462,
       minLat: 53.919221,

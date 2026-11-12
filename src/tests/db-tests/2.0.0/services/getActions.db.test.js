@@ -34,10 +34,6 @@ describe('getActions Service (DB)', () => {
 
   const expectedActions = {
     CLIG3: '1.0.0',
-    CSAM1: '1.0.1',
-    OFM3: '1.0.0',
-    SAM1: '1.0.0',
-    SPM4: '1.0.0',
     CMOR1: '2.0.0',
     UPL1: '3.1.0',
     UPL2: '3.1.0',
@@ -45,13 +41,7 @@ describe('getActions Service (DB)', () => {
     UPL8: '1.0.0',
     UPL10: '1.0.0',
     PA3: '1.1.0',
-    CSAM3: '1.0.0',
-    SPM5: '1.0.0',
-    UPL4: '1.0.0',
-    UPL5: '1.0.0',
-    UPL6: '1.0.0',
-    UPL7: '1.0.0',
-    UPL9: '1.0.0'
+    CSAM3: '1.0.0'
   }
 
   const mockLandActions = [
