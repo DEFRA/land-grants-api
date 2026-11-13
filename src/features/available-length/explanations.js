@@ -1,14 +1,25 @@
 import { SINGLE_SIDE } from '~/src/features/common/constants/sidedness.js'
 
 /**
- * @param {string} targetAction - The action code being applied for
- * @param {Sidedness} targetSidedness - The sidedness of the action applied for
- * @returns {ExplanationSection} The action applied for and its sidedness
+ * @param {LengthExplanationTarget} target - The action applied for, its sidedness and the length applied for
+ * @returns {ExplanationSection} The action applied for, its sidedness and, when known, the length applied for
  */
-const applicationSection = (targetAction, targetSidedness) => ({
-  title: 'Application',
-  content: [`Target action: ${targetAction}`, `Sidedness: ${targetSidedness}`]
-})
+const applicationSection = ({
+  targetAction,
+  targetSidedness,
+  appliedForLengthMeters
+}) => {
+  const content = [
+    `Target action: ${targetAction}`,
+    `Sidedness: ${targetSidedness}`
+  ]
+
+  if (appliedForLengthMeters !== undefined) {
+    content.push(`Length applied for: ${appliedForLengthMeters} m`)
+  }
+
+  return { title: 'Application', content }
+}
 
 /**
  * @param {number} boundaryLengthMeters - The parcel's perimeter
@@ -112,17 +123,14 @@ const unavailableResultSection = ({ availableLength }, targetAction) => ({
  * Explains a linear action's available length step by step: the action
  * applied for, the parcel boundary, the existing actions on it and the result.
  * @param {AvailableLength} availableLength - The available length and the figures behind it
- * @param {object} target
- * @param {string} target.targetAction - The action code being applied for
- * @param {Sidedness} target.targetSidedness - The sidedness of the action applied for
+ * @param {LengthExplanationTarget} target - The action applied for, its sidedness and the length applied for
  * @returns {ExplanationSection[]} The explanation, one section per step
  */
-export function formatLengthExplanationSections(
-  availableLength,
-  { targetAction, targetSidedness }
-) {
+export function formatLengthExplanationSections(availableLength, target) {
+  const { targetAction, targetSidedness } = target
+
   const contextSections = [
-    applicationSection(targetAction, targetSidedness),
+    applicationSection(target),
     parcelBoundarySection(availableLength.boundaryLengthMeters),
     existingActionsSection(availableLength.explainedOccupancies)
   ]
@@ -142,6 +150,6 @@ export function formatLengthExplanationSections(
 }
 
 /**
- * @import { AvailableLength, ExplainedOccupancy, Sidedness } from '~/src/features/available-length/available-length.d.js'
+ * @import { AvailableLength, ExplainedOccupancy, LengthExplanationTarget, Sidedness } from '~/src/features/available-length/available-length.d.js'
  * @import { ExplanationSection } from '~/src/features/available-area/explanations.d.js'
  */

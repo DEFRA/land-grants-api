@@ -187,6 +187,22 @@ describe('actionResultTransformer', () => {
         ])
       })
     })
+
+    test('should explain the length applied for, as the rules checked it', () => {
+      const result = actionResultTransformer({
+        action: { ...action, quantity: 1200.4 },
+        actions,
+        availableArea: null,
+        availableLength,
+        appliedForQuantity: 1200,
+        ruleResult
+      })
+
+      const explanationLines = result.availableLength.explanations.flatMap(
+        ({ content }) => content
+      )
+      expect(explanationLines).toContain('Length applied for: 1200 m')
+    })
   })
 })
 
