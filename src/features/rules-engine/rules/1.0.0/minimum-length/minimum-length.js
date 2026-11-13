@@ -3,7 +3,7 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
-import { REQUIRED_RULE_DATA } from '../../../services/requiredRuleData.js'
+import { REQUIRED_RULE_DATA } from '~/src/features/rules-engine/services/requiredRuleData.js'
 
 /**
  * @param {number} minimumLengthM - The action's configured minimum length in metres

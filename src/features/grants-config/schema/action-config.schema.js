@@ -6,28 +6,28 @@ import { ruleSchema } from '../../rules-engine/rules/schemas.js'
 // Relative imports only: the schemas package copies this file and its imports as they are
 
 const paymentSchema = Joi.object({
-  ratePerUnitGbp: Joi.number(),
-  ratePerAgreementPerYearGbp: Joi.number()
+  ratePerAgreementPerYearGbp: Joi.number(),
+  ratePerUnitGbp: Joi.number()
 })
 
 const paymentTierSchema = Joi.object({
   flatRateGbp: Joi.number(),
   lowerLimitHa: Joi.number(),
-  upperLimitHa: Joi.number().allow(null),
-  ratePerUnitGbp: Joi.number()
+  ratePerUnitGbp: Joi.number(),
+  upperLimitHa: Joi.number().allow(null)
 })
 
 const paymentMethodConfigSchema = Joi.object({
-  ratePerUnitGbp: Joi.number(),
+  newWoodlandMaxPercent: Joi.number(),
   ratePerAgreementPerYearGbp: Joi.number(),
-  tiers: Joi.array().items(paymentTierSchema),
-  newWoodlandMaxPercent: Joi.number()
+  ratePerUnitGbp: Joi.number(),
+  tiers: Joi.array().items(paymentTierSchema)
 }).unknown(true)
 
 const paymentMethodSchema = Joi.object({
+  config: paymentMethodConfigSchema,
   name: Joi.string().required(),
-  version: Joi.string(),
-  config: paymentMethodConfigSchema
+  version: Joi.string()
 })
 
 const availabilitySchema = Joi.object({
@@ -37,27 +37,27 @@ const availabilitySchema = Joi.object({
 })
 
 const actionConfigSchema = Joi.object({
+  applicationUnitOfMeasurement: Joi.string()
+    .valid(...UNIT_TYPES)
+    .required(),
+  availability: availabilitySchema,
   code: Joi.string().required(),
   description: Joi.string().required(),
   display: Joi.boolean().required(),
   displayOrder: Joi.number().required(),
+  displayUnit: Joi.string(),
+  displayUnitPlural: Joi.string(),
   durationYears: Joi.number().required(),
   enabled: Joi.boolean().required(),
   groupId: Joi.number().integer().allow(null).required(),
-  applicationUnitOfMeasurement: Joi.string()
-    .valid(...UNIT_TYPES)
-    .required(),
-  startDate: Joi.string().isoDate().required(),
-  semanticVersion: Joi.string().required(),
   guidanceUrl: Joi.string().uri(),
-  availability: availabilitySchema,
   landCoverClassCodes: Joi.array().items(Joi.string()),
   payment: paymentSchema.allow(null).required(),
   paymentMethod: paymentMethodSchema.required(),
+  rotationType: Joi.string(),
   rules: Joi.array().items(ruleSchema).required(),
-  displayUnit: Joi.string(),
-  displayUnitPlural: Joi.string(),
-  rotationType: Joi.string()
+  semanticVersion: Joi.string().required(),
+  startDate: Joi.string().isoDate().required()
 })
 
 /**
