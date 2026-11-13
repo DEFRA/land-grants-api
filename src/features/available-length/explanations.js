@@ -1,4 +1,5 @@
 import { SINGLE_SIDE } from '~/src/features/common/constants/sidedness.js'
+import { COMPATIBLE, DEDUCTED, STACKED } from './occupancyStatus.js'
 
 /**
  * @param {string} targetAction - The action code being applied for
@@ -20,32 +21,145 @@ const parcelBoundarySection = (boundaryLengthMeters) => ({
 })
 
 /**
- * @param {ExplainedOccupancy} explainedOccupancy - The boundary an existing action occupies, and whether it was deducted
- * @returns {string} The existing action, the boundary it occupies and whether it was deducted
+ * @param {string[]} codes - Action codes
+ * @returns {string} The codes as a list, the last joined with "and"
  */
-const occupancyLine = ({
-  actionCode,
-  billedLengthMeters,
-  sidedness,
-  occupiedMeters,
-  deducted
-}) => {
-  const deduction = deducted ? 'deducted' : 'not deducted'
+const listOf = (codes) =>
+  codes.length > 1
+    ? `${codes.slice(0, -1).join(', ')} and ${codes.at(-1)}`
+    : codes.join('')
 
-  return `${actionCode}: billed ${billedLengthMeters} m, ${sidedness}, occupies ${occupiedMeters} m of boundary, ${deduction}`
+/**
+ * @param {ExplainedOccupancy} explainedOccupancy - An existing action and why it was or was not deducted
+ * @param {string} targetAction - The action code being applied for
+ * @returns {string} Why the action was or was not deducted from the boundary
+ */
+const feasibleReason = ({ status, sharesWith }, targetAction) => {
+  if (status === COMPATIBLE) {
+    return `Can share with ${targetAction}, so it is not deducted`
+  }
+
+  if (status === DEDUCTED) {
+    return `Cannot share with ${targetAction}, so it is deducted`
+  }
+
+  if (sharesWith.length === 0) {
+    return `Cannot share with ${targetAction}, but occupies no boundary to deduct`
+  }
+
+  const verb = sharesWith.length > 1 ? 'are' : 'is'
+
+  return `Cannot share with ${targetAction}, but shares a stretch with ${listOf(sharesWith)}, which ${verb} already deducted`
 }
 
 /**
- * @param {ExplainedOccupancy[]} explainedOccupancies - The boundary each existing action occupies, and whether it was deducted
+ * @param {ExplainedOccupancy} explainedOccupancy - An existing action and why it was or was not counted
+ * @returns {string} Why the action was or was not counted in the boundary the existing actions need
+ */
+const infeasibleReason = ({ status, sharesWith }) => {
+  if (status === DEDUCTED) {
+    return 'Counted in the boundary the existing actions need'
+  }
+
+  if (sharesWith.length === 0) {
+    return 'Occupies no boundary, so it is not counted'
+  }
+
+  return `Shares a stretch with ${listOf(sharesWith)}, so it is not counted again`
+}
+
+/**
+ * @param {ExplainedOccupancy} explainedOccupancy - The boundary an existing action occupies, and why it was or was not deducted
+ * @param {{targetAction: string, feasible: boolean}} context - The action applied for, and whether the existing actions all fit
+ * @returns {string} The existing action, the boundary it occupies and why it was or was not deducted
+ */
+const occupancyLine = (explainedOccupancy, { targetAction, feasible }) => {
+  const { actionCode, billedLengthMeters, sidedness, occupiedMeters } =
+    explainedOccupancy
+
+  const reason = feasible
+    ? feasibleReason(explainedOccupancy, targetAction)
+    : infeasibleReason(explainedOccupancy)
+
+  return `${actionCode}: billed ${billedLengthMeters} m, ${sidedness}, occupies ${occupiedMeters} m of boundary. ${reason}`
+}
+
+/**
+ * @param {ExplainedOccupancy[]} explainedOccupancies - The boundary each existing action occupies, and why it was or was not deducted
+ * @param {{targetAction: string, feasible: boolean}} context - The action applied for, and whether the existing actions all fit
  * @returns {ExplanationSection} Each existing action on the boundary
  */
-const existingActionsSection = (explainedOccupancies) => {
+const existingActionsSection = (explainedOccupancies, context) => {
   const content =
     explainedOccupancies.length > 0
-      ? explainedOccupancies.map(occupancyLine)
+      ? explainedOccupancies.map((explainedOccupancy) =>
+          occupancyLine(explainedOccupancy, context)
+        )
       : ['No existing actions on the boundary']
 
   return { title: 'Existing actions on the boundary', content }
+}
+
+/**
+ * @param {ExplainedOccupancy[]} explainedOccupancies - Each existing action and why it was or was not deducted
+ * @returns {ExplainedOccupancy[]} The actions laid end to end, in the order given
+ */
+const deductedOf = (explainedOccupancies) =>
+  explainedOccupancies.filter(({ status }) => status === DEDUCTED)
+
+/**
+ * Places each stacked action on the first deducted action it can share with
+ * and fits within, or, when it fits within none alone, across every deducted
+ * action it can share with.
+ * @param {ExplainedOccupancy} stacked - An action stacked on deducted actions
+ * @param {ExplainedOccupancy[]} deducted - The actions laid end to end
+ * @returns {ExplainedOccupancy[]} The deducted actions it is placed on
+ */
+const placementOf = (stacked, deducted) => {
+  const sharing = deducted.filter(({ actionCode }) =>
+    stacked.sharesWith.includes(actionCode)
+  )
+
+  const fit = sharing.find(
+    ({ occupiedMeters }) => occupiedMeters >= stacked.occupiedMeters
+  )
+
+  return fit ? [fit] : sharing
+}
+
+/**
+ * @param {ExplainedOccupancy[]} explainedOccupancies - Each existing action and why it was or was not deducted
+ * @returns {ExplanationSection | null} Each deducted action with the actions stacked on it, or nothing when none were deducted
+ */
+const stacksSection = (explainedOccupancies) => {
+  const deducted = deductedOf(explainedOccupancies)
+
+  if (deducted.length === 0) {
+    return null
+  }
+
+  const stacked = explainedOccupancies.filter(
+    ({ status }) => status === STACKED
+  )
+
+  const content = deducted.map((base, index) => {
+    const codes = [
+      base.actionCode,
+      ...stacked
+        .filter((action) => placementOf(action, deducted).includes(base))
+        .map(({ actionCode }) => actionCode)
+    ]
+
+    return `Stack ${index + 1}: ${codes.join(' + ')} (${base.occupiedMeters} m)`
+  })
+
+  if (deducted.length > 1) {
+    const bases = listOf(deducted.map(({ actionCode }) => actionCode))
+
+    content.push(`${bases} cannot share a stretch with each other`)
+  }
+
+  return { title: 'Stacks', content }
 }
 
 /**
@@ -76,14 +190,25 @@ export const doNotFitSection = ({
  * @returns {ExplanationSection} How the free boundary becomes the available length
  */
 const resultSection = (
-  { availableLength, boundaryLengthMeters, incompatibleLengthMeters },
+  {
+    availableLength,
+    boundaryLengthMeters,
+    incompatibleLengthMeters,
+    explainedOccupancies
+  },
   { targetAction, targetSidedness }
 ) => {
   const freeBoundaryMeters = boundaryLengthMeters - incompatibleLengthMeters
   const bothFacesBilled = targetSidedness === SINGLE_SIDE
 
+  const deducted = deductedOf(explainedOccupancies)
+  const workings =
+    deducted.length > 1
+      ? `${deducted.map(({ occupiedMeters }) => occupiedMeters).join(' + ')} = `
+      : ''
+
   const content = [
-    `Boundary occupied by incompatible actions: ${incompatibleLengthMeters} m`,
+    `Boundary occupied by incompatible actions: ${workings}${incompatibleLengthMeters} m`,
     `Free boundary: ${freeBoundaryMeters} m`
   ]
 
@@ -110,7 +235,8 @@ const unavailableResultSection = ({ availableLength }, targetAction) => ({
 
 /**
  * Explains a linear action's available length step by step: the action
- * applied for, the parcel boundary, the existing actions on it and the result.
+ * applied for, the parcel boundary, the existing actions on it and why each
+ * was or was not deducted, how they stack, and the result.
  * @param {AvailableLength} availableLength - The available length and the figures behind it
  * @param {object} target
  * @param {string} target.targetAction - The action code being applied for
@@ -121,13 +247,17 @@ export function formatLengthExplanationSections(
   availableLength,
   { targetAction, targetSidedness }
 ) {
+  const { explainedOccupancies, feasible } = availableLength
+  const stacks = stacksSection(explainedOccupancies)
+
   const contextSections = [
     applicationSection(targetAction, targetSidedness),
     parcelBoundarySection(availableLength.boundaryLengthMeters),
-    existingActionsSection(availableLength.explainedOccupancies)
+    existingActionsSection(explainedOccupancies, { targetAction, feasible }),
+    ...(stacks ? [stacks] : [])
   ]
 
-  if (!availableLength.feasible) {
+  if (!feasible) {
     return [
       ...contextSections,
       doNotFitSection(availableLength),
