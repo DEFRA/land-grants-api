@@ -67,10 +67,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Publish Schemas Package
-        # Until the npm credentials are in place, a failed publish must not fail the deploy
+        # Until npm trusted publishing is connected, a failed publish must not fail the deploy
         continue-on-error: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           version=$(node -p "require('./packages/schemas/package.json').version")
           if npm view "@defra/land-grants-schemas@$version" version > /dev/null 2>&1; then
