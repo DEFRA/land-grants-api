@@ -170,11 +170,11 @@ describe('Payment Calculate WMP Controller (DB)', () => {
       const item = data.payment.agreementLevelItems[1]
 
       expect(statusCode).toBe(200)
-      expect(data.payment.agreementTotalPence).toBe(315000)
+      expect(data.payment.agreementTotalPence).toBe(312000)
       expect(data.payment.agreementStartDate).toBe('2025-04-01')
       expect(data.payment.agreementEndDate).toBe('2028-03-31')
       expect(item.activePaymentTier).toBe(3)
-      expect(item.quantityInActiveTier).toBe(10)
+      expect(item.quantityInActiveTier).toBe(8)
       expect(item.activeTierRatePence).toBe(1500)
       expect(item.activeTierFlatRatePence).toBe(300000)
     })
