@@ -39,6 +39,13 @@ describe('getActionCodesWithSupplements', () => {
     ).toEqual(new Set(['CLIG3']))
   })
 
+  test('excludes a supported base whose supplement is enabled but not displayed (e.g. UPL1 with SPM4)', () => {
+    // SPM4 is not in the supported codes, as only displayed actions are passed in
+    const matrix = [row('UPL1', 'SPM4', 'SUPBAS')]
+
+    expect(getActionCodesWithSupplements(matrix, ['UPL1'])).toEqual(new Set())
+  })
+
   test('ignores relationships that are not SUPBAS', () => {
     const matrix = [
       row('CLIG3', 'AGF1', 'BASECO'),

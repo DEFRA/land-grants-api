@@ -168,24 +168,27 @@ describe('Parcels Controller 2.0.0', () => {
   describe('supplements', () => {
     const compatibilitySource = 'parcelsController.db.test.supplements'
 
-    // CSAM1 is enabled, so it is a supplement we support; SP99 is not an enabled action
+    // UPL3 is enabled and displayed, so it is a supplement we support.
+    // CSAM1 is enabled but not displayed, and SP99 is not an enabled action,
+    // so neither is a supplement we support.
     beforeAll(async () => {
       await seedCompatibilityMatrix(
         connection,
         compatibilitySource,
         [
-          ['UPL1', 'CSAM1'],
+          ['UPL1', 'UPL3'],
+          ['UPL2', 'CSAM1'],
           ['UPL2', 'SP99']
         ],
         { type: 'SUPBAS' }
       )
       await seedCompatibilityMatrix(connection, compatibilitySource, [
-        ['UPL3', 'CSAM1']
+        ['UPL3', 'UPL1']
       ])
       await seedCompatibilityMatrix(
         connection,
         compatibilitySource,
-        [['CMOR1', 'CSAM1']],
+        [['CMOR1', 'UPL3']],
         { type: 'SUPBAS', year: 2025 }
       )
     })
@@ -213,7 +216,7 @@ describe('Parcels Controller 2.0.0', () => {
       expect((await hasSupplementsByCode()).UPL1).toBe(true)
     })
 
-    test('should not flag an action whose only supplement is not supported', async () => {
+    test('should not flag an action whose supplements are not displayed or not enabled', async () => {
       expect((await hasSupplementsByCode()).UPL2).toBe(false)
     })
 
