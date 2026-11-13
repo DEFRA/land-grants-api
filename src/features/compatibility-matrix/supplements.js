@@ -4,7 +4,7 @@ const SUPPLEMENT_BASE_TYPE = 'SUPBAS'
 /**
  * Finds the actions that are a base for at least one supported supplement action.
  * @param {CompatibilityMatrix[]} compatibilityMatrix - The latest year's compatibility matrix rows
- * @param {string[]} supportedActionCodes - The action codes we currently support (enabled actions)
+ * @param {string[]} supportedActionCodes - The action codes we currently offer (enabled and displayed actions)
  * @returns {Set<string>} The codes of actions that have supplements
  */
 export const getActionCodesWithSupplements = (

@@ -1323,7 +1323,18 @@ describe('Parcels Controller 2.0.0', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should call compatibility matrix creation with correct parameters', async () => {
+    test('should only pass displayed actions as supported to the compatibility lookups', async () => {
+      const hiddenSupplement = {
+        ...mockEnabledActions[0],
+        code: 'SPM4',
+        display: false
+      }
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: null,
+        parcels: [mockParcelData],
+        enabledActions: [...mockEnabledActions, hiddenSupplement]
+      })
+
       const request = {
         method: 'POST',
         url: '/api/v2/parcels',
