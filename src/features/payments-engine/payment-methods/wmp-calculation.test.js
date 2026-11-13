@@ -25,7 +25,7 @@ const tiers = [
 describe('wmpCalculation', () => {
   const createPaymentMethod = () => ({
     name: 'wmp-calculation',
-    config: { newWoodlandMaxPercent: 20, tiers }
+    config: { newWoodlandMaxPercent: 25, tiers }
   })
 
   const createData = (oldWoodlandAreaHa, newWoodlandAreaHa) => ({
@@ -68,34 +68,60 @@ describe('wmpCalculation', () => {
       expect(result.activeTierFlatRatePence).toBe(1500)
     })
 
-    test('should apply the young woodland cap and calculate a tier 2 payment', () => {
-      // old=60ha, new=30ha, 20% cap=18ha → eligible=78ha → tier 2 → £1500 + 30*(78-50)=£2340
+    test('Actual new woodland is more than maximum eligible new woodland', () => {
       const result = wmpCalculation.execute(
         createPaymentMethod(),
-        createData(60, 30)
+        createData(100, 500)
       )
 
-      expect(result.eligibleArea).toBe(78)
-      expect(result.payment).toBe(2340)
-      expect(result.activePaymentTier).toBe(2)
-      expect(result.quantityInActiveTier).toBe(28)
-      expect(result.activeTierRatePence).toBe(30)
-      expect(result.activeTierFlatRatePence).toBe(1500)
-    })
-
-    test('should apply the young woodland cap and calculate a tier 3 payment', () => {
-      // old=100ha, new=50ha, 20% cap=30ha → eligible=130ha → tier 3 → £3000 + 15*(130-100)=£3450
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(100, 50)
-      )
-
-      expect(result.eligibleArea).toBe(130)
-      expect(result.payment).toBe(3450)
+      expect(result.eligibleArea).toBe(125)
+      expect(result.payment).toBe(3375)
       expect(result.activePaymentTier).toBe(3)
-      expect(result.quantityInActiveTier).toBe(30)
+      expect(result.quantityInActiveTier).toBe(25)
       expect(result.activeTierRatePence).toBe(15)
       expect(result.activeTierFlatRatePence).toBe(3000)
+    })
+
+    test('Actual new woodland is more than maximum eligible new woodland and on the 100ha limit', () => {
+      const result = wmpCalculation.execute(
+        createPaymentMethod(),
+        createData(80, 80)
+      )
+
+      expect(result.eligibleArea).toBe(100)
+      expect(result.payment).toBe(3000)
+      expect(result.activePaymentTier).toBe(3)
+      expect(result.quantityInActiveTier).toBe(0)
+      expect(result.activeTierRatePence).toBe(15)
+      expect(result.activeTierFlatRatePence).toBe(3000)
+    })
+
+    test('Actual new woodland is more than maximum eligible new woodland and just above the 100ha limit', () => {
+      const result = wmpCalculation.execute(
+        createPaymentMethod(),
+        createData(81, 500)
+      )
+
+      expect(result.eligibleArea).toBe(101.25)
+      expect(result.payment).toBe(3018.75)
+      expect(result.activePaymentTier).toBe(3)
+      expect(result.quantityInActiveTier).toBe(1.25)
+      expect(result.activeTierRatePence).toBe(15)
+      expect(result.activeTierFlatRatePence).toBe(3000)
+    })
+
+    test('Actual new woodland is less than maximum eligible new woodland', () => {
+      const result = wmpCalculation.execute(
+        createPaymentMethod(),
+        createData(81, 10)
+      )
+
+      expect(result.eligibleArea).toBe(91)
+      expect(result.payment).toBe(2730)
+      expect(result.activePaymentTier).toBe(2)
+      expect(result.quantityInActiveTier).toBe(41)
+      expect(result.activeTierRatePence).toBe(30)
+      expect(result.activeTierFlatRatePence).toBe(1500)
     })
   })
 
