@@ -144,11 +144,16 @@ const ParcelsControllerV2 = {
         return Boom.notFound(validationResponse.errors.join(', '))
       }
 
+      const displayedActions = validationResponse.enabledActions.filter(
+        (enabledAction) => enabledAction.display
+      )
+
+      // Only actions we offer (enabled and displayed) are supported
       const { compatibilityCheckFn, actionCodesWithSupplements } =
         await createCompatibilityLookups(
           request.logger,
           postgresDb,
-          validationResponse.enabledActions.map((action) => action.code)
+          displayedActions.map((action) => action.code)
         )
 
       /** @type {AgreementsByParcel} */
@@ -164,9 +169,6 @@ const ParcelsControllerV2 = {
         )
       }
 
-      const displayedActions = validationResponse.enabledActions.filter(
-        (enabledAction) => enabledAction.display
-      )
       const unitByActionCode = getUnitByActionCode(
         validationResponse.enabledActions
       )
