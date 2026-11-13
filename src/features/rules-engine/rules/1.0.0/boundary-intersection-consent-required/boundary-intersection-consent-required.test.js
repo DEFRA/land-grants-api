@@ -1,6 +1,6 @@
 import { boundaryIntersectionConsentRequired } from './boundary-intersection-consent-required.js'
-import { executeRules } from '../../rulesEngine.js'
-import { rules } from '../index.js'
+import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
+import { rules } from '~/src/features/rules-engine/rules/index.js'
 
 describe('boundaryIntersectionConsentRequired', () => {
   const createApplication = (

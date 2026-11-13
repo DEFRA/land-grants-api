@@ -1,14 +1,7 @@
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { requirementProviders } from './dataProviders.js'
 import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
-
-/**
- *
- * @param {ActionRule} rule
- * @returns string
- */
-export const ruleKeyFor = (rule) =>
-  `${rule.type ?? rule.name}-${rule.version ?? '1.0.0'}`
+import { ruleKeyFor } from '~/src/features/rules-engine/rules/rule-key.js'
 
 /**
  * Drops rules whose executor needs a data type the caller can't supply,

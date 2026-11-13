@@ -1,23 +1,25 @@
 import { normalizeAppliedArea } from '~/src/features/common/helpers/measurement.js'
-import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+import { REQUIRED_RULE_DATA } from '~/src/features/rules-engine/services/requiredRuleData.js'
 
 /**
  * @import { RuleEngineApplication } from '~/src/features/rules-engine/rules.d.js'
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
+// This rule allows applying for a partial or total area up to available area.
+
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
-export const appliedForTotalAvailableArea = {
+export const appliedForTotalOrPartialAvailableArea = {
   requires: [
     {
-      type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
+      type: REQUIRED_RULE_DATA.AVAILABLE_AREA
     },
     {
-      type: REQUIRED_RULE_DATA.AVAILABLE_AREA
+      type: REQUIRED_RULE_DATA.APPLIED_FOR_QUANTITY
     }
   ],
   execute: (application, rule) => {
@@ -26,34 +28,35 @@ export const appliedForTotalAvailableArea = {
       applicationUnitOfMeasurement,
       landParcel: { availableAreaSqm }
     } = application
+    const name = rule.name
 
     const {
       unit,
-      appliedAreaDisplay: appliedForQuantityDisplay,
-      availableAreaDisplay,
-      appliedAreaSqm: appliedForQuantitySqm
+      appliedAreaDisplay: parsedAppliedArea,
+      availableAreaDisplay: parsedAvailableArea,
+      appliedAreaSqm,
+      availableAreaSqmDisplay: maximumAllowedAreaSqm
     } = normalizeAppliedArea(
       applicationUnitOfMeasurement,
       appliedForQuantity,
       availableAreaSqm
     )
 
-    const name = rule.name
     const explanations = [
       {
-        title: 'Total valid land cover',
+        title: 'Total or partial available area',
         lines: [
-          `The available area was (${availableAreaDisplay} ${unit}) the applicant applied for (${appliedForQuantityDisplay} ${unit})`
+          `The available area is (${parsedAvailableArea} ${unit}), and the applicant applied for (${parsedAppliedArea} ${unit}).`
         ]
       }
     ]
 
-    if (appliedForQuantitySqm !== availableAreaSqm) {
+    if (appliedAreaSqm <= 0 || appliedAreaSqm > maximumAllowedAreaSqm) {
       return {
         name,
         passed: false,
         description: rule.description,
-        reason: `There is not sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
+        reason: `The amount of land must be the same as or less than the available area`,
         explanations
       }
     }
@@ -62,7 +65,7 @@ export const appliedForTotalAvailableArea = {
       name,
       passed: true,
       description: rule.description,
-      reason: `There is sufficient available area (${availableAreaDisplay} ${unit}) for the applied figure (${appliedForQuantityDisplay} ${unit})`,
+      reason: `The applied figure (${parsedAppliedArea} ${unit}) is within the allowed range (greater than 0 ${unit} and up to ${parsedAvailableArea} ${unit})`,
       explanations
     }
   }

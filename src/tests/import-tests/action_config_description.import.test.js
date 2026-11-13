@@ -5,6 +5,7 @@ import {
   deleteFiles
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 import { S3_CONFIG } from '~/src/tests/db-tests/setup/test-config.js'
+import { actionConfigFor } from '~/src/tests/import-tests/setup/action-config.js'
 
 import { processMessage } from '~/src/features/grants-config/handlers/grants-config-update.handler.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
@@ -21,12 +22,9 @@ const ACTION_CONFIG_S3_KEY = `land-grants/0.0.0-test/actions_config/${TEST_CODE}
 const ELIGIBILITY_S3_KEY =
   'land-grants/0.0.0-desc-test/actions/actions_eligibility.csv'
 
-const actionConfig = {
-  code: TEST_CODE,
-  semanticVersion: '1.0.0',
-  description: 'Description test action',
-  applicationUnitOfMeasurement: 'ha'
-}
+const actionConfig = actionConfigFor(TEST_CODE, {
+  description: 'Description test action'
+})
 
 const brokerMessage = (manifest) => ({
   MessageId: 'action-config-description-import',
