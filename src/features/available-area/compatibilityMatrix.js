@@ -33,7 +33,7 @@ export const createCompatibilityMatrix = async (logger, db, codes = null) => {
  * and the set of actions that have supplements.
  * @param {Logger} logger
  * @param {Pool} db
- * @param {string[]} supportedActionCodes - The action codes we currently support (enabled actions)
+ * @param {string[]} supportedActionCodes - The action codes we currently offer (enabled and displayed actions)
  * @returns {Promise<{ compatibilityCheckFn: (action1: string, action2: string) => boolean, actionCodesWithSupplements: Set<string> }>}
  */
 export const createCompatibilityLookups = async (

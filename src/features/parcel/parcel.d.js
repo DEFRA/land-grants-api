@@ -26,7 +26,7 @@
  * @typedef {object} PreparedActions
  * @property {Action[]} displayedActions - The enabled actions this request reports
  * @property {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
- * @property {Set<string>} [actionCodesWithSupplements] - Codes of actions that are a base for at least one supported supplement action
+ * @property {Set<string>} [actionCodesWithSupplements] - Codes of displayed actions that are a base for at least one displayed supplement action
  */
 
 /**
