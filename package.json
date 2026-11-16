@@ -79,7 +79,7 @@
     "hapi-pulse": "^4.0.0",
     "hapi-swagger": "^17.3.2",
     "javascript-lp-solver": "^1.0.3",
-    "joi": "^17.13.9",
+    "joi": "^18.3.1",
     "pg": "^8.23.1",
     "pg-copy-streams": "^7.0.0",
     "pino": "^10.4.0",
