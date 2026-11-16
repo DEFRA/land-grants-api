@@ -19,16 +19,16 @@ A farmer can apply for several actions on one parcel of land. Some actions can b
 
 A **stack** is a group of actions sitting on one piece of ground. A stack is valid only if every pair of actions inside it is stackable.
 
-**Why the API cares.** When a farmer asks "how much of this parcel can I put action X on?", the answer is the parcel's eligible area minus the ground already taken by actions that X *can't* share with. Stackable actions don't reduce the answer. Non-stackable ones do.
+**Why the API cares.** When a farmer asks "how much of this parcel can I put action X on?", the answer is the parcel's eligible area minus the ground already taken by actions that X _can't_ share with. Stackable actions don't reduce the answer. Non-stackable ones do.
 
 ### Example
 
 A parcel has 10 ha of grassland. The farmer already has action B on 6 ha.
 
-| Is X stackable with B? | Available area for X |
-| --- | --- |
-| Yes | 10 ha (X can sit on top of B) |
-| No | 4 ha (only the ground B isn't using) |
+| Is X stackable with B? | Available area for X                 |
+| ---------------------- | ------------------------------------ |
+| Yes                    | 10 ha (X can sit on top of B)        |
+| No                     | 4 ha (only the ground B isn't using) |
 
 ### Not the same thing: supplemental actions
 
@@ -42,7 +42,7 @@ A **supplemental** action is an add-on that only exists on top of a base action 
 2. **It is not transitive.** If A–B are stackable and B–C are stackable, that says nothing about A–C. A stack of {A, B, C} needs all three pairs listed.
 3. **No entry means not stackable.** The RPA confirms this reading.
 4. **An action usually can't stack with itself.** A second CLIG3 can't sit on top of the first. The exception is any action that has a row pairing it with itself: today only `CIPM1` and `CNUM1`. Don't hard-code "never with itself".
-5. **A few pairs can't be on the same parcel at all**, even on different ground. These are rare. They are checked *before* the area calculation, not inside it.
+5. **A few pairs can't be on the same parcel at all**, even on different ground. These are rare. They are checked _before_ the area calculation, not inside it.
 
 ---
 
@@ -52,11 +52,11 @@ The RPA publishes a table of action pairs. We load it from `src/land-data/compat
 
 Each row has an action code, a second action code, a year, and a **type** that says what the relationship is:
 
-| Type | Meaning | Relevant here? |
-| --- | --- | --- |
-| `BASECO` | The two actions can share the same area | **Yes.** This is "stackable" |
-| `BASEPA` | The two actions may not be on the same parcel (rare). 310 rows in 2026 | **Yes.** This is "parcel-exclusive". The code currently reads it the wrong way round, as "compatible" |
-| `SUPBAS`, `SUPBPA`, `SUPAGR` | Supplement-to-base relationships | No. Supplemental work only |
+| Type                         | Meaning                                                                | Relevant here?                                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `BASECO`                     | The two actions can share the same area                                | **Yes.** This is "stackable"                                                                          |
+| `BASEPA`                     | The two actions may not be on the same parcel (rare). 310 rows in 2026 | **Yes.** This is "parcel-exclusive". The code currently reads it the wrong way round, as "compatible" |
+| `SUPBAS`, `SUPBPA`, `SUPAGR` | Supplement-to-base relationships                                       | No. Supplemental work only                                                                            |
 
 Things that are true of the 2026 file and that the code can rely on:
 
@@ -80,7 +80,7 @@ Things that are true of the 2026 file and that the code can rely on:
 
 1. Combine the actions already on the parcel (agreements plus other actions in the same application), adding up areas per action code.
 2. Rename the action being checked to `<code>__target` so it isn't confused with an existing action of the same code. The lookup strips the suffix. This is why a second CLIG3 is blocked by an existing CLIG3: the lookup is `(CLIG3, CLIG3)`, and there is no row.
-3. Build a graph of which actions *can't* share, and find the groups of mutually-incompatible actions (maximal cliques).
+3. Build a graph of which actions _can't_ share, and find the groups of mutually-incompatible actions (maximal cliques).
 4. Set up a linear program (LP): each existing action must be fully placed on land it is eligible for, and within each group of mutually-incompatible actions the placements on any land cover can't exceed that land cover's area.
 5. Maximise the area the target action can take. That is the available area.
 
@@ -88,11 +88,11 @@ Things that are true of the 2026 file and that the code can rely on:
 
 ### Known problems
 
-| # | Problem | Effect |
-| --- | --- | --- |
-| 1 | The row **type** is thrown away on load, so `BASEPA` ("can't be on the same parcel") is read as "can share ground" | A parcel-exclusive action is offered area it shouldn't get. Example: AB2 on a parcel that already has RP32 |
-| 2 | Looking up a pair scans every row | Slow, and gets worse as the number of actions on a parcel grows |
-| 3 | The "groups of incompatible actions" approach is only exact if the incompatibility graph has no odd cycle of five or more | In rare layouts the area is overstated (2.8 ha reported where 1.0 ha is true). **Never seen on real data** |
+| #   | Problem                                                                                                                   | Effect                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | The row **type** is thrown away on load, so `BASEPA` ("can't be on the same parcel") is read as "can share ground"        | A parcel-exclusive action is offered area it shouldn't get. Example: AB2 on a parcel that already has RP32 |
+| 2   | Looking up a pair scans every row                                                                                         | Slow, and gets worse as the number of actions on a parcel grows                                            |
+| 3   | The "groups of incompatible actions" approach is only exact if the incompatibility graph has no odd cycle of five or more | In rare layouts the area is overstated (2.8 ha reported where 1.0 ha is true). **Never seen on real data** |
 
 ---
 
@@ -132,18 +132,18 @@ Implementation notes:
 Runs before the area calculation. For the target action and every other action on the same parcel (agreements plus the rest of the application):
 
 - If `isParcelExclusive(target, existing)` is true for any existing action, fail with reason `PARCEL_EXCLUSIVE`, name the clashing action, and return 0 ha.
-- A clashing action on a *different* parcel doesn't count.
+- A clashing action on a _different_ parcel doesn't count.
 
 Order of checks, most basic first:
 
-| Order | Check | Reason code |
-| --- | --- | --- |
-| 1 | Is there eligible land after SSSI/historic-feature exclusions? | `NO_ELIGIBLE_LAND` |
-| 2 | **Is any action on this parcel parcel-exclusive with the target?** | `PARCEL_EXCLUSIVE` |
-| 3 | Is the base action present? (supplemental work) | `BASE_MISSING`, `BASE_NOT_IN_APPLICATION` |
-| 4 | Can all existing actions still be placed? | `EXISTING_INFEASIBLE` |
-| 5 | Is the requested quantity within the available area? | `FULLY_OCCUPIED`, `EXCEEDS_AVAILABLE` |
-| 6 | Total-area-only actions | existing rule |
+| Order | Check                                                              | Reason code                               |
+| ----- | ------------------------------------------------------------------ | ----------------------------------------- |
+| 1     | Is there eligible land after SSSI/historic-feature exclusions?     | `NO_ELIGIBLE_LAND`                        |
+| 2     | **Is any action on this parcel parcel-exclusive with the target?** | `PARCEL_EXCLUSIVE`                        |
+| 3     | Is the base action present? (supplemental work)                    | `BASE_MISSING`, `BASE_NOT_IN_APPLICATION` |
+| 4     | Can all existing actions still be placed?                          | `EXISTING_INFEASIBLE`                     |
+| 5     | Is the requested quantity within the available area?               | `FULLY_OCCUPIED`, `EXCEEDS_AVAILABLE`     |
+| 6     | Total-area-only actions                                            | existing rule                             |
 
 ### 5.3 Optional: a more exact area calculation
 
@@ -225,6 +225,7 @@ Three steps. Each one can be merged on its own, in this order. Steps 1 and 2 are
 **Step 1: Make the lookup fast and keep the row type (no change in behaviour)**
 
 What to do:
+
 1. Add a `relationship_type` column to the `compatibility_matrix` table, and fill it from the CSV's `TYPE` column during ingest.
 2. Return it from the transformer as `relationshipType`.
 3. When the matrix is loaded, turn the rows into a `Set` of compatible pairs (see section 5.1) instead of keeping a list of rows.
@@ -237,11 +238,12 @@ For now, keep treating **every** row type as "compatible", including `BASEPA` an
 **Step 2: Block parcel-exclusive actions (first behaviour change)**
 
 What to do:
+
 1. In the new lookup, record `BASEPA` pairs separately as "parcel-exclusive". If a pair is both `BASECO` and `BASEPA`, it is parcel-exclusive and not compatible. Log a warning.
 2. Before the area calculation, check the target action against the other actions on the same parcel. If any of them is parcel-exclusive with it, stop and return 0 ha with the reason `PARCEL_EXCLUSIVE` and the code of the clashing action.
 3. Put this check second in the order (see the table in section 5.2).
 
-Done when: AB2 on a parcel that already has RP32 returns 0 ha and `PARCEL_EXCLUSIVE`, and AB2 with RP32 only on a *different* parcel still works normally.
+Done when: AB2 on a parcel that already has RP32 returns 0 ha and `PARCEL_EXCLUSIVE`, and AB2 with RP32 only on a _different_ parcel still works normally.
 
 **Step 3: Exact stack calculation (optional)**
 
@@ -251,29 +253,29 @@ Don't start this unless we have a real parcel where the current calculation give
 
 LGA-008 scenarios ST-01 to ST-14 are the source of truth. Unit tests inject a policy fixture rather than reading the live matrix. All use a 10 ha parcel with every action eligible. A, B and C are made-up codes. "Today" shows where the current engine gives a different answer.
 
-| ID | Matrix rows | Already on parcel | Applying for | Expected | Today |
-| --- | --- | --- | --- | --- | --- |
-| ST-01 | none | nothing | A 10 ha | 10 ha, pass | same |
-| ST-02 | A–B | B 4 ha | A 10 ha | 10 ha, pass | same |
-| ST-03 | none | B 4 ha | A 6 ha | 6 ha, pass | same |
-| ST-04 | none | B 4 ha | A 7 ha | 6 ha, fail `EXCEEDS_AVAILABLE` | same |
-| ST-05 | B–C | B 6, C 6 | A 4 ha | 4 ha, pass | same |
-| ST-06 | A–B, B–C | B 6, C 6 | A 10 ha | 4 ha, fail (not transitive) | same |
-| ST-07 | none | B 6, C 6 | A 1 ha | 0 ha, fail `EXISTING_INFEASIBLE` | same |
-| ST-08 | none | A 3 | A 7 ha | 7 ha, pass (no self-stacking) | same |
-| ST-09 | five actions in a ring | A1–A5, 3.6 ha each | T 1 ha | 1.0 ha, pass | **2.8 ha** |
-| ST-10 | A–B, B–C | B 6, C 6 (same application) | A 4 ha | 4 ha, pass | same |
-| ST-11 | RP32–AB2 `BASEPA` | RP32 1 ha, this parcel | AB2 5 ha | 0 ha, fail `PARCEL_EXCLUSIVE` | **10 ha, pass** |
-| ST-12 | RP32–AB2 `BASEPA` | RP32, other parcel only | AB2 5 ha | 10 ha, pass | same |
-| ST-13 | B→A `BASECO` only | B 4 ha | A 10 ha | 10 ha, pass (direction ignored) | same |
-| ST-14 | A→B `BASECO`, B→A `BASEPA` | B 4 ha | A 5 ha | 0 ha, fail `PARCEL_EXCLUSIVE`, warning logged | **10 ha, pass** |
+| ID    | Matrix rows                | Already on parcel           | Applying for | Expected                                      | Today           |
+| ----- | -------------------------- | --------------------------- | ------------ | --------------------------------------------- | --------------- |
+| ST-01 | none                       | nothing                     | A 10 ha      | 10 ha, pass                                   | same            |
+| ST-02 | A–B                        | B 4 ha                      | A 10 ha      | 10 ha, pass                                   | same            |
+| ST-03 | none                       | B 4 ha                      | A 6 ha       | 6 ha, pass                                    | same            |
+| ST-04 | none                       | B 4 ha                      | A 7 ha       | 6 ha, fail `EXCEEDS_AVAILABLE`                | same            |
+| ST-05 | B–C                        | B 6, C 6                    | A 4 ha       | 4 ha, pass                                    | same            |
+| ST-06 | A–B, B–C                   | B 6, C 6                    | A 10 ha      | 4 ha, fail (not transitive)                   | same            |
+| ST-07 | none                       | B 6, C 6                    | A 1 ha       | 0 ha, fail `EXISTING_INFEASIBLE`              | same            |
+| ST-08 | none                       | A 3                         | A 7 ha       | 7 ha, pass (no self-stacking)                 | same            |
+| ST-09 | five actions in a ring     | A1–A5, 3.6 ha each          | T 1 ha       | 1.0 ha, pass                                  | **2.8 ha**      |
+| ST-10 | A–B, B–C                   | B 6, C 6 (same application) | A 4 ha       | 4 ha, pass                                    | same            |
+| ST-11 | RP32–AB2 `BASEPA`          | RP32 1 ha, this parcel      | AB2 5 ha     | 0 ha, fail `PARCEL_EXCLUSIVE`                 | **10 ha, pass** |
+| ST-12 | RP32–AB2 `BASEPA`          | RP32, other parcel only     | AB2 5 ha     | 10 ha, pass                                   | same            |
+| ST-13 | B→A `BASECO` only          | B 4 ha                      | A 10 ha      | 10 ha, pass (direction ignored)               | same            |
+| ST-14 | A→B `BASECO`, B→A `BASEPA` | B 4 ha                      | A 5 ha       | 0 ha, fail `PARCEL_EXCLUSIVE`, warning logged | **10 ha, pass** |
 
-| Area | Cases |
-| --- | --- |
-| Coexistence | no matrix rows; one compatible pair; pair with two existing; non-transitive chain; existing actions that can't all be placed; no self-stacking without a self row; self-stacking with a self row |
-| Normalisation | row in one direction only; `BASECO` and `BASEPA` for the same pair; duplicate rows with different types |
-| Parcel-exclusive | exclusive action on this parcel (fail); on another parcel only (pass) |
-| Stack LP (if built) | five-ring gives 1.0 ha not 2.8; the two worked examples; cap at 16 actions falls back |
+| Area                | Cases                                                                                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Coexistence         | no matrix rows; one compatible pair; pair with two existing; non-transitive chain; existing actions that can't all be placed; no self-stacking without a self row; self-stacking with a self row |
+| Normalisation       | row in one direction only; `BASECO` and `BASEPA` for the same pair; duplicate rows with different types                                                                                          |
+| Parcel-exclusive    | exclusive action on this parcel (fail); on another parcel only (pass)                                                                                                                            |
+| Stack LP (if built) | five-ring gives 1.0 ha not 2.8; the two worked examples; cap at 16 actions falls back                                                                                                            |
 
 Properties worth generating:
 
