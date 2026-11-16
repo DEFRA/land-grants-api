@@ -11,7 +11,7 @@ import { auditEvent } from '~/src/features/common/helpers/audit-event.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { getActionsByVersion } from '~/src/features/actions/queries/2.0.0/getActionsByVersion.query.js'
 import { getLandParcelBoundary } from '~/src/features/parcel/queries/getParcelBoundary.query.js'
-import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length.js'
+import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length/applied-for-total-or-partial-available-length.js'
 import {
   SINGLE_SIDE,
   billingFactorOf

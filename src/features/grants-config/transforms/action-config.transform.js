@@ -1,13 +1,13 @@
-import { actionConfigInputSchema } from '../schema/action-config.schema.js'
+import { validateActionConfig } from '../schema/action-config.schema.js'
 
 /**
  * Transform an action config JSON (camelCase from land-grants-config repo)
  * into the shape stored in the actions_config DB table.
  * @param {object} actionJson - Raw action JSON from S3
- * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string|null, groupId: number|null, config: object }}
+ * @returns {{ code: string, semanticVersion: string, major: number, minor: number, patch: number, displayOrder: number, description: string, groupId: number|null, config: object }}
  */
 export function transformActionConfig(actionJson) {
-  const { error } = actionConfigInputSchema.validate(actionJson)
+  const { error } = validateActionConfig(actionJson)
   if (error) {
     throw new TypeError(
       `Invalid action config: ${error.details.map((d) => d.message).join('; ')}`
@@ -24,16 +24,10 @@ export function transformActionConfig(actionJson) {
     major,
     minor,
     patch,
-    ...buildDefaults(actionJson),
+    displayOrder: actionJson.displayOrder,
+    description: actionJson.description,
+    groupId: actionJson.groupId,
     config: buildConfig(actionJson)
-  }
-}
-
-function buildDefaults(actionJson) {
-  return {
-    displayOrder: actionJson.displayOrder ?? 0,
-    description: actionJson.description ?? null,
-    groupId: actionJson.groupId ?? null
   }
 }
 
@@ -45,13 +39,13 @@ function buildConfig(actionJson) {
     payment: actionJson.payment,
     payment_method: actionJson.paymentMethod,
     land_cover_class_codes: actionJson.landCoverClassCodes ?? [],
-    rules: actionJson.rules ?? [],
+    rules: actionJson.rules,
     guidance_url: actionJson.guidanceUrl ?? null,
     availability: actionJson.availability ?? null,
     display_unit: actionJson.displayUnit ?? null,
     display_unit_plural: actionJson.displayUnitPlural ?? null,
-    enabled: actionJson.enabled ?? true,
-    display: actionJson.display ?? true
+    enabled: actionJson.enabled,
+    display: actionJson.display
   }
 }
 
