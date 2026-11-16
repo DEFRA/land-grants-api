@@ -18,7 +18,7 @@
       ],
       "ignoreDependencies": ["k6", "pino-pretty"]
     },
-    "packages/schemas": {
+    "packages/rules-schemas": {
       "ignoreDependencies": ["joi"]
     }
   }

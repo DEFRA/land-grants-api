@@ -1,12 +1,12 @@
 {
-  "name": "@defra/land-grants-schemas",
+  "name": "@defra/land-grants-rules-schemas",
   "version": "1.0.0",
-  "description": "Joi schemas for land-grants-api",
+  "description": "Joi schemas for land-grants-api action config and its rules",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DEFRA/land-grants-api.git",
-    "directory": "packages/schemas"
+    "directory": "packages/rules-schemas"
   },
   "publishConfig": {
     "access": "public"
