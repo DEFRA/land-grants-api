@@ -437,9 +437,10 @@ describe('Parcels Controller 2.0.0', () => {
           {
             title: 'Existing actions on the boundary',
             content: [
-              'BND2: billed 300 m, single-side, occupies 150 m of boundary, deducted'
+              'BND2: billed 300 m, single-side, occupies 150 m of boundary. Cannot share with BND1, so it is deducted'
             ]
           },
+          { title: 'Stacks', content: ['Stack 1: BND2 (150 m)'] },
           {
             title: 'Result',
             content: [
@@ -468,8 +469,12 @@ describe('Parcels Controller 2.0.0', () => {
           {
             title: 'Existing actions on the boundary',
             content: [
-              `BND2: billed ${(perimeterMeters + 1) * billingFactorOf(SINGLE_SIDE)} m, single-side, occupies ${perimeterMeters + 1} m of boundary, deducted`
+              `BND2: billed ${(perimeterMeters + 1) * billingFactorOf(SINGLE_SIDE)} m, single-side, occupies ${perimeterMeters + 1} m of boundary. Counted in the boundary the existing actions need`
             ]
+          },
+          {
+            title: 'Stacks',
+            content: [`Stack 1: BND2 (${perimeterMeters + 1} m)`]
           },
           {
             title: 'Error - existing actions do not fit',
