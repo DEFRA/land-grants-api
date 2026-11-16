@@ -165,7 +165,8 @@ describe('actionResultTransformer', () => {
           billedLengthMeters: 300,
           sidedness: BOTH_SIDES,
           occupiedMeters: 300,
-          deducted: true
+          status: 'deducted',
+          sharesWith: []
         }
       ],
       targetSidedness: SINGLE_SIDE

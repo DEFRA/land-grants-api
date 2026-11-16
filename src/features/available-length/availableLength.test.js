@@ -24,13 +24,14 @@ vi.mock('../actions/queries/getSidednessByActionCode.query.js')
 const explained = (
   actionCode,
   billedLengthMeters,
-  { sidedness, occupiedMeters, deducted }
+  { sidedness, occupiedMeters, status, sharesWith = [] }
 ) => ({
   actionCode,
   billedLengthMeters,
   sidedness,
   occupiedMeters,
-  deducted
+  status,
+  sharesWith
 })
 
 describe('getAvailableLength', () => {
@@ -221,12 +222,12 @@ describe('getAvailableLength', () => {
         explained('BND1', 200, {
           sidedness: BOTH_SIDES,
           occupiedMeters: 200,
-          deducted: true
+          status: 'deducted'
         }),
         explained('BND1', 100, {
           sidedness: BOTH_SIDES,
           occupiedMeters: 100,
-          deducted: true
+          status: 'deducted'
         })
       ],
       targetSidedness: SINGLE_SIDE
@@ -256,7 +257,7 @@ describe('getAvailableLength', () => {
         explained('BND1', 200.4, {
           sidedness: BOTH_SIDES,
           occupiedMeters: 201,
-          deducted: true
+          status: 'deducted'
         })
       ],
       targetSidedness: BOTH_SIDES
@@ -328,7 +329,7 @@ describe('getAvailableLength', () => {
         explained('BND1', 1500, {
           sidedness: BOTH_SIDES,
           occupiedMeters: 1500,
-          deducted: true
+          status: 'deducted'
         })
       ],
       targetSidedness: SINGLE_SIDE
@@ -398,7 +399,7 @@ describe('getAvailableLength', () => {
           explained('BND2', 1000, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 500,
-            deducted: true
+            status: 'deducted'
           })
         ],
         targetSidedness: BOTH_SIDES
@@ -488,7 +489,7 @@ describe('calculateAvailableLength', () => {
           explained('BND2', 1000, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 500,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -511,7 +512,7 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 300, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 300,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -534,7 +535,7 @@ describe('calculateAvailableLength', () => {
           explained('BND2', 2 * PARCEL_PERIMETER_METERS, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: PARCEL_PERIMETER_METERS,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -557,7 +558,7 @@ describe('calculateAvailableLength', () => {
           explained('BND2', 1001, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 501,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -581,12 +582,12 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 200.4, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 201,
-            deducted: true
+            status: 'deducted'
           }),
           explained('BND1', 150.3, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 151,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -624,7 +625,7 @@ describe('calculateAvailableLength', () => {
           explained('HRW1', 400, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 400,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -649,7 +650,7 @@ describe('calculateAvailableLength', () => {
           explained('CHRW2', 1200, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 600,
-            deducted: false
+            status: 'compatible'
           })
         ]
       })
@@ -672,12 +673,12 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 200, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 200,
-            deducted: true
+            status: 'deducted'
           }),
           explained('CHRW2', 100, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 50,
-            deducted: false
+            status: 'compatible'
           })
         ]
       })
@@ -703,12 +704,13 @@ describe('calculateAvailableLength', () => {
           explained('BND2', 1500, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 750,
-            deducted: true
+            status: 'deducted'
           }),
           explained('CHRW2', 1500, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 750,
-            deducted: false
+            status: 'stacked',
+            sharesWith: ['BND2']
           })
         ]
       })
@@ -732,12 +734,13 @@ describe('calculateAvailableLength', () => {
           explained('CHRW2', 1500, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 750,
-            deducted: true
+            status: 'deducted'
           }),
           explained('BND2', 1500, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 750,
-            deducted: false
+            status: 'stacked',
+            sharesWith: ['CHRW2']
           })
         ]
       })
@@ -761,12 +764,12 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 200, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 200,
-            deducted: true
+            status: 'deducted'
           }),
           explained('HRW1', 150, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 150,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -790,12 +793,12 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 300, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 300,
-            deducted: true
+            status: 'deducted'
           }),
           explained('BND1', 200, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 200,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -822,12 +825,12 @@ describe('calculateAvailableLength', () => {
           explained('B', 600, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 600,
-            deducted: false
+            status: 'compatible'
           }),
           explained('C', 600, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 600,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -835,7 +838,7 @@ describe('calculateAvailableLength', () => {
   })
 
   describe('explaining the result', () => {
-    it('lists each existing action with the boundary it occupies and whether it was deducted', () => {
+    it('lists each existing action with the boundary it occupies and why it was or was not deducted', () => {
       const result = calculateAvailableLength(
         'BND2',
         [existing('CHRW2', 400), existing('BND1', 200)],
@@ -852,12 +855,12 @@ describe('calculateAvailableLength', () => {
           explained('CHRW2', 400, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 200,
-            deducted: false
+            status: 'compatible'
           }),
           explained('BND1', 200, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 200,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -882,7 +885,7 @@ describe('calculateAvailableLength', () => {
           explained('BND1', 1200, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 1200,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -905,7 +908,7 @@ describe('calculateAvailableLength', () => {
           explained('BND1', PARCEL_PERIMETER_METERS, {
             sidedness: BOTH_SIDES,
             occupiedMeters: PARCEL_PERIMETER_METERS,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -929,12 +932,12 @@ describe('calculateAvailableLength', () => {
           explained('WBD2', 600, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 600,
-            deducted: true
+            status: 'deducted'
           }),
           explained('WBD2', 500, {
             sidedness: BOTH_SIDES,
             occupiedMeters: 500,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -958,7 +961,7 @@ describe('calculateAvailableLength', () => {
           explained('CHRW2', 100, {
             sidedness: SINGLE_SIDE,
             occupiedMeters: 50,
-            deducted: true
+            status: 'deducted'
           })
         ]
       })
@@ -1166,12 +1169,34 @@ describe('calculateAvailableLength', () => {
         const result = calculate(testCase)
 
         const markedDeducted = result.explainedOccupancies
-          .filter(({ deducted }) => deducted)
+          .filter(({ status }) => status === 'deducted')
           .map(({ actionCode, billedLengthMeters }) =>
             existing(actionCode, billedLengthMeters)
           )
 
         return !sameActions(markedDeducted, result.incompatibleActions)
+      })
+
+      expect(violations).toEqual([])
+    })
+
+    it('stacks every action it does not deduct or find compatible within deducted actions it can share with', () => {
+      const violations = CASES.filter((testCase) => {
+        const result = calculate(testCase)
+
+        const deducted = result.explainedOccupancies.filter(
+          ({ status }) => status === 'deducted'
+        )
+
+        return result.explainedOccupancies
+          .filter(({ status }) => status === 'stacked')
+          .some(({ occupiedMeters, sharesWith }) => {
+            const sharedMeters = deducted
+              .filter(({ actionCode }) => sharesWith.includes(actionCode))
+              .reduce((total, member) => total + member.occupiedMeters, 0)
+
+            return occupiedMeters > sharedMeters
+          })
       })
 
       expect(violations).toEqual([])
