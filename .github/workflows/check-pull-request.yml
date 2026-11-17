@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #7.0.1
 
       - name: Test code and Create Test Coverage Reports
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 #7.1.0
         with:
           node-version-file: '.nvmrc'
           cache: npm
@@ -35,7 +35,7 @@ jobs:
           npm test
 
       - name: Import tests
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 #7.1.0
         with:
           node-version-file: '.nvmrc'
           cache: npm
@@ -43,7 +43,7 @@ jobs:
           npm run test:import
 
       - name: Setup Node for e2e tests
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 #7.1.0
         with:
           node-version-file: '.nvmrc'
           cache: npm
@@ -65,7 +65,7 @@ jobs:
 
       - name: SonarCloud Scan
         if: github.actor != 'dependabot[bot]'
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 #8.5.0
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
