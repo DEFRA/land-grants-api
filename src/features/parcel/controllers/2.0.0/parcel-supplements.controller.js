@@ -62,7 +62,6 @@ const getBaseActionSupplements = async ({
   return {
     supplements: getSupplementsWithAvailability({
       baseAction,
-      selectedSupplements,
       supplementActions: displayedActions.filter((action) =>
         supplementCodes.has(action.code)
       )
@@ -80,7 +79,7 @@ const ParcelSupplementsControllerV2 = {
     tags: ['api'],
     description: 'Get the supplementary actions for a selected base action',
     notes:
-      'Returns the supplements of the base action on the land parcel, each with its availability. Pass the supplements selected so far to find out which of them are selected for more than the base action covers.',
+      'Returns the supplements of the base action on the land parcel, each with its availability. Like /parcels, it reports what is available and does not judge the quantities selected: /application/validate checks those. Each selected supplement must be a supplement of the base action.',
     validate: {
       payload: parcelSupplementsSchema
     },

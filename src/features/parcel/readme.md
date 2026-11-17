@@ -28,17 +28,18 @@ supplements selected so far. Each supplement of the base we offer (enabled and
 displayed) is returned,
 shaped as `/parcels` shapes actions:
 
-- its availability is the base action's area, as a supplement sits on top of its
-  base and can cover all or part of it
-- it is unavailable (`exceeds-base-action-area`) when it is selected for more than
-  the base action's area
+its availability is the base action's area, as a supplement sits on top of its
+base and can cover all or part of it.
 
-Like `/parcels`, it reports what can be selected rather than rejecting the
-selection, so grants-ui calls it again after each change. The final check of
-the application is still `POST /api/v2/application/validate`.
+Like `/parcels`, it reports what is available and does not judge the quantities
+selected, so grants-ui calls it again after each change. Checking that a
+supplement's quantity fits its available area is a job for
+`POST /api/v2/application/validate`, the final check of the application. The
+only check made on `selectedSupplements` is that each one is a supplement of the
+base action (400 otherwise).
 
 Supplements that cannot overlap (no `SUPCO` row between them) can still share
 the base action's area side by side, for example GRH7 on 6 ha and GRH8 on 4 ha
-of a 10 ha CLIG3. Selected supplements do not yet reduce each other's
-availability; that, and the matching check in `/application/validate`, is a
-follow-up story.
+of a 10 ha CLIG3. Selected supplements, and the other actions on the parcel, do
+not yet reduce a supplement's availability; that, and the matching checks in
+`/application/validate`, are follow-up stories.

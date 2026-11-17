@@ -87,13 +87,9 @@ describe('parcelSupplementsSuccessResponseSchema', () => {
           code: 'GRH8',
           isAvailable: false,
           unavailableReason: {
-            code: 'exceeds-base-action-area',
-            reason: 'More than the area of its base action',
-            metadata: {
-              baseActionCode: 'CLIG3',
-              baseActionAreaHa: 2.5,
-              selectedAreaHa: 3
-            }
+            code: 'no-availability',
+            reason: 'There is no remaining availability for this action',
+            metadata: {}
           }
         }
       ])

@@ -2,7 +2,6 @@ import createTestServer from '~/src/tests/test-server.js'
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { parcel } from '~/src/features/parcel/index.js'
-import { EXCEEDS_BASE_ACTION_AREA } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 vi.mock(
   '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
@@ -128,14 +127,21 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     expect(result.supplements).toEqual([])
   })
 
-  test('should mark a supplement selected for more than the base action unavailable', async () => {
-    const { result } = await requestSupplements({
+  // Like /parcels, this reports what is available rather than judging the
+  // quantity selected; /application/validate checks the quantity
+  test('should not judge the quantity of a selected supplement', async () => {
+    const { statusCode, result } = await requestSupplements({
       selectedSupplements: [{ actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
     })
 
-    expect(result.supplements[0].unavailableReason.code).toBe(
-      EXCEEDS_BASE_ACTION_AREA
+    expect(statusCode).toBe(200)
+    expect(result.supplements[0]).toEqual(
+      expect.objectContaining({
+        availability: { unit: 'ha', value: 2.5 },
+        isAvailable: true
+      })
     )
+    expect(result.supplements[0].unavailableReason).toBeUndefined()
   })
 
   test('should leave out supplements that are enabled but not displayed', async () => {

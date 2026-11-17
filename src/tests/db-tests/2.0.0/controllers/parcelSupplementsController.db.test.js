@@ -7,7 +7,6 @@ import {
 } from '~/src/tests/db-tests/setup/compatibility-matrix.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { EXCEEDS_BASE_ACTION_AREA } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
@@ -115,10 +114,11 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     )
   })
 
+  // The quantities selected are not judged here: /application/validate checks them
   test('should leave selected supplements available up to the whole base action area', async () => {
     const { data } = await requestSupplements({
       selectedSupplements: [
-        { actionCode: 'GRH7', quantity: 1.5, unit: 'ha' },
+        { actionCode: 'GRH7', quantity: 3, unit: 'ha' },
         { actionCode: 'GRH8', quantity: 1, unit: 'ha' }
       ]
     })
@@ -131,16 +131,6 @@ describe('Parcel Supplements Controller 2.0.0', () => {
         })
       )
     }
-  })
-
-  test('should mark a supplement selected for more than the base action unavailable', async () => {
-    const { data } = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
-    })
-
-    expect(byCode(data).GRH7.unavailableReason.code).toBe(
-      EXCEEDS_BASE_ACTION_AREA
-    )
   })
 
   test('should reject a selected action that is not a supplement of the base action', async () => {
