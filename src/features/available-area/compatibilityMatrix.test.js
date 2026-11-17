@@ -1,8 +1,11 @@
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import {
   createCompatibilityMatrix,
-  createCompatibilityLookups
+  createCompatibilityLookups,
+  createSupplementLookups
 } from '~/src/features/available-area/compatibilityMatrix.js'
+
+const LAND_SHARING_TYPES = ['BASECO', 'SUPBAS', 'SUPCO']
 
 vi.mock(
   '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js',
@@ -50,7 +53,8 @@ describe('Compatibility Matrix', () => {
       expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
         mockLogger,
         mockDb,
-        codes
+        codes,
+        LAND_SHARING_TYPES
       )
       expect(typeof compatibilityFn).toBe('function')
 
@@ -77,7 +81,8 @@ describe('Compatibility Matrix', () => {
       expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
         mockLogger,
         mockDb,
-        codes
+        codes,
+        LAND_SHARING_TYPES
       )
       expect(typeof compatibilityFn).toBe('function')
 
@@ -121,7 +126,9 @@ describe('Compatibility Matrix', () => {
       expect(mockGetCompatibilityMatrix).toHaveBeenCalledTimes(1)
       expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
         mockLogger,
-        mockDb
+        mockDb,
+        null,
+        LAND_SHARING_TYPES
       )
     })
 
@@ -153,6 +160,61 @@ describe('Compatibility Matrix', () => {
       )
 
       expect(actionCodesWithSupplements).toEqual(new Set(['AB1']))
+    })
+  })
+
+  // Real 2026 rows: CLIG3 is a base for GRH7 and GRH8, which cannot stack;
+  // GRH7 and GRH11 can (SUPCO, stored in both directions)
+  const realRows = [
+    { optionCode: 'CLIG3', optionCodeCompat: 'GRH7', type: 'SUPBAS' },
+    { optionCode: 'CLIG3', optionCodeCompat: 'GRH8', type: 'SUPBAS' },
+    { optionCode: 'CLIG3', optionCodeCompat: 'GRH11', type: 'SUPBAS' },
+    { optionCode: 'GRH7', optionCodeCompat: 'GRH11', type: 'SUPCO' },
+    { optionCode: 'GRH11', optionCodeCompat: 'GRH7', type: 'SUPCO' }
+  ]
+
+  describe('supplements in the compatibility check', () => {
+    test('lets a supplement overlap its base, and supplements stack only with a SUPCO row', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue(realRows)
+
+      const { compatibilityCheckFn } = await createCompatibilityLookups(
+        mockLogger,
+        mockDb,
+        []
+      )
+
+      expect(compatibilityCheckFn('CLIG3', 'GRH7')).toBe(true)
+      expect(compatibilityCheckFn('GRH7', 'GRH11')).toBe(true)
+      expect(compatibilityCheckFn('GRH7', 'GRH8')).toBe(false)
+    })
+  })
+
+  describe('createSupplementLookups', () => {
+    test('reads the whole matrix once, with the land sharing types', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue([])
+
+      await createSupplementLookups(mockLogger, mockDb, 'CLIG3', [])
+
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledTimes(1)
+      expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
+        mockLogger,
+        mockDb,
+        null,
+        LAND_SHARING_TYPES
+      )
+    })
+
+    test('returns the supported supplements of the base and the compatibility check', async () => {
+      mockGetCompatibilityMatrix.mockResolvedValue(realRows)
+
+      const { supplementCodes, compatibilityCheckFn } =
+        await createSupplementLookups(mockLogger, mockDb, 'CLIG3', [
+          'GRH7',
+          'GRH8'
+        ])
+
+      expect(supplementCodes).toEqual(new Set(['GRH7', 'GRH8']))
+      expect(compatibilityCheckFn('GRH7', 'GRH8')).toBe(false)
     })
   })
 })

@@ -60,6 +60,19 @@ const parcelSchema = Joi.object({
   actions: Joi.array().items(actionSchema).optional()
 })
 
+// The actions the applicant has already selected on the parcel
+export const plannedActionsSchema = Joi.array()
+  .items(
+    Joi.object({
+      actionCode: Joi.string().required(),
+      quantity: Joi.number().required(),
+      unit: Joi.string()
+        .valid(...UNIT_TYPES)
+        .required()
+    })
+  )
+  .optional()
+
 const parcelsSchema = Joi.object({
   sbi: Joi.string().required(),
   parcelIds: Joi.array().items(parcelIdSchema).required(),
@@ -75,17 +88,7 @@ const parcelsSchema = Joi.object({
       )
     )
     .required(),
-  plannedActions: Joi.array()
-    .items(
-      Joi.object({
-        actionCode: Joi.string().required(),
-        quantity: Joi.number().required(),
-        unit: Joi.string()
-          .valid(...UNIT_TYPES)
-          .required()
-      })
-    )
-    .optional()
+  plannedActions: plannedActionsSchema
 })
 
 const groupSchema = Joi.object({

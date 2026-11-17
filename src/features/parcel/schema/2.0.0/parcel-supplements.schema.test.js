@@ -4,10 +4,12 @@ import {
 } from './parcel-supplements.schema.js'
 
 const baseAction = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
+const sbi = '106284736'
 
 describe('parcelSupplementsSchema', () => {
   test('defaults the selected supplements to an empty list', () => {
     const { error, value } = parcelSupplementsSchema.validate({
+      sbi,
       parcelId: 'SX0679-9238',
       baseAction
     })
@@ -18,6 +20,7 @@ describe('parcelSupplementsSchema', () => {
 
   test('accepts selected supplements in hectares or square metres', () => {
     const { error } = parcelSupplementsSchema.validate({
+      sbi,
       parcelId: 'SX0679-9238',
       baseAction,
       selectedSupplements: [
@@ -27,6 +30,27 @@ describe('parcelSupplementsSchema', () => {
     })
 
     expect(error).toBeUndefined()
+  })
+
+  test('accepts the other actions selected on the parcel, in any unit', () => {
+    const { error } = parcelSupplementsSchema.validate({
+      sbi,
+      parcelId: 'SX0679-9238',
+      baseAction,
+      plannedActions: [
+        { actionCode: 'CAGF1', quantity: 4, unit: 'ha' },
+        { actionCode: 'CHRW1', quantity: 120, unit: 'm' }
+      ]
+    })
+
+    expect(error).toBeUndefined()
+  })
+
+  test('rejects a request without an sbi', () => {
+    expect(
+      parcelSupplementsSchema.validate({ parcelId: 'SX0679-9238', baseAction })
+        .error
+    ).toBeDefined()
   })
 
   test.each([
@@ -55,7 +79,9 @@ describe('parcelSupplementsSchema', () => {
     ],
     ['with an invalid parcel id', { parcelId: 'SX0679', baseAction }]
   ])('rejects a request %s', (_name, payload) => {
-    expect(parcelSupplementsSchema.validate(payload).error).toBeDefined()
+    expect(
+      parcelSupplementsSchema.validate({ sbi, ...payload }).error
+    ).toBeDefined()
   })
 })
 

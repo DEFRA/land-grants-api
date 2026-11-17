@@ -40,8 +40,10 @@ describe('getCompatibilityMatrix', () => {
 
     expect(result).toEqual([compatibilityMatrixTransformer(cm)])
     expect(dbMock.connect).toHaveBeenCalled()
-    expect(queryMock).toHaveBeenCalledWith(expect.any(String), null)
-    expect(queryOf()).not.toContain('option_code = ANY ($1)')
+    expect(queryMock).toHaveBeenCalledWith(expect.any(String), [
+      ['BASECO', 'SUPBAS']
+    ])
+    expect(queryOf()).not.toContain('option_code = ANY')
     expect(mockLogger.info).toHaveBeenCalledWith(
       {
         event: {
@@ -59,8 +61,11 @@ describe('getCompatibilityMatrix', () => {
 
     expect(result).toEqual([compatibilityMatrixTransformer(cm)])
     expect(dbMock.connect).toHaveBeenCalled()
-    expect(queryMock).toHaveBeenCalledWith(expect.any(String), [codes])
-    expect(queryOf()).toContain('AND option_code = ANY ($1)')
+    expect(queryMock).toHaveBeenCalledWith(expect.any(String), [
+      ['BASECO', 'SUPBAS'],
+      codes
+    ])
+    expect(queryOf()).toContain('AND option_code = ANY ($2)')
   })
 
   test('should only select the latest year', async () => {
@@ -71,18 +76,30 @@ describe('getCompatibilityMatrix', () => {
     expect(query).toContain('year in (select year from year)')
   })
 
-  test('should only select BASECO and SUPBAS compatibility types', async () => {
+  test('should select BASECO and SUPBAS rows by default', async () => {
     await getCompatibilityMatrix(mockLogger, dbMock)
 
-    expect(queryOf()).toContain("AND type IN ('BASECO', 'SUPBAS')")
+    expect(queryOf()).toContain('AND type = ANY ($1)')
+    expect(queryMock.mock.calls[0][1]).toEqual([['BASECO', 'SUPBAS']])
+  })
+
+  test('should select the types asked for', async () => {
+    await getCompatibilityMatrix(mockLogger, dbMock, null, [
+      'BASECO',
+      'SUPBAS',
+      'SUPCO'
+    ])
+
+    expect(queryMock.mock.calls[0][1]).toEqual([['BASECO', 'SUPBAS', 'SUPCO']])
   })
 
   test('should filter by type alongside option codes', async () => {
-    await getCompatibilityMatrix(mockLogger, dbMock, ['CMOR1'])
+    await getCompatibilityMatrix(mockLogger, dbMock, ['CMOR1'], ['SUPCO'])
 
     expect(queryOf()).toMatch(
-      /AND type IN \('BASECO', 'SUPBAS'\)\s+AND option_code = ANY \(\$1\)/
+      /AND type = ANY \(\$1\)\s+AND option_code = ANY \(\$2\)/
     )
+    expect(queryMock.mock.calls[0][1]).toEqual([['SUPCO'], ['CMOR1']])
   })
 
   test('should return both BASECO and SUPBAS rows', async () => {
