@@ -16,6 +16,7 @@ import { formatLengthExplanationSections } from '~/src/features/available-length
  * @param {Action[]} actionResult.actions - The actions
  * @param {object|null} [actionResult.availableArea] - The available area, for an area action
  * @param {TargetedAvailableLength} [actionResult.availableLength] - The available length, for a linear action
+ * @param {number} [actionResult.appliedForQuantity] - The quantity applied for, as the rules check it
  * @param {RulesResult} actionResult.ruleResult - The rule result
  * @returns {object} The validation result
  */
@@ -24,6 +25,7 @@ export const actionResultTransformer = ({
   actions,
   availableArea,
   availableLength,
+  appliedForQuantity,
   ruleResult
 }) => {
   const actionConfig = actions.find((a) => a.code === action.code)
@@ -40,7 +42,8 @@ export const actionResultTransformer = ({
         lengthMeters: availableLength.availableLength,
         explanations: formatLengthExplanationSections(availableLength, {
           targetAction: action.code,
-          targetSidedness: availableLength.targetSidedness
+          targetSidedness: availableLength.targetSidedness,
+          appliedForLengthMeters: appliedForQuantity
         })
       }
     : null

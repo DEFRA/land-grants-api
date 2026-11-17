@@ -129,6 +129,7 @@ describe('Action Validation Service', () => {
         action: mockAction,
         actions: mockActionConfig,
         availableArea: null,
+        appliedForQuantity: 10.5,
         ruleResult: mockRuleResult
       })
     })
@@ -481,6 +482,48 @@ describe('Action Validation Service', () => {
 
       const [transformed] = mockActionResultTransformer.mock.calls[0]
       expect(transformed.availableLength).toBe(availableLength)
+    })
+
+    test('should carry the length applied for to the action result, rounded as the rules check it', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 300,
+        feasible: true
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+      const fractionalAction = { code: 'BND1', quantity: 200.4 }
+
+      await validateLandAction(
+        fractionalAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        { ...mockLandAction, actions: [fractionalAction] },
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.appliedForQuantity).toBe(200)
+    })
+
+    test('should carry the length applied for to the action result when the existing actions do not fit', async () => {
+      const availableLength = availableLengthOf({
+        availableLength: 0,
+        feasible: false,
+        incompatibleLengthMeters: 600
+      })
+      vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
+
+      await validateLandAction(
+        linearAction,
+        actionConfigWithBnd1,
+        mockAgreements,
+        mockCompatibilityCheckFn,
+        linearLandAction,
+        mockRequest
+      )
+
+      const [transformed] = mockActionResultTransformer.mock.calls[0]
+      expect(transformed.appliedForQuantity).toBe(linearAction.quantity)
     })
 
     test('should fail when the parcel boundary cannot be read', async () => {

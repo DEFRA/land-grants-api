@@ -3,14 +3,14 @@
  * @import { ActionRule } from '~/src/features/actions/action.d.js'
  */
 
-import { REQUIRED_RULE_DATA } from '../../services/requiredRuleData.js'
+import { REQUIRED_RULE_DATA } from '~/src/features/rules-engine/services/requiredRuleData.js'
 
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
  * @returns {RuleResultItem} - The result of the rule
  */
-export const sssiConsentRequired = {
+export const heferConsentRequired = {
   requires: [{ type: REQUIRED_RULE_DATA.INTERSECTION }],
   execute: (application, rule) => {
     const { layerName, caveatDescription, tolerancePercent } = rule.config
@@ -44,7 +44,7 @@ export const sssiConsentRequired = {
     if (isConsentRequired) {
       const { parcelId, sheetId, actionCode } = application
       caveat = {
-        code: 'ne-consent-required',
+        code: 'hefer-consent-required',
         description: caveatDescription,
         metadata: {
           actionCode,
@@ -58,7 +58,7 @@ export const sssiConsentRequired = {
 
     explanations[0].lines.push(
       // @ts-expect-error - lines
-      `This parcel has a ${intersectingAreaPercentage}% intersection with the sssi layer. The tolerance is ${tolerancePercent}%.`
+      `This parcel has a ${intersectingAreaPercentage}% intersection with the ${layerName} layer. The tolerance is ${tolerancePercent}%.`
     )
 
     return {

@@ -11,6 +11,7 @@ import {
   sidednessOf
 } from '~/src/features/common/constants/sidedness.js'
 import { findMinimumBoundary, incompatibleWith } from './minimumBoundary.js'
+import { COMPATIBLE, DEDUCTED, STACKED } from './occupancyStatus.js'
 
 /**
  * An existing action with its sidedness and the metres of boundary it
@@ -81,6 +82,46 @@ const availableLengthFor = (
 }
 
 /**
+ * Why an existing action was or was not deducted. Actions laid end to end are
+ * deducted. Any other action that cannot share with the one applied for
+ * stacks on the deducted actions it can share with: it always has at least
+ * one, and is never longer than those together, since otherwise a longer
+ * group would have been laid end to end. When the existing actions cannot all
+ * fit, every one counts, so none is compatible.
+ * @param {Occupancy} occupancy - The boundary an existing action occupies
+ * @param {object} context
+ * @param {string} context.actionCode - The action code being applied for
+ * @param {Occupancy[]} context.deductedOccupancies - The actions laid end to end
+ * @param {boolean} context.feasible - Whether the existing actions all fit
+ * @param {CompatibilityCheckFn} context.compatibilityCheckFn - Whether two actions can share a stretch of boundary
+ * @returns {ExplainedOccupancy} The occupancy with why it was or was not deducted
+ */
+const explainOccupancy = (
+  occupancy,
+  { actionCode, deductedOccupancies, feasible, compatibilityCheckFn }
+) => {
+  if (deductedOccupancies.includes(occupancy)) {
+    return { ...occupancy, status: DEDUCTED, sharesWith: [] }
+  }
+
+  if (feasible && compatibilityCheckFn(occupancy.actionCode, actionCode)) {
+    return { ...occupancy, status: COMPATIBLE, sharesWith: [] }
+  }
+
+  const sharesWith = [
+    ...new Set(
+      deductedOccupancies
+        .filter((deducted) =>
+          compatibilityCheckFn(occupancy.actionCode, deducted.actionCode)
+        )
+        .map((deducted) => deducted.actionCode)
+    )
+  ]
+
+  return { ...occupancy, status: STACKED, sharesWith }
+}
+
+/**
  * Deducts the physical boundary occupied by incompatible actions from a
  * parcel's perimeter, and bills what is left at the applied-for action's rate.
  * Incompatible actions that can share a stretch with each other are deducted
@@ -127,10 +168,14 @@ export function calculateAvailableLength(
     })
   )
 
-  const explainedOccupancies = existingOccupancies.map((existingOccupancy) => ({
-    ...existingOccupancy,
-    deducted: minimumIncompatibleBoundary.actions.includes(existingOccupancy)
-  }))
+  const explainedOccupancies = existingOccupancies.map((existingOccupancy) =>
+    explainOccupancy(existingOccupancy, {
+      actionCode,
+      deductedOccupancies: minimumIncompatibleBoundary.actions,
+      feasible,
+      compatibilityCheckFn
+    })
+  )
 
   return {
     availableLength,
@@ -224,7 +269,7 @@ export async function getAvailableLength(
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { ActionWithLength, AvailableLength, BoundaryContext, Occupancy, Sidedness, SidednessByActionCode, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
+ * @import { ActionWithLength, AvailableLength, BoundaryContext, ExplainedOccupancy, Occupancy, Sidedness, SidednessByActionCode, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  */

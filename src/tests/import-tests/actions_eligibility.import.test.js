@@ -5,6 +5,7 @@ import {
   deleteFiles
 } from '~/src/tests/import-tests/setup/s3-test-helpers.js'
 import { S3_CONFIG } from '~/src/tests/db-tests/setup/test-config.js'
+import { actionConfigFor } from '~/src/tests/import-tests/setup/action-config.js'
 
 import { processMessage } from '~/src/features/grants-config/handlers/grants-config-update.handler.js'
 import { connectToTestDatabase } from '~/src/tests/db-tests/setup/postgres.js'
@@ -258,12 +259,11 @@ describe('Actions eligibility import', () => {
       await uploadTestFile(
         s3Client,
         ACTION_CONFIG_S3_KEY,
-        JSON.stringify({
-          code: NEW_CODE,
-          semanticVersion: '1.0.0',
-          description: 'Eligibility only test action',
-          applicationUnitOfMeasurement: 'ha'
-        }),
+        JSON.stringify(
+          actionConfigFor(NEW_CODE, {
+            description: 'Eligibility only test action'
+          })
+        ),
         S3_CONFIG.bucket,
         'binary/octet-stream'
       )
@@ -299,11 +299,7 @@ describe('Actions eligibility import', () => {
       await uploadTestFile(
         s3Client,
         ACTION_CONFIG_S3_KEY,
-        JSON.stringify({
-          code: UNMAPPED_CODE,
-          semanticVersion: '1.0.0',
-          applicationUnitOfMeasurement: 'ha'
-        }),
+        JSON.stringify(actionConfigFor(UNMAPPED_CODE)),
         S3_CONFIG.bucket,
         'binary/octet-stream'
       )

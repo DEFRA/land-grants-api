@@ -22,8 +22,16 @@
  */
 
 /**
- * @typedef {Occupancy & {deducted: boolean}} ExplainedOccupancy
- * The boundary an existing action occupies, and whether it was deducted
+ * @typedef {'deducted'|'stacked'|'compatible'} OccupancyStatus
+ * Why an existing action was or was not deducted: laid end to end and
+ * deducted, stacked on a stretch already deducted, or compatible with the
+ * action applied for
+ */
+
+/**
+ * @typedef {Occupancy & {status: OccupancyStatus, sharesWith: string[]}} ExplainedOccupancy
+ * The boundary an existing action occupies, why it was or was not deducted,
+ * and, when stacked, the codes of the deducted actions it shares a stretch with
  */
 
 /**
@@ -32,6 +40,13 @@
 
 /**
  * @typedef {{[actionCode: string]: Sidedness}} SidednessByActionCode
+ */
+
+/**
+ * @typedef {object} LengthExplanationTarget
+ * @property {string} targetAction - The action code being applied for
+ * @property {Sidedness} targetSidedness - The sidedness of the action applied for
+ * @property {number} [appliedForLengthMeters] - The length applied for, as the rules check it; absent when nothing has been applied for yet
  */
 
 /**

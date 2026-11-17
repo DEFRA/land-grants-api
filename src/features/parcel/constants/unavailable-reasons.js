@@ -5,11 +5,13 @@
 export const EXISTING_ACTIONS_DO_NOT_FIT = 'existing-actions-do-not-fit'
 export const RULE_FAILED = 'rule-failed'
 export const NO_AVAILABILITY = 'no-availability'
+export const EXCEEDS_BASE_ACTION_AREA = 'exceeds-base-action-area'
 
 export const UNAVAILABLE_REASON_CODES = [
   EXISTING_ACTIONS_DO_NOT_FIT,
   RULE_FAILED,
-  NO_AVAILABILITY
+  NO_AVAILABILITY,
+  EXCEEDS_BASE_ACTION_AREA
 ]
 
 export const EXISTING_ACTIONS_DO_NOT_FIT_REASON =
@@ -19,3 +21,6 @@ export const EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON =
 
 export const NO_AVAILABILITY_REASON =
   'There is no remaining availability for this action'
+
+export const EXCEEDS_BASE_ACTION_AREA_REASON =
+  'The quantity for this supplementary action is more than the area of its base action'

@@ -435,7 +435,7 @@ flowchart TD
   **heaviest incompatible clique** and subtracting its footprint — but sharing the AAC's graph and
   clique code keeps the two calculations consistent.
 - **The calculation** is assembled in `src/features/available-length/availableLength.js`, and a
-  rules-engine rule (`src/features/rules-engine/rules/1.0.0/minimum-length.md`) caps an
+  rules-engine rule (`src/features/rules-engine/rules/1.0.0/minimum-length/minimum-length.md`) caps an
   application at the available length, failing with a clear message if more is applied for.
 
   > **Note: current gap.** `availableLength.js` converts each existing action to its physical

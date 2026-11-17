@@ -55,6 +55,7 @@ export const validateLandAction = async (
       action,
       actions,
       availableLength,
+      appliedForQuantity,
       ruleResult: doNotFitResult
     })
   }
@@ -92,6 +93,7 @@ export const validateLandAction = async (
     actions,
     availableArea,
     availableLength,
+    appliedForQuantity,
     ruleResult
   })
 }

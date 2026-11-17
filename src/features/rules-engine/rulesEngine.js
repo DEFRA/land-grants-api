@@ -3,13 +3,7 @@
  * @import {RulesResult, RuleExecutor, RuleEngineApplication} from '~/src/features/rules-engine/rules.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
  */
-
-// `type` lets a config-defined rule name (e.g. a per-action caveat identity like
-// 'pond-check-required') be dispatched to a shared, generic executor (e.g.
-// 'manual-check-required') without needing its own registry entry. Falls back to
-// `name` for every existing rule, which has no `type` - dispatch is unchanged for them.
-const ruleKeyFor = (rule) =>
-  `${rule.type ?? rule.name}-${rule.version ?? '1.0.0'}`
+import { ruleKeyFor } from '~/src/features/rules-engine/rules/rule-key.js'
 
 /**
  * Executes the rules for the given application and action rules.
