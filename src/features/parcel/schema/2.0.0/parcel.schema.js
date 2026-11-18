@@ -68,7 +68,10 @@ export const plannedActionsSchema = Joi.array()
       quantity: Joi.number().required(),
       unit: Joi.string()
         .valid(...UNIT_TYPES)
-        .required()
+        .required(),
+      baseAction: Joi.string()
+        .optional()
+        .description('For a supplement, the base action it sits on')
     })
   )
   .optional()

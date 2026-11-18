@@ -1,159 +1,34 @@
-import {
-  HECTARES,
-  isAreaUnit
-} from '~/src/features/common/constants/unit_type.js'
-import {
-  haToSqm,
-  sqmToHaRounded
-} from '~/src/features/common/helpers/measurement.js'
-import { findMaximumAvailableArea } from '~/src/features/available-area/availableArea.js'
+import { actionsByCompetingUnit } from '~/src/features/common/helpers/action-unit.js'
+import { areaActionsTransformer } from '~/src/features/parcel/transformers/parcelActions.transformer.js'
+import { findAvailableAreaWithinBaseActions } from '~/src/features/available-area/availableAreaWithinBaseActions.js'
 import { getActionsForParcel } from './parcel.service.js'
-import { noAvailabilityReason } from './unavailability.js'
+
+const NO_BASE_CODES = new Set()
 
 /**
- * An area quantity in square metres, from hectares or square metres.
- * @param {{quantity: number, unit: string}} selected - The quantity and its unit
- * @returns {number} The area in square metres
- */
-const toSqm = ({ quantity, unit }) =>
-  unit === HECTARES ? haToSqm(quantity) : quantity
-
-/**
- * Every action selected on the parcel: the base action, the supplements
- * selected so far, and the other planned actions. An entry in the planned
- * actions for the base or a selected supplement is left out, as those are
- * given on their own.
- * @param {object} params
- * @param {SelectedAction} params.baseAction - The selected base action and its area
- * @param {SelectedAction[]} params.selectedSupplements - The supplements selected so far
- * @param {SelectedAction[]} params.plannedActions - The other actions selected on the parcel
- * @returns {SelectedAction[]} The actions selected on the parcel
- */
-const actionsSelectedOnParcel = ({
-  baseAction,
-  selectedSupplements,
-  plannedActions
-}) => {
-  const givenCodes = new Set([
-    baseAction.actionCode,
-    ...selectedSupplements.map((selected) => selected.actionCode)
-  ])
-
-  return [
-    ...plannedActions.filter((planned) => !givenCodes.has(planned.actionCode)),
-    baseAction,
-    ...selectedSupplements
-  ]
-}
-
-// The base action's area, as the only land in the calculation of what is
-// left of it for a supplement
-const BASE_ACTION_AREA = 'base-action-area'
-const BASE_ACTION_LAND_COVER = [
-  { landCoverCode: BASE_ACTION_AREA, landCoverClassCode: BASE_ACTION_AREA }
-]
-
-/**
- * How much of the base action's area is left for a supplement, given the other
- * supplements selected on it. Supplements sit within their base, so they share
- * its area: those without a SUPCO row cannot overlap, but can sit side by side.
- * This runs the available area calculation over the base action's area alone.
- * @param {string} supplementCode - The supplement to work out
- * @param {SelectedAction[]} otherSupplements - The other supplements selected on the base
- * @param {number} baseAreaSqm - The base action's area
- * @param {CompatibilityCheckFn} compatibilityCheckFn - The compatibility check
- * @returns {number} The area left for the supplement, in square metres
- */
-const availableWithinBaseActionSqm = (
-  supplementCode,
-  otherSupplements,
-  baseAreaSqm,
-  compatibilityCheckFn
-) => {
-  if (otherSupplements.length === 0) {
-    return baseAreaSqm
-  }
-
-  const { availableAreaSqm } = findMaximumAvailableArea(
-    supplementCode,
-    otherSupplements.map((other) => ({
-      actionCode: other.actionCode,
-      areaSqm: toSqm(other)
-    })),
-    compatibilityCheckFn,
-    {
-      landCoverCodesForAppliedForAction: BASE_ACTION_LAND_COVER,
-      landCoversForParcel: [
-        { landCoverClassCode: BASE_ACTION_AREA, areaSqm: baseAreaSqm }
-      ],
-      landCoversForExistingActions: Object.fromEntries(
-        otherSupplements.map((other) => [
-          other.actionCode,
-          BASE_ACTION_LAND_COVER
-        ])
-      ),
-      landCoverToString: (code) => code
-    }
-  )
-
-  return availableAreaSqm
-}
-
-/**
- * Caps a supplement's availability at what is left for it within its base
- * action. A supplement capped to nothing is unavailable. The flag for the
- * supplement's own supplements is dropped, as supplements have none.
- * @param {object} supplementWithFlag - The supplement, as the parcels endpoint reports it
- * @param {number} withinBaseSqm - The area left for it within the base action
- * @returns {object} The supplement, with its availability capped
- */
-const capWithinBaseAction = (supplementWithFlag, withinBaseSqm) => {
-  const supplement = { ...supplementWithFlag }
-  delete supplement.hasSupplements
-  const { availability, isAvailable } = supplement
-
-  if (availability.value === null || !isAreaUnit(availability.unit)) {
-    return supplement
-  }
-
-  const withinBase =
-    availability.unit === HECTARES
-      ? sqmToHaRounded(withinBaseSqm)
-      : withinBaseSqm
-
-  if (availability.value <= withinBase) {
-    return supplement
-  }
-
-  const capped = {
-    ...supplement,
-    availability: { ...availability, value: withinBase }
-  }
-
-  // An unavailable supplement keeps its own reason, such as a failed rule
-  return withinBase > 0 || !isAvailable
-    ? capped
-    : { ...capped, isAvailable: false, unavailableReason: noAvailabilityReason }
-}
-
-/**
- * The supplements of a base action, each with its availability. Each
- * supplement goes through the available area calculation the parcels endpoint
- * uses, with every other action on the parcel competing for its land: the
- * other planned actions, the other selected supplements (those without a SUPCO
+ * The supplements of the selected base action, each with its availability.
+ * Each supplement goes through the available area calculation the parcels
+ * endpoint uses, with every other action selected on the parcel competing for
+ * its land: other base actions, the other supplements (those without a SUPCO
  * row cannot overlap, but can sit side by side) and the existing agreements.
- * Its own selection is left out, so its availability is how much it could
- * cover at most. That is then capped at what is left for it within the base
- * action's area, once the other supplements selected on it have their share.
+ * Its own selection counts too, as on /parcels, so its availability is what
+ * is left for it on top of it. The calculation holds it to what is left for it within the
+ * base action's area, once the other supplements on it have their share, so
+ * it is reported as /parcels reports any action held to that figure.
+ *
+ * A planned supplement is on the base action when its baseAction names it, or
+ * when it names none and the base action is one of its bases. Supplements on
+ * another base action leave this one's area alone, but still compete for the
+ * parcel's land.
  *
  * Like /parcels, this reports what is available rather than judging the
  * quantities selected: /application/validate checks those.
  * @param {object} params
  * @param {LandParcelDb} params.parcel - The parcel
- * @param {SelectedAction} params.baseAction - The selected base action and its area
- * @param {SelectedAction[]} params.selectedSupplements - The supplements selected so far
- * @param {SelectedAction[]} params.plannedActions - The other actions selected on the parcel
+ * @param {string} params.baseActionCode - The selected base action to list the supplements of
+ * @param {SelectedAction[]} params.plannedActions - Every action selected on the parcel, the base action among them
  * @param {Action[]} params.supplementActions - The base action's enabled and displayed supplements, in display order
+ * @param {Map<string, Set<string>>} params.baseCodesBySupplement - The base actions of each supplement
  * @param {Record<string, string | undefined>} params.unitByActionCode - The unit of each enabled action
  * @param {CompatibilityCheckFn} params.compatibilityCheckFn - The compatibility check
  * @param {AgreementAction[]} params.agreements - The current agreements on the parcel
@@ -162,49 +37,69 @@ const capWithinBaseAction = (supplementWithFlag, withinBaseSqm) => {
  */
 export async function getSupplementsWithAvailability({
   parcel,
-  baseAction,
-  selectedSupplements,
+  baseActionCode,
   plannedActions,
   supplementActions,
+  baseCodesBySupplement,
   unitByActionCode,
   compatibilityCheckFn,
   agreements,
   request
 }) {
-  const selectedOnParcel = actionsSelectedOnParcel({
-    baseAction,
-    selectedSupplements,
-    plannedActions
-  })
-  const baseAreaSqm = toSqm(baseAction)
+  const isSupplementOfBase = (/** @type {string} */ code) =>
+    baseCodesBySupplement.get(code)?.has(baseActionCode) ?? false
+  const onlyThisBase = new Set([baseActionCode])
+
+  // Within the base action, a supplement can only sit on this base action
+  const baseCodesOf = (/** @type {string} */ code) =>
+    isSupplementOfBase(code) ? onlyThisBase : NO_BASE_CODES
+
+  // The base action and the planned supplements on it, the only land and
+  // actions of the calculation within the base action
+  const onBaseAction = plannedActions.filter(
+    (planned) =>
+      planned.actionCode === baseActionCode ||
+      (isSupplementOfBase(planned.actionCode) &&
+        (planned.baseAction ?? baseActionCode) === baseActionCode)
+  )
+  const areaActionsOnBase = areaActionsTransformer(
+    actionsByCompetingUnit(onBaseAction, unitByActionCode).area
+  )
 
   return Promise.all(
     supplementActions.map(async (supplement) => {
-      const { actions } = await getActionsForParcel(
+      const { availableAreaSqm: withinBaseSqm } =
+        findAvailableAreaWithinBaseActions(
+          supplement.code,
+          areaActionsOnBase,
+          baseCodesOf,
+          compatibilityCheckFn
+        )
+
+      const {
+        actions: [reported]
+      } = await getActionsForParcel(
         parcel,
         {
           fields: ['actions'],
-          plannedActions: selectedOnParcel.filter(
-            (selected) => selected.actionCode !== supplement.code
-          )
+          plannedActions
         },
         false,
-        { displayedActions: [supplement], unitByActionCode },
+        {
+          displayedActions: [supplement],
+          unitByActionCode,
+          availableAreaCapSqm: { [supplement.code]: withinBaseSqm }
+        },
         compatibilityCheckFn,
         request,
         agreements
       )
 
-      const withinBaseSqm = availableWithinBaseActionSqm(
-        supplement.code,
-        selectedSupplements.filter(
-          (selected) => selected.actionCode !== supplement.code
-        ),
-        baseAreaSqm,
-        compatibilityCheckFn
-      )
+      // Supplements have no supplements of their own, so the flag is dropped
+      const supplementReported = { ...reported }
+      delete supplementReported.hasSupplements
 
-      return capWithinBaseAction(actions[0], withinBaseSqm)
+      return supplementReported
     })
   )
 }
@@ -214,6 +109,7 @@ export async function getSupplementsWithAvailability({
  * @property {string} actionCode
  * @property {number} quantity
  * @property {string} unit
+ * @property {string} [baseAction] - For a supplement, the base action it sits on
  */
 
 /**

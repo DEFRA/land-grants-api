@@ -1,6 +1,6 @@
 import {
   getActionCodesWithSupplements,
-  getSupplementCodesForBase
+  getBaseCodesBySupplement
 } from './supplements.js'
 
 const row = (optionCode, optionCodeCompat, type) => ({
@@ -79,34 +79,25 @@ describe('getActionCodesWithSupplements', () => {
   })
 })
 
-describe('getSupplementCodesForBase', () => {
-  const matrix = [
-    ...clig3Supplements,
-    row('LIG1', 'GRH11', 'SUPBAS'),
-    row('CLIG3', 'AGF1', 'BASECO')
-  ]
+describe('getBaseCodesBySupplement', () => {
+  test('gives the base actions of each supplement, from SUPBAS rows only', () => {
+    const rows = [
+      { optionCode: 'CLIG3_26', optionCodeCompat: 'GRH7_26', type: 'SUPBAS' },
+      { optionCode: 'CLIG3_26', optionCodeCompat: 'SPM3_26', type: 'SUPBAS' },
+      { optionCode: 'AGF1_26', optionCodeCompat: 'SPM3_26', type: 'SUPBAS' },
+      { optionCode: 'CLIG3_26', optionCodeCompat: 'CAGF1', type: 'BASECO' },
+      { optionCode: 'GRH7_26', optionCodeCompat: 'GRH11_26', type: 'SUPCO' }
+    ]
 
-  test('returns the supported supplements of the base action', () => {
-    expect(
-      getSupplementCodesForBase(matrix, 'CLIG3', [
-        'GRH7',
-        'GRH8',
-        'GRH10',
-        'GRH11',
-        'AGF1'
+    expect(getBaseCodesBySupplement(rows)).toEqual(
+      new Map([
+        ['GRH7_26', new Set(['CLIG3_26'])],
+        ['SPM3_26', new Set(['CLIG3_26', 'AGF1_26'])]
       ])
-    ).toEqual(new Set(['GRH7', 'GRH8', 'GRH10']))
-  })
-
-  test('leaves out supplements that are not supported', () => {
-    expect(getSupplementCodesForBase(matrix, 'CLIG3', ['GRH7'])).toEqual(
-      new Set(['GRH7'])
     )
   })
 
-  test('returns an empty set for an action that is not a base', () => {
-    expect(getSupplementCodesForBase(matrix, 'GRH7', ['GRH7'])).toEqual(
-      new Set()
-    )
+  test('gives no supplements for no rows', () => {
+    expect(getBaseCodesBySupplement([])).toEqual(new Map())
   })
 })

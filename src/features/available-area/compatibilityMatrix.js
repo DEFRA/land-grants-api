@@ -2,7 +2,7 @@ import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/quer
 import { LAND_SHARING_COMPATIBILITY_TYPES } from '~/src/features/compatibility-matrix/constants/compatibility-types.js'
 import {
   getActionCodesWithSupplements,
-  getSupplementCodesForBase
+  getBaseCodesBySupplement
 } from '~/src/features/compatibility-matrix/supplements.js'
 
 /**
@@ -23,20 +23,24 @@ const compatibilityCheckFromMatrix = (compatibilityMatrices) => {
 }
 
 /**
- * Creates a compatibility checking function based on the database and the codes passed
+ * Reads the compatibility matrix once and builds the compatibility check and
+ * the base actions of each supplement, for validating an application and for
+ * listing the supplements of base actions.
  * @param {Logger} logger
  * @param {Pool} db
- * @param {string[] | null} codes
- * @returns {Promise<(action1: string, action2: string) => boolean>}
+ * @returns {Promise<{ compatibilityCheckFn: (action1: string, action2: string) => boolean, baseCodesBySupplement: Map<string, Set<string>> }>}
  */
-export const createCompatibilityMatrix = async (logger, db, codes = null) => {
+export const createValidationLookups = async (logger, db) => {
   const compatibilityMatrices = await getCompatibilityMatrix(
     logger,
     db,
-    codes,
+    null,
     LAND_SHARING_COMPATIBILITY_TYPES
   )
-  return compatibilityCheckFromMatrix(compatibilityMatrices)
+  return {
+    compatibilityCheckFn: compatibilityCheckFromMatrix(compatibilityMatrices),
+    baseCodesBySupplement: getBaseCodesBySupplement(compatibilityMatrices)
+  }
 }
 
 /**
@@ -62,37 +66,6 @@ export const createCompatibilityLookups = async (
     compatibilityCheckFn: compatibilityCheckFromMatrix(compatibilityMatrices),
     actionCodesWithSupplements: getActionCodesWithSupplements(
       compatibilityMatrices,
-      supportedActionCodes
-    )
-  }
-}
-
-/**
- * Reads the compatibility matrix once and builds both the compatibility check
- * and the supplements of a base action.
- * @param {Logger} logger
- * @param {Pool} db
- * @param {string} baseActionCode - The base action
- * @param {string[]} supportedActionCodes - The action codes we currently offer (enabled and displayed actions)
- * @returns {Promise<{ compatibilityCheckFn: (action1: string, action2: string) => boolean, supplementCodes: Set<string> }>}
- */
-export const createSupplementLookups = async (
-  logger,
-  db,
-  baseActionCode,
-  supportedActionCodes
-) => {
-  const compatibilityMatrices = await getCompatibilityMatrix(
-    logger,
-    db,
-    null,
-    LAND_SHARING_COMPATIBILITY_TYPES
-  )
-  return {
-    compatibilityCheckFn: compatibilityCheckFromMatrix(compatibilityMatrices),
-    supplementCodes: getSupplementCodesForBase(
-      compatibilityMatrices,
-      baseActionCode,
       supportedActionCodes
     )
   }

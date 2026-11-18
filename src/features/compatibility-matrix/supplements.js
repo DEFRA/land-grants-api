@@ -24,29 +24,23 @@ export const getActionCodesWithSupplements = (
 }
 
 /**
- * Finds the supported supplements of a base action.
+ * The base actions of each supplement.
  * @param {CompatibilityMatrix[]} compatibilityMatrix - The latest year's compatibility matrix rows
- * @param {string} baseActionCode - The base action
- * @param {string[]} supportedActionCodes - The action codes we currently support (enabled actions)
- * @returns {Set<string>} The codes of the base action's supplements
+ * @returns {Map<string, Set<string>>} The codes of each supplement's base actions, by supplement code
  */
-export const getSupplementCodesForBase = (
-  compatibilityMatrix,
-  baseActionCode,
-  supportedActionCodes
-) => {
-  const supported = new Set(supportedActionCodes)
+export const getBaseCodesBySupplement = (compatibilityMatrix) => {
+  const baseCodesBySupplement = new Map()
 
-  return new Set(
-    compatibilityMatrix
-      .filter(
-        (row) =>
-          row.type === SUPPLEMENT_BASE_TYPE &&
-          row.optionCode === baseActionCode &&
-          supported.has(row.optionCodeCompat)
-      )
-      .map((row) => row.optionCodeCompat)
-  )
+  for (const row of compatibilityMatrix) {
+    if (row.type === SUPPLEMENT_BASE_TYPE) {
+      const baseCodes =
+        baseCodesBySupplement.get(row.optionCodeCompat) ?? new Set()
+      baseCodes.add(row.optionCode)
+      baseCodesBySupplement.set(row.optionCodeCompat, baseCodes)
+    }
+  }
+
+  return baseCodesBySupplement
 }
 
 /**

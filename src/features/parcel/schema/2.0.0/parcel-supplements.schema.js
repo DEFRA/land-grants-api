@@ -1,17 +1,9 @@
 import Joi from 'joi'
-import { HECTARES, SQM } from '~/src/features/common/constants/unit_type.js'
 import {
   actionSchema,
   parcelIdSchema,
   plannedActionsSchema
 } from './parcel.schema.js'
-
-// A supplement sits on top of its base action's land, so both are areas
-const selectedAreaActionSchema = Joi.object({
-  actionCode: Joi.string().required(),
-  quantity: Joi.number().positive().required(),
-  unit: Joi.string().valid(HECTARES, SQM).required()
-})
 
 const parcelSupplementsSchema = Joi.object({
   sbi: Joi.string()
@@ -20,19 +12,20 @@ const parcelSupplementsSchema = Joi.object({
       'The business, whose existing agreements on the parcel use up land'
     ),
   parcelId: parcelIdSchema.required(),
-  baseAction: selectedAreaActionSchema
+  baseAction: Joi.string()
     .required()
-    .description('The selected base action and the area applied for'),
-  selectedSupplements: Joi.array()
-    .items(selectedAreaActionSchema)
-    .default([])
-    .description('The supplements of the base action selected so far'),
-  plannedActions: plannedActionsSchema.description(
-    'The other actions selected on the parcel, such as other base actions. Entries for the base action or a selected supplement are ignored: those are given above.'
-  )
+    .description(
+      'The selected base action to list the supplements of. It must be in plannedActions, which gives its area.'
+    ),
+  plannedActions: plannedActionsSchema
+    .required()
+    .description(
+      'Every action selected on the parcel so far: the base actions, the other actions and the supplements selected, each supplement with the base action it sits on (baseAction)'
+    )
 })
 
-// Supplements are reported as the parcels endpoint reports actions, without the flag for their own supplements
+// Supplements are reported as the parcels endpoint reports actions, without
+// the flag for their own supplements
 const supplementSchema = actionSchema.keys({
   hasSupplements: Joi.any().forbidden()
 })

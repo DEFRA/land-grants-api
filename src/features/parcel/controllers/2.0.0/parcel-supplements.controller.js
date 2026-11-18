@@ -10,9 +10,10 @@ import {
   parcelSupplementsSuccessResponseSchema
 } from '~/src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
 import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
-import { createSupplementLookups } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getSupplementsWithAvailability } from '../../service/2.0.0/supplements.service.js'
 import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
+import { isAreaUnit } from '~/src/features/common/constants/unit_type.js'
 import {
   getAgreements,
   agreementsForParcel
@@ -49,14 +50,14 @@ const getCurrentAgreements = async (request, sbi, parcel, defraIdToken) => {
 }
 
 /**
- * The supplements of the base action we offer, each with its availability, or
- * the selected actions that are not among them.
+ * The supplements of the selected base action that we offer, each with its
+ * availability, or the problem with a supplement's base action if there is one.
  * @param {object} params
  * @param {import('@hapi/hapi').Request} params.request - Hapi request object
  * @param {Action[]} params.enabledActions - The enabled actions
  * @param {LandParcelDb} params.parcel - The parcel
  * @param {string} params.defraIdToken - The end user's Defra ID token
- * @returns {Promise<{supplements?: object[], notSupplements?: string[]}>} The supplements, or the selected codes that are not supplements
+ * @returns {Promise<{problem?: string, supplements?: object[]}>} The supplements, or the problem
  */
 const getBaseActionSupplements = async ({
   request,
@@ -64,40 +65,38 @@ const getBaseActionSupplements = async ({
   parcel,
   defraIdToken
 }) => {
-  const { sbi, baseAction, selectedSupplements, plannedActions } =
-    /** @type {any} */ (request.payload)
+  const { sbi, baseAction, plannedActions } = /** @type {any} */ (
+    request.payload
+  )
 
-  // Only supplements we offer (enabled and displayed), as for hasSupplements on /parcels
-  const displayedActions = enabledActions.filter((action) => action.display)
-
-  const { compatibilityCheckFn, supplementCodes } =
-    await createSupplementLookups(
+  const { compatibilityCheckFn, baseCodesBySupplement } =
+    await createValidationLookups(
       request.logger,
       // @ts-expect-error - postgresDb
-      request.server.postgresDb,
-      baseAction.actionCode,
-      displayedActions.map((action) => action.code)
+      request.server.postgresDb
     )
 
-  const notSupplements = selectedSupplements
-    .map((selected) => selected.actionCode)
-    .filter((code) => !supplementCodes.has(code))
-
-  if (notSupplements.length > 0) {
-    return { notSupplements }
+  const problem = supplementBaseActionProblem(
+    plannedActions,
+    baseCodesBySupplement
+  )
+  if (problem) {
+    return { problem }
   }
 
-  const supplementActions = displayedActions.filter((action) =>
-    supplementCodes.has(action.code)
+  // Only supplements we offer (enabled and displayed), as for hasSupplements on /parcels
+  const supplementActions = enabledActions.filter(
+    (action) =>
+      action.display && baseCodesBySupplement.get(action.code)?.has(baseAction)
   )
 
   return {
     supplements: await getSupplementsWithAvailability({
       parcel,
-      baseAction,
-      selectedSupplements,
-      plannedActions: plannedActions ?? [],
+      baseActionCode: baseAction,
+      plannedActions,
       supplementActions,
+      baseCodesBySupplement,
       unitByActionCode: getUnitByActionCode(enabledActions),
       compatibilityCheckFn,
       agreements:
@@ -110,6 +109,54 @@ const getBaseActionSupplements = async ({
 }
 
 /**
+ * What is wrong with the request's base actions, if anything: the base action
+ * must be in the planned actions, which give its area, with an area greater
+ * than zero, and so must the base action each planned supplement sits on.
+ * @param {string} baseAction - The selected base action
+ * @param {PlannedAction[]} plannedActions - Every action selected on the parcel
+ * @returns {string | undefined} The problem, if any
+ */
+const baseActionProblem = (baseAction, plannedActions) => {
+  const planned = plannedActions.find((p) => p.actionCode === baseAction)
+
+  if (!planned) {
+    return `Base action missing from plannedActions: ${baseAction}`
+  }
+
+  if (!isAreaUnit(planned.unit) || !(Number(planned.quantity) > 0)) {
+    return `Base action must be given as an area greater than zero, in ha or sqm: ${baseAction}`
+  }
+
+  const unplannedBase = plannedActions.find(
+    (p) =>
+      p.baseAction !== undefined &&
+      !plannedActions.some((other) => other.actionCode === p.baseAction)
+  )
+
+  return unplannedBase
+    ? `${unplannedBase.actionCode}'s baseAction ${unplannedBase.baseAction} is not in plannedActions`
+    : undefined
+}
+
+/**
+ * A planned action given a base action it is not a supplement of, if any.
+ * @param {PlannedAction[]} plannedActions - Every action selected on the parcel
+ * @param {Map<string, Set<string>>} baseCodesBySupplement - The base actions of each supplement
+ * @returns {string | undefined} The problem, if any
+ */
+const supplementBaseActionProblem = (plannedActions, baseCodesBySupplement) => {
+  const misplaced = plannedActions.find(
+    (p) =>
+      p.baseAction !== undefined &&
+      !baseCodesBySupplement.get(p.actionCode)?.has(p.baseAction)
+  )
+
+  return misplaced
+    ? `${misplaced.actionCode} is not a supplement of ${misplaced.baseAction}`
+    : undefined
+}
+
+/**
  * ParcelSupplementsController
  * Returns the supplementary actions of a selected base action on a land parcel
  * @satisfies {Partial<ServerRoute>}
@@ -117,9 +164,9 @@ const getBaseActionSupplements = async ({
 const ParcelSupplementsControllerV2 = {
   options: {
     tags: ['api'],
-    description: 'Get the supplementary actions for a selected base action',
+    description: 'Get the supplementary actions for the selected base action',
     notes:
-      "Returns the supplements of the base action on the land parcel, each with its availability: how much it could cover, given the other actions selected on the parcel and the business's existing agreements, and no more than the base action's area. Like /parcels, it reports what is available and does not judge the quantities selected: /application/validate checks those. Each selected supplement must be a supplement of the base action.",
+      "Returns the supplements of the selected base action on the land parcel, each with its availability: how much it could cover, given every other action selected on the parcel (the supplements among them) and the business's existing agreements, and no more than what the base action has left for it once the supplements on it have their share. Like /parcels, it reports what is available and does not judge the quantities selected: /application/validate checks those. The base action must be in plannedActions, as an area, and each planned supplement can name the base action it sits on (baseAction).",
     validate: {
       payload: parcelSupplementsSchema
     },
@@ -141,12 +188,12 @@ const ParcelSupplementsControllerV2 = {
    */
   handler: async (request, h) => {
     // @ts-expect-error - payload
-    const { parcelId, baseAction, selectedSupplements } = request.payload
+    const { parcelId, baseAction, plannedActions } = request.payload
     const context = {
       parcelId,
-      baseActionCode: baseAction.actionCode,
-      selectedSupplements: selectedSupplements
-        .map((selected) => selected.actionCode)
+      baseActionCode: baseAction,
+      plannedActions: plannedActions
+        .map((planned) => planned.actionCode)
         .join(',')
     }
 
@@ -156,6 +203,11 @@ const ParcelSupplementsControllerV2 = {
         message: 'Fetch parcel supplements',
         context
       })
+
+      const problem = baseActionProblem(baseAction, plannedActions)
+      if (problem) {
+        return Boom.badRequest(problem)
+      }
 
       const defraIdToken = /** @type {string} */ (
         request.headers['x-forwarded-authorization']
@@ -180,23 +232,21 @@ const ParcelSupplementsControllerV2 = {
 
       const { enabledActions } = validationResponse
 
-      if (!enabledActions.some((a) => a.code === baseAction.actionCode)) {
-        return Boom.notFound(`Base action not found: ${baseAction.actionCode}`)
+      if (!enabledActions.some((a) => a.code === baseAction)) {
+        return Boom.notFound(`Base action not found: ${baseAction}`)
       }
 
       const [parcel] = validationResponse.parcels
 
-      const { supplements, notSupplements } = await getBaseActionSupplements({
-        request,
-        enabledActions,
-        parcel,
-        defraIdToken
-      })
-
-      if (notSupplements) {
-        return Boom.badRequest(
-          `Not supplements of ${baseAction.actionCode}: ${notSupplements.join(', ')}`
-        )
+      const { problem: supplementProblem, supplements } =
+        await getBaseActionSupplements({
+          request,
+          enabledActions,
+          parcel,
+          defraIdToken
+        })
+      if (supplementProblem) {
+        return Boom.badRequest(supplementProblem)
       }
 
       return h
@@ -204,7 +254,7 @@ const ParcelSupplementsControllerV2 = {
           message: 'success',
           parcelId: parcel.parcel_id,
           sheetId: parcel.sheet_id,
-          baseActionCode: baseAction.actionCode,
+          baseActionCode: baseAction,
           supplements
         })
         .code(statusCodes.ok)
@@ -226,4 +276,12 @@ export { ParcelSupplementsControllerV2 }
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
+ */
+
+/**
+ * @typedef {object} PlannedAction
+ * @property {string} actionCode
+ * @property {number} quantity
+ * @property {string} unit
+ * @property {string} [baseAction] - For a supplement, the base action it sits on
  */
