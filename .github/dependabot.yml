@@ -45,7 +45,6 @@ updates:
 
       test:
         patterns:
-          - '@pact-foundation/*'
           - '@vitest/*'
           - '*vitest*'
           - 'vitest-fetch-mock'
