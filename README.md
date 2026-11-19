@@ -29,10 +29,6 @@ Managing the service:
 
 - [Managing the service on dev environment](docs/managing-the-service.md)
 
-Pact testing
-
-- [Contract testing with Pact](docs/pact-testing.md)
-
 Authentication
 
 - [Authentication Endpoints](docs/authentication.md)

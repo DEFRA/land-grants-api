@@ -19,8 +19,10 @@ const calculateEligibleArea = (
   newWoodlandAreaSqm,
   newWoodlandMaxPercent
 ) => {
-  const totalWoodlandAreaSqm = oldWoodlandAreaSqm + newWoodlandAreaSqm
-  const maxNewWoodlandSqm = (newWoodlandMaxPercent / 100) * totalWoodlandAreaSqm
+  const percentFraction = newWoodlandMaxPercent / 100
+  // new woodland can be no more than 20% of the total eligible area
+  const maxNewWoodlandSqm =
+    (oldWoodlandAreaSqm * percentFraction) / (1 - percentFraction)
   const eligibleNewWoodlandSqm = Math.min(newWoodlandAreaSqm, maxNewWoodlandSqm)
   return Math.round(oldWoodlandAreaSqm + eligibleNewWoodlandSqm)
 }
