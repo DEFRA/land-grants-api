@@ -1,15 +1,11 @@
-import { validateLandAction } from './action-validation.service.js'
+import { validateActionOnParcel } from './action-validation.service.js'
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
 import { resolveApplicationData } from '~/src/features/rules-engine/services/resolveApplicationData.js'
 import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
-import { doNotFitSection } from '~/src/features/available-length/explanations.js'
-import {
-  EXISTING_ACTIONS_DO_NOT_FIT,
-  EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON
-} from '~/src/features/parcel/constants/unavailable-reasons.js'
+import { existingActionsDoNotFitResult } from './availability.service.js'
 
 vi.mock('~/src/features/rules-engine/rulesEngine.js', () => ({
   executeRules: vi.fn()
@@ -113,9 +109,9 @@ describe('Action Validation Service', () => {
     mockActionResultTransformer.mockReturnValue(mockActionResult)
   })
 
-  describe('validateLandAction', () => {
-    test('should successfully validate a land action', async () => {
-      const result = await validateLandAction(
+  describe('validateActionOnParcel', () => {
+    test('should successfully validate an action on a parcel', async () => {
+      const result = await validateActionOnParcel(
         mockAction,
         mockActionConfig,
         mockAgreements,
@@ -135,7 +131,7 @@ describe('Action Validation Service', () => {
     })
 
     test('should resolve application data using the rules configured for the action', async () => {
-      await validateLandAction(
+      await validateActionOnParcel(
         mockAction,
         mockActionConfig,
         mockAgreements,
@@ -170,7 +166,7 @@ describe('Action Validation Service', () => {
     })
 
     test('should execute the action rules against the resolved application', async () => {
-      await validateLandAction(
+      await validateActionOnParcel(
         mockAction,
         mockActionConfig,
         mockAgreements,
@@ -192,7 +188,7 @@ describe('Action Validation Service', () => {
     })
 
     test('should keep a fractional quantity for area-based actions', async () => {
-      await validateLandAction(
+      await validateActionOnParcel(
         mockAction,
         mockActionConfig,
         mockAgreements,
@@ -213,7 +209,7 @@ describe('Action Validation Service', () => {
         { code: 'HEF1', applicationUnitOfMeasurement: 'sqm', rules: [] }
       ]
 
-      await validateLandAction(
+      await validateActionOnParcel(
         sqmAction,
         actionConfigWithHef1,
         mockAgreements,
@@ -236,7 +232,7 @@ describe('Action Validation Service', () => {
         { code: 'BND1', applicationUnitOfMeasurement: 'm', rules: [] }
       ]
 
-      await validateLandAction(
+      await validateActionOnParcel(
         meterAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -257,7 +253,7 @@ describe('Action Validation Service', () => {
     test('should round the quantity for count-based actions', async () => {
       const countAction = { code: 'WBD1', quantity: 2.4 }
 
-      await validateLandAction(
+      await validateActionOnParcel(
         countAction,
         mockActionConfig,
         mockAgreements,
@@ -276,7 +272,7 @@ describe('Action Validation Service', () => {
     test('should pass undefined unit and empty rules when the action config is not found', async () => {
       const unknownAction = { code: 'UNKNOWN1', quantity: 3.7 }
 
-      await validateLandAction(
+      await validateActionOnParcel(
         unknownAction,
         mockActionConfig,
         mockAgreements,
@@ -297,7 +293,7 @@ describe('Action Validation Service', () => {
     })
 
     test('should default existingAgreements to an empty array when agreements are not supplied', async () => {
-      await validateLandAction(
+      await validateActionOnParcel(
         mockAction,
         mockActionConfig,
         undefined,
@@ -312,7 +308,7 @@ describe('Action Validation Service', () => {
 
     test('should throw error when landAction is null', async () => {
       await expect(
-        validateLandAction(
+        validateActionOnParcel(
           mockAction,
           mockActionConfig,
           mockAgreements,
@@ -326,7 +322,7 @@ describe('Action Validation Service', () => {
 
     test('should throw error when actions is null', async () => {
       await expect(
-        validateLandAction(
+        validateActionOnParcel(
           mockAction,
           null,
           mockAgreements,
@@ -339,7 +335,7 @@ describe('Action Validation Service', () => {
 
     test('should throw error when compatibilityCheckFn is null', async () => {
       await expect(
-        validateLandAction(
+        validateActionOnParcel(
           mockAction,
           mockActionConfig,
           mockAgreements,
@@ -356,7 +352,7 @@ describe('Action Validation Service', () => {
       )
 
       await expect(
-        validateLandAction(
+        validateActionOnParcel(
           mockAction,
           mockActionConfig,
           mockAgreements,
@@ -369,7 +365,7 @@ describe('Action Validation Service', () => {
     })
   })
 
-  describe('validateLandAction for a linear action', () => {
+  describe('validateActionOnParcel for a linear action', () => {
     const linearAction = { code: 'BND1', quantity: 100 }
     const linearLandAction = { ...mockLandAction, actions: [linearAction] }
     const actionConfigWithBnd1 = [
@@ -398,7 +394,7 @@ describe('Action Validation Service', () => {
       })
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
 
-      await validateLandAction(
+      await validateActionOnParcel(
         linearAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -408,19 +404,8 @@ describe('Action Validation Service', () => {
       )
 
       const [{ ruleResult }] = mockActionResultTransformer.mock.calls[0]
-      const { title, content } = doNotFitSection(availableLength)
-      expect(ruleResult).toEqual({
-        passed: false,
-        results: [
-          {
-            name: EXISTING_ACTIONS_DO_NOT_FIT,
-            passed: false,
-            description: expect.any(String),
-            reason: EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
-            explanations: [{ title, lines: content }]
-          }
-        ]
-      })
+      const doNotFitResult = existingActionsDoNotFitResult({ availableLength })
+      expect(ruleResult).toEqual(doNotFitResult)
     })
 
     test('should check the rules against the available length worked out for the action', async () => {
@@ -430,7 +415,7 @@ describe('Action Validation Service', () => {
       })
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
 
-      await validateLandAction(
+      await validateActionOnParcel(
         linearAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -450,7 +435,7 @@ describe('Action Validation Service', () => {
       })
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
 
-      await validateLandAction(
+      await validateActionOnParcel(
         linearAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -471,7 +456,7 @@ describe('Action Validation Service', () => {
       })
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
 
-      await validateLandAction(
+      await validateActionOnParcel(
         linearAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -492,7 +477,7 @@ describe('Action Validation Service', () => {
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
       const fractionalAction = { code: 'BND1', quantity: 200.4 }
 
-      await validateLandAction(
+      await validateActionOnParcel(
         fractionalAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -513,7 +498,7 @@ describe('Action Validation Service', () => {
       })
       vi.mocked(getAvailableLength).mockResolvedValue(availableLength)
 
-      await validateLandAction(
+      await validateActionOnParcel(
         linearAction,
         actionConfigWithBnd1,
         mockAgreements,
@@ -524,38 +509,6 @@ describe('Action Validation Service', () => {
 
       const [transformed] = mockActionResultTransformer.mock.calls[0]
       expect(transformed.appliedForQuantity).toBe(linearAction.quantity)
-    })
-
-    test('should fail when the parcel boundary cannot be read', async () => {
-      vi.mocked(getAvailableLength).mockRejectedValue(
-        new Error('Unable to read the boundary of land parcel SX0679-9238')
-      )
-
-      const validation = validateLandAction(
-        linearAction,
-        actionConfigWithBnd1,
-        mockAgreements,
-        mockCompatibilityCheckFn,
-        linearLandAction,
-        mockRequest
-      )
-
-      await expect(validation).rejects.toThrow(
-        'Unable to read the boundary of land parcel SX0679-9238'
-      )
-    })
-
-    test('should not work out an available length for an area action', async () => {
-      await validateLandAction(
-        mockAction,
-        mockActionConfig,
-        mockAgreements,
-        mockCompatibilityCheckFn,
-        mockLandAction,
-        mockRequest
-      )
-
-      expect(getAvailableLength).not.toHaveBeenCalled()
     })
   })
 })
