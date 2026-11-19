@@ -16,7 +16,8 @@ export default defineConfig({
       '**/src/features/available-area/**/*.test.js',
       '**/src/payment-calculation/**/*.test.js',
       '**/src/routes/**/*.test.js',
-      '**/src/services/**/*.test.js'
+      '**/src/services/**/*.test.js',
+      '**/packages/*/*.test.js'
     ],
     exclude: ['.server'],
     globals: true,
