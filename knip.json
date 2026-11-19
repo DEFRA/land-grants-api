@@ -20,6 +20,9 @@
     },
     "packages/rules-schemas": {
       "ignoreDependencies": ["joi"]
+    },
+    "packages/contract-schemas": {
+      "ignoreDependencies": ["joi"]
     }
   }
 }

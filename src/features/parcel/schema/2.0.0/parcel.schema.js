@@ -1,6 +1,6 @@
 import Joi from 'joi'
-import { COUNT, UNIT_TYPES } from '~/src/features/common/constants/unit_type.js'
-import { UNAVAILABLE_REASON_CODES } from '~/src/features/parcel/constants/unavailable-reasons.js'
+import { COUNT, UNIT_TYPES } from '../../../common/constants/unit_type.js'
+import { UNAVAILABLE_REASON_CODES } from '../../constants/unavailable-reasons.js'
 
 export const parcelIdSchema = Joi.string().pattern(/^[A-Za-z0-9]{6}-[0-9]{4}$/)
 

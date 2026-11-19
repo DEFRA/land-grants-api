@@ -20,6 +20,7 @@
     "coverage",
     "node_modules",
     "src/**/*.test.js",
+    "packages/**/*.test.js",
     "src/tests/**",
     "vitest.*.config.js"
   ],

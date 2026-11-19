@@ -76,3 +76,14 @@ jobs:
           else
             npm publish --workspace packages/rules-schemas --ignore-scripts=false
           fi
+
+      - name: Publish Contract Schemas Package
+        # Until npm trusted publishing is connected, a failed publish must not fail the deploy
+        continue-on-error: true
+        run: |
+          version=$(node -p "require('./packages/contract-schemas/package.json').version")
+          if npm view "@defra/land-grants-contract-schemas@$version" version > /dev/null 2>&1; then
+            echo "@defra/land-grants-contract-schemas@$version is already published"
+          else
+            npm publish --workspace packages/contract-schemas --ignore-scripts=false
+          fi

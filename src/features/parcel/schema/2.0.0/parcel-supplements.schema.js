@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { HECTARES, SQM } from '~/src/features/common/constants/unit_type.js'
+import { HECTARES, SQM } from '../../../common/constants/unit_type.js'
 import { actionSchema, parcelIdSchema } from './parcel.schema.js'
 
 // A supplement sits on top of its base action's land, so both are areas

@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { statusCodes } from '~/src/features/common/constants/status-codes.js'
+import { statusCodes } from '../constants/status-codes.js'
 
 /**
  * @typedef {object} ErrorResponseSchema
