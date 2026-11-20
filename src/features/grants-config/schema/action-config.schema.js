@@ -57,7 +57,8 @@ const actionConfigSchema = Joi.object({
   rotationType: Joi.string(),
   rules: Joi.array().items(ruleSchema).required(),
   semanticVersion: Joi.string().required(),
-  startDate: Joi.string().isoDate().required()
+  startDate: Joi.string().isoDate().required(),
+  isSupplementalOnly: Joi.boolean().optional()
 })
 
 /**

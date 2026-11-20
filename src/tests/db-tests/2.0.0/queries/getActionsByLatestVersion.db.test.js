@@ -56,6 +56,7 @@ describe('Get Actions By Latest Version Query', () => {
       availability: null,
       displayUnit: null,
       displayUnitPlural: null,
+      isSupplementalOnly: false,
       payment: {
         ratePerUnitGbp: 10.6,
         ratePerAgreementPerYearGbp: 272
