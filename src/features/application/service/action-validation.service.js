@@ -1,29 +1,25 @@
 import { actionResultTransformer } from '~/src/features/application/transformers/application.transformer.js'
-import {
-  isAreaUnit,
-  isLengthUnit
-} from '~/src/features/common/constants/unit_type.js'
+import { isAreaUnit } from '~/src/features/common/constants/unit_type.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
-import { getAvailableLength } from '~/src/features/available-length/availableLength.js'
-import { doNotFitSection } from '~/src/features/available-length/explanations.js'
 import {
-  EXISTING_ACTIONS_DO_NOT_FIT,
-  EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON
-} from '~/src/features/parcel/constants/unavailable-reasons.js'
+  getAvailability,
+  existingActionsFit,
+  existingActionsDoNotFitResult
+} from './availability.service.js'
 import { resolveApplicationData } from '../../rules-engine/services/resolveApplicationData.js'
 
 /**
- * Validate a land action
+ * Validate one action applied for on a parcel
  * @param {ActionRequest} action - The action
  * @param {Action[]} actions - All enabled actions
  * @param {AgreementAction[]} agreements - The agreements
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
- * @param {LandAction} landAction - The land action
+ * @param {LandAction} landAction - The parcel and every action applied for on it
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
  * @returns {Promise<ActionRuleResult>} The validation result
  */
-export const validateLandAction = async (
+export const validateActionOnParcel = async (
   action,
   actions,
   agreements,
@@ -42,14 +38,17 @@ export const validateLandAction = async (
     ? action.quantity
     : Math.round(action.quantity)
 
-  const availableLength = await availableLengthFor(
+  const availability = await getAvailability(
     unit,
     { action, actions, agreements, compatibilityCheckFn, landAction },
     request
   )
+  const { availableLength } = availability
 
-  if (availableLength?.feasible === false) {
-    const doNotFitResult = existingActionsDoNotFitResult(availableLength)
+  const fit = existingActionsFit(availability)
+
+  if (!fit) {
+    const doNotFitResult = existingActionsDoNotFitResult(availability)
 
     return actionResultTransformer({
       action,
@@ -96,54 +95,6 @@ export const validateLandAction = async (
     appliedForQuantity,
     ruleResult
   })
-}
-
-/**
- * The available length for a linear action, worked out before its rules run.
- * @param {string | undefined} unit - The action's unit of measurement
- * @param {{action: ActionRequest, actions: Action[], agreements: AgreementAction[], compatibilityCheckFn: CompatibilityCheckFn, landAction: LandAction}} applicationData - The action and what competes with it
- * @param {{logger: object, server: {postgresDb: object}}} request - The request object
- * @returns {Promise<TargetedAvailableLength | undefined>} The available length, or undefined for an action not measured in metres
- */
-const availableLengthFor = async (unit, applicationData, request) => {
-  if (!isLengthUnit(unit)) {
-    return undefined
-  }
-
-  const { action, actions, agreements, compatibilityCheckFn, landAction } =
-    applicationData
-
-  return getAvailableLength(
-    action,
-    actions,
-    agreements,
-    compatibilityCheckFn,
-    landAction,
-    request.server.postgresDb,
-    request.logger
-  )
-}
-
-/**
- * The failure given in place of a linear action's rules when its existing actions cannot all fit, as /parcels reports it.
- * @param {AvailableLength} availableLength - The infeasible available length
- * @returns {RulesResult} A failed result shaped like any rule's
- */
-const existingActionsDoNotFitResult = (availableLength) => {
-  const { title, content } = doNotFitSection(availableLength)
-
-  return {
-    passed: false,
-    results: [
-      {
-        name: EXISTING_ACTIONS_DO_NOT_FIT,
-        passed: false,
-        description: 'Do the existing actions fit the parcel boundary?',
-        reason: EXISTING_ACTIONS_DO_NOT_FIT_ON_LENGTH_REASON,
-        explanations: [{ title, lines: content }]
-      }
-    ]
-  }
 }
 
 /**
@@ -197,7 +148,6 @@ const buildRuleEngineApplication = async (
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
  * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
- * @import { RuleEngineApplication, LandParcel, RulesResult } from '~/src/features/rules-engine/rules.d.js'
+ * @import { RuleEngineApplication, LandParcel } from '~/src/features/rules-engine/rules.d.js'
  * @import { ApplicationData } from '~/src/features/rules-engine/data-requirements.d.js'
- * @import { AvailableLength, TargetedAvailableLength } from '~/src/features/available-length/available-length.d.js'
  */
