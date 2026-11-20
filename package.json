@@ -25,7 +25,7 @@
     "docker:rebuild": "docker compose build && docker compose up -d",
     "format": "prettier --write \"src/**/*.js\" \"**/*.{js,cjs,md,json,config.js,test.js,graphql.js}\"",
     "format:check": "prettier --check \"src/**/*.js\" \"**/*.{js,cjs,md,json,config.js,test.js,graphql.js}\"",
-    "git:pre-commit-hook": "npm run format:check && npm run lint && npm run test:unit",
+    "git:pre-commit-hook": "npm run scan:secrets && npm run format:check && npm run lint && npm run test:unit",
     "lint": "npm run lint:eslint && npm run lint:types && npm run lint:knip",
     "lint:eslint": "eslint --cache --cache-strategy content \"**/*.{cjs,js}\"",
     "lint:fix": "npm run lint:eslint -- --fix && npm run lint:knip -- --fix",
@@ -48,6 +48,7 @@
     "extractsql": "scripts/extract-gz-to-sql src/land-data/migration changelog/",
     "server:watch": "nodemon --exec tsx --enable-source-maps ./src",
     "server:debug": "nodemon --exec tsx --enable-source-maps --inspect ./src",
+    "scan:secrets": "gitleaks git --pre-commit --staged --no-banner --verbose",
     "prestart": "npm run build",
     "start": "NODE_ENV=production node --use-strict .",
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module"

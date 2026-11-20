@@ -21,7 +21,7 @@ const GAS_TOKEN_HASH = crypto
   .createHash('sha256')
   .update(GAS_TOKEN, 'utf8')
   .digest('hex')
-const ENCRYPTION_KEY = 'encryption-key-123456789012345678901234'
+const ENCRYPTION_KEY = 'encryption-key-123456789012345678901234' // gitleaks:allow
 
 function encryptToken(token, encryptionKey) {
   const iv = crypto.randomBytes(12)
