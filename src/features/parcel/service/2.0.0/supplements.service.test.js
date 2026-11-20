@@ -1,118 +1,264 @@
 import { getSupplementsWithAvailability } from './supplements.service.js'
-import { EXCEEDS_BASE_ACTION_AREA } from '~/src/features/parcel/constants/unavailable-reasons.js'
+import { getActionsForParcel } from './parcel.service.js'
+
+vi.mock('./parcel.service.js')
+
+const mockGetActionsForParcel = vi.mocked(getActionsForParcel)
 
 const supplementAction = (code, unit = 'ha') => ({
   code,
   description: `${code} description`,
   semanticVersion: '1.0.0',
-  applicationUnitOfMeasurement: unit,
-  payment: { ratePerUnitGbp: 10 }
+  applicationUnitOfMeasurement: unit
 })
 
-// Real 2026 rows: CLIG3 is a base for GRH7, GRH8 and GRH11
-const supplementActions = [
-  supplementAction('GRH7'),
-  supplementAction('GRH8'),
-  supplementAction('GRH11')
-]
+const reported = (code) => ({
+  code,
+  availability: { unit: 'ha', value: 6 },
+  isAvailable: true,
+  hasSupplements: false
+})
 
-const baseAction = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
+const parcel = { parcel_id: '9238', sheet_id: 'SX0679', area_sqm: 100000 }
 
-const supplementsFor = (selectedSupplements, overrides = {}) =>
+// Real 2026 rows: CLIG3 is a base for GRH7, GRH8 and SPM3, and AGF1 for SPM3
+const baseCodesBySupplement = new Map([
+  ['GRH7', new Set(['CLIG3'])],
+  ['GRH8', new Set(['CLIG3'])],
+  ['SPM3', new Set(['CLIG3', 'AGF1'])]
+])
+const baseAction = { actionCode: 'CLIG3', quantity: 10, unit: 'ha' }
+
+const supplementsFor = (overrides = {}) =>
   getSupplementsWithAvailability({
-    baseAction,
-    selectedSupplements,
-    supplementActions,
+    parcel,
+    baseActionCode: 'CLIG3',
+    plannedActions: [baseAction],
+    supplementActions: [supplementAction('GRH7'), supplementAction('GRH8')],
+    baseCodesBySupplement,
+    unitByActionCode: {},
+    compatibilityCheckFn: () => false,
+    agreements: [],
+    request: {},
     ...overrides
   })
 
-const byCode = (supplements) =>
-  Object.fromEntries(supplements.map((s) => [s.code, s]))
+const callFor = (code) =>
+  mockGetActionsForParcel.mock.calls.find(
+    ([, , , { displayedActions }]) => displayedActions[0].code === code
+  )
+
+const plannedActionsFor = (code) => callFor(code)[1].plannedActions
+
+// The cap the calculation is given for a supplement, in hectares
+const capHaFor = (code) => callFor(code)[3].availableAreaCapSqm[code] / 10000
 
 describe('getSupplementsWithAvailability', () => {
-  test('returns every supplement, available up to the area of the base action', () => {
-    const supplements = supplementsFor([])
-
-    expect(supplements.map((s) => s.code)).toEqual(['GRH7', 'GRH8', 'GRH11'])
-    for (const supplement of supplements) {
-      expect(supplement).toEqual(
-        expect.objectContaining({
-          availability: { unit: 'ha', value: 2.5 },
-          isAvailable: true,
-          ratePerUnitGbp: 10,
-          version: '1.0.0'
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockGetActionsForParcel.mockImplementation(
+      (_parcel, _payload, _showResults, { displayedActions }) =>
+        Promise.resolve({
+          actions: displayedActions.map((action) => reported(action.code))
         })
-      )
-      expect(supplement.unavailableReason).toBeUndefined()
-    }
+    )
   })
 
-  test('reports availability in square metres for a supplement measured in them', () => {
-    const [supplement] = supplementsFor([], {
-      supplementActions: [supplementAction('GRH7', 'sqm')]
+  test('reports each supplement as the parcels endpoint does, without its hasSupplements flag', async () => {
+    const supplements = await supplementsFor()
+
+    expect(supplements).toEqual([
+      {
+        code: 'GRH7',
+        availability: { unit: 'ha', value: 6 },
+        isAvailable: true
+      },
+      {
+        code: 'GRH8',
+        availability: { unit: 'ha', value: 6 },
+        isAvailable: true
+      }
+    ])
+  })
+
+  test('holds each supplement to the area of its base action', async () => {
+    await supplementsFor()
+
+    expect(capHaFor('GRH7')).toBe(10)
+    expect(capHaFor('GRH8')).toBe(10)
+  })
+
+  test('works out the base action area from square metres', async () => {
+    await supplementsFor({
+      plannedActions: [{ actionCode: 'CLIG3', quantity: 25000, unit: 'sqm' }]
     })
 
-    expect(supplement.availability).toEqual({ unit: 'sqm', value: 25000 })
+    expect(capHaFor('GRH7')).toBe(2.5)
   })
 
-  test('converts a base action given in square metres', () => {
-    const [supplement] = supplementsFor([], {
-      baseAction: { actionCode: 'CLIG3', quantity: 25000, unit: 'sqm' }
+  test('runs the calculation for one supplement at a time, without results', async () => {
+    const compatibilityCheckFn = () => true
+    const agreements = [{ actionCode: 'CAGF1', quantity: 2, unit: 'ha' }]
+
+    await supplementsFor({ compatibilityCheckFn, agreements })
+
+    expect(mockGetActionsForParcel).toHaveBeenCalledTimes(2)
+    const [call] = mockGetActionsForParcel.mock.calls
+    expect(call[0]).toBe(parcel)
+    expect(call[1].fields).toEqual(['actions'])
+    expect(call[2]).toBe(false)
+    expect(call[3].displayedActions).toEqual([supplementAction('GRH7')])
+    expect(call[4]).toBe(compatibilityCheckFn)
+    expect(call[6]).toBe(agreements)
+  })
+
+  test('counts every action selected on the parcel, the supplement itself among them, as /parcels does', async () => {
+    const grh7 = { actionCode: 'GRH7', quantity: 6, unit: 'ha' }
+    const grh8 = { actionCode: 'GRH8', quantity: 4, unit: 'ha' }
+    const cagf1 = { actionCode: 'CAGF1', quantity: 4, unit: 'ha' }
+
+    await supplementsFor({
+      plannedActions: [cagf1, baseAction, grh7, grh8]
     })
 
-    expect(supplement.availability).toEqual({ unit: 'ha', value: 2.5 })
+    expect(plannedActionsFor('GRH7')).toEqual([cagf1, baseAction, grh7, grh8])
+    expect(plannedActionsFor('GRH8')).toEqual([cagf1, baseAction, grh7, grh8])
   })
 
-  // GRH7 and GRH8 cannot overlap but can share the base action's area. Until
-  // that is worked out, selected supplements do not reduce each other's availability
-  test('leaves each selected supplement available up to the whole base action area', () => {
-    const supplements = byCode(
-      supplementsFor([
-        { actionCode: 'GRH7', quantity: 1.5, unit: 'ha' },
-        { actionCode: 'GRH8', quantity: 1, unit: 'ha' }
-      ])
-    )
+  describe('supplements sharing the base action area', () => {
+    // Real 2026 rows: GRH7 and GRH8 have no SUPCO row, so they cannot overlap
+    const noSupco = () => false
+    const grh7 = { actionCode: 'GRH7', quantity: 6, unit: 'ha' }
 
-    for (const code of ['GRH7', 'GRH8', 'GRH11']) {
-      expect(supplements[code]).toEqual(
-        expect.objectContaining({
-          availability: { unit: 'ha', value: 2.5 },
-          isAvailable: true
-        })
-      )
-    }
-  })
-
-  test('accepts a selected supplement covering all of the base action', () => {
-    const supplements = byCode(
-      supplementsFor([{ actionCode: 'GRH7', quantity: 25000, unit: 'sqm' }])
-    )
-
-    expect(supplements.GRH7.isAvailable).toBe(true)
-  })
-
-  test('marks a selected supplement covering more than the base action unavailable', () => {
-    const supplements = byCode(
-      supplementsFor([{ actionCode: 'GRH11', quantity: 3, unit: 'ha' }])
-    )
-
-    expect(supplements.GRH11).toEqual(
-      expect.objectContaining({
-        isAvailable: false,
-        unavailableReason: expect.objectContaining({
-          code: EXCEEDS_BASE_ACTION_AREA,
-          metadata: {
-            baseActionCode: 'CLIG3',
-            baseActionAreaHa: 2.5,
-            selectedAreaHa: 3
-          }
-        })
+    test('leaves a supplement what the other selected supplements leave of the base', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, grh7],
+        compatibilityCheckFn: noSupco
       })
-    )
-    expect(supplements.GRH7.isAvailable).toBe(true)
+
+      // GRH7 takes 6 of the 10 ha of CLIG3
+      expect(capHaFor('GRH8')).toBe(4)
+    })
+
+    test('lets supplements with a SUPCO row stack on the whole base', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, grh7],
+        compatibilityCheckFn: (a, b) =>
+          [a, b].sort().join() === ['GRH7', 'GRH8'].join()
+      })
+
+      expect(capHaFor('GRH8')).toBe(10)
+    })
+
+    test('counts a supplement against itself, leaving what is left on top of its selection', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, grh7],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH7')).toBe(4)
+    })
+
+    test('leaves a supplement nothing when its own selection takes all of the base', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, { ...grh7, quantity: 10 }],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH7')).toBe(0)
+      expect(capHaFor('GRH8')).toBe(0)
+    })
+
+    test('leaves a supplement nothing when the others take all of the base', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, { ...grh7, quantity: 10 }],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH8')).toBe(0)
+    })
   })
 
-  test('returns no supplements when the base action has none', () => {
-    expect(supplementsFor([], { supplementActions: [] })).toEqual([])
+  describe('supplements on other base actions', () => {
+    const agf1 = { actionCode: 'AGF1', quantity: 3, unit: 'ha' }
+    const noSupco = () => false
+
+    test('lets a supplement with several bases use only the area of the base action asked about', async () => {
+      await supplementsFor({
+        plannedActions: [baseAction, agf1],
+        supplementActions: [supplementAction('GRH7'), supplementAction('SPM3')]
+      })
+
+      expect(capHaFor('GRH7')).toBe(10)
+      expect(capHaFor('SPM3')).toBe(10)
+    })
+
+    test('counts a supplement given this base action against the others on it', async () => {
+      await supplementsFor({
+        plannedActions: [
+          baseAction,
+          { actionCode: 'GRH7', quantity: 6, unit: 'ha', baseAction: 'CLIG3' }
+        ],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH8')).toBe(4)
+    })
+
+    test('counts a supplement given no base action against the base action asked about, when it is one of its bases', async () => {
+      await supplementsFor({
+        plannedActions: [
+          baseAction,
+          agf1,
+          { actionCode: 'SPM3', quantity: 6, unit: 'ha' }
+        ],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH7')).toBe(4)
+    })
+
+    test('leaves the base action alone for a supplement given another base action, which still competes for the parcel', async () => {
+      const spm3OnAgf1 = {
+        actionCode: 'SPM3',
+        quantity: 3,
+        unit: 'ha',
+        baseAction: 'AGF1'
+      }
+
+      await supplementsFor({
+        plannedActions: [baseAction, agf1, spm3OnAgf1],
+        compatibilityCheckFn: noSupco
+      })
+
+      expect(capHaFor('GRH7')).toBe(10)
+      expect(plannedActionsFor('GRH7')).toContainEqual(spm3OnAgf1)
+    })
+
+    test('reports no base actions on the supplements', async () => {
+      const [spm3] = await supplementsFor({
+        plannedActions: [baseAction, agf1],
+        supplementActions: [supplementAction('SPM3')]
+      })
+
+      expect(spm3).not.toHaveProperty('baseActionCodes')
+    })
+  })
+
+  test('leaves out planned actions that are not areas from the base action area', async () => {
+    await supplementsFor({
+      plannedActions: [
+        baseAction,
+        { actionCode: 'GRH8', quantity: 40000, unit: 'm' }
+      ],
+      supplementActions: [supplementAction('GRH7')]
+    })
+
+    expect(capHaFor('GRH7')).toBe(10)
+  })
+
+  test('returns no supplements when the base action has none', async () => {
+    expect(await supplementsFor({ supplementActions: [] })).toEqual([])
+    expect(mockGetActionsForParcel).not.toHaveBeenCalled()
   })
 })

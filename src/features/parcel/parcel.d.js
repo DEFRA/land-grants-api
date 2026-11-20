@@ -27,6 +27,7 @@
  * @property {Action[]} displayedActions - The enabled actions this request reports
  * @property {Record<string, string|undefined>} unitByActionCode - Configured unit of measurement by action code
  * @property {Set<string>} [actionCodesWithSupplements] - Codes of displayed actions that are a base for at least one displayed supplement action
+ * @property {Record<string, number>} [availableAreaCapSqm] - The most an area action can have, in square metres, by action code, whatever the parcel leaves it: for a supplement, what its base actions leave it
  */
 
 /**

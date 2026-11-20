@@ -261,6 +261,23 @@ describe('Parcel Schema Validation v2', () => {
       expect(result.error).toBeDefined()
     })
 
+    it('should accept a planned supplement with the base action it sits on', () => {
+      const valid = {
+        ...validParcelsRequest,
+        plannedActions: [
+          { actionCode: 'CLIG3_26', quantity: 4, unit: 'ha' },
+          {
+            actionCode: 'GRH7_26',
+            quantity: 2,
+            unit: 'ha',
+            baseAction: 'CLIG3_26'
+          }
+        ]
+      }
+      const result = parcelsSchema.validate(valid)
+      expect(result.error).toBeUndefined()
+    })
+
     it('should reject invalid unit', () => {
       const invalid = {
         ...validParcelsRequest,

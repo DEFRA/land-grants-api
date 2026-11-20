@@ -15,7 +15,7 @@ function sizeTransformer(area, unit) {
 /**
  * Transform existing and planned actions to actions with their area in square metres.
  * Callers pass only the actions competing for the parcel's land.
- * @param {AgreementAction[] | null} actions - The existing and planned actions to transform
+ * @param {{actionCode: string, quantity: number, unit: string}[] | null} actions - The existing and planned actions to transform
  * @returns {ActionRequest[]} The transformed actions
  */
 function areaActionsTransformer(actions) {
@@ -93,7 +93,6 @@ export {
 }
 
 /**
- * @import { AgreementAction } from "../../agreements/agreements.d.js"
  * @import { Action, ActionRequest } from "../../actions/action.d.js"
  * @import { AvailableAreaForAction } from "~/src/features/available-area/available-area.d.js"
  * @import { ActionWithLength } from "~/src/features/available-length/available-length.d.js"

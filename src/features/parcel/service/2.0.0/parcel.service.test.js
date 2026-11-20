@@ -320,6 +320,58 @@ describe('Parcel Service 2.0.0', () => {
       )
     })
 
+    describe('an area cap', () => {
+      const withCap = (availableAreaCapSqm) => ({
+        ...prepared(mockEnabledActionsForParcel),
+        availableAreaCapSqm
+      })
+
+      const run = (availableAreaCapSqm) =>
+        getActionsForParcel(
+          mockParcel,
+          mockPayload,
+          false,
+          withCap(availableAreaCapSqm),
+          mockCompatibilityCheckFn,
+          mockRequest,
+          []
+        )
+
+      test('holds an action to its cap when the parcel leaves it more', async () => {
+        await run({ UPL1: 2000 })
+
+        expect(actionAvailabilityFor('UPL1')).toEqual(
+          expect.objectContaining({
+            availableAreaSqm: 2000,
+            availableAreaHectares: 0.2
+          })
+        )
+      })
+
+      test('leaves an action the parcel leaves less than its cap as it is', async () => {
+        await run({ UPL1: 9000 })
+
+        expect(actionAvailabilityFor('UPL1').availableAreaSqm).toBe(5000)
+      })
+
+      test('leaves an action without a cap as it is', async () => {
+        await run({ UPL1: 2000 })
+
+        expect(actionAvailabilityFor('HEF1').availableAreaSqm).toBe(5000)
+      })
+
+      test('holds an action to a cap of nothing', async () => {
+        await run({ UPL1: 0 })
+
+        expect(actionAvailabilityFor('UPL1')).toEqual(
+          expect.objectContaining({
+            availableAreaSqm: 0,
+            availableAreaHectares: 0
+          })
+        )
+      })
+    })
+
     test.each([
       ['building (sqm)', 2],
       ['hectare', 0]

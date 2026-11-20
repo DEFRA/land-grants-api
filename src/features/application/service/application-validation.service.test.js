@@ -1,5 +1,5 @@
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
@@ -20,7 +20,7 @@ vi.mock('~/src/features/agreements/transformers/filters.js')
 vi.mock('~/src/features/agreements/repo.js')
 vi.mock('~/src/features/available-area/compatibilityMatrix.js')
 
-const mockCreateCompatibilityMatrix = createCompatibilityMatrix
+const mockCreateValidationLookups = createValidationLookups
 const mockSaveApplication = saveApplication
 const mockApplicationDataTransformer = applicationDataTransformer
 const mockValidateLandParcelActions = validateLandParcelActions
@@ -28,6 +28,8 @@ const mockValidateRequest = validateRequest
 const mockGetActions = getActions
 
 const dalAuth = { type: 'internal', value: 'dummy@defra.gov.uk' }
+
+const mockBaseCodesBySupplement = new Map([['GRH7_26', new Set(['CLIG3_26'])]])
 
 describe('Application Validation Service', () => {
   const mockLogger = {
@@ -164,7 +166,10 @@ describe('Application Validation Service', () => {
   beforeEach(() => {
     mockGetActions.mockResolvedValue(mockEnabledActions)
     mockValidateRequest.mockResolvedValue(null)
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockCreateValidationLookups.mockResolvedValue({
+      compatibilityCheckFn: mockCompatibilityCheckFn,
+      baseCodesBySupplement: mockBaseCodesBySupplement
+    })
     mockValidateLandParcelActions.mockResolvedValue(mockParcelResults[0])
     mockApplicationDataTransformer.mockReturnValue(mockApplicationData)
     mockSaveApplication.mockResolvedValue(mockApplicationValidationRunId)
@@ -211,7 +216,7 @@ describe('Application Validation Service', () => {
         mockRequest
       )
 
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+      expect(mockCreateValidationLookups).toHaveBeenCalledWith(
         mockLogger,
         mockPostgresDb
       )
@@ -223,7 +228,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        agreements['9238-SX0679']
+        agreements['9238-SX0679'],
+        mockBaseCodesBySupplement
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
@@ -231,7 +237,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        agreements['9239-SX0680']
+        agreements['9239-SX0680'],
+        mockBaseCodesBySupplement
       )
 
       expect(mockApplicationDataTransformer).toHaveBeenCalledWith(
@@ -312,7 +319,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        []
+        [],
+        mockBaseCodesBySupplement
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
@@ -320,7 +328,8 @@ describe('Application Validation Service', () => {
         mockEnabledActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        []
+        [],
+        mockBaseCodesBySupplement
       )
     })
 
@@ -371,7 +380,7 @@ describe('Application Validation Service', () => {
       )
 
       // Should not proceed to parcel validation
-      expect(mockCreateCompatibilityMatrix).not.toHaveBeenCalled()
+      expect(mockCreateValidationLookups).not.toHaveBeenCalled()
       expect(mockValidateLandParcelActions).not.toHaveBeenCalled()
       expect(mockApplicationDataTransformer).not.toHaveBeenCalled()
       expect(mockSaveApplication).not.toHaveBeenCalled()
@@ -442,7 +451,7 @@ describe('Application Validation Service', () => {
       const compatibilityError = new Error(
         'Failed to create compatibility matrix'
       )
-      mockCreateCompatibilityMatrix.mockRejectedValue(compatibilityError)
+      mockCreateValidationLookups.mockRejectedValue(compatibilityError)
 
       await expect(
         validateApplication(
@@ -455,7 +464,7 @@ describe('Application Validation Service', () => {
         )
       ).rejects.toThrow('Failed to create compatibility matrix')
 
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+      expect(mockCreateValidationLookups).toHaveBeenCalledWith(
         mockLogger,
         mockPostgresDb
       )
