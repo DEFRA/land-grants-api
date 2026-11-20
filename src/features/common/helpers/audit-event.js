@@ -1,5 +1,6 @@
 import { SNSClient } from '@aws-sdk/client-sns'
 import { publishAuditEvent } from '@defra/fcp-audit-publisher'
+import { getTraceId } from '@defra/hapi-tracing'
 
 import { config } from '~/src/config/index.js'
 import { createLogger } from '~/src/features/common/helpers/logging/logger.js'
@@ -11,16 +12,6 @@ export class InvalidEventType extends Error {
     this.eventType = eventType
   }
 }
-
-/**
- * Resolves the correlation id to record on audit events from the tracing header.
- * @param {import('@hapi/hapi').Request} request
- * @returns {string|string[]|undefined}
- */
-export const getCorrelationId = (request) =>
-  /** @type {string | string[] | undefined} */ (
-    request.headers?.[config.get('tracing.header')]
-  )
 
 /**
  * Audit event types. Populated by tickets as land-grants-api operations are
@@ -117,10 +108,12 @@ const buildAuditPayload = (
     throw new InvalidEventType(event)
   }
 
+  const traceId = getTraceId()
+
   return {
     application: 'Grants',
     component: config.get('serviceName'),
-    correlationid: context.correlationId,
+    correlationid: traceId,
     datetime: new Date().toISOString(),
     environment: `cdp-${config.get('cdpEnvironment')}`,
     ip: extractIp(request),
@@ -143,7 +136,11 @@ const buildAuditPayload = (
     audit: {
       entities: entitiesFunc(context),
       status,
-      details: { eventType: eventTypes[event], ...context },
+      details: {
+        eventType: eventTypes[event],
+        correlationId: traceId,
+        ...context
+      },
       accounts: {
         sbi: context.identifiers?.sbi,
         frn: context.identifiers?.frn,
