@@ -13,6 +13,7 @@ import * as sourceApplicationSchemas from '../../src/features/application/schema
 import * as sourceApplicationSchemasV2 from '../../src/features/application/schema/2.0.0/application-validation.schema.js'
 import * as sourceCaseManagementSchemas from '../../src/features/case-management-adapter/schema/application-validation.schema.js'
 import * as sourceCommonSchemas from '../../src/features/common/schema/index.js'
+import * as sourceIngestStatusSchemas from '../../src/features/land-data-ingest/schema/status.schema.js'
 import * as sourceParcelSchemas from '../../src/features/parcel/schema/2.0.0/parcel.schema.js'
 import * as sourceParcelSupplementsSchemas from '../../src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
 import * as sourcePaymentSchemas from '../../src/features/payment/schema/2.0.0/payment-calculate.schema.js'
@@ -31,6 +32,7 @@ const sourceModules = [
   sourceApplicationSchemasV2,
   sourceCaseManagementSchemas,
   sourceCommonSchemas,
+  sourceIngestStatusSchemas,
   sourceParcelSchemas,
   sourceParcelSupplementsSchemas,
   sourcePaymentSchemas,
@@ -70,6 +72,8 @@ const PUBLIC_EXPORTS = [
   'paymentCalculateWMPSchemaV2',
   'paymentCalculateWMPResponseSchema',
   'paymentCalculateTotalWMPSchema',
+  'statusIngestQuery',
+  'statusResponseSchema',
   'badRequestResponseSchema',
   'errorResponseSchema',
   'unprocessableEntityResponseSchema',
@@ -293,6 +297,17 @@ describe('@defra/land-grants-contract-schemas', () => {
         ).toBeDefined()
       }
     )
+
+    test('statusIngestQuery allows a filename only alongside an ingest id', () => {
+      expect(contract.statusIngestQuery.validate({}).error).toBeUndefined()
+      expect(
+        contract.statusIngestQuery.validate({ ingestId: 4, filename: 'a.csv' })
+          .error
+      ).toBeUndefined()
+      expect(
+        contract.statusIngestQuery.validate({ filename: 'a.csv' }).error
+      ).toBeDefined()
+    })
 
     test('validateWMPSchemaV2 requires parcels and the old woodland area', () => {
       const request = { parcelIds: ['SD6743-8083'], oldWoodlandAreaHa: 1.5 }
@@ -528,6 +543,34 @@ describe('@defra/land-grants-contract-schemas', () => {
           ...body,
           parcels: [{ id: 'SD6743-8083' }]
         }).error
+      ).toBeDefined()
+    })
+
+    test('statusResponseSchema accepts an ingest, a file or a list of ingests', () => {
+      const file = {
+        id: 1,
+        ingest_id: 4,
+        filename: 'a.csv',
+        total_rows: 10,
+        status: 'complete'
+      }
+      const ingest = {
+        id: 4,
+        entity: 'land_cover',
+        status: 'complete',
+        start_date: '2026-11-17T10:00:00.000Z',
+        completed_date: null,
+        files: [file]
+      }
+      expect(
+        contract.statusResponseSchema.validate(ingest).error
+      ).toBeUndefined()
+      expect(contract.statusResponseSchema.validate(file).error).toBeUndefined()
+      expect(
+        contract.statusResponseSchema.validate([ingest]).error
+      ).toBeUndefined()
+      expect(
+        contract.statusResponseSchema.validate({ id: 4 }).error
       ).toBeDefined()
     })
 
