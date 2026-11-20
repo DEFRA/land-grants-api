@@ -16,12 +16,16 @@ const mockConfigGet = vi.hoisted(() =>
       serviceName: 'land-grants-api',
       'aws.region': 'eu-west-2',
       'sns.endpoint': 'http://localhost:4566',
-      'sns.auditTopicArn': topicArn,
-      'tracing.header': 'x-cdp-request-id'
+      'sns.auditTopicArn': topicArn
     }
     return configMap[key]
   })
 )
+
+const { TRACE_ID, mockGetTraceId } = vi.hoisted(() => {
+  const traceId = 'trace-123'
+  return { TRACE_ID: traceId, mockGetTraceId: vi.fn(() => traceId) }
+})
 
 const mockExtractIp = vi.hoisted(() => vi.fn())
 
@@ -33,6 +37,7 @@ function getPublishedPayload() {
 
 vi.mock('@defra/fcp-audit-publisher')
 vi.mock('~/src/config/index.js', () => ({ config: { get: mockConfigGet } }))
+vi.mock('@defra/hapi-tracing', () => ({ getTraceId: mockGetTraceId }))
 
 vi.mock('~/src/features/common/helpers/request-ip.js', () => ({
   extractIp: mockExtractIp
@@ -136,7 +141,6 @@ describe('auditEvent', () => {
 
   test('publishes correct top-level fields', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       sessionId: 'session-abc',
       user: 'test.user@defra.gov.uk'
     }
@@ -146,7 +150,6 @@ describe('auditEvent', () => {
     expect(getPublishedPayload()).toMatchObject({
       sessionid: 'session-abc',
       user: 'test.user@defra.gov.uk',
-      correlationid: 'corr-xyz',
       environment: 'cdp-test',
       application: 'Grants',
       component: 'land-grants-api'
@@ -154,7 +157,7 @@ describe('auditEvent', () => {
   })
 
   test('sessionid and user are undefined when absent from context', async () => {
-    await auditEvent(EVENT_TYPE, { correlationId: 'corr-xyz' })
+    await auditEvent(EVENT_TYPE, {})
 
     const payload = getPublishedPayload()
     expect(payload.sessionid).toBeUndefined()
@@ -169,7 +172,6 @@ describe('auditEvent', () => {
 
   test('publishes correct audit fields', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       identifiers: { sbi, frn, crn }
     }
 
@@ -223,12 +225,13 @@ describe('auditEvent', () => {
     expect(payload.audit.status).toBe('failure')
   })
 
-  test('will fail audit event validation and be rejected when context is empty', async () => {
-    await auditEvent(EVENT_TYPE)
+  test('produces an event the audit publisher rejects for a missing correlation id when the request has no trace id', async () => {
+    mockGetTraceId.mockReturnValueOnce(undefined)
 
-    const payload = getPublishedPayload()
-    expect(payload.correlationid).toBeUndefined()
-    expect(validateAuditEvent(payload).valid).toBe(false)
+    await auditEvent(EVENT_TYPE, {})
+
+    const validation = validateAuditEvent(getPublishedPayload())
+    expect(validation.errors).toContain('"correlationid" is required')
   })
 
   test('defaults status to success when not provided', async () => {
@@ -274,7 +277,6 @@ describe('auditEvent - SFI_PAYMENT_CALCULATED', () => {
 
   test('publishes correct audit fields, including all payment calculation details', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       applicationId: 'app-1',
       identifiers: { sbi },
       request: { parcel: [{ sheetId: 'SD2324', parcelId: '1253' }] },
@@ -352,7 +354,6 @@ describe('auditEvent - SFI_APPLICATION_VALIDATED', () => {
 
   test('publishes correct audit fields, including the eligibility decisions and explanations', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       applicationId: 'app-1',
       identifiers: { sbi, crn },
       request: { landActions: [{ sheetId: 'SD2324', parcelId: '1253' }] },
@@ -420,7 +421,6 @@ describe('auditEvent - WMP_PAYMENT_CALCULATED', () => {
 
   test('publishes correct audit fields, including the WMP payment calculation details', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       parcelIds: ['SX067-99238', 'SX067-99239'],
       request: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 },
       response: { agreementTotalPence: 150000 }
@@ -475,7 +475,6 @@ describe('auditEvent - WMP_PAYMENT_TOTAL_CALCULATED', () => {
 
   test('publishes correct audit fields, including the WMP payment calculation details', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       parcelIds: ['SX067-99238', 'SX067-99239'],
       request: { oldWoodlandAreaHa: 5, newWoodlandAreaHa: 3 },
       response: { agreementTotalPence: 150000 }
@@ -530,7 +529,6 @@ describe('auditEvent - WMP_VALIDATED', () => {
 
   test('publishes correct audit fields, including the WMP validation result', async () => {
     const context = {
-      correlationId: 'corr-xyz',
       parcelIds: ['SX067-99238'],
       response: { result: { hasPassed: true, code: 'PA3' } }
     }
@@ -547,12 +545,19 @@ describe('auditEvent - WMP_VALIDATED', () => {
   })
 })
 
-describe('getCorrelationId', () => {
-  let getCorrelationId
+describe('auditEvent correlation id', () => {
+  let auditEvent
 
   beforeEach(async () => {
     vi.resetModules()
-    ;({ getCorrelationId } = await import('./audit-event.js'))
+    mockExtractIp.mockReturnValue('192.168.1.100')
+    vi.doMock('@aws-sdk/client-sns', () => ({
+      SNSClient: vi.fn()
+    }))
+    vi.doMock('~/src/features/common/helpers/logging/logger.js', () => ({
+      createLogger: vi.fn(() => ({ info: vi.fn(), error: vi.fn() }))
+    }))
+    ;({ auditEvent } = await import('./audit-event.js'))
   })
 
   afterEach(() => {
@@ -560,14 +565,39 @@ describe('getCorrelationId', () => {
     vi.clearAllMocks()
   })
 
-  test('reads the correlation id from the configured tracing header', () => {
-    const request = { headers: { 'x-cdp-request-id': 'trace-123' } }
+  test('records the request trace id as the correlation id', async () => {
+    await auditEvent(EVENT_TYPE, {})
 
-    expect(getCorrelationId(request)).toBe('trace-123')
+    const payload = getPublishedPayload()
+    expect(payload.correlationid).toBe(TRACE_ID)
   })
 
-  test('returns undefined when headers are absent from the request', () => {
-    expect(getCorrelationId({})).toBeUndefined()
+  test('keeps a copy of the correlation id in the audit details', async () => {
+    await auditEvent(EVENT_TYPE, {})
+
+    const { audit } = getPublishedPayload()
+    expect(audit.details.correlationId).toBe(TRACE_ID)
+  })
+
+  test('places the correlation id straight after the event type in the audit details', async () => {
+    await auditEvent(EVENT_TYPE, { applicationId: 'app-1' })
+
+    const detailKeys = Object.keys(getPublishedPayload().audit.details)
+    expect(detailKeys).toEqual(['eventType', 'correlationId', 'applicationId'])
+  })
+
+  test('records the request trace id as the correlation id on failure events', async () => {
+    await auditEvent(
+      EVENT_TYPE,
+      { error: 'Validation service failed' },
+      'failure'
+    )
+
+    const payload = getPublishedPayload()
+    expect(payload).toMatchObject({
+      correlationid: TRACE_ID,
+      audit: { status: 'failure', details: { correlationId: TRACE_ID } }
+    })
   })
 })
 
@@ -598,5 +628,19 @@ describe('auditEvent error handling', () => {
     publishAuditEvent.mockRejectedValue(new Error('SNS publish failed'))
 
     await expect(auditEvent(EVENT_TYPE, {})).resolves.not.toThrow()
+  })
+
+  test('logs the failure when the audit publisher rejects the event', async () => {
+    const rejection = new Error(
+      'Invalid audit event: "correlationid" is required'
+    )
+    publishAuditEvent.mockRejectedValue(rejection)
+
+    await auditEvent(EVENT_TYPE, {})
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      rejection,
+      `Failed to publish audit event: ${EVENT_TYPE}`
+    )
   })
 })

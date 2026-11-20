@@ -2,8 +2,7 @@ import Boom from '@hapi/boom'
 
 import {
   AuditEvent,
-  auditEvent,
-  getCorrelationId
+  auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 import {
   caseManagementApplicationValidationRerunRequestSchema,
@@ -26,15 +25,13 @@ import { validateApplication } from '../../application/service/application-valid
 /**
  * Builds the shared portion of a case management application validation
  * audit context.
- * @param {import('@hapi/hapi').Request} request
  * @param {object} params
  * @param {string} params.applicationId
  * @param {string} params.sbi
  * @param {string} params.crn
  * @returns {object}
  */
-const buildAuditContext = (request, { applicationId, sbi, crn }) => ({
-  correlationId: getCorrelationId(request),
+const buildAuditContext = ({ applicationId, sbi, crn }) => ({
   applicationId,
   identifiers: { sbi, crn }
 })
@@ -141,7 +138,7 @@ const runCaseManagementValidation = async (
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
     {
-      ...buildAuditContext(request, { applicationId, sbi, crn }),
+      ...buildAuditContext({ applicationId, sbi, crn }),
       request: {
         validationRunId: id,
         requesterUsername,
@@ -189,13 +186,12 @@ const handleCaseManagementValidationError = async (
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
     {
-      ...(applicationValidationRun
-        ? buildAuditContext(request, {
-            applicationId: applicationValidationRun.application_id,
-            sbi: applicationValidationRun.sbi,
-            crn: applicationValidationRun.crn
-          })
-        : { correlationId: getCorrelationId(request) }),
+      ...(applicationValidationRun &&
+        buildAuditContext({
+          applicationId: applicationValidationRun.application_id,
+          sbi: applicationValidationRun.sbi,
+          crn: applicationValidationRun.crn
+        })),
       request: { validationRunId: id, requesterUsername },
       error: error.message
     },

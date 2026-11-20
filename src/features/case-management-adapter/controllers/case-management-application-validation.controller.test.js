@@ -370,5 +370,26 @@ describe('Case Management Application Validation Controller', () => {
         expect.objectContaining({ method: 'post' })
       )
     })
+
+    test('should publish a failure audit event when looking up the validation run fails', async () => {
+      getApplicationValidationRun.mockRejectedValue(
+        new Error('Database unavailable')
+      )
+
+      await server.inject(defaultRequest)
+
+      expect(mockAuditEvent).toHaveBeenCalledWith(
+        AuditEvent.SFI_APPLICATION_VALIDATED,
+        {
+          request: {
+            validationRunId: defaultRequest.payload.id,
+            requesterUsername: defaultRequest.payload.requesterUsername
+          },
+          error: 'Database unavailable'
+        },
+        'failure',
+        expect.objectContaining({ method: 'post' })
+      )
+    })
   })
 })
