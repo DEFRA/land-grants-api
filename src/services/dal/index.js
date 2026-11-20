@@ -1,3 +1,4 @@
+import { getTraceId } from '@defra/hapi-tracing'
 import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
 import {
@@ -63,6 +64,11 @@ export async function getAgreements(sbi, auth, logger) {
     entraHeader = { Authorization: `Bearer ${entraToken}` }
   }
 
+  const traceId = getTraceId()
+  const tracingHeader = traceId
+    ? { [config.get('tracing.header')]: traceId }
+    : {}
+
   const requestBody = await withRetries(
     async () => {
       const response = await fetch(endpoint, {
@@ -70,7 +76,8 @@ export async function getAgreements(sbi, auth, logger) {
         headers: {
           'Content-Type': 'application/json',
           ...authHeaders,
-          ...entraHeader
+          ...entraHeader,
+          ...tracingHeader
         },
         body: JSON.stringify({ query: GET_BUSINESS, variables: { sbi } })
       })
