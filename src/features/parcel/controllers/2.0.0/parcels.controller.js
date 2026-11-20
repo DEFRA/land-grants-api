@@ -145,15 +145,20 @@ const ParcelsControllerV2 = {
       }
 
       const displayedActions = validationResponse.enabledActions.filter(
-        (enabledAction) => enabledAction.display
+        (enabledAction) =>
+          enabledAction.display && !enabledAction.isSupplementalOnly
       )
+      const enabledActions = validationResponse.enabledActions
+        .filter((action) => action.display)
+        .map((action) => action.code)
 
-      // Only actions we offer (enabled and displayed) are supported
+      // All enabled actions are supported, including supplemental only actions,
+      // so base actions are flagged as having supplements
       const { compatibilityCheckFn, actionCodesWithSupplements } =
         await createCompatibilityLookups(
           request.logger,
           postgresDb,
-          displayedActions.map((action) => action.code)
+          enabledActions
         )
 
       /** @type {AgreementsByParcel} */

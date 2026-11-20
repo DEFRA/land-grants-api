@@ -1323,16 +1323,17 @@ describe('Parcels Controller 2.0.0', () => {
       expect(message).toBe('An internal server error occurred')
     })
 
-    test('should only pass displayed actions as supported to the compatibility lookups', async () => {
+    test('should pass enabled & not displayed actions as supported to the compatibility lookups', async () => {
       const hiddenSupplement = {
         ...mockEnabledActions[0],
         code: 'SPM4',
         display: false
       }
+      const enabledActions = [...mockEnabledActions, hiddenSupplement]
       mockGetDataAndValidateRequest.mockResolvedValue({
         errors: null,
         parcels: [mockParcelData],
-        enabledActions: [...mockEnabledActions, hiddenSupplement]
+        enabledActions
       })
 
       const request = {
@@ -1351,7 +1352,53 @@ describe('Parcels Controller 2.0.0', () => {
       expect(mockCreateCompatibilityLookups).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
-        mockEnabledActions.map((action) => action.code)
+        mockEnabledActions.map((a) => a.code)
+      )
+    })
+
+    test('should exclude supplemental only actions from the displayed actions but include them in compatibility lookups', async () => {
+      const supplementalOnlyAction = {
+        ...mockEnabledActions[0],
+        code: 'GRH7',
+        display: true,
+        isSupplementalOnly: true
+      }
+      const enabledActions = [...mockEnabledActions, supplementalOnlyAction]
+      mockGetDataAndValidateRequest.mockResolvedValue({
+        errors: null,
+        parcels: [mockParcelData],
+        enabledActions
+      })
+
+      const request = {
+        method: 'POST',
+        url: '/api/v2/parcels',
+        headers: { 'X-Forwarded-Authorization': 'dummy' },
+        payload: {
+          sbi,
+          parcelIds: ['SX0679-9238'],
+          fields: ['actions']
+        }
+      }
+
+      await server.inject(request)
+
+      expect(mockCreateCompatibilityLookups).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        enabledActions.map((action) => action.code)
+      )
+      expect(mockGetActionsForParcel).toHaveBeenCalledWith(
+        mockParcelData,
+        expect.anything(),
+        false,
+        expect.objectContaining({
+          displayedActions: mockEnabledActions.filter((a) => a.display),
+          unitByActionCode: getUnitByActionCode(enabledActions)
+        }),
+        expect.any(Function),
+        expect.anything(),
+        expect.anything()
       )
     })
 

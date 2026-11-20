@@ -34,7 +34,8 @@ const getActionsByVersionSql = `
           ag.name AS group_name,
           ac.display_order AS display_order,
           COALESCE((ac.config->>'display')::BOOLEAN, FALSE) as display,
-          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled
+          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled,
+          COALESCE((ac.config->>'is_supplemental_only')::BOOLEAN, FALSE) as is_supplemental_only
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT JOIN requested r ON r.code = a.code
