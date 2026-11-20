@@ -33,6 +33,7 @@ const PAYMENT_CALCULATE_WMP_SCHEMA =
   'features/woodland-management/schema/payment-calculate-wmp.schema.js'
 const PAYMENT_CALCULATE_TOTAL_WMP_SCHEMA =
   'features/woodland-management/schema/payment-calculate-total-wmp.schema.js'
+const INGEST_STATUS_SCHEMA = 'features/land-data-ingest/schema/status.schema.js'
 const COMMON_SCHEMA = 'features/common/schema/index.js'
 
 // The public surface: export name by the file that defines it.
@@ -75,6 +76,7 @@ const exportsByFile = {
     'paymentCalculateWMPResponseSchema'
   ],
   [PAYMENT_CALCULATE_TOTAL_WMP_SCHEMA]: ['paymentCalculateTotalWMPSchema'],
+  [INGEST_STATUS_SCHEMA]: ['statusIngestQuery', 'statusResponseSchema'],
   [COMMON_SCHEMA]: [
     'badRequestResponseSchema',
     'errorResponseSchema',
