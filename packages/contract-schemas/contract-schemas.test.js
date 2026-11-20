@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { applicationValidationSchema as sourceApplicationValidationSchema } from '../../src/features/application/schema/application-validation.schema.js'
+import * as sourceCaseManagementSchemas from '../../src/features/case-management-adapter/schema/application-validation.schema.js'
 import * as sourceCommonSchemas from '../../src/features/common/schema/index.js'
 import * as sourceParcelSchemas from '../../src/features/parcel/schema/2.0.0/parcel.schema.js'
 import * as sourceParcelSupplementsSchemas from '../../src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
@@ -34,6 +35,10 @@ const sourceByExport = {
   applicationValidationSchema: sourceApplicationValidationSchema,
   applicationValidationResponseSchemaV2:
     sourceApplicationSchemasV2.applicationValidationResponseSchemaV2,
+  caseManagementApplicationValidationRunRequestSchema:
+    sourceCaseManagementSchemas.caseManagementApplicationValidationRunRequestSchema,
+  caseManagementApplicationValidationRunResponseSchema:
+    sourceCaseManagementSchemas.caseManagementApplicationValidationRunResponseSchema,
   badRequestResponseSchema: sourceCommonSchemas.badRequestResponseSchema,
   errorResponseSchema: sourceCommonSchemas.errorResponseSchema,
   unprocessableEntityResponseSchema:
@@ -252,6 +257,46 @@ describe('@defra/land-grants-contract-schemas', () => {
         contract.applicationValidationResponseSchemaV2.validate({
           message: 'success',
           id: 1
+        }).error
+      ).toBeDefined()
+    })
+
+    test('caseManagementApplicationValidationRunRequestSchema requires an integer id', () => {
+      expect(
+        contract.caseManagementApplicationValidationRunRequestSchema.validate({
+          id: 12
+        }).error
+      ).toBeUndefined()
+      expect(
+        contract.caseManagementApplicationValidationRunRequestSchema.validate({
+          id: 'abc'
+        }).error
+      ).toBeDefined()
+    })
+
+    test('caseManagementApplicationValidationRunResponseSchema accepts nested details components', () => {
+      const body = {
+        message: 'success',
+        response: [
+          { component: 'heading', text: 'Result', level: 2 },
+          {
+            component: 'details',
+            summaryItems: [
+              { component: 'status', text: 'Passed', colour: 'green' }
+            ],
+            items: [{ component: 'paragraph', text: 'All rules passed' }]
+          }
+        ]
+      }
+      expect(
+        contract.caseManagementApplicationValidationRunResponseSchema.validate(
+          body
+        ).error
+      ).toBeUndefined()
+      expect(
+        contract.caseManagementApplicationValidationRunResponseSchema.validate({
+          message: 'success',
+          response: [{ component: 'heading', text: 'Result', level: 9 }]
         }).error
       ).toBeDefined()
     })

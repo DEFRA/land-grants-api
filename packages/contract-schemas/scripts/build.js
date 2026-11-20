@@ -21,6 +21,8 @@ const APPLICATION_VALIDATION_SCHEMA =
   'features/application/schema/application-validation.schema.js'
 const APPLICATION_VALIDATION_SCHEMA_V2 =
   'features/application/schema/2.0.0/application-validation.schema.js'
+const CASE_MANAGEMENT_SCHEMA =
+  'features/case-management-adapter/schema/application-validation.schema.js'
 const COMMON_SCHEMA = 'features/common/schema/index.js'
 
 // The public surface: export name by the file that defines it.
@@ -36,6 +38,10 @@ const exportsByFile = {
   ],
   [APPLICATION_VALIDATION_SCHEMA]: ['applicationValidationSchema'],
   [APPLICATION_VALIDATION_SCHEMA_V2]: ['applicationValidationResponseSchemaV2'],
+  [CASE_MANAGEMENT_SCHEMA]: [
+    'caseManagementApplicationValidationRunRequestSchema',
+    'caseManagementApplicationValidationRunResponseSchema'
+  ],
   [COMMON_SCHEMA]: [
     'badRequestResponseSchema',
     'errorResponseSchema',
