@@ -9,43 +9,83 @@ import {
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { applicationValidationSchema as sourceApplicationValidationSchema } from '../../src/features/application/schema/application-validation.schema.js'
+import * as sourceApplicationSchemas from '../../src/features/application/schema/application-validation.schema.js'
+import * as sourceApplicationSchemasV2 from '../../src/features/application/schema/2.0.0/application-validation.schema.js'
 import * as sourceCaseManagementSchemas from '../../src/features/case-management-adapter/schema/application-validation.schema.js'
 import * as sourceCommonSchemas from '../../src/features/common/schema/index.js'
 import * as sourceParcelSchemas from '../../src/features/parcel/schema/2.0.0/parcel.schema.js'
 import * as sourceParcelSupplementsSchemas from '../../src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
 import * as sourcePaymentSchemas from '../../src/features/payment/schema/2.0.0/payment-calculate.schema.js'
-import * as sourceApplicationSchemasV2 from '../../src/features/application/schema/2.0.0/application-validation.schema.js'
+import * as sourceParcelTilesSchemas from '../../src/features/vector-tiles/schema/parcel-tiles.schema.js'
+import * as sourceParcelTilesLocateSchemas from '../../src/features/vector-tiles/schema/parcel-tiles-locate.schema.js'
+import * as sourceValidateWmpSchemas from '../../src/features/woodland-management/schema/validate-wmp.schema.js'
+import * as sourcePaymentCalculateWmpSchemas from '../../src/features/woodland-management/schema/payment-calculate-wmp.schema.js'
+import * as sourcePaymentCalculateTotalWmpSchemas from '../../src/features/woodland-management/schema/payment-calculate-total-wmp.schema.js'
 
 const packageDir = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(packageDir, '..', '..')
 const PACKAGE_NAME = '@defra/land-grants-contract-schemas'
 
-const sourceByExport = {
-  parcelsSchema: sourceParcelSchemas.parcelsSchema,
-  parcelsSuccessResponseSchema:
-    sourceParcelSchemas.parcelsSuccessResponseSchema,
-  parcelSupplementsSchema:
-    sourceParcelSupplementsSchemas.parcelSupplementsSchema,
-  parcelSupplementsSuccessResponseSchema:
-    sourceParcelSupplementsSchemas.parcelSupplementsSuccessResponseSchema,
-  PaymentCalculateSchema: sourcePaymentSchemas.PaymentCalculateSchema,
-  PaymentCalculateResponseSchemaV2:
-    sourcePaymentSchemas.PaymentCalculateResponseSchemaV2,
-  applicationValidationSchema: sourceApplicationValidationSchema,
-  applicationValidationResponseSchemaV2:
-    sourceApplicationSchemasV2.applicationValidationResponseSchemaV2,
-  caseManagementApplicationValidationRunRequestSchema:
-    sourceCaseManagementSchemas.caseManagementApplicationValidationRunRequestSchema,
-  caseManagementApplicationValidationRunResponseSchema:
-    sourceCaseManagementSchemas.caseManagementApplicationValidationRunResponseSchema,
-  badRequestResponseSchema: sourceCommonSchemas.badRequestResponseSchema,
-  errorResponseSchema: sourceCommonSchemas.errorResponseSchema,
-  unprocessableEntityResponseSchema:
-    sourceCommonSchemas.unprocessableEntityResponseSchema,
-  internalServerErrorResponseSchema:
-    sourceCommonSchemas.internalServerErrorResponseSchema
-}
+const sourceModules = [
+  sourceApplicationSchemas,
+  sourceApplicationSchemasV2,
+  sourceCaseManagementSchemas,
+  sourceCommonSchemas,
+  sourceParcelSchemas,
+  sourceParcelSupplementsSchemas,
+  sourcePaymentSchemas,
+  sourceParcelTilesSchemas,
+  sourceParcelTilesLocateSchemas,
+  sourceValidateWmpSchemas,
+  sourcePaymentCalculateWmpSchemas,
+  sourcePaymentCalculateTotalWmpSchemas
+]
+
+// The public surface, listed explicitly so adding or dropping an export is a
+// deliberate change to this test.
+const PUBLIC_EXPORTS = [
+  'parcelsSchema',
+  'parcelsSuccessResponseSchema',
+  'parcelSupplementsSchema',
+  'parcelSupplementsSuccessResponseSchema',
+  'PaymentCalculateSchema',
+  'PaymentCalculateResponseSchemaV2',
+  'applicationValidationSchema',
+  'applicationValidationResponseSchemaV2',
+  'applicationValidationRunRequestSchema',
+  'applicationValidationRunResponseSchema',
+  'applicationValidationRunsRequestSchema',
+  'applicationValidationRunsBodyRequestSchema',
+  'applicationValidationRunsResponseSchema',
+  'caseManagementApplicationValidationRunRequestSchema',
+  'caseManagementApplicationValidationRunResponseSchema',
+  'caseManagementApplicationValidationRerunRequestSchema',
+  'caseManagementApplicationValidationReRunResponseSchema',
+  'parcelTilesParamsSchema',
+  'parcelTilesPayloadSchema',
+  'parcelTilesLocatePayloadSchema',
+  'parcelTilesLocateSuccessResponseSchema',
+  'validateWMPSchemaV2',
+  'validateWMPResponseSchemaV2',
+  'paymentCalculateWMPSchemaV2',
+  'paymentCalculateWMPResponseSchema',
+  'paymentCalculateTotalWMPSchema',
+  'badRequestResponseSchema',
+  'errorResponseSchema',
+  'unprocessableEntityResponseSchema',
+  'internalServerErrorResponseSchema'
+]
+
+// Custom rules carry a function, and the packed copy is a different module
+// instance, so functions compare as a marker; their behaviour is tested below.
+const describeSchema = (schema) =>
+  JSON.parse(
+    JSON.stringify(schema.describe(), (_key, value) =>
+      typeof value === 'function' ? '[function]' : value
+    )
+  )
+
+const sourceSchema = (name) => sourceModules.find((m) => name in m)?.[name]
 
 describe('@defra/land-grants-contract-schemas', () => {
   let installDir
@@ -101,9 +141,7 @@ describe('@defra/land-grants-contract-schemas', () => {
   })
 
   test('exports exactly the public surface', () => {
-    expect(Object.keys(contract).sort()).toEqual(
-      Object.keys(sourceByExport).sort()
-    )
+    expect(Object.keys(contract).sort()).toEqual([...PUBLIC_EXPORTS].sort())
   })
 
   test('ships no test files or sources outside dist', () => {
@@ -112,10 +150,12 @@ describe('@defra/land-grants-contract-schemas', () => {
     ).toBe(false)
   })
 
-  test.each(Object.keys(sourceByExport))(
+  test.each(PUBLIC_EXPORTS)(
     '%s matches the schema the service uses',
     (name) => {
-      expect(contract[name].describe()).toEqual(sourceByExport[name].describe())
+      expect(describeSchema(contract[name])).toEqual(
+        describeSchema(sourceSchema(name))
+      )
     }
   )
 
@@ -181,6 +221,120 @@ describe('@defra/land-grants-contract-schemas', () => {
         contract.applicationValidationSchema.validate({
           ...request,
           landActions: []
+        }).error
+      ).toBeDefined()
+    })
+
+    test('applicationValidationRunRequestSchema requires an integer id', () => {
+      expect(
+        contract.applicationValidationRunRequestSchema.validate({ id: 3 }).error
+      ).toBeUndefined()
+      expect(
+        contract.applicationValidationRunRequestSchema.validate({ id: 'x' })
+          .error
+      ).toBeDefined()
+    })
+
+    test('applicationValidationRunsRequestSchema and body schema require their fields', () => {
+      expect(
+        contract.applicationValidationRunsRequestSchema.validate({
+          applicationId: 'APP-1'
+        }).error
+      ).toBeUndefined()
+      expect(
+        contract.applicationValidationRunsRequestSchema.validate({}).error
+      ).toBeDefined()
+      expect(
+        contract.applicationValidationRunsBodyRequestSchema.validate({
+          fields: ['details']
+        }).error
+      ).toBeUndefined()
+      expect(
+        contract.applicationValidationRunsBodyRequestSchema.validate({
+          fields: ['other']
+        }).error
+      ).toBeDefined()
+    })
+
+    test('caseManagementApplicationValidationRerunRequestSchema requires the requester and id', () => {
+      expect(
+        contract.caseManagementApplicationValidationRerunRequestSchema.validate(
+          { requesterUsername: 'case.worker', id: 12 }
+        ).error
+      ).toBeUndefined()
+      expect(
+        contract.caseManagementApplicationValidationRerunRequestSchema.validate(
+          { id: 12 }
+        ).error
+      ).toBeDefined()
+    })
+
+    test('parcelTilesParamsSchema keeps x and y inside the zoom level', () => {
+      expect(
+        contract.parcelTilesParamsSchema.validate({ z: 2, x: 3, y: 0 }).error
+      ).toBeUndefined()
+      expect(
+        contract.parcelTilesParamsSchema.validate({ z: 2, x: 4, y: 0 }).error
+      ).toBeDefined()
+      expect(
+        contract.parcelTilesParamsSchema.validate({ z: 23, x: 0, y: 0 }).error
+      ).toBeDefined()
+    })
+
+    test.each(['parcelTilesPayloadSchema', 'parcelTilesLocatePayloadSchema'])(
+      '%s requires at least one well-formed parcel id',
+      (name) => {
+        expect(
+          contract[name].validate({ parcelIds: ['SD6743-8083'] }).error
+        ).toBeUndefined()
+        expect(contract[name].validate({ parcelIds: [] }).error).toBeDefined()
+        expect(
+          contract[name].validate({ parcelIds: ['not a parcel'] }).error
+        ).toBeDefined()
+      }
+    )
+
+    test('validateWMPSchemaV2 requires parcels and the old woodland area', () => {
+      const request = { parcelIds: ['SD6743-8083'], oldWoodlandAreaHa: 1.5 }
+      expect(
+        contract.validateWMPSchemaV2.validate(request).error
+      ).toBeUndefined()
+      expect(
+        contract.validateWMPSchemaV2.validate({ parcelIds: ['SD6743-8083'] })
+          .error
+      ).toBeDefined()
+    })
+
+    test('paymentCalculateWMPSchemaV2 requires both woodland areas and a parcel', () => {
+      const request = {
+        parcelIds: ['SD6743-8083'],
+        oldWoodlandAreaHa: 1,
+        newWoodlandAreaHa: 2
+      }
+      expect(
+        contract.paymentCalculateWMPSchemaV2.validate(request).error
+      ).toBeUndefined()
+      expect(
+        contract.paymentCalculateWMPSchemaV2.validate({
+          ...request,
+          parcelIds: []
+        }).error
+      ).toBeDefined()
+    })
+
+    test('paymentCalculateTotalWMPSchema requires the total area, application and sbi', () => {
+      const request = {
+        totalAreaHa: 12.5,
+        applicationId: 'APP-1',
+        sbi: '106284736'
+      }
+      expect(
+        contract.paymentCalculateTotalWMPSchema.validate(request).error
+      ).toBeUndefined()
+      expect(
+        contract.paymentCalculateTotalWMPSchema.validate({
+          ...request,
+          totalAreaHa: -1
         }).error
       ).toBeDefined()
     })
@@ -297,6 +451,133 @@ describe('@defra/land-grants-contract-schemas', () => {
         contract.caseManagementApplicationValidationRunResponseSchema.validate({
           message: 'success',
           response: [{ component: 'heading', text: 'Result', level: 9 }]
+        }).error
+      ).toBeDefined()
+    })
+
+    test('applicationValidationRunResponseSchema requires the run to be a complete record', () => {
+      const run = {
+        id: 1,
+        application_id: 'APP-1',
+        sbi: '106284736',
+        crn: '1100014934',
+        data: {},
+        created_at: '2026-11-17T10:00:00.000Z'
+      }
+      expect(
+        contract.applicationValidationRunResponseSchema.validate({
+          message: 'success',
+          applicationValidationRun: run
+        }).error
+      ).toBeUndefined()
+      expect(
+        contract.applicationValidationRunResponseSchema.validate({
+          message: 'success',
+          applicationValidationRun: { id: 1 }
+        }).error
+      ).toBeDefined()
+    })
+
+    test('applicationValidationRunsResponseSchema accepts summary and detailed runs', () => {
+      expect(
+        contract.applicationValidationRunsResponseSchema.validate({
+          message: 'success',
+          applicationValidationRuns: [
+            { id: 1, created_at: '2026-11-17T10:00:00.000Z' }
+          ]
+        }).error
+      ).toBeUndefined()
+      expect(
+        contract.applicationValidationRunsResponseSchema.validate({
+          applicationValidationRuns: []
+        }).error
+      ).toBeDefined()
+    })
+
+    test('caseManagementApplicationValidationReRunResponseSchema requires the validity and run id', () => {
+      const body = {
+        message: 'success',
+        valid: true,
+        id: 5,
+        date: '2026-11-17T10:00:00.000Z'
+      }
+      expect(
+        contract.caseManagementApplicationValidationReRunResponseSchema.validate(
+          body
+        ).error
+      ).toBeUndefined()
+      expect(
+        contract.caseManagementApplicationValidationReRunResponseSchema.validate(
+          { message: 'success' }
+        ).error
+      ).toBeDefined()
+    })
+
+    test('parcelTilesLocateSuccessResponseSchema requires bounds for the box and each parcel', () => {
+      const bounds = { minLng: -2, minLat: 51, maxLng: -1, maxLat: 52 }
+      const body = {
+        message: 'success',
+        bbox: bounds,
+        parcels: [{ id: 'SD6743-8083', bounds }]
+      }
+      expect(
+        contract.parcelTilesLocateSuccessResponseSchema.validate(body).error
+      ).toBeUndefined()
+      expect(
+        contract.parcelTilesLocateSuccessResponseSchema.validate({
+          ...body,
+          parcels: [{ id: 'SD6743-8083' }]
+        }).error
+      ).toBeDefined()
+    })
+
+    test('validateWMPResponseSchemaV2 requires a complete rule result', () => {
+      const body = {
+        message: 'success',
+        result: {
+          hasPassed: true,
+          code: 'WMP',
+          actionConfigVersion: '1.0.0',
+          rules: []
+        }
+      }
+      expect(
+        contract.validateWMPResponseSchemaV2.validate(body).error
+      ).toBeUndefined()
+      expect(
+        contract.validateWMPResponseSchemaV2.validate({
+          message: 'success',
+          result: { hasPassed: true }
+        }).error
+      ).toBeDefined()
+    })
+
+    test('paymentCalculateWMPResponseSchema requires the agreement and payments', () => {
+      const body = {
+        message: 'success',
+        payment: {
+          explanations: [],
+          agreementStartDate: '2026-01-01',
+          agreementEndDate: '2036-01-01',
+          frequency: 'Annually',
+          agreementTotalPence: 100000,
+          parcelItems: {},
+          payments: [
+            {
+              totalPaymentPence: 10000,
+              paymentDate: null,
+              lineItems: [{ agreementLevelItemId: 1, paymentPence: 10000 }]
+            }
+          ]
+        }
+      }
+      expect(
+        contract.paymentCalculateWMPResponseSchema.validate(body).error
+      ).toBeUndefined()
+      expect(
+        contract.paymentCalculateWMPResponseSchema.validate({
+          message: 'success',
+          payment: { ...body.payment, payments: undefined }
         }).error
       ).toBeDefined()
     })
