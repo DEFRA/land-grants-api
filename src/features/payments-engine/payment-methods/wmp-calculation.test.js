@@ -1,5 +1,24 @@
+import { readFileSync } from 'node:fs'
 import { wmpCalculation } from './wmp-calculation.js'
 import { haToSqm } from '../../common/helpers/measurement.js'
+
+const fixtureScenarios = readFileSync(
+  new URL('../fixture/wmp-calculation.csv', import.meta.url),
+  'utf8'
+)
+  .trim()
+  .split(/\r?\n/)
+  .slice(1)
+  .map((line) => {
+    const [scenario, oldHa, newHa, , , eligibleHa, payment] = line.split(',')
+    return {
+      scenario,
+      oldWoodlandAreaHa: Number(oldHa),
+      newWoodlandAreaHa: Number(newHa),
+      eligibleAreaHa: Number(eligibleHa),
+      payment: Number(payment)
+    }
+  })
 
 const tiers = [
   {
@@ -68,89 +87,17 @@ describe('wmpCalculation', () => {
       expect(result.activeTierFlatRatePence).toBe(1500)
     })
 
-    test('Actual new woodland is more than maximum eligible new woodland', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(100, 500)
-      )
-
-      expect(result.eligibleArea).toBe(125)
-      expect(result.payment).toBe(3375)
-      expect(result.activePaymentTier).toBe(3)
-      expect(result.quantityInActiveTier).toBe(25)
-      expect(result.activeTierRatePence).toBe(15)
-      expect(result.activeTierFlatRatePence).toBe(3000)
-    })
-
-    test('Actual new woodland is more than maximum eligible new woodland and on the 100ha limit', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(80, 80)
-      )
-
-      expect(result.eligibleArea).toBe(100)
-      expect(result.payment).toBe(3000)
-      expect(result.activePaymentTier).toBe(3)
-      expect(result.quantityInActiveTier).toBe(0)
-      expect(result.activeTierRatePence).toBe(15)
-      expect(result.activeTierFlatRatePence).toBe(3000)
-    })
-
-    test('Actual new woodland is more than maximum eligible new woodland and just above the 100ha limit', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(81, 500)
-      )
-
-      expect(result.eligibleArea).toBe(101.25)
-      expect(result.payment).toBe(3018.75)
-      expect(result.activePaymentTier).toBe(3)
-      expect(result.quantityInActiveTier).toBe(1.25)
-      expect(result.activeTierRatePence).toBe(15)
-      expect(result.activeTierFlatRatePence).toBe(3000)
-    })
-
-    test('Actual new woodland is less than maximum eligible new woodland', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(81, 10)
-      )
-
-      expect(result.eligibleArea).toBe(91)
-      expect(result.payment).toBe(2730)
-      expect(result.activePaymentTier).toBe(2)
-      expect(result.quantityInActiveTier).toBe(41)
-      expect(result.activeTierRatePence).toBe(30)
-      expect(result.activeTierFlatRatePence).toBe(1500)
-    })
-
-    test('rounds output values', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(80.7458, 23.7859)
-      )
-
-      expect(result.eligibleArea).toBe(100.9323) // 100.93225
-      expect(result.payment).toBe(3013.98)
-      expect(result.activePaymentTier).toBe(3)
-      expect(result.quantityInActiveTier).toBe(0.9323)
-      expect(result.activeTierRatePence).toBe(15)
-      expect(result.activeTierFlatRatePence).toBe(3000)
-    })
-
-    test('rounds input values', () => {
-      const result = wmpCalculation.execute(
-        createPaymentMethod(),
-        createData(50.0000989, 5.0000989)
-      )
-
-      expect(result.eligibleArea).toBe(55.0002)
-      expect(result.payment).toBe(1650.01)
-      expect(result.activePaymentTier).toBe(2)
-      expect(result.quantityInActiveTier).toBe(5.0002)
-      expect(result.activeTierRatePence).toBe(30)
-      expect(result.activeTierFlatRatePence).toBe(1500)
-    })
+    test.each(fixtureScenarios)(
+      'fixture scenario $scenario: old=$oldWoodlandAreaHa ha, new=$newWoodlandAreaHa ha → eligible=$eligibleAreaHa ha, £$payment',
+      ({ oldWoodlandAreaHa, newWoodlandAreaHa, eligibleAreaHa, payment }) => {
+        const result = wmpCalculation.execute(
+          createPaymentMethod(),
+          createData(oldWoodlandAreaHa, newWoodlandAreaHa)
+        )
+        expect(result.eligibleArea).toBe(eligibleAreaHa)
+        expect(result.payment).toBe(payment)
+      }
+    )
   })
 
   describe('execute with total woodland area', () => {
