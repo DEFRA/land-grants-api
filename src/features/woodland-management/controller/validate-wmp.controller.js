@@ -16,23 +16,7 @@ import { statusCodes } from '~/src/features/common/constants/status-codes.js'
 import { wmpResultTransformer } from '../transformer/wmp.transformer.js'
 import { getAndValidateParcels } from '../../parcel/validation/2.0.0/parcel.validation.js'
 import { splitParcelId } from '../../parcel/helpers/parcel-id.js'
-import {
-  AuditEvent,
-  auditEvent,
-  getCorrelationId
-} from '../../common/helpers/audit-event.js'
-
-/**
- * Builds the shared portion of a WMP validation audit context.
- * @param {import('@hapi/hapi').Request} request
- * @param {object} params
- * @param {string[]} params.parcelIds
- * @returns {object}
- */
-const buildAuditContext = (request, { parcelIds }) => ({
-  correlationId: getCorrelationId(request),
-  parcelIds
-})
+import { AuditEvent, auditEvent } from '../../common/helpers/audit-event.js'
 
 export const ValidateWMPController = {
   options: {
@@ -95,7 +79,7 @@ export const ValidateWMPController = {
       await auditEvent(
         AuditEvent.WMP_VALIDATED,
         {
-          ...buildAuditContext(request, { parcelIds }),
+          parcelIds,
           response: { result: transformedResult }
         },
         'success',
@@ -127,7 +111,7 @@ export const ValidateWMPController = {
       await auditEvent(
         AuditEvent.WMP_VALIDATED,
         {
-          ...buildAuditContext(request, { parcelIds }),
+          parcelIds,
           error: error.message
         },
         'failure',

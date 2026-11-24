@@ -18,24 +18,8 @@ import { executePaymentMethod } from '../../payments-engine/paymentsEngine.js'
 import { validatePaymentCalculationRequest } from '../validation/payment-calculation.validation.js'
 import { getActionsByLatestVersion } from '../../actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { haToSqm } from '../../common/helpers/measurement.js'
-import {
-  AuditEvent,
-  auditEvent,
-  getCorrelationId
-} from '../../common/helpers/audit-event.js'
+import { AuditEvent, auditEvent } from '../../common/helpers/audit-event.js'
 import { WMP_ACTION_CODE } from '../constants.js'
-
-/**
- * Builds the shared portion of a WMP payment calculation audit context.
- * @param {import('@hapi/hapi').Request} request
- * @param {object} params
- * @param {string[]} params.parcelIds
- * @returns {object}
- */
-const buildAuditContext = (request, { parcelIds }) => ({
-  correlationId: getCorrelationId(request),
-  parcelIds
-})
 
 /**
  * Runs the WMP payment calculation pipeline for a validated request.
@@ -119,7 +103,7 @@ const handleWmpPaymentCalculationError = async (request, error) => {
   await auditEvent(
     AuditEvent.WMP_PAYMENT_CALCULATED,
     {
-      ...buildAuditContext(request, { parcelIds }),
+      parcelIds,
       request: { oldWoodlandAreaHa, newWoodlandAreaHa, startDate },
       error: error.message
     },
@@ -186,7 +170,7 @@ export const PaymentsCalculateWMPController = {
       await auditEvent(
         AuditEvent.WMP_PAYMENT_CALCULATED,
         {
-          ...buildAuditContext(request, { parcelIds }),
+          parcelIds,
           request: { oldWoodlandAreaHa, newWoodlandAreaHa, startDate },
           response: transformedPayment
         },
