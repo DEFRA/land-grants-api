@@ -8,7 +8,7 @@ import {
 /**
  * Calculates the eligible woodland area, applying the young woodland cap.
  * Young woodland (new woodland) can contribute at most `newWoodlandMaxPercent`% of
- * the total woodland area. Any excess is excluded from payment.
+ * the old woodland area. Any excess is excluded from payment.
  * @param {number} oldWoodlandAreaSqm - Area of established woodland in square metres
  * @param {number} newWoodlandAreaSqm - Area of young woodland (under 10 years) in square metres
  * @param {number} newWoodlandMaxPercent - Maximum percentage of total area that new woodland may contribute
@@ -20,9 +20,8 @@ const calculateEligibleArea = (
   newWoodlandMaxPercent
 ) => {
   const percentFraction = newWoodlandMaxPercent / 100
-  // new woodland can be no more than 20% of the total eligible area
-  const maxNewWoodlandSqm =
-    (oldWoodlandAreaSqm * percentFraction) / (1 - percentFraction)
+  // new woodland can be no more than 20% of the old woodland area
+  const maxNewWoodlandSqm = oldWoodlandAreaSqm * percentFraction
   const eligibleNewWoodlandSqm = Math.min(newWoodlandAreaSqm, maxNewWoodlandSqm)
   return Math.round(oldWoodlandAreaSqm + eligibleNewWoodlandSqm)
 }
