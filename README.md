@@ -63,6 +63,18 @@ cd land-grants-api
 nvm use
 ```
 
+### Betterleaks
+
+[Betterleaks](https://github.com/betterleaks/betterleaks) must be on your `PATH`, because the pre-commit hook uses it to stop secrets being committed - on macOS:
+
+```bash
+brew install betterleaks
+```
+
+For other platforms, see the [betterleaks releases page](https://github.com/betterleaks/betterleaks/releases).
+
+If a finding is a genuine false positive, add a `// betterleaks:allow` comment to the end of that line.
+
 ## Local development
 
 ### Configuration
