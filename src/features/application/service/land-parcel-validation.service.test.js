@@ -1,10 +1,10 @@
 import { mockActionConfig } from '~/src/features/actions/fixtures/index.js'
-import { validateLandAction } from './action-validation.service.js'
+import { validateActionOnParcel } from './action-validation.service.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
 
 vi.mock('./action-validation.service.js')
 
-const mockValidateLandAction = validateLandAction
+const mockValidateActionOnParcel = validateActionOnParcel
 
 const parcelId = '9238'
 const sheetId = 'SX0679'
@@ -95,12 +95,12 @@ describe('Land Parcel Validation Service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockValidateLandAction.mockResolvedValue(mockActionResult1)
+    mockValidateActionOnParcel.mockResolvedValue(mockActionResult1)
   })
 
   describe('validateLandParcelActions', () => {
     test('should successfully validate land parcel actions', async () => {
-      mockValidateLandAction
+      mockValidateActionOnParcel
         .mockResolvedValueOnce(mockActionResult1)
         .mockResolvedValueOnce(mockActionResult2)
 
@@ -118,8 +118,8 @@ describe('Land Parcel Validation Service', () => {
         actions: [mockActionResult1, mockActionResult2]
       })
 
-      expect(mockValidateLandAction).toHaveBeenCalledTimes(2)
-      expect(mockValidateLandAction).toHaveBeenNthCalledWith(
+      expect(mockValidateActionOnParcel).toHaveBeenCalledTimes(2)
+      expect(mockValidateActionOnParcel).toHaveBeenNthCalledWith(
         1,
         mockLandAction.actions[0],
         mockActions,
@@ -128,7 +128,7 @@ describe('Land Parcel Validation Service', () => {
         mockLandAction,
         mockRequest
       )
-      expect(mockValidateLandAction).toHaveBeenNthCalledWith(
+      expect(mockValidateActionOnParcel).toHaveBeenNthCalledWith(
         2,
         mockLandAction.actions[1],
         mockActions,
