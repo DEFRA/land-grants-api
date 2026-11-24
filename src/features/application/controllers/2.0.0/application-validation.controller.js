@@ -24,21 +24,18 @@ import {
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
   AuditEvent,
-  auditEvent,
-  getCorrelationId
+  auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 
 /**
  * Builds the shared portion of an application validation audit context.
- * @param {import('@hapi/hapi').Request} request
  * @param {object} params
  * @param {string} params.applicationId
  * @param {string} params.sbi
  * @param {string} params.applicantCrn
  * @returns {object}
  */
-const buildAuditContext = (request, { applicationId, sbi, applicantCrn }) => ({
-  correlationId: getCorrelationId(request),
+const buildAuditContext = ({ applicationId, sbi, applicantCrn }) => ({
   applicationId,
   identifiers: { sbi, crn: applicantCrn }
 })
@@ -213,7 +210,7 @@ const handleValidationError = async (error, request) => {
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
     {
-      ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
+      ...buildAuditContext({ applicationId, sbi, applicantCrn }),
       request: { landActions },
       error: error.message
     },
@@ -249,7 +246,7 @@ const sendValidationAuditEvent = async (
   await auditEvent(
     AuditEvent.SFI_APPLICATION_VALIDATED,
     {
-      ...buildAuditContext(request, { applicationId, sbi, applicantCrn }),
+      ...buildAuditContext({ applicationId, sbi, applicantCrn }),
       request: { landActions },
       response: { valid: responseData.valid, actions: responseData.actions }
     },

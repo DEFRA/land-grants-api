@@ -45,7 +45,8 @@ function buildConfig(actionJson) {
     display_unit: actionJson.displayUnit ?? null,
     display_unit_plural: actionJson.displayUnitPlural ?? null,
     enabled: actionJson.enabled,
-    display: actionJson.display
+    display: actionJson.display,
+    is_supplemental_only: actionJson.isSupplementalOnly
   }
 }
 

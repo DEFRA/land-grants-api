@@ -1,4 +1,4 @@
-import { validateLandAction } from './action-validation.service.js'
+import { validateActionOnParcel } from './action-validation.service.js'
 
 /**
  * Validate land parcel actions
@@ -21,7 +21,7 @@ export const validateLandParcelActions = async (
 
   const actionResults = await Promise.all(
     landAction.actions.map(async (action) => {
-      return validateLandAction(
+      return validateActionOnParcel(
         action,
         actions,
         agreements,

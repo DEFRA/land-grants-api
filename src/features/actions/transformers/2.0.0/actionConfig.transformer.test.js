@@ -172,6 +172,26 @@ describe('actionConfigTransformer', () => {
     expect(result.displayOrder).toBeNull()
   })
 
+  test('should transform is_supplemental_only to isSupplementalOnly', () => {
+    const action = {
+      code: 'SPM5',
+      duration_years: 5,
+      application_unit_of_measurement: 'hectares',
+      land_cover_class_codes: ['LC001'],
+      start_date: '2024-01-01',
+      last_updated: new Date('2024-01-01T00:00:00Z'),
+      major_version: 1,
+      minor_version: 0,
+      patch_version: 0,
+      is_supplemental_only: true
+    }
+
+    const result = actionConfigTransformer(action)
+
+    expect(result.isSupplementalOnly).toBe(true)
+    expect(result.is_supplemental_only).toBeUndefined()
+  })
+
   test('should preserve other fields in action object', () => {
     const action = {
       code: 'UPL1',

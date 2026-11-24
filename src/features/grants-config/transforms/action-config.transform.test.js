@@ -132,6 +132,19 @@ describe('transformActionConfig', () => {
     expect(result.config.display).toBe(false)
   })
 
+  test('sets config.is_supplemental_only', () => {
+    const result = transformActionConfig({
+      ...pa3Json,
+      isSupplementalOnly: true
+    })
+    expect(result.config.is_supplemental_only).toBe(true)
+  })
+
+  test('leaves config.is_supplemental_only undefined when absent', () => {
+    const result = transformActionConfig(pa3Json)
+    expect(result.config.is_supplemental_only).toBeUndefined()
+  })
+
   test('maps camelCase fields to snake_case config JSONB keys', () => {
     const result = transformActionConfig(pa3Json)
     expect(result.config).toEqual({

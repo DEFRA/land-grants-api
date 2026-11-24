@@ -33,7 +33,8 @@ describe('getActionsByLatestVersion', () => {
             name: 'wmp-calculation',
             version: '1.0.0',
             config: {}
-          }
+          },
+          is_supplemental_only: false
         },
         {
           code: 'CMOR1',
@@ -54,7 +55,8 @@ describe('getActionsByLatestVersion', () => {
           semantic_version: '3.0.0',
           group_id: 2,
           group_name: 'Moorland',
-          payment_method: null
+          payment_method: null,
+          is_supplemental_only: true
         }
       ]
     }
@@ -80,7 +82,12 @@ describe('getActionsByLatestVersion', () => {
         semanticVersion: '2.0.0',
         groupId: 1,
         groupName: 'Upland',
-        paymentMethod: { name: 'wmp-calculation', version: '1.0.0', config: {} }
+        paymentMethod: {
+          name: 'wmp-calculation',
+          version: '1.0.0',
+          config: {}
+        },
+        isSupplementalOnly: false
       },
       {
         code: 'CMOR1',
@@ -101,7 +108,8 @@ describe('getActionsByLatestVersion', () => {
         semanticVersion: '3.0.0',
         groupId: 2,
         groupName: 'Moorland',
-        paymentMethod: null
+        paymentMethod: null,
+        isSupplementalOnly: true
       }
     ]
 
@@ -136,6 +144,15 @@ describe('getActionsByLatestVersion', () => {
     const result = await getActionsByLatestVersion(mockLogger, mockDb)
 
     expect(result).toEqual(expectedTransformedResult)
+  })
+
+  test('should select is_supplemental_only defaulting to false', async () => {
+    await getActionsByLatestVersion(mockLogger, mockDb)
+
+    const [sql] = mockClient.query.mock.calls[0]
+    expect(sql).toContain(
+      "COALESCE((ac.config->>'is_supplemental_only')::BOOLEAN, FALSE) as is_supplemental_only"
+    )
   })
 
   test('should return empty array when no enabled actions found', async () => {

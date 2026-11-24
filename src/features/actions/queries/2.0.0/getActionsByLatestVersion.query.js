@@ -42,7 +42,8 @@ async function getActionsByLatestVersion(logger, db) {
           ac.display_order as display_order,
           ac.config->'payment_method' as payment_method,
           COALESCE((ac.config->>'display')::BOOLEAN, FALSE) as display,
-          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled
+          COALESCE((ac.config->>'enabled')::BOOLEAN, FALSE) as enabled,
+          COALESCE((ac.config->>'is_supplemental_only')::BOOLEAN, FALSE) as is_supplemental_only
         FROM actions a
         JOIN actions_config ac ON a.code = ac.code
         LEFT OUTER JOIN action_groups ag ON ac.group_id = ag.id

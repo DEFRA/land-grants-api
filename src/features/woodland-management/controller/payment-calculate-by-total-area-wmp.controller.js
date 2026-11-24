@@ -12,11 +12,7 @@ import { haToSqm } from '../../common/helpers/measurement.js'
 import { calculateWMPPayment } from '../service/wmp-service.js'
 import { wmpPaymentCalculateTransformer } from '../transformer/wmp-payment-calculate.transformer.js'
 import { paymentCalculateWMPResponseSchema } from '../schema/payment-calculate-wmp.schema.js'
-import {
-  AuditEvent,
-  auditEvent,
-  getCorrelationId
-} from '../../common/helpers/audit-event.js'
+import { AuditEvent, auditEvent } from '../../common/helpers/audit-event.js'
 
 const handleWmpPaymentTotalCalculationError = async (request, error) => {
   /** @type {paymentCalculateTotalWMPSchema} */
@@ -39,7 +35,7 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
   await auditEvent(
     AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
     {
-      ...buildAuditContext(request, sbi, crn),
+      ...buildAuditContext(sbi, crn),
       request: { totalAreaHa, originalTotalAreaHa, applicationId, sbi, crn },
       error: error.message
     },
@@ -51,13 +47,11 @@ const handleWmpPaymentTotalCalculationError = async (request, error) => {
 }
 /**
  * Builds the shared portion of a WMP payment calculation audit context.
- * @param {import('@hapi/hapi').Request} request
  * @param {string} sbi
  * @param {string} [crn]
  * @returns {object}
  */
-const buildAuditContext = (request, sbi, crn) => ({
-  correlationId: getCorrelationId(request),
+const buildAuditContext = (sbi, crn) => ({
   identifiers: { sbi, crn }
 })
 
@@ -140,7 +134,7 @@ export const PaymentsCalculateTotalWMPController = {
       await auditEvent(
         AuditEvent.WMP_PAYMENT_TOTAL_CALCULATED,
         {
-          ...buildAuditContext(request, sbi, crn),
+          ...buildAuditContext(sbi, crn),
           request: {
             totalAreaHa,
             originalTotalAreaHa,

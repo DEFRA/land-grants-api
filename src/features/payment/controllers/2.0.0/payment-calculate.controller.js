@@ -23,20 +23,17 @@ import { paymentCalculationTransformerV2 } from '~/src/features/payment/transfor
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
   AuditEvent,
-  auditEvent,
-  getCorrelationId
+  auditEvent
 } from '~/src/features/common/helpers/audit-event.js'
 
 /**
  * Builds the shared portion of a payment calculation audit context.
- * @param {import('@hapi/hapi').Request} request
  * @param {object} params
  * @param {string} params.applicationId
  * @param {string} params.sbi
  * @returns {object}
  */
-const buildAuditContext = (request, { applicationId, sbi }) => ({
-  correlationId: getCorrelationId(request),
+const buildAuditContext = ({ applicationId, sbi }) => ({
   applicationId,
   identifiers: { sbi }
 })
@@ -127,7 +124,7 @@ const handleCalculationError = async (request, error) => {
   await auditEvent(
     AuditEvent.SFI_PAYMENT_CALCULATED,
     {
-      ...buildAuditContext(request, { applicationId, sbi }),
+      ...buildAuditContext({ applicationId, sbi }),
       request: { parcel, startDate },
       error: error.message
     },
@@ -205,7 +202,7 @@ const PaymentsCalculateControllerV2 = {
       await auditEvent(
         AuditEvent.SFI_PAYMENT_CALCULATED,
         {
-          ...buildAuditContext(request, { applicationId, sbi }),
+          ...buildAuditContext({ applicationId, sbi }),
           request: { parcel: landActions, startDate },
           response: transformedResponse
         },

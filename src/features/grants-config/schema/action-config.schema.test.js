@@ -48,4 +48,22 @@ describe('validateActionConfig', () => {
     const [problem] = error.details
     expect(problem.context.ruleKey).toBe('made-up-rule-1.0.0')
   })
+
+  test('accepts isSupplementalOnly as a boolean', () => {
+    const { error } = validateActionConfig({
+      ...actionConfig,
+      isSupplementalOnly: true
+    })
+
+    expect(error).toBeUndefined()
+  })
+
+  test('rejects a non-boolean isSupplementalOnly', () => {
+    const { error } = validateActionConfig({
+      ...actionConfig,
+      isSupplementalOnly: 'yes'
+    })
+
+    expect(error.details[0].path).toEqual(['isSupplementalOnly'])
+  })
 })

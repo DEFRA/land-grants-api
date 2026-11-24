@@ -29,6 +29,7 @@
  * @property {string} [displayUnit]
  * @property {string} [displayUnitPlural]
  * @property {string} updatedBy
+ * @property {boolean} [isSupplementalOnly]
  */
 
 /**

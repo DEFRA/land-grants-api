@@ -1,3 +1,4 @@
+import { getTraceId } from '@defra/hapi-tracing'
 import getToken from '~/src/services/entra/index.js'
 import { GET_BUSINESS } from './queries.js'
 import {
@@ -27,6 +28,7 @@ const errorResponse = {
 
 const mockLogger = { info: vi.fn() }
 vi.mock('~/src/services/entra/index.js')
+vi.mock('@defra/hapi-tracing', () => ({ getTraceId: vi.fn() }))
 
 const externalAuth = { type: 'external', value: 'dummy' }
 const internalAuth = { type: 'internal', value: 'dummy@defra.gov.uk' }
@@ -232,5 +234,58 @@ describe('getAgreements', () => {
     )
 
     expect(getToken).not.toHaveBeenCalled()
+  })
+
+  describe('request tracing', () => {
+    const tracingHeader = config.get('tracing.header')
+    const traceId = 'trace-from-inbound-request'
+
+    it('passes the inbound trace id on to the DAL', async () => {
+      getTraceId.mockReturnValue(traceId)
+      fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(dalResponse)
+      })
+
+      await getAgreements(sbi, externalAuth, mockLogger)
+
+      const [, sentRequest] = fetch.mock.calls[0]
+      expect(sentRequest.headers[tracingHeader]).toBe(traceId)
+    })
+
+    it('sends no tracing header when the inbound request had no trace id', async () => {
+      getTraceId.mockReturnValue(undefined)
+      fetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(dalResponse)
+      })
+
+      await getAgreements(sbi, externalAuth, mockLogger)
+
+      const [, sentRequest] = fetch.mock.calls[0]
+      expect(sentRequest.headers).not.toHaveProperty(tracingHeader)
+    })
+
+    it('sends the same trace id on every retry', async () => {
+      config.set('dal.requestRetries', 1)
+      getTraceId.mockReturnValue(traceId)
+      fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error'
+        })
+        .mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve(dalResponse)
+        })
+
+      await getAgreements(sbi, externalAuth, mockLogger)
+
+      const sentTraceIds = fetch.mock.calls.map(
+        ([, sentRequest]) => sentRequest.headers[tracingHeader]
+      )
+      expect(sentTraceIds).toEqual([traceId, traceId])
+    })
   })
 })
