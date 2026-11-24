@@ -23,6 +23,7 @@ export function actionConfigTransformer(action) {
     display_unit: displayUnit,
     display_unit_plural: displayUnitPlural,
     updated_by: updatedBy,
+    is_supplemental_only: isSupplementalOnly,
     ...actionObj
   } = action
   return {
@@ -44,6 +45,7 @@ export function actionConfigTransformer(action) {
     groupName,
     displayOrder,
     paymentMethod,
-    updatedBy
+    updatedBy,
+    isSupplementalOnly
   }
 }

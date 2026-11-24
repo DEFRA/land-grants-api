@@ -50,7 +50,6 @@ export default defineConfig({
         'src/db-tests/setup/',
         'src/db-tests/fixtures/',
         'scripts/',
-        'src/contract-tests/',
         '**/*.d.js',
         'src/import-tests/setup/',
         'src/features/land-cover-codes/fixtures/'

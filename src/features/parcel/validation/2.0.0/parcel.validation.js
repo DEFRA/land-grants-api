@@ -46,7 +46,7 @@ export const getAndValidateParcels = async (sheetParcelIds, request) => {
  * @param {string[]} parcelIds - The parcelIds
  * @param {object} request - The request
  * @param {boolean} validateActions - Whether to validate actions
- * @returns {Promise<{ errors: string[] | null, enabledActions: object[], parcels: object[] }>} The error message
+ * @returns {Promise<{ errors: string[] | null, enabledActions: Action[], parcels: object[] }>} The error message
  */
 export const getDataAndValidateRequest = async (
   parcelIds,
@@ -84,3 +84,7 @@ export const getDataAndValidateRequest = async (
 
   return { errors: null, enabledActions, parcels: response?.parcels }
 }
+
+/**
+ * @import { Action } from '~/src/features/actions/action.d.js'
+ */
