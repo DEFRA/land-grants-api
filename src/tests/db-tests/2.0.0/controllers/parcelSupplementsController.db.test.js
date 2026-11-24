@@ -7,7 +7,6 @@ import {
 } from '~/src/tests/db-tests/setup/compatibility-matrix.js'
 import { getActionsByLatestVersion } from '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
 import { logger } from '~/src/tests/db-tests/setup/testLogger.js'
-import { EXCEEDS_BASE_ACTION_AREA } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 vi.mock(
   '~/src/features/actions/queries/2.0.0/getActionsByLatestVersion.query.js'
@@ -66,17 +65,21 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     )
   })
 
+  const clig3 = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
+
   const requestSupplements = async (payload) => {
     const { h, getResponse } = createResponseCapture()
 
     const response = await ParcelSupplementsControllerV2.handler(
       {
         payload: {
+          sbi: '106284736',
           parcelId: 'SD5649-9215',
-          baseAction: { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' },
-          selectedSupplements: [],
+          baseActionCode: 'CLIG3',
+          plannedActions: [clig3],
           ...payload
         },
+        headers: { 'x-forwarded-authorization': 'defra-id-token' },
         logger,
         server: { postgresDb: connection }
       },
@@ -117,8 +120,14 @@ describe('Parcel Supplements Controller 2.0.0', () => {
 
   test('should leave selected supplements available up to the whole base action area', async () => {
     const { data } = await requestSupplements({
-      selectedSupplements: [
-        { actionCode: 'GRH7', quantity: 1.5, unit: 'ha' },
+      plannedActions: [
+        clig3,
+        {
+          actionCode: 'GRH7',
+          quantity: 1.5,
+          unit: 'ha',
+          baseActionCode: 'CLIG3'
+        },
         { actionCode: 'GRH8', quantity: 1, unit: 'ha' }
       ]
     })
@@ -133,22 +142,34 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     }
   })
 
-  test('should mark a supplement selected for more than the base action unavailable', async () => {
-    const { data } = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
+  // Like /parcels, this reports what is available rather than rejecting the
+  // quantity selected; /application/validate checks the quantity
+  test('should not reject a supplement selected for more than the base action', async () => {
+    const { data, statusCode } = await requestSupplements({
+      plannedActions: [clig3, { actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
     })
 
-    expect(byCode(data).GRH7.unavailableReason.code).toBe(
-      EXCEEDS_BASE_ACTION_AREA
-    )
+    expect(statusCode).toBe(200)
+    expect(byCode(data).GRH7.unavailableReason).toBeUndefined()
   })
 
-  test('should reject a selected action that is not a supplement of the base action', async () => {
+  test('should reject a planned action given a base action it is not a supplement of for the latest year', async () => {
     const response = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH12', quantity: 1, unit: 'ha' }]
+      plannedActions: [
+        clig3,
+        {
+          actionCode: 'GRH12',
+          quantity: 1,
+          unit: 'ha',
+          baseActionCode: 'CLIG3'
+        }
+      ]
     })
 
     expect(response.output.statusCode).toBe(400)
+    expect(response.output.payload.message).toBe(
+      'GRH12 is not a supplement of CLIG3'
+    )
   })
 
   test('should leave out supplements that are enabled but not displayed', async () => {
@@ -170,7 +191,8 @@ describe('Parcel Supplements Controller 2.0.0', () => {
 
   test('should return no supplements for a base action without any', async () => {
     const { data, statusCode } = await requestSupplements({
-      baseAction: { actionCode: 'GRH7', quantity: 1, unit: 'ha' }
+      baseActionCode: 'GRH7',
+      plannedActions: [{ actionCode: 'GRH7', quantity: 1, unit: 'ha' }]
     })
 
     expect(statusCode).toBe(200)

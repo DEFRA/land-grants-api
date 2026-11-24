@@ -2,7 +2,6 @@ import createTestServer from '~/src/tests/test-server.js'
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
 import { getDataAndValidateRequest } from '~/src/features/parcel/validation/2.0.0/parcel.validation.js'
 import { parcel } from '~/src/features/parcel/index.js'
-import { EXCEEDS_BASE_ACTION_AREA } from '~/src/features/parcel/constants/unavailable-reasons.js'
 
 vi.mock(
   '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
@@ -11,6 +10,8 @@ vi.mock('~/src/features/parcel/validation/2.0.0/parcel.validation.js')
 
 const mockGetCompatibilityMatrix = vi.mocked(getCompatibilityMatrix)
 const mockGetDataAndValidateRequest = vi.mocked(getDataAndValidateRequest)
+
+const sbi = '106284736'
 
 const enabledAction = (code) => ({
   code,
@@ -29,19 +30,31 @@ const row = (optionCode, optionCodeCompat, type) => ({
   year: 2026
 })
 
-// Real 2026 rows: CLIG3 is a base for GRH7, GRH8 and GRH11, and LIG1 for GRH10
+// Real 2026 rows: CLIG3 is a base for GRH7, GRH8, GRH11 and SPM3, AGF1 for
+// SPM3, and LIG1 for GRH10
 const compatibilityMatrix = [
   row('CLIG3', 'GRH7', 'SUPBAS'),
   row('CLIG3', 'GRH8', 'SUPBAS'),
   row('CLIG3', 'GRH11', 'SUPBAS'),
-  row('LIG1', 'GRH10', 'SUPBAS')
+  row('CLIG3', 'SPM3', 'SUPBAS'),
+  row('AGF1', 'SPM3', 'SUPBAS'),
+  row('LIG1', 'GRH10', 'SUPBAS'),
+  row('CLIG3', 'CAGF1', 'BASECO')
 ]
 
-const enabledActions = ['CLIG3', 'LIG1', 'GRH7', 'GRH8', 'GRH10', 'GRH11'].map(
-  enabledAction
-)
+const enabledActions = [
+  'CLIG3',
+  'CAGF1',
+  'AGF1',
+  'LIG1',
+  'GRH7',
+  'GRH8',
+  'GRH10',
+  'GRH11',
+  'SPM3'
+].map(enabledAction)
 
-const baseAction = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
+const clig3 = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
 
 describe('Parcel Supplements Controller 2.0.0', () => {
   const server = createTestServer()
@@ -77,14 +90,21 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     mockGetCompatibilityMatrix.mockResolvedValue(compatibilityMatrix)
   })
 
-  const requestSupplements = (payload) =>
+  const requestSupplements = (payload, headers = {}) =>
     server.inject({
       method: 'POST',
       url: '/api/v2/parcels/supplements',
-      payload: { parcelId: 'SX0679-9238', baseAction, ...payload }
+      headers: { 'X-Forwarded-Authorization': 'defra-id-token', ...headers },
+      payload: {
+        sbi,
+        parcelId: 'SX0679-9238',
+        baseActionCode: 'CLIG3',
+        plannedActions: [clig3],
+        ...payload
+      }
     })
 
-  test('should return the supplements of the base action, available up to its area', async () => {
+  test('should return the supplements of the base action, each available up to the base action area', async () => {
     const { statusCode, result } = await requestSupplements({})
 
     expect(statusCode).toBe(200)
@@ -99,7 +119,8 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     expect(result.supplements.map((s) => s.code)).toEqual([
       'GRH7',
       'GRH8',
-      'GRH11'
+      'GRH11',
+      'SPM3'
     ])
     expect(result.supplements[0]).toEqual(
       expect.objectContaining({
@@ -107,35 +128,30 @@ describe('Parcel Supplements Controller 2.0.0', () => {
         isAvailable: true
       })
     )
+    expect(result.supplements[0].hasSupplements).toBeUndefined()
+    expect(result.supplements[0].baseActionCodes).toBeUndefined()
   })
 
-  test('should read the compatibility matrix rows of the base action', async () => {
-    await requestSupplements({})
+  // Like /parcels, this reports what is available rather than rejecting the
+  // quantity selected; /application/validate checks the quantity
+  test('should not reject a selected supplement over the base action', async () => {
+    const { statusCode, result } = await requestSupplements({
+      plannedActions: [clig3, { actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
+    })
 
-    expect(mockGetCompatibilityMatrix).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      ['CLIG3']
-    )
+    expect(statusCode).toBe(200)
+    expect(result.supplements[0].availability.value).toBe(2.5)
+    expect(result.supplements[0].unavailableReason).toBeUndefined()
   })
 
   test('should return an empty list for a base action without supplements', async () => {
     const { statusCode, result } = await requestSupplements({
-      baseAction: { actionCode: 'GRH7', quantity: 1, unit: 'ha' }
+      baseActionCode: 'CAGF1',
+      plannedActions: [{ actionCode: 'CAGF1', quantity: 1, unit: 'ha' }]
     })
 
     expect(statusCode).toBe(200)
     expect(result.supplements).toEqual([])
-  })
-
-  test('should mark a supplement selected for more than the base action unavailable', async () => {
-    const { result } = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH7', quantity: 3, unit: 'ha' }]
-    })
-
-    expect(result.supplements[0].unavailableReason.code).toBe(
-      EXCEEDS_BASE_ACTION_AREA
-    )
   })
 
   test('should leave out supplements that are enabled but not displayed', async () => {
@@ -150,38 +166,81 @@ describe('Parcel Supplements Controller 2.0.0', () => {
     const { statusCode, result } = await requestSupplements({})
 
     expect(statusCode).toBe(200)
-    expect(result.supplements.map((s) => s.code)).toEqual(['GRH7', 'GRH11'])
+    expect(result.supplements.map((s) => s.code)).toEqual([
+      'GRH7',
+      'GRH11',
+      'SPM3'
+    ])
   })
 
-  test('should return 400 when a selected supplement is enabled but not displayed', async () => {
-    mockGetDataAndValidateRequest.mockResolvedValue({
-      errors: null,
-      parcels: [{ sheet_id: 'SX0679', parcel_id: '9238', area_sqm: 100000 }],
-      enabledActions: enabledActions.map((action) =>
-        action.code === 'GRH8' ? { ...action, display: false } : action
+  test('should return 400 when the base action is not in the planned actions', async () => {
+    const { statusCode, result } = await requestSupplements({
+      baseActionCode: 'AGF1'
+    })
+
+    expect(statusCode).toBe(400)
+    expect(result.message).toBe('Base action missing from plannedActions: AGF1')
+  })
+
+  test("should return 400 when a supplement's base action is not in the planned actions", async () => {
+    const { statusCode, result } = await requestSupplements({
+      plannedActions: [
+        clig3,
+        { actionCode: 'SPM3', quantity: 1, unit: 'ha', baseActionCode: 'AGF1' }
+      ]
+    })
+
+    expect(statusCode).toBe(400)
+    expect(result.message).toBe(
+      "SPM3's baseActionCode AGF1 is not in plannedActions"
+    )
+    expect(mockGetCompatibilityMatrix).not.toHaveBeenCalled()
+  })
+
+  test('should return 400 when a planned action is given a base action it is not a supplement of', async () => {
+    const { statusCode, result } = await requestSupplements({
+      plannedActions: [
+        clig3,
+        { actionCode: 'LIG1', quantity: 1, unit: 'ha' },
+        { actionCode: 'GRH7', quantity: 1, unit: 'ha', baseActionCode: 'LIG1' }
+      ]
+    })
+
+    expect(statusCode).toBe(400)
+    expect(result.message).toBe('GRH7 is not a supplement of LIG1')
+  })
+
+  test.each([
+    ['in metres', { quantity: 100, unit: 'm' }],
+    ['with no area', { quantity: 0, unit: 'ha' }]
+  ])(
+    'should return 400 when the base action is given %s',
+    async (_name, area) => {
+      const { statusCode, result } = await requestSupplements({
+        plannedActions: [{ ...clig3, ...area }]
+      })
+
+      expect(statusCode).toBe(400)
+      expect(result.message).toBe(
+        'Base action must be given as an area greater than zero, in ha or sqm: CLIG3'
       )
-    })
+    }
+  )
 
-    const { statusCode, result } = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH8', quantity: 1, unit: 'ha' }]
-    })
+  test('should return 401 without the end user token', async () => {
+    const { statusCode, result } = await requestSupplements(
+      {},
+      { 'X-Forwarded-Authorization': '' }
+    )
 
-    expect(statusCode).toBe(400)
-    expect(result.message).toBe('Not supplements of CLIG3: GRH8')
-  })
-
-  test('should return 400 when a selected action is not a supplement of the base action', async () => {
-    const { statusCode, result } = await requestSupplements({
-      selectedSupplements: [{ actionCode: 'GRH10', quantity: 1, unit: 'ha' }]
-    })
-
-    expect(statusCode).toBe(400)
-    expect(result.message).toBe('Not supplements of CLIG3: GRH10')
+    expect(statusCode).toBe(401)
+    expect(result.message).toBe('X-Forwarded-Authorization is required')
   })
 
   test('should return 404 when the base action is not enabled', async () => {
     const { statusCode, result } = await requestSupplements({
-      baseAction: { actionCode: 'UNKNOWN', quantity: 1, unit: 'ha' }
+      baseActionCode: 'UNKNOWN',
+      plannedActions: [{ actionCode: 'UNKNOWN', quantity: 1, unit: 'ha' }]
     })
 
     expect(statusCode).toBe(404)
@@ -202,14 +261,17 @@ describe('Parcel Supplements Controller 2.0.0', () => {
   })
 
   test.each([
-    ['a missing base action', { baseAction: undefined }],
+    ['a missing sbi', { sbi: undefined }],
+    ['a missing base action', { baseActionCode: undefined }],
+    ['several base actions', { baseActionCode: ['CLIG3', 'AGF1'] }],
+    ['missing planned actions', { plannedActions: undefined }],
     [
-      'a base action measured in metres',
-      { baseAction: { actionCode: 'CLIG3', quantity: 1, unit: 'm' } }
+      'selected supplements, which go in the planned actions',
+      { selectedSupplements: [] }
     ],
     [
-      'a base action with no area',
-      { baseAction: { actionCode: 'CLIG3', quantity: 0, unit: 'ha' } }
+      'a planned action without a unit',
+      { plannedActions: [{ actionCode: 'CAGF1', quantity: 1 }] }
     ],
     ['an invalid parcel id', { parcelId: 'not-a-parcel' }]
   ])('should return 400 for %s', async (_name, payload) => {
