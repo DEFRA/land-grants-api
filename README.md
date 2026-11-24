@@ -65,21 +65,13 @@ nvm use
 
 ### Betterleaks
 
-[Betterleaks](https://github.com/betterleaks/betterleaks) must be on your `PATH`, because the pre-commit hook uses it to stop secrets and personal data being committed - on macOS:
+[Betterleaks](https://github.com/betterleaks/betterleaks) must be on your `PATH`, because the pre-commit hook uses it to stop secrets being committed - on macOS:
 
 ```bash
 brew install betterleaks
 ```
 
 For other platforms, see the [betterleaks releases page](https://github.com/betterleaks/betterleaks/releases).
-
-As well as the standard secret rules, `.betterleaks.toml` blocks real Single Business Identifiers (SBIs), Customer Reference Numbers (CRNs), Firm Reference Numbers (FRNs) and government email addresses. Use synthetic values in tests and fixtures instead:
-
-| Identifier | Synthetic range                                    |
-| ---------- | -------------------------------------------------- |
-| SBI        | `800000001` to `800000999`                         |
-| CRN        | `9000000001` to `9000000999`                       |
-| FRN        | `0` followed by a synthetic SBI, e.g. `0800000001` |
 
 If a finding is a genuine false positive, add a `// betterleaks:allow` comment to the end of that line.
 
