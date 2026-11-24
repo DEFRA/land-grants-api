@@ -8,58 +8,35 @@ updates:
 
     # Group packages into shared PRs
     groups:
-      aws-sdk:
+      dev:
+        applies-to: 'version-updates'
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
         patterns:
-          - '@aws-sdk/*'
-          - 'aws*'
+          - '*'
 
-      babel:
+      prod:
+        applies-to: 'version-updates'
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
         patterns:
-          - '@babel/*'
-          - 'babel*'
+          - '*'
 
-      hapi:
+      security:
+        applies-to: 'security-updates'
         patterns:
-          - '@hapi/*'
-          - 'hapi-*'
+          - '*'
 
-      lint:
+      other:
+        update-types:
+          - 'minor'
+          - 'patch'
         patterns:
-          - 'prettier'
-          - 'stylelint'
-          - 'stylelint-*'
-
-      pino-logging:
-        patterns:
-          - '*-pino'
-          - '*-pino-format'
-          - 'pino'
-          - 'pino-*'
-          - 'pino-pretty'
-
-      postgres:
-        patterns:
-          - 'pg-*'
-          - 'pg-copy-streams'
-          - 'pg'
-
-      test:
-        patterns:
-          - '@vitest/*'
-          - '*vitest*'
-          - 'vitest-fetch-mock'
-
-      tools:
-        patterns:
-          - 'husky'
-          - 'nodemon'
-          - 'npm-run-all'
-          - 'nyc'
-          - 'tsx'
-
-      types:
-        patterns:
-          - '@types/*'
+          - '*'
 
     ignore:
       # neostandard peer-depends on eslint 9.x
