@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/knip/schema.json",
-  "ignoreBinaries": ["soffice", "gitleaks"],
+  "ignoreBinaries": ["soffice", "betterleaks"],
   "ignoreIssues": {
     "**/tests/**": ["exports"],
     "**/fixtures/**": ["exports"]

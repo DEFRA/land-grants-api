@@ -1,4 +1,4 @@
-title = "land-grants-api gitleaks config"
+title = "land-grants-api betterleaks config"
 
 [extend]
 useDefault = true
