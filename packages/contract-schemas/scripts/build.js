@@ -2,7 +2,7 @@
 // same paths so their relative imports still resolve. Runs on `npm pack` /
 // `npm publish` via prepack.
 //
-// Every file in a schema's import graph must be listed in `exportsByFile` or
+// Every file in a schema's import graph must be listed in `schemasByFile` or
 // `dependencies`, and those files must import each other by relative path (not
 // the `~/` alias). The packaging test installs the packed tarball in a clean
 // project to catch a missing entry.
@@ -36,8 +36,8 @@ const PAYMENT_CALCULATE_TOTAL_WMP_SCHEMA =
 const INGEST_STATUS_SCHEMA = 'features/land-data-ingest/schema/status.schema.js'
 const COMMON_SCHEMA = 'features/common/schema/index.js'
 
-// The public surface: export name by the file that defines it.
-const exportsByFile = {
+// Schema names by the file that defines them.
+const schemasByFile = {
   [PARCEL_SCHEMA]: ['parcelsSchema', 'parcelsSuccessResponseSchema'],
   [PARCEL_SUPPLEMENTS_SCHEMA]: [
     'parcelSupplementsSchema',
@@ -85,6 +85,126 @@ const exportsByFile = {
   ]
 }
 
+const errorResponses = {
+  404: 'errorResponseSchema',
+  500: 'internalServerErrorResponseSchema'
+}
+
+// The public surface: each endpoint's request parts and responses by status,
+// keyed by path and method so the service's internal schema names stay
+// internal.
+const paths = {
+  '/api/v2/parcels': {
+    post: {
+      payload: 'parcelsSchema',
+      responses: { 200: 'parcelsSuccessResponseSchema', ...errorResponses }
+    }
+  },
+  '/api/v2/parcels/supplements': {
+    post: {
+      payload: 'parcelSupplementsSchema',
+      responses: {
+        200: 'parcelSupplementsSuccessResponseSchema',
+        400: 'badRequestResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/api/v2/payments/calculate': {
+    post: {
+      payload: 'PaymentCalculateSchema',
+      responses: { 200: 'PaymentCalculateResponseSchemaV2', ...errorResponses }
+    }
+  },
+  '/api/v2/application/validate': {
+    post: {
+      payload: 'applicationValidationSchema',
+      responses: {
+        200: 'applicationValidationResponseSchemaV2',
+        422: 'unprocessableEntityResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/application/validation-run/{id}': {
+    post: {
+      params: 'applicationValidationRunRequestSchema',
+      responses: {
+        200: 'applicationValidationRunResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/application/{applicationId}/validation-run': {
+    post: {
+      params: 'applicationValidationRunsRequestSchema',
+      payload: 'applicationValidationRunsBodyRequestSchema',
+      responses: {
+        200: 'applicationValidationRunsResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/case-management-adapter/application/validation-run/{id}': {
+    get: {
+      params: 'caseManagementApplicationValidationRunRequestSchema',
+      responses: {
+        200: 'caseManagementApplicationValidationRunResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/case-management-adapter/application/validation-run/rerun': {
+    post: {
+      payload: 'caseManagementApplicationValidationRerunRequestSchema',
+      responses: {
+        200: 'caseManagementApplicationValidationReRunResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/api/v1/parcel-tiles/{z}/{x}/{y}': {
+    post: {
+      params: 'parcelTilesParamsSchema',
+      payload: 'parcelTilesPayloadSchema',
+      responses: {}
+    }
+  },
+  '/api/v1/parcel-tiles/locate': {
+    post: {
+      payload: 'parcelTilesLocatePayloadSchema',
+      responses: {
+        200: 'parcelTilesLocateSuccessResponseSchema',
+        ...errorResponses
+      }
+    }
+  },
+  '/api/v1/wmp/validate': {
+    post: {
+      payload: 'validateWMPSchemaV2',
+      responses: { 200: 'validateWMPResponseSchemaV2', ...errorResponses }
+    }
+  },
+  '/api/v1/wmp/payments/calculate': {
+    post: {
+      payload: 'paymentCalculateWMPSchemaV2',
+      responses: { 200: 'paymentCalculateWMPResponseSchema', ...errorResponses }
+    }
+  },
+  '/api/v1/wmp/payments/calculate-by-total-area': {
+    post: {
+      payload: 'paymentCalculateTotalWMPSchema',
+      responses: { 200: 'paymentCalculateWMPResponseSchema', ...errorResponses }
+    }
+  },
+  '/ingest/status': {
+    get: {
+      query: 'statusIngestQuery',
+      responses: { 200: 'statusResponseSchema', ...errorResponses }
+    }
+  }
+}
+
 // Modules the schemas import but do not export.
 const dependencies = [
   'features/common/constants/status-codes.js',
@@ -94,12 +214,26 @@ const dependencies = [
 
 rmSync(dist, { recursive: true, force: true })
 
-for (const file of [...Object.keys(exportsByFile), ...dependencies]) {
+for (const file of [...Object.keys(schemasByFile), ...dependencies]) {
   cpSync(`${src}${file}`, `${dist}${file}`)
 }
 
-const index = Object.entries(exportsByFile)
-  .map(([file, names]) => `export { ${names.join(', ')} } from './${file}'`)
+const imports = Object.entries(schemasByFile)
+  .map(([file, names]) => `import { ${names.join(', ')} } from './${file}'`)
   .join('\n')
 
-writeFileSync(`${dist}index.js`, `${index}\n`)
+// Writes the map as source, with each schema name as a reference to its import.
+const sourceOf = (value) => {
+  if (typeof value === 'string') {
+    return value
+  }
+  const entries = Object.entries(value).map(
+    ([key, inner]) => `${JSON.stringify(key)}: ${sourceOf(inner)}`
+  )
+  return `{ ${entries.join(', ')} }`
+}
+
+writeFileSync(
+  `${dist}index.js`,
+  `${imports}\n\nexport const paths = ${sourceOf(paths)}\n`
+)
