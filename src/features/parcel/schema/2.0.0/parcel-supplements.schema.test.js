@@ -3,26 +3,29 @@ import {
   parcelSupplementsSuccessResponseSchema
 } from './parcel-supplements.schema.js'
 
-const baseAction = { actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }
+const sbi = '106284736'
+const parcelId = 'SX0679-9238'
+const baseActionCode = 'CLIG3'
+const plannedActions = [{ actionCode: 'CLIG3', quantity: 2.5, unit: 'ha' }]
 
 describe('parcelSupplementsSchema', () => {
-  test('defaults the selected supplements to an empty list', () => {
-    const { error, value } = parcelSupplementsSchema.validate({
-      parcelId: 'SX0679-9238',
-      baseAction
-    })
-
-    expect(error).toBeUndefined()
-    expect(value.selectedSupplements).toEqual([])
-  })
-
-  test('accepts selected supplements in hectares or square metres', () => {
+  test('accepts the base action and every action selected on the parcel, in any unit, each supplement with or without its base action', () => {
     const { error } = parcelSupplementsSchema.validate({
-      parcelId: 'SX0679-9238',
-      baseAction,
-      selectedSupplements: [
-        { actionCode: 'GRH7', quantity: 1, unit: 'ha' },
-        { actionCode: 'GRH11', quantity: 5000, unit: 'sqm' }
+      sbi,
+      parcelId,
+      baseActionCode,
+      plannedActions: [
+        ...plannedActions,
+        { actionCode: 'AGF1', quantity: 1, unit: 'ha' },
+        {
+          actionCode: 'GRH7',
+          quantity: 1,
+          unit: 'ha',
+          baseActionCode: 'CLIG3'
+        },
+        { actionCode: 'GRH8', quantity: 1, unit: 'ha' },
+        { actionCode: 'GRH11', quantity: 5000, unit: 'sqm' },
+        { actionCode: 'CHRW1', quantity: 120, unit: 'm' }
       ]
     })
 
@@ -30,32 +33,75 @@ describe('parcelSupplementsSchema', () => {
   })
 
   test.each([
-    ['without a base action', { parcelId: 'SX0679-9238' }],
+    ['without an sbi', { sbi: undefined }],
+    ['without a base action', { baseActionCode: undefined }],
+    ['with several base actions', { baseActionCode: ['CLIG3', 'AGF1'] }],
     [
-      'with a base action measured in metres',
-      {
-        parcelId: 'SX0679-9238',
-        baseAction: { ...baseAction, unit: 'm' }
-      }
+      'with the base action given with its area',
+      { baseActionCode: plannedActions[0] }
+    ],
+    ['with the base actions of the old request', { baseActions: ['CLIG3'] }],
+    ['with the base action named baseAction', { baseAction: 'CLIG3' }],
+    ['without planned actions', { plannedActions: undefined }],
+    [
+      'with a planned action without a quantity',
+      { plannedActions: [{ actionCode: 'CLIG3', unit: 'ha' }] }
+    ],
+    ['with selected supplements', { selectedSupplements: [] }],
+    ['with an invalid parcel id', { parcelId: 'SX0679' }]
+  ])('rejects a request %s', (_name, change) => {
+    expect(
+      parcelSupplementsSchema.validate({
+        sbi,
+        parcelId,
+        baseActionCode,
+        plannedActions,
+        ...change
+      }).error
+    ).toBeDefined()
+  })
+
+  test.each([
+    [
+      'the base action is not in the planned actions',
+      { baseActionCode: 'AGF1' },
+      'Base action missing from plannedActions: AGF1'
     ],
     [
-      'with a negative base action quantity',
-      {
-        parcelId: 'SX0679-9238',
-        baseAction: { ...baseAction, quantity: -1 }
-      }
+      'the base action is given in metres',
+      { plannedActions: [{ actionCode: 'CLIG3', quantity: 100, unit: 'm' }] },
+      'Base action must be given as an area greater than zero, in ha or sqm: CLIG3'
     ],
     [
-      'with a selected supplement without a quantity',
-      {
-        parcelId: 'SX0679-9238',
-        baseAction,
-        selectedSupplements: [{ actionCode: 'GRH7', unit: 'ha' }]
-      }
+      'the base action has no area',
+      { plannedActions: [{ actionCode: 'CLIG3', quantity: 0, unit: 'ha' }] },
+      'Base action must be given as an area greater than zero, in ha or sqm: CLIG3'
     ],
-    ['with an invalid parcel id', { parcelId: 'SX0679', baseAction }]
-  ])('rejects a request %s', (_name, payload) => {
-    expect(parcelSupplementsSchema.validate(payload).error).toBeDefined()
+    [
+      "a supplement's base action is not in the planned actions",
+      {
+        plannedActions: [
+          ...plannedActions,
+          {
+            actionCode: 'SPM3',
+            quantity: 1,
+            unit: 'ha',
+            baseActionCode: 'AGF1'
+          }
+        ]
+      },
+      "SPM3's baseActionCode AGF1 is not in plannedActions"
+    ]
+  ])('rejects a request when %s', (_name, change, message) => {
+    const { error } = parcelSupplementsSchema.validate({
+      sbi,
+      parcelId,
+      baseActionCode,
+      plannedActions,
+      ...change
+    })
+
+    expect(error?.message).toBe(message)
   })
 })
 
@@ -87,13 +133,9 @@ describe('parcelSupplementsSuccessResponseSchema', () => {
           code: 'GRH8',
           isAvailable: false,
           unavailableReason: {
-            code: 'exceeds-base-action-area',
-            reason: 'More than the area of its base action',
-            metadata: {
-              baseActionCode: 'CLIG3',
-              baseActionAreaHa: 2.5,
-              selectedAreaHa: 3
-            }
+            code: 'no-availability',
+            reason: 'There is no remaining availability for this action',
+            metadata: {}
           }
         }
       ])
@@ -113,6 +155,23 @@ describe('parcelSupplementsSuccessResponseSchema', () => {
       parcelSupplementsSuccessResponseSchema.validate(
         response([{ ...supplement, hasSupplements: false }])
       ).error
+    ).toBeDefined()
+  })
+
+  test('rejects a supplement listing base actions', () => {
+    expect(
+      parcelSupplementsSuccessResponseSchema.validate(
+        response([{ ...supplement, baseActionCodes: ['CLIG3'] }])
+      ).error
+    ).toBeDefined()
+  })
+
+  test('rejects base actions given as a list', () => {
+    expect(
+      parcelSupplementsSuccessResponseSchema.validate({
+        ...response([]),
+        baseActionCode: ['CLIG3']
+      }).error
     ).toBeDefined()
   })
 })
