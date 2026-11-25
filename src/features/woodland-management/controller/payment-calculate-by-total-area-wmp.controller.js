@@ -114,10 +114,7 @@ export const PaymentsCalculateTotalWMPController = {
       // general we take the adjusted figure (totalAreaHa) but if they adjust the area upward we
       // must still cap the area to the original -- we should never pay out more than the original
       // agreement.
-      const adjustedArea =
-        originalTotalAreaHa !== undefined && originalTotalAreaHa < totalAreaHa
-          ? originalTotalAreaHa
-          : totalAreaHa
+      const adjustedArea = Math.min(originalTotalAreaHa, totalAreaHa)
 
       const { result: paymentResult, action } = await calculateWMPPayment(
         logger,

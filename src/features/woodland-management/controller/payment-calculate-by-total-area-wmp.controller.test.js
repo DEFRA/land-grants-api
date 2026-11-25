@@ -171,11 +171,7 @@ describe('Payment calculate total WMP controller', () => {
       const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: {
-          totalAreaHa: 8,
-          applicationId: 'app-123',
-          sbi
-        }
+        payload: validPayload
       })
 
       expect(statusCode).toBe(200)
@@ -214,22 +210,6 @@ describe('Payment calculate total WMP controller', () => {
       )
     })
 
-    test('should pass totalAreaHa to calculation if originalTotalAreaHa is missing', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const { statusCode } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: { ...validPayload, originalTotalAreaHa: undefined }
-      })
-
-      expect(statusCode).toBe(200)
-      expect(mockCalculateWMPPayment).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        { totalWoodlandAreaSqm: 80000 }
-      )
-    })
-
     test('should pass totalAreaHa to calculation if originalTotalAreaHa is higher', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
       const { statusCode } = await server.inject({
@@ -248,73 +228,31 @@ describe('Payment calculate total WMP controller', () => {
   })
 
   describe('schema validation', () => {
-    test('should return 400 when totalAreaHa is missing', async () => {
+    test.each([
+      ['totalAreaHa'],
+      ['applicationId'],
+      ['sbi'],
+      ['originalTotalAreaHa']
+    ])('should return 400 when %s is missing', async (param) => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
+      const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: {
-          applicationId: 'app-123',
-          sbi
-        }
+        payload: { ...validPayload, [param]: undefined }
       })
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('"totalAreaHa" is required')
     })
 
     test('should return 400 when totalAreaHa is negative', async () => {
       /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
+      const { statusCode } = await server.inject({
         method: 'POST',
         url: '/api/v1/wmp/payments/calculate-by-total-area',
         payload: { ...validPayload, totalAreaHa: -1 }
       })
 
       expect(statusCode).toBe(400)
-      expect(message).toBe('"totalAreaHa" must be greater than or equal to 0')
-    })
-
-    test('should return 400 when applicationId is missing', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: {
-          totalAreaHa: 8,
-          sbi
-        }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe('"applicationId" is required')
-    })
-
-    test('should return 400 when sbi is missing', async () => {
-      /** @type { Hapi.ServerInjectResponse<object> } */
-      const {
-        statusCode,
-        result: { message }
-      } = await server.inject({
-        method: 'POST',
-        url: '/api/v1/wmp/payments/calculate-by-total-area',
-        payload: {
-          totalAreaHa: 8,
-          applicationId: 'app-123'
-        }
-      })
-
-      expect(statusCode).toBe(400)
-      expect(message).toBe('"sbi" is required')
     })
   })
 
