@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { parcelIdsSchema } from '~/src/features/vector-tiles/schema/parcel-tiles.schema.js'
+import { parcelIdsSchema } from './parcel-tiles.schema.js'
 
 const parcelTilesLocatePayloadSchema = Joi.object({
   parcelIds: parcelIdsSchema
