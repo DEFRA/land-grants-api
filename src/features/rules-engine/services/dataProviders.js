@@ -11,6 +11,7 @@ import { getBoundaryIntersection } from '../../data-layers/queries/getBoundaryIn
 import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 import { getAvailableArea } from '../../application/service/get-available-area.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import { getSupplementBaseActions } from '../../application/service/supplement-base-actions.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 const intersectionLayerStrategies = {
@@ -178,6 +179,22 @@ export const requirementProviders = {
       getLandCoversForAction(action.code, db, logger),
     apply: (application, _req, value) => {
       application.actionLandCovers = value
+    }
+  },
+  [REQUIRED_RULE_DATA.SUPPLEMENT_BASE_ACTIONS]: {
+    dedupeKey: () => 'supplementBaseActions',
+    fetch: (
+      _req,
+      { action, actions, landAction, baseCodesBySupplement = new Map() }
+    ) =>
+      getSupplementBaseActions(
+        action,
+        landAction,
+        actions,
+        baseCodesBySupplement
+      ),
+    apply: (application, _req, value) => {
+      application.supplementBaseActions = value
     }
   }
 }

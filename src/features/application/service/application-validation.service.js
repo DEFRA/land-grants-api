@@ -1,5 +1,5 @@
 import { applicationDataTransformer } from '../transformers/application.transformer.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 import { getActions } from '../../actions/service/action.service.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
@@ -55,11 +55,9 @@ export const validateApplication = async (
     }
   }
 
-  // Create a compatibility check function
-  const compatibilityCheckFn = await createCompatibilityMatrix(
-    request.logger,
-    request.server.postgresDb
-  )
+  // The compatibility check, and the base actions of each supplement
+  const { compatibilityCheckFn, baseCodesBySupplement } =
+    await createValidationLookups(request.logger, request.server.postgresDb)
 
   const allAgreements = await getAgreements(
     sbi,
@@ -81,7 +79,8 @@ export const validateApplication = async (
         actions,
         compatibilityCheckFn,
         request,
-        agreements
+        agreements,
+        baseCodesBySupplement
       )
     })
   )

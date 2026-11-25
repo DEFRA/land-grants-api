@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom'
 
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
 import { validateLandParcelActions } from './land-parcel-validation.service.js'
@@ -22,8 +22,10 @@ const fullParcelId = '9238-SX0679'
 
 const mockValidateRequest = vi.mocked(validateRequest)
 const mockLogValidationWarn = vi.mocked(logValidationWarn)
-const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
+const mockCreateValidationLookups = vi.mocked(createValidationLookups)
 const mockValidateLandParcelActions = vi.mocked(validateLandParcelActions)
+
+const mockBaseCodesBySupplement = new Map([['GRH7_26', new Set(['CLIG3_26'])]])
 
 describe('Validation Service', () => {
   const mockPostgresDb = {
@@ -134,7 +136,10 @@ describe('Validation Service', () => {
         { sheetId: 'SX0680', parcelId: '9239', actions: [] }
       ]
       const mockCompatibilityCheckFn = vi.fn()
-      mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+      mockCreateValidationLookups.mockResolvedValue({
+        compatibilityCheckFn: mockCompatibilityCheckFn,
+        baseCodesBySupplement: mockBaseCodesBySupplement
+      })
       mockValidateLandParcelActions
         .mockResolvedValueOnce(mockParcelResult1)
         .mockResolvedValueOnce(mockParcelResult2)
@@ -151,7 +156,7 @@ describe('Validation Service', () => {
       )
 
       expect(result).toEqual([mockParcelResult1, mockParcelResult2])
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+      expect(mockCreateValidationLookups).toHaveBeenCalledWith(
         mockLogger,
         mockPostgresDb
       )
@@ -172,7 +177,8 @@ describe('Validation Service', () => {
         mockActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        agreements[fullParcelId]
+        agreements[fullParcelId],
+        mockBaseCodesBySupplement
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
@@ -180,7 +186,8 @@ describe('Validation Service', () => {
         mockActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        agreements['9239-SX0680']
+        agreements['9239-SX0680'],
+        mockBaseCodesBySupplement
       )
     })
 
@@ -193,7 +200,10 @@ describe('Validation Service', () => {
         { sheetId: 'SX0680', parcelId: '9239', actions: [] }
       ]
       const mockCompatibilityCheckFn = vi.fn()
-      mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+      mockCreateValidationLookups.mockResolvedValue({
+        compatibilityCheckFn: mockCompatibilityCheckFn,
+        baseCodesBySupplement: mockBaseCodesBySupplement
+      })
       mockValidateLandParcelActions
         .mockResolvedValueOnce(mockParcelResult1)
         .mockResolvedValueOnce(mockParcelResult2)
@@ -212,7 +222,7 @@ describe('Validation Service', () => {
       )
 
       expect(result).toEqual([mockParcelResult1, mockParcelResult2])
-      expect(mockCreateCompatibilityMatrix).toHaveBeenCalledWith(
+      expect(mockCreateValidationLookups).toHaveBeenCalledWith(
         mockLogger,
         mockPostgresDb
       )
@@ -233,7 +243,8 @@ describe('Validation Service', () => {
         mockActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        []
+        [],
+        mockBaseCodesBySupplement
       )
       expect(mockValidateLandParcelActions).toHaveBeenNthCalledWith(
         2,
@@ -241,7 +252,8 @@ describe('Validation Service', () => {
         mockActions,
         mockCompatibilityCheckFn,
         mockRequest,
-        []
+        [],
+        mockBaseCodesBySupplement
       )
     })
   })

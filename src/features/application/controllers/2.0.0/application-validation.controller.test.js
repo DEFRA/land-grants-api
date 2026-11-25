@@ -2,7 +2,7 @@ import Hapi from '@hapi/hapi'
 import Boom from '@hapi/boom'
 import { ApplicationValidationController } from './application-validation.controller.js'
 import { UnauthorizedError } from '~/src/services/dal/errors.js'
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { saveApplication } from '../../mutations/saveApplication.mutation.js'
 import { getActions } from '~/src/features/actions/service/action.service.js'
 import {
@@ -21,7 +21,7 @@ vi.mock('~/src/features/actions/service/action.service.js', () => ({
   getActions: vi.fn()
 }))
 vi.mock('~/src/features/available-area/compatibilityMatrix.js', () => ({
-  createCompatibilityMatrix: vi.fn()
+  createValidationLookups: vi.fn()
 }))
 vi.mock('../../mutations/saveApplication.mutation.js', () => ({
   saveApplication: vi.fn()
@@ -33,11 +33,13 @@ vi.mock('~/src/features/application/service/validation.service.js', () => ({
 vi.mock('~/src/features/common/helpers/audit-event.js')
 
 const mockGetActions = vi.mocked(getActions)
-const mockCreateCompatibilityMatrix = vi.mocked(createCompatibilityMatrix)
+const mockCreateValidationLookups = vi.mocked(createValidationLookups)
 const mockSaveApplication = vi.mocked(saveApplication)
 const mockValidateRequestData = vi.mocked(validateRequestData)
 const mockValidateAllLandParcels = vi.mocked(validateAllLandParcels)
 const mockAuditEvent = vi.mocked(auditEvent)
+
+const mockBaseCodesBySupplement = new Map([['GRH7_26', new Set(['CLIG3_26'])]])
 
 describe('ApplicationValidationController', () => {
   const server = Hapi.server()
@@ -174,7 +176,10 @@ describe('ApplicationValidationController', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockGetActions.mockResolvedValue(mockActions)
-    mockCreateCompatibilityMatrix.mockResolvedValue(mockCompatibilityCheckFn)
+    mockCreateValidationLookups.mockResolvedValue({
+      compatibilityCheckFn: mockCompatibilityCheckFn,
+      baseCodesBySupplement: mockBaseCodesBySupplement
+    })
     mockValidateRequestData.mockResolvedValue(null)
     mockValidateAllLandParcels.mockResolvedValue(mockActionValidationResults)
     mockSaveApplication.mockResolvedValue(1)
@@ -471,7 +476,7 @@ describe('ApplicationValidationController', () => {
       )
     })
 
-    test('should return 500 when createCompatibilityMatrix fails', async () => {
+    test('should return 500 when createValidationLookups fails', async () => {
       mockValidateAllLandParcels.mockRejectedValue(
         new Error('Compatibility matrix creation failed')
       )

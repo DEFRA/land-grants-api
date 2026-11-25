@@ -1,5 +1,5 @@
 import { connectToTestDatabase } from '../src/tests/db-tests/setup/postgres.js'
-import { createCompatibilityMatrix } from '../src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '../src/features/available-area/compatibilityMatrix.js'
 import { getAvailableAreaDataRequirements } from '../src/features/available-area/availableAreaDataRequirements.js'
 import { getAvailableAreaFixtures } from '../src/tests/db-tests/setup/getAvailableAreaFixtures.js'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -310,10 +310,9 @@ async function generateAvailableAreaFixtures() {
 
     // Step 3: Generate compatibility pairs once (instead of 14 times in test)
     console.log('🔍 Generating compatibility pairs...')
-    const compatibilityCheckFn = await createCompatibilityMatrix(
+    const { compatibilityCheckFn } = await createValidationLookups(
       logger,
-      connection,
-      actionCodes
+      connection
     )
     const compatibilityMatrix = buildCompatibilityMatrix(
       compatibilityCheckFn,

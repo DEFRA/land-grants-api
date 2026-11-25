@@ -65,3 +65,33 @@ as an area greater than zero, in `ha` or `sqm`: supplements sit on their base
 action's area. It is also rejected when a planned action's `baseActionCode` is not
 in `plannedActions`, or is not one of its `SUPBAS` bases. A base action we do
 not offer is a 404.
+
+### Validating supplements
+
+`POST /api/v2/application/validate` checks each supplement measured by area
+against its parcel and its base action:
+
+- **The parcel.** The supplement's own configured rule
+  (`applied-for-total-or-partial-available-area`) runs the parcel-level
+  calculation, with every other action applied for on the parcel and the
+  existing agreements competing for its land.
+- **The base action.** Two rules, configured on each supplement in
+  grants-config-land-grants like any other rule, check it against the
+  compatibility matrix's `SUPBAS` rows:
+  - [`supplement-has-base-action`](../rules-engine/rules/1.0.0/supplement-has-base-action/supplement-has-base-action.md):
+    one of its base actions is applied for on the same parcel, in the same
+    application. A base action held only in an existing agreement does not
+    count. The reason names the base actions, e.g. "GRH7_26 requires the base
+    action CLIG3_26 on the same land parcel".
+  - [`supplement-within-base-action-area`](../rules-engine/rules/1.0.0/supplement-within-base-action-area/supplement-within-base-action-area.md):
+    its quantity is no more than the area of its base actions applied for on
+    the parcel, e.g. "The area (5.0001 ha) must not exceed the CLIG3_26 area
+    (5 ha)". A supplement with several of its bases on the parcel can use all
+    of them.
+
+A supplement fails when any of its rules fails, and an action not configured
+with these rules is not checked against a base action. Both rules need what is
+applied for, so `/parcels` doesn't run them. For now, each supplement is
+compared with the whole of its base action: supplements that cannot overlap,
+such as GRH7_26 and GRH8_26, are not yet checked against each other's share of
+it.

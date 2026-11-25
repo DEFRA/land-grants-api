@@ -8,6 +8,7 @@
  * @property {string | undefined} unit
  * @property {number} appliedForQuantity
  * @property {AvailableLength} [availableLength] - Worked out before the rules run, for a linear action
+ * @property {Map<string, Set<string>>} [baseCodesBySupplement] - The base actions of each supplement, for the supplement rules
  */
 
 /**
@@ -20,6 +21,7 @@
  * @property {string | undefined} [unit]
  * @property {number} [appliedForQuantity]
  * @property {AvailableLength} [availableLength] - Worked out before the rules run, for a linear action
+ * @property {Map<string, Set<string>>} [baseCodesBySupplement] - The base actions of each supplement, for the supplement rules
  * @property {object} db
  * @property {object} logger
  */

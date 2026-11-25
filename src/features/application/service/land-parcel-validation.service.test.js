@@ -126,7 +126,8 @@ describe('Land Parcel Validation Service', () => {
         agreements,
         mockCompatibilityCheckFn,
         mockLandAction,
-        mockRequest
+        mockRequest,
+        new Map()
       )
       expect(mockValidateActionOnParcel).toHaveBeenNthCalledWith(
         2,
@@ -135,8 +136,37 @@ describe('Land Parcel Validation Service', () => {
         agreements,
         mockCompatibilityCheckFn,
         mockLandAction,
-        mockRequest
+        mockRequest,
+        new Map()
       )
+    })
+
+    test("should give each action's validation the base actions of each supplement, for the supplement rules", async () => {
+      const baseCodesBySupplement = new Map([
+        ['GRH7_26', new Set(['CLIG3_26'])]
+      ])
+      mockValidateActionOnParcel.mockResolvedValue({ hasPassed: true })
+
+      await validateLandParcelActions(
+        mockLandAction,
+        mockActions,
+        mockCompatibilityCheckFn,
+        mockRequest,
+        agreements,
+        baseCodesBySupplement
+      )
+
+      for (const action of mockLandAction.actions) {
+        expect(mockValidateActionOnParcel).toHaveBeenCalledWith(
+          action,
+          mockActions,
+          agreements,
+          mockCompatibilityCheckFn,
+          mockLandAction,
+          mockRequest,
+          baseCodesBySupplement
+        )
+      }
     })
 
     test('should throw error when landAction is null', async () => {

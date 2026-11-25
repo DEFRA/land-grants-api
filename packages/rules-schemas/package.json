@@ -1,6 +1,6 @@
 {
   "name": "@defra/land-grants-rules-schemas",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Joi schemas for land-grants-api action config and its rules",
   "type": "module",
   "repository": {
