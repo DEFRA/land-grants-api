@@ -1,5 +1,6 @@
 import { requirementProviders } from './dataProviders.js'
 import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
+import { SINGLE_SIDE } from '~/src/features/common/constants/sidedness.js'
 import {
   DATA_LAYER_TYPES,
   getDataLayerQueryAccumulated,
@@ -362,6 +363,23 @@ describe('requirementProviders', () => {
         totalMeters: 927,
         incompatibleMeters: 127
       })
+    })
+
+    it('stores the sidedness of the action applied for', () => {
+      const application = emptyApplication()
+
+      provider.apply(
+        application,
+        {},
+        {
+          availableLength: 800,
+          boundaryLengthMeters: 927,
+          incompatibleLengthMeters: 127,
+          targetSidedness: SINGLE_SIDE
+        }
+      )
+
+      expect(application.landParcel.sidedness).toBe(SINGLE_SIDE)
     })
   })
 

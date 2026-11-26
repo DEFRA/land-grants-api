@@ -1,5 +1,6 @@
 /**
  * @import { BoundaryIntersections } from '~/src/features/data-layers/data-layers.d.js'
+ * @import { Sidedness } from '~/src/features/available-length/available-length.d.js'
  */
 
 /**
@@ -37,6 +38,7 @@
  * @property {number} [parcelSizeSqm]
  * @property {number} [availability]
  * @property {BoundaryLength|null} [boundaryLength]
+ * @property {Sidedness} [sidedness]
  * @property {any[] | undefined} [existingAgreements]
  * @property {object} [intersections]
  * @property {{landCoverClassCode:string, areaSqm: number}[]} [landCovers]
