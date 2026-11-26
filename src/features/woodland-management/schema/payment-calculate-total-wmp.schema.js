@@ -5,7 +5,7 @@ export const paymentCalculateTotalWMPSchema = Joi.object({
   totalAreaHa: Joi.number().min(0).required(),
   // The total area on the original WMP application, before adjustments which may be later made
   // by the forestry commission
-  originalTotalAreaHa: Joi.number().min(0).optional(),
+  originalTotalAreaHa: Joi.number().min(0).required(),
   applicationId: Joi.string().required(),
   sbi: Joi.string().required(),
   crn: Joi.string().optional(),
