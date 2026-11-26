@@ -139,6 +139,101 @@ describe('Land Parcel Validation Service', () => {
       )
     })
 
+    describe('supplements', () => {
+      const supplementLandAction = {
+        sheetId,
+        parcelId,
+        actions: [
+          { code: 'CLIG3_26', quantity: 10 },
+          { code: 'GRH7_26', quantity: 6 },
+          { code: 'GRH8_26', quantity: 5 }
+        ]
+      }
+      const supplementActions = ['CLIG3_26', 'GRH7_26', 'GRH8_26'].map(
+        (code) => ({ code, applicationUnitOfMeasurement: 'ha' })
+      )
+      const baseCodesBySupplement = new Map([
+        ['GRH7_26', new Set(['CLIG3_26'])],
+        ['GRH8_26', new Set(['CLIG3_26'])]
+      ])
+      const passed = (code) => ({
+        hasPassed: true,
+        code,
+        rules: [
+          { name: 'applied-for-total-or-partial-available-area', passed: true }
+        ]
+      })
+
+      beforeEach(() => {
+        mockValidateActionOnParcel.mockImplementation((action) =>
+          Promise.resolve(passed(action.code))
+        )
+      })
+
+      const validate = () =>
+        validateLandParcelActions(
+          supplementLandAction,
+          supplementActions,
+          () => false,
+          mockRequest,
+          agreements,
+          baseCodesBySupplement
+        )
+
+      test('should add the supplement checks to each supplement', async () => {
+        const { actions } = await validate()
+        const ruleNames = (code) =>
+          actions.find((a) => a.code === code).rules.map((r) => r.name)
+
+        expect(ruleNames('GRH7_26')).toEqual([
+          'applied-for-total-or-partial-available-area',
+          'supplement-has-base-action',
+          'supplement-within-base-action-area'
+        ])
+        expect(ruleNames('GRH8_26')).toEqual([
+          'applied-for-total-or-partial-available-area',
+          'supplement-has-base-action',
+          'supplement-within-base-action-area'
+        ])
+      })
+
+      test('should leave an action that is not a supplement as validated', async () => {
+        const { actions } = await validate()
+
+        expect(actions.find((a) => a.code === 'CLIG3_26')).toEqual(
+          passed('CLIG3_26')
+        )
+      })
+
+      test('should fail a supplement whose check fails', async () => {
+        // GRH7_26 and GRH8_26 cannot stack, and 6 + 5 ha is over 10 ha of CLIG3_26
+        const { actions } = await validate()
+
+        expect(actions.find((a) => a.code === 'GRH7_26').hasPassed).toBe(false)
+        expect(actions.find((a) => a.code === 'GRH8_26').hasPassed).toBe(false)
+      })
+
+      test('should keep a supplement failed when its own rules fail, even if its checks pass', async () => {
+        mockValidateActionOnParcel.mockImplementation((action) =>
+          Promise.resolve({ ...passed(action.code), hasPassed: false })
+        )
+
+        const { actions } = await validateLandParcelActions(
+          {
+            ...supplementLandAction,
+            actions: supplementLandAction.actions.slice(0, 2)
+          },
+          supplementActions,
+          () => false,
+          mockRequest,
+          agreements,
+          baseCodesBySupplement
+        )
+
+        expect(actions.find((a) => a.code === 'GRH7_26').hasPassed).toBe(false)
+      })
+    })
+
     test('should throw error when landAction is null', async () => {
       await expect(
         validateLandParcelActions(
