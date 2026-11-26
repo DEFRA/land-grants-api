@@ -3,6 +3,10 @@ import { executeRules } from '~/src/features/rules-engine/rulesEngine.js'
 import { rules } from '~/src/features/rules-engine/rules/index.js'
 import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getBoundaryIntersection.query.js'
 import { belowMinimumLengthReason } from '~/src/features/rules-engine/rules/1.0.0/minimum-length/minimum-length.js'
+import {
+  BOTH_SIDES,
+  SINGLE_SIDE
+} from '~/src/features/common/constants/sidedness.js'
 import { ABOVE_AVAILABLE_LENGTH_REASON } from '~/src/features/rules-engine/rules/1.0.0/applied-for-total-or-partial-available-length/applied-for-total-or-partial-available-length.js'
 
 // Real rules and real providers, with only the queries stubbed, so a rule
@@ -71,14 +75,16 @@ describe('linear action rules with their data providers', () => {
 
   const givenAvailableLength = (
     availableLengthMeters,
-    incompatibleLengthMeters = 0
+    incompatibleLengthMeters = 0,
+    targetSidedness = BOTH_SIDES
   ) => {
     availableLength = {
       availableLength: availableLengthMeters,
       boundaryLengthMeters: availableLengthMeters + incompatibleLengthMeters,
       incompatibleLengthMeters,
       incompatibleActions: [],
-      feasible: true
+      feasible: true,
+      targetSidedness
     }
   }
 
@@ -145,6 +151,16 @@ describe('linear action rules with their data providers', () => {
 
     expect(resultFor(results, minimumLengthRule.name).reason).toBe(
       'The minimum allowable length for this action (20 m) is more than the available length for this land parcel (10 m)'
+    )
+  })
+
+  it('fails the minimum length for a single-side action with less than the minimum of boundary available', async () => {
+    givenAvailableLength(30, 0, SINGLE_SIDE)
+
+    const results = await validate([minimumLengthRule])
+
+    expect(resultFor(results, minimumLengthRule.name).reason).toBe(
+      'The minimum allowable length for this action (20 m of boundary, 40 m across both sides) is more than the available length for this land parcel (30 m)'
     )
   })
 

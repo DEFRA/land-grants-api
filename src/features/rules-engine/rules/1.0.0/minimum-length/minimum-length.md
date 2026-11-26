@@ -14,6 +14,14 @@ Checks run in this order, and the order matters:
 
 The second check runs before the third so that an applicant on a parcel with no room left is told the action does not fit, rather than being told to enter more length than the parcel holds.
 
+## Single-side actions
+
+A single-side action such as BND2 or CHRW2 is paid per face, so its available length is in billed metres, twice the free boundary. The second check therefore compares the available length with the minimum multiplied by the action's billing factor: a 20 m minimum needs 40 m available, which is 20 m of boundary. The reason and explanation give both figures, as "20 m of boundary, 40 m across both sides". The sidedness is supplied to the rule as `landParcel.sidedness`, and an action with none is treated as both-sides.
+
+The third check does not apply the billing factor - an applicant with management control of only one side enters that side alone, so one face of a 20 m boundary, entered as 20 m, is the smallest valid entry. The applied-for length cannot tell one face of a long boundary from both faces of a short one, so whether the boundary itself is long enough is left to the second check.
+
+## When nothing has been applied for
+
 The applied-for quantity is optional. The `/parcels` endpoint runs this rule before anything is applied for, with the available length it has already calculated, so only the first two checks apply there. A failure makes the action unavailable with the `rule-failed` code and the second check's wording as the reason. An action with no length left at all is reported as `no-availability` before its rules run.
 
 ## Why the available length can be zero
@@ -28,9 +36,9 @@ The two are told apart by `landParcel.boundaryLength`, which carries the parcel'
 
 ## Configuration parameters
 
-| Parameter        | Type   | Description                                                               |
-| ---------------- | ------ | ------------------------------------------------------------------------- |
-| `minimumLengthM` | number | The minimum length in metres that may be applied for. A positive integer. |
+| Parameter        | Type   | Description                                                                        |
+| ---------------- | ------ | ---------------------------------------------------------------------------------- |
+| `minimumLengthM` | number | The minimum length of boundary in metres, as GOV.UK states it. A positive integer. |
 
 Lengths are whole metres throughout - the rule performs no rounding of its own.
 

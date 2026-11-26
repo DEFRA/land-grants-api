@@ -162,6 +162,7 @@ export const requirementProviders = {
         totalMeters: value.boundaryLengthMeters,
         incompatibleMeters: value.incompatibleLengthMeters
       }
+      application.landParcel.sidedness = value.targetSidedness
     }
   },
   [REQUIRED_RULE_DATA.LAND_COVERS]: {
