@@ -38,7 +38,8 @@ async function getActionsWithAvailability(
   const {
     displayedActions,
     unitByActionCode,
-    actionCodesWithSupplements = new Set()
+    actionCodesWithSupplements = new Set(),
+    availableAreaCapSqm = {}
   } = preparedActions
 
   const boundaryLengthMeters = await getBoundaryLengthMeters(
@@ -78,7 +79,8 @@ async function getActionsWithAvailability(
           parcel,
           postgresDb,
           logger,
-          parcelDataCache
+          parcelDataCache,
+          areaCapSqm: availableAreaCapSqm[displayedAction.code]
         })
 
       actionWithAvailability.hasSupplements = actionCodesWithSupplements.has(

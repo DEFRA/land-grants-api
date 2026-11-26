@@ -9,6 +9,7 @@ import { formatExplanationSections } from '~/src/features/available-area/explana
 import { formatLengthExplanationSections } from '~/src/features/available-length/explanations.js'
 import { sidednessOf } from '~/src/features/common/constants/sidedness.js'
 import { getAvailableAreaDataRequirements } from '~/src/features/available-area/availableAreaDataRequirements.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import {
   areaUnavailableReason,
   lengthUnavailableReason
@@ -19,7 +20,7 @@ import {
  * @import {Logger} from '~/src/features/common/logger.d.js'
  * @import {Pool} from '~/src/features/common/postgres.d.js'
  * @import {Action} from '~/src/features/actions/action.d.js'
- * @import {ActionWithArea, AvailableAreaDataRequirements, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
+ * @import {ActionWithArea, AvailableAreaDataRequirements, AvailableAreaForActionLp, CompatibilityCheckFn} from '~/src/features/available-area/available-area.d.js'
  * @import {ActionWithLength, AvailableLength, SidednessByActionCode} from '~/src/features/available-length/available-length.d.js'
  */
 
@@ -32,6 +33,23 @@ import {
  */
 
 /**
+ * Holds an area result to a cap from elsewhere, such as the area a
+ * supplement's base actions leave it. The result is otherwise as the
+ * calculation gave it, so the action is reported as any other.
+ * @param {AvailableAreaForActionLp} lpResult - The available area calculation's result
+ * @param {number} [areaCapSqm] - The most the action can have, in square metres
+ * @returns {AvailableAreaForActionLp} The result, held to the cap
+ */
+const capAvailableArea = (lpResult, areaCapSqm) =>
+  areaCapSqm === undefined || lpResult.availableAreaSqm <= areaCapSqm
+    ? lpResult
+    : {
+        ...lpResult,
+        availableAreaSqm: areaCapSqm,
+        availableAreaHectares: sqmToHaRounded(areaCapSqm)
+      }
+
+/**
  * Compute a single action's entry for the parcel actions response, running it
  * through the AAC when its unit competes for area. Always returns the action,
  * even at zero available area - see the feature readme.
@@ -41,6 +59,7 @@ import {
  * @param {object} context
  * @param {boolean} context.showActionResults - Whether to show action results
  * @param {CompatibilityCheckFn} context.compatibilityCheckFn - The compatibility check function
+ * @param {number} [context.areaCapSqm] - The most the action can have, in square metres, whatever the parcel leaves it
  * @returns {ActionWithAvailability} The transformed action
  */
 function buildActionWithAvailableArea(
@@ -49,13 +68,16 @@ function buildActionWithAvailableArea(
   availableAreaDataRequirements,
   context
 ) {
-  const { showActionResults, compatibilityCheckFn } = context
+  const { showActionResults, compatibilityCheckFn, areaCapSqm } = context
 
-  const lpResult = findMaximumAvailableArea(
-    action.code,
-    areaActions,
-    compatibilityCheckFn,
-    availableAreaDataRequirements
+  const lpResult = capAvailableArea(
+    findMaximumAvailableArea(
+      action.code,
+      areaActions,
+      compatibilityCheckFn,
+      availableAreaDataRequirements
+    ),
+    areaCapSqm
   )
 
   const areaCalculation = {
@@ -148,6 +170,7 @@ function buildActionWithAvailableLength(
  * @param {Pool} context.postgresDb - The postgres database
  * @param {Logger} context.logger - The logger
  * @param {Map<string, Promise<unknown>>} [context.parcelDataCache] - Parcel data shared across the request's actions
+ * @param {number} [context.areaCapSqm] - The most an area action can have, in square metres, whatever the parcel leaves it
  * @returns {Promise<ActionWithAvailability>} The transformed action, and its available length when linear
  */
 export async function buildActionWithAvailability(
@@ -163,7 +186,8 @@ export async function buildActionWithAvailability(
     parcel,
     postgresDb,
     logger,
-    parcelDataCache
+    parcelDataCache,
+    areaCapSqm
   } = context
   const unit = action.applicationUnitOfMeasurement
 
@@ -183,7 +207,7 @@ export async function buildActionWithAvailability(
       action,
       competingActions.area,
       availableAreaDataRequirements,
-      { showActionResults, compatibilityCheckFn }
+      { showActionResults, compatibilityCheckFn, areaCapSqm }
     )
   }
 

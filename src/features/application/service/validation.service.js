@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom'
 
-import { createCompatibilityMatrix } from '~/src/features/available-area/compatibilityMatrix.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 import { getAgreements } from '~/src/features/agreements/repo.js'
 import { logValidationWarn } from '~/src/features/common/helpers/logging/log-helpers.js'
@@ -56,10 +56,8 @@ export const validateAllLandParcels = async (
   defraIdToken,
   { landActions, actions }
 ) => {
-  const compatibilityCheckFn = await createCompatibilityMatrix(
-    request.logger,
-    postgresDb
-  )
+  const { compatibilityCheckFn, baseCodesBySupplement } =
+    await createValidationLookups(request.logger, postgresDb)
   const allAgreements = await getAgreements(
     sbi,
     landActions.map((a) => [a.parcelId, a.sheetId]),
@@ -79,7 +77,8 @@ export const validateAllLandParcels = async (
         actions,
         compatibilityCheckFn,
         request,
-        agreements
+        agreements,
+        baseCodesBySupplement
       )
     })
   )

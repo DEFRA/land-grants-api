@@ -10,14 +10,43 @@ import {
   parcelSupplementsSuccessResponseSchema
 } from '~/src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
 import { getDataAndValidateRequest } from '../../validation/2.0.0/parcel.validation.js'
-import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-import { getBaseCodesBySupplement } from '~/src/features/compatibility-matrix/supplements.js'
+import { createValidationLookups } from '~/src/features/available-area/compatibilityMatrix.js'
 import { getSupplementsWithAvailability } from '../../service/2.0.0/supplements.service.js'
+import { getUnitByActionCode } from '~/src/features/common/helpers/action-unit.js'
+import {
+  getAgreements,
+  agreementsForParcel
+} from '~/src/features/agreements/repo.js'
+import { expiredActionsFilter } from '~/src/features/agreements/transformers/filters.js'
 import {
   logBusinessError,
   logInfo,
   logValidationWarn
 } from '~/src/features/common/helpers/logging/log-helpers.js'
+
+/**
+ * The current agreements on the parcel, as /parcels reads them.
+ * @param {import('@hapi/hapi').Request} request - Hapi request object
+ * @param {string} sbi - The business owning the parcel
+ * @param {LandParcelDb} parcel - The parcel
+ * @param {string} defraIdToken - The end user's Defra ID token
+ * @returns {Promise<AgreementAction[]>} The parcel's current agreements
+ */
+const getCurrentAgreements = async (request, sbi, parcel, defraIdToken) => {
+  const agreements = await getAgreements(
+    sbi,
+    [[parcel.parcel_id, parcel.sheet_id]],
+    { type: 'external', value: defraIdToken },
+    // @ts-expect-error - postgresDb
+    request.server.postgresDb,
+    request.logger
+  )
+
+  return agreementsForParcel(agreements, {
+    parcelId: parcel.parcel_id,
+    sheetId: parcel.sheet_id
+  }).filter((agreementAction) => expiredActionsFilter(agreementAction))
+}
 
 /**
  * Validate that each planned action given a base action is a supplement of it.
@@ -49,7 +78,7 @@ const ParcelSupplementsControllerV2 = {
     tags: ['api'],
     description: 'Get the supplementary actions for the selected base action',
     notes:
-      'Returns the supplements of the selected base action on the land parcel, each with its availability: for now, the area of the base action. Like /parcels, it reports what is available and does not judge the quantities selected: /application/validate checks those. The base action must be in plannedActions, as an area, and each planned supplement can name the base action it sits on (baseActionCode).',
+      "Returns the supplements of the selected base action on the land parcel, each with its availability: how much it could cover, given every other action selected on the parcel (the supplements among them) and the business's existing agreements, and no more than what the base action has left for it once the supplements on it have their share. Like /parcels, it reports what is available and does not judge the quantities selected: /application/validate checks those. The base action must be in plannedActions, as an area, and each planned supplement can name the base action it sits on (baseActionCode).",
     validate: {
       payload: parcelSupplementsSchema
     },
@@ -71,7 +100,7 @@ const ParcelSupplementsControllerV2 = {
    */
   handler: async (request, h) => {
     // @ts-expect-error - payload
-    const { parcelId, baseActionCode, plannedActions } = request.payload
+    const { sbi, parcelId, baseActionCode, plannedActions } = request.payload
     const context = {
       parcelId,
       baseActionCode,
@@ -87,7 +116,10 @@ const ParcelSupplementsControllerV2 = {
         context
       })
 
-      if (!request.headers['x-forwarded-authorization']) {
+      const defraIdToken = /** @type {string} */ (
+        request.headers['x-forwarded-authorization']
+      )
+      if (!defraIdToken) {
         return Boom.unauthorized('X-Forwarded-Authorization is required')
       }
 
@@ -111,10 +143,12 @@ const ParcelSupplementsControllerV2 = {
         return Boom.notFound(`Base action not found: ${baseActionCode}`)
       }
 
-      const baseCodesBySupplement = getBaseCodesBySupplement(
-        // @ts-expect-error - postgresDb
-        await getCompatibilityMatrix(request.logger, request.server.postgresDb)
-      )
+      const { compatibilityCheckFn, baseCodesBySupplement } =
+        await createValidationLookups(
+          request.logger,
+          // @ts-expect-error - postgresDb
+          request.server.postgresDb
+        )
 
       const plannedSupplementsError = validatePlannedSupplements(
         plannedActions,
@@ -124,14 +158,21 @@ const ParcelSupplementsControllerV2 = {
         return plannedSupplementsError
       }
 
-      const supplements = getSupplementsWithAvailability({
+      const [parcel] = validationResponse.parcels
+
+      const supplements = await getSupplementsWithAvailability({
+        parcel,
         baseActionCode,
         plannedActions,
         enabledActions,
-        baseCodesBySupplement
+        baseCodesBySupplement,
+        unitByActionCode: getUnitByActionCode(enabledActions),
+        compatibilityCheckFn,
+        // Read only when the base action has supplements to work out
+        getAgreements: () =>
+          getCurrentAgreements(request, sbi, parcel, defraIdToken),
+        request
       })
-
-      const [parcel] = validationResponse.parcels
 
       return h
         .response({
@@ -157,5 +198,7 @@ export { ParcelSupplementsControllerV2 }
 
 /**
  * @import { ServerRoute } from '@hapi/hapi'
+ * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
+ * @import { LandParcelDb } from '~/src/features/parcel/parcel.d.js'
  * @import { PlannedAction } from '~/src/features/parcel/schema/2.0.0/parcel-supplements.schema.js'
  */

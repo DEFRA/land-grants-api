@@ -9,6 +9,37 @@ import { haToSqm } from '~/src/features/common/helpers/measurement.js'
 import { areaActionsTransformer } from '../../parcel/transformers/parcelActions.transformer.js'
 
 /**
+ * The other actions applied for on the parcel that compete for its area, with
+ * their areas in square metres. Non-area actions (e.g. count/item-based
+ * actions like WBD1) don't compete for area, so they're excluded rather than
+ * mismeasured as hectares. Each sibling's own configured unit decides whether
+ * its quantity needs converting from hectares, or is already area-native
+ * (e.g. sqm). Where there is no enabled-action config, fall back to hectares.
+ * @param {Pick<ActionRequest, 'code'>} action - The action
+ * @param {Omit<LandAction, 'sbi'>} landAction - The land action
+ * @param {Action[]} actions - All enabled actions
+ * @returns {ActionWithArea[]} The other area actions on the parcel
+ */
+export const otherAreaActionsOnParcel = (action, landAction, actions) => {
+  const findConfiguredUnit = (code) =>
+    actions.find((config) => config.code === code)?.applicationUnitOfMeasurement
+
+  return landAction.actions
+    .filter((a) => a !== action)
+    .filter((a) => {
+      const configuredUnit = findConfiguredUnit(a.code)
+      return configuredUnit === undefined || isAreaUnit(configuredUnit)
+    })
+    .map((a) => ({
+      actionCode: a.code,
+      areaSqm:
+        (findConfiguredUnit(a.code) ?? HECTARES) === HECTARES
+          ? haToSqm(a.quantity)
+          : a.quantity
+    }))
+}
+
+/**
  * Find the available area for a land action, only for land-area-based (hectare or sqm) actions
  * @param {Pick<ActionRequest, 'code'>} action - The action
  * @param {Action[]} actions - All enabled actions
@@ -31,27 +62,7 @@ export async function getAvailableArea(
   // Other actions requested for this same parcel in this submission also
   // compete for the parcel's area, alongside persisted agreements - both
   // are treated as "existing" demand when computing this action's available area.
-  // Non-area actions (e.g. count/item-based actions like WBD1) don't compete
-  // for area, so they're excluded rather than mismeasured as hectares.
-  // Each sibling's own configured unit decides whether its quantity needs
-  // converting from hectares, or is already area-native (e.g. sqm). Where
-  // there is no enabled-action config, fall back to hectares.
-  const findConfiguredUnit = (code) =>
-    actions.find((config) => config.code === code)?.applicationUnitOfMeasurement
-
-  const siblingActions = landAction.actions
-    .filter((a) => a !== action)
-    .filter((a) => {
-      const configuredUnit = findConfiguredUnit(a.code)
-      return configuredUnit === undefined || isAreaUnit(configuredUnit)
-    })
-    .map((a) => ({
-      actionCode: a.code,
-      areaSqm:
-        (findConfiguredUnit(a.code) ?? HECTARES) === HECTARES
-          ? haToSqm(a.quantity)
-          : a.quantity
-    }))
+  const siblingActions = otherAreaActionsOnParcel(action, landAction, actions)
 
   // Agreements arrive in every unit; only area-based ones compete for area.
   const areaAgreements = agreements.filter((a) => isAreaUnit(a.unit))
@@ -92,6 +103,6 @@ export async function getAvailableArea(
  * @import { ActionRequest } from '~/src/features/application/application.d.js'
  * @import { Action } from '~/src/features/actions/action.d.js'
  * @import { AgreementAction } from '~/src/features/agreements/agreements.d.js'
- * @import { CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
+ * @import { ActionWithArea, CompatibilityCheckFn } from '~/src/features/available-area/available-area.d.js'
  * @import { LandAction } from '~/src/features/payment/payment.d.js'
  */

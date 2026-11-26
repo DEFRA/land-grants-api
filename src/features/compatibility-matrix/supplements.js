@@ -1,5 +1,4 @@
-// "First option is base for the second option" - the second option is a supplement of the first
-const SUPPLEMENT_BASE_TYPE = 'SUPBAS'
+import { SUPPLEMENT_BASE_TYPE } from './constants/compatibility-types.js'
 
 /**
  * Finds the actions that are a base for at least one supported supplement action.
