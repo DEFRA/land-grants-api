@@ -11,7 +11,6 @@ import parcelHasMinimumEligibilityForWoodlandManagementPlanSchema from './woodla
 import parcelHasValidLandCoverSchema from './parcel-has-valid-land-cover/parcel-has-valid-land-cover.schema.js'
 import parcelIntersectionDoesNotExceedMaximumForDataLayerSchema from './parcel-intersection-does-not-exceed-maximum-for-data-layer/parcel-intersection-does-not-exceed-maximum-for-data-layer.schema.js'
 import supplementHasBaseActionSchema from './supplement-has-base-action/supplement-has-base-action.schema.js'
-import supplementWithinBaseActionAreaSchema from './supplement-within-base-action-area/supplement-within-base-action-area.schema.js'
 import sssiConsentRequiredSchema from './sssi-consent-required/sssi-consent-required.schema.js'
 import totalAreaNotExceedLandParcelsWoodlandManagementPlanSchema from './woodland-total-area/woodland-total-area.schema.js'
 
@@ -38,8 +37,6 @@ export const configSchemaByRuleKey = {
     parcelIntersectionDoesNotExceedMaximumForDataLayerSchema,
   'sssi-consent-required-1.0.0': sssiConsentRequiredSchema,
   'supplement-has-base-action-1.0.0': supplementHasBaseActionSchema,
-  'supplement-within-base-action-area-1.0.0':
-    supplementWithinBaseActionAreaSchema,
   'total-area-not-exceed-land-parcels-woodland-management-plan-1.0.0':
     totalAreaNotExceedLandParcelsWoodlandManagementPlanSchema
 }

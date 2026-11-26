@@ -1,4 +1,7 @@
-import { getSupplementBaseActions } from './supplement-base-actions.js'
+import {
+  getSupplementBaseActions,
+  holdToBaseActions
+} from './supplement-base-actions.js'
 
 // Real 2026 rows: CLIG3_26 is the base of GRH7_26, and CLIG3_26, AGF1_26 and
 // OFM1_26 are bases of SPM3_26
@@ -103,4 +106,78 @@ describe('getSupplementBaseActions', () => {
       baseActionsOf('CLIG3_26', [applied('CLIG3_26', 5), applied('GRH7_26', 4)])
     ).toEqual({ baseCodes: [], onParcel: [] })
   })
+})
+
+describe('holdToBaseActions', () => {
+  const parcelLeaves = (availableAreaSqm) => ({
+    availableAreaSqm,
+    availableAreaHectares: availableAreaSqm / 10000,
+    explanations: [{ title: 'Result', content: ['From the parcel'] }]
+  })
+  const clig3 = (areaSqm) => ({
+    baseCodes: ['CLIG3_26'],
+    onParcel: [{ actionCode: 'CLIG3_26', areaSqm }]
+  })
+
+  test('holds a supplement to the area of its base action, saying why', () => {
+    expect(
+      holdToBaseActions(parcelLeaves(100000), 'GRH7_26', clig3(50000))
+    ).toEqual({
+      availableAreaSqm: 50000,
+      availableAreaHectares: 5,
+      explanations: [
+        { title: 'Result', content: ['From the parcel'] },
+        {
+          title: 'Base action',
+          content: [
+            'GRH7_26 is a supplement of CLIG3_26, applied for on 5 ha of this land parcel.',
+            'Its available area is held to that of its base action: 5 ha.'
+          ]
+        }
+      ]
+    })
+  })
+
+  test('leaves what the parcel leaves when that is less', () => {
+    const held = holdToBaseActions(parcelLeaves(30000), 'GRH7_26', clig3(50000))
+
+    expect(held.availableAreaSqm).toBe(30000)
+    expect(held.explanations.at(-1).content).toEqual([
+      'GRH7_26 is a supplement of CLIG3_26, applied for on 5 ha of this land parcel.'
+    ])
+  })
+
+  test('lets a supplement with several base actions use them all', () => {
+    expect(
+      holdToBaseActions(parcelLeaves(100000), 'SPM3_26', {
+        baseCodes: ['CLIG3_26', 'AGF1_26'],
+        onParcel: [
+          { actionCode: 'CLIG3_26', areaSqm: 50000 },
+          { actionCode: 'AGF1_26', areaSqm: 30000 }
+        ]
+      }).availableAreaSqm
+    ).toBe(80000)
+  })
+
+  test.each([
+    [
+      ['CLIG3_26'],
+      'GRH7_26 is a supplement of CLIG3_26, which is not applied for on this land parcel in this application.'
+    ],
+    [
+      ['CLIG3_26', 'AGF1_26'],
+      'GRH7_26 is a supplement of CLIG3_26 or AGF1_26, none of which is applied for on this land parcel in this application.'
+    ]
+  ])(
+    'leaves a supplement without its base action on the parcel no area',
+    (baseCodes, line) => {
+      const held = holdToBaseActions(parcelLeaves(100000), 'GRH7_26', {
+        baseCodes,
+        onParcel: []
+      })
+
+      expect(held.availableAreaSqm).toBe(0)
+      expect(held.explanations.at(-1).content[0]).toBe(line)
+    }
+  )
 })

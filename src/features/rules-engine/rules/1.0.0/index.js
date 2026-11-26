@@ -10,7 +10,6 @@ import { parcelHasIntersectionWithDataLayer } from './parcel-has-intersection-wi
 import { parcelHasValidLandCover } from './parcel-has-valid-land-cover/parcel-has-valid-land-cover.js'
 import { parcelIntersectionDoesNotExceedMaximumForDataLayer } from './parcel-intersection-does-not-exceed-maximum-for-data-layer/parcel-intersection-does-not-exceed-maximum-for-data-layer.js'
 import { supplementHasBaseAction } from './supplement-has-base-action/supplement-has-base-action.js'
-import { supplementWithinBaseActionArea } from './supplement-within-base-action-area/supplement-within-base-action-area.js'
 import { sssiConsentRequired } from './sssi-consent-required/sssi-consent-required.js'
 import { woodlandMinimumEligibility } from './woodland-minimum-eligibility/woodland-minimum-eligibility.js'
 import { woodlandTotalArea } from './woodland-total-area/woodland-total-area.js'
@@ -38,6 +37,5 @@ export const rules = {
   'parcel-has-valid-land-cover-1.0.0': parcelHasValidLandCover,
   'boundary-intersection-consent-required-1.0.0':
     boundaryIntersectionConsentRequired,
-  'supplement-has-base-action-1.0.0': supplementHasBaseAction,
-  'supplement-within-base-action-area-1.0.0': supplementWithinBaseActionArea
+  'supplement-has-base-action-1.0.0': supplementHasBaseAction
 }

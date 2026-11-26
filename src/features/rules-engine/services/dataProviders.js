@@ -11,7 +11,10 @@ import { getBoundaryIntersection } from '../../data-layers/queries/getBoundaryIn
 import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 import { getAvailableArea } from '../../application/service/get-available-area.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
-import { getSupplementBaseActions } from '../../application/service/supplement-base-actions.js'
+import {
+  getSupplementBaseActions,
+  holdToBaseActions
+} from '../../application/service/supplement-base-actions.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 const intersectionLayerStrategies = {
@@ -135,11 +138,12 @@ export const requirementProviders = {
         agreements,
         compatibilityCheckFn,
         landAction,
+        baseCodesBySupplement,
         db,
         logger
       }
-    ) =>
-      getAvailableArea(
+    ) => {
+      const availableArea = await getAvailableArea(
         action,
         actions,
         agreements,
@@ -147,7 +151,23 @@ export const requirementProviders = {
         landAction,
         db,
         logger
-      ),
+      )
+
+      // Only validation gives the supplements, as only it has their base
+      // actions applied for: /parcels lists actions before anything is
+      return baseCodesBySupplement?.has(action.code)
+        ? holdToBaseActions(
+            availableArea,
+            action.code,
+            getSupplementBaseActions(
+              action,
+              landAction,
+              actions,
+              baseCodesBySupplement
+            )
+          )
+        : availableArea
+    },
     apply: (application, _req, value) => {
       application.landParcel.availableArea = value
       application.landParcel.availableAreaSqm = value.availableAreaSqm

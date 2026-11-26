@@ -19,12 +19,11 @@ const mockAuditEvent = vi.mocked(auditEvent)
 
 const PARCEL_AREA_RULE = 'applied-for-total-or-partial-available-area'
 const HAS_BASE_RULE = 'supplement-has-base-action'
-const WITHIN_BASE_RULE = 'supplement-within-base-action-area'
 
 const rule = (name) => ({ name, description: name })
 
-// The supplements are configured with the supplement rules, as in grants-config-land-grants
-const SUPPLEMENT_RULES = [rule(HAS_BASE_RULE), rule(WITHIN_BASE_RULE)]
+// The supplements are configured with the base action rule, as in grants-config-land-grants
+const SUPPLEMENT_RULES = [rule(HAS_BASE_RULE)]
 
 const enabledAction = (code, supplementRules = []) => ({
   enabled: true,
@@ -137,28 +136,26 @@ describe('Application validation of supplements', () => {
     const data = await validate([ha('CAGF1', 4), ha('GRH7_26', 4)])
 
     expect(data.valid).toBe(false)
+    // With no base action on the parcel, the supplement has no area either
     expect(rulesOf(data, 'GRH7_26')).toEqual({
-      [PARCEL_AREA_RULE]: true,
-      [HAS_BASE_RULE]: false,
-      [WITHIN_BASE_RULE]: false
+      [PARCEL_AREA_RULE]: false,
+      [HAS_BASE_RULE]: false
     })
     expect(reasonOf(data, 'GRH7_26', HAS_BASE_RULE)).toBe(
       'GRH7_26 requires the base action CLIG3_26 on the same land parcel'
     )
-    expect(reasonOf(data, 'GRH7_26', WITHIN_BASE_RULE)).toBe(
-      'The area (4 ha) must not exceed the CLIG3_26 area (0 ha)'
-    )
   })
 
-  test('makes no supplement checks on a supplement not configured with the rules', async () => {
+  test('fails a supplement without its base action, even when its config lacks the base action rule', async () => {
     mockGetActionsByVersion.mockResolvedValue([
       enabledAction('CAGF1'),
       enabledAction('GRH7_26')
     ])
 
+    // CAGF1 is on the parcel, but GRH7_26's base action CLIG3_26 is not
     const data = await validate([ha('CAGF1', 4), ha('GRH7_26', 4)])
 
-    expect(rulesOf(data, 'GRH7_26')).toEqual({ [PARCEL_AREA_RULE]: true })
+    expect(rulesOf(data, 'GRH7_26')).toEqual({ [PARCEL_AREA_RULE]: false })
   })
 
   test('fails a supplement over the area of its base action', async () => {
@@ -166,12 +163,11 @@ describe('Application validation of supplements', () => {
 
     expect(data.valid).toBe(false)
     expect(rulesOf(data, 'GRH7_26')).toEqual({
-      [PARCEL_AREA_RULE]: true,
-      [HAS_BASE_RULE]: true,
-      [WITHIN_BASE_RULE]: false
+      [PARCEL_AREA_RULE]: false,
+      [HAS_BASE_RULE]: true
     })
-    expect(reasonOf(data, 'GRH7_26', WITHIN_BASE_RULE)).toBe(
-      'The area (5.0001 ha) must not exceed the CLIG3_26 area (5 ha)'
+    expect(reasonOf(data, 'GRH7_26', PARCEL_AREA_RULE)).toBe(
+      'The amount of land must be the same as or less than the available area'
     )
   })
 
@@ -183,13 +179,15 @@ describe('Application validation of supplements', () => {
       expect(data.valid).toBe(true)
       expect(rulesOf(data, code)).toEqual({
         [PARCEL_AREA_RULE]: true,
-        [HAS_BASE_RULE]: true,
-        [WITHIN_BASE_RULE]: true
+        [HAS_BASE_RULE]: true
       })
+      expect(reasonOf(data, code, PARCEL_AREA_RULE)).toBe(
+        'The applied figure (5 ha) is within the allowed range (greater than 0 ha and up to 5 ha)'
+      )
     }
   )
 
-  test('passes supplements that cannot stack, side by side within the base action', async () => {
+  test('passes supplements that can exist side by side within the base action but which cannot stack one upon another', async () => {
     const data = await validate([
       ha('CLIG3_26', 9),
       ha('GRH7_26', 6),
@@ -210,8 +208,7 @@ describe('Application validation of supplements', () => {
     expect(data.valid).toBe(false)
     expect(rulesOf(data, 'GRH7_26')).toEqual({
       [PARCEL_AREA_RULE]: false,
-      [HAS_BASE_RULE]: true,
-      [WITHIN_BASE_RULE]: true
+      [HAS_BASE_RULE]: true
     })
   })
 })

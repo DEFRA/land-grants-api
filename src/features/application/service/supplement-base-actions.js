@@ -1,3 +1,5 @@
+import { listOf } from '~/src/features/common/helpers/list-of.js'
+import { sqmToHaRounded } from '~/src/features/common/helpers/measurement.js'
 import { otherAreaActionsOnParcel } from './get-available-area.js'
 
 /**
@@ -30,6 +32,61 @@ export const getSupplementBaseActions = (
     )
   }
 }
+
+/**
+ * Holds a supplement's available area to the area of its base actions applied
+ * for on the parcel, as a supplement sits within its base action. With none on
+ * the parcel, that area is 0. The section added to the explanations says why.
+ * @param {AvailableArea} availableArea - What the parcel leaves the supplement
+ * @param {string} code - The supplement
+ * @param {SupplementBaseActions} supplementBaseActions - Its base actions
+ * @returns {AvailableArea} The smaller of the two
+ */
+export const holdToBaseActions = (
+  availableArea,
+  code,
+  { baseCodes, onParcel }
+) => {
+  // A supplement with several of its base actions on the parcel can use them all
+  const baseAreaSqm = onParcel.reduce((total, base) => total + base.areaSqm, 0)
+  const isHeld = baseAreaSqm < availableArea.availableAreaSqm
+  const baseCodesOnParcel = [
+    ...new Set(onParcel.map((base) => base.actionCode))
+  ]
+
+  let baseActionLine
+  if (onParcel.length > 0) {
+    baseActionLine = `${code} is a supplement of ${listOf(baseCodesOnParcel, 'and')}, applied for on ${sqmToHaRounded(baseAreaSqm)} ha of this land parcel.`
+  } else if (baseCodes.length === 1) {
+    baseActionLine = `${code} is a supplement of ${baseCodes[0]}, which is not applied for on this land parcel in this application.`
+  } else {
+    baseActionLine = `${code} is a supplement of ${listOf(baseCodes, 'or')}, none of which is applied for on this land parcel in this application.`
+  }
+
+  return {
+    ...availableArea,
+    ...(isHeld && {
+      availableAreaSqm: baseAreaSqm,
+      availableAreaHectares: sqmToHaRounded(baseAreaSqm)
+    }),
+    explanations: [
+      ...(availableArea.explanations ?? []),
+      {
+        title: 'Base action',
+        content: isHeld
+          ? [
+              baseActionLine,
+              `Its available area is held to that of its base action: ${sqmToHaRounded(baseAreaSqm)} ha.`
+            ]
+          : [baseActionLine]
+      }
+    ]
+  }
+}
+
+/**
+ * @typedef {{ availableAreaSqm: number, availableAreaHectares?: number, explanations?: object[] }} AvailableArea
+ */
 
 /**
  * @typedef {object} SupplementBaseActions

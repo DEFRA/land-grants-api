@@ -9,4 +9,3 @@
 - [Minimum length](minimum-length/minimum-length.md)
 - [Applied for total or partial available length](applied-for-total-or-partial-available-length/applied-for-total-or-partial-available-length.md)
 - [Supplement has base action](supplement-has-base-action/supplement-has-base-action.md)
-- [Supplement within base action area](supplement-within-base-action-area/supplement-within-base-action-area.md)

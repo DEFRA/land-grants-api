@@ -8,6 +8,8 @@ import { REQUIRED_RULE_DATA } from '~/src/features/rules-engine/services/require
 
 // A supplement is applied for on the same parcel as one of its base actions, in the same application.
 
+const EXPLANATION_TITLE = 'Base action'
+
 /**
  * @param {RuleEngineApplication} application - The application to execute the rule on
  * @param {ActionRule} rule - The rule to execute
@@ -34,7 +36,7 @@ export const supplementHasBaseAction = {
         reason: `${code} is not a supplement of any action`,
         explanations: [
           {
-            title: 'Base action',
+            title: EXPLANATION_TITLE,
             lines: [`${code} has no base action in the compatibility matrix.`]
           }
         ]
@@ -49,7 +51,7 @@ export const supplementHasBaseAction = {
         reason: `${code} requires the base action ${listOf(baseCodes, 'or')} on the same land parcel`,
         explanations: [
           {
-            title: 'Base action',
+            title: EXPLANATION_TITLE,
             lines: [
               baseCodes.length === 1
                 ? `${code} is a supplement of ${baseCodes[0]}, which is not applied for on this land parcel in this application.`
@@ -72,7 +74,7 @@ export const supplementHasBaseAction = {
       reason: `${code} is applied for with its base action ${baseCodesOnParcel}`,
       explanations: [
         {
-          title: 'Base action',
+          title: EXPLANATION_TITLE,
           lines: [
             `${code} is a supplement of ${baseCodesOnParcel}, applied for on this land parcel.`
           ]

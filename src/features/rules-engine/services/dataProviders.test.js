@@ -13,7 +13,10 @@ import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getB
 import { getAvailableArea } from '~/src/features/application/service/get-available-area.js'
 import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
-import { getSupplementBaseActions } from '~/src/features/application/service/supplement-base-actions.js'
+import {
+  getSupplementBaseActions,
+  holdToBaseActions
+} from '~/src/features/application/service/supplement-base-actions.js'
 
 vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
@@ -304,6 +307,46 @@ describe('requirementProviders', () => {
         db,
         logger
       )
+    })
+
+    it('holds a supplement to its base actions when validating', async () => {
+      const availableArea = { availableAreaSqm: 5000 }
+      const supplementBaseActions = { baseCodes: ['CLIG3_26'], onParcel: [] }
+      const held = { availableAreaSqm: 0 }
+      const baseCodesBySupplement = new Map([
+        [action.code, new Set(['CLIG3_26'])]
+      ])
+      getAvailableArea.mockResolvedValue(availableArea)
+      getSupplementBaseActions.mockReturnValue(supplementBaseActions)
+      holdToBaseActions.mockReturnValue(held)
+
+      const value = await provider.fetch({}, { ...ctx, baseCodesBySupplement })
+
+      expect(value).toBe(held)
+      expect(getSupplementBaseActions).toHaveBeenCalledWith(
+        action,
+        landAction,
+        actions,
+        baseCodesBySupplement
+      )
+      expect(holdToBaseActions).toHaveBeenCalledWith(
+        availableArea,
+        action.code,
+        supplementBaseActions
+      )
+    })
+
+    it('leaves an action that is not a supplement as the parcel leaves it', async () => {
+      const availableArea = { availableAreaSqm: 5000 }
+      getAvailableArea.mockResolvedValue(availableArea)
+
+      const value = await provider.fetch(
+        {},
+        { ...ctx, baseCodesBySupplement: new Map() }
+      )
+
+      expect(value).toBe(availableArea)
+      expect(holdToBaseActions).not.toHaveBeenCalled()
     })
 
     it('stores the available area on the parcel', () => {
