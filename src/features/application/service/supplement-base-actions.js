@@ -49,15 +49,22 @@ export const capSupplementAtBaseActions = (
   { baseCodes, onParcel }
 ) => {
   // A supplement with several of its base actions on the parcel can use them all
-  const baseAreaSqm = onParcel.reduce((total, base) => total + base.areaSqm, 0)
-  const isHeld = baseAreaSqm < availableArea.availableAreaSqm
+  const totalBaseAreaSqm = onParcel.reduce(
+    (total, base) => total + base.areaSqm,
+    0
+  )
+  const availableAreaSqm = Math.min(
+    availableArea.availableAreaSqm,
+    totalBaseAreaSqm
+  )
+  const isCapped = availableAreaSqm < availableArea.availableAreaSqm
   const baseCodesOnParcel = [
     ...new Set(onParcel.map((base) => base.actionCode))
   ]
 
   let baseActionLine
   if (onParcel.length > 0) {
-    baseActionLine = `${code} is a supplement of ${listOf(baseCodesOnParcel, 'and')}, applied for on ${sqmToHaRounded(baseAreaSqm)} ha of this land parcel.`
+    baseActionLine = `${code} is a supplement of ${listOf(baseCodesOnParcel, 'and')}, applied for on ${sqmToHaRounded(totalBaseAreaSqm)} ha of this land parcel.`
   } else if (baseCodes.length === 1) {
     baseActionLine = `${code} is a supplement of ${baseCodes[0]}, which is not applied for on this land parcel in this application.`
   } else {
@@ -66,18 +73,16 @@ export const capSupplementAtBaseActions = (
 
   return {
     ...availableArea,
-    ...(isHeld && {
-      availableAreaSqm: baseAreaSqm,
-      availableAreaHectares: sqmToHaRounded(baseAreaSqm)
-    }),
+    availableAreaSqm,
+    availableAreaHectares: sqmToHaRounded(availableAreaSqm),
     explanations: [
       ...(availableArea.explanations ?? []),
       {
         title: 'Base action',
-        content: isHeld
+        content: isCapped
           ? [
               baseActionLine,
-              `Its available area is held to that of its base action: ${sqmToHaRounded(baseAreaSqm)} ha.`
+              `Its available area is capped at that of its base action: ${sqmToHaRounded(availableAreaSqm)} ha.`
             ]
           : [baseActionLine]
       }

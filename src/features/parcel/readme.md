@@ -83,7 +83,7 @@ against its parcel and its base action, using the compatibility matrix's
     application. A supplement with several of its bases on the parcel can use
     all of them; with none, it has no area.
 
-  The figure is held to its base actions by the `AVAILABLE_AREA` data
+  The figure is capped at its base actions by the `AVAILABLE_AREA` data
   provider, for every supplement in the matrix, whatever its configured rules.
   Its explanations gain a "Base action" section saying so. The rule's reason is
   the usual one, "The amount of land must be the same as or less than the
@@ -100,5 +100,5 @@ against its parcel and its base action, using the compatibility matrix's
   `/parcels` doesn't run it.
 
 A supplement fails when any of its rules fails. For now, each supplement is
-held to the whole of its base action: supplements that cannot overlap, such as
+capped at the whole of its base action: supplements that cannot overlap, such as
 GRH7_26 and GRH8_26, are not yet checked against each other's share of it.

@@ -131,7 +131,7 @@ describe('capSupplementAtBaseActions', () => {
           title: 'Base action',
           content: [
             'GRH7_26 is a supplement of CLIG3_26, applied for on 5 ha of this land parcel.',
-            'Its available area is held to that of its base action: 5 ha.'
+            'Its available area is capped at that of its base action: 5 ha.'
           ]
         }
       ]
