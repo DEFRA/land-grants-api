@@ -1,5 +1,8 @@
 import { getCompatibilityMatrix } from '~/src/features/compatibility-matrix/queries/getCompatibilityMatrix.query.js'
-import { getActionCodesWithSupplements } from '~/src/features/compatibility-matrix/supplements.js'
+import {
+  getActionCodesWithSupplements,
+  getBaseCodesBySupplement
+} from '~/src/features/compatibility-matrix/supplements.js'
 
 /**
  * Creates a compatibility checking function from compatibility matrix rows
@@ -17,15 +20,18 @@ const compatibilityCheckFromMatrix = (compatibilityMatrices) => {
 }
 
 /**
- * Creates a compatibility checking function based on the database and the codes passed
+ * Reads the compatibility matrix once and builds the compatibility check and
+ * the base actions of each supplement, for validating an application.
  * @param {Logger} logger
  * @param {Pool} db
- * @param {string[] | null} codes
- * @returns {Promise<(action1: string, action2: string) => boolean>}
+ * @returns {Promise<{ compatibilityCheckFn: (action1: string, action2: string) => boolean, baseCodesBySupplement: Map<string, Set<string>> }>}
  */
-export const createCompatibilityMatrix = async (logger, db, codes = null) => {
-  const compatibilityMatrices = await getCompatibilityMatrix(logger, db, codes)
-  return compatibilityCheckFromMatrix(compatibilityMatrices)
+export const createValidationLookups = async (logger, db) => {
+  const compatibilityMatrices = await getCompatibilityMatrix(logger, db)
+  return {
+    compatibilityCheckFn: compatibilityCheckFromMatrix(compatibilityMatrices),
+    baseCodesBySupplement: getBaseCodesBySupplement(compatibilityMatrices)
+  }
 }
 
 /**

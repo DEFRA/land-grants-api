@@ -159,6 +159,7 @@ describe('Action Validation Service', () => {
           compatibilityCheckFn: mockCompatibilityCheckFn,
           unit: 'ha',
           appliedForQuantity: 10.5,
+          baseCodesBySupplement: new Map(),
           db: mockPostgresDb,
           logger: mockLogger
         }

@@ -65,3 +65,40 @@ as an area greater than zero, in `ha` or `sqm`: supplements sit on their base
 action's area. It is also rejected when a planned action's `baseActionCode` is not
 in `plannedActions`, or is not one of its `SUPBAS` bases. A base action we do
 not offer is a 404.
+
+### Validating supplements
+
+`POST /api/v2/application/validate` checks each supplement measured by area
+against its parcel and its base action, using the compatibility matrix's
+`SUPBAS` rows:
+
+- **Its area.** The supplement's configured
+  `applied-for-total-or-partial-available-area` rule checks its quantity
+  against the smaller of two figures, as `/parcels/supplements` reports it:
+  - what the parcel leaves it: the parcel-level calculation, with every other
+    action applied for on the parcel and the existing agreements competing for
+    its land. On its own, this lets a supplement cover its base action's land,
+    as the matrix lets them share it;
+  - the area of its base actions applied for on the same parcel, in the same
+    application. A supplement with several of its bases on the parcel can use
+    all of them; with none, it has no area.
+
+  The figure is capped at its base actions by the `AVAILABLE_AREA` data
+  provider, for every supplement in the matrix, whatever its configured rules.
+  Its explanations gain a "Base action" section saying so. The rule's reason is
+  the usual one, "The amount of land must be the same as or less than the
+  available area". `/parcels` is not held: it lists actions before anything is
+  applied for.
+
+- **Its base action.** The
+  [`supplement-has-base-action`](../rules-engine/rules/1.0.0/supplement-has-base-action/supplement-has-base-action.md)
+  rule, configured on each supplement in grants-config-land-grants, checks that
+  one of its base actions is applied for on the same parcel, in the same
+  application. A base action held only in an existing agreement does not
+  count. The reason names the base actions, e.g. "GRH7_26 requires the base
+  action CLIG3_26 on the same land parcel". It needs what is applied for, so
+  `/parcels` doesn't run it.
+
+A supplement fails when any of its rules fails. For now, each supplement is
+capped at the whole of its base action: supplements that cannot overlap, such as
+GRH7_26 and GRH8_26, are not yet checked against each other's share of it.

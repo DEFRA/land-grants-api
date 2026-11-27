@@ -11,6 +11,10 @@ import { getBoundaryIntersection } from '../../data-layers/queries/getBoundaryIn
 import { REQUIRED_RULE_DATA } from './requiredRuleData.js'
 import { getAvailableArea } from '../../application/service/get-available-area.js'
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
+import {
+  getSupplementBaseActions,
+  capSupplementAtBaseActions
+} from '../../application/service/supplement-base-actions.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
 const intersectionLayerStrategies = {
@@ -134,11 +138,12 @@ export const requirementProviders = {
         agreements,
         compatibilityCheckFn,
         landAction,
+        baseCodesBySupplement,
         db,
         logger
       }
-    ) =>
-      getAvailableArea(
+    ) => {
+      const availableArea = await getAvailableArea(
         action,
         actions,
         agreements,
@@ -146,7 +151,23 @@ export const requirementProviders = {
         landAction,
         db,
         logger
-      ),
+      )
+
+      // Only validation gives the supplements, as only it has their base
+      // actions applied for: /parcels lists actions before anything is
+      return baseCodesBySupplement?.has(action.code)
+        ? capSupplementAtBaseActions(
+            availableArea,
+            action.code,
+            getSupplementBaseActions(
+              action,
+              landAction,
+              actions,
+              baseCodesBySupplement
+            )
+          )
+        : availableArea
+    },
     apply: (application, _req, value) => {
       application.landParcel.availableArea = value
       application.landParcel.availableAreaSqm = value.availableAreaSqm
@@ -178,6 +199,22 @@ export const requirementProviders = {
       getLandCoversForAction(action.code, db, logger),
     apply: (application, _req, value) => {
       application.actionLandCovers = value
+    }
+  },
+  [REQUIRED_RULE_DATA.SUPPLEMENT_BASE_ACTIONS]: {
+    dedupeKey: () => 'supplementBaseActions',
+    fetch: (
+      _req,
+      { action, actions, landAction, baseCodesBySupplement = new Map() }
+    ) =>
+      getSupplementBaseActions(
+        action,
+        landAction,
+        actions,
+        baseCodesBySupplement
+      ),
+    apply: (application, _req, value) => {
+      application.supplementBaseActions = value
     }
   }
 }

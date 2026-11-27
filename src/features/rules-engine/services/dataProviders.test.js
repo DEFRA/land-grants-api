@@ -13,6 +13,10 @@ import { getBoundaryIntersection } from '~/src/features/data-layers/queries/getB
 import { getAvailableArea } from '~/src/features/application/service/get-available-area.js'
 import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCoversForParcel.query.js'
 import { getLandCoversForAction } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
+import {
+  getSupplementBaseActions,
+  capSupplementAtBaseActions
+} from '~/src/features/application/service/supplement-base-actions.js'
 
 vi.mock(
   '~/src/features/data-layers/queries/getDataLayer.query.js',
@@ -32,6 +36,7 @@ vi.mock('~/src/features/parcel/queries/getSdaIntersectPercentage.js')
 vi.mock('~/src/features/data-layers/queries/getBoundaryIntersection.query.js')
 vi.mock('~/src/features/application/service/get-available-area.js')
 vi.mock('~/src/features/parcel/queries/getLandCoversForParcel.query.js')
+vi.mock('~/src/features/application/service/supplement-base-actions.js')
 vi.mock(
   '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 )
@@ -304,6 +309,46 @@ describe('requirementProviders', () => {
       )
     })
 
+    it('holds a supplement to its base actions when validating', async () => {
+      const availableArea = { availableAreaSqm: 5000 }
+      const supplementBaseActions = { baseCodes: ['CLIG3_26'], onParcel: [] }
+      const held = { availableAreaSqm: 0 }
+      const baseCodesBySupplement = new Map([
+        [action.code, new Set(['CLIG3_26'])]
+      ])
+      getAvailableArea.mockResolvedValue(availableArea)
+      getSupplementBaseActions.mockReturnValue(supplementBaseActions)
+      capSupplementAtBaseActions.mockReturnValue(held)
+
+      const value = await provider.fetch({}, { ...ctx, baseCodesBySupplement })
+
+      expect(value).toBe(held)
+      expect(getSupplementBaseActions).toHaveBeenCalledWith(
+        action,
+        landAction,
+        actions,
+        baseCodesBySupplement
+      )
+      expect(capSupplementAtBaseActions).toHaveBeenCalledWith(
+        availableArea,
+        action.code,
+        supplementBaseActions
+      )
+    })
+
+    it('leaves an action that is not a supplement as the parcel leaves it', async () => {
+      const availableArea = { availableAreaSqm: 5000 }
+      getAvailableArea.mockResolvedValue(availableArea)
+
+      const value = await provider.fetch(
+        {},
+        { ...ctx, baseCodesBySupplement: new Map() }
+      )
+
+      expect(value).toBe(availableArea)
+      expect(capSupplementAtBaseActions).not.toHaveBeenCalled()
+    })
+
     it('stores the available area on the parcel', () => {
       const application = emptyApplication()
       const availableArea = { availableAreaSqm: 5000 }
@@ -422,6 +467,52 @@ describe('requirementProviders', () => {
 
       expect(application.actionLandCovers).toBe(actionLandCovers)
       expect(application.landParcel).toEqual({})
+    })
+  })
+
+  describe('SUPPLEMENT_BASE_ACTIONS', () => {
+    const provider =
+      requirementProviders[REQUIRED_RULE_DATA.SUPPLEMENT_BASE_ACTIONS]
+    const supplementBaseActions = { baseCodes: ['CLIG3_26'], onParcel: [] }
+
+    it('dedupes to a single fetch', () => {
+      expect(provider.dedupeKey({})).toBe('supplementBaseActions')
+    })
+
+    it("works out the supplement's base actions on the parcel", async () => {
+      const baseCodesBySupplement = new Map([
+        ['GRH7_26', new Set(['CLIG3_26'])]
+      ])
+      getSupplementBaseActions.mockReturnValue(supplementBaseActions)
+
+      const value = await provider.fetch({}, { ...ctx, baseCodesBySupplement })
+
+      expect(value).toBe(supplementBaseActions)
+      expect(getSupplementBaseActions).toHaveBeenCalledWith(
+        action,
+        landAction,
+        actions,
+        baseCodesBySupplement
+      )
+    })
+
+    it('finds no base actions without the compatibility matrix', async () => {
+      await provider.fetch({}, ctx)
+
+      expect(getSupplementBaseActions).toHaveBeenCalledWith(
+        action,
+        landAction,
+        actions,
+        new Map()
+      )
+    })
+
+    it('stores them on the application', () => {
+      const application = emptyApplication()
+
+      provider.apply(application, {}, supplementBaseActions)
+
+      expect(application.supplementBaseActions).toBe(supplementBaseActions)
     })
   })
 })

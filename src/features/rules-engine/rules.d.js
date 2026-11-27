@@ -1,5 +1,6 @@
 /**
  * @import { BoundaryIntersections } from '~/src/features/data-layers/data-layers.d.js'
+ * @import { SupplementBaseActions } from '~/src/features/application/service/supplement-base-actions.js'
  */
 
 /**
@@ -67,6 +68,7 @@
  * @property {string} [actionCodeAppliedFor]
  * @property {LandParcel} [landParcel]
  * @property {{landCoverClassCode: string, landCoverCode: string}[]} [actionLandCovers]
+ * @property {SupplementBaseActions} [supplementBaseActions] - For a supplement, its base actions and those applied for on the parcel
  */
 
 /**

@@ -17,6 +17,7 @@ import { resolveApplicationData } from '../../rules-engine/services/resolveAppli
  * @param {CompatibilityCheckFn} compatibilityCheckFn - Compatibility check function
  * @param {LandAction} landAction - The parcel and every action applied for on it
  * @param {{logger: object, server: {postgresDb: object}}} request - The request object
+ * @param {Map<string, Set<string>>} [baseCodesBySupplement] - The base actions of each supplement, for the supplement rules
  * @returns {Promise<ActionRuleResult>} The validation result
  */
 export const validateActionOnParcel = async (
@@ -25,7 +26,8 @@ export const validateActionOnParcel = async (
   agreements,
   compatibilityCheckFn,
   landAction,
-  request
+  request,
+  baseCodesBySupplement = new Map()
 ) => {
   if (!landAction || !actions || !compatibilityCheckFn) {
     throw new Error('Unable to validate land action')
@@ -68,7 +70,8 @@ export const validateActionOnParcel = async (
       compatibilityCheckFn,
       unit,
       appliedForQuantity,
-      availableLength
+      availableLength,
+      baseCodesBySupplement
     },
     request,
     actionConfig?.rules
