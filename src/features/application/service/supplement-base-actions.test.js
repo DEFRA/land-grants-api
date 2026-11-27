@@ -1,6 +1,6 @@
 import {
   getSupplementBaseActions,
-  holdToBaseActions
+  capSupplementAtBaseActions
 } from './supplement-base-actions.js'
 
 // Real 2026 rows: CLIG3_26 is the base of GRH7_26, and CLIG3_26, AGF1_26 and
@@ -108,7 +108,7 @@ describe('getSupplementBaseActions', () => {
   })
 })
 
-describe('holdToBaseActions', () => {
+describe('capSupplementAtBaseActions', () => {
   const parcelLeaves = (availableAreaSqm) => ({
     availableAreaSqm,
     availableAreaHectares: availableAreaSqm / 10000,
@@ -121,7 +121,7 @@ describe('holdToBaseActions', () => {
 
   test('holds a supplement to the area of its base action, saying why', () => {
     expect(
-      holdToBaseActions(parcelLeaves(100000), 'GRH7_26', clig3(50000))
+      capSupplementAtBaseActions(parcelLeaves(100000), 'GRH7_26', clig3(50000))
     ).toEqual({
       availableAreaSqm: 50000,
       availableAreaHectares: 5,
@@ -139,7 +139,11 @@ describe('holdToBaseActions', () => {
   })
 
   test('leaves what the parcel leaves when that is less', () => {
-    const held = holdToBaseActions(parcelLeaves(30000), 'GRH7_26', clig3(50000))
+    const held = capSupplementAtBaseActions(
+      parcelLeaves(30000),
+      'GRH7_26',
+      clig3(50000)
+    )
 
     expect(held.availableAreaSqm).toBe(30000)
     expect(held.explanations.at(-1).content).toEqual([
@@ -149,7 +153,7 @@ describe('holdToBaseActions', () => {
 
   test('lets a supplement with several base actions use them all', () => {
     expect(
-      holdToBaseActions(parcelLeaves(100000), 'SPM3_26', {
+      capSupplementAtBaseActions(parcelLeaves(100000), 'SPM3_26', {
         baseCodes: ['CLIG3_26', 'AGF1_26'],
         onParcel: [
           { actionCode: 'CLIG3_26', areaSqm: 50000 },
@@ -171,7 +175,7 @@ describe('holdToBaseActions', () => {
   ])(
     'leaves a supplement without its base action on the parcel no area',
     (baseCodes, line) => {
-      const held = holdToBaseActions(parcelLeaves(100000), 'GRH7_26', {
+      const held = capSupplementAtBaseActions(parcelLeaves(100000), 'GRH7_26', {
         baseCodes,
         onParcel: []
       })

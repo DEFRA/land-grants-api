@@ -15,7 +15,7 @@ import { getLandCoversForParcel } from '~/src/features/parcel/queries/getLandCov
 import { getLandCoversForAction } from '~/src/features/land-cover-codes/queries/getLandCoversForActions.query.js'
 import {
   getSupplementBaseActions,
-  holdToBaseActions
+  capSupplementAtBaseActions
 } from '~/src/features/application/service/supplement-base-actions.js'
 
 vi.mock(
@@ -318,7 +318,7 @@ describe('requirementProviders', () => {
       ])
       getAvailableArea.mockResolvedValue(availableArea)
       getSupplementBaseActions.mockReturnValue(supplementBaseActions)
-      holdToBaseActions.mockReturnValue(held)
+      capSupplementAtBaseActions.mockReturnValue(held)
 
       const value = await provider.fetch({}, { ...ctx, baseCodesBySupplement })
 
@@ -329,7 +329,7 @@ describe('requirementProviders', () => {
         actions,
         baseCodesBySupplement
       )
-      expect(holdToBaseActions).toHaveBeenCalledWith(
+      expect(capSupplementAtBaseActions).toHaveBeenCalledWith(
         availableArea,
         action.code,
         supplementBaseActions
@@ -346,7 +346,7 @@ describe('requirementProviders', () => {
       )
 
       expect(value).toBe(availableArea)
-      expect(holdToBaseActions).not.toHaveBeenCalled()
+      expect(capSupplementAtBaseActions).not.toHaveBeenCalled()
     })
 
     it('stores the available area on the parcel', () => {

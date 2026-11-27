@@ -197,8 +197,11 @@ describe('Application validation of supplements', () => {
     expect(data.valid).toBe(true)
   })
 
-  test('fails a supplement over the land another base action leaves it', async () => {
+  test('fails a supplement that overlaps an action it cannot share land with', async () => {
     // CAGF1 can share CLIG3_26's land, but not GRH7_26's: 10.0548 - 4 ha is left
+    // This is in fact a bug, confirmed by Lee Rose. The QAs are happy to have it
+    // resolved as part of TODO: https://eaflood.atlassian.net/jira/browse/GSPS-741
+    // in order to reduce the complexity of the PR.
     const data = await validate([
       ha('CLIG3_26', 9),
       ha('CAGF1', 4),

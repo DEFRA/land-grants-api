@@ -13,7 +13,7 @@ import { getAvailableArea } from '../../application/service/get-available-area.j
 import { getLandCoversForParcel } from '../../parcel/queries/getLandCoversForParcel.query.js'
 import {
   getSupplementBaseActions,
-  holdToBaseActions
+  capSupplementAtBaseActions
 } from '../../application/service/supplement-base-actions.js'
 import { getLandCoversForAction } from '../../land-cover-codes/queries/getLandCoversForActions.query.js'
 
@@ -156,7 +156,7 @@ export const requirementProviders = {
       // Only validation gives the supplements, as only it has their base
       // actions applied for: /parcels lists actions before anything is
       return baseCodesBySupplement?.has(action.code)
-        ? holdToBaseActions(
+        ? capSupplementAtBaseActions(
             availableArea,
             action.code,
             getSupplementBaseActions(

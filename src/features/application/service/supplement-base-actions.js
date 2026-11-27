@@ -34,15 +34,16 @@ export const getSupplementBaseActions = (
 }
 
 /**
- * Holds a supplement's available area to the area of its base actions applied
- * for on the parcel, as a supplement sits within its base action. With none on
- * the parcel, that area is 0. The section added to the explanations says why.
+ * A supplement can cover no more land than its base actions applied for on the parcel,
+ * so cap its available area at theirs.
+ * With none on the parcel, that area is 0.
+ * The section added to the explanations says why.
  * @param {AvailableArea} availableArea - What the parcel leaves the supplement
  * @param {string} code - The supplement
  * @param {SupplementBaseActions} supplementBaseActions - Its base actions
  * @returns {AvailableArea} The smaller of the two
  */
-export const holdToBaseActions = (
+export const capSupplementAtBaseActions = (
   availableArea,
   code,
   { baseCodes, onParcel }
